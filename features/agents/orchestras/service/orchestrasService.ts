@@ -36,6 +36,7 @@ import {
   isOrchestraResultMode,
   DEFAULT_ORCHESTRA_RESULT_MODE,
 } from "../constants";
+import { parseMemberContext, memberContextToWire, type MemberContext } from "../memberContext";
 import type {
   OrchestraConfig,
   OrchestraDetail,
@@ -85,6 +86,37 @@ function configToMeta(cfg: OrchestraConfig): Json {
     ...rest,
     ...(isOrchestraDepthBudget(depthBudget) ? { depth_budget: depthBudget } : {}),
   } as Json;
+}
+
+/** The member-edge metadata keys the builder edits; every other key is carried through. */
+const BUILDER_MEMBER_META_KEYS = new Set(["gap", "pos", "required", "result_mode"]);
+
+function extraMemberMeta(meta: Json | null | undefined): Record<string, Json> {
+  const out: Record<string, Json> = {};
+  for (const [k, v] of Object.entries(asRecord(meta))) {
+    if (!BUILDER_MEMBER_META_KEYS.has(k)) out[k] = v as Json;
+  }
+  return out;
+}
+
+/** Each member edge's typed payload (the connection setting), read beside the edge list. */
+async function memberPayloads(
+  edgeIds: string[],
+): Promise<Map<string, { payload_kind: string | null; payload: unknown }>> {
+  const out = new Map<string, { payload_kind: string | null; payload: unknown }>();
+  for (let i = 0; i < edgeIds.length; i += 200) {
+    const { data, error } = await supabase
+      .schema("platform")
+      .from("associations")
+      .select("id, payload_kind, payload")
+      .in("id", edgeIds.slice(i, i + 200))
+      .is("deleted_at", null);
+    if (error) throw error;
+    for (const row of (data ?? []) as { id: string; payload_kind: string | null; payload: unknown }[]) {
+      out.set(row.id, { payload_kind: row.payload_kind, payload: row.payload });
+    }
+  }
+  return out;
 }
 
 // Per-member metadata jsonb holds ONLY gap + saved position. The member's role
@@ -162,11 +194,19 @@ export const orchestrasService = {
     const marker = edges.find(
       (e) => isOrchestraMarkerRole(e.role) && e.targetId === conductorId,
     );
-    const members: OrchestraMember[] = edges
-      .filter((e) => e.role === MEMBER_ROLE)
+    const memberEdges = edges.filter((e) => e.role === MEMBER_ROLE);
+    let payloads: Awaited<ReturnType<typeof memberPayloads>>;
+    try {
+      payloads = await memberPayloads(memberEdges.map((e) => e.id));
+    } catch (e) {
+      return { ok: false, error: mapThrownError(e, "orchestrasService") };
+    }
+    const members: OrchestraMember[] = memberEdges
       .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
       .map((e, i) => {
         const meta = metaToMemberMeta(e.metadata);
+        const stored = payloads.get(e.id);
+        const parsed = parseMemberContext(stored?.payload_kind ?? null, stored?.payload ?? null);
         return {
           edgeId: e.id,
           agentId: e.targetId,
@@ -176,6 +216,10 @@ export const orchestrasService = {
           pos: meta.pos ?? null,
           required: meta.required === true,
           resultMode: meta.resultMode ?? DEFAULT_ORCHESTRA_RESULT_MODE,
+          context: parsed.context,
+          contextVersion: parsed.version,
+          contextError: parsed.error,
+          extraMeta: extraMemberMeta(e.metadata),
         };
       });
 
@@ -233,7 +277,7 @@ export const orchestrasService = {
   async addMember(
     conductorId: string,
     memberId: string,
-    args?: { position?: number; meta?: OrchestraMemberMeta },
+    args?: { position?: number; meta?: OrchestraMemberMeta; extraMeta?: Record<string, Json> },
   ): Promise<RecordsResult<{ id: string }>> {
     const meta = args?.meta ?? {};
     return fromAssociations(await associationsService.add({
@@ -250,7 +294,10 @@ export const orchestrasService = {
       // `result_mode` (wire key, snake_case) is written only when it is NOT the
       // default: the server treats an absent key as "inline", so an all-default
       // roster leaves edges exactly as they were before D-40.
+      // assoc_add REPLACES metadata whole: every key the builder does not edit (a job link's
+      // `mandate_key`, dag `depends_on` / `when`) rides back unchanged, first.
       metadata: {
+        ...(args?.extraMeta ?? {}),
         gap: meta.gap,
         pos: meta.pos,
         ...(meta.required === true ? { required: true } : {}),
@@ -260,6 +307,33 @@ export const orchestrasService = {
           : {}),
       } as Json,
     }));
+  },
+
+  /**
+   * Save one member's connection setting (context passthrough) through the version-checked
+   * door: it lands only while the edge is still at `expectedVersion`; otherwise
+   * `conflict` (someone saved since this was read — reload, never overwrite).
+   */
+  async saveMemberContext(
+    edgeId: string,
+    context: MemberContext,
+    expectedVersion: number,
+  ): Promise<RecordsResult<{ version: number }>> {
+    try {
+      const { data, error } = await supabase
+        .schema("agent")
+        .rpc("orchestra_member_set_context", {
+          p_edge_id: edgeId,
+          p_context: memberContextToWire(context),
+          p_expected_version: expectedVersion,
+        });
+      // A stale save is PT409 → `stale_write` (the package's mapping): reload, never overwrite.
+      if (error) return { ok: false as const, error: mapThrownError(error, "orchestrasService") };
+      const version = (data as { version?: unknown } | null)?.version;
+      return ok({ version: typeof version === "number" ? version : expectedVersion + 1 });
+    } catch (e) {
+      return { ok: false, error: mapThrownError(e, "orchestrasService") };
+    }
   },
 
   /**

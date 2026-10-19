@@ -65,7 +65,7 @@ describe("checkPack and covers", () => {
 
   it("refuses a gallery key that names no cover, on the pack and on a page", () => {
     const findings = checkPack(withCover("gallery:healthcare-made-up-photo"));
-    expect(findings.map((f) => f.at)).toEqual(expect.arrayContaining(["cover", "pages[0] (projects-and-tasks).cover"]));
+    expect(findings.map((f) => f.at)).toEqual(expect.arrayContaining(["cover", "pages[0].cover"]));
     expect(findings.find((f) => f.at === "cover")?.says).toMatch(/not a gallery cover/);
   });
 

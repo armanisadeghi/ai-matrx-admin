@@ -303,8 +303,8 @@ values, chips) and PROVES it with the same queries the sealed checks use, before
 dirty start state is INCONCLUSIVE whatever it shows (2026-10-01: a fault proof ran on a note still holding the
 previous run's finished line; the agent "corrected" it instead of filling it, and the proof had to be repeated).
 A fresh test subject per run is a clean start state; say so in the run row.
-A shared preview that other lanes are editing hot-reloads the runner's page mid-run; sequence runs after fixes
-land, and treat "page changed by itself" as INCONCLUSIVE.
+A release landing on the live site mid-run can change the runner's page; record the build before and after, and
+treat a changed build or "page changed by itself" as INCONCLUSIVE.
 
 ### 4a. Preflight — the environment is proven before any runner is sent
 

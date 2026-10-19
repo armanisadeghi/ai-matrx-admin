@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0557",
-  "version": 1,
+  "version": 3,
   "title": "Tutoring Center Desk",
-  "description": "Students, tutors, sessions and prepaid hour packages for a tutoring business.",
+  "description": "Tutoring center desk: students, sessions, hour packages used, assessments and progress.",
   "forWho": "Tutoring centers and independent tutor groups",
   "icon": {
     "emoji": "📚"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:education-desk-lamp-books-study",
     "offsetY": 50
   },
   "category": "education",
   "tags": [
+    "center director",
+    "tutor",
+    "parents",
     "tutoring",
-    "sessions",
-    "packages",
-    "students"
+    "test prep",
+    "sessions"
   ],
   "spec": {
     "specVersion": 1,
@@ -157,6 +159,36 @@
             },
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "goal",
+            "label": "Goal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "school",
+            "label": "School",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "missed_or_cancelled",
+            "label": "Missed or cancelled sessions",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "sessions",
+            "pick": "session_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Missed",
+                "Cancelled"
+              ]
+            }
           },
           {
             "key": "guardian",
@@ -424,7 +456,9 @@
               "phone": "(505) 555-0121",
               "next_review": "@today+10d",
               "tutor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "goal": "Grade-level fractions by spring",
+              "school": "Eastgate Middle"
             }
           },
           {
@@ -438,7 +472,9 @@
               "email": "linh.tran@mailbox.net",
               "phone": "(505) 555-0122",
               "next_review": "@today+3d",
-              "tutor": "tm-4"
+              "tutor": "tm-4",
+              "goal": "SAT 1350 by March",
+              "school": "Northfield High"
             }
           },
           {
@@ -453,7 +489,9 @@
               "phone": "(505) 555-0123",
               "next_review": "@today",
               "tutor": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "goal": "Read at grade level by June",
+              "school": "Maple Street Elementary"
             }
           },
           {
@@ -467,7 +505,9 @@
               "email": "a.ferrante@mailbox.net",
               "phone": "(505) 555-0124",
               "next_review": "@today+2d",
-              "tutor": "tm-3"
+              "tutor": "tm-3",
+              "goal": "Five-paragraph essays without help",
+              "school": "Eastgate Middle"
             }
           },
           {
@@ -482,7 +522,9 @@
               "phone": "(505) 555-0125",
               "next_review": "@today+6d",
               "tutor": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "goal": "SAT 1450 for scholarship cutoffs",
+              "school": "Northfield High"
             }
           },
           {
@@ -496,7 +538,9 @@
               "email": "siobhan.on@mailbox.net",
               "phone": "(505) 555-0126",
               "next_review": "@today+1d",
-              "tutor": "tm-2"
+              "tutor": "tm-2",
+              "goal": "Close the gap in multiplication",
+              "school": "Maple Street Elementary"
             }
           },
           {
@@ -511,7 +555,9 @@
               "phone": "(505) 555-0127",
               "next_review": "@today-3d",
               "tutor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "goal": "B or better in science",
+              "school": "Eastgate Middle"
             }
           },
           {
@@ -525,7 +571,9 @@
               "email": "yuki.kondo@mailbox.net",
               "phone": "(505) 555-0128",
               "next_review": "@today+30d",
-              "tutor": "tm-2"
+              "tutor": "tm-2",
+              "goal": "Pass Algebra 2",
+              "school": "Northfield High"
             }
           },
           {
@@ -540,7 +588,9 @@
               "phone": "(505) 555-0129",
               "next_review": "@today+14d",
               "tutor": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "goal": "Fluent reading of short books",
+              "school": "Maple Street Elementary"
             }
           },
           {
@@ -553,7 +603,9 @@
               "guardian": "Milica Djordjevic",
               "email": "milica.d@mailbox.net",
               "phone": "(505) 555-0130",
-              "tutor": "tm-4"
+              "tutor": "tm-4",
+              "goal": "SAT 1300",
+              "school": "Northfield High"
             }
           }
         ]
@@ -573,7 +625,8 @@
         "subject": "thing",
         "independentOf": {
           "student": "Either record can be created or change status before the other.",
-          "tutor": "Either record can be created or change status before the other."
+          "tutor": "Either record can be created or change status before the other.",
+          "package": "Either record can be created or change status before the other."
         },
         "statusImplies": [],
         "fields": [
@@ -602,6 +655,15 @@
             "relationMax": 1,
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "package",
+            "label": "Package",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "package",
+            "relationMax": 1
           },
           {
             "key": "subject",
@@ -675,6 +737,13 @@
                 "value": 4
               }
             ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "charged",
+            "label": "Charged to the package",
+            "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -815,7 +884,9 @@
               "status": "Scheduled",
               "session_at": "@today+1d 16:00",
               "hours": 1,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "package": "package-1",
+              "charged": false
             }
           },
           {
@@ -827,7 +898,9 @@
               "subject": "SAT or ACT prep",
               "status": "Scheduled",
               "session_at": "@today 17:00",
-              "hours": 1.5
+              "hours": 1.5,
+              "package": "package-2",
+              "charged": false
             }
           },
           {
@@ -840,7 +913,9 @@
               "status": "Scheduled",
               "session_at": "@today 15:30",
               "hours": 1,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "package": "package-3",
+              "charged": false
             }
           },
           {
@@ -852,7 +927,9 @@
               "subject": "SAT or ACT prep",
               "status": "Scheduled",
               "session_at": "@today+2d 18:00",
-              "hours": 1.5
+              "hours": 1.5,
+              "package": "package-4",
+              "charged": false
             }
           },
           {
@@ -865,7 +942,8 @@
               "status": "Scheduled",
               "session_at": "@today+1d 15:00",
               "hours": 1,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "charged": false
             }
           },
           {
@@ -877,7 +955,9 @@
               "subject": "Science",
               "status": "Scheduled",
               "session_at": "@today-1d 16:30",
-              "hours": 1
+              "hours": 1,
+              "package": "package-5",
+              "charged": false
             }
           },
           {
@@ -890,7 +970,9 @@
               "status": "Scheduled",
               "session_at": "@today+3d 15:30",
               "hours": 1,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "package": "package-6",
+              "charged": false
             }
           },
           {
@@ -902,7 +984,9 @@
               "subject": "SAT or ACT prep",
               "status": "Done",
               "session_at": "@today-4d 17:00",
-              "hours": 1.5
+              "hours": 1.5,
+              "package": "package-2",
+              "charged": true
             }
           },
           {
@@ -915,7 +999,9 @@
               "status": "Done",
               "session_at": "@today-5d 16:00",
               "hours": 1,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "package": "package-1",
+              "charged": true
             }
           },
           {
@@ -927,7 +1013,9 @@
               "subject": "Reading",
               "status": "Done",
               "session_at": "@today-6d 15:30",
-              "hours": 1
+              "hours": 1,
+              "package": "package-3",
+              "charged": true
             }
           },
           {
@@ -940,7 +1028,9 @@
               "status": "Missed",
               "session_at": "@today-8d 16:30",
               "hours": 1,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "package": "package-5",
+              "charged": true
             }
           },
           {
@@ -952,7 +1042,9 @@
               "subject": "SAT or ACT prep",
               "status": "Done",
               "session_at": "@today-3d 18:00",
-              "hours": 1.5
+              "hours": 1.5,
+              "package": "package-4",
+              "charged": true
             }
           },
           {
@@ -965,7 +1057,9 @@
               "status": "Done",
               "session_at": "@today-10d 15:30",
               "hours": 1,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "package": "package-6",
+              "charged": true
             }
           }
         ]
@@ -1023,6 +1117,30 @@
             "contextPolicy": "include"
           },
           {
+            "key": "used",
+            "label": "Hours used",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "package_sessions",
+            "pick": "hours",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Done",
+                "Missed"
+              ]
+            }
+          },
+          {
+            "key": "left",
+            "label": "Hours left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "MAX(0, {Hours in package} - {Hours used})"
+          },
+          {
             "key": "price",
             "label": "Price (USD)",
             "parityType": "currency",
@@ -1039,6 +1157,13 @@
                 "value": 20000
               }
             ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "paid",
+            "label": "Paid",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
             "contextPolicy": "include"
           },
           {
@@ -1176,7 +1301,8 @@
               "price": 1300,
               "status": "Active",
               "expires_on": "@today+120d",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "paid": true
             }
           },
           {
@@ -1187,7 +1313,8 @@
               "hours": 30,
               "price": 2100,
               "status": "Active",
-              "expires_on": "@today+2d"
+              "expires_on": "@today+2d",
+              "paid": true
             }
           },
           {
@@ -1199,7 +1326,8 @@
               "price": 650,
               "status": "Active",
               "expires_on": "@today",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "paid": true
             }
           },
           {
@@ -1210,7 +1338,8 @@
               "hours": 30,
               "price": 2100,
               "status": "Active",
-              "expires_on": "@today+5d"
+              "expires_on": "@today+5d",
+              "paid": false
             }
           },
           {
@@ -1222,7 +1351,8 @@
               "price": 650,
               "status": "Active",
               "expires_on": "@today-3d",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "paid": true
             }
           },
           {
@@ -1233,7 +1363,8 @@
               "hours": 10,
               "price": 650,
               "status": "Active",
-              "expires_on": "@today+90d"
+              "expires_on": "@today+90d",
+              "paid": true
             }
           },
           {
@@ -1245,7 +1376,8 @@
               "price": 2100,
               "status": "Used up",
               "expires_on": "@today-60d",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "paid": true
             }
           },
           {
@@ -1256,7 +1388,8 @@
               "hours": 20,
               "price": 1300,
               "status": "Expired",
-              "expires_on": "@today-45d"
+              "expires_on": "@today-45d",
+              "paid": true
             }
           }
         ]
@@ -1473,6 +1606,348 @@
             }
           }
         ]
+      },
+      {
+        "token": "assessment",
+        "name": "Assessments",
+        "labelSingular": "Assessment",
+        "labelPlural": "Assessments",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-check",
+        "titleField": "assess_name",
+        "describes": "Diagnostics, practice tests and report cards, so parents see progress in numbers.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New assessment",
+            "values": {
+              "assess_name": "New assessment",
+              "status": "Booked"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Conditions"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Timed like the real test, in a quiet room, no phone."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Score entered and compared with the goal"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Two strengths and two next steps written for the parent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "student": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "assess_name",
+            "label": "Assessment",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "student",
+            "label": "Student",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "student",
+            "relationMax": 1
+          },
+          {
+            "key": "test",
+            "label": "Test",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Diagnostic",
+              "Practice SAT",
+              "Practice ACT",
+              "Reading level",
+              "School report card"
+            ],
+            "choiceColors": {
+              "Diagnostic": "blue",
+              "Practice SAT": "violet",
+              "Practice ACT": "teal",
+              "Reading level": "green",
+              "School report card": "amber"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Booked",
+              "Done",
+              "Missed"
+            ],
+            "choiceColors": {
+              "Booked": "blue",
+              "Done": "green",
+              "Missed": "red"
+            },
+            "required": true,
+            "statusGroups": {
+              "Booked": "todo",
+              "Done": "done",
+              "Missed": "done"
+            }
+          },
+          {
+            "key": "taken_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "score",
+            "label": "Score",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1600
+              }
+            ]
+          },
+          {
+            "key": "goal_score",
+            "label": "Goal score",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1600
+              }
+            ]
+          },
+          {
+            "key": "to_goal",
+            "label": "Points to goal",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Score} > 0, MAX(0, {Goal score} - {Score}), 0)"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "assessment_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "assessment-1",
+            "values": {
+              "assess_name": "Bao, practice SAT 3",
+              "student": "student-2",
+              "test": "Practice SAT",
+              "status": "Booked",
+              "taken_on": "@today+2d",
+              "goal_score": 1350,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "assessment-2",
+            "values": {
+              "assess_name": "Finnegan, math diagnostic",
+              "student": "student-6",
+              "test": "Diagnostic",
+              "status": "Booked",
+              "taken_on": "@today"
+            }
+          },
+          {
+            "key": "assessment-3",
+            "values": {
+              "assess_name": "Esperanza, practice SAT 2",
+              "student": "student-5",
+              "test": "Practice SAT",
+              "status": "Booked",
+              "taken_on": "@today-1d",
+              "goal_score": 1450,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "assessment-4",
+            "values": {
+              "assess_name": "Calista, reading level retest",
+              "student": "student-3",
+              "test": "Reading level",
+              "status": "Booked",
+              "taken_on": "@today+5d"
+            }
+          },
+          {
+            "key": "assessment-5",
+            "values": {
+              "assess_name": "Bao, practice SAT 2",
+              "student": "student-2",
+              "test": "Practice SAT",
+              "status": "Done",
+              "taken_on": "@today-9d",
+              "score": 1240,
+              "goal_score": 1350
+            }
+          },
+          {
+            "key": "assessment-6",
+            "values": {
+              "assess_name": "Bao, practice SAT 1",
+              "student": "student-2",
+              "test": "Practice SAT",
+              "status": "Done",
+              "taken_on": "@today-40d",
+              "score": 1170,
+              "goal_score": 1350
+            }
+          },
+          {
+            "key": "assessment-7",
+            "values": {
+              "assess_name": "Esperanza, practice SAT 1",
+              "student": "student-5",
+              "test": "Practice SAT",
+              "status": "Done",
+              "taken_on": "@today-30d",
+              "score": 1380,
+              "goal_score": 1450
+            }
+          },
+          {
+            "key": "assessment-8",
+            "values": {
+              "assess_name": "Alder, fractions diagnostic",
+              "student": "student-1",
+              "test": "Diagnostic",
+              "status": "Done",
+              "taken_on": "@today-60d",
+              "score": 42,
+              "goal_score": 80
+            }
+          },
+          {
+            "key": "assessment-9",
+            "values": {
+              "assess_name": "Alder, fractions retest",
+              "student": "student-1",
+              "test": "Diagnostic",
+              "status": "Done",
+              "taken_on": "@today-12d",
+              "score": 68,
+              "goal_score": 80,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "assessment-10",
+            "values": {
+              "assess_name": "Gaia, first-quarter report card",
+              "student": "student-7",
+              "test": "School report card",
+              "status": "Done",
+              "taken_on": "@today-20d",
+              "score": 79,
+              "goal_score": 85
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1525,6 +2000,26 @@
         "cardinality": "one",
         "onDelete": "restrict",
         "inverseKey": "notes"
+      },
+      {
+        "describes": "A session draws down hours from one package.",
+        "fromTable": "sessions",
+        "fromField": "package",
+        "toTable": "package",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "package_sessions"
+      },
+      {
+        "describes": "Each assessment belongs to one student.",
+        "fromTable": "assessment",
+        "fromField": "student",
+        "toTable": "student",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "assessments"
       }
     ],
     "sharedBlocks": [
@@ -1719,6 +2214,20 @@
         "kind": "row_action",
         "token": "note_claim",
         "table": "note",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "assessment_claim",
+        "table": "assessment",
         "name": "Assign to me",
         "actionKind": "update",
         "steps": [
@@ -2001,6 +2510,80 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_assessment",
+        "name": "All assessments",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "assessment"
+      },
+      {
+        "token": "assessment_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "assessment"
+      },
+      {
+        "token": "assessment_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "taken_on",
+        "allDay": true,
+        "table": "assessment"
+      },
+      {
+        "token": "assessment_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "taken_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        },
+        "table": "assessment"
+      },
+      {
+        "token": "assessment_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "taken_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        },
+        "table": "assessment"
+      },
+      {
+        "token": "assessment_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "taken_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        },
+        "table": "assessment"
+      },
+      {
+        "token": "assessment_mine",
+        "name": "My assessments",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "assessment"
       }
     ],
     "agent": {
@@ -2073,6 +2656,18 @@
           "surface": "package_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open assessments.",
+        "action": {
+          "kind": "open",
+          "surface": "assessment_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "assessment_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2089,7 +2684,7 @@
         "Quarry Street"
       ]
     },
-    "version": 1
+    "version": 3
   },
   "pages": [
     {
@@ -2100,7 +2695,7 @@
         "emoji": "📚"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:education-desk-lamp-books-study",
         "offsetY": 50
       },
       "settings": {
@@ -2111,12 +2706,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "The center's day in one place: students and their goals, sessions, prepaid hour packages and the short progress notes families trust. Start with the Dashboard each afternoon. Mark every session done or missed the same day so hours left is always true."
+              "text": "The center in one place. Students holds each family's goal; Sessions is the schedule, and every session draws hours from a package; Hour packages shows what is used and left; Assessments and Progress notes show parents the gains. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2592,6 +3193,381 @@
             ],
             "activeViewId": "not-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Assessments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Diagnostics, practice tests and report cards."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "assessment",
+              "view": "assessment_board"
+            },
+            "inline": true,
+            "title": "Assessments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "as-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "as-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "taken_on"
+              },
+              {
+                "id": "as-t",
+                "name": "All assessments",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "as-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "taken_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "as-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "taken_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "as-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "taken_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "as-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "as-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "tutoring-center-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the center in this workspace. Share it with the director, every tutor and whoever answers the phone."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Students",
+              "bold": true
+            },
+            {
+              "text": ": each student's grade, subject, school, goal, parent contact, tutor and missed sessions."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sessions",
+              "bold": true
+            },
+            {
+              "text": ": the schedule, each linked to a student, tutor and the package it draws from."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Hour packages",
+              "bold": true
+            },
+            {
+              "text": ": what each family bought, hours used, hours left, paid and expiry."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Assessments",
+              "bold": true
+            },
+            {
+              "text": ": diagnostics, practice tests and report cards with goal scores."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Progress notes",
+              "bold": true
+            },
+            {
+              "text": ": the tutor's note after each session."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: the week's sessions confirmed by text."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every day: tutors mark sessions and write notes the same evening."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Thursday: packages low on hours or near expiry get a renewal call."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Friday: the director reads the Dashboard: hours by tutor, packages running low, assessments booked."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: today's sessions and assessments"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every week: progress notes written, missed sessions followed up"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every four weeks: a parent summary and a retest for each student"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every season: tutor schedules and new inquiries for the next term"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The director owns intake, plans, packages and parents. Tutors own sessions, notes and assessments. The front desk confirms sessions and chases payment."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Talking to parents"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Parents pay for progress they can see. Every four weeks each family gets a short summary built from the progress notes and the latest assessment: what improved, what is next, and how many hours are left in the package. Good news goes out by text the same day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Children's privacy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Students appear by first name and last initial. Keep report cards and school records in the family's file, not in notes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename subjects, tests and package sizes and delete the sample rows once your own are in. Edit any cell in place; hours used and left update by themselves."
+            }
+          ]
         }
       ]
     },
@@ -2992,6 +3968,89 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Packages running low"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "package",
+              "view": "all_package"
+            },
+            "inline": true,
+            "title": "Packages",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dp-1",
+                "name": "Active packages",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Active"
+                },
+                "sorts": [
+                  {
+                    "field": "left",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "dp-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Hours by tutor"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sessions",
+              "view": "all_sessions"
+            },
+            "inline": true,
+            "title": "Hours by tutor",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dp-2",
+                "name": "Hours by tutor",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "tutor",
+                  "op": "sum",
+                  "field": "hours"
+                }
+              }
+            ],
+            "activeViewId": "dp-2"
+          }
         }
       ]
     },
@@ -3010,7 +4069,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A student decides in ten minutes whether tutoring is safe. Spend those minutes on connection before correction."
+              "text": "Families come to a tutoring center worried. The first call and the first session should leave them with a clear plan, a number to beat and a tutor their child likes."
             }
           ],
           "background": "blue",
@@ -3022,7 +4081,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Plan"
+              "text": "The first call"
             }
           ],
           "props": {
@@ -3033,7 +4092,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Read the inquiry and the goals the family wrote down."
+              "text": "Add the student as "
+            },
+            {
+              "text": "Inquiry",
+              "bold": true
+            },
+            {
+              "text": " with grade, subject, school and the parent's name and contact."
             }
           ]
         },
@@ -3041,7 +4107,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Choose two short activities: one the student will find easy and one that shows the gap."
+              "text": "Ask what is happening at school, in the parent's words, and write the "
+            },
+            {
+              "text": "Goal",
+              "bold": true
+            },
+            {
+              "text": " as something you can measure: \"grade-level fractions by spring\", \"SAT 1350 by March\"."
             }
           ]
         },
@@ -3049,7 +4122,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Keep the first session to a conversation and one achievable win."
+              "text": "Book a diagnostic in "
+            },
+            {
+              "text": "Assessments",
+              "bold": true
+            },
+            {
+              "text": " and set the student to "
+            },
+            {
+              "text": "Assessment booked",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3057,7 +4144,82 @@
           "type": "heading",
           "text": [
             {
-              "text": "After"
+              "text": "The diagnostic"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Math and reading: a short placement test at grade level and one below."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Test prep: a full timed practice test, so the baseline is honest."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Enter the "
+            },
+            {
+              "text": "Score",
+              "bold": true
+            },
+            {
+              "text": " and the "
+            },
+            {
+              "text": "Goal score",
+              "bold": true
+            },
+            {
+              "text": "; "
+            },
+            {
+              "text": "Points to goal",
+              "bold": true
+            },
+            {
+              "text": " works itself out."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Meet the parent for fifteen minutes after the diagnostic. Show two strengths and two gaps, recommend sessions per week and a package size, and name the tutor. Most students need one or two sessions a week for at least ten weeks to see real change."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The first session"
             }
           ],
           "props": {
@@ -3068,7 +4230,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Write a progress note with the starting level"
+              "text": "The tutor has read the diagnostic and the goal"
             }
           ],
           "props": {
@@ -3079,7 +4241,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Recommend a plan and a package size"
+              "text": "Start with something the student can do, then one new thing"
             }
           ],
           "props": {
@@ -3090,12 +4252,61 @@
           "type": "todo",
           "text": [
             {
-              "text": "Call the guardian within a day"
+              "text": "End with a two-line note to the parent: what we did, what to practice"
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Book the next eight sessions before they leave"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Matching tutors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Match on subject first, then on personality. A quiet ninth grader may open up with a calm tutor; a restless fourth grader may need games and movement. Change tutors early and without fuss if it is not working."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A parent calls about her sixth grader's fractions. The director logs the goal, books a diagnostic for Thursday (score 42 out of 80), and recommends a 20-hour package twice a week with the math tutor. Twelve weeks later the retest shows 68 and the report card moves from a C to a B."
+            }
+          ]
         }
       ]
     },
@@ -3114,7 +4325,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Clear rules protect families and the center. Print this and give it to every new guardian."
+              "text": "Prepaid packages keep scheduling steady and cash predictable. Clear rules, written down and shared before the first payment, prevent nearly every billing argument."
             }
           ],
           "background": "blue",
@@ -3126,7 +4337,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "How packages work"
+              "text": "Packages we sell"
             }
           ],
           "props": {
@@ -3137,7 +4348,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Hours are used as sessions are finished, not when they are booked."
+              "text": "10 hours for single-subject help or a short push before exams."
             }
           ]
         },
@@ -3145,7 +4356,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Packages expire on the date shown; a short extension is possible for illness."
+              "text": "20 hours for a semester of steady support."
             }
           ]
         },
@@ -3153,7 +4364,62 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Siblings can share a package only when agreed in writing at the start."
+              "text": "30 hours for full test preparation."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Prices are on each package. Packages are paid before the first session; tick "
+            },
+            {
+              "text": "Paid",
+              "bold": true
+            },
+            {
+              "text": " when the money is in."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How hours are used"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every session is linked to the student's active package. "
+            },
+            {
+              "text": "Hours used",
+              "bold": true
+            },
+            {
+              "text": " counts sessions that were held, plus sessions missed without notice. "
+            },
+            {
+              "text": "Hours left",
+              "bold": true
+            },
+            {
+              "text": " is what remains. Tick "
+            },
+            {
+              "text": "Charged to the package",
+              "bold": true
+            },
+            {
+              "text": " on every session that uses hours."
             }
           ]
         },
@@ -3169,69 +4435,155 @@
           }
         },
         {
-          "type": "table",
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cancelled 24 hours or more ahead: no charge, rebook the time."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cancelled late or missed: the hour is used. The director may waive one per package for illness."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If the tutor cancels, the hour is never charged."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Expiry"
+            }
+          ],
           "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Notice"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "What happens"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "24 hours or more"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Session moves free of charge"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Under 24 hours"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Half the session hours are used"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "No show"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "The full session hours are used"
-                    }
-                  ]
-                ]
-              }
-            ]
+            "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Packages expire after six months (test-prep packs on the test date). A week before expiry, call the family to book the remaining hours. Expired hours are not refunded but may be moved once to a sibling."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Renewals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When a package has three hours left, the tutor mentions it and the office sends the renewal. Families who renew before the last session keep their time slot."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Refunds"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Unused hours on an active package are refunded at the hourly rate the family paid, less any discount they received for buying in bulk. Mark the package "
+            },
+            {
+              "text": "Refunded",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Dashboard: active packages with fewer than three hours left"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Packages expiring in the next two weeks"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Sessions marked missed: was the family told the hour was used?"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Bao's 30-hour SAT pack has 4.5 hours left and expires in two weeks, the day of his test. The office calls his parents, books three sessions before the test, and offers a short follow-up pack for the second sitting."
+            }
+          ]
         }
       ]
     },
@@ -3250,7 +4602,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Great tutors listen more than they talk. This page is the shared standard for every session."
+              "text": "Tutors are the product. These are the habits that make a session worth what a family pays for it."
             }
           ],
           "background": "blue",
@@ -3262,7 +4614,100 @@
           "type": "heading",
           "text": [
             {
-              "text": "Every session"
+              "text": "Before each session"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Read the last "
+            },
+            {
+              "text": "Progress note",
+              "bold": true
+            },
+            {
+              "text": " and the student's goal."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Have the materials ready: a warm-up, the main work, and a short check at the end."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Arrive five minutes early. Families notice."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "During the session"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Warm up with something the student can do (five minutes)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Teach one new idea, then practice it together, then alone."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check with two or three questions that show whether it stuck."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Leave three minutes for questions about schoolwork."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Students should talk and write more than the tutor. If you are talking most of the hour, change the plan."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After each session"
             }
           ],
           "props": {
@@ -3273,7 +4718,14 @@
           "type": "todo",
           "text": [
             {
-              "text": "Read the last progress note before the student arrives"
+              "text": "Mark the session "
+            },
+            {
+              "text": "Done",
+              "bold": true
+            },
+            {
+              "text": " and enter the hours"
             }
           ],
           "props": {
@@ -3284,7 +4736,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Start with a quick win"
+              "text": "Write a progress note: what we covered, the level (needs support, getting there, on track, ahead), what to practice"
             }
           ],
           "props": {
@@ -3295,18 +4747,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Ask the student to explain their thinking"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Leave five minutes to write what changed"
+              "text": "Tell the office about anything worrying: a sudden drop, a student who seems unhappy"
             }
           ],
           "props": {
@@ -3317,7 +4758,52 @@
           "type": "heading",
           "text": [
             {
-              "text": "Every month"
+              "text": "Every four weeks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write a short summary for the parent and book a retest in "
+            },
+            {
+              "text": "Assessments",
+              "bold": true
+            },
+            {
+              "text": ". Parents renew when they see progress in numbers."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Working with schools"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "With the parent's permission, ask the classroom teacher what is coming next. Pre-teaching next week's topic is often the fastest win."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Professional habits"
             }
           ],
           "props": {
@@ -3328,7 +4814,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Write a progress note for each student you see weekly."
+              "text": "Sessions with minors happen in open rooms or with the door open; online sessions are recorded where families agree."
             }
           ]
         },
@@ -3336,7 +4822,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Tell the director about any student who is stuck."
+              "text": "No private texts with students; messages go through the parent."
             }
           ]
         },
@@ -3344,7 +4830,26 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Share a resource that worked so others can use it."
+              "text": "Never do a student's homework for them. Show the method, then let them do it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Calista's note from last week says she is getting there with two-syllable words. The tutor warms up with word cards she knows, introduces a new vowel pattern, reads a short story together, then checks with five new words. Calista reads four; the note says so, and suggests five minutes of reading aloud at home each night."
             }
           ]
         }

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0402",
-  "version": 4,
+  "version": 5,
   "title": "Chiropractic Office",
   "description": "For chiropractors: new-patient calls, care plans, prepaid visits, re-exams and the desk.",
   "forWho": "Chiropractors and chiropractic front desks",
@@ -9,7 +9,7 @@
     "emoji": "🩻"
   },
   "cover": {
-    "url": "gallery:solid-beige",
+    "url": "gallery:healthcare-spine-model-anatomy",
     "offsetY": 50
   },
   "category": "healthcare",
@@ -2179,7 +2179,7 @@
         "Pecan Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2190,7 +2190,7 @@
         "emoji": "🩻"
       },
       "cover": {
-        "url": "gallery:solid-beige",
+        "url": "gallery:healthcare-spine-model-anatomy",
         "offsetY": 50
       },
       "settings": {

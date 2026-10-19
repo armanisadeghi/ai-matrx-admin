@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0200",
-  "version": 6,
+  "version": 7,
   "title": "Life OS",
   "description": "Anyone: tasks, projects, notes and goals in one home, with a daily view.",
   "forWho": "Anyone running their whole life from one place",
@@ -9,7 +9,7 @@
     "emoji": "🧭"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:personal-sunrise-over-lake-calm",
     "offsetY": 50
   },
   "category": "personal",
@@ -2107,7 +2107,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2118,7 +2118,7 @@
         "emoji": "🧭"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:personal-sunrise-over-lake-calm",
         "offsetY": 50
       },
       "settings": {

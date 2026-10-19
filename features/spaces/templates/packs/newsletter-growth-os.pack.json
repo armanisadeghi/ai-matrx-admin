@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0311",
-  "version": 6,
+  "version": 7,
   "title": "Newsletter Growth & Sponsors",
   "description": "Independent writers: write issues, sell sponsor slots and watch subscriber growth.",
   "forWho": "Independent newsletter writers",
@@ -9,7 +9,7 @@
     "emoji": "✉️"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:marketing-typewriter-paper",
     "offsetY": 50
   },
   "category": "marketing",
@@ -1666,7 +1666,7 @@
         "Quillfeather Road"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1677,7 +1677,7 @@
         "emoji": "✉️"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:marketing-typewriter-paper",
         "offsetY": 50
       },
       "settings": {

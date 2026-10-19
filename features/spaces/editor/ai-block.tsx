@@ -1,7 +1,7 @@
 "use client";
 
 // features/spaces/editor/ai-block.tsx — C28: Notion's AI block. "/ai" puts a block on the page that asks what
-// to write; the prompt runs the page's writing job (mandate `spaces.writing_assist`, action "prompt", the page
+// to write; the prompt runs the page's writing job (mandate `spaces.writing_assist`, action "custom", the page
 // as named variables — the same job the top Agents menu already discloses), the answer streams in place through
 // the one pipeline (MarkdownStream), and the block keeps the prompt and its Markdown (`prompt`, `output`, `ranAt`)
 // so it reads the same after a reload. Try again re-runs it; Edit changes the prompt.
@@ -81,7 +81,7 @@ function AiBlockView({ p, ctx }: { p: Record<string, unknown>; ctx: Ctx }) {
     const blocks = fromEngine(editor.document as EngineBlock[]);
     const title = (params?.spaceId && byId.get(params.spaceId)?.title) || "";
     try {
-      const answer = await ai.run({ action: "prompt", typedPrompt: ask, selectedText: "", precedingMarkdown: "", pageTitle: title, pageMarkdown: plainText(blocks) });
+      const answer = await ai.run({ action: "custom", typedPrompt: ask, selectedText: "", precedingMarkdown: "", pageTitle: title, pageMarkdown: plainText(blocks) });
       if (answer.trim()) ctx.update({ ...p, prompt: ask, output: answer, ranAt: new Date().toISOString() });
       else toast.error("AI wrote nothing — try again");
     } catch (err) {

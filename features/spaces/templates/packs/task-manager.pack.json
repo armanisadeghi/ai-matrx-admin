@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0201",
-  "version": 6,
+  "version": 7,
   "title": "Personal To-Do List",
   "description": "Anyone with a long to-do list: capture tasks, sort by priority, use smart lists.",
   "forWho": "Anyone with a long to-do list",
@@ -9,7 +9,7 @@
     "emoji": "☑️"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:personal-minimal-desk-notebook-pen",
     "offsetY": 50
   },
   "category": "personal",
@@ -981,7 +981,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -992,7 +992,7 @@
         "emoji": "☑️"
       },
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:personal-minimal-desk-notebook-pen",
         "offsetY": 50
       },
       "settings": {

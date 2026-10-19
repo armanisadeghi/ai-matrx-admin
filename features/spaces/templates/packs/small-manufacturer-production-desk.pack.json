@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0569",
-  "version": 1,
+  "version": 2,
   "title": "Small Manufacturer Production Desk",
   "description": "Customer orders, products, parts, production runs and quality checks for a small factory.",
   "forWho": "Small manufacturers and workshops making products to order",
@@ -9,7 +9,7 @@
     "emoji": "🏭"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:manufacturing-factory-machinery",
     "offsetY": 50
   },
   "category": "manufacturing",
@@ -2940,7 +2940,7 @@
         "Foundry Street"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2951,7 +2951,7 @@
         "emoji": "🏭"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:manufacturing-factory-machinery",
         "offsetY": 50
       },
       "settings": {

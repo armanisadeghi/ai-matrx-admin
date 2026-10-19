@@ -9,6 +9,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { fieldKindFor } from "@ai-matrx/records";
 import { createRecordsClient } from "@ai-matrx/records/core";
 import { templatePreview } from "@ai-matrx/records/memory";
 import type { TemplateSpec } from "@ai-matrx/records/templates";
@@ -56,7 +57,7 @@ describe.each(PACKS)("preview world of %s", (file) => {
       }
       const rows = page.data.rows;
       for (const f of fields.data) {
-        if (f.type === "relation" && f.parity_type !== "attachment") {
+        if (f.type === "relation" && fieldKindFor(f) !== "attachment") {
           const ids = [...new Set(rows.flatMap((r) => { const v = r.document[f.key]; return Array.isArray(v) ? v : typeof v === "string" ? [v] : []; }))] as string[];
           if (!ids.length) continue;
           const words = await client.relationWordsMany({ field_id: f.id, record_ids: ids as never });

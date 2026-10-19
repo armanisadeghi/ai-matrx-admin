@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0161",
-  "version": 6,
+  "version": 7,
   "title": "Partnerships Tracker",
   "description": "Partner and business development teams: partners, milestones and referral revenue share.",
   "forWho": "Business development and partner teams",
@@ -9,7 +9,7 @@
     "emoji": "🤝"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:sales-bridge-connecting-city",
     "offsetY": 50
   },
   "category": "sales",
@@ -1317,7 +1317,7 @@
         "Embarcadero Mews"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1676,7 +1676,7 @@
         }
       ],
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:sales-bridge-connecting-city",
         "offsetY": 50
       }
     },

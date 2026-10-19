@@ -65,6 +65,8 @@ export interface SpendAlarmDeps {
     options: { snoozedUntil?: string; note?: string | null },
   ) => Promise<void>;
   decideApproval: (approvalId: string, decision: "approve" | "reject") => Promise<void>;
+  /** Moves the expiring temporary approvals out to `expiresAt` (one decision, made by the person who presses it). */
+  extendApprovals?: (approvalIds: string[], expiresAt: string) => Promise<void>;
   /** Puts back the owner's own approval the volume rule paused (status and expiry as he left them). */
   restoreApproval?: (approvalId: string) => Promise<void>;
   setTaskEnabled: (taskId: string, enabled: boolean) => Promise<void>;
@@ -193,6 +195,24 @@ function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): Attention
         confirmLabel: "Restore",
       },
       run: () => restoreApproval(approvalId),
+    });
+  }
+  if (row.kind === "spend_approvals_expiring" && refs.approval_ids && refs.extend_to && deps.extendApprovals) {
+    const approvalIds = refs.approval_ids.split(",").filter(Boolean);
+    const extendTo = refs.extend_to;
+    const extendApprovals = deps.extendApprovals;
+    const count = approvalIds.length;
+    const until = new Date(extendTo).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    out.push({
+      id: "extend_approvals",
+      label: "Extend",
+      variant: "default",
+      confirm: {
+        title: `Extend ${count} approval${count === 1 ? "" : "s"} to ${until}?`,
+        description: `Keeps ${count === 1 ? "this approval" : `these ${count} approvals`} approved until ${until} instead of lapsing back to rejected. Their automated runs keep running at their current cost until then.`,
+        confirmLabel: "Extend",
+      },
+      run: () => extendApprovals(approvalIds, extendTo),
     });
   }
   for (const id of ids) {

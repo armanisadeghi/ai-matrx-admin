@@ -151,6 +151,8 @@ never his.
 
 ### What the agent kept fetching is what the call site must hand over
 
+**Measure it with** AI Dream MCP `surface_evidence` (most-fetched vs supplied context per surface, every agent).
+
 A provision is proven by the runs, not the declaration: when real runs of the job fetch the
 same value by tool (the receipt row reads `on_request`), the value is offered but not
 delivered. Promote it — an inline limit on the holder's context policy, a server-resolved

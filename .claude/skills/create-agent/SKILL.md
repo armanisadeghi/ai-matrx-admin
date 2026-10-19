@@ -152,6 +152,8 @@ question down, or refuse — you never let the agent fill the gap.
 
 ### 0b. Evidence before instructions — read what real runs DID (Arman, 2026-10-19)
 
+**Call first:** AI Dream MCP `surface_evidence` (`action=runs`, then `review`) returns this table for any surface, every agent ([report](/systems/intelligence/mandates/projects/intelligence-from-data/surface-evidence-api-2026-10-19.md)).
+
 The factory requires real calls before a custom agent for a reason: **the pattern of what
 the agent kept reaching for is the design.** Rebuilding or replacing an agent whose job
 already runs (a mandate's runs, or ANY agent people run on that surface — find them by

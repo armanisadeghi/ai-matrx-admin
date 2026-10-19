@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0416",
-  "version": 4,
+  "version": 5,
   "title": "General Contractor Projects",
   "description": "For builders and remodelers: jobs, subs, permits, change orders, punch lists and closeout.",
   "forWho": "General contractors, remodelers and project managers",
@@ -9,7 +9,7 @@
     "emoji": "🏗️"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:realestate-construction-site-crane",
     "offsetY": 50
   },
   "category": "realestate",
@@ -2900,7 +2900,7 @@
         "Quarry Road"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2911,7 +2911,7 @@
         "emoji": "🏗️"
       },
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:realestate-construction-site-crane",
         "offsetY": 50
       },
       "settings": {

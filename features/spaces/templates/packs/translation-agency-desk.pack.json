@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0461",
-  "version": 5,
+  "version": 6,
   "title": "Translation Agency Desk",
   "description": "For translation project managers: jobs, word counts, linguists, glossaries and reviews.",
   "forWho": "Translation and localization agencies",
@@ -9,7 +9,7 @@
     "emoji": "🌐"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:services-world-map-globe",
     "offsetY": 50
   },
   "category": "services",
@@ -2497,7 +2497,7 @@
         "Cormorant Way"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2508,7 +2508,7 @@
         "emoji": "🌐"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:services-world-map-globe",
         "offsetY": 50
       },
       "settings": {

@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0566",
-  "version": 1,
+  "version": 3,
   "title": "Podcast Network Operations Desk",
-  "description": "Shows, episodes, guests and sponsorship deals for a podcast network.",
+  "description": "Podcast network: shows, episodes, ad inventory, downloads and sponsor deals.",
   "forWho": "Podcast networks and multi-show audio studios",
   "icon": {
     "emoji": "🎙️"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:media-studio-microphones-headphones",
     "offsetY": 50
   },
   "category": "media",
   "tags": [
-    "podcast network",
-    "shows",
-    "episodes",
-    "sponsors"
+    "network head",
+    "producer",
+    "editor",
+    "ad sales",
+    "podcast",
+    "sponsorships"
   ],
   "spec": {
     "specVersion": 1,
@@ -158,6 +160,43 @@
             "contextPolicy": "include"
           },
           {
+            "key": "cpm",
+            "label": "CPM rate (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ],
+            "description": "Price per thousand downloads for one host-read spot."
+          },
+          {
+            "key": "slots",
+            "label": "Ad slots per episode",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10
+              }
+            ]
+          },
+          {
             "key": "episodes_published",
             "label": "Episodes published",
             "parityType": "rollup",
@@ -218,6 +257,24 @@
                 "Delivered"
               ]
             }
+          },
+          {
+            "key": "ad_value",
+            "label": "Value of one episode's ads (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND({Average downloads per episode} / 1000 * {CPM rate (USD)} * {Ad slots per episode}, 0)"
+          },
+          {
+            "key": "downloads_total",
+            "label": "Downloads, months reported",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "show_months",
+            "pick": "downloads",
+            "agg": "sum"
           },
           {
             "key": "btn_claim",
@@ -404,7 +461,9 @@
               "cadence": "Weekly",
               "hosts": "Mirela and Dev",
               "producer": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "cpm": 25,
+              "slots": 3
             }
           },
           {
@@ -414,8 +473,10 @@
               "status": "Active",
               "genre": "Interview",
               "cadence": "Every two weeks",
-              "hosts": "Kofi Annan-Reyes",
-              "producer": "tm-5"
+              "hosts": "Kofi Mensah-Reyes",
+              "producer": "tm-5",
+              "cpm": 28,
+              "slots": 2
             }
           },
           {
@@ -427,7 +488,9 @@
               "cadence": "Weekly",
               "hosts": "Priya and Anton",
               "producer": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "cpm": 30,
+              "slots": 3
             }
           },
           {
@@ -438,7 +501,9 @@
               "genre": "News and talk",
               "cadence": "Weekly",
               "hosts": "Odalys Quintero",
-              "producer": "tm-3"
+              "producer": "tm-3",
+              "cpm": 22,
+              "slots": 3
             }
           },
           {
@@ -450,7 +515,9 @@
               "cadence": "Monthly",
               "hosts": "The Stacks crew",
               "producer": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "cpm": 18,
+              "slots": 2
             }
           },
           {
@@ -461,7 +528,9 @@
               "genre": "Storytelling",
               "cadence": "Seasonal",
               "hosts": "Wren Calloway",
-              "producer": "tm-3"
+              "producer": "tm-3",
+              "cpm": 25,
+              "slots": 2
             }
           },
           {
@@ -473,7 +542,9 @@
               "cadence": "Weekly",
               "hosts": "Hollis and Mina",
               "producer": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "cpm": 18,
+              "slots": 2
             }
           }
         ]
@@ -558,6 +629,23 @@
             "contextPolicy": "include"
           },
           {
+            "key": "ep_type",
+            "label": "Episode type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Full",
+              "Bonus",
+              "Trailer"
+            ],
+            "choiceColors": {
+              "Full": "blue",
+              "Bonus": "violet",
+              "Trailer": "teal"
+            }
+          },
+          {
             "key": "record_on",
             "label": "Record on",
             "parityType": "datetime",
@@ -600,6 +688,23 @@
             "contextPolicy": "include"
           },
           {
+            "key": "downloads_7d",
+            "label": "Downloads in first 7 days",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000000
+              }
+            ]
+          },
+          {
             "key": "downloads",
             "label": "Downloads in first 30 days",
             "parityType": "number",
@@ -615,6 +720,35 @@
             ],
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "spots_sold",
+            "label": "Ad spots sold",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "ad_spots",
+            "pick": "spot_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Sold",
+                "Aired"
+              ]
+            }
+          },
+          {
+            "key": "spots_open",
+            "label": "Ad spots unsold",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "ad_spots",
+            "pick": "spot_name",
+            "agg": "count",
+            "filter": {
+              "status": "Open"
+            }
           },
           {
             "key": "editor",
@@ -837,7 +971,8 @@
               "guest": "guests-1",
               "minutes": 42,
               "editor": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "ep_type": "Full"
             }
           },
           {
@@ -850,7 +985,8 @@
               "publish_on": "@today+1d",
               "guest": "guests-2",
               "minutes": 35,
-              "editor": "tm-3"
+              "editor": "tm-3",
+              "ep_type": "Full"
             }
           },
           {
@@ -864,7 +1000,8 @@
               "guest": "guests-3",
               "minutes": 50,
               "editor": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "ep_type": "Full"
             }
           },
           {
@@ -876,7 +1013,8 @@
               "record_on": "@today-2d",
               "publish_on": "@today",
               "minutes": 38,
-              "editor": "tm-3"
+              "editor": "tm-3",
+              "ep_type": "Full"
             }
           },
           {
@@ -887,9 +1025,9 @@
               "status": "Idea",
               "record_on": "@today+6d",
               "publish_on": "@today+13d",
-              "minutes": 0,
               "editor": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "ep_type": "Full"
             }
           },
           {
@@ -902,7 +1040,8 @@
               "publish_on": "@today-1d",
               "guest": "guests-4",
               "minutes": 33,
-              "editor": "tm-3"
+              "editor": "tm-3",
+              "ep_type": "Full"
             }
           },
           {
@@ -913,9 +1052,9 @@
               "status": "Idea",
               "record_on": "@today+10d",
               "publish_on": "@today+30d",
-              "minutes": 0,
               "editor": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "ep_type": "Full"
             }
           },
           {
@@ -929,7 +1068,9 @@
               "guest": "guests-1",
               "minutes": 44,
               "downloads": 9800,
-              "editor": "tm-3"
+              "editor": "tm-3",
+              "ep_type": "Full",
+              "downloads_7d": 6076
             }
           },
           {
@@ -943,7 +1084,9 @@
               "minutes": 31,
               "downloads": 12400,
               "editor": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "ep_type": "Full",
+              "downloads_7d": 7688
             }
           },
           {
@@ -957,7 +1100,9 @@
               "guest": "guests-5",
               "minutes": 47,
               "downloads": 7100,
-              "editor": "tm-3"
+              "editor": "tm-3",
+              "ep_type": "Full",
+              "downloads_7d": 4402
             }
           },
           {
@@ -971,18 +1116,47 @@
               "minutes": 28,
               "downloads": 5200,
               "editor": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "ep_type": "Full",
+              "downloads_7d": 3224
             }
           },
           {
             "key": "episodes-12",
             "values": {
-              "episode_name": "Cancelled crossover episode",
+              "episode_name": "Stacks and Static crossover",
               "show": "show-5",
               "status": "Cancelled",
               "record_on": "@today-9d",
               "publish_on": "@today+10d",
-              "minutes": 0,
+              "editor": "tm-3",
+              "ep_type": "Full"
+            }
+          },
+          {
+            "key": "episodes-13",
+            "values": {
+              "episode_name": "Bonus: listener questions on side incomes",
+              "show": "show-3",
+              "status": "Published",
+              "ep_type": "Bonus",
+              "record_on": "@today-5d",
+              "publish_on": "@today-3d",
+              "minutes": 19,
+              "downloads_7d": 5400,
+              "editor": "tm-3"
+            }
+          },
+          {
+            "key": "episodes-14",
+            "values": {
+              "episode_name": "Fieldwork season one trailer",
+              "show": "show-6",
+              "status": "Scheduled",
+              "ep_type": "Trailer",
+              "record_on": "@today-3d",
+              "publish_on": "@today+4d",
+              "minutes": 3,
               "editor": "tm-3"
             }
           }
@@ -1285,7 +1459,8 @@
         "subject": "thing",
         "independentOf": {
           "show": "Either record can be created or change status before the other.",
-          "owner": "Either record can be created or change status before the other."
+          "owner": "Either record can be created or change status before the other.",
+          "sponsor": "Either record can be created or change status before the other."
         },
         "statusImplies": [
           {
@@ -1316,6 +1491,15 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "required": true
+          },
+          {
+            "key": "sponsor",
+            "label": "Sponsor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "sponsor",
+            "relationMax": 1
           },
           {
             "key": "show",
@@ -1440,6 +1624,56 @@
             "formula": "MAX(0, {Reads owed} - {Reads delivered})",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "spots_aired",
+            "label": "Spots aired",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "deal_spots",
+            "pick": "spot_name",
+            "agg": "count",
+            "filter": {
+              "status": "Aired"
+            }
+          },
+          {
+            "key": "makegoods",
+            "label": "Make-goods owed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "deal_spots",
+            "pick": "spot_name",
+            "agg": "count",
+            "filter": {
+              "status": "Make-good owed"
+            }
+          },
+          {
+            "key": "promo",
+            "label": "Promo code",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "guaranteed",
+            "label": "Downloads guaranteed",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000000
+              }
+            ]
           },
           {
             "key": "owner",
@@ -1611,7 +1845,10 @@
               "reads_owed": 8,
               "reads_done": 5,
               "owner": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sponsor": "sponsor-1",
+              "guaranteed": 120000,
+              "promo": "LONGWAY"
             }
           },
           {
@@ -1625,7 +1862,10 @@
               "flight_ends": "@today+5d",
               "reads_owed": 6,
               "reads_done": 2,
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "sponsor": "sponsor-2",
+              "guaranteed": 150000,
+              "promo": "LEDGER"
             }
           },
           {
@@ -1640,7 +1880,10 @@
               "reads_owed": 6,
               "reads_done": 0,
               "owner": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sponsor": "sponsor-3",
+              "guaranteed": 90000,
+              "promo": "ROOMS"
             }
           },
           {
@@ -1654,7 +1897,9 @@
               "flight_ends": "@today+80d",
               "reads_owed": 10,
               "reads_done": 0,
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "sponsor": "sponsor-4",
+              "guaranteed": 240000
             }
           },
           {
@@ -1669,7 +1914,10 @@
               "reads_owed": 8,
               "reads_done": 7,
               "owner": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sponsor": "sponsor-5",
+              "guaranteed": 160000,
+              "promo": "NIGHTSHIFT"
             }
           },
           {
@@ -1683,7 +1931,9 @@
               "flight_ends": "@today-2d",
               "reads_owed": 4,
               "reads_done": 0,
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "sponsor": "sponsor-6",
+              "guaranteed": 40000
             }
           },
           {
@@ -1699,7 +1949,10 @@
               "reads_done": 8,
               "owner": "tm-4",
               "proof_sent_on": "@today-44d",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sponsor": "sponsor-7",
+              "guaranteed": 110000,
+              "promo": "ROUND"
             }
           },
           {
@@ -1713,7 +1966,717 @@
               "flight_ends": "@today-10d",
               "reads_owed": 5,
               "reads_done": 0,
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "sponsor": "sponsor-8",
+              "guaranteed": 60000
+            }
+          }
+        ]
+      },
+      {
+        "token": "sponsor",
+        "name": "Sponsors",
+        "labelSingular": "Sponsor",
+        "labelPlural": "Sponsors",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "handshake",
+        "titleField": "sponsor_name",
+        "describes": "Every brand that buys or might buy ads: category, who to talk to, and whether they buy direct or through an agency.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "sponsor_name",
+            "label": "Sponsor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Home and garden",
+              "Finance",
+              "Food and drink",
+              "Software",
+              "Books and media",
+              "Energy"
+            ],
+            "choiceColors": {
+              "Home and garden": "green",
+              "Finance": "blue",
+              "Food and drink": "amber",
+              "Software": "violet",
+              "Books and media": "pink",
+              "Energy": "orange"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Prospect",
+              "Active",
+              "Lapsed"
+            ],
+            "choiceColors": {
+              "Prospect": "amber",
+              "Active": "green",
+              "Lapsed": "slate"
+            }
+          },
+          {
+            "key": "contact",
+            "label": "Contact",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "buys_through",
+            "label": "Buys through",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Direct",
+              "Agency"
+            ],
+            "choiceColors": {
+              "Direct": "blue",
+              "Agency": "violet"
+            }
+          },
+          {
+            "key": "spent",
+            "label": "Booked with us (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "sponsor_deals",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Booked",
+                "Delivering",
+                "Delivered"
+              ]
+            }
+          },
+          {
+            "key": "deals_live",
+            "label": "Deals not lost",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "sponsor_deals",
+            "pick": "deal_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Lost"
+                ]
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "sponsor-1",
+            "values": {
+              "sponsor_name": "Hollis Hardware",
+              "category": "Home and garden",
+              "status": "Active",
+              "contact": "Marketing manager",
+              "buys_through": "Direct"
+            }
+          },
+          {
+            "key": "sponsor-2",
+            "values": {
+              "sponsor_name": "Tidal Bank",
+              "category": "Finance",
+              "status": "Active",
+              "contact": "Brand partnerships lead",
+              "buys_through": "Agency"
+            }
+          },
+          {
+            "key": "sponsor-3",
+            "values": {
+              "sponsor_name": "Cedar Coffee",
+              "category": "Food and drink",
+              "status": "Active",
+              "contact": "Founder",
+              "buys_through": "Direct"
+            }
+          },
+          {
+            "key": "sponsor-4",
+            "values": {
+              "sponsor_name": "Mapworks Software",
+              "category": "Software",
+              "status": "Prospect",
+              "contact": "Growth marketer",
+              "buys_through": "Direct"
+            }
+          },
+          {
+            "key": "sponsor-5",
+            "values": {
+              "sponsor_name": "Brightline Insurance",
+              "category": "Finance",
+              "status": "Active",
+              "contact": "Media buyer",
+              "buys_through": "Agency"
+            }
+          },
+          {
+            "key": "sponsor-6",
+            "values": {
+              "sponsor_name": "Wren and Bell Books",
+              "category": "Books and media",
+              "status": "Prospect",
+              "contact": "Publicity director",
+              "buys_through": "Direct"
+            }
+          },
+          {
+            "key": "sponsor-7",
+            "values": {
+              "sponsor_name": "Lantern Power",
+              "category": "Energy",
+              "status": "Lapsed",
+              "contact": "Community marketing lead",
+              "buys_through": "Agency"
+            }
+          },
+          {
+            "key": "sponsor-8",
+            "values": {
+              "sponsor_name": "Dovetail Furniture",
+              "category": "Home and garden",
+              "status": "Lapsed",
+              "contact": "E-commerce manager",
+              "buys_through": "Direct"
+            }
+          }
+        ]
+      },
+      {
+        "token": "spot",
+        "name": "Ad spots",
+        "labelSingular": "Ad spot",
+        "labelPlural": "Ad spots",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "megaphone",
+        "titleField": "spot_name",
+        "describes": "Ad inventory: every pre-roll, mid-roll and post-roll slot in each episode, whether it is sold, aired or owed again.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "independentOf": {
+          "episode": "Either record can be created or change status before the other.",
+          "deal": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "spot_name",
+            "label": "Ad spot",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "episode",
+            "label": "Episode",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "episodes",
+            "relationMax": 1
+          },
+          {
+            "key": "deal",
+            "label": "Sponsor deal",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "deals",
+            "relationMax": 1
+          },
+          {
+            "key": "position",
+            "label": "Position",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pre-roll",
+              "Mid-roll",
+              "Post-roll"
+            ],
+            "choiceColors": {
+              "Pre-roll": "blue",
+              "Mid-roll": "violet",
+              "Post-roll": "teal"
+            }
+          },
+          {
+            "key": "read",
+            "label": "Read type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Host read",
+              "Produced spot",
+              "Dynamic insert"
+            ],
+            "choiceColors": {
+              "Host read": "green",
+              "Produced spot": "amber",
+              "Dynamic insert": "slate"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Open",
+              "Sold",
+              "Aired",
+              "Make-good owed"
+            ],
+            "choiceColors": {
+              "Open": "slate",
+              "Sold": "blue",
+              "Aired": "green",
+              "Make-good owed": "red"
+            }
+          },
+          {
+            "key": "airs_on",
+            "label": "Airs on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "btn_aired",
+            "label": "Mark aired",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "spot_aired"
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "spot_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "spot-1",
+            "values": {
+              "spot_name": "Long Way Round, mapmaker, mid-roll",
+              "episode": "episodes-1",
+              "deal": "deals-1",
+              "position": "Mid-roll",
+              "read": "Host read",
+              "status": "Sold",
+              "airs_on": "@today+2d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "spot-2",
+            "values": {
+              "spot_name": "Long Way Round, mapmaker, pre-roll",
+              "episode": "episodes-1",
+              "position": "Pre-roll",
+              "read": "Dynamic insert",
+              "status": "Open",
+              "airs_on": "@today+2d"
+            }
+          },
+          {
+            "key": "spot-3",
+            "values": {
+              "spot_name": "Ledger Lines, ledgers lie, mid-roll",
+              "episode": "episodes-2",
+              "deal": "deals-2",
+              "position": "Mid-roll",
+              "read": "Host read",
+              "status": "Sold",
+              "airs_on": "@today+1d"
+            }
+          },
+          {
+            "key": "spot-4",
+            "values": {
+              "spot_name": "Ledger Lines, ledgers lie, pre-roll",
+              "episode": "episodes-2",
+              "deal": "deals-2",
+              "position": "Pre-roll",
+              "read": "Host read",
+              "status": "Sold",
+              "airs_on": "@today+1d"
+            }
+          },
+          {
+            "key": "spot-5",
+            "values": {
+              "spot_name": "Night Shift, dispatch center, mid-roll",
+              "episode": "episodes-4",
+              "deal": "deals-5",
+              "position": "Mid-roll",
+              "read": "Host read",
+              "status": "Sold",
+              "airs_on": "@today",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "spot-6",
+            "values": {
+              "spot_name": "Ledger Lines, taxes, mid-roll",
+              "episode": "episodes-6",
+              "deal": "deals-2",
+              "position": "Mid-roll",
+              "read": "Host read",
+              "status": "Sold",
+              "airs_on": "@today-1d"
+            }
+          },
+          {
+            "key": "spot-7",
+            "values": {
+              "spot_name": "Small Rooms, lighthouse keeper, mid-roll",
+              "episode": "episodes-3",
+              "deal": "deals-3",
+              "position": "Mid-roll",
+              "read": "Host read",
+              "status": "Sold",
+              "airs_on": "@today+14d"
+            }
+          },
+          {
+            "key": "spot-8",
+            "values": {
+              "spot_name": "Fieldwork, letters part one, pre-roll",
+              "episode": "episodes-7",
+              "position": "Pre-roll",
+              "read": "Dynamic insert",
+              "status": "Open",
+              "airs_on": "@today+30d"
+            }
+          },
+          {
+            "key": "spot-9",
+            "values": {
+              "spot_name": "Long Way Round, cartographer, mid-roll",
+              "episode": "episodes-8",
+              "deal": "deals-1",
+              "position": "Mid-roll",
+              "read": "Host read",
+              "status": "Aired",
+              "airs_on": "@today-13d"
+            }
+          },
+          {
+            "key": "spot-10",
+            "values": {
+              "spot_name": "Ledger Lines, studio budget, mid-roll",
+              "episode": "episodes-9",
+              "deal": "deals-2",
+              "position": "Mid-roll",
+              "read": "Host read",
+              "status": "Aired",
+              "airs_on": "@today-8d"
+            }
+          },
+          {
+            "key": "spot-11",
+            "values": {
+              "spot_name": "Long Way Round, cartographer, pre-roll",
+              "episode": "episodes-8",
+              "deal": "deals-1",
+              "position": "Pre-roll",
+              "read": "Host read",
+              "status": "Make-good owed",
+              "airs_on": "@today-13d"
+            }
+          },
+          {
+            "key": "spot-12",
+            "values": {
+              "spot_name": "Ledger Lines, studio budget, post-roll",
+              "episode": "episodes-9",
+              "deal": "deals-2",
+              "position": "Post-roll",
+              "read": "Produced spot",
+              "status": "Make-good owed",
+              "airs_on": "@today-8d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "month",
+        "name": "Monthly downloads",
+        "labelSingular": "Month",
+        "labelPlural": "Monthly downloads",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "chart-line",
+        "titleField": "month_name",
+        "describes": "Each show's downloads and listeners for each month, from the hosting provider's report, with the app most people use.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "independentOf": {
+          "show": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "month_name",
+            "label": "Month",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "show",
+            "label": "Show",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "show",
+            "relationMax": 1
+          },
+          {
+            "key": "month_of",
+            "label": "Month of",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "downloads",
+            "label": "Downloads",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000000
+              }
+            ]
+          },
+          {
+            "key": "listeners",
+            "label": "Unique listeners",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000000
+              }
+            ]
+          },
+          {
+            "key": "per_listener",
+            "label": "Downloads per listener",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Unique listeners} > 0, ROUND({Downloads} / {Unique listeners}, 1), 0)"
+          },
+          {
+            "key": "top_app",
+            "label": "Top listening app",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Apple Podcasts",
+              "Spotify",
+              "YouTube",
+              "Overcast",
+              "Other"
+            ],
+            "choiceColors": {
+              "Apple Podcasts": "violet",
+              "Spotify": "green",
+              "YouTube": "red",
+              "Overcast": "orange",
+              "Other": "slate"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "month-1",
+            "values": {
+              "month_name": "Long Way Round, last month",
+              "show": "show-1",
+              "month_of": "@today-30d",
+              "downloads": 41200,
+              "listeners": 15800,
+              "top_app": "Apple Podcasts"
+            }
+          },
+          {
+            "key": "month-2",
+            "values": {
+              "month_name": "Long Way Round, two months ago",
+              "show": "show-1",
+              "month_of": "@today-60d",
+              "downloads": 38900,
+              "listeners": 15100,
+              "top_app": "Apple Podcasts"
+            }
+          },
+          {
+            "key": "month-3",
+            "values": {
+              "month_name": "Ledger Lines, last month",
+              "show": "show-3",
+              "month_of": "@today-30d",
+              "downloads": 52600,
+              "listeners": 19400,
+              "top_app": "Spotify"
+            }
+          },
+          {
+            "key": "month-4",
+            "values": {
+              "month_name": "Ledger Lines, two months ago",
+              "show": "show-3",
+              "month_of": "@today-60d",
+              "downloads": 47100,
+              "listeners": 18200,
+              "top_app": "Spotify"
+            }
+          },
+          {
+            "key": "month-5",
+            "values": {
+              "month_name": "Small Rooms, last month",
+              "show": "show-2",
+              "month_of": "@today-30d",
+              "downloads": 15300,
+              "listeners": 8200,
+              "top_app": "Apple Podcasts"
+            }
+          },
+          {
+            "key": "month-6",
+            "values": {
+              "month_name": "Night Shift Radio, last month",
+              "show": "show-4",
+              "month_of": "@today-30d",
+              "downloads": 33800,
+              "listeners": 12900,
+              "top_app": "YouTube"
+            }
+          },
+          {
+            "key": "month-7",
+            "values": {
+              "month_name": "Night Shift Radio, two months ago",
+              "show": "show-4",
+              "month_of": "@today-60d",
+              "downloads": 35600,
+              "listeners": 13500,
+              "top_app": "YouTube"
+            }
+          },
+          {
+            "key": "month-8",
+            "values": {
+              "month_name": "Overheard in the Stacks, last month",
+              "show": "show-5",
+              "month_of": "@today-30d",
+              "downloads": 4100,
+              "listeners": 2600,
+              "top_app": "Spotify"
             }
           }
         ]
@@ -1789,6 +2752,46 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "deal_by_owner"
+      },
+      {
+        "describes": "A sponsor deal is with one sponsor.",
+        "fromTable": "deals",
+        "fromField": "sponsor",
+        "toTable": "sponsor",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "sponsor_deals"
+      },
+      {
+        "describes": "An ad spot runs in one episode.",
+        "fromTable": "spot",
+        "fromField": "episode",
+        "toTable": "episodes",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "ad_spots"
+      },
+      {
+        "describes": "An ad spot is filled by one sponsor deal.",
+        "fromTable": "spot",
+        "fromField": "deal",
+        "toTable": "deals",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "deal_spots"
+      },
+      {
+        "describes": "A monthly downloads row belongs to one show.",
+        "fromTable": "month",
+        "fromField": "show",
+        "toTable": "show",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "show_months"
       }
     ],
     "sharedBlocks": [
@@ -2011,6 +3014,34 @@
         "kind": "row_action",
         "token": "deals_claim",
         "table": "deals",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "spot_aired",
+        "table": "spot",
+        "name": "Mark aired",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Aired"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "spot_claim",
+        "table": "spot",
         "name": "Assign to me",
         "actionKind": "update",
         "steps": [
@@ -2306,6 +3337,101 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_sponsor",
+        "name": "All sponsors",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "sponsor"
+      },
+      {
+        "token": "sponsor_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "sponsor"
+      },
+      {
+        "token": "all_spot",
+        "name": "All ad spots",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "spot"
+      },
+      {
+        "token": "spot_board",
+        "name": "By position",
+        "kind": "kanban",
+        "groupBy": "position",
+        "table": "spot"
+      },
+      {
+        "token": "spot_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "airs_on",
+        "allDay": true,
+        "table": "spot"
+      },
+      {
+        "token": "spot_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "airs_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Sold"
+        },
+        "table": "spot"
+      },
+      {
+        "token": "spot_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "airs_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Sold"
+        },
+        "table": "spot"
+      },
+      {
+        "token": "spot_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "airs_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Sold"
+        },
+        "table": "spot"
+      },
+      {
+        "token": "spot_mine",
+        "name": "My ad spots",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "spot"
+      },
+      {
+        "token": "all_month",
+        "name": "All months",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "month"
       }
     ],
     "agent": {
@@ -2378,6 +3504,42 @@
           "surface": "guests_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open sponsors.",
+        "action": {
+          "kind": "open",
+          "surface": "sponsor_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "sponsor_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open ad spots.",
+        "action": {
+          "kind": "open",
+          "surface": "spot_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "spot_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open monthly downloads.",
+        "action": {
+          "kind": "open",
+          "surface": "all_month"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_month",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2394,7 +3556,7 @@
         "Vinyl Street"
       ]
     },
-    "version": 1
+    "version": 3
   },
   "pages": [
     {
@@ -2405,7 +3567,7 @@
         "emoji": "🎙️"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:media-studio-microphones-headphones",
         "offsetY": 50
       },
       "settings": {
@@ -2416,12 +3578,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Seven shows, one workspace: episodes from idea to published, guests, and the sponsor reads that pay for it all. Start with the Dashboard each Monday. Update an episode's status as soon as it changes, log every sponsor read when it airs and look at average downloads before the next pitch."
+              "text": "The network in one place. Shows hold the CPM and ad slots; Episodes run from idea to published with downloads; Ad spots is the inventory sold in each episode; Sponsors and Sponsor deals hold who buys and what is owed; Monthly downloads keeps the hosting numbers. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2910,6 +4078,489 @@
             ],
             "activeViewId": "dea-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ad spots"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every ad slot in every episode: open, sold, aired or owed again."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "spot",
+              "view": "all_spot"
+            },
+            "inline": true,
+            "title": "Ad spots",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ad-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "position"
+              },
+              {
+                "id": "ad-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "airs_on"
+              },
+              {
+                "id": "ad-t",
+                "name": "All ad spots",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "ad-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "airs_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Sold"
+                }
+              },
+              {
+                "id": "ad-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "airs_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Sold"
+                }
+              },
+              {
+                "id": "ad-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "airs_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Sold"
+                }
+              },
+              {
+                "id": "ad-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "ad-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sponsors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The brands that buy, and how they buy."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sponsor",
+              "view": "all_sponsor"
+            },
+            "inline": true,
+            "title": "Sponsors",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "spn-t",
+                "name": "All sponsors",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "spn-b",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              }
+            ],
+            "activeViewId": "spn-t"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly downloads"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each show by month, from the hosting report."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "month",
+              "view": "all_month"
+            },
+            "inline": true,
+            "title": "Monthly downloads",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "mo-t",
+                "name": "All months",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "month_of",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "mo-t"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "podcast-network-operations",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the network in this workspace. Share it with producers, editors, hosts and ad sales."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Shows",
+              "bold": true
+            },
+            {
+              "text": ": each show with genre, cadence, hosts, CPM rate, ad slots per episode, average downloads and sponsor value booked."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Episodes",
+              "bold": true
+            },
+            {
+              "text": ": from idea to published, with record and publish dates, guest, length, downloads at seven and thirty days, and ad spots sold."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Guests",
+              "bold": true
+            },
+            {
+              "text": ": who you want, who said yes and when they record."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ad spots",
+              "bold": true
+            },
+            {
+              "text": ": the inventory, slot by slot, open, sold, aired or make-good owed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sponsors",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Sponsor deals",
+              "bold": true
+            },
+            {
+              "text": ": who buys, each flight, reads owed and delivered, promo codes and downloads guaranteed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monthly downloads",
+              "bold": true
+            },
+            {
+              "text": ": each show's numbers from the hosting provider."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: the dashboard. Episodes publishing this week, sold spots due to air, make-goods owed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Daily: editors move episodes forward; producers book guests."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Thursday: ad sales reviews unsold spots and flights ending soon."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "First week of the month: last month's downloads entered for every show."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: what publishes today, and which spots run in it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every week: four episodes ahead on each show"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every flight: mid-flight note, proof within five days of the end"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: downloads by show, CPM rates reviewed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Producers own shows, guests and the calendar. Editors own the cut, the ad breaks and the upload. Ad sales owns sponsors, deals and inventory. The network head reads downloads, sell-through and renewals."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Numbers we use"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Value of one episode's ads",
+              "bold": true
+            },
+            {
+              "text": " is average downloads divided by a thousand, times the CPM, times the slots. "
+            },
+            {
+              "text": "Downloads per listener",
+              "bold": true
+            },
+            {
+              "text": " shows how many episodes each listener plays in a month."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename genres, positions and sponsor categories to fit your network, set your own CPM rates and delete the sample rows once your shows are in."
+            }
+          ]
         }
       ]
     },
@@ -3318,6 +4969,104 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ad inventory"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "spot",
+              "view": "all_spot"
+            },
+            "inline": true,
+            "title": "Ad inventory",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dp-1",
+                "name": "Spots by status",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "status",
+                  "op": "count",
+                  "centerValue": true
+                }
+              },
+              {
+                "id": "dp-2",
+                "name": "Unsold spots",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "dp-3",
+                "name": "Make-goods owed",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "filters": {
+                  "status": "Make-good owed"
+                }
+              }
+            ],
+            "activeViewId": "dp-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Downloads"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "month",
+              "view": "all_month"
+            },
+            "inline": true,
+            "title": "Downloads by show",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dp-4",
+                "name": "Downloads by show",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "show",
+                  "op": "sum",
+                  "field": "downloads"
+                }
+              }
+            ],
+            "activeViewId": "dp-4"
+          }
         }
       ]
     },
@@ -3336,7 +5085,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "The same path for every episode keeps seven shows on schedule."
+              "text": "Every episode moves through the same stages, and every one is on the calendar from the day it is an idea. Listeners forgive a lot, but not a missed release day."
             }
           ],
           "background": "blue",
@@ -3348,7 +5097,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "Idea"
             }
           ],
           "props": {
@@ -3356,152 +5105,271 @@
           }
         },
         {
-          "type": "table",
+          "type": "text",
+          "text": [
+            {
+              "text": "Add the episode as "
+            },
+            {
+              "text": "Idea",
+              "bold": true
+            },
+            {
+              "text": " under its show, with a working title and a target "
+            },
+            {
+              "text": "Publish on",
+              "bold": true
+            },
+            {
+              "text": " date. Producers keep at least four ideas ahead for every weekly show."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Booked"
+            }
+          ],
           "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Status"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "What happens"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Owner"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Idea"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Angle and guest chosen"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Producer"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Booked"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Guest and recording time confirmed"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Producer"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Recorded"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Raw audio stored and logged"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Producer"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Editing"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Cut, mix and loudness check"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Audio editor"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Scheduled"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Show notes, art and sponsor reads placed"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Producer"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Published"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Live in the feed, links shared"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Producer"
-                    }
-                  ]
-                ]
-              }
-            ]
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book the guest (see Booking guests) and set "
+            },
+            {
+              "text": "Record on",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the guest the questions outline and the recording setup: a quiet room, wired headphones, and a backup recorder if they have one."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the ad plan: how many "
+            },
+            {
+              "text": "Ad spots",
+              "bold": true
+            },
+            {
+              "text": " this episode will carry and which are already sold."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recorded"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set the episode to "
+            },
+            {
+              "text": "Recorded",
+              "bold": true
+            },
+            {
+              "text": " the same day and upload the raw files to the shared drive with the date in the file name. Note any part the guest asked to remove, word for word."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Editing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The editor cuts for pace first, then cleans the audio."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark where each mid-roll goes. A natural pause around the halfway point keeps listeners through the ad."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Host-read ads are recorded by the host against the sponsor's talking points, never word for word unless the contract says so."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write the show notes, the transcript and the chapter marks."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Scheduled"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Upload to the hosting provider, set the release time and check the episode plays in two different apps. Set it to "
+            },
+            {
+              "text": "Scheduled",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Published"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "On the day, set it to "
+            },
+            {
+              "text": "Published",
+              "bold": true
+            },
+            {
+              "text": " and mark each ad spot that ran as aired. After seven days, write "
+            },
+            {
+              "text": "Downloads in first 7 days",
+              "bold": true
+            },
+            {
+              "text": "; after thirty, "
+            },
+            {
+              "text": "Downloads in first 30 days",
+              "bold": true
+            },
+            {
+              "text": ". Those are the numbers sponsors buy against."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every show has its next four episodes on the calendar"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Nothing recorded for more than ten days without an editor"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every published episode's spots marked aired"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Download numbers filled in for episodes a week and a month old"
+            }
+          ],
+          "props": {
+            "checked": false
           }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Rules"
+              "text": "Example"
             }
           ],
           "props": {
@@ -3509,26 +5377,10 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Always record a backup track."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Mark the sponsor read in the run sheet before recording."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Never schedule an episode without a listen-through."
+              "text": "Ledger Lines recorded \"Why ledgers lie\" with an accountant guest. The editor placed the mid-roll after the story about a missing invoice, where the conversation paused. The episode went out on schedule with two Tidal Bank spots, and seven days later the producer logged its downloads for the sponsor's report."
             }
           ]
         }
@@ -3549,7 +5401,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Sponsors renew when they see what they paid for. Deliver exactly what was booked, and show proof."
+              "text": "Sponsors renew when they get what they paid for and hear about it before they ask. This is how a deal moves from pitch to proof, and how we keep the inventory honest."
             }
           ],
           "background": "blue",
@@ -3561,7 +5413,70 @@
           "type": "heading",
           "text": [
             {
-              "text": "From booking to invoice"
+              "text": "Selling"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every show has a "
+            },
+            {
+              "text": "CPM rate",
+              "bold": true
+            },
+            {
+              "text": " and a number of "
+            },
+            {
+              "text": "Ad slots per episode",
+              "bold": true
+            },
+            {
+              "text": ". A spot's price is roughly the episode's expected downloads divided by a thousand, times the CPM."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pitch sponsors that fit the audience. A finance show suits a bank; a storytelling show suits books and home brands."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Each deal names the "
+            },
+            {
+              "text": "Sponsor",
+              "bold": true
+            },
+            {
+              "text": ", the shows, the number of reads, a flight with start and end dates, and how many "
+            },
+            {
+              "text": "Downloads guaranteed",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Booking"
             }
           ],
           "props": {
@@ -3572,7 +5487,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Press Mark booked and enter the flight dates and reads owed."
+              "text": "When the insertion order is signed, set the deal to "
+            },
+            {
+              "text": "Booked",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3580,7 +5502,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send the brief to the host and note any must-say lines."
+              "text": "Mark the matching "
+            },
+            {
+              "text": "Ad spots",
+              "bold": true
+            },
+            {
+              "text": " as "
+            },
+            {
+              "text": "Sold",
+              "bold": true
+            },
+            {
+              "text": " and link them to the deal. Never sell the same spot twice; the unsold list on the dashboard is the truth."
             }
           ]
         },
@@ -3588,23 +5524,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Log each read on the deal when the episode goes live."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "Send the talking points to the host and agree a "
+            },
             {
-              "text": "Send proof of airing at the end of the flight."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "Promo code",
+              "bold": true
+            },
             {
-              "text": "Press Mark delivered and send the invoice."
+              "text": " so the sponsor can count listeners who respond."
             }
           ]
         },
@@ -3612,7 +5539,70 @@
           "type": "heading",
           "text": [
             {
-              "text": "If a read is missed"
+              "text": "Delivering"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "As each episode publishes, press "
+            },
+            {
+              "text": "Mark aired",
+              "bold": true
+            },
+            {
+              "text": " on its spots. "
+            },
+            {
+              "text": "Spots aired",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Reads left",
+              "bold": true
+            },
+            {
+              "text": " show where the deal stands."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Midway through the flight, send the sponsor a short note: episodes so far, downloads to date, promo code use if they share it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If an episode slips or a read goes wrong, the spot becomes "
+            },
+            {
+              "text": "Make-good owed",
+              "bold": true
+            },
+            {
+              "text": ". Schedule the make-good in the next episode with an open slot and tell the sponsor before they notice."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Proof of performance"
             }
           ],
           "props": {
@@ -3623,7 +5613,103 @@
           "type": "text",
           "text": [
             {
-              "text": "Tell the sponsor before they notice. Offer a make-good in the next episode and write it on the deal row."
+              "text": "When the flight ends, send the proof within five working days: each episode, its air date, the read, and downloads at seven and thirty days. Set the deal to "
+            },
+            {
+              "text": "Delivered",
+              "bold": true
+            },
+            {
+              "text": " and fill in "
+            },
+            {
+              "text": "Proof sent on",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Renewal"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Two weeks before a flight ends, offer the next one. Sponsors who heard results early renew far more often than those who get a single report at the end."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No sold spot past its air date without being marked aired"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Make-goods scheduled within two weeks"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Proofs sent for flights that ended"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Long Way Round's cartographer episode went out with the Hollis Hardware pre-roll cut short by an upload error. The spot became a make-good. Ad sales placed it in the mapmaker episode's open pre-roll, told the sponsor that afternoon, and included it in the mid-flight note. Hollis asked about a summer flight the next week."
             }
           ]
         }
@@ -3644,7 +5730,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Good guests say yes to clear, specific, respectful requests."
+              "text": "Guests make or break interview shows. A good booking routine means fewer no-shows, better audio and guests who share the episode when it comes out."
             }
           ],
           "background": "blue",
@@ -3656,7 +5742,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The email"
+              "text": "Finding guests"
             }
           ],
           "props": {
@@ -3664,34 +5750,31 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Say who you are and who listens."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
+              "text": "Keep a running list in "
+            },
             {
-              "text": "Say exactly what you want to talk about."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
+              "text": "Guests",
+              "bold": true
+            },
             {
-              "text": "Offer two recording options, remote or in person."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
+              "text": " with what each person is "
+            },
             {
-              "text": "State the time it will take and when it will air."
+              "text": "Known for",
+              "bold": true
+            },
+            {
+              "text": ". Good sources: listener suggestions, people quoted in local news, authors with a new book, and past guests' recommendations. Add them as "
+            },
+            {
+              "text": "Idea",
+              "bold": true
+            },
+            {
+              "text": " before you reach out."
             }
           ]
         },
@@ -3699,7 +5782,185 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before recording"
+              "text": "Inviting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write a short, personal invitation: the show, why them, what the conversation would cover, how long it takes, and two or three times that work."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set them to "
+            },
+            {
+              "text": "Invited",
+              "bold": true
+            },
+            {
+              "text": " with a "
+            },
+            {
+              "text": "Recording day",
+              "bold": true
+            },
+            {
+              "text": " you are aiming for."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Follow up once after a week. If there is no answer after two tries, let it go politely."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Confirming"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "When they say yes, set "
+            },
+            {
+              "text": "Confirmed",
+              "bold": true
+            },
+            {
+              "text": " and send a calendar invite with the link, the time zone spelled out, and the producer's phone number."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send the setup notes: a quiet room with soft furnishings, wired headphones, the laptop plugged in, notifications off."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask for a short bio, how they want to be introduced, and any topic that is off limits."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recording day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Start ten minutes early for a sound check. Record a backup locally if the guest can. Thank them on air and off."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After recording"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Set the guest to "
+            },
+            {
+              "text": "Recorded",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tell them the release date and send the episode link, a short clip and a ready-made post when it is out. Guests who share the episode bring new listeners."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If they asked to remove something, confirm it was removed before release."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a guest declines"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Mark them "
+            },
+            {
+              "text": "Declined",
+              "bold": true
+            },
+            {
+              "text": " with a kind note. Many say yes a season later."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly check"
             }
           ],
           "props": {
@@ -3710,7 +5971,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Send questions or topics one week ahead"
+              "text": "Every confirmed guest has an invite and setup notes"
             }
           ],
           "props": {
@@ -3721,7 +5982,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Send a technical check link"
+              "text": "Invitations older than a week followed up"
             }
           ],
           "props": {
@@ -3732,7 +5993,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Confirm release and permissions"
+              "text": "Recorded guests told their release date"
             }
           ],
           "props": {
@@ -3740,15 +6001,23 @@
           }
         },
         {
-          "type": "todo",
+          "type": "heading",
           "text": [
             {
-              "text": "Thank them the day after"
+              "text": "Example"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A lighthouse keeper agreed to talk to Small Rooms but had only a phone signal on the coast. The producer sent a backup recorder by mail, ran a sound check two days before and booked a calm-weather morning. The episode is confirmed with a sold mid-roll waiting for it."
+            }
+          ]
         }
       ]
     }

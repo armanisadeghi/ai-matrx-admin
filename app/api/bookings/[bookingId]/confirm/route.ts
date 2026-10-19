@@ -18,6 +18,7 @@ import { NextResponse } from "next/server";
 
 import { bucketFor, confirmBooking, publicBooking, recordSmsConsent } from "@/features/booking/service";
 import { checkoutIfAsked } from "@/features/payments/server";
+import { requestHostOrigin } from "@/utils/auth/request-origin";
 import { typedAnswersFor } from "@ai-matrx/records/forms";
 import { pathOnRequestHost } from "@/lib/custom-domains/request-host";
 
@@ -122,7 +123,7 @@ export async function POST(
           subjectKind: "form",
           subjectId: bookingId,
           recordId: outcome.record_id,
-          origin: new URL(request.url).origin,
+          origin: requestHostOrigin(request.headers) ?? new URL(request.url).origin,
           back: await pathOnRequestHost(request, `/b/${bookingId}`),
         }).catch((thrown: unknown) => {
           // A store/Stripe failure is logged, never handed to an anonymous payer verbatim (M3).

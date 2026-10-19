@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0215",
-  "version": 3,
+  "version": 4,
   "title": "Home Inventory",
   "description": "Homeowners and renters: list what you own by room, with values and warranty dates.",
   "forWho": "Homeowners and renters",
@@ -9,7 +9,7 @@
     "emoji": "🏠"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:personal-cozy-living-room-interior",
     "offsetY": 50
   },
   "category": "personal",
@@ -1021,7 +1021,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -1032,7 +1032,7 @@
         "emoji": "🏠"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:personal-cozy-living-room-interior",
         "offsetY": 50
       },
       "settings": {

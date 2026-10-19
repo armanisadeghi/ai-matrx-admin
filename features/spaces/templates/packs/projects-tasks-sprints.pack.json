@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0100",
-  "version": 6,
+  "version": 7,
   "title": "Projects, Tasks & Sprints",
   "description": "Product teams that plan by project: tasks, two-week sprints and a live sprint dashboard.",
   "forWho": "Software and product teams working in sprints",
@@ -9,7 +9,7 @@
     "emoji": "🏃"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:projects-kanban-board-sticky-notes",
     "offsetY": 50
   },
   "category": "projects",
@@ -1525,7 +1525,7 @@
         "Fennimore Court"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1536,7 +1536,7 @@
         "emoji": "🏃"
       },
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:projects-kanban-board-sticky-notes",
         "offsetY": 50
       },
       "settings": {

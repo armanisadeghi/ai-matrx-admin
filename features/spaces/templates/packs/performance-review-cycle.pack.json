@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0256",
-  "version": 3,
+  "version": 4,
   "title": "Performance Review Cycle",
   "description": "HR and managers: run review rounds with goals, feedback and sign-off.",
   "forWho": "HR and managers running reviews",
@@ -9,7 +9,7 @@
     "emoji": "⭐"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:team-growth-plant-sprout",
     "offsetY": 50
   },
   "category": "team",
@@ -1500,7 +1500,7 @@
         "Saltmarsh Way"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -1511,7 +1511,7 @@
         "emoji": "⭐"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:team-growth-plant-sprout",
         "offsetY": 50
       },
       "settings": {

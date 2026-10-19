@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0451",
-  "version": 4,
+  "version": 6,
   "title": "Web Design Studio HQ",
-  "description": "Clients, site projects, page inventory, revision requests and invoices for a web studio.",
+  "description": "For web studios: site projects by phase, page content, change requests and invoices.",
   "forWho": "Web design and development studios",
   "icon": {
     "emoji": "🖥️"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:agencies-web-design-wireframe-sketch",
     "offsetY": 50
   },
   "category": "agencies",
   "tags": [
-    "web design",
-    "projects",
-    "revisions",
-    "invoices"
+    "web designer",
+    "web studio",
+    "project manager",
+    "site launches",
+    "change requests",
+    "care plans"
   ],
   "spec": {
     "specVersion": 1,
@@ -131,6 +133,42 @@
             "key": "website",
             "label": "Current website",
             "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "care_fee",
+            "label": "Care plan per month",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "hosting",
+            "label": "Hosting",
+            "parityType": "select",
+            "choices": [
+              "We host it",
+              "Client hosts it",
+              "Platform hosts it"
+            ],
+            "choiceColors": {
+              "We host it": "blue",
+              "Client hosts it": "green",
+              "Platform hosts it": "amber"
+            },
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -318,7 +356,8 @@
               "website": "https://juniperhollowinn.net",
               "since": "@today-95d",
               "owner": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "hosting": "We host it"
             }
           },
           {
@@ -330,7 +369,8 @@
               "contact_email": "office@callowayelectric.net",
               "website": "https://callowayelectric.net",
               "since": "@today-60d",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "hosting": "We host it"
             }
           },
           {
@@ -343,7 +383,9 @@
               "website": "https://mossgatephysio.net",
               "since": "@today-400d",
               "owner": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "care_fee": 150,
+              "hosting": "We host it"
             }
           },
           {
@@ -355,7 +397,8 @@
               "contact_email": "makers@terntidecandles.net",
               "website": "https://terntidecandles.net",
               "since": "@today-150d",
-              "owner": "tm-1"
+              "owner": "tm-1",
+              "hosting": "Platform hosts it"
             }
           },
           {
@@ -368,7 +411,8 @@
               "website": "https://hargrovetaxadv.net",
               "since": "@today-30d",
               "owner": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "hosting": "Client hosts it"
             }
           },
           {
@@ -380,7 +424,9 @@
               "contact_email": "info@blueridgeceramics.net",
               "website": "https://blueridgeceramics.net",
               "since": "@today-700d",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "care_fee": 90,
+              "hosting": "We host it"
             }
           },
           {
@@ -404,7 +450,8 @@
               "contact_email": "shop@ardentbikes.net",
               "website": "https://ardentbikes.net",
               "since": "@today-900d",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "hosting": "Client hosts it"
             }
           },
           {
@@ -417,7 +464,8 @@
               "website": "https://wrencreekbakery.net",
               "since": "@today-45d",
               "owner": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "hosting": "Platform hosts it"
             }
           }
         ]
@@ -496,6 +544,51 @@
             }
           },
           {
+            "key": "platform",
+            "label": "Platform",
+            "parityType": "select",
+            "choices": [
+              "WordPress",
+              "Webflow",
+              "Shopify",
+              "Squarespace",
+              "Custom build"
+            ],
+            "choiceColors": {
+              "WordPress": "blue",
+              "Webflow": "green",
+              "Shopify": "amber",
+              "Squarespace": "violet",
+              "Custom build": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "domain",
+            "label": "Domain",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "content",
+            "label": "Content from client",
+            "parityType": "select",
+            "choices": [
+              "Waiting on client",
+              "Partly in",
+              "All in"
+            ],
+            "choiceColors": {
+              "Waiting on client": "blue",
+              "Partly in": "green",
+              "All in": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "starts_on",
             "label": "Starts",
             "parityType": "datetime",
@@ -546,7 +639,14 @@
             "contextPolicy": "include",
             "via": "invoices",
             "pick": "amount",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Draft"
+                ]
+              }
+            }
           },
           {
             "key": "paid",
@@ -560,6 +660,22 @@
             "filter": {
               "status": "Paid"
             }
+          },
+          {
+            "key": "awaiting",
+            "label": "Awaiting payment",
+            "parityType": "rollup",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Sent",
+                "Overdue"
+              ]
+            },
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
           },
           {
             "key": "left_to_invoice",
@@ -591,6 +707,23 @@
             "filter": {
               "status": "Approved"
             }
+          },
+          {
+            "key": "pages_left",
+            "label": "Pages not approved",
+            "parityType": "rollup",
+            "via": "pages",
+            "pick": "page_title",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Approved"
+                ]
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "progress",
@@ -813,7 +946,10 @@
               "budget": 9800,
               "client": "client-1",
               "lead": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "platform": "WordPress",
+              "domain": "juniperhollowinn.net",
+              "content": "All in"
             }
           },
           {
@@ -826,7 +962,10 @@
               "launch_on": "@today+30d",
               "budget": 7200,
               "client": "client-2",
-              "lead": "tm-3"
+              "lead": "tm-3",
+              "platform": "Webflow",
+              "domain": "callowayelectric.net",
+              "content": "Partly in"
             }
           },
           {
@@ -841,7 +980,10 @@
               "client": "client-3",
               "lead": "tm-4",
               "owner_me": "@installer",
-              "launched_on": "@today-360d"
+              "launched_on": "@today-360d",
+              "platform": "WordPress",
+              "domain": "mossgatephysio.net",
+              "content": "All in"
             }
           },
           {
@@ -851,10 +993,13 @@
               "status": "Review",
               "kind": "Online store",
               "starts_on": "@today-75d",
-              "launch_on": "@today+6d",
+              "launch_on": "@today",
               "budget": 14500,
               "client": "client-4",
-              "lead": "tm-1"
+              "lead": "tm-1",
+              "platform": "Shopify",
+              "domain": "terntidecandles.net",
+              "content": "All in"
             }
           },
           {
@@ -864,11 +1009,14 @@
               "status": "Discovery",
               "kind": "Landing page",
               "starts_on": "@today-3d",
-              "launch_on": "@today+21d",
+              "launch_on": "@today-3d",
               "budget": 3200,
               "client": "client-5",
               "lead": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "platform": "Webflow",
+              "domain": "hargrovetaxadv.net",
+              "content": "Waiting on client"
             }
           },
           {
@@ -882,7 +1030,10 @@
               "budget": 2400,
               "client": "client-6",
               "lead": "tm-2",
-              "launched_on": "@today-45d"
+              "launched_on": "@today-45d",
+              "platform": "Squarespace",
+              "domain": "blueridgeceramics.net",
+              "content": "All in"
             }
           },
           {
@@ -896,7 +1047,10 @@
               "budget": 8600,
               "client": "client-9",
               "lead": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "platform": "Shopify",
+              "domain": "wrencreekbakery.net",
+              "content": "Partly in"
             }
           },
           {
@@ -910,7 +1064,10 @@
               "budget": 4900,
               "client": "client-8",
               "lead": "tm-1",
-              "launched_on": "@today-880d"
+              "launched_on": "@today-880d",
+              "platform": "WordPress",
+              "domain": "ardentbikes.net",
+              "content": "All in"
             }
           },
           {
@@ -924,7 +1081,10 @@
               "budget": 11000,
               "client": "client-7",
               "lead": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "platform": "Webflow",
+              "domain": "fieldstonedental.net",
+              "content": "Waiting on client"
             }
           }
         ]
@@ -1003,6 +1163,20 @@
               "Contact": "teal",
               "Store": "orange"
             }
+          },
+          {
+            "key": "copy_in",
+            "label": "Copy from client",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "seo",
+            "label": "Title and description written",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "due_on",
@@ -1155,13 +1329,15 @@
           {
             "key": "page-1",
             "values": {
-              "page_title": "Juniper home page",
+              "page_title": "Juniper Hollow home page",
               "status": "Built",
               "page_type": "Home",
               "due_on": "@today+3d",
               "project": "project-1",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "copy_in": true,
+              "seo": true
             }
           },
           {
@@ -1172,7 +1348,9 @@
               "page_type": "Service",
               "due_on": "@today+4d",
               "project": "project-1",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "copy_in": true,
+              "seo": true
             }
           },
           {
@@ -1184,18 +1362,22 @@
               "due_on": "@today+6d",
               "project": "project-1",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "copy_in": true,
+              "seo": false
             }
           },
           {
             "key": "page-4",
             "values": {
-              "page_title": "Calloway home page",
+              "page_title": "Calloway Electric home page",
               "status": "Designed",
               "page_type": "Home",
               "due_on": "@today+9d",
               "project": "project-2",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "copy_in": true,
+              "seo": false
             }
           },
           {
@@ -1207,7 +1389,9 @@
               "due_on": "@today+14d",
               "project": "project-2",
               "owner": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "copy_in": true,
+              "seo": false
             }
           },
           {
@@ -1218,7 +1402,9 @@
               "page_type": "Service",
               "due_on": "@today+18d",
               "project": "project-2",
-              "owner": "tm-5"
+              "owner": "tm-5",
+              "copy_in": false,
+              "seo": false
             }
           },
           {
@@ -1231,7 +1417,9 @@
               "project": "project-4",
               "owner": "tm-2",
               "owner_me": "@installer",
-              "approved_on": "@today-12d"
+              "approved_on": "@today-12d",
+              "copy_in": true,
+              "seo": true
             }
           },
           {
@@ -1242,7 +1430,9 @@
               "page_type": "Store",
               "due_on": "@today-2d",
               "project": "project-4",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "copy_in": true,
+              "seo": true
             }
           },
           {
@@ -1254,7 +1444,9 @@
               "due_on": "@mon+3d",
               "project": "project-4",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "copy_in": true,
+              "seo": false
             }
           },
           {
@@ -1266,7 +1458,9 @@
               "due_on": "@today-10d",
               "project": "project-4",
               "owner": "tm-5",
-              "approved_on": "@today-10d"
+              "approved_on": "@today-10d",
+              "copy_in": true,
+              "seo": true
             }
           },
           {
@@ -1278,18 +1472,22 @@
               "due_on": "@today+7d",
               "project": "project-5",
               "owner": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "copy_in": false,
+              "seo": false
             }
           },
           {
             "key": "page-12",
             "values": {
-              "page_title": "Wren Creek home page",
+              "page_title": "Wren Creek Bakery home page",
               "status": "Designed",
               "page_type": "Home",
               "due_on": "@today+10d",
               "project": "project-7",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "copy_in": true,
+              "seo": false
             }
           },
           {
@@ -1301,18 +1499,22 @@
               "due_on": "@today+13d",
               "project": "project-7",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "copy_in": false,
+              "seo": false
             }
           },
           {
             "key": "page-14",
             "values": {
-              "page_title": "Wren Creek visit us",
+              "page_title": "Wren Creek visit us page",
               "status": "Copy drafted",
               "page_type": "Contact",
               "due_on": "@today+11d",
               "project": "project-7",
-              "owner": "tm-5"
+              "owner": "tm-5",
+              "copy_in": true,
+              "seo": false
             }
           },
           {
@@ -1325,18 +1527,22 @@
               "project": "project-6",
               "owner": "tm-2",
               "owner_me": "@installer",
-              "approved_on": "@today-50d"
+              "approved_on": "@today-50d",
+              "copy_in": true,
+              "seo": true
             }
           },
           {
             "key": "page-16",
             "values": {
-              "page_title": "Journal",
+              "page_title": "Fieldstone journal",
               "status": "Not started",
               "page_type": "Blog",
               "due_on": "@today+20d",
               "project": "project-9",
-              "owner": "tm-5"
+              "owner": "tm-5",
+              "copy_in": false,
+              "seo": false
             }
           }
         ],
@@ -1573,7 +1779,7 @@
               "status": "Open",
               "source": "Testing",
               "hours": 1.5,
-              "requested_on": "@today-1d",
+              "requested_on": "@today",
               "in_scope": true,
               "project": "project-1"
             }
@@ -1610,7 +1816,7 @@
               "source": "Client",
               "hours": 4,
               "requested_on": "@today-9d",
-              "in_scope": false,
+              "in_scope": true,
               "project": "project-4",
               "completed_on": "@today-9d"
             }
@@ -1954,7 +2160,7 @@
               "status": "Sent",
               "amount": 1800,
               "issued_on": "@today-1d",
-              "due_on": "@today+13d",
+              "due_on": "@today",
               "project": "project-3"
             }
           },
@@ -2619,7 +2825,7 @@
         "Pemberly Row"
       ]
     },
-    "version": 4
+    "version": 6
   },
   "pages": [
     {
@@ -2630,7 +2836,7 @@
         "emoji": "🖥️"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:agencies-web-design-wireframe-sketch",
         "offsetY": 50
       },
       "settings": {
@@ -2658,6 +2864,12 @@
                 "width": 0.5
               },
               "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                },
                 {
                   "type": "page",
                   "props": {
@@ -3203,6 +3415,368 @@
       ]
     },
     {
+      "key": "start-here",
+      "parent": "web-design-studio",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This workspace runs a small web studio: clients and their care plans, each site project from discovery to launch, every page and whether its content is in, the change requests that come after sign-off, and the invoices tied to each milestone. Code, designs and files stay in your design tool and repository; this is where the work is planned and tracked."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One row is"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What you watch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clients"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A business you build for"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Status, care plan per month, hosting"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Projects"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One site or one piece of a site"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Phase, platform, domain, content from client, fixed fee, invoiced, awaiting payment, pages not approved"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pages"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One page of a site"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Status, page type, copy from client, title and description written, due date"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Change requests"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One requested change"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Source, hours, in scope or not"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Invoices"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One milestone bill"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Amount, due date, status, days late"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The money columns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Invoiced",
+              "bold": true
+            },
+            {
+              "text": " adds every invoice except drafts. "
+            },
+            {
+              "text": "Paid",
+              "bold": true
+            },
+            {
+              "text": " adds paid ones. "
+            },
+            {
+              "text": "Awaiting payment",
+              "bold": true
+            },
+            {
+              "text": " is sent and overdue together."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Left to invoice",
+              "bold": true
+            },
+            {
+              "text": " is the fixed fee minus what has been invoiced."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Change hours",
+              "bold": true
+            },
+            {
+              "text": " adds up hours on change requests; out-of-scope ones are billed separately."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter active clients and every project with the fixed fee, platform and launch date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add each page of each site with its due date and whether the client's copy has arrived."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter open change requests and tick "
+            },
+            {
+              "text": "In scope",
+              "bold": true
+            },
+            {
+              "text": " only for what the agreement covers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter invoices sent and unpaid."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happens"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Monday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Projects by phase; pages due this week; content still waiting on clients"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wednesday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Change requests triaged: in scope, out of scope, or later"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Invoices due and overdue followed up; launches next week confirmed"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Tern & Tide's online store is in review and launches this week. Two change requests are out of scope (a gift wrap option and a second button color), so the project lead sends a short quote for both before launch week."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "key": "dashboard",
       "parent": "web-design-studio",
       "title": "Dashboard",
@@ -3640,12 +4214,23 @@
           "type": "callout",
           "text": [
             {
-              "text": "A project that skips a phase pays for it later, usually in revisions. These are the exit tests we use."
+              "text": "Every site moves through the same five phases. Each phase ends with something the client signs off, and the next phase starts only after that sign-off. That rhythm keeps projects on schedule and protects you from endless revisions."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The phases"
+            }
+          ],
+          "props": {
+            "level": 2
           }
         },
         {
@@ -3663,12 +4248,12 @@
                   ],
                   [
                     {
-                      "text": "Exit test"
+                      "text": "What happens"
                     }
                   ],
                   [
                     {
-                      "text": "Owner"
+                      "text": "Ends with"
                     }
                   ]
                 ]
@@ -3682,12 +4267,12 @@
                   ],
                   [
                     {
-                      "text": "Goals, sitemap and content owner agreed in writing"
+                      "text": "Brief, sitemap, content plan, platform choice"
                     }
                   ],
                   [
                     {
-                      "text": "Project manager"
+                      "text": "Sitemap and brief approved; deposit paid"
                     }
                   ]
                 ]
@@ -3701,12 +4286,12 @@
                   ],
                   [
                     {
-                      "text": "Home and one inner page approved on desktop and phone"
+                      "text": "Home page and one inner page designed, then the rest"
                     }
                   ],
                   [
                     {
-                      "text": "Creative director"
+                      "text": "Design approved; design milestone invoiced"
                     }
                   ]
                 ]
@@ -3720,12 +4305,12 @@
                   ],
                   [
                     {
-                      "text": "Every page Built; forms, analytics and redirects working"
+                      "text": "Pages built on the platform with real content"
                     }
                   ],
                   [
                     {
-                      "text": "Developer"
+                      "text": "All pages built"
                     }
                   ]
                 ]
@@ -3739,12 +4324,12 @@
                   ],
                   [
                     {
-                      "text": "Client has signed off every page; open revisions at zero"
+                      "text": "Client tests on a staging site; fixes"
                     }
                   ],
                   [
                     {
-                      "text": "Project manager"
+                      "text": "Written go-ahead to launch"
                     }
                   ]
                 ]
@@ -3758,12 +4343,12 @@
                   ],
                   [
                     {
-                      "text": "Live, monitored for a week, handover session held"
+                      "text": "Site live, checks done"
                     }
                   ],
                   [
                     {
-                      "text": "Project manager"
+                      "text": "Final invoice; care plan starts"
                     }
                   ]
                 ]
@@ -3775,7 +4360,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Moving a project forward"
+              "text": "Moving a project"
             }
           ],
           "props": {
@@ -3786,7 +4371,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Open the project row and check Page progress and Open revisions."
+              "text": "Add every page from the sitemap in Discovery, with a due date and an owner."
             }
           ]
         },
@@ -3794,7 +4379,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "If the exit test is met, change the phase and note what was agreed."
+              "text": "Move pages through their own statuses: copy drafted, designed, built, approved."
             }
           ]
         },
@@ -3802,7 +4387,26 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Create the next phase's first page or task so work starts the same day."
+              "text": "When a phase's sign-off arrives, move the project and send the milestone invoice."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pages not approved",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Page progress",
+              "bold": true
+            },
+            {
+              "text": " show how close the build really is."
             }
           ]
         },
@@ -3810,7 +4414,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Slipping projects"
+              "text": "Content is the usual delay"
             }
           ],
           "props": {
@@ -3818,10 +4422,10 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "A project more than a week behind needs a new launch date told to the client that day, not at the next call."
+              "text": "Most late launches are waiting on the client's words and photos, not on the studio. Track it honestly:"
             }
           ]
         },
@@ -3829,7 +4433,159 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Never absorb the delay silently; log it in the project page with the cause."
+              "text": "Content from client",
+              "bold": true
+            },
+            {
+              "text": " on the project: waiting, partly in or all in."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Copy from client",
+              "bold": true
+            },
+            {
+              "text": " on each page."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Agree a content deadline at kickoff and put it in the agreement. If it slips, the launch date moves the same number of days."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Choosing the platform"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Platform"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Good for"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "WordPress"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Content-heavy sites the client edits often"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Webflow"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Design-led marketing sites"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Shopify"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Online stores"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Squarespace"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Simple sites the client wants to run alone"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Calloway Electric site is in design with services copy drafted and the emergency callouts page not started. Content is only partly in, so the project lead sends the owner three short questions instead of a blank page to fill."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keep the client close"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send a two-line update every Friday: what moved this week and what you need from them. Silence makes clients nervous, and nervous clients ask for more changes."
             }
           ]
         }
@@ -3840,14 +4596,14 @@
       "parent": "web-design-studio",
       "title": "Client intake and creative brief",
       "icon": {
-        "emoji": "📋"
+        "emoji": "📝"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "One page of clear answers saves a month of back and forth. Collect these before you quote."
+              "text": "A good brief is the cheapest way to avoid three rounds of redesign. Spend an hour with the client before anything is drawn."
             }
           ],
           "background": "blue",
@@ -3859,7 +4615,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Questions to ask"
+              "text": "The intake call"
             }
           ],
           "props": {
@@ -3867,42 +4623,227 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "What should a visitor do on the site, and how will you know it worked?"
+              "text": "Ask, and write the answers on the client and project:"
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "Who are the three kinds of people you most want to reach?"
+              "text": "What the business does, in one sentence a customer would use"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "Which sites do you admire, and which do you dislike? Why?"
+              "text": "Who the site is for and the one thing they should do on it: call, book, buy or visit"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "Who writes and approves copy? When can they deliver it?"
+              "text": "Three sites they like and why, and one they dislike"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "What must the site connect to: bookings, payments, email lists, calendars?"
+              "text": "What exists: logo, brand colors, photos, current site, domain and hosting logins"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Who writes the words, and by when"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Who approves the work, and how many people need to see it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Budget and launch date, and what drives the date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The brief (one page)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Section"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it says"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Goal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The main action and how we will measure it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Audience"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who visits and what they need to find"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Sitemap"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every page, with one line on its job"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Look and feel"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Words and examples, not adjectives alone"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Content"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who supplies what, and the deadline"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Platform"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it is built and who edits it after launch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Out of scope"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What this project does not include"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send the brief for approval before design starts. Sign-off on the brief is the end of discovery."
             }
           ]
         },
@@ -3910,7 +4851,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Turning answers into a brief"
+              "text": "Pricing and agreement"
             }
           ],
           "props": {
@@ -3918,34 +4859,34 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Write the goal as a sentence with a number in it."
+              "text": "Fixed fee per project, split into deposit, design milestone and launch balance."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "List pages as a sitemap and count them; each becomes a row in Pages."
+              "text": "Two rounds of design changes included; more at your hourly rate."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Note content risks: missing photos, outdated menus, legal text."
+              "text": "Content deadline written in, with the launch moving if content is late."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Agree the revision allowance: how many rounds per phase and how extra work is priced."
+              "text": "Care plan offered from launch, monthly."
             }
           ]
         },
@@ -3964,7 +4905,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Several people with veto and no single owner."
+              "text": "No one on the client's side can decide."
             }
           ]
         },
@@ -3972,7 +4913,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Copy promised after design starts."
+              "text": "\"We'll write the content later.\""
             }
           ]
         },
@@ -3980,7 +4921,34 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "A launch date set by an event that cannot move."
+              "text": "A launch date tied to an event less than three weeks away."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Name the risk kindly at intake, and write it in the brief."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Hargrove Tax Advisers' tax season landing page has slipped past its launch date because the copy is still waiting on the client. The brief said the launch moves day for day when content is late, so the new date is agreed without an argument."
             }
           ]
         }
@@ -3995,10 +4963,236 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Clients will always ask for changes. The goal is not to refuse them but to make each one visible, sorted and, when it is new work, paid for."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "The rule"
+              "text": "What is included"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Two rounds of changes on the design."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Fixes to anything that does not match the approved design or does not work."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Small text and image swaps before launch."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Logging every request"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add each request as its own row, written as the client asked it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick the "
+            },
+            {
+              "text": "Source",
+              "bold": true
+            },
+            {
+              "text": ": client, internal review or testing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Estimate "
+            },
+            {
+              "text": "Hours",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tick "
+            },
+            {
+              "text": "In scope",
+              "bold": true
+            },
+            {
+              "text": " only if the agreement covers it. Bugs and mismatches with the approved design are always in scope."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sorting requests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Kind"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Example"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fix"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Menu overlaps the logo on phones"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Do it; in scope"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Small change"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Saturday hours in the footer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Do it in the next batch; in scope before launch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "New feature"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Gift wrap at checkout"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quote it; out of scope"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Change of mind"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A new button color after sign-off"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quote it, or bundle it after launch"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Batching"
             }
           ],
           "props": {
@@ -4009,7 +5203,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Each phase includes two rounds of consolidated feedback. A round is one list from one person who speaks for the client."
+              "text": "Work through requests in batches twice a week rather than one at a time. The client gets one update with everything done, and the team is not interrupted all day."
             }
           ]
         },
@@ -4017,77 +5211,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Logging a request"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Add a row to Revisions with the page, what changed and who asked."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Estimate the hours before doing the work."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Untick Inside agreed scope if it adds something new."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Answering the client"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "In scope: reply with the date it will be done."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Out of scope: offer two options, a quote for extra hours or a swap for something planned."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Never start out-of-scope work on a verbal yes."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Checking the damage"
+              "text": "Talking about out-of-scope work"
             }
           ],
           "props": {
@@ -4098,7 +5222,45 @@
           "type": "text",
           "text": [
             {
-              "text": "Open a project and read Revision hours against the fixed fee. When revisions exceed ten percent of the fee, raise it with the client before the next phase."
+              "text": "Say yes to the idea and give a price: \"Happy to add gift wrap. It is about six hours, so 540 dollars. Shall we do it before launch or right after?\" Write the answer on the request."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After launch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Once the site is live, changes belong to the care plan or a new small project. A care plan with a few hours a month turns change requests into steady income."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Tern & Tide asked for a gift wrap option and larger product photos. The photos were in the agreement and are done; gift wrap is new work, logged as out of scope with a six-hour estimate."
             }
           ]
         }
@@ -4116,7 +5278,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Launch is a checklist, not a feeling. Print it, tick it, and keep one person in charge."
+              "text": "A launch should be boring. Every check below is done on the staging site the week before, so launch day is only the switch and a final look."
             }
           ],
           "background": "blue",
@@ -4128,7 +5290,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before the switch"
+              "text": "The week before"
             }
           ],
           "props": {
@@ -4139,7 +5301,21 @@
           "type": "todo",
           "text": [
             {
-              "text": "Every page approved and revisions at zero"
+              "text": "Every page "
+            },
+            {
+              "text": "Approved",
+              "bold": true
+            },
+            {
+              "text": "; "
+            },
+            {
+              "text": "Pages not approved",
+              "bold": true
+            },
+            {
+              "text": " shows zero"
             }
           ],
           "props": {
@@ -4150,7 +5326,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Forms deliver to the right inbox, tested twice"
+              "text": "Every page has a title and description written for search"
             }
           ],
           "props": {
@@ -4161,7 +5337,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Analytics and conversion goals firing"
+              "text": "Forms send to the right inbox; a test submission received"
             }
           ],
           "props": {
@@ -4172,7 +5348,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Redirects from old addresses mapped and tested"
+              "text": "Store: test order placed, paid and refunded; taxes and shipping checked"
             }
           ],
           "props": {
@@ -4183,7 +5359,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Backups taken, passwords handed to the owner"
+              "text": "Images compressed; every image has alt text"
             }
           ],
           "props": {
@@ -4194,7 +5370,51 @@
           "type": "todo",
           "text": [
             {
-              "text": "Final invoice sent so payment is not an afterthought"
+              "text": "Site checked on a phone, a tablet and two desktop browsers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Analytics installed and a test visit recorded"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Redirects from old page addresses mapped, so search rankings carry over"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Privacy policy and cookie notice in place where needed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Written go-ahead to launch from the client"
             }
           ],
           "props": {
@@ -4205,7 +5425,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The switch"
+              "text": "Launch day"
             }
           ],
           "props": {
@@ -4216,7 +5436,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Lower the domain record's cache time a day earlier."
+              "text": "Take a backup of the old site if there is one."
             }
           ]
         },
@@ -4224,7 +5444,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Point the domain at the new host and watch it propagate."
+              "text": "Point the domain at the new site; check that the secure lock shows."
             }
           ]
         },
@@ -4232,7 +5452,30 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check the secure certificate, the home page and one form."
+              "text": "Click every menu link and submit every form on the live site."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Submit the sitemap to search engines."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the project to "
+            },
+            {
+              "text": "Launched",
+              "bold": true
+            },
+            {
+              "text": " with the date, and send the launch balance invoice."
             }
           ]
         },
@@ -4240,7 +5483,26 @@
           "type": "heading",
           "text": [
             {
-              "text": "The first week"
+              "text": "If something breaks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep the old site's backup for 30 days. If the new site has a serious problem in the first hours, point the domain back, fix it on staging and launch again. Tell the client straight away, with the plan."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The first week after"
             }
           ],
           "props": {
@@ -4251,7 +5513,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Look at errors and broken links daily."
+              "text": "Watch for broken links and form errors."
             }
           ]
         },
@@ -4259,7 +5521,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Hold the handover call: how to edit, who to call, what the care plan covers."
+              "text": "Check analytics daily for odd drops."
             }
           ]
         },
@@ -4267,7 +5529,117 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Move the project to Launched and ask for a short testimonial."
+              "text": "Send the client a short guide: how to edit pages, who to call, and what the care plan covers."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Care plan handover"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Included"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Example"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Updates and backups"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Platform and plugin updates monthly"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Small edits"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Up to an hour a month"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Monitoring"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Uptime and security checks"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Record "
+            },
+            {
+              "text": "Care plan per month",
+              "bold": true
+            },
+            {
+              "text": " on the client and start billing from launch."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Juniper Hollow booking site launches in twelve days. Rooms and rates is built, Book a stay is designed, and the client's copy is all in, so the project lead books the launch for a quiet weekday morning."
             }
           ]
         }

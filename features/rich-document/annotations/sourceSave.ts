@@ -10,6 +10,7 @@
 //   3. a plain sentence for a conflict or a missing row.
 // A store supplies only how to write a body at a version and how to read the current row.
 
+import { throwIfHeld, whileAgentHoldsTheNote } from "@/features/notes/service/noteEditHold";
 import { guardedUpdate } from "@ai-matrx/data/db";
 import { spliceProposal } from "@ai-matrx/rich-content/rich-document/review/proposedEdit";
 import { supabase } from "@/utils/supabase/client";
@@ -48,12 +49,16 @@ export function noteBodyStore(noteId: string): VersionedBodyStore {
   const asRow = (r: { version: number; content: string | null } | null) => (r ? { version: r.version, body: r.content ?? "" } : null);
   return {
     noun: "note",
+    // A person's save waits while an agent of an Orchestra holds the note (noteEditHold).
     write: (body, expectedVersion, nextVersion) =>
-      supabase.schema("workbench").from("notes")
-        .update({ content: body, version: nextVersion })
-        .eq("id", noteId).eq("version", expectedVersion).is("deleted_at", null)
-        .select("version, content").maybeSingle()
-        .then(({ data, error }) => ({ data: asRow(data), error })),
+      whileAgentHoldsTheNote(null, async () =>
+        throwIfHeld(
+          await supabase.schema("workbench").from("notes")
+            .update({ content: body, version: nextVersion })
+            .eq("id", noteId).eq("version", expectedVersion).is("deleted_at", null)
+            .select("version, content").maybeSingle(),
+        ),
+      ).then(({ data, error }) => ({ data: asRow(data), error })),
     current: () =>
       supabase.schema("workbench").from("notes")
         .select("version, content").eq("id", noteId).is("deleted_at", null).maybeSingle()

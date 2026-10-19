@@ -5,6 +5,7 @@ import { supabase } from "@/utils/supabase/client";
 import { getClientClaimsUserCached } from "@/utils/supabase/clientClaimsCache";
 import { requireUserId } from "@/utils/auth/getUserId";
 import { operationFailed } from "@/utils/errors";
+import { throwIfHeld, whileAgentHoldsTheNote } from "@/features/notes/service/noteEditHold";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import { requireOrganizationContext } from "@/lib/api/organization-context";
 import { guardedUpdate } from "@ai-matrx/data/db";
@@ -605,8 +606,12 @@ export async function persistNoteUpdate(
     Object.keys(databaseUpdates).length > 0 ? "saved" : "unchanged";
   if (Object.keys(databaseUpdates).length > 0) {
     if (options?.expectedVersion !== undefined) {
-      const result = await guardedUpdate<NoteRow>({
-        expectedVersion: options.expectedVersion,
+      const expectedVersion = options.expectedVersion;
+      // A PERSON's edits follow the simultaneous-edit rule: while an agent holds this note for
+      // its turn the database refuses the save (PT423); wait for the hold to clear, then save —
+      // a CAS miss then is the ordinary conflict below (re-read, merge, save again).
+      const result = await whileAgentHoldsTheNote(organizationId, () => guardedUpdate<NoteRow>({
+        expectedVersion,
         applyUpdate: ({ expectedVersion, nextVersion }) =>
           supabase
             .schema("workbench")
@@ -641,7 +646,7 @@ export async function persistNoteUpdate(
               },
             }
           : {}),
-      });
+      }));
       if (result.status === "conflict") {
         throw new NoteUpdateConflictError({
           expectedVersion: options.expectedVersion,
@@ -656,15 +661,19 @@ export async function persistNoteUpdate(
       data = result.row;
     } else {
       // write-lands-exempt: zero rows leaves `data` null, and the `if (!data)` below refuses in words
-      const { data: updated, error } = await supabase
-        .schema("workbench")
-        .from("notes")
-        .update(databaseUpdates)
-        .eq("id", id)
-        .eq("organization_id", organizationId)
-        .is("deleted_at", null)
-        .select("*")
-        .maybeSingle();
+      const { data: updated, error } = await whileAgentHoldsTheNote(organizationId, async () =>
+        throwIfHeld(
+          await supabase
+            .schema("workbench")
+            .from("notes")
+            .update(databaseUpdates)
+            .eq("id", id)
+            .eq("organization_id", organizationId)
+            .is("deleted_at", null)
+            .select("*")
+            .maybeSingle(),
+        ),
+      );
       if (error) {
         console.error("Error updating note:", error);
         throw error;

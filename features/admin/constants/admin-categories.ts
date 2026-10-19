@@ -1028,6 +1028,13 @@ export const adminCategoriesData: AdminCategory[] = [
         isNew: true,
       },
       {
+        title: "Run Evidence",
+        description: "Every run on a surface by any agent: tools, context, cost and why.",
+        iconName: "ScanSearch",
+        link: "/administration/intelligence/run-evidence",
+        isNew: true,
+      },
+      {
         title: "Memory Lab",
         description:
           "Replay one person's chats through the memory agents into a sandbox store and inspect every edit.",

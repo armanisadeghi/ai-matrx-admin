@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0250",
-  "version": 6,
+  "version": 7,
   "title": "Student OS",
   "description": "Students: classes, tasks, notes and study time in one dashboard for the term.",
   "forWho": "Students in high school and college",
@@ -9,7 +9,7 @@
     "emoji": "🎓"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:education-university-campus-building",
     "offsetY": 50
   },
   "category": "education",
@@ -1621,7 +1621,7 @@
         "Alder Quill Court"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1632,7 +1632,7 @@
         "emoji": "🎓"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:education-university-campus-building",
         "offsetY": 50
       },
       "settings": {

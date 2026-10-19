@@ -23,6 +23,7 @@ import { GmailReviewCard } from "@/features/google-workspace/agent/GmailReviewCa
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { ReviewAnswersLink } from "@/features/agents/decision-review/components/ReviewAnswersLink";
 import { RecordChangeApprovalCard } from "@/features/record-change-approvals/RecordChangeApprovalCard";
+import { DockRunCard } from "@/features/records-tool-display/DockRunCard";
 import { SystemInstructionModal } from "@/features/agents/components/builder/message-builders/system-instructions/SystemInstructionModal";
 import { FileRagBadge } from "@/features/files/components/core/FileBadges/FileRagBadge";
 import { MediaAttachmentThumbnail } from "@/features/files/components/inline/MediaAttachmentThumbnail";
@@ -50,6 +51,7 @@ export const baseSlotImpls = {
   ShareButton,
   ReviewAnswersLink,
   RecordChangeApprovalCard,
+  BackgroundRunCard: DockRunCard,
   SystemInstructionModal,
   FileRagBadge,
   MediaAttachmentThumbnail,

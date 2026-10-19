@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0464",
-  "version": 4,
+  "version": 5,
   "title": "Catering Business Desk",
-  "description": "Clients, catered events, menu items, prep lists and event staffing for a caterer.",
+  "description": "For caterers: proposals, event orders, prep and pack lists, food and labor cost per event.",
   "forWho": "Caterers and event food companies",
   "icon": {
     "emoji": "🥘"
@@ -14,10 +14,12 @@
   },
   "category": "hospitality",
   "tags": [
-    "catering",
-    "events",
+    "caterer",
+    "catering chef",
+    "event order",
     "prep list",
-    "staffing"
+    "food cost",
+    "event staffing"
   ],
   "spec": {
     "specVersion": 1,
@@ -423,12 +425,41 @@
             }
           },
           {
+            "key": "service_style",
+            "label": "Service style",
+            "parityType": "select",
+            "choices": [
+              "Plated",
+              "Buffet",
+              "Family style",
+              "Stations",
+              "Drop-off"
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choiceColors": {
+              "Plated": "blue",
+              "Buffet": "green",
+              "Family style": "orange",
+              "Stations": "violet",
+              "Drop-off": "teal"
+            }
+          },
+          {
             "key": "event_on",
             "label": "Event date",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "final_count_on",
+            "label": "Final count due",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "closed_on",
@@ -463,6 +494,20 @@
             ]
           },
           {
+            "key": "dietary",
+            "label": "Dietary counts",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "order_sent",
+            "label": "Event order sent to kitchen",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "per_head",
             "label": "Price per head (USD)",
             "parityType": "currency",
@@ -482,12 +527,38 @@
             ]
           },
           {
+            "key": "service_pct",
+            "label": "Service charge (%)",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "total",
             "label": "Event total (USD)",
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "{Guests} * {Price per head (USD)}"
+          },
+          {
+            "key": "service_charge",
+            "label": "Service charge (USD)",
+            "parityType": "formula",
+            "unit": "USD",
+            "formula": "ROUND({Event total (USD)} * {Service charge (%)} / 100, 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "deposit",
@@ -514,7 +585,27 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Event total (USD)} - {Deposit received (USD)}"
+            "formula": "{Event total (USD)} + {Service charge (USD)} - {Deposit received (USD)}"
+          },
+          {
+            "key": "food_cost",
+            "label": "Food cost (USD)",
+            "parityType": "rollup",
+            "via": "items",
+            "pick": "food_cost",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "labor_cost",
+            "label": "Labor cost (USD)",
+            "parityType": "rollup",
+            "via": "shifts",
+            "pick": "labor_cost",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "days_to_go",
@@ -567,6 +658,23 @@
             "filter": {
               "status": "Confirmed"
             }
+          },
+          {
+            "key": "staff_open",
+            "label": "Shifts not confirmed",
+            "parityType": "rollup",
+            "via": "shifts",
+            "pick": "shift_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Confirmed"
+                ]
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "client",
@@ -743,7 +851,12 @@
               "deposit": 4500,
               "client": "client-1",
               "captain": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "service_style": "Plated",
+              "service_pct": 20,
+              "order_sent": false,
+              "final_count_on": "@today+34d",
+              "dietary": "8 vegetarian, 3 gluten free, 1 shellfish allergy"
             }
           },
           {
@@ -752,13 +865,18 @@
               "event_name": "Cobalt quarterly all-hands lunch",
               "status": "Prep week",
               "kind": "Office lunch",
-              "event_on": "@today+3d",
+              "event_on": "@mon+4d",
               "venue": "Cobalt campus",
               "guests": 85,
               "per_head": 28,
               "deposit": 0,
               "client": "client-2",
-              "captain": "tm-3"
+              "captain": "tm-3",
+              "service_style": "Buffet",
+              "service_pct": 18,
+              "order_sent": true,
+              "final_count_on": "@mon+0d",
+              "dietary": "12 vegetarian, 4 vegan, 2 nut allergies"
             }
           },
           {
@@ -774,7 +892,12 @@
               "deposit": 1300,
               "client": "client-3",
               "captain": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "service_style": "Family style",
+              "service_pct": 20,
+              "order_sent": true,
+              "final_count_on": "@today+11d",
+              "dietary": "2 gluten free"
             }
           },
           {
@@ -789,7 +912,11 @@
               "per_head": 52,
               "deposit": 0,
               "client": "client-5",
-              "captain": "tm-3"
+              "captain": "tm-3",
+              "service_style": "Stations",
+              "service_pct": 20,
+              "order_sent": false,
+              "final_count_on": "@today+23d"
             }
           },
           {
@@ -805,7 +932,11 @@
               "deposit": 0,
               "client": "client-6",
               "captain": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "service_style": "Plated",
+              "service_pct": 20,
+              "order_sent": false,
+              "final_count_on": "@today+81d"
             }
           },
           {
@@ -821,7 +952,12 @@
               "deposit": 0,
               "client": "client-2",
               "captain": "tm-3",
-              "closed_on": "@today-40d"
+              "closed_on": "@today-40d",
+              "service_style": "Buffet",
+              "service_pct": 18,
+              "order_sent": true,
+              "final_count_on": "@today-45d",
+              "dietary": "20 vegetarian"
             }
           },
           {
@@ -838,7 +974,12 @@
               "client": "client-4",
               "captain": "tm-3",
               "owner_me": "@installer",
-              "closed_on": "@today-330d"
+              "closed_on": "@today-330d",
+              "service_style": "Plated",
+              "service_pct": 20,
+              "order_sent": true,
+              "final_count_on": "@today-344d",
+              "dietary": "15 vegetarian, 6 gluten free"
             }
           },
           {
@@ -847,13 +988,38 @@
               "event_name": "Cobalt board dinner",
               "status": "Booked",
               "kind": "Private dinner",
-              "event_on": "@today+11d",
+              "event_on": "@today+5d",
               "venue": "Cobalt boardroom",
               "guests": 16,
               "per_head": 120,
               "deposit": 900,
               "client": "client-2",
-              "captain": "tm-2"
+              "captain": "tm-2",
+              "service_style": "Plated",
+              "service_pct": 20,
+              "order_sent": true,
+              "final_count_on": "@today+0d",
+              "dietary": "1 vegetarian, 1 dairy free"
+            }
+          },
+          {
+            "key": "event-9",
+            "values": {
+              "event_name": "Foodways volunteer thank-you lunch",
+              "status": "Prep week",
+              "kind": "Office lunch",
+              "service_style": "Drop-off",
+              "event_on": "@today-2d",
+              "final_count_on": "@today-6d",
+              "venue": "Upstate Foodways warehouse",
+              "guests": 30,
+              "per_head": 24,
+              "service_pct": 10,
+              "deposit": 0,
+              "order_sent": true,
+              "dietary": "6 vegetarian",
+              "client": "client-4",
+              "captain": "tm-3"
             }
           }
         ],
@@ -945,6 +1111,33 @@
             ]
           },
           {
+            "key": "price_head",
+            "label": "Menu price per guest (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "food_pct",
+            "label": "Food cost (%)",
+            "parityType": "formula",
+            "formula": "IF({Menu price per guest (USD)} > 0, ROUND({Food cost per head (USD)} / {Menu price per guest (USD)} * 100, 0), 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "notes",
             "label": "Notes",
             "parityType": "text",
@@ -1030,7 +1223,8 @@
               "course": "Appetizer",
               "diet": "Vegetarian",
               "cost_head": 2.1,
-              "notes": "Assemble onsite"
+              "notes": "Assemble onsite",
+              "price_head": 7
             }
           },
           {
@@ -1040,7 +1234,8 @@
               "course": "Appetizer",
               "diet": "Contains dairy",
               "cost_head": 2.9,
-              "notes": "Make two days ahead"
+              "notes": "Make two days ahead",
+              "price_head": 9
             }
           },
           {
@@ -1050,7 +1245,8 @@
               "course": "Main",
               "diet": "Gluten free",
               "cost_head": 14.5,
-              "notes": "Rest ten minutes before slicing"
+              "notes": "Rest ten minutes before slicing",
+              "price_head": 42
             }
           },
           {
@@ -1060,7 +1256,8 @@
               "course": "Main",
               "diet": "Gluten free",
               "cost_head": 6.8,
-              "notes": "Holds well in transit"
+              "notes": "Holds well in transit",
+              "price_head": 21
             }
           },
           {
@@ -1070,7 +1267,8 @@
               "course": "Main",
               "diet": "Vegetarian",
               "cost_head": 5.2,
-              "notes": "Fry onsite"
+              "notes": "Fry onsite",
+              "price_head": 16
             }
           },
           {
@@ -1080,7 +1278,8 @@
               "course": "Side",
               "diet": "Vegan",
               "cost_head": 1.4,
-              "notes": "Finish onsite"
+              "notes": "Finish onsite",
+              "price_head": 5
             }
           },
           {
@@ -1090,7 +1289,8 @@
               "course": "Side",
               "diet": "Vegan",
               "cost_head": 2.2,
-              "notes": "Dress at the last moment"
+              "notes": "Dress at the last moment",
+              "price_head": 7
             }
           },
           {
@@ -1100,7 +1300,8 @@
               "course": "Dessert",
               "diet": "Vegetarian",
               "cost_head": 2.6,
-              "notes": "Contains eggs"
+              "notes": "Contains eggs",
+              "price_head": 8
             }
           },
           {
@@ -1110,7 +1311,8 @@
               "course": "Dessert",
               "diet": "Contains nuts",
               "cost_head": 1.2,
-              "notes": "Pack in sealed tins"
+              "notes": "Pack in sealed tins",
+              "price_head": 4
             }
           },
           {
@@ -1120,7 +1322,8 @@
               "course": "Station",
               "diet": "Gluten free",
               "cost_head": 7.4,
-              "notes": "Needs two staff"
+              "notes": "Needs two staff",
+              "price_head": 22
             }
           }
         ]
@@ -1187,6 +1390,45 @@
                 "value": 3000
               }
             ]
+          },
+          {
+            "key": "cost_each",
+            "label": "Cost per portion (USD)",
+            "parityType": "lookup",
+            "via": "dish",
+            "pick": "cost_head",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "food_cost",
+            "label": "Food cost (USD)",
+            "parityType": "formula",
+            "unit": "USD",
+            "formula": "ROUND({Portions} * {Cost per portion (USD)}, 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "container",
+            "label": "Packed in",
+            "parityType": "select",
+            "choices": [
+              "Hotel pans",
+              "Cambros",
+              "Sheet trays",
+              "Deli quarts",
+              "Sealed tins"
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choiceColors": {
+              "Hotel pans": "blue",
+              "Cambros": "green",
+              "Sheet trays": "orange",
+              "Deli quarts": "violet",
+              "Sealed tins": "teal"
+            }
           },
           {
             "key": "prep_on",
@@ -1292,7 +1534,8 @@
               "prep_on": "@today+1d",
               "event": "event-2",
               "dish": "menu_item-4",
-              "cook": "tm-2"
+              "cook": "tm-2",
+              "container": "Cambros"
             }
           },
           {
@@ -1301,10 +1544,11 @@
               "item_name": "Cobalt lunch: farro salad",
               "status": "Not started",
               "portions": 90,
-              "prep_on": "@today+2d",
+              "prep_on": "@today+1d",
               "event": "event-2",
               "dish": "menu_item-7",
-              "cook": "tm-2"
+              "cook": "tm-2",
+              "container": "Deli quarts"
             }
           },
           {
@@ -1316,7 +1560,8 @@
               "prep_on": "@today+0d",
               "event": "event-2",
               "dish": "menu_item-8",
-              "cook": "tm-1"
+              "cook": "tm-1",
+              "container": "Sheet trays"
             }
           },
           {
@@ -1328,7 +1573,8 @@
               "prep_on": "@today+2d",
               "event": "event-2",
               "dish": "menu_item-6",
-              "cook": "tm-2"
+              "cook": "tm-2",
+              "container": "Hotel pans"
             }
           },
           {
@@ -1337,10 +1583,11 @@
               "item_name": "Board dinner: lamb loin",
               "status": "Not started",
               "portions": 16,
-              "prep_on": "@today+10d",
+              "prep_on": "@today+4d",
               "event": "event-8",
               "dish": "menu_item-3",
-              "cook": "tm-1"
+              "cook": "tm-1",
+              "container": "Hotel pans"
             }
           },
           {
@@ -1349,10 +1596,11 @@
               "item_name": "Board dinner: crostini",
               "status": "Not started",
               "portions": 32,
-              "prep_on": "@today+10d",
+              "prep_on": "@today+4d",
               "event": "event-8",
               "dish": "menu_item-1",
-              "cook": "tm-2"
+              "cook": "tm-2",
+              "container": "Sheet trays"
             }
           },
           {
@@ -1364,7 +1612,8 @@
               "prep_on": "@today+17d",
               "event": "event-3",
               "dish": "menu_item-5",
-              "cook": "tm-2"
+              "cook": "tm-2",
+              "container": "Sheet trays"
             }
           },
           {
@@ -1376,7 +1625,8 @@
               "prep_on": "@today+46d",
               "event": "event-1",
               "dish": "menu_item-2",
-              "cook": "tm-2"
+              "cook": "tm-2",
+              "container": "Deli quarts"
             }
           },
           {
@@ -1388,7 +1638,34 @@
               "prep_on": "@today+45d",
               "event": "event-1",
               "dish": "menu_item-9",
-              "cook": "tm-1"
+              "cook": "tm-1",
+              "container": "Sealed tins"
+            }
+          },
+          {
+            "key": "item-10",
+            "values": {
+              "item_name": "Cobalt lunch: whipped feta crostini",
+              "status": "Not started",
+              "portions": 170,
+              "prep_on": "@today-1d",
+              "event": "event-2",
+              "dish": "menu_item-1",
+              "cook": "tm-2",
+              "container": "Sheet trays"
+            }
+          },
+          {
+            "key": "item-11",
+            "values": {
+              "item_name": "Board dinner: olive oil cake",
+              "status": "Prepped",
+              "portions": 16,
+              "prep_on": "@mon+3d",
+              "event": "event-8",
+              "dish": "menu_item-8",
+              "cook": "tm-1",
+              "container": "Sheet trays"
             }
           }
         ]
@@ -1475,6 +1752,41 @@
             ]
           },
           {
+            "key": "rate",
+            "label": "Hourly rate (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "labor_cost",
+            "label": "Labor cost (USD)",
+            "parityType": "formula",
+            "unit": "USD",
+            "formula": "ROUND({Hours} * {Hourly rate (USD)}, 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "call_time",
+            "label": "Call time",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "event",
             "label": "Event",
             "parityType": "relation",
@@ -1559,7 +1871,9 @@
               "role": "Captain",
               "hours": 6,
               "event": "event-2",
-              "person": "tm-3"
+              "person": "tm-3",
+              "rate": 28,
+              "call_time": "9:00 am at the kitchen"
             }
           },
           {
@@ -1570,7 +1884,9 @@
               "role": "Driver",
               "hours": 5,
               "event": "event-2",
-              "person": "tm-4"
+              "person": "tm-4",
+              "rate": 19,
+              "call_time": "9:30 am load"
             }
           },
           {
@@ -1581,7 +1897,9 @@
               "role": "Cook",
               "hours": 6,
               "event": "event-2",
-              "person": "tm-2"
+              "person": "tm-2",
+              "rate": 24,
+              "call_time": "7:00 am"
             }
           },
           {
@@ -1592,7 +1910,9 @@
               "role": "Captain",
               "hours": 6,
               "event": "event-8",
-              "person": "tm-3"
+              "person": "tm-3",
+              "rate": 28,
+              "call_time": "4:00 pm on site"
             }
           },
           {
@@ -1602,7 +1922,9 @@
               "status": "Requested",
               "role": "Server",
               "hours": 5,
-              "event": "event-8"
+              "event": "event-8",
+              "rate": 20,
+              "call_time": "4:30 pm on site"
             }
           },
           {
@@ -1613,7 +1935,9 @@
               "role": "Cook",
               "hours": 7,
               "event": "event-3",
-              "person": "tm-2"
+              "person": "tm-2",
+              "rate": 24,
+              "call_time": "1:00 pm"
             }
           },
           {
@@ -1624,7 +1948,9 @@
               "role": "Captain",
               "hours": 10,
               "event": "event-1",
-              "person": "tm-3"
+              "person": "tm-3",
+              "rate": 28,
+              "call_time": "2:00 pm on site"
             }
           },
           {
@@ -1635,7 +1961,9 @@
               "role": "Driver",
               "hours": 8,
               "event": "event-1",
-              "person": "tm-4"
+              "person": "tm-4",
+              "rate": 19,
+              "call_time": "12:30 pm load"
             }
           }
         ]
@@ -2178,7 +2506,7 @@
         "Millrace Drive"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2200,7 +2528,14 @@
           "type": "callout",
           "text": [
             {
-              "text": "Everything the kitchen and the office need for each event: clients, events with balance due and prep progress, a menu with cost per head, the prep list by day, and the staff who are confirmed. Start on the Dashboard, then check Prepping this week and any event with an unpaid balance."
+              "text": "The office and kitchen of an off-site caterer: clients, each event with guests, style, price, service charge and balance, the menu with cost and price per guest, the prep and pack list per event, and the staff booked to serve it, with food and labor cost per event. Open "
+            },
+            {
+              "text": "Start here",
+              "bold": true
+            },
+            {
+              "text": " first."
             }
           ],
           "background": "blue",
@@ -2221,6 +2556,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
                   }
                 }
               ]
@@ -3098,6 +3439,46 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Event costs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "event",
+              "view": "all_event"
+            },
+            "inline": true,
+            "title": "Event costs",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "vec",
+                "name": "Upcoming events and costs",
+                "layout": "grid",
+                "icon": "Table",
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Prep week"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vec"
+          }
         }
       ]
     },
@@ -3106,14 +3487,14 @@
       "parent": "catering-business-desk",
       "title": "From inquiry to contract",
       "icon": {
-        "emoji": "📝"
+        "emoji": "✍️"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "A fast, clear proposal wins the booking. Aim to send one within a working day."
+              "text": "Most lost catering business is lost in the first 48 hours. Answer fast, ask the right questions, and send a proposal the client can say yes to."
             }
           ],
           "background": "blue",
@@ -3125,7 +3506,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The inquiry call"
+              "text": "The first call"
             }
           ],
           "props": {
@@ -3136,7 +3517,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Date, venue, guest count, budget range and service style."
+              "text": "Date, time, venue and whether it has a kitchen"
             }
           ]
         },
@@ -3144,7 +3525,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Dietary needs and any cultural or religious requirements."
+              "text": "Guest count and the kind of event"
             }
           ]
         },
@@ -3152,7 +3533,23 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Kitchen access at the venue and load-in time."
+              "text": "Service style: plated, buffet, family style, stations or drop-off"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Budget per guest, and what must be included (bar, rentals, staff)"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Dietary needs and allergies"
             }
           ]
         },
@@ -3160,7 +3557,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The proposal"
+              "text": "Proposal within two working days"
             }
           ],
           "props": {
@@ -3171,7 +3568,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Choose dishes from the Menu and check cost per head."
+              "text": "Add the event as "
+            },
+            {
+              "text": "Inquiry",
+              "bold": true
+            },
+            {
+              "text": ", then build the menu from your dishes."
             }
           ]
         },
@@ -3179,7 +3583,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Set the price per head and add staffing, rentals and travel."
+              "text": "Price per guest from the menu prices, adjusted for style: plated needs more staff than a buffet."
             }
           ]
         },
@@ -3187,7 +3591,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "State the deposit, the balance date and the cancellation terms."
+              "text": "Add the service charge and state what it covers."
             }
           ]
         },
@@ -3195,7 +3599,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send it and set the event to Proposal sent."
+              "text": "Send it and set "
+            },
+            {
+              "text": "Proposal sent",
+              "bold": true
+            },
+            {
+              "text": ". Follow up after three days."
             }
           ]
         },
@@ -3203,306 +3614,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Booking"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "When the contract is signed and the deposit received, move the event to Booked and record the deposit."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "prep-and-pack",
-      "parent": "catering-business-desk",
-      "title": "Prep week and packing",
-      "icon": {
-        "emoji": "📦"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Seven days out"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Final headcount and dietary list confirmed"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Prep items created for every dish"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Purchasing list sent to suppliers"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Prep days"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Work the Prepping this week view each morning."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Cook the longest-lasting items first; assemble delicate items last."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Label every container with the event, dish, date and allergens."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Packing"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Pack against the prep list, not memory."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Pack hot and cold items separately, and keep a temperature log."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Press Pack it for each item as it goes in the van."
-            }
-          ]
-        },
-        {
-          "type": "callout",
-          "text": [
-            {
-              "text": "A forgotten sauce is a small thing until it is the one thing the client remembers."
-            }
-          ],
-          "background": "blue",
-          "props": {
-            "icon": "Lightbulb"
-          }
-        }
-      ]
-    },
-    {
-      "key": "event-day-runbook",
-      "parent": "catering-business-desk",
-      "title": "Event day runbook",
-      "icon": {
-        "emoji": "🚐"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "At the kitchen"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Load the van using the loading list and confirm the count with the driver."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Check the staff list and phone numbers."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "On site"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Meet the on-site contact and confirm the timeline."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Set up the station and check power, water and holding."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Brief the staff on dietary tags and service order."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Photograph the setup for the portfolio, with permission."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "After service"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Count rentals, clear waste and leave the space cleaner than you found it."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Collect the balance if due and close the event with Close out."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "dietary-and-safety",
-      "parent": "catering-business-desk",
-      "title": "Dietary needs and food safety",
-      "icon": {
-        "emoji": "🛡️"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Capturing needs"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Ask for dietary needs at booking and again ten days out."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Record allergies as specific as possible; avoid \"no nuts\" when it should be \"tree nuts and peanuts\"."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "On the menu"
+              "text": "What a good proposal says"
             }
           ],
           "props": {
@@ -3519,17 +3631,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Tag"
+                      "text": "Section"
                     }
                   ],
                   [
                     {
-                      "text": "Meaning"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Handling"
+                      "text": "Include"
                     }
                   ]
                 ]
@@ -3538,17 +3645,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Vegan"
+                      "text": "Menu"
                     }
                   ],
                   [
                     {
-                      "text": "No animal products"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Separate utensils and surfaces"
+                      "text": "Dishes by course, with dietary marks"
                     }
                   ]
                 ]
@@ -3557,17 +3659,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Gluten free"
+                      "text": "Service"
                     }
                   ],
                   [
                     {
-                      "text": "No wheat, barley or rye"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Check sauces and shared fryers"
+                      "text": "Style, staff count, hours on site"
                     }
                   ]
                 ]
@@ -3576,17 +3673,40 @@
                 "cells": [
                   [
                     {
-                      "text": "Contains nuts"
+                      "text": "Price"
                     }
                   ],
                   [
                     {
-                      "text": "Tree nuts or peanuts"
+                      "text": "Per guest, service charge, tax, deposit and balance dates"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Logistics"
                     }
                   ],
                   [
                     {
-                      "text": "Keep separate; label in bold"
+                      "text": "Arrival time, kitchen needs, rentals, cleanup"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Terms"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Final count date, cancellation, what happens if the count drops"
                     }
                   ]
                 ]
@@ -3598,7 +3718,581 @@
           "type": "heading",
           "text": [
             {
-              "text": "Food safety"
+              "text": "Signing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Contract signed by the client"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Deposit received; enter it on the event"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Status set to "
+            },
+            {
+              "text": "Booked",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Final count date entered, usually 7 to 14 days before"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tasting booked for weddings and large dinners"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deposits and payment"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Most caterers take 30 to 50 percent to hold the date and the balance a few days before the event. Corporate clients often pay on invoice after the event; agree that in writing and note it on the event so nobody chases a deposit that was never due."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Final count"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "On the final count date, confirm guests and dietary counts in writing. The count can go up after this date, rarely down. Update guests on the event and the portions on every prep item."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Chamber mixer proposal is out for 90 guests at stations, 52 dollars a head plus 20 percent service. The follow-up call is booked for later this week."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "prep-and-pack",
+      "parent": "catering-business-desk",
+      "title": "Prep week and packing",
+      "icon": {
+        "emoji": "📦"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Off-site food must survive a van ride and still taste fresh. Prep week is planned backwards from the moment food leaves the kitchen."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The event order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The event order is the kitchen's copy of the event: menu, portions, dietary counts, service style, timings and venue notes. Send it to the kitchen a week out and tick "
+            },
+            {
+              "text": "Event order sent to kitchen",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Plan the prep"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add one prep item per dish per event, with portions and the cook."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the "
+            },
+            {
+              "text": "prep date",
+              "bold": true
+            },
+            {
+              "text": ": two days ahead for rillettes and dressings, one day for proteins and salads, the morning of for anything that wilts."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Plan oven and fridge space across all events that week, not one at a time."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Order ingredients from the combined prep list."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Statuses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Status"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Not started"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "On the list, nobody has begun"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Prepped"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cooked or assembled, chilling"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Packed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Labeled, in its container, in the van fridge or staging area"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Packing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Each container labeled with the event, dish, portions and allergens"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Hot food in insulated carriers above 135 degrees Fahrenheit"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cold food at 41 degrees or below"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Allergy-free meals packed separately and marked with the guest's name"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Serving utensils, chafers, fuel, platters, linens, gloves, towels, trash bags"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Printed event order and run of service"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The day before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Walk the walk-in with the prep list in hand. Anything not Prepped by mid-afternoon gets a second cook. Check the van: fuel, clean fridge, straps, a spare tire."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Portions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Make 3 to 5 percent extra for buffets and stations; plated events get exact counts plus a few spares for vendors and mistakes. Never cut portions to cover a last-minute count change."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The crostini for Cobalt should have been made earlier this week. The cook moves it to first thing in the morning, and the kitchen lead checks that the 170 pieces still fit the van's sheet-tray rack."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "event-day-runbook",
+      "parent": "catering-business-desk",
+      "title": "Event day runbook",
+      "icon": {
+        "emoji": "🚐"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "On the day, the captain runs the event. Everything they need should be on the event page and in the van."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before leaving the kitchen"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pack list checked against the event order"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Staff confirmed with call times"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Venue contact, address, parking and load-in door"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Weather plan for outdoor service"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cash or card reader for bar sales if agreed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On site"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Arrive at the agreed time; walk the space with the venue contact."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the kitchen or staging area; check power for warmers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the buffet, stations or tables to the plan."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Brief the staff: menu, allergies, timing, who to call."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Taste every hot dish before it goes out."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "During service"
             }
           ],
           "props": {
@@ -3609,7 +4303,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Hold hot food above 135 degrees Fahrenheit and cold food below 41."
+              "text": "The captain keeps the timeline and talks to the client's host."
             }
           ]
         },
@@ -3617,7 +4311,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Keep a thermometer and a log on every job."
+              "text": "Allergy plates go out first, by name, from a separate tray."
             }
           ]
         },
@@ -3625,7 +4319,827 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "When in doubt, throw it out."
+              "text": "Track what runs short; never substitute a dish without telling the host."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Timing for a plated dinner"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Time before service"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Task"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "3 hours"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Arrive, unload, set kitchen"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "2 hours"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tables and bar set; staff briefing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1 hour"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Hot food warming; cold plates assembled"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "30 minutes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Final taste; staff in position"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Breakdown"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Leftovers handled as agreed with the client, labeled and dated"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Venue kitchen left as clean as found"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rentals counted and stacked for pickup"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Damage or losses written down with photos"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the event"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "An event that has passed but is not marked Served shows under Overdue; it usually means the balance has not been invoiced. Set the event to "
+            },
+            {
+              "text": "Served",
+              "bold": true
+            },
+            {
+              "text": ". Note what ran short, what came back, how long setup took and any client feedback. Invoice the balance the next working day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Cobalt board dinner needs a second server; that shift is still Requested. The captain confirms someone before the end of the week, and the call time is set for 4:30 pm on site."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dietary-and-safety",
+      "parent": "catering-business-desk",
+      "title": "Dietary needs and food safety",
+      "icon": {
+        "emoji": "🥗"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "One allergy mistake can hurt a guest and end a business. Treat dietary needs as part of the order, not a note in the margin."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Collect it early"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask for allergies and dietary needs at the proposal and again at the final count."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write the counts on the event: \"12 vegetarian, 4 vegan, 2 nut allergies\"."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "For plated events, ask for names and seat numbers of guests with allergies."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Mark every dish"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each dish on the menu carries its dietary mark: vegan, vegetarian, gluten free, contains nuts, contains dairy, contains shellfish. Recheck marks whenever a recipe changes, including garnishes and sauces."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "In the kitchen"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Allergy meals made first, with clean boards, knives and gloves"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Packed in separate, labeled containers with the guest's name"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Never use shared fryer oil for allergy-free food"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Nuts and shellfish stored apart and below other food"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Temperatures"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Food"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Safe range"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cold holding"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "41 degrees Fahrenheit or below"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hot holding"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "135 degrees or above"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cooling cooked food"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "135 to 70 within two hours, to 41 within four more"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Reheating"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "165 degrees within two hours"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Probe and write down temperatures at packing, arrival and service."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Labels on the buffet"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Small cards for every dish: name and dietary marks. Staff should know the ingredients of every dish and say \"let me check\" rather than guess."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Staff training"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every server learns the allergy routine in their first shift: how meals are marked, how to answer questions, and who to fetch when unsure. Repeat it at every pre-service briefing; it takes one minute."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When something goes wrong"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Stop serving the dish."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Help the guest; call emergency services if there is any sign of a reaction."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tell the client's host and the owner."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write down what happened, the dish and the batch."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Kessler-Adeyemi wedding has one shellfish allergy. The smoked trout is fine, but the captain makes sure that guest's appetizer comes from a separate tray, and the place card is marked."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "catering-business-desk",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A catering business sells a promise months ahead and delivers it in a few hours somewhere else. This workspace keeps the promise, the kitchen work and the people in one place for every event."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it holds"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clients"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Couples, companies, families and nonprofits, with their events"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Events"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Date, venue, style, guests and dietary counts, price per guest, service charge, deposit, balance, final count date, food and labor cost"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Menu"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Each dish with cost and price per guest, food cost percent, dietary notes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Prep and pack"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Each dish for each event: portions, prep date, cook, cost and container"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Staffing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Each shift: role, person, hours, rate, labor cost, call time"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the money works"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Event total",
+              "bold": true
+            },
+            {
+              "text": " is guests times price per guest. The "
+            },
+            {
+              "text": "service charge",
+              "bold": true
+            },
+            {
+              "text": " is a percentage on top."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Balance due",
+              "bold": true
+            },
+            {
+              "text": " is total plus service charge, minus the deposit received."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Food cost",
+              "bold": true
+            },
+            {
+              "text": " adds the prep items for the event: portions times cost per portion from the menu."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Labor cost",
+              "bold": true
+            },
+            {
+              "text": " adds the staff shifts. Food plus labor against the event total shows what the event really earns."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter the menu with cost and price per guest. Cost the five dishes you sell most first."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add booked events with guests, price, deposit and final count date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "For events in the next two weeks, add prep items and staff shifts."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Note every allergy and dietary count on the event, not in an email."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monday:",
+              "bold": true
+            },
+            {
+              "text": " events this week and next; final counts due; staff gaps under Shifts not confirmed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Two days before:",
+              "bold": true
+            },
+            {
+              "text": " prep list printed by day; containers chosen."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Event day:",
+              "bold": true
+            },
+            {
+              "text": " pack list checked against the event order before the van leaves."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Cobalt's all-hands lunch is a buffet for 85 with 12 vegetarian, 4 vegan and 2 nut allergies. The cake is packed, the chicken is prepped, and the crostini batch is late, so it is first on the list for the morning cook."
             }
           ]
         }

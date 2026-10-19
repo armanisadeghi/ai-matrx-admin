@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0453",
-  "version": 4,
+  "version": 6,
   "title": "PR Agency Desk",
-  "description": "Clients, campaigns, a media contact book, pitches and earned coverage for a PR agency.",
+  "description": "For PR agencies: client retainers, campaigns, a media list, pitches and earned coverage.",
   "forWho": "Public relations and communications agencies",
   "icon": {
     "emoji": "📣"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:agencies-newspapers-stack",
     "offsetY": 50
   },
   "category": "agencies",
   "tags": [
-    "pr",
-    "media relations",
+    "pr agency",
+    "publicist",
+    "account executive",
+    "media list",
     "pitching",
-    "coverage"
+    "press coverage"
   ],
   "spec": {
     "specVersion": 1,
@@ -138,6 +140,37 @@
                 "value": 100000
               }
             ]
+          },
+          {
+            "key": "target",
+            "label": "Coverage goal per month",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "spokespeople",
+            "label": "Approved spokespeople",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "messages",
+            "label": "Key messages",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "contact_email",
@@ -337,7 +370,10 @@
               "contact_email": "press@larkspuranalytics.net",
               "since": "@today-380d",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "target": 6,
+              "spokespeople": "Maren Lowe, chief executive; Teo Vasquez, head of data",
+              "messages": "Forecasts that cut stockouts for mid-size retailers; built on real store data"
             }
           },
           {
@@ -349,7 +385,10 @@
               "retainer": 4200,
               "contact_email": "hello@honeycombkitchens.net",
               "since": "@today-210d",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "target": 4,
+              "spokespeople": "Hollis Grant, chef and owner",
+              "messages": "A neighborhood kitchen that bakes with regional flour"
             }
           },
           {
@@ -362,7 +401,10 @@
               "contact_email": "comms@westbrookclinic.net",
               "since": "@today-500d",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "target": 3,
+              "spokespeople": "Dr. Amara Fenn, medical director",
+              "messages": "Free and low-cost care for anyone in the county, no questions asked"
             }
           },
           {
@@ -374,7 +416,10 @@
               "retainer": 8000,
               "contact_email": "media@ledgerwisepay.net",
               "since": "@today-90d",
-              "owner": "tm-1"
+              "owner": "tm-1",
+              "target": 6,
+              "spokespeople": "Ilse Brandt, chief executive; Rafael Moss, head of risk",
+              "messages": "Fraud checks that do not slow down honest customers"
             }
           },
           {
@@ -387,7 +432,10 @@
               "contact_email": "info@riverbendfoodbank.net",
               "since": "@today-640d",
               "owner": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "target": 2,
+              "spokespeople": "Joanna Pike, executive director",
+              "messages": "Every dollar feeds a family within the county"
             }
           },
           {
@@ -410,7 +458,9 @@
               "contact_email": "press@torchlightlearn.net",
               "since": "@today-800d",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "spokespeople": "Marcus Holt, founder",
+              "messages": "Learning that fits around shift work"
             }
           }
         ]
@@ -486,6 +536,13 @@
             }
           },
           {
+            "key": "hook",
+            "label": "News hook",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "starts_on",
             "label": "Pitching starts",
             "parityType": "datetime",
@@ -500,6 +557,13 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "release_ok",
+            "label": "Release approved by client",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "client",
@@ -546,6 +610,19 @@
             }
           },
           {
+            "key": "waiting",
+            "label": "Pitches waiting on reply",
+            "parityType": "rollup",
+            "via": "pitches",
+            "pick": "label",
+            "agg": "count",
+            "filter": {
+              "status": "Sent"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "reply_rate",
             "label": "Reply rate (%)",
             "parityType": "formula",
@@ -562,6 +639,23 @@
             "via": "coverage",
             "pick": "headline",
             "agg": "count"
+          },
+          {
+            "key": "positive",
+            "label": "Positive stories",
+            "parityType": "rollup",
+            "via": "coverage",
+            "pick": "headline",
+            "agg": "count",
+            "filter": {
+              "sentiment": {
+                "not": [
+                  "Negative"
+                ]
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "reach_total",
@@ -723,7 +817,9 @@
               "embargo_on": "@today-3d",
               "client": "client-1",
               "lead": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "hook": "New forecasting engine available to all retailers",
+              "release_ok": true
             }
           },
           {
@@ -733,9 +829,11 @@
               "status": "Pitching",
               "kind": "Thought leadership",
               "starts_on": "@today-5d",
-              "embargo_on": "@today+9d",
+              "embargo_on": "@today-3d",
               "client": "client-1",
-              "lead": "tm-3"
+              "lead": "tm-3",
+              "hook": "Original survey of 400 store managers on stockouts",
+              "release_ok": false
             }
           },
           {
@@ -748,7 +846,9 @@
               "embargo_on": "@today+6d",
               "client": "client-2",
               "lead": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "hook": "Second kitchen opens on the Eastside with 30 new jobs",
+              "release_ok": true
             }
           },
           {
@@ -760,7 +860,9 @@
               "starts_on": "@today+12d",
               "embargo_on": "@today+30d",
               "client": "client-2",
-              "lead": "tm-4"
+              "lead": "tm-4",
+              "hook": "First look at the summer menu for food editors",
+              "release_ok": false
             }
           },
           {
@@ -773,7 +875,9 @@
               "embargo_on": "@today-14d",
               "client": "client-3",
               "lead": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "hook": "Free flu shots, longer hours, no appointment",
+              "release_ok": true
             }
           },
           {
@@ -785,7 +889,9 @@
               "starts_on": "@today-6d",
               "embargo_on": "@today+4d",
               "client": "client-4",
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "hook": "Series B funding to widen fraud checks",
+              "release_ok": true
             }
           },
           {
@@ -798,7 +904,9 @@
               "embargo_on": "@today+21d",
               "client": "client-4",
               "lead": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "hook": "Quarterly fraud trends from real payment data",
+              "release_ok": false
             }
           },
           {
@@ -810,7 +918,9 @@
               "starts_on": "@today-120d",
               "embargo_on": "@today-70d",
               "client": "client-5",
-              "lead": "tm-4"
+              "lead": "tm-4",
+              "hook": "Winter appeal to fund 50,000 meals",
+              "release_ok": true
             }
           }
         ]
@@ -875,6 +985,30 @@
             "contextPolicy": "include"
           },
           {
+            "key": "prefers",
+            "label": "Prefers",
+            "parityType": "select",
+            "choices": [
+              "Email",
+              "Phone",
+              "Social message"
+            ],
+            "choiceColors": {
+              "Email": "blue",
+              "Phone": "green",
+              "Social message": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "notes",
+            "label": "How they like to be pitched",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "relationship",
             "label": "Relationship",
             "parityType": "select",
@@ -917,6 +1051,19 @@
             "via": "contact_pitches",
             "pick": "label",
             "agg": "count"
+          },
+          {
+            "key": "covered",
+            "label": "Stories about our clients",
+            "parityType": "rollup",
+            "via": "contact_pitches",
+            "pick": "label",
+            "agg": "count",
+            "filter": {
+              "status": "Covered"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "added_at",
@@ -992,7 +1139,9 @@
               "email": "plindholm@cascadeledger.net",
               "relationship": "Warm",
               "last_contacted": "@today-12d",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "prefers": "Email",
+              "notes": "Short emails, no attachments; wants local business angles"
             }
           },
           {
@@ -1004,7 +1153,9 @@
               "email": "idris@northerntechwire.net",
               "relationship": "Friendly",
               "last_contacted": "@today-4d",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "prefers": "Email",
+              "notes": "Data first; likes exclusives on product news"
             }
           },
           {
@@ -1016,7 +1167,9 @@
               "email": "calista@metrotable.net",
               "relationship": "Warm",
               "last_contacted": "@today-20d",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "prefers": "Email",
+              "notes": "Covers openings and chefs; plans features three weeks out"
             }
           },
           {
@@ -1028,7 +1181,9 @@
               "email": "gokafor@heartlandhealth.net",
               "relationship": "Cold",
               "last_contacted": "@today-90d",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "prefers": "Phone",
+              "notes": "Left the beat; check before pitching"
             }
           },
           {
@@ -1040,7 +1195,9 @@
               "email": "tbrandvold@tcdaily.net",
               "relationship": "Friendly",
               "last_contacted": "@today-6d",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "prefers": "Email",
+              "notes": "Health and community stories; deadline 2 pm"
             }
           },
           {
@@ -1052,7 +1209,9 @@
               "email": "marcus@paymentsquarterly.net",
               "relationship": "Warm",
               "last_contacted": "@today-3d",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "prefers": "Email",
+              "notes": "Payments and fintech; wants a named source"
             }
           },
           {
@@ -1064,7 +1223,9 @@
               "email": "rachterberg@prairiepublic.net",
               "relationship": "Cold",
               "last_contacted": "@today-150d",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "prefers": "Phone",
+              "notes": "Radio; needs a spokesperson free that day"
             }
           },
           {
@@ -1076,7 +1237,9 @@
               "email": "dev@ventureledger.net",
               "relationship": "Warm",
               "last_contacted": "@today-8d",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "prefers": "Email",
+              "notes": "Funding and growth; embargoes respected"
             }
           },
           {
@@ -1088,7 +1251,9 @@
               "email": "annika@kitchencellar.net",
               "relationship": "Friendly",
               "last_contacted": "@today-2d",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "prefers": "Social message",
+              "notes": "Food trends; answers direct messages faster than email"
             }
           }
         ]
@@ -1191,6 +1356,30 @@
             "key": "angle",
             "label": "Angle",
             "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "exclusive",
+            "label": "Exclusive offered",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "followups",
+            "label": "Follow-ups sent",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 3
+              }
+            ],
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -1329,7 +1518,9 @@
               "sent_on": "@today-18d",
               "follow_up_on": "@today-12d",
               "angle": "First look at the forecasting engine",
-              "covered_on": "@today-12d"
+              "covered_on": "@today-12d",
+              "exclusive": true,
+              "followups": 1
             }
           },
           {
@@ -1341,7 +1532,9 @@
               "contact": "media_contact-1",
               "sent_on": "@today-17d",
               "follow_up_on": "@today-10d",
-              "angle": "Customer story: cutting stockouts"
+              "angle": "Customer story: cutting stockouts",
+              "exclusive": false,
+              "followups": 1
             }
           },
           {
@@ -1353,7 +1546,9 @@
               "contact": "media_contact-8",
               "sent_on": "@today-4d",
               "follow_up_on": "@today+1d",
-              "angle": "Data on how teams share dashboards"
+              "angle": "Data on how teams share dashboards",
+              "exclusive": false,
+              "followups": 0
             }
           },
           {
@@ -1364,7 +1559,9 @@
               "campaign": "campaign-2",
               "contact": "media_contact-1",
               "follow_up_on": "@today+2d",
-              "angle": "Exclusive for Monday"
+              "angle": "Exclusive for Monday",
+              "exclusive": false,
+              "followups": 0
             }
           },
           {
@@ -1376,7 +1573,9 @@
               "contact": "media_contact-3",
               "sent_on": "@today-5d",
               "follow_up_on": "@mon+2d",
-              "angle": "Second kitchen and the new bread program"
+              "angle": "Second kitchen and the new bread program",
+              "exclusive": false,
+              "followups": 1
             }
           },
           {
@@ -1388,7 +1587,9 @@
               "contact": "media_contact-9",
               "sent_on": "@today-6d",
               "follow_up_on": "@today+3d",
-              "angle": "Chef interview offer"
+              "angle": "Chef interview offer",
+              "exclusive": true,
+              "followups": 0
             }
           },
           {
@@ -1400,7 +1601,9 @@
               "contact": "media_contact-5",
               "sent_on": "@today-7d",
               "follow_up_on": "@today-1d",
-              "angle": "Local jobs and neighborhood angle"
+              "angle": "Local jobs and neighborhood angle",
+              "exclusive": false,
+              "followups": 2
             }
           },
           {
@@ -1413,7 +1616,9 @@
               "sent_on": "@today-28d",
               "follow_up_on": "@today-22d",
               "angle": "Free flu shots, extended hours",
-              "covered_on": "@today-22d"
+              "covered_on": "@today-22d",
+              "exclusive": false,
+              "followups": 1
             }
           },
           {
@@ -1425,7 +1630,9 @@
               "contact": "media_contact-7",
               "sent_on": "@today-27d",
               "follow_up_on": "@today-20d",
-              "angle": "Interview with the nurse lead"
+              "angle": "Interview with the nurse lead",
+              "exclusive": false,
+              "followups": 2
             }
           },
           {
@@ -1437,7 +1644,9 @@
               "contact": "media_contact-8",
               "sent_on": "@today-4d",
               "follow_up_on": "@today+2d",
-              "angle": "Embargoed round details"
+              "angle": "Embargoed round details",
+              "exclusive": true,
+              "followups": 0
             }
           },
           {
@@ -1449,7 +1658,9 @@
               "contact": "media_contact-6",
               "sent_on": "@today-3d",
               "follow_up_on": "@today+3d",
-              "angle": "Where the money goes next"
+              "angle": "Where the money goes next",
+              "exclusive": false,
+              "followups": 0
             }
           },
           {
@@ -1460,7 +1671,9 @@
               "campaign": "campaign-7",
               "contact": "media_contact-6",
               "follow_up_on": "@today+10d",
-              "angle": "Fraud trend numbers"
+              "angle": "Fraud trend numbers",
+              "exclusive": false,
+              "followups": 0
             }
           }
         ]
@@ -1491,6 +1704,27 @@
             "key": "outlet",
             "label": "Outlet",
             "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "tier",
+            "label": "Tier",
+            "parityType": "select",
+            "choices": [
+              "National",
+              "Trade",
+              "Local",
+              "Broadcast",
+              "Podcast"
+            ],
+            "choiceColors": {
+              "National": "blue",
+              "Trade": "green",
+              "Local": "amber",
+              "Broadcast": "violet",
+              "Podcast": "teal"
+            },
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -1535,6 +1769,20 @@
               "Neutral": "blue",
               "Negative": "amber"
             }
+          },
+          {
+            "key": "quoted",
+            "label": "Spokesperson quoted",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "message",
+            "label": "Key message landed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "link",
@@ -1632,12 +1880,15 @@
             "values": {
               "headline": "Larkspur unveils forecasting engine for retailers",
               "outlet": "Northern Tech Wire",
-              "published_on": "@today-12d",
+              "published_on": "@today",
               "reach": 210000,
               "sentiment": "Positive",
               "link": "https://northerntechwire.net/larkspur-forecasting",
               "campaign": "campaign-1",
-              "client": "client-1"
+              "client": "client-1",
+              "tier": "Trade",
+              "quoted": true,
+              "message": true
             }
           },
           {
@@ -1650,7 +1901,10 @@
               "sentiment": "Positive",
               "link": "https://cascadeledger.net/stockouts",
               "campaign": "campaign-1",
-              "client": "client-1"
+              "client": "client-1",
+              "tier": "National",
+              "quoted": true,
+              "message": true
             }
           },
           {
@@ -1663,7 +1917,10 @@
               "sentiment": "Positive",
               "link": "https://tcdaily.net/westbrook-flu",
               "campaign": "campaign-5",
-              "client": "client-3"
+              "client": "client-3",
+              "tier": "Local",
+              "quoted": true,
+              "message": true
             }
           },
           {
@@ -1676,7 +1933,10 @@
               "sentiment": "Positive",
               "link": "https://kitchencellar.net/honeycomb-second",
               "campaign": "campaign-3",
-              "client": "client-2"
+              "client": "client-2",
+              "tier": "Local",
+              "quoted": true,
+              "message": true
             }
           },
           {
@@ -1689,7 +1949,10 @@
               "sentiment": "Positive",
               "link": "https://ventureledger.net/ledgerwise-series-b",
               "campaign": "campaign-6",
-              "client": "client-4"
+              "client": "client-4",
+              "tier": "Trade",
+              "quoted": true,
+              "message": true
             }
           },
           {
@@ -1702,7 +1965,10 @@
               "sentiment": "Neutral",
               "link": "https://heartlandhealth.net/clinic-hours",
               "campaign": "campaign-5",
-              "client": "client-3"
+              "client": "client-3",
+              "tier": "Broadcast",
+              "quoted": false,
+              "message": false
             }
           },
           {
@@ -1715,7 +1981,10 @@
               "sentiment": "Negative",
               "link": "https://prairiepublic.net/foodbank-appeal",
               "campaign": "campaign-8",
-              "client": "client-5"
+              "client": "client-5",
+              "tier": "Local",
+              "quoted": true,
+              "message": false
             }
           },
           {
@@ -1728,7 +1997,10 @@
               "sentiment": "Positive",
               "link": "https://metrotable.net/honeycomb-flour",
               "campaign": "campaign-3",
-              "client": "client-2"
+              "client": "client-2",
+              "tier": "Trade",
+              "quoted": true,
+              "message": true
             }
           }
         ]
@@ -2273,7 +2545,7 @@
         "Candlewick Court"
       ]
     },
-    "version": 4
+    "version": 6
   },
   "pages": [
     {
@@ -2284,7 +2556,7 @@
         "emoji": "📣"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:agencies-newspapers-stack",
         "offsetY": 50
       },
       "settings": {
@@ -2312,6 +2584,12 @@
                 "width": 0.5
               },
               "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                },
                 {
                   "type": "page",
                   "props": {
@@ -2795,6 +3073,354 @@
       ]
     },
     {
+      "key": "start-here",
+      "parent": "pr-agency-desk",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This workspace runs the media relations side of a PR agency: each client's retainer, goals, spokespeople and key messages, every campaign and its news hook, the media list with how each journalist likes to be pitched, every pitch and follow-up, and the coverage you earn. Monitoring tools and email stay where they are; this is the agency's memory."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One row is"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What you watch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clients"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A retainer client"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Coverage goal per month, approved spokespeople, key messages, coverage this month"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Campaigns"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One story pushed to the media"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "News hook, embargo, release approved, pitches, replies, waiting on reply"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Media contacts"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One journalist or producer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Beat, outlet, how they like to be pitched, stories about our clients"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pitches"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One story offered to one person"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Angle, exclusive offered, follow-ups sent, status"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Coverage"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One published story"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Outlet, tier, reach, sentiment, spokesperson quoted, key message landed"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The numbers to watch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Reply rate",
+              "bold": true
+            },
+            {
+              "text": " compares replies and wins with pitches sent."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pitches waiting on reply",
+              "bold": true
+            },
+            {
+              "text": " shows who needs a follow-up."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Coverage this month",
+              "bold": true
+            },
+            {
+              "text": " against the client's "
+            },
+            {
+              "text": "Coverage goal per month",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter clients with retainer, goal, spokespeople and the two or three messages they want in every story."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter live campaigns with the news hook and embargo date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the 20 journalists who matter most to each client, with notes on how they like to be pitched."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log the last month's pitches and coverage so the first report has a baseline."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happens"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Monday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Campaigns this week; embargoes and launches; who pitches whom"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tuesday to Thursday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pitching and follow-ups; morning is best for most newsrooms"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Coverage logged; client update sent"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Ledgerwise Series B is under embargo this week. Venture Ledger replied to the exclusive, so the account lead books the chief executive for a call and holds every other pitch until the embargo lifts."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "key": "dashboard",
       "parent": "pr-agency-desk",
       "title": "Dashboard",
@@ -3232,7 +3858,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A journalist decides in the subject line. Everything else is there to prove it was worth the click."
+              "text": "Journalists get hundreds of pitches a week and read the first two lines of most. A good pitch is short, specific and written for that one person."
             }
           ],
           "background": "blue",
@@ -3244,50 +3870,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The shape"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Subject: the news in under nine words, without hype."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "First line: what is new and why their readers care this week."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Second paragraph: the proof, a number or a named person."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Last line: what you can offer and by when, such as an interview or early data."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Before you send"
+              "text": "Before you write"
             }
           ],
           "props": {
@@ -3298,7 +3881,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "You have read their last three stories"
+              "text": "The news hook is real: new, local, surprising, or backed by data"
             }
           ],
           "props": {
@@ -3309,7 +3892,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "The embargo and time zone are stated"
+              "text": "You have read the journalist's last five stories"
             }
           ],
           "props": {
@@ -3320,7 +3903,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Attachments are small; images are linked"
+              "text": "The spokesperson is approved and free this week"
             }
           ],
           "props": {
@@ -3331,7 +3914,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "The pitch is under 150 words"
+              "text": "Embargo date agreed with the client, if any"
             }
           ],
           "props": {
@@ -3342,7 +3925,119 @@
           "type": "heading",
           "text": [
             {
-              "text": "After you send"
+              "text": "The shape of a pitch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Part"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it says"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Subject line"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The story in under ten words, no hype"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "First sentence"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Why their readers care, now"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Second paragraph"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The facts: numbers, names, dates"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Offer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Interview, data, photos or an exclusive"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Close"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One line; no pressure"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep it under 150 words. Paste the press release below your signature, not as an attachment."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it personal"
             }
           ],
           "props": {
@@ -3353,7 +4048,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Log the pitch and set the follow-up date for three working days."
+              "text": "Mention a recent story of theirs and why this one fits."
             }
           ]
         },
@@ -3361,36 +4056,14 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Follow up once with something new. Never send the same note twice."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "media-list-hygiene",
-      "parent": "pr-agency-desk",
-      "title": "Keeping the media list honest",
-      "icon": {
-        "emoji": "🗂️"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
+              "text": "Use the "
+            },
             {
-              "text": "Rules for the contact book"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
+              "text": "Angle",
+              "bold": true
+            },
             {
-              "text": "One row per journalist, with beat, outlet and the date you last spoke."
+              "text": " field to note the angle you used, so you can see which ones work."
             }
           ]
         },
@@ -3398,15 +4071,14 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Only add someone after reading their recent work. A name from a list is not a contact."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
+              "text": "Follow the journalist's notes in "
+            },
             {
-              "text": "Move people between Cold, Warm and Friendly based on real replies."
+              "text": "How they like to be pitched",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3414,169 +4086,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Monthly clean-up"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Open Contacted this month and see who has gone quiet."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Check outlets for staff changes and update beats."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Remove anyone who asked not to be pitched."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Etiquette"
-            }
-          ],
-          "props": {
-            "level": 3
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Never share one journalist's private note with another."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Do not pitch two people at the same outlet the same exclusive."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "coverage-reporting",
-      "parent": "pr-agency-desk",
-      "title": "Coverage reporting for clients",
-      "icon": {
-        "emoji": "📊"
-      },
-      "blocks": [
-        {
-          "type": "callout",
-          "text": [
-            {
-              "text": "Clients remember headlines, not hours. A clear coverage report is the best renewal argument."
-            }
-          ],
-          "background": "blue",
-          "props": {
-            "icon": "Lightbulb"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "What goes in"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Each piece with headline, outlet, date and tone."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Estimated reach, labelled as an estimate."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "One paragraph on what the coverage did for the campaign message."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Build it in ten minutes"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Open the Coverage table and choose Published this month."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Group by campaign and copy the headlines into the client report."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Add two quotes from the pieces that match the key message."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Write the plan for next month: two stories to pitch and one to hold."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Be straight about misses"
+              "text": "Exclusives"
             }
           ],
           "props": {
@@ -3587,7 +4097,809 @@
           "type": "text",
           "text": [
             {
-              "text": "Say what did not land and what you will change. Clients trust an agency that explains a miss."
+              "text": "Offering one outlet the story first can land a bigger piece. Tick "
+            },
+            {
+              "text": "Exclusive offered",
+              "bold": true
+            },
+            {
+              "text": ", give them a firm deadline to answer, and do not pitch anyone else until they decide."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Following up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "One follow-up after two or three working days, with something new: a data point, a photo, a time slot."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "A second only if the news is time-sensitive."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Never more than two. Record each in "
+            },
+            {
+              "text": "Follow-ups sent",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Words to avoid"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "\"Revolutionary\", \"game-changing\", \"world-leading\" and \"excited to announce\". They make a story sound like an advertisement."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Larkspur study pitch to Venture Ledger leads with one number from the survey: how many store managers lost sales to stockouts last quarter. It offers the head of data for a call and the full results under embargo."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the reply"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Answer within the hour. A journalist who replied is on deadline; a slow answer often loses the story."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "media-list-hygiene",
+      "parent": "pr-agency-desk",
+      "title": "Keeping the media list honest",
+      "icon": {
+        "emoji": "📇"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A media list goes stale fast: journalists change beats, outlets close, and people move. A clean list means fewer bounced emails, fewer annoyed reporters and better coverage."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What each contact should have"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Full name, outlet and "
+            },
+            {
+              "text": "Beat",
+              "bold": true
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Email, and "
+            },
+            {
+              "text": "Prefers",
+              "bold": true
+            },
+            {
+              "text": ": email, phone or social message"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "How they like to be pitched",
+              "bold": true
+            },
+            {
+              "text": ", in plain notes"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Relationship",
+              "bold": true
+            },
+            {
+              "text": ": cold, warm or friendly"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Last contacted",
+              "bold": true
+            },
+            {
+              "text": ", updated after every touch"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The monthly clean-up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Contacts not contacted in 90 days checked: still on the beat, still at the outlet?"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Bounced emails fixed or the contact removed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Anyone who asked not to be pitched marked and left alone"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "New bylines on your clients' topics added"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Building relationships"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Relationship"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How to move it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cold"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Never replied"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pitch only strong, well-fitted stories"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Warm"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Has replied or covered a client"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Share useful data, even without a pitch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friendly"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Calls you for sources"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Protect it; never waste their time"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never add someone to a mass email list. Every pitch is sent by a person to a person."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never pitch the same story to two reporters at the same outlet without telling them."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Respect embargoes and exclusives exactly as agreed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If a journalist asks you to stop, stop."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the list"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Pitched",
+              "bold": true
+            },
+            {
+              "text": " shows how often you contact someone; "
+            },
+            {
+              "text": "Stories about our clients",
+              "bold": true
+            },
+            {
+              "text": " shows how often it worked. A contact pitched often with no stories needs better-fitted pitches, or a rest."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Gideon Okafor has not been contacted in three months and his notes say he left the beat. The account executive checks his recent stories, finds he now covers transport, and updates his beat instead of deleting him."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sharing across the team"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The list belongs to the agency, not to one account executive. Notes from every pitch go on the contact so the next person knows the history."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "coverage-reporting",
+      "parent": "pr-agency-desk",
+      "title": "Coverage reporting for clients",
+      "icon": {
+        "emoji": "📰"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Clients pay for results they can see. A clear coverage report shows what ran, where, and whether the story said what the client wanted it to say."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Logging coverage"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every story gets a row the day it runs:"
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Headline, outlet and link"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tier",
+              "bold": true
+            },
+            {
+              "text": ": national, trade, local, broadcast or podcast"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Reach from the outlet's audience figures, with the source noted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Sentiment",
+              "bold": true
+            },
+            {
+              "text": ": positive, neutral or negative"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Spokesperson quoted",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Key message landed",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Link the story to the client and the campaign."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The monthly report"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Section"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What goes in it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Headline"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Stories this month against the coverage goal"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Top three stories"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "With a line on why each matters"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Messages"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How many stories carried a key message"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Campaigns"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pitches, replies and stories for each"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Next month"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Campaigns planned and the stories you are chasing"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Be honest about quality"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Not all coverage is equal. One trade story read by the client's buyers can matter more than five local mentions. Lead with impact, then volume."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Negative coverage"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Log it like any other story, with sentiment Negative. Explain what happened and what you did: a correction requested, a statement given, or a plan to respond. Never leave it out of the report."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reach numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Reach is an estimate of audience, not readers of the story. Use it to compare, not to impress. Avoid advertising-value figures; most clients and journalists no longer trust them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Westbrook's flu clinic campaign earned two local stories. One said queues remained long, so it is logged as negative with the key message missing. The report explains it and proposes a follow-up story on the extra Saturday hours."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clips"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Save a copy of every story the day it runs. Links break and paywalls go up, and clients want the clip months later for their own website and sales decks."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The client call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Walk through the report in 20 minutes. Ask which story mattered most to the client's business; their answer tells you what to chase next month."
             }
           ]
         }
@@ -3598,9 +4910,21 @@
       "parent": "pr-agency-desk",
       "title": "News day runbook",
       "icon": {
-        "emoji": "⏰"
+        "emoji": "🗞️"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "On the day news breaks, everything happens at once. A written runbook means nobody is guessing who sends what, and the client hears the results as they land."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
         {
           "type": "heading",
           "text": [
@@ -3616,7 +4940,11 @@
           "type": "todo",
           "text": [
             {
-              "text": "Embargoed materials sent with the lift time in the subject"
+              "text": "Press release approved in writing; tick "
+            },
+            {
+              "text": "Release approved by client",
+              "bold": true
             }
           ],
           "props": {
@@ -3627,7 +4955,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Spokespeople briefed and available all day"
+              "text": "Embargo time agreed with the client and stated in every pitch"
             }
           ],
           "props": {
@@ -3638,7 +4966,29 @@
           "type": "todo",
           "text": [
             {
-              "text": "Approved quotes and facts in one shared page"
+              "text": "Spokespeople briefed on the three key messages and the hard questions"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Photos, logos and data ready in one shared folder"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Exclusive partner, if any, confirmed with interview booked"
             }
           ],
           "props": {
@@ -3649,7 +4999,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "On the day"
+              "text": "The day before"
             }
           ],
           "props": {
@@ -3657,34 +5007,26 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Check the embargo lifts and the website is live."
+              "text": "Confirm interview times with journalists and spokespeople."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Send a short note to everyone who asked for a heads up."
+              "text": "Send a reminder of the embargo time to everyone who has the story."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Log coverage as it appears and thank the journalist."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Post only what the client approved."
+              "text": "Agree who answers incoming calls and who posts on the client's channels."
             }
           ]
         },
@@ -3692,7 +5034,122 @@
           "type": "heading",
           "text": [
             {
-              "text": "The day after"
+              "text": "News day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Time"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Embargo lifts"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Account lead"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Release goes out; client posts on their channels"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "First hour"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Account executive"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Personal pitches to the second-tier list"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Through the day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Account lead"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Interviews; answer every journalist within the hour"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "End of day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Account executive"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Coverage logged; client update sent"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Handling questions"
             }
           ],
           "props": {
@@ -3703,7 +5160,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Collect screenshots and links."
+              "text": "Stick to the key messages; never guess at numbers."
             }
           ]
         },
@@ -3711,7 +5168,110 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Note questions journalists asked; they become next time's pitch."
+              "text": "If a journalist asks something the spokesperson cannot answer, promise a reply by a set time and keep the promise."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Off-the-record means nothing unless the journalist agreed to it first."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If the story leaks early"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If a story breaks before the embargo, call the client first, then release to everyone at once. Do not blame the outlet in public; note it on the contact and decide later whether to trust them with embargoes again."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log every story with tier, reach and sentiment."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Thank each journalist who covered it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pitch follow-up angles to those who did not, with any new data from the launch."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move the campaign to "
+            },
+            {
+              "text": "Live",
+              "bold": true
+            },
+            {
+              "text": ", then "
+            },
+            {
+              "text": "Wrapped",
+              "bold": true
+            },
+            {
+              "text": " when the coverage stops."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Honeycomb's second location opens this week. The food editor at Kitchen & Cellar replied to the exclusive offer, so the chef's walk-through is booked the morning before opening and the wider pitches go out once that story runs."
             }
           ]
         }

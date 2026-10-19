@@ -1,22 +1,24 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0465",
-  "version": 4,
+  "version": 6,
   "title": "Boutique Hotel Desk",
-  "description": "Rooms, reservations, housekeeping and repairs for a boutique hotel or bed and breakfast.",
+  "description": "For innkeepers: rooms, reservations, housekeeping status, repairs, occupancy and ADR.",
   "forWho": "Boutique hotels, inns and bed and breakfasts",
   "icon": {
     "emoji": "🛎️"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:hospitality-boutique-hotel-lobby",
     "offsetY": 50
   },
   "category": "hospitality",
   "tags": [
-    "hotel",
-    "b&b",
+    "innkeeper",
+    "hotel manager",
+    "b&b owner",
     "housekeeping",
+    "occupancy",
     "reservations"
   ],
   "spec": {
@@ -156,6 +158,21 @@
             "key": "feature",
             "label": "Feature",
             "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "last_deep_clean",
+            "label": "Last deep clean",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "accessible",
+            "label": "Step-free access",
+            "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -312,7 +329,9 @@
               "kind": "Queen",
               "sleeps": 2,
               "rate": 189,
-              "feature": "Doors to the herb garden"
+              "feature": "Doors to the herb garden",
+              "last_deep_clean": "@today-40d",
+              "accessible": true
             }
           },
           {
@@ -323,7 +342,8 @@
               "kind": "King",
               "sleeps": 2,
               "rate": 229,
-              "feature": "Window seat over the orchard"
+              "feature": "Window seat over the orchard",
+              "last_deep_clean": "@today-75d"
             }
           },
           {
@@ -334,7 +354,8 @@
               "kind": "Suite",
               "sleeps": 4,
               "rate": 329,
-              "feature": "Sitting room and fireplace"
+              "feature": "Sitting room and fireplace",
+              "last_deep_clean": "@today-20d"
             }
           },
           {
@@ -345,7 +366,8 @@
               "kind": "Queen",
               "sleeps": 2,
               "rate": 179,
-              "feature": "Wood stove"
+              "feature": "Wood stove",
+              "last_deep_clean": "@today-95d"
             }
           },
           {
@@ -356,7 +378,8 @@
               "kind": "King",
               "sleeps": 2,
               "rate": 239,
-              "feature": "Private balcony"
+              "feature": "Private balcony",
+              "last_deep_clean": "@today-30d"
             }
           },
           {
@@ -367,7 +390,8 @@
               "kind": "Suite",
               "sleeps": 3,
               "rate": 299,
-              "feature": "Vaulted ceiling"
+              "feature": "Vaulted ceiling",
+              "last_deep_clean": "@today-60d"
             }
           },
           {
@@ -378,7 +402,8 @@
               "kind": "Cottage",
               "sleeps": 4,
               "rate": 359,
-              "feature": "Separate kitchenette and porch"
+              "feature": "Separate kitchenette and porch",
+              "last_deep_clean": "@today-15d"
             }
           },
           {
@@ -389,7 +414,9 @@
               "kind": "Queen",
               "sleeps": 2,
               "rate": 169,
-              "feature": "Ground floor, step-free"
+              "feature": "Ground floor, step-free",
+              "last_deep_clean": "@today-120d",
+              "accessible": true
             }
           },
           {
@@ -400,7 +427,8 @@
               "kind": "King",
               "sleeps": 2,
               "rate": 219,
-              "feature": "View of the pond"
+              "feature": "View of the pond",
+              "last_deep_clean": "@today-88d"
             }
           }
         ]
@@ -518,6 +546,27 @@
             }
           },
           {
+            "key": "rate_plan",
+            "label": "Rate plan",
+            "parityType": "select",
+            "choices": [
+              "Best available",
+              "Bed and breakfast package",
+              "Returning guest",
+              "Group block",
+              "Midweek offer"
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choiceColors": {
+              "Best available": "blue",
+              "Bed and breakfast package": "green",
+              "Returning guest": "orange",
+              "Group block": "violet",
+              "Midweek offer": "teal"
+            }
+          },
+          {
             "key": "rate",
             "label": "Room rate (USD)",
             "parityType": "lookup",
@@ -535,10 +584,52 @@
             "formula": "{Nights} * {Room rate (USD)}"
           },
           {
+            "key": "deposit",
+            "label": "Deposit paid (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "balance",
+            "label": "Balance at checkout (USD)",
+            "parityType": "formula",
+            "unit": "USD",
+            "formula": "{Stay total (USD)} - {Deposit paid (USD)}",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "requests",
             "label": "Requests",
             "parityType": "text",
             "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "arrival_time",
+            "label": "Expected arrival",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Guest email",
+            "parityType": "email",
+            "sensitivity": "confidential",
             "contextPolicy": "include"
           },
           {
@@ -692,7 +783,11 @@
               "requests": "Anniversary; late checkout",
               "room": "room-2",
               "host": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "rate_plan": "Bed and breakfast package",
+              "email": "moreau.lindqvist@mailpost.net",
+              "deposit": 229,
+              "arrival_time": "Already in house"
             }
           },
           {
@@ -706,7 +801,11 @@
               "source": "Booking site",
               "requests": "Extra towels",
               "room": "room-3",
-              "host": "tm-2"
+              "host": "tm-2",
+              "rate_plan": "Best available",
+              "email": "hollis.brandt@mailpost.net",
+              "deposit": 987,
+              "arrival_time": "Already in house"
             }
           },
           {
@@ -721,7 +820,11 @@
               "requests": "Quiet room please",
               "room": "room-7",
               "host": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "rate_plan": "Best available",
+              "email": "p.raman@mailpost.net",
+              "deposit": 500,
+              "arrival_time": "Already in house"
             }
           },
           {
@@ -735,7 +838,11 @@
               "source": "Direct",
               "requests": "Vegetarian breakfast",
               "room": "room-1",
-              "host": "tm-2"
+              "host": "tm-2",
+              "rate_plan": "Bed and breakfast package",
+              "email": "fairweather.home@mailpost.net",
+              "deposit": 189,
+              "arrival_time": "Around 4 pm"
             }
           },
           {
@@ -750,7 +857,11 @@
               "requests": "Arriving late",
               "room": "room-5",
               "host": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "rate_plan": "Midweek offer",
+              "email": "theo.aziz@mailpost.net",
+              "deposit": 478,
+              "arrival_time": "After 9 pm; door code sent"
             }
           },
           {
@@ -764,7 +875,11 @@
               "source": "Returning guest",
               "requests": "Same room as last time",
               "room": "room-6",
-              "host": "tm-2"
+              "host": "tm-2",
+              "rate_plan": "Returning guest",
+              "email": "g.oyelowo@mailpost.net",
+              "deposit": 150,
+              "arrival_time": "Around 3 pm"
             }
           },
           {
@@ -779,7 +894,11 @@
               "requests": "Block of three rooms",
               "room": "room-9",
               "host": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "rate_plan": "Group block",
+              "email": "wexford.wedding@mailpost.net",
+              "deposit": 219,
+              "arrival_time": "Rehearsal ends at 6 pm"
             }
           },
           {
@@ -793,7 +912,9 @@
               "source": "Phone",
               "requests": "Asked about dog policy",
               "room": "room-4",
-              "host": "tm-2"
+              "host": "tm-2",
+              "rate_plan": "Best available",
+              "email": "annika.solberg@mailpost.net"
             }
           },
           {
@@ -808,7 +929,10 @@
               "requests": "",
               "room": "room-1",
               "host": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "rate_plan": "Bed and breakfast package",
+              "email": "teixeira.ri@mailpost.net",
+              "deposit": 189
             }
           },
           {
@@ -822,7 +946,10 @@
               "source": "Booking site",
               "requests": "Cot needed",
               "room": "room-3",
-              "host": "tm-2"
+              "host": "tm-2",
+              "rate_plan": "Best available",
+              "email": "chofamily@mailpost.net",
+              "deposit": 987
             }
           },
           {
@@ -837,7 +964,26 @@
               "requests": "Cancelled due to illness",
               "room": "room-8",
               "host": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "rate_plan": "Best available",
+              "email": "l.bellamy@mailpost.net"
+            }
+          },
+          {
+            "key": "reservation-12",
+            "values": {
+              "guest_name": "Marguerite Okafor",
+              "status": "Checked in",
+              "check_in": "@today-2d",
+              "check_out": "@today+0d",
+              "guests": 1,
+              "source": "Returning guest",
+              "rate_plan": "Returning guest",
+              "requests": "Taxi to the station at 10:30",
+              "room": "room-9",
+              "host": "tm-2",
+              "deposit": 219,
+              "email": "m.okafor@mailpost.net"
             }
           }
         ]
@@ -906,6 +1052,37 @@
               "Deep clean": "amber",
               "Public areas": "violet"
             }
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes taken",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 600
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "linens",
+            "label": "Linens changed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "restocked",
+            "label": "Amenities restocked",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "due_on",
@@ -1049,7 +1226,8 @@
               "due_on": "@today+0d",
               "room": "room-3",
               "cleaner": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "minutes": 20
             }
           },
           {
@@ -1061,7 +1239,10 @@
               "due_on": "@today-1d",
               "room": "room-1",
               "cleaner": "tm-3",
-              "inspected_on": "@today-1d"
+              "inspected_on": "@today-1d",
+              "minutes": 48,
+              "linens": true,
+              "restocked": true
             }
           },
           {
@@ -1097,7 +1278,8 @@
               "room": "room-1",
               "cleaner": "tm-5",
               "owner_me": "@installer",
-              "inspected_on": "@today-1d"
+              "inspected_on": "@today-1d",
+              "minutes": 35
             }
           },
           {
@@ -1108,6 +1290,17 @@
               "kind": "Turnover",
               "due_on": "@mon+4d",
               "room": "room-6",
+              "cleaner": "tm-3"
+            }
+          },
+          {
+            "key": "cleaning-9",
+            "values": {
+              "cleaning_name": "Mill Queen deep clean",
+              "status": "To clean",
+              "kind": "Deep clean",
+              "due_on": "@today-2d",
+              "room": "room-8",
               "cleaner": "tm-3"
             }
           }
@@ -1350,8 +1543,8 @@
               "issue": "Stove door seal is loose",
               "status": "Reported",
               "priority": "Soon",
-              "reported_on": "@today-1d",
-              "fix_by": "@today+6d",
+              "reported_on": "@today-8d",
+              "fix_by": "@today-1d",
               "room": "room-4",
               "owner": "tm-4"
             }
@@ -1389,7 +1582,7 @@
               "status": "Scheduled",
               "priority": "Soon",
               "reported_on": "@today-6d",
-              "fix_by": "@today+9d",
+              "fix_by": "@mon+6d",
               "room": "room-7",
               "owner": "tm-4",
               "owner_me": "@installer"
@@ -1405,6 +1598,229 @@
               "fix_by": "@today+2d",
               "room": "room-3",
               "owner": "tm-4"
+            }
+          }
+        ]
+      },
+      {
+        "token": "night",
+        "name": "Nightly report",
+        "labelSingular": "Night",
+        "labelPlural": "Nightly report",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "moon",
+        "titleField": "night_name",
+        "describes": "One row per night with rooms sold and room revenue, giving occupancy, average daily rate and revenue per available room.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "night_name",
+            "label": "Night",
+            "parityType": "text",
+            "required": true,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "night_on",
+            "label": "Night of",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "rooms_available",
+            "label": "Rooms available",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "rooms_sold",
+            "label": "Rooms sold",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "room_revenue",
+            "label": "Room revenue (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "occupancy",
+            "label": "Occupancy (%)",
+            "parityType": "formula",
+            "formula": "IF({Rooms available} > 0, ROUND({Rooms sold} / {Rooms available} * 100, 0), 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "adr",
+            "label": "Average daily rate (USD)",
+            "parityType": "formula",
+            "unit": "USD",
+            "formula": "IF({Rooms sold} > 0, ROUND({Room revenue (USD)} / {Rooms sold}, 0), 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "revpar",
+            "label": "Revenue per available room (USD)",
+            "parityType": "formula",
+            "unit": "USD",
+            "formula": "IF({Rooms available} > 0, ROUND({Room revenue (USD)} / {Rooms available}, 0), 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "breakfasts",
+            "label": "Breakfasts served",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "notes",
+            "label": "Notes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "night-1",
+            "values": {
+              "night_name": "Last Monday night",
+              "night_on": "@mon-7d",
+              "rooms_available": 8,
+              "rooms_sold": 5,
+              "room_revenue": 1130,
+              "breakfasts": 9
+            }
+          },
+          {
+            "key": "night-2",
+            "values": {
+              "night_name": "Last Tuesday night",
+              "night_on": "@mon-6d",
+              "rooms_available": 8,
+              "rooms_sold": 4,
+              "room_revenue": 880,
+              "breakfasts": 7,
+              "notes": "Mill Queen out of service"
+            }
+          },
+          {
+            "key": "night-3",
+            "values": {
+              "night_name": "Last Wednesday night",
+              "night_on": "@mon-5d",
+              "rooms_available": 8,
+              "rooms_sold": 5,
+              "room_revenue": 1095,
+              "breakfasts": 8
+            }
+          },
+          {
+            "key": "night-4",
+            "values": {
+              "night_name": "Last Thursday night",
+              "night_on": "@mon-4d",
+              "rooms_available": 8,
+              "rooms_sold": 6,
+              "room_revenue": 1420,
+              "breakfasts": 11
+            }
+          },
+          {
+            "key": "night-5",
+            "values": {
+              "night_name": "Last Friday night",
+              "night_on": "@mon-3d",
+              "rooms_available": 8,
+              "rooms_sold": 8,
+              "room_revenue": 2160,
+              "breakfasts": 15,
+              "notes": "Wedding guests; two walk-ins turned away"
+            }
+          },
+          {
+            "key": "night-6",
+            "values": {
+              "night_name": "Last Saturday night",
+              "night_on": "@mon-2d",
+              "rooms_available": 8,
+              "rooms_sold": 8,
+              "room_revenue": 2240,
+              "breakfasts": 16
+            }
+          },
+          {
+            "key": "night-7",
+            "values": {
+              "night_name": "Last Sunday night",
+              "night_on": "@mon-1d",
+              "rooms_available": 8,
+              "rooms_sold": 5,
+              "room_revenue": 1165,
+              "breakfasts": 9
             }
           }
         ]
@@ -1917,6 +2333,25 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_night",
+        "name": "All nightly report",
+        "table": "night",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "night_week",
+        "name": "Last 7 nights",
+        "table": "night",
+        "kind": "grid",
+        "sorts": [
+          {
+            "field": "night_on",
+            "direction": "asc"
+          }
+        ]
       }
     ],
     "agent": {
@@ -2005,7 +2440,7 @@
         "Cobbler's Green"
       ]
     },
-    "version": 4
+    "version": 6
   },
   "pages": [
     {
@@ -2016,7 +2451,7 @@
         "emoji": "🛎️"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:hospitality-boutique-hotel-lobby",
         "offsetY": 50
       },
       "settings": {
@@ -2027,7 +2462,14 @@
           "type": "callout",
           "text": [
             {
-              "text": "Run the inn from one page: rooms and their state, reservations with nights and totals, today's cleaning and the repairs that cannot wait. Start the day on the Dashboard and Arriving today, then work Mine. Never mark a room Ready until the cleaning job has passed inspection."
+              "text": "The front desk and back office of a nine-room inn: rooms with their housekeeping status, every reservation with rate plan, deposit and balance, the housekeeping board, repairs, and a nightly report of occupancy, average daily rate and revenue per room. Open "
+            },
+            {
+              "text": "Start here",
+              "bold": true
+            },
+            {
+              "text": " first."
             }
           ],
           "background": "blue",
@@ -2049,6 +2491,12 @@
                   "props": {
                     "spaceId": "page:dashboard"
                   }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
                 }
               ]
             },
@@ -2062,6 +2510,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:arrival-and-departure"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:rates-and-occupancy"
                   }
                 }
               ]
@@ -2497,6 +2951,48 @@
               }
             ],
             "activeViewId": "rep-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Nightly report"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rooms sold and room revenue each night, with occupancy, average daily rate and revenue per available room."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "night",
+              "view": "all_night"
+            },
+            "inline": true,
+            "title": "Nightly report",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "night-t",
+                "name": "All nightly report",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "night-t"
           }
         }
       ]
@@ -2959,6 +3455,46 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Last 7 nights"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "night",
+              "view": "all_night"
+            },
+            "inline": true,
+            "title": "Nightly report",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "vnr",
+                "name": "Occupancy and ADR",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "night_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vnr"
+          }
         }
       ]
     },
@@ -2967,14 +3503,26 @@
       "parent": "boutique-hotel-desk",
       "title": "Arrival and departure routine",
       "icon": {
-        "emoji": "🔑"
+        "emoji": "🛎️"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The first ten minutes and the last ten minutes of a stay shape the review. A routine makes both feel personal, even on a busy day."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Before arrival"
+              "text": "The day before arrival"
             }
           ],
           "props": {
@@ -2985,7 +3533,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Room cleaned and passed inspection"
+              "text": "Room assigned and its requests noted on the housekeeping job"
             }
           ],
           "props": {
@@ -2996,7 +3544,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Welcome note, towels and amenities in place"
+              "text": "Welcome email with directions, parking, check-in time and the door code process"
             }
           ],
           "props": {
@@ -3007,7 +3555,11 @@
           "type": "todo",
           "text": [
             {
-              "text": "Requests read: allergies, dietary needs, occasions"
+              "text": "Expected arrival",
+              "bold": true
+            },
+            {
+              "text": " filled in; late arrivals get the after-hours plan"
             }
           ],
           "props": {
@@ -3018,7 +3570,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Arrival time confirmed by message"
+              "text": "Deposit received; balance noted"
             }
           ],
           "props": {
@@ -3040,7 +3592,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Greet by name and confirm the stay dates."
+              "text": "Greet by name; offer water or coffee."
             }
           ]
         },
@@ -3048,7 +3600,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Explain breakfast, parking, quiet hours and the Wi-Fi."
+              "text": "Confirm dates, guests and any request (anniversary, quiet room, allergy)."
             }
           ]
         },
@@ -3056,7 +3608,72 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Press Check in guest on the reservation."
+              "text": "Take payment for the balance or a card for incidentals, as your policy says."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Walk them to the room; show the thermostat, Wi-Fi and the best thing about that room."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the reservation to "
+            },
+            {
+              "text": "Checked in",
+              "bold": true
+            },
+            {
+              "text": " and the room to "
+            },
+            {
+              "text": "Occupied",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Late arrivals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send the door code only after the booking is confirmed and paid."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Leave a welcome card with breakfast times."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check the next morning that the room was found and all is well."
             }
           ]
         },
@@ -3072,32 +3689,122 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Ask about the stay and thank them."
+              "text": "Ask how the stay was, and listen; write any problem on a repair or the guest's notes."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Press Check out guest, then create a cleaning job for the room."
+              "text": "Settle the balance; email the receipt."
             }
           ]
         },
         {
-          "type": "callout",
+          "type": "numbered",
           "text": [
             {
-              "text": "The first and last five minutes decide the review."
+              "text": "Set the reservation to "
+            },
+            {
+              "text": "Checked out",
+              "bold": true
+            },
+            {
+              "text": " and the room to "
+            },
+            {
+              "text": "Needs cleaning",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Start the turnover job."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Guests who need more help"
             }
           ],
-          "background": "blue",
           "props": {
-            "icon": "Lightbulb"
+            "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Some guests need a step-free room, a ground-floor door, or help with bags. Ask at booking, note it on the reservation, and put them in a room with "
+            },
+            {
+              "text": "Step-free access",
+              "bold": true
+            },
+            {
+              "text": " ticked. Never move such a guest to another room without asking."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the stay"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Thank-you email within a day, with a link to leave a review."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Returning guests get the Returning guest rate plan and their favorite room when possible."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Theodora Aziz arrives after 9 pm on a midweek offer. Her code is sent, the Meadow King is on the turnover list, and its balcony lock repair must be done before she arrives, so it is marked urgent."
+            }
+          ]
         }
       ]
     },
@@ -3106,14 +3813,26 @@
       "parent": "boutique-hotel-desk",
       "title": "Housekeeping standards",
       "icon": {
-        "emoji": "🧼"
+        "emoji": "🧹"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Guests judge a small hotel first by how clean it is. Clear standards, a fixed order of work and an inspection keep every room the same."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Turnover order"
+              "text": "Order of the day"
             }
           ],
           "props": {
@@ -3124,7 +3843,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Strip linens and open windows."
+              "text": "Departures that have an arrival the same day."
             }
           ]
         },
@@ -3132,7 +3851,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Dust high to low and wipe all surfaces."
+              "text": "Other departures."
             }
           ]
         },
@@ -3140,7 +3859,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Clean the bathroom top to bottom; polish fixtures."
+              "text": "Stay-overs, at the time the guest asked for, or when they are out."
             }
           ]
         },
@@ -3148,23 +3867,118 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Make the bed with fresh linens and fold towels."
+              "text": "Public areas: breakfast room, lobby, stairs, porches."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "heading",
           "text": [
             {
-              "text": "Vacuum or mop and check under beds."
+              "text": "Turnover checklist"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Final walk-through with the checklist."
+              "text": "Strip beds; fresh linens and towels"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Bathroom scrubbed: shower, toilet, sink, mirror, floor; hair check"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Dust surfaces, lamps, headboards, window sills"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Vacuum, including under the bed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Restock: toiletries, coffee, tea, water, tissues; tick "
+            },
+            {
+              "text": "Amenities restocked",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check lamps, remote, kettle, hair dryer; report anything broken as a repair"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Air the room; set the thermostat for arrival"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stay-overs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Make beds, empty bins, replace towels left on the floor, restock. Change linens every third night or on request. Respect \"do not disturb\" and offer a later time."
             }
           ]
         },
@@ -3180,74 +3994,17 @@
           }
         },
         {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "A second person checks each turnover before the room is marked Ready."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Anything broken becomes a repair row, not a note on a paper."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Rhythm"
-            }
-          ],
-          "props": {
-            "level": 3
-          }
-        },
-        {
           "type": "text",
           "text": [
             {
-              "text": "Do stay-over service by midday; leave a card with the option to skip it."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "maintenance-rhythm",
-      "parent": "boutique-hotel-desk",
-      "title": "Maintenance rhythm",
-      "icon": {
-        "emoji": "🔧"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
+              "text": "The innkeeper or lead housekeeper inspects every arrival room. Only an inspected room is "
+            },
             {
-              "text": "Weekly"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
+              "text": "Ready",
+              "bold": true
+            },
             {
-              "text": "Walk the building with the Repairs view open."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Check smoke and carbon monoxide alarms; test hot water in one room per day."
+              "text": ". Note anything missed and talk to the cleaner the same day, kindly and specifically."
             }
           ]
         },
@@ -3255,7 +4012,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Seasonal"
+              "text": "Time and labor"
             }
           ],
           "props": {
@@ -3272,12 +4029,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Season"
+                      "text": "Job"
                     }
                   ],
                   [
                     {
-                      "text": "Focus"
+                      "text": "Typical minutes"
                     }
                   ]
                 ]
@@ -3286,12 +4043,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Spring"
+                      "text": "Turnover, queen or king"
                     }
                   ],
                   [
                     {
-                      "text": "Windows, gutters, garden furniture, patio"
+                      "text": "40 to 50"
                     }
                   ]
                 ]
@@ -3300,12 +4057,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Summer"
+                      "text": "Turnover, suite or cottage"
                     }
                   ],
                   [
                     {
-                      "text": "Air conditioning, screens, outdoor lighting"
+                      "text": "60 to 75"
                     }
                   ]
                 ]
@@ -3314,12 +4071,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Autumn"
+                      "text": "Stay-over"
                     }
                   ],
                   [
                     {
-                      "text": "Heating service, chimney, weather sealing"
+                      "text": "15 to 25"
                     }
                   ]
                 ]
@@ -3328,12 +4085,638 @@
                 "cells": [
                   [
                     {
-                      "text": "Winter"
+                      "text": "Deep clean"
                     }
                   ],
                   [
                     {
-                      "text": "Pipes, snow plan, emergency lighting"
+                      "text": "120 or more"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Record "
+            },
+            {
+              "text": "Minutes taken",
+              "bold": true
+            },
+            {
+              "text": ". If turnovers creep past an hour, look for missing supplies or a cart that needs restocking."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lost property"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Bag and label anything left behind with the room and date, then email the guest the same day. Keep unclaimed items for 60 days."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deep cleaning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each room gets a deep clean every 60 to 90 days: mattress flipped, curtains washed, walls wiped, grout scrubbed. "
+            },
+            {
+              "text": "Last deep clean",
+              "bold": true
+            },
+            {
+              "text": " on the room shows which is next."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Hearth Queen needs a turnover, and its last deep clean was 95 days ago. Since nobody arrives in it this week, the turnover becomes a deep clean."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "maintenance-rhythm",
+      "parent": "boutique-hotel-desk",
+      "title": "Maintenance rhythm",
+      "icon": {
+        "emoji": "🔧"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "In an old building something always needs fixing. Sorting repairs by how much they affect guests keeps rooms sellable and guests happy."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Priorities"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Priority"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Examples"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fix by"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Urgent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "No hot water, broken lock, leak, no heat or cooling"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Before the next guest, same day if occupied"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Soon"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Slow drain, loose seal, flickering lamp"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Within a week"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Whenever"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Paint touch-ups, sealing, small wear"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quiet season"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A room with an urgent repair that cannot be fixed goes "
+            },
+            {
+              "text": "Out of service",
+              "bold": true
+            },
+            {
+              "text": " until it is."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Logging a repair"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Anyone who sees a problem logs it: housekeeping, the front desk, or a guest."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the room, priority, date reported and a fix-by date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The owner schedules it; status "
+            },
+            {
+              "text": "Scheduled",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When done, set "
+            },
+            {
+              "text": "Fixed",
+              "bold": true
+            },
+            {
+              "text": " and the date; tell the guest if they reported it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly walk"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every room: lights, outlets, taps, toilets, locks, windows, heating and cooling"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Smoke and carbon monoxide detectors tested monthly"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fire extinguishers checked and tagged"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Outside: steps, railings, paths, lighting"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Seasonal work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Spring: gutters, porch and deck sealing, outdoor furniture."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Autumn: heating service, chimney sweep for rooms with fireplaces or stoves, weather-stripping."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Quiet season: painting, deep repairs, mattress replacement."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Overdue repairs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A repair past its fix-by date shows under Overdue on the Repairs list. Each morning, the innkeeper either books it, changes the date with a reason, or moves the room out of service. A repair that slips twice needs a different contractor."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Records"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep receipts and warranty papers with the repair. When a boiler or appliance fails twice in a year, compare the repair costs with a replacement."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Contractors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep one plumber, electrician, heating and cooling company, handyman and locksmith on file with after-hours numbers."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Hot water pressure drops after 8 pm in the Birch Suite, which has guests. It is urgent, a plumber is booked within two days, and the guests have been offered the Loft Suite if it gets worse."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "breakfast-and-requests",
+      "parent": "boutique-hotel-desk",
+      "title": "Breakfast and guest requests",
+      "icon": {
+        "emoji": "🥐"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Breakfast is often the moment guests remember most at a small inn. Requests handled well turn a nice stay into a story they tell friends."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Breakfast"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The evening before, count guests in house and any arrivals."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the reservation "
+            },
+            {
+              "text": "requests",
+              "bold": true
+            },
+            {
+              "text": " for allergies and diets."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Prepare a menu with one hot dish, one lighter dish and a vegetarian choice; adapt for any allergy."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Serve between set hours; offer a packed breakfast for early departures."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record "
+            },
+            {
+              "text": "Breakfasts served",
+              "bold": true
+            },
+            {
+              "text": " on the nightly report."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Common requests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Request"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Anniversary or birthday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Card in the room, small treat, a quiet table at breakfast"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Late checkout"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Yes when the room has no same-day arrival; confirm by 9 am"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Early check-in"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Store bags; offer coffee; yes when the room is ready"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Extra towels or a cot"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Note on the housekeeping job"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Dog-friendly"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Only in rooms you have set as dog-friendly, with a fee"
                     }
                   ]
                 ]
@@ -3345,7 +4728,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Reporting"
+              "text": "Allergies"
             }
           ],
           "props": {
@@ -3356,25 +4739,241 @@
           "type": "text",
           "text": [
             {
-              "text": "Any repair that affects safety goes to Urgent and the room is set to Out of service until it is fixed."
+              "text": "Ask at booking and again at check-in. Keep allergy-free food apart and prepare it first. If unsure about an ingredient, do not serve it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Breakfast costs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Count what breakfast costs per guest once a season: food, coffee, labor. If it is creeping up, simplify the menu rather than cut quality; one excellent hot dish beats three average ones."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Local recommendations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep a short list of restaurants, walks and shops you know, with opening hours. Book dinner for guests when asked, and note it on their reservation, with the time, so the morning team can ask how it was."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Small touches that cost little"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Handwritten welcome note"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Local chocolates or cookies on arrival"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Umbrellas by the door"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Phone chargers at the front desk"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Fairweathers, arriving in two days, asked for a vegetarian breakfast. The innkeeper plans a mushroom frittata for that morning and notes it on the reservation, so whoever cooks will see it."
             }
           ]
         }
       ]
     },
     {
-      "key": "breakfast-and-requests",
+      "key": "start-here",
       "parent": "boutique-hotel-desk",
-      "title": "Breakfast and guest requests",
+      "title": "Start here",
       "icon": {
-        "emoji": "🍳"
+        "emoji": "🧭"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A small hotel runs on three questions every morning: who is arriving, which rooms are ready, and what is broken. This workspace answers all three and keeps the numbers an innkeeper watches each week."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "The evening before"
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it holds"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Rooms"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Type, sleeps, rate, feature, housekeeping status, last deep clean, step-free access, stays, nights this month, repairs waiting"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Reservations"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Guest, room, dates, nights, guests, booked via, rate plan, rate, stay total, deposit, balance, requests, expected arrival"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Housekeeping"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every clean: turnover, stay-over, deep clean or public areas, who, when, minutes, linens, restock, inspection"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Repairs"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What is wrong, where, priority, fix-by date and who owns it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Nightly report"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rooms sold and room revenue each night, with occupancy, ADR and RevPAR"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Room status, in plain words"
             }
           ],
           "props": {
@@ -3385,7 +4984,11 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Read tomorrow's reservations for dietary needs and arrival times."
+              "text": "Ready",
+              "bold": true
+            },
+            {
+              "text": ": cleaned and inspected; can be sold for this night."
             }
           ]
         },
@@ -3393,7 +4996,35 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Prepare the breakfast prep list with counts."
+              "text": "Occupied",
+              "bold": true
+            },
+            {
+              "text": ": a guest is in it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Needs cleaning",
+              "bold": true
+            },
+            {
+              "text": ": the guest left; housekeeping has not finished."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Out of service",
+              "bold": true
+            },
+            {
+              "text": ": cannot be sold until a repair is done."
             }
           ]
         },
@@ -3401,7 +5032,103 @@
           "type": "heading",
           "text": [
             {
-              "text": "In the morning"
+              "text": "The three numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How it is worked out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it tells you"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Occupancy"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rooms sold divided by rooms available"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How full you are"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "ADR (average daily rate)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Room revenue divided by rooms sold"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What each sold room earned"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "RevPAR"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Room revenue divided by rooms available"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Both together; the best single measure"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
             }
           ],
           "props": {
@@ -3412,7 +5139,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check allergies against the menu before service."
+              "text": "Enter rooms with rates and features."
             }
           ]
         },
@@ -3420,7 +5147,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Serve on time; offer a take-away option for early departures."
+              "text": "Enter every reservation for the next 90 days with rate plan and deposit."
             }
           ]
         },
@@ -3428,7 +5155,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Log guest feedback in the reservation."
+              "text": "Each morning, enter the night before in the Nightly report from your booking system."
             }
           ]
         },
@@ -3436,7 +5163,107 @@
           "type": "heading",
           "text": [
             {
-              "text": "Special requests"
+              "text": "The daily rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "7 am:",
+              "bold": true
+            },
+            {
+              "text": " arrivals and departures this day; rooms Needs cleaning assigned."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "11 am:",
+              "bold": true
+            },
+            {
+              "text": " checkouts done; turnovers start."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "3 pm:",
+              "bold": true
+            },
+            {
+              "text": " every arriving room Ready and inspected."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Evening:",
+              "bold": true
+            },
+            {
+              "text": " late arrivals have codes; next day's breakfast count set."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Last Friday and Saturday sold 8 of 8 available rooms, with the Mill Queen out of service. ADR was about 270 dollars on Friday, against about 220 on Tuesday, so the innkeeper tries a midweek offer to lift Tuesday and Wednesday."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "rates-and-occupancy",
+      "parent": "boutique-hotel-desk",
+      "title": "Rates, occupancy and ADR",
+      "icon": {
+        "emoji": "📈"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Pricing a small hotel is a weekly habit, not a once-a-year task. The nightly report shows where rooms go empty and where you could charge more."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The nightly report"
             }
           ],
           "props": {
@@ -3447,7 +5274,312 @@
           "type": "text",
           "text": [
             {
-              "text": "Write down every request in the reservation, and tick it off once it is done. Surprises are best when they are planned."
+              "text": "Each morning, enter the night before: rooms available (leave out rooms out of service), rooms sold and room revenue, without tax or breakfast extras. The formulas give occupancy, ADR and RevPAR."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pattern"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it means"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Try"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "High occupancy, low ADR"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rooms are too cheap on those nights"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Raise the rate a little; watch the next two weeks"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Low occupancy, high ADR"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Price may be scaring guests away"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A midweek offer or a package"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Weekends full weeks ahead"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Demand is strong"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Minimum two-night stay on Saturdays"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Weekdays empty"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Leisure guests come at weekends"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Work with local businesses for weekday stays"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rate plans"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Best available",
+              "bold": true
+            },
+            {
+              "text": ": the normal rate, changed by season and demand."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Bed and breakfast package",
+              "bold": true
+            },
+            {
+              "text": ": rate plus a set breakfast or a dinner voucher."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Returning guest",
+              "bold": true
+            },
+            {
+              "text": ": a thank-you price; it costs less than a new booking."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Group block",
+              "bold": true
+            },
+            {
+              "text": ": weddings and events; a cut-off date after which unbooked rooms are released."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Midweek offer",
+              "bold": true
+            },
+            {
+              "text": ": for Sunday to Thursday nights."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Direct bookings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Booking sites charge commission on every stay. Ask returning guests to book directly, offer a small direct-booking perk, and note "
+            },
+            {
+              "text": "Booked via",
+              "bold": true
+            },
+            {
+              "text": " so you can see the mix each month."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cancellations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A clear cancellation policy protects busy nights: free cancellation up to 7 days before for most stays, longer for group blocks and holidays. Apply it consistently and kindly."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Occupancy, ADR and RevPAR for the month, compared with last year"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Share of direct bookings"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Nights with rooms out of service"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rates for the next 90 days checked against local events"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Last week Friday and Saturday sold out at about 270 dollars a night while Tuesday sold four rooms at about 220. The innkeeper adds a midweek offer for Tuesday and Wednesday and raises the Saturday rate by 15 dollars."
             }
           ]
         }

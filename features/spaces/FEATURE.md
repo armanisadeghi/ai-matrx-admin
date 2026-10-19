@@ -48,6 +48,14 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
 
 ## Change log
 
+- 2026-10-19 — DB-BLOCK-CHROME-2. **A database block's first paint is its final height.** (1) The served page hydrated a
+  minute late on slow 4G and "Edited 27m ago" read "28m ago": a text hydration mismatch made React redraw the whole served
+  page in the browser, and the kept server-drawn hosts were then EMPTY. `readSpacePage` returns `servedAt` and the page's first
+  clock is the server's; a browser-drawn static paint draws `DatabaseLoadingBox` in the host, never nothing. (2) The seed also
+  says which blocks' tables do not open (`expectedNotes`, one decision in `data/opens-note.ts` shared with DataMount): the
+  loading box IS that note. `DatabaseHost` holds a stored painted size, and the static paint writes its per-width min-height,
+  only when no live answer (rows, cards per column, note) gives the height (`useBlockHeightKnown`). Guard:
+  `editor/__tests__/a-database-block-first-paint-is-its-final-height.test.tsx`.
 - 2026-10-19 — DB-BLOCK-CHROME. **A loading database block is the live frame.** Every wait of a table block (the server's
   Suspense fallback, the editor's late seed, the block's code chunk via `DatabaseLoadingSlot`, DataMount still resolving)
   draws `data/database-frame-shape.tsx` `DatabaseFrameShape`: the frame, title row, the stored view tabs by name, the toolbar

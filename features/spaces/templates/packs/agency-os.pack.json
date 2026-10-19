@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0306",
-  "version": 6,
+  "version": 7,
   "title": "Agency OS",
   "description": "Small agencies: clients, retainers, projects, capacity and proposals in one place.",
   "forWho": "Small design, marketing and dev agencies",
@@ -9,7 +9,7 @@
     "emoji": "🏗️"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:operations-creative-studio-workspace",
     "offsetY": 50
   },
   "category": "operations",
@@ -2734,7 +2734,7 @@
         "Ketterick Wharf"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2745,7 +2745,7 @@
         "emoji": "🏗️"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:operations-creative-studio-workspace",
         "offsetY": 50
       },
       "settings": {

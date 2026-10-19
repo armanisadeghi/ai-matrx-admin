@@ -36,7 +36,7 @@ export function workflowRunRenderer(Fallback: ComponentType<ToolRendererProps>) 
   function WorkflowRunAnswer(props: ToolRendererProps) {
     const runId = workflowRunRunId(props.entry);
     if (!runId) return <Fallback {...props} />;
-    return <BackgroundRunCard runId={runId} hint="workflow" name={null} />;
+    return <BackgroundRunCard runId={runId} hint="workflow" name={null} conversationId={props.conversationId} requestId={props.requestId} />;
   }
   WorkflowRunAnswer.displayName = `WorkflowRunAnswer(${Fallback.displayName ?? Fallback.name ?? "Renderer"})`;
   return WorkflowRunAnswer;
@@ -48,7 +48,7 @@ export function answerRenderer(Fallback: ComponentType<ToolRendererProps>) {
     if (entry.status === "error") return <RefusalLine message={entry.errorMessage} />;
     const answer = readRecordsAnswer(resultAsObject(entry));
     if (!answer) return <Fallback {...props} />;
-    return <RecordsAnswerBody answer={withRunHint(answer, entry.arguments)} />;
+    return <RecordsAnswerBody answer={withRunHint(answer, entry.arguments)} conversationId={props.conversationId} requestId={props.requestId} />;
   }
   DataToolAnswer.displayName = `DataToolAnswer(${Fallback.displayName ?? Fallback.name ?? "Renderer"})`;
   return DataToolAnswer;

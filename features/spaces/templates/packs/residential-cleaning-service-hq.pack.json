@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0503",
-  "version": 4,
+  "version": 5,
   "title": "Residential Cleaning Service HQ",
   "description": "For house cleaning companies: recurring cleans, teams, home details, supplies, billing.",
   "forWho": "Residential cleaning businesses",
@@ -9,7 +9,7 @@
     "emoji": "🧹"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:trades-clean-bright-kitchen",
     "offsetY": 50
   },
   "category": "trades",
@@ -2489,7 +2489,7 @@
         "Larkspur Avenue"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2500,7 +2500,7 @@
         "emoji": "🧹"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:trades-clean-bright-kitchen",
         "offsetY": 50
       },
       "settings": {

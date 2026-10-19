@@ -378,7 +378,7 @@ export function SiteVideosView({
       {libraryVideos.length > 0 ? (
         <section className="space-y-2">
           <div className="flex items-baseline gap-2 px-1">
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-foreground/70">
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Brand library
             </h3>
             <span className="text-[10px] tabular-nums text-muted-foreground">
@@ -431,7 +431,7 @@ export function SiteVideosView({
                     )}
                     <VideoPublishDate
                       publishedAt={publishedAt}
-                      className="pointer-events-none absolute bottom-1.5 left-1.5 rounded bg-black/75 px-1 py-0.5 text-white shadow-sm"
+                      className="pointer-events-none absolute bottom-1.5 left-1.5 rounded border border-border bg-card/90 px-1 py-0.5 text-foreground shadow-sm"
                     />
                   </div>
                   <div className="space-y-1 p-1.5">
@@ -516,7 +516,7 @@ export function SiteVideosView({
       {crawled.length > 0 ? (
         <section className="space-y-2">
           <div className="flex items-baseline gap-2 px-1">
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-foreground/70">
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Crawled videos &amp; embeds
             </h3>
             <span className="text-[10px] tabular-nums text-muted-foreground">
@@ -563,7 +563,7 @@ export function SiteVideosView({
                     </Badge>
                     <VideoPublishDate
                       publishedAt={publishedAt}
-                      className="pointer-events-none absolute bottom-1.5 left-1.5 rounded bg-black/75 px-1 py-0.5 text-white shadow-sm"
+                      className="pointer-events-none absolute bottom-1.5 left-1.5 rounded border border-border bg-card/90 px-1 py-0.5 text-foreground shadow-sm"
                     />
                   </div>
                   <div className="space-y-1 p-1.5">

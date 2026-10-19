@@ -115,9 +115,18 @@ export interface PrPlayView {
   action: PrPlayActionView | null;
 }
 
+/** The peg the Director checked (`pr_peg_check`): the hook, and its three tests. */
+export interface PrPegView {
+  text: string;
+  passesNew: boolean;
+  passesTimely: boolean;
+  passesOthersCare: boolean;
+}
+
 export interface PrPlayMenuServerData extends Record<string, unknown> {
   plays: PrPlayView[];
   nextMove: string;
+  peg: PrPegView | null;
 }
 
 function str(value: unknown): string {
@@ -149,11 +158,23 @@ export function readPrPlays(value: Record<string, unknown>): PrPlayView[] {
     .filter((play) => play.title !== "");
 }
 
+export function readPrPeg(value: unknown): PrPegView | null {
+  if (!isRecord(value)) return null;
+  const text = str(value.text);
+  if (!text) return null;
+  return {
+    text,
+    passesNew: value.passes_new === true,
+    passesTimely: value.passes_timely === true,
+    passesOthersCare: value.passes_others_care === true,
+  };
+}
+
 export const prPlayMenuServerDataFromEnvelope = makeCompleteEnvelopeBridge<PrPlayMenuServerData>(
   PR_PLAY_MENU_KIND,
   (value) => {
     if (!Array.isArray(value.plays)) return undefined;
-    return { plays: readPrPlays(value), nextMove: str(value.next_move) };
+    return { plays: readPrPlays(value), nextMove: str(value.next_move), peg: readPrPeg(value.peg) };
   },
 );
 

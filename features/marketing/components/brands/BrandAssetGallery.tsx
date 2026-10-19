@@ -3,6 +3,7 @@
 import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import {
   HelpCircle,
+  ImageOff,
   Palette,
   RectangleHorizontal,
   RectangleVertical,
@@ -13,7 +14,7 @@ import {
 } from "lucide-react";
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
-import { proxiedExternalImageUrl } from "@/lib/media/external-image";
+import { blocksCrossOriginImages, proxiedExternalImageUrl } from "@/lib/media/external-image";
 import {
   categorizeAspect,
   categorizeSizeTier,
@@ -65,14 +66,23 @@ function useImageSizes(urls: string[]): { sizes: Map<string, Size | null>; settl
       if (found.size === list.length) setState({ key, sizes: new Map(found) });
     };
     const timers = list.map((url) => {
-      const img = new Image();
-      img.referrerPolicy = "no-referrer";
-      img.onload = () =>
-        finish(url, img.naturalWidth > 0 ? { width: img.naturalWidth, height: img.naturalHeight } : null);
-      img.onerror = () => finish(url, null);
-      img.src = url;
+      // Many hosts refuse a hotlinked load (favicons, social CDNs): retry once through our image proxy.
+      const measure = (src: string, onFail: () => void) => {
+        const img = new Image();
+        img.referrerPolicy = "no-referrer";
+        img.onload = () =>
+          img.naturalWidth > 0
+            ? finish(url, { width: img.naturalWidth, height: img.naturalHeight })
+            : onFail();
+        img.onerror = onFail;
+        img.src = src;
+      };
+      const viaProxy = () =>
+        /^https?:\/\//i.test(url) ? measure(proxiedExternalImageUrl(url), () => finish(url, null)) : finish(url, null);
+      if (blocksCrossOriginImages(url)) viaProxy();
+      else measure(url, viaProxy);
       // A host that never answers must not hold the whole section.
-      return window.setTimeout(() => finish(url, null), 6000);
+      return window.setTimeout(() => finish(url, null), 8000);
     });
     return () => {
       cancelled = true;
@@ -269,6 +279,21 @@ function TileChrome({
   );
 }
 
+/** An image whose saved address no longer loads, even through the proxy. */
+function DeadImage() {
+  return (
+    <span
+      role="img"
+      aria-label="Image no longer loads"
+      title="This image no longer loads from its saved address"
+      className="flex flex-col items-center gap-1 text-muted-foreground"
+    >
+      <ImageOff className="h-5 w-5" />
+      <span className="type-meta">Not loading</span>
+    </span>
+  );
+}
+
 function Letter({ label }: { label: string }) {
   return (
     <span
@@ -337,7 +362,8 @@ export function BrandAssetGallery({
     <div
       className={cn(
         "flex items-center justify-center overflow-hidden",
-        (p.item.preview && tones.get(p.item.preview) && TONE_BACKDROP[tones.get(p.item.preview) as Tone]) || "bg-card",
+        // A solid dark image (a black-square logo) skips the tone check and would melt into the dark card: a muted backdrop keeps its edge.
+        (p.item.preview && tones.get(p.item.preview) && TONE_BACKDROP[tones.get(p.item.preview) as Tone]) || "bg-card dark:bg-muted",
         p.item.asset.source_url && "cursor-pointer",
         className,
       )}
@@ -354,6 +380,18 @@ export function BrandAssetGallery({
         />
       ) : p.item.asset.kind === "color" ? (
         <Palette className="h-5 w-5 text-muted-foreground" />
+      ) : p.item.asset.kind === "font" ? (
+        // A font is not a picture: show it set in itself.
+        <span
+          className="text-2xl text-foreground"
+          style={{ fontFamily: `"${p.item.asset.title ?? ""}", ui-sans-serif, system-ui` }}
+          title={p.item.asset.title ?? p.item.label}
+        >
+          Aa
+        </span>
+      ) : p.item.preview ? (
+        // The saved image address no longer answers (not even through the proxy): say so, never a stand-in.
+        <DeadImage />
       ) : (
         <Letter label={p.item.label} />
       )}
@@ -438,7 +476,7 @@ export function BrandAssetGallery({
 /** A confirmed asset's picture: outside URLs fall back through the proxy; a dead one shows the label's letter, never a broken image. */
 function GalleryImage({ url, label, imgSize }: { url: string; label: string; imgSize?: { width: number; height: number } }) {
   const image = useOutsideImage(url);
-  if (image.failed || !image.src) return <Letter label={label} />;
+  if (image.failed || !image.src) return <DeadImage />;
   return (
     <img
       key={image.imgKey}

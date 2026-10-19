@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0512",
-  "version": 4,
+  "version": 5,
   "title": "Hair Salon HQ",
   "description": "For hair salons: appointments, stylist commission, color formulas, rebooking, retail.",
   "forWho": "Hair salons and stylist teams",
@@ -9,7 +9,7 @@
     "emoji": "✂️"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:wellness-hair-salon-interior",
     "offsetY": 50
   },
   "category": "wellness",
@@ -2552,7 +2552,7 @@
         "Ladybird Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2563,7 +2563,7 @@
         "emoji": "✂️"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:wellness-hair-salon-interior",
         "offsetY": 50
       },
       "settings": {

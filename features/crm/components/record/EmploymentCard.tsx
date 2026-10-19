@@ -60,7 +60,8 @@ import type {
   AffiliationWithPerson,
   PartyRef,
 } from "../../types";
-import { SectionCard, SectionEmpty } from "./SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
+import { SectionEmpty } from "./SectionEmpty";
 import { CrmRecordCopyButtons } from "./CrmRecordCopyButtons";
 import {
   buildEmploymentCopyViews,
@@ -409,13 +410,13 @@ export function EmploymentCard(props: Props) {
   });
 
   return (
-    <SectionCard
+    <SectionCard dense bodyClassName="p-2"
       empty={rows.length === 0 && !adding}
       title={isPerson ? "Employment" : "People"}
-      Icon={isPerson ? Briefcase : Users}
+      icon={isPerson ? Briefcase : Users}
       count={rows.length}
       compactAction
-      action={
+      headerExtra={
         <div className="flex items-center">
           {rows.length > 0 && (
             <CrmRecordCopyButtons

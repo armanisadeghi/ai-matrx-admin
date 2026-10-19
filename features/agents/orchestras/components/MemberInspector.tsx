@@ -20,6 +20,7 @@ import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { AgentPeekButton } from "./AgentPeekButton";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { AgentIODetails } from "./AgentIODetails";
+import { MemberReceivesCard } from "./MemberReceivesCard";
 import { accentClasses } from "./accents";
 import {
   DEFAULT_ORCHESTRA_RESULT_MODE,
@@ -201,6 +202,9 @@ export function MemberInspector({ conductorId, member, accent, onClose }: Member
             })}
           </div>
         </div>
+
+        {/* What it receives from the Conductor (context passthrough) — saved per control. */}
+        <MemberReceivesCard conductorId={conductorId} member={member} />
 
         {/* Agent I/O — what this member consumes + produces (lazy-loaded full def) */}
         <AgentIODetails agentId={member.agentId} accent={accent} />

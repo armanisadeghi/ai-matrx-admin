@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0504",
-  "version": 4,
+  "version": 5,
   "title": "Auto Repair Shop HQ",
   "description": "For independent auto repair shops: repair orders, vehicles, parts, and pickups.",
   "forWho": "Independent auto repair shops and garages",
@@ -9,7 +9,7 @@
     "emoji": "🔧"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:trades-auto-repair-garage",
     "offsetY": 50
   },
   "category": "trades",
@@ -2730,7 +2730,7 @@
         "Foundry Road"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2741,7 +2741,7 @@
         "emoji": "🔧"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:trades-auto-repair-garage",
         "offsetY": 50
       },
       "settings": {

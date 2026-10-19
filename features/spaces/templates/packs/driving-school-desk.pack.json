@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0560",
-  "version": 1,
+  "version": 3,
   "title": "Driving School Desk",
-  "description": "Learners, instructors, cars, lessons and road tests for a driving school.",
+  "description": "Driving school desk: learners' permits and hours, lessons, cars, classroom and road tests.",
   "forWho": "Driving schools and driver-education programs",
   "icon": {
     "emoji": "🚗"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:education-empty-road-dashed-lines",
     "offsetY": 50
   },
   "category": "education",
   "tags": [
-    "driving school",
-    "lessons",
-    "vehicles",
-    "road tests"
+    "driving instructor",
+    "school owner",
+    "parents",
+    "driver education",
+    "road tests",
+    "fleet"
   ],
   "spec": {
     "specVersion": 1,
@@ -103,6 +105,103 @@
             },
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "permit_on",
+            "label": "Permit issued",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "age",
+            "label": "Age",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 15
+              },
+              {
+                "kind": "max",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "key": "classroom",
+            "label": "Classroom hours done",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 40
+              }
+            ]
+          },
+          {
+            "key": "wheel",
+            "label": "Behind-the-wheel hours done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "drives",
+            "pick": "hours",
+            "agg": "sum",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "log",
+            "label": "Supervised practice hours (parent log)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "ready",
+            "label": "Road test requirements",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(AND({Age} >= 18, {Behind-the-wheel hours done} >= 6), \"Met\", IF(AND({Classroom hours done} >= 30, {Behind-the-wheel hours done} >= 6, {Supervised practice hours (parent log)} >= 50), \"Met\", \"Not yet\"))",
+            "description": "Example rule: under 18 needs 30 classroom hours, 6 behind the wheel and 50 logged with a parent. Change it to your state."
+          },
+          {
+            "key": "attempts",
+            "label": "Road test attempts",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tests",
+            "pick": "test_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Passed",
+                "Failed"
+              ]
+            }
           },
           {
             "key": "package",
@@ -428,7 +527,11 @@
               "next_step_on": "@today+2d",
               "hours_needed": 20,
               "instructor": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "permit_on": "@today-120d",
+              "age": 16,
+              "classroom": 30,
+              "log": 38
             }
           },
           {
@@ -441,7 +544,11 @@
               "phone": "(702) 555-0122",
               "next_step_on": "@today",
               "hours_needed": 30,
-              "instructor": "tm-2"
+              "instructor": "tm-2",
+              "permit_on": "@today-200d",
+              "age": 17,
+              "classroom": 30,
+              "log": 55
             }
           },
           {
@@ -455,7 +562,11 @@
               "next_step_on": "@today+4d",
               "hours_needed": 20,
               "instructor": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "permit_on": "@today-90d",
+              "age": 16,
+              "classroom": 24,
+              "log": 20
             }
           },
           {
@@ -468,7 +579,11 @@
               "phone": "(702) 555-0124",
               "next_step_on": "@today+1d",
               "hours_needed": 10,
-              "instructor": "tm-3"
+              "instructor": "tm-3",
+              "permit_on": "@today-10d",
+              "age": 15,
+              "classroom": 6,
+              "log": 2
             }
           },
           {
@@ -482,7 +597,11 @@
               "next_step_on": "@today-3d",
               "hours_needed": 30,
               "instructor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "permit_on": "@today-160d",
+              "age": 16,
+              "classroom": 30,
+              "log": 52
             }
           },
           {
@@ -494,7 +613,11 @@
               "email": "farah.a@mailbox.net",
               "phone": "(702) 555-0126",
               "hours_needed": 20,
-              "instructor": "tm-4"
+              "instructor": "tm-4",
+              "permit_on": "@today-300d",
+              "age": 19,
+              "classroom": 0,
+              "log": 0
             }
           },
           {
@@ -508,7 +631,11 @@
               "next_step_on": "@today+5d",
               "hours_needed": 20,
               "instructor": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "permit_on": "@today-180d",
+              "age": 16,
+              "classroom": 30,
+              "log": 61
             }
           },
           {
@@ -521,7 +648,11 @@
               "phone": "(702) 555-0128",
               "next_step_on": "@today+3d",
               "hours_needed": 10,
-              "instructor": "tm-4"
+              "instructor": "tm-4",
+              "permit_on": "@today-60d",
+              "age": 16,
+              "classroom": 18,
+              "log": 12
             }
           },
           {
@@ -534,7 +665,11 @@
               "phone": "(702) 555-0129",
               "hours_needed": 20,
               "instructor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "permit_on": "@today-250d",
+              "age": 17,
+              "classroom": 30,
+              "log": 40
             }
           },
           {
@@ -547,9 +682,19 @@
               "phone": "(702) 555-0130",
               "next_step_on": "@today+6d",
               "hours_needed": 0,
-              "instructor": "tm-3"
+              "instructor": "tm-3",
+              "permit_on": "@today-400d",
+              "age": 34,
+              "classroom": 0,
+              "log": 0
             }
           }
+        ],
+        "before": [
+          [
+            "permit_on",
+            "next_step_on"
+          ]
         ]
       },
       {
@@ -627,6 +772,13 @@
               "Night driving": "teal",
               "Test practice": "green"
             },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "skills",
+            "label": "Skills to work on",
+            "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -820,7 +972,8 @@
               "status": "Booked",
               "drive_at": "@today+2d 10:00",
               "hours": 1,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "skills": "Lane changes, checking blind spots"
             }
           },
           {
@@ -833,7 +986,8 @@
               "focus": "Test practice",
               "status": "Booked",
               "drive_at": "@today 14:00",
-              "hours": 1
+              "hours": 1,
+              "skills": "Smooth braking to a stop line"
             }
           },
           {
@@ -847,7 +1001,8 @@
               "status": "Booked",
               "drive_at": "@today+4d 16:00",
               "hours": 1.5,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "skills": "Merging at speed"
             }
           },
           {
@@ -860,7 +1015,8 @@
               "focus": "First drive",
               "status": "Booked",
               "drive_at": "@today+1d 09:00",
-              "hours": 1
+              "hours": 1,
+              "skills": "Mirrors, seat, hands; quiet residential streets"
             }
           },
           {
@@ -874,7 +1030,8 @@
               "status": "Booked",
               "drive_at": "@today-1d 11:00",
               "hours": 1,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "skills": "Parallel and reverse parking"
             }
           },
           {
@@ -887,7 +1044,8 @@
               "focus": "City streets",
               "status": "Booked",
               "drive_at": "@today+3d 15:00",
-              "hours": 1
+              "hours": 1,
+              "skills": "Left turns across traffic"
             }
           },
           {
@@ -901,7 +1059,8 @@
               "status": "Booked",
               "drive_at": "@today+5d 13:00",
               "hours": 1,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "skills": "Three-point turn and the test route"
             }
           },
           {
@@ -914,7 +1073,8 @@
               "focus": "Parking",
               "status": "Done",
               "drive_at": "@today-7d 10:00",
-              "hours": 1
+              "hours": 1,
+              "skills": "Reverse parking: closer to the line"
             }
           },
           {
@@ -928,7 +1088,8 @@
               "status": "Done",
               "drive_at": "@today-5d 19:00",
               "hours": 1.5,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "skills": "Night: dipping lights, judging distance"
             }
           },
           {
@@ -941,7 +1102,8 @@
               "focus": "First drive",
               "status": "Done",
               "drive_at": "@today-9d 16:00",
-              "hours": 1
+              "hours": 1,
+              "skills": "Steering control and speed in town"
             }
           },
           {
@@ -955,7 +1117,8 @@
               "status": "No-show",
               "drive_at": "@today-6d 11:00",
               "hours": 1,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "skills": "Did not arrive; reschedule"
             }
           },
           {
@@ -968,7 +1131,8 @@
               "focus": "First drive",
               "status": "Done",
               "drive_at": "@today-4d 15:00",
-              "hours": 1
+              "hours": 1,
+              "skills": "Stopping fully at stop signs"
             }
           }
         ]
@@ -1359,6 +1523,30 @@
             "contextPolicy": "include"
           },
           {
+            "key": "errors",
+            "label": "Points lost",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "examiner_notes",
+            "label": "Examiner notes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "test_on",
             "label": "Test on",
             "parityType": "datetime",
@@ -1527,7 +1715,9 @@
               "status": "Passed",
               "test_on": "@today-20d 09:00",
               "coach": "tm-4",
-              "site": "Westside test center"
+              "site": "Westside test center",
+              "errors": 8,
+              "examiner_notes": "Wide right turn once; otherwise smooth."
             }
           },
           {
@@ -1539,7 +1729,9 @@
               "test_on": "@today-40d 13:00",
               "coach": "tm-2",
               "site": "Eastside test center",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "errors": 32,
+              "examiner_notes": "Rolled a stop sign; automatic fail."
             }
           },
           {
@@ -1563,6 +1755,298 @@
               "coach": "tm-4",
               "site": "Eastside test center",
               "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "classroom",
+        "name": "Classroom sessions",
+        "labelSingular": "Classroom session",
+        "labelPlural": "Classroom sessions",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "presentation",
+        "titleField": "class_name",
+        "describes": "The theory hours: each class session, its topic, instructor and how many learners attended.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New classroom session",
+            "values": {
+              "class_name": "New session",
+              "status": "Scheduled"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Attendance"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Sign-in sheet at the start and end; hours count only for learners present for the whole session."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Topic notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Key points, the video or handout used, and questions learners asked."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "class_name",
+            "label": "Session",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "topic",
+            "label": "Topic",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Scheduled",
+              "Held",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Scheduled": "blue",
+              "Held": "green",
+              "Cancelled": "slate"
+            },
+            "required": true,
+            "statusGroups": {
+              "Scheduled": "todo",
+              "Held": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "class_at",
+            "label": "Starts",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "instructor",
+            "label": "Instructor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "seats",
+            "label": "Seats",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "key": "enrolled",
+            "label": "Learners attending",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "key": "open_seats",
+            "label": "Seats open",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "MAX(0, {Seats} - {Learners attending})"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "classroom_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "classroom-1",
+            "values": {
+              "class_name": "Evening class, session 4",
+              "topic": "Right of way and intersections",
+              "status": "Scheduled",
+              "class_at": "@today 18:00",
+              "instructor": "tm-2",
+              "seats": 24,
+              "enrolled": 21,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "classroom-2",
+            "values": {
+              "class_name": "Evening class, session 5",
+              "topic": "Sharing the road: bikes, buses, pedestrians",
+              "status": "Scheduled",
+              "class_at": "@today+2d 18:00",
+              "instructor": "tm-2",
+              "seats": 24,
+              "enrolled": 21
+            }
+          },
+          {
+            "key": "classroom-3",
+            "values": {
+              "class_name": "Saturday intensive, morning",
+              "topic": "Impaired and distracted driving",
+              "status": "Scheduled",
+              "class_at": "@today+5d 09:00",
+              "instructor": "tm-3",
+              "seats": 30,
+              "enrolled": 26,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "classroom-4",
+            "values": {
+              "class_name": "Evening class, session 6",
+              "topic": "Highways and merging",
+              "status": "Scheduled",
+              "class_at": "@today+4d 18:00",
+              "instructor": "tm-2",
+              "seats": 24,
+              "enrolled": 20
+            }
+          },
+          {
+            "key": "classroom-5",
+            "values": {
+              "class_name": "Online make-up session",
+              "topic": "Signs, signals and markings",
+              "status": "Scheduled",
+              "class_at": "@today-1d 17:00",
+              "instructor": "tm-4",
+              "seats": 15,
+              "enrolled": 6
+            }
+          },
+          {
+            "key": "classroom-6",
+            "values": {
+              "class_name": "Evening class, session 3",
+              "topic": "Speed, space and following distance",
+              "status": "Held",
+              "class_at": "@today-2d 18:00",
+              "instructor": "tm-2",
+              "seats": 24,
+              "enrolled": 22
+            }
+          },
+          {
+            "key": "classroom-7",
+            "values": {
+              "class_name": "Evening class, session 2",
+              "topic": "Vehicle controls and pre-drive checks",
+              "status": "Held",
+              "class_at": "@today-5d 18:00",
+              "instructor": "tm-2",
+              "seats": 24,
+              "enrolled": 23
+            }
+          },
+          {
+            "key": "classroom-8",
+            "values": {
+              "class_name": "Saturday intensive, cancelled for snow",
+              "topic": "Night driving and weather",
+              "status": "Cancelled",
+              "class_at": "@today-9d 09:00",
+              "instructor": "tm-3",
+              "seats": 30,
+              "enrolled": 25
             }
           }
         ]
@@ -1628,6 +2112,16 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "road_test_by_coach"
+      },
+      {
+        "describes": "Each classroom session is taught by one instructor.",
+        "fromTable": "classroom",
+        "fromField": "instructor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "classroom_by_instructor"
       }
     ],
     "sharedBlocks": [
@@ -1878,6 +2372,20 @@
         "kind": "row_action",
         "token": "road_test_claim",
         "table": "road_test",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "classroom_claim",
+        "table": "classroom",
         "name": "Assign to me",
         "actionKind": "update",
         "steps": [
@@ -2225,6 +2733,80 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_classroom",
+        "name": "All sessions",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "classroom"
+      },
+      {
+        "token": "classroom_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "classroom"
+      },
+      {
+        "token": "classroom_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "class_at",
+        "allDay": false,
+        "table": "classroom"
+      },
+      {
+        "token": "classroom_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "class_at": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        },
+        "table": "classroom"
+      },
+      {
+        "token": "classroom_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "class_at": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        },
+        "table": "classroom"
+      },
+      {
+        "token": "classroom_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "class_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        },
+        "table": "classroom"
+      },
+      {
+        "token": "classroom_mine",
+        "name": "My sessions",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "classroom"
       }
     ],
     "agent": {
@@ -2297,6 +2879,18 @@
           "surface": "vehicle_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open classroom sessions.",
+        "action": {
+          "kind": "open",
+          "surface": "classroom_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "classroom_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2313,7 +2907,7 @@
         "Mesquite Plaza"
       ]
     },
-    "version": 1
+    "version": 3
   },
   "pages": [
     {
@@ -2324,7 +2918,7 @@
         "emoji": "🚗"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:education-empty-road-dashed-lines",
         "offsetY": 50
       },
       "settings": {
@@ -2335,12 +2929,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Learners, lessons, cars and road tests in one place. Start with the Dashboard each morning. Book every lesson with a car and an instructor, mark it done or no-show the same day, and send a car to the shop the moment a service is overdue."
+              "text": "The school in one place. Learners shows each student's permit, classroom hours, behind-the-wheel hours and parent log, and whether the road test requirements are met; Lessons is the driving schedule; Classroom sessions holds theory hours; Vehicles keeps cars safe; Road tests tracks every attempt. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2880,6 +3480,381 @@
             ],
             "activeViewId": "roa-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Classroom sessions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Theory hours: each session, its topic and attendance."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "classroom",
+              "view": "classroom_board"
+            },
+            "inline": true,
+            "title": "Classroom sessions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cl-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cl-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "class_at"
+              },
+              {
+                "id": "cl-t",
+                "name": "All sessions",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cl-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "class_at": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "cl-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "class_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "cl-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "class_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "cl-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cl-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "driving-school-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the driving school in this workspace. Share it with the owner, every instructor and the office."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Learners",
+              "bold": true
+            },
+            {
+              "text": ": each learner's package, permit date, age, classroom hours, behind-the-wheel hours, parent log hours, road test requirements and attempts."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Lessons",
+              "bold": true
+            },
+            {
+              "text": ": each drive with learner, instructor, car, focus and the skills to work on next."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Classroom sessions",
+              "bold": true
+            },
+            {
+              "text": ": theory classes with topic, instructor, seats and attendance."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Vehicles",
+              "bold": true
+            },
+            {
+              "text": ": each car with plate, mileage, service and inspection dates."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Road tests",
+              "bold": true
+            },
+            {
+              "text": ": every attempt, with the site, coach, points lost and the examiner's notes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: lessons for the week confirmed; cars checked against bookings."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every day: instructors mark lessons and write the next skills."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Wednesday: learners whose requirements are met get a road test booked."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Friday: the owner reads the Dashboard: learners by stage, tests coming up, cars due for service."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: today's lessons and the pre-drive car check"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every week: classroom attendance entered, parent logs updated"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: car service and inspection dates, no-shows followed up"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every quarter: road test pass rate by instructor"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The owner runs bookings, cars and the classroom calendar. Instructors own lessons, notes and test readiness. Parents of learners under 18 own the practice log."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Payments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Packages are paid before the first drive, or half up front and half before the road test. Lessons cancelled with less than 24 hours' notice are counted as used, and the office tells the family the same day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Privacy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Learners under 18 appear by first name and last initial. Permit numbers and parents' phone numbers stay in the learner's file, not in notes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename packages, focuses and test sites, change the road test formula to your state's rule, and delete the sample rows once your own are in. Edit any cell in place; hours and requirements update by themselves."
+            }
+          ]
         }
       ]
     },
@@ -3282,6 +4257,58 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who is ready for a road test"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "learner",
+              "view": "all_learner"
+            },
+            "inline": true,
+            "title": "Learners by readiness",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl-1",
+                "name": "In lessons or test ready",
+                "layout": "grid",
+                "icon": "Table",
+                "anyOf": {
+                  "stage": [
+                    "In lessons",
+                    "Test ready"
+                  ]
+                }
+              },
+              {
+                "id": "dl-2",
+                "name": "By stage",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "stage",
+                  "op": "count",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "dl-1"
+          }
         }
       ]
     },
@@ -3300,7 +4327,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "The first lesson sets the learner's confidence. Choose a quiet place, go slowly and finish on a win."
+              "text": "A new driver's first hour sets the tone for everything after. Calm, quiet streets and clear words build confidence; a busy road on day one can scare someone off driving for months."
             }
           ],
           "background": "blue",
@@ -3312,7 +4339,71 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before they get in"
+              "text": "Before the first drive"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the learner's "
+            },
+            {
+              "text": "Permit issued",
+              "bold": true
+            },
+            {
+              "text": " date and see the permit in person. No permit, no drive."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "For learners under 18, a parent signs the enrollment form and gets the parent practice log."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read any notes from the classroom instructor."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book the car and route in "
+            },
+            {
+              "text": "Lessons",
+              "bold": true
+            },
+            {
+              "text": " with the focus "
+            },
+            {
+              "text": "First drive",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "In the parking lot (15 minutes)"
             }
           ],
           "props": {
@@ -3323,7 +4414,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Check the permit and photo ID"
+              "text": "Adjust seat, mirrors, headrest and steering wheel"
             }
           ],
           "props": {
@@ -3334,7 +4425,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Walk around the car and name the controls"
+              "text": "Seat belt, doors locked, phone off and out of reach"
             }
           ],
           "props": {
@@ -3345,7 +4436,18 @@
           "type": "todo",
           "text": [
             {
-              "text": "Adjust seat and mirrors together"
+              "text": "Hands at nine and three; feet on the right pedals"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Start, stop and steer at walking speed"
             }
           ],
           "props": {
@@ -3356,7 +4458,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "In the car"
+              "text": "On quiet streets (35 minutes)"
             }
           ],
           "props": {
@@ -3367,7 +4469,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Start in an empty lot: start, stop, steer, turn."
+              "text": "Pulling away and stopping smoothly at the curb."
             }
           ]
         },
@@ -3375,7 +4477,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Name every action before the learner does it."
+              "text": "Right turns, then left turns, at quiet corners."
             }
           ]
         },
@@ -3383,7 +4485,15 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Stop for a short debrief before leaving."
+              "text": "Stop signs: full stop, look left, right, left."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Use the dual brake only when needed, and explain why afterward without blame."
             }
           ]
         },
@@ -3391,7 +4501,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After"
+              "text": "The last ten minutes"
             }
           ],
           "props": {
@@ -3399,37 +4509,83 @@
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Mark the lesson done and record the hours"
+              "text": "Park, turn off the engine, and talk: two things that went well, one to practice. Write them in "
+            },
+            {
+              "text": "Skills to work on",
+              "bold": true
+            },
+            {
+              "text": " for the next lesson."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Parents"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Tick the skills covered on the learner's checklist"
+              "text": "Parents are part of the training. Tell them what to practice and where. A good parent drive is twenty to thirty minutes on familiar streets, several times a week. The learner logs every drive in the "
+            },
+            {
+              "text": "Supervised practice hours",
+              "bold": true
+            },
+            {
+              "text": " count."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Nervous learners"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Book the next lesson before the learner leaves"
+              "text": "Go slower than you planned. Stay in the lot for the whole hour if needed. Confidence comes from small wins."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Delphine, fifteen, has had her permit ten days. Her instructor spends twenty minutes in the lot and thirty on quiet streets near the school. She stops smoothly by the end. The note for next time says: left turns and checking mirrors before pulling away; her parent is asked to practice in the lot on Sunday."
+            }
+          ]
         }
       ]
     },
@@ -3448,7 +4604,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Test day should feel like another lesson. Rehearse the route and the paperwork."
+              "text": "Most road test failures come from a few habits: rolling stops, not checking blind spots, and nerves. Practice the test, not just driving, and learners pass the first time."
             }
           ],
           "background": "blue",
@@ -3460,7 +4616,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "A week before"
+              "text": "Requirements"
             }
           ],
           "props": {
@@ -3468,26 +4624,14 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Press Mark test ready only when the learner has met the checklist twice in a row."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "Road test requirements",
+              "bold": true
+            },
             {
-              "text": "Book a practice lesson on the test route."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Send a reminder with documents to bring."
+              "text": " on each learner reads the classroom hours, the behind-the-wheel hours and the parent log against an example rule: under 18, 30 classroom hours, 6 hours with an instructor and 50 logged with a parent. Change the formula to your state's rule. Only book the test when it says Met and the instructor agrees."
             }
           ]
         },
@@ -3495,7 +4639,63 @@
           "type": "heading",
           "text": [
             {
-              "text": "On the day"
+              "text": "Two weeks out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book the test with the licensing office and add it to "
+            },
+            {
+              "text": "Road tests",
+              "bold": true
+            },
+            {
+              "text": " with the date, site and coach."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move the learner to "
+            },
+            {
+              "text": "Test ready",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book two "
+            },
+            {
+              "text": "Test practice",
+              "bold": true
+            },
+            {
+              "text": " lessons on the real test route if you can."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The common fails"
             }
           ],
           "props": {
@@ -3506,7 +4706,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Arrive early and do a calm warm-up drive."
+              "text": "Rolling through a stop sign: an automatic fail at most test centers."
             }
           ]
         },
@@ -3514,7 +4714,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Check the car's lights, signals and insurance papers."
+              "text": "Not checking blind spots on lane changes and pulling away."
             }
           ]
         },
@@ -3522,7 +4722,137 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "After the test, press Mark passed or Mark failed and add a note for the next lesson."
+              "text": "Wide or cut turns."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Too slow: driving well under the limit for no reason."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Parking: hitting the curb or needing more than three moves."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Test-day checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Permit and identification"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Car registered, insured and passing a quick check: lights, signals, horn, tires, brake lights"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Arrive 20 minutes early; short warm-up drive around the block"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A parent or the coach in the waiting area"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Afterward"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Enter the result, the "
+            },
+            {
+              "text": "Points lost",
+              "bold": true
+            },
+            {
+              "text": " and the "
+            },
+            {
+              "text": "Examiner notes",
+              "bold": true
+            },
+            {
+              "text": ". If the learner passes, set them to "
+            },
+            {
+              "text": "Licensed",
+              "bold": true
+            },
+            {
+              "text": " and congratulate them. If not, book a lesson within a week on exactly what the examiner noted, and rebook the test."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Gustavo is booked in six days. His record shows 30 classroom hours, 7 behind the wheel and 61 logged with his parent, so requirements are met. Two test-practice lessons on the east route focus on full stops and blind spots. He passes with six points lost."
             }
           ]
         }
@@ -3543,7 +4873,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A safe car is the first instructor. Keep a written routine and follow it."
+              "text": "A training car carries a new driver and an instructor every hour of the day. It must be safe, legal and clean every time it leaves the lot."
             }
           ],
           "background": "blue",
@@ -3555,7 +4885,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before each lesson"
+              "text": "Before every lesson (two minutes)"
             }
           ],
           "props": {
@@ -3566,7 +4896,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Check tires, lights and dual controls"
+              "text": "Walk around: tires, lights, signals, mirrors, dents"
             }
           ],
           "props": {
@@ -3577,7 +4907,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Check fuel and fluids weekly"
+              "text": "Dual-control brake tested at walking speed"
             }
           ],
           "props": {
@@ -3588,7 +4918,18 @@
           "type": "todo",
           "text": [
             {
-              "text": "Clean the windshield and mirrors"
+              "text": "Learner signs and the \"student driver\" magnet in place"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fuel above a quarter tank"
             }
           ],
           "props": {
@@ -3599,7 +4940,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Each month"
+              "text": "Every week"
             }
           ],
           "props": {
@@ -3607,69 +4948,171 @@
           }
         },
         {
-          "type": "table",
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tire pressure and tread."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Washer fluid and wipers."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Interior cleaned and wiped down."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mileage written on the vehicle."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Service and inspection"
+            }
+          ],
           "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Task"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Who"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Review miles and next service date"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "School manager"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Interior clean and sanitize"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Instructor of the car"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Report any fault the same day"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Everyone"
-                    }
-                  ]
-                ]
-              }
-            ]
+            "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each car shows "
+            },
+            {
+              "text": "Service due",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Inspection due",
+              "bold": true
+            },
+            {
+              "text": ". Book service a week ahead so the car is never out on a busy afternoon. When a car is in the shop, set it to "
+            },
+            {
+              "text": "In the shop",
+              "bold": true
+            },
+            {
+              "text": " so nobody books it, and move its lessons to another car."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The dual brake"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The instructor's brake is the most important part of the car. Have it checked at every service and after any hard stop. If it feels soft or spongy, the car stops being used until it is repaired."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Incidents"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Any bump, however small, is written up the same day: date, place, what happened, photos, and who was driving. Tell the owner the same day and the insurer within their deadline."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cleanliness"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Learners notice a dirty car and judge the school by it. Empty the car after every lesson, wipe the wheel and gear stick at the end of each day, and keep a box of tissues and hand gel in the glove box."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Replacing cars"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Training cars work hard. Plan to replace each one at around 120,000 miles or when repairs in a year cost more than a third of its value."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Car 4 is overdue for service by four days and its manual clutch is slipping. The manager sets it to In the shop, moves two lessons to Car 5, and books the repair. The car returns on Thursday with a new clutch and its brake checked."
+            }
+          ]
         }
       ]
     }

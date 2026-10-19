@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0550",
-  "version": 2,
+  "version": 3,
   "title": "Nonprofit Fundraising Desk",
   "description": "Donor CRM for nonprofits: gifts, pledges, monthly donors, campaigns and thank-you letters.",
   "forWho": "Small and mid-size nonprofits with a development team",
@@ -9,7 +9,7 @@
     "emoji": "💛"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:nonprofit-hands-heart-charity",
     "offsetY": 50
   },
   "category": "nonprofit",
@@ -3371,7 +3371,7 @@
         "Larkspur Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -3382,7 +3382,7 @@
         "emoji": "💛"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:nonprofit-hands-heart-charity",
         "offsetY": 50
       },
       "settings": {

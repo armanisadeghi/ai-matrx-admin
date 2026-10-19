@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0454",
-  "version": 4,
+  "version": 6,
   "title": "Video Production Studio",
-  "description": "Clients, productions, shot lists, bookings and edit versions for a video company.",
+  "description": "For video producers: productions, shot lists, crew and gear bookings, and edit rounds.",
   "forWho": "Video and film production companies",
   "icon": {
     "emoji": "🎬"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:agencies-film-clapperboard",
     "offsetY": 50
   },
   "category": "agencies",
   "tags": [
-    "video",
-    "production",
+    "video producer",
+    "production company",
     "shot list",
-    "post"
+    "crew booking",
+    "edit rounds",
+    "post-production"
   ],
   "spec": {
     "specVersion": 1,
@@ -423,6 +425,58 @@
             }
           },
           {
+            "key": "deliverables",
+            "label": "Deliverables",
+            "parityType": "multi_select",
+            "choices": [
+              "Main film 16:9",
+              "Vertical 9:16",
+              "Square 1:1",
+              "Captions",
+              "Thumbnails"
+            ],
+            "choiceColors": {
+              "Main film 16:9": "blue",
+              "Vertical 9:16": "green",
+              "Square 1:1": "amber",
+              "Captions": "violet",
+              "Thumbnails": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "rounds_included",
+            "label": "Edit rounds included",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 6
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "releases",
+            "label": "Releases signed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "music",
+            "label": "Music licensed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "shoot_on",
             "label": "Shoot day",
             "parityType": "datetime",
@@ -474,6 +528,19 @@
             "via": "bookings",
             "pick": "rate",
             "agg": "sum"
+          },
+          {
+            "key": "unconfirmed",
+            "label": "Bookings not confirmed",
+            "parityType": "rollup",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count",
+            "filter": {
+              "status": "Requested"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "budget_left",
@@ -529,6 +596,23 @@
                 "Revisions"
               ]
             }
+          },
+          {
+            "key": "cuts_sent",
+            "label": "Cuts sent to client",
+            "parityType": "rollup",
+            "via": "cuts",
+            "pick": "cut_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Rough cut"
+                ]
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "days_to_delivery",
@@ -728,11 +812,19 @@
               "status": "Post",
               "format": "Brand film",
               "shoot_on": "@today-12d",
-              "delivery_on": "@today+10d",
+              "delivery_on": "@today",
               "budget": 18000,
               "client": "client-1",
               "producer": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "deliverables": [
+                "Main film 16:9",
+                "Vertical 9:16",
+                "Captions"
+              ],
+              "rounds_included": 2,
+              "releases": true,
+              "music": true
             }
           },
           {
@@ -745,7 +837,14 @@
               "delivery_on": "@today+14d",
               "budget": 9500,
               "client": "client-2",
-              "producer": "tm-2"
+              "producer": "tm-2",
+              "deliverables": [
+                "Main film 16:9",
+                "Vertical 9:16"
+              ],
+              "rounds_included": 1,
+              "releases": false,
+              "music": false
             }
           },
           {
@@ -759,7 +858,14 @@
               "budget": 26000,
               "client": "client-3",
               "producer": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "deliverables": [
+                "Main film 16:9",
+                "Captions"
+              ],
+              "rounds_included": 2,
+              "releases": false,
+              "music": false
             }
           },
           {
@@ -772,7 +878,16 @@
               "delivery_on": "@today-2d",
               "budget": 22000,
               "client": "client-5",
-              "producer": "tm-1"
+              "producer": "tm-1",
+              "deliverables": [
+                "Main film 16:9",
+                "Square 1:1",
+                "Captions",
+                "Thumbnails"
+              ],
+              "rounds_included": 2,
+              "releases": true,
+              "music": false
             }
           },
           {
@@ -786,7 +901,15 @@
               "budget": 7000,
               "client": "client-5",
               "producer": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "deliverables": [
+                "Vertical 9:16",
+                "Square 1:1",
+                "Captions"
+              ],
+              "rounds_included": 1,
+              "releases": false,
+              "music": false
             }
           },
           {
@@ -800,7 +923,14 @@
               "budget": 8500,
               "client": "client-1",
               "producer": "tm-2",
-              "delivered_on": "@today-40d"
+              "delivered_on": "@today-40d",
+              "deliverables": [
+                "Main film 16:9",
+                "Vertical 9:16"
+              ],
+              "rounds_included": 2,
+              "releases": true,
+              "music": true
             }
           },
           {
@@ -815,7 +945,13 @@
               "client": "client-4",
               "producer": "tm-1",
               "owner_me": "@installer",
-              "delivered_on": "@today-380d"
+              "delivered_on": "@today-380d",
+              "deliverables": [
+                "Main film 16:9"
+              ],
+              "rounds_included": 2,
+              "releases": true,
+              "music": true
             }
           }
         ]
@@ -888,6 +1024,20 @@
               "Drone": "teal",
               "Interview": "orange"
             }
+          },
+          {
+            "key": "location",
+            "label": "Location",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "notes",
+            "label": "Camera and sound notes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "shoot_day",
@@ -990,7 +1140,9 @@
               "status": "Captured",
               "size": "Wide",
               "shoot_day": "@today-12d",
-              "production": "production-1"
+              "production": "production-1",
+              "location": "Barrel room",
+              "notes": "Slider, 35mm, slow push"
             }
           },
           {
@@ -1000,7 +1152,9 @@
               "status": "Captured",
               "size": "Close-up",
               "shoot_day": "@today-12d",
-              "production": "production-1"
+              "production": "production-1",
+              "location": "Taproom bar",
+              "notes": "85mm, shallow focus, practical lights only"
             }
           },
           {
@@ -1010,7 +1164,9 @@
               "status": "Pickup needed",
               "size": "Insert",
               "shoot_day": "@today-12d",
-              "production": "production-1"
+              "production": "production-1",
+              "location": "Bottling line",
+              "notes": "Macro insert; needs clean hands"
             }
           },
           {
@@ -1020,7 +1176,9 @@
               "status": "Captured",
               "size": "Drone",
               "shoot_day": "@today-13d",
-              "production": "production-1"
+              "production": "production-1",
+              "location": "Brewery front lot",
+              "notes": "Wide, last 30 minutes of sun"
             }
           },
           {
@@ -1030,7 +1188,9 @@
               "status": "Planned",
               "size": "Wide",
               "shoot_day": "@mon+2d",
-              "production": "production-2"
+              "production": "production-2",
+              "location": "Listing one, front porch",
+              "notes": "Gimbal, steady walk up"
             }
           },
           {
@@ -1040,7 +1200,9 @@
               "status": "Planned",
               "size": "Medium",
               "shoot_day": "@mon+2d",
-              "production": "production-2"
+              "production": "production-2",
+              "location": "Listing one, kitchen",
+              "notes": "Gimbal, left to right, lights on"
             }
           },
           {
@@ -1050,7 +1212,9 @@
               "status": "Planned",
               "size": "Interview",
               "shoot_day": "@mon+2d",
-              "production": "production-2"
+              "production": "production-2",
+              "location": "Listing one, living room",
+              "notes": "Lav mic; two takes minimum"
             }
           },
           {
@@ -1060,7 +1224,9 @@
               "status": "Planned",
               "size": "Interview",
               "shoot_day": "@today+9d",
-              "production": "production-3"
+              "production": "production-3",
+              "location": "Museum archive",
+              "notes": "Interview setup, two cameras"
             }
           },
           {
@@ -1070,7 +1236,9 @@
               "status": "Planned",
               "size": "Insert",
               "shoot_day": "@today+9d",
-              "production": "production-3"
+              "production": "production-3",
+              "location": "Museum archive",
+              "notes": "Overhead, soft light"
             }
           },
           {
@@ -1080,7 +1248,9 @@
               "status": "Captured",
               "size": "Wide",
               "shoot_day": "@today-30d",
-              "production": "production-4"
+              "production": "production-4",
+              "location": "Foundry floor",
+              "notes": "Long lens from the safe line; ear protection"
             }
           },
           {
@@ -1090,7 +1260,9 @@
               "status": "Captured",
               "size": "Medium",
               "shoot_day": "@today-30d",
-              "production": "production-4"
+              "production": "production-4",
+              "location": "Machine shop",
+              "notes": "Lav mic plus boom; machine off for dialogue"
             }
           },
           {
@@ -1100,7 +1272,9 @@
               "status": "Pickup needed",
               "size": "Close-up",
               "shoot_day": "@today-30d",
-              "production": "production-4"
+              "production": "production-4",
+              "location": "Training bench",
+              "notes": "Close-up insert; retake for focus"
             }
           }
         ]
@@ -1190,6 +1364,23 @@
             ]
           },
           {
+            "key": "days",
+            "label": "Days",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "on_date",
             "label": "Date",
             "parityType": "datetime",
@@ -1201,6 +1392,13 @@
             "key": "supplier",
             "label": "Supplier",
             "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "coi",
+            "label": "Insurance certificate received",
+            "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -1280,7 +1478,9 @@
               "rate": 1400,
               "on_date": "@mon+2d",
               "supplier": "Aldana Freelance",
-              "production": "production-2"
+              "production": "production-2",
+              "days": 2,
+              "coi": true
             }
           },
           {
@@ -1292,7 +1492,9 @@
               "rate": 650,
               "on_date": "@mon+2d",
               "supplier": "Lensworks Rentals",
-              "production": "production-2"
+              "production": "production-2",
+              "days": 2,
+              "coi": true
             }
           },
           {
@@ -1304,7 +1506,9 @@
               "rate": 0,
               "on_date": "@mon+2d",
               "supplier": "Capitol Row Realty",
-              "production": "production-2"
+              "production": "production-2",
+              "days": 1,
+              "coi": false
             }
           },
           {
@@ -1316,7 +1520,9 @@
               "rate": 300,
               "on_date": "@today+9d",
               "supplier": "Delta Heritage Museum",
-              "production": "production-3"
+              "production": "production-3",
+              "days": 1,
+              "coi": true
             }
           },
           {
@@ -1328,7 +1534,9 @@
               "rate": 700,
               "on_date": "@today+9d",
               "supplier": "Marlow Audio",
-              "production": "production-3"
+              "production": "production-3",
+              "days": 1,
+              "coi": false
             }
           },
           {
@@ -1340,7 +1548,9 @@
               "rate": 600,
               "on_date": "@today-13d",
               "supplier": "Skyhook Aerial",
-              "production": "production-1"
+              "production": "production-1",
+              "days": 1,
+              "coi": true
             }
           },
           {
@@ -1352,7 +1562,8 @@
               "rate": 1800,
               "on_date": "@today+4d",
               "supplier": "Fenwick Color",
-              "production": "production-1"
+              "production": "production-1",
+              "days": 3
             }
           },
           {
@@ -1364,7 +1575,9 @@
               "rate": 450,
               "on_date": "@today-30d",
               "supplier": "Ironbark Machine Works",
-              "production": "production-4"
+              "production": "production-4",
+              "days": 1,
+              "coi": true
             }
           },
           {
@@ -1376,7 +1589,9 @@
               "rate": 520,
               "on_date": "@today-30d",
               "supplier": "Lensworks Rentals",
-              "production": "production-4"
+              "production": "production-4",
+              "days": 1,
+              "coi": true
             }
           }
         ]
@@ -1449,6 +1664,13 @@
                 "value": 50
               }
             ]
+          },
+          {
+            "key": "feedback",
+            "label": "Client notes",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "sent_on",
@@ -1584,7 +1806,8 @@
               "version": 1,
               "sent_on": "@today-2d",
               "due_on": "@today+3d",
-              "production": "production-1"
+              "production": "production-1",
+              "feedback": "Love the opening; shorter middle section; swap the label close-up"
             }
           },
           {
@@ -1595,7 +1818,8 @@
               "version": 2,
               "sent_on": "@today-6d",
               "due_on": "@today-1d",
-              "production": "production-4"
+              "production": "production-4",
+              "feedback": "Logo at the end too small; trim the safety section by ten seconds; use the second founder take"
             }
           },
           {
@@ -1606,7 +1830,8 @@
               "version": 1,
               "sent_on": "@today-20d",
               "due_on": "@today-14d",
-              "production": "production-4"
+              "production": "production-4",
+              "feedback": "Approved with small text fixes"
             }
           },
           {
@@ -2207,7 +2432,7 @@
         "Tannery Row"
       ]
     },
-    "version": 4
+    "version": 6
   },
   "pages": [
     {
@@ -2218,7 +2443,7 @@
         "emoji": "🎬"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:agencies-film-clapperboard",
         "offsetY": 50
       },
       "settings": {
@@ -2246,6 +2471,12 @@
                 "width": 0.5
               },
               "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                },
                 {
                   "type": "page",
                   "props": {
@@ -2729,6 +2960,373 @@
       ]
     },
     {
+      "key": "start-here",
+      "parent": "video-production-studio",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This workspace runs a video production company: clients, each production from brief to delivery with its budget, the shot list, the crew, gear and locations booked for each shoot, and every cut sent for client feedback. Edit files and footage live on your drives and editing software; this is where the job is planned and tracked."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One row is"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What you watch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clients"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A company you make video for"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Status, productions, productions in progress"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Productions"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One job"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Phase, format, deliverables, budget, crew and gear costs, budget left, rounds included, cuts sent, releases and music"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Shots"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One shot on the shot list"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Size, location, camera and sound notes, shoot day, captured or pickup needed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Bookings"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Crew, gear, a location or talent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rate, days, date, supplier, insurance certificate"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cuts"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One version sent or due"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Version, client notes, due date, status"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The numbers to watch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Budget left",
+              "bold": true
+            },
+            {
+              "text": " is the budget minus crew and gear costs booked."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Shots captured",
+              "bold": true
+            },
+            {
+              "text": " against "
+            },
+            {
+              "text": "Shots planned",
+              "bold": true
+            },
+            {
+              "text": " shows if a shoot day got everything."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cuts sent to client",
+              "bold": true
+            },
+            {
+              "text": " against "
+            },
+            {
+              "text": "Edit rounds included",
+              "bold": true
+            },
+            {
+              "text": " shows when extra rounds become billable."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Bookings not confirmed",
+              "bold": true
+            },
+            {
+              "text": " flags a shoot at risk."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter active productions with budget, shoot date, delivery date and what is being delivered."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add shot lists for the next two shoots."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add every crew, gear and location booking with rate and days."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log the cuts out with clients and their notes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happens"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Monday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shoots this week: bookings confirmed, releases ready, call sheets out"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Midweek"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cuts due to clients; feedback chased"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Budget check on every production in post"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Ironbark's factory story is past its delivery date with version two in revisions. The client wants a bigger logo, a shorter safety section and a different founder take, so the editor turns it around in a day and the producer explains this was the last included round."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "key": "dashboard",
       "parent": "video-production-studio",
       "title": "Dashboard",
@@ -3160,14 +3758,14 @@
       "parent": "video-production-studio",
       "title": "Pre-production checklist",
       "icon": {
-        "emoji": "📝"
+        "emoji": "🎬"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Most shoot-day problems were decided two weeks earlier. Work this list from the moment the brief is signed."
+              "text": "Most problems on a shoot day were decided in pre-production. A complete plan makes the day calm, and calm days produce better footage."
             }
           ],
           "background": "blue",
@@ -3179,7 +3777,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Two weeks out"
+              "text": "Two weeks before the shoot"
             }
           ],
           "props": {
@@ -3190,7 +3788,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Script or interview questions approved in writing"
+              "text": "Brief signed off: audience, message, length and every deliverable"
             }
           ],
           "props": {
@@ -3201,7 +3799,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Locations visited; power, parking, sound and light noted"
+              "text": "Treatment or storyboard approved by the client"
             }
           ],
           "props": {
@@ -3212,7 +3810,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Releases for people and places sent"
+              "text": "Shot list written: every shot with size, location and notes"
             }
           ],
           "props": {
@@ -3223,7 +3821,51 @@
           "type": "todo",
           "text": [
             {
-              "text": "Crew and gear requests logged in Bookings"
+              "text": "Locations confirmed, with access times and parking"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Crew booked: camera, sound, lighting, drone if needed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Gear booked, and insurance certificates received for rentals"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Release forms prepared for everyone on camera and every private location"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Music direction agreed; a licensed track or a composer booked"
             }
           ],
           "props": {
@@ -3234,105 +3876,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "One week out"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Shot list complete and shared with the director"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Call sheet drafted with times, addresses and phone numbers"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Weather plan or backup location agreed"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Day before"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Batteries charged, cards formatted, spares counted"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Call sheet sent to every person on the shoot"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Client reminded who will be on set and when they arrive"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        }
-      ]
-    },
-    {
-      "key": "shoot-day-runbook",
-      "parent": "video-production-studio",
-      "title": "Shoot day runbook",
-      "icon": {
-        "emoji": "🎥"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "On arrival"
+              "text": "One week before"
             }
           ],
           "props": {
@@ -3343,7 +3887,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Walk the location with the client contact and confirm what is off limits."
+              "text": "Recce every location you have not shot before: light at the shoot time, power, noise, where the crew can set up."
             }
           ]
         },
@@ -3351,7 +3895,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Set up audio first; a good picture with bad sound is unusable."
+              "text": "Confirm every booking. "
+            },
+            {
+              "text": "Bookings not confirmed",
+              "bold": true
+            },
+            {
+              "text": " on the production should read zero."
             }
           ]
         },
@@ -3359,7 +3910,15 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Capture the hardest shots while the light and the people are fresh."
+              "text": "Write the call sheet: times, addresses, contacts, weather, nearest hospital."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the shot list to the client and ask what is a must-have."
             }
           ]
         },
@@ -3367,7 +3926,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "During the day"
+              "text": "Interviews"
             }
           ],
           "props": {
@@ -3378,7 +3937,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Tick off shots in the Shot list as they are captured, and mark misses Pickup needed straight away."
+              "text": "Send the interviewee the topics, not the questions, two days before."
             }
           ]
         },
@@ -3386,7 +3945,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Slate or name each take so the editor can find it."
+              "text": "Ask them to avoid fine stripes and bright white."
             }
           ]
         },
@@ -3394,7 +3953,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Back up every card before it is formatted, to two places."
+              "text": "Book a quiet room; turn off air conditioning and fridges during takes."
             }
           ]
         },
@@ -3402,72 +3961,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "At wrap"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "All releases signed"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Cards labelled and backed up twice"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Gear counted back into cases"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Client told what happens next and when they will see a cut"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        }
-      ]
-    },
-    {
-      "key": "post-and-feedback",
-      "parent": "video-production-studio",
-      "title": "Post-production and feedback rounds",
-      "icon": {
-        "emoji": "🎞️"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "The rounds"
+              "text": "Permits and safety"
             }
           ],
           "props": {
@@ -3484,17 +3978,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Round"
+                      "text": "Situation"
                     }
                   ],
                   [
                     {
-                      "text": "Purpose"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Client sees"
+                      "text": "What you need"
                     }
                   ]
                 ]
@@ -3503,17 +3992,532 @@
                 "cells": [
                   [
                     {
-                      "text": "Assembly"
+                      "text": "Public street or park"
                     }
                   ],
                   [
                     {
-                      "text": "Story order and pacing"
+                      "text": "City film permit if your crew blocks the path"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Drone"
                     }
                   ],
                   [
                     {
-                      "text": "Rough cut, no color or final music"
+                      "text": "A licensed pilot and permission for the airspace"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Factory or site"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The client's safety induction and protective gear"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Delta Heritage oral history shoot is in pre-production. The museum archive room is confirmed but the sound recordist is still only requested, so the producer confirms or replaces them before the end of the week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Client on set"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Agree who from the client attends and what they decide on the day. One decision-maker on set saves hours; three opinions on every take cost the schedule."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Budget check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Before the shoot, compare crew and gear costs with the budget. If "
+            },
+            {
+              "text": "Budget left",
+              "bold": true
+            },
+            {
+              "text": " is thin, cut a day or a camera now, not in the edit."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "shoot-day-runbook",
+      "parent": "video-production-studio",
+      "title": "Shoot day runbook",
+      "icon": {
+        "emoji": "🎥"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A shoot day runs on the call sheet and the shot list. Everyone knows the plan, the producer protects the time, and nothing leaves the location until the footage is backed up."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before call time"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Gear checked the night before: batteries charged, cards formatted, lenses clean"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Call sheet sent to crew and client"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Release forms and pens in the kit"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Water, food and a first-aid kit"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On set"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Safety briefing first, especially on factory floors and sites."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Shoot the must-have shots first, while energy and light are best."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark each shot "
+            },
+            {
+              "text": "Captured",
+              "bold": true
+            },
+            {
+              "text": " as you get it. A shot that failed becomes "
+            },
+            {
+              "text": "Pickup needed",
+              "bold": true
+            },
+            {
+              "text": " with a note on why."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record room tone for 30 seconds at each location."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Get a signed release from everyone on camera before they leave."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The producer's job on the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep the schedule: call time, setups, lunch, wrap."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Talk to the client so the director can work."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Decide quickly when a shot is not working: move on and come back if there is time."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Wrap"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every card backed up to two drives before anyone leaves"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Shot list checked: everything captured or marked for pickup"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Location left as found; photos of how it was left"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Bookings marked "
+            },
+            {
+              "text": "Wrapped",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the shoot"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send the client a short note: what you captured and any pickups needed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Log any overtime or extra gear so the budget stays true."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Common problems"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Problem"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fix"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Noise from machines or traffic"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Record dialogue in a pause; shoot inserts during noise"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Light changing fast"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shoot wides first, then close-ups under your own light"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Nervous interviewee"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Start with easy questions; roll from the start"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "On the Sutter Valley shoot, the label close-up was soft. It is marked Pickup needed, and the producer books a short pickup with the bottling line the same day as the colour session."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "post-and-feedback",
+      "parent": "video-production-studio",
+      "title": "Post-production and feedback rounds",
+      "icon": {
+        "emoji": "✂️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Post-production is where budgets disappear, usually through feedback that arrives late, in pieces, or from too many people. A clear round structure protects the edit and the client relationship."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The stages"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stage"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What the client sees"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Rough cut"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Story and structure; no grading or final sound"
                     }
                   ]
                 ]
@@ -3527,12 +4531,7 @@
                   ],
                   [
                     {
-                      "text": "Trims, graphics, music"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Near-final with temporary elements"
+                      "text": "Locked story; pacing and shot choices"
                     }
                   ]
                 ]
@@ -3546,12 +4545,7 @@
                   ],
                   [
                     {
-                      "text": "Color, mix, legal text"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Locked picture, ready for delivery"
+                      "text": "Graded, mixed, captioned, every deliverable"
                     }
                   ]
                 ]
@@ -3563,7 +4557,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Collecting feedback"
+              "text": "Sending a cut"
             }
           ],
           "props": {
@@ -3574,7 +4568,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send one link with a feedback due date."
+              "text": "Add the cut with its version number and a due date for feedback."
             }
           ]
         },
@@ -3582,7 +4576,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Ask for one consolidated list from one person."
+              "text": "Send one link with frame-accurate commenting, plus three questions you want answered."
             }
           ]
         },
@@ -3590,7 +4584,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Log notes in the Cut row with timecodes."
+              "text": "Set "
+            },
+            {
+              "text": "Client review",
+              "bold": true
+            },
+            {
+              "text": " and the sent date."
             }
           ]
         },
@@ -3598,7 +4599,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Limits"
+              "text": "Feedback rules"
             }
           ],
           "props": {
@@ -3609,7 +4610,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Two rounds of changes are included; extra rounds are quoted before work starts."
+              "text": "One person collects feedback from everyone on the client side and sends it as one list."
             }
           ]
         },
@@ -3617,9 +4618,122 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Changes to the story after the fine cut count as a new edit."
+              "text": "Feedback within three working days, or the schedule moves."
             }
           ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write the notes in "
+            },
+            {
+              "text": "Client notes",
+              "bold": true
+            },
+            {
+              "text": " so the editor works from one place."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rounds"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each production has "
+            },
+            {
+              "text": "Edit rounds included",
+              "bold": true
+            },
+            {
+              "text": ". Compare it with "
+            },
+            {
+              "text": "Cuts sent to client",
+              "bold": true
+            },
+            {
+              "text": " before sending another version."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Situation"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Within included rounds"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Make the changes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Beyond included rounds"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quote the extra round before starting it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "A new idea after fine cut"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Treat as new scope; quote it"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         },
         {
           "type": "heading",
@@ -3633,10 +4747,110 @@
           }
         },
         {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every deliverable exported: main film, vertical, square, captions, thumbnails"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Music licence covers every place the video will run"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Files named clearly and shared with the client"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Production set to "
+            },
+            {
+              "text": "Delivered",
+              "bold": true
+            },
+            {
+              "text": " with the date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Archive"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
           "type": "text",
           "text": [
             {
-              "text": "Export the agreed formats, name files clearly, send the checksum list and move the production to Delivered with Close out."
+              "text": "Keep project files and footage for at least a year. Clients come back for new cutdowns, and a quick turnaround from your archive is easy, welcome work."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Sutter Valley autumn film is due this week and the first assembly is still with the client. The producer calls for notes the same day, agrees a short extension in writing, and holds the social cutdowns until the main film is approved so the verticals are not cut twice."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keep the edit moving"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When feedback is late, send a friendly reminder on day three and a call on day five. Tell the client plainly how the delivery date moves if notes do not arrive."
             }
           ]
         }
@@ -3647,14 +4861,225 @@
       "parent": "video-production-studio",
       "title": "Quoting a video job",
       "icon": {
-        "emoji": "💬"
+        "emoji": "💵"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A good quote is clear about what is included, how many days, how many rounds, and what costs extra. Most disputes start with a quote that left those things vague."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "What to ask first"
+              "text": "Ask before you price"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Where will the video run, and how long should it be?"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Which deliverables: main film, vertical, square, captions?"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "How many locations and how many people on camera?"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Does the client supply music, or do we license it?"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "What is the deadline, and what drives it?"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Building the price"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Part"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How to price"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pre-production"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Producer days for brief, treatment, recce and planning"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Shoot"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Crew day rates times shoot days, plus gear"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Locations and permits"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At cost plus handling"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Post"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Editor days, colour, sound mix, motion graphics"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Music"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Licence fee for the uses agreed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Rounds"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Number of edit rounds included"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Enter the total as the "
+            },
+            {
+              "text": "Budget",
+              "bold": true
+            },
+            {
+              "text": " on the production and book crew and gear against it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The quote document"
             }
           ],
           "props": {
@@ -3665,7 +5090,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Where will it run: social, a website, an event screen, television?"
+              "text": "Deliverables, listed one by one."
             }
           ]
         },
@@ -3673,7 +5098,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "How long should it be, and how many versions?"
+              "text": "Shoot days and locations."
             }
           ]
         },
@@ -3681,7 +5106,27 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Who is on screen, and do they need to be booked?"
+              "text": "Edit rounds included",
+              "bold": true
+            },
+            {
+              "text": ", and the price of an extra round."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Payment terms: often half to book, half on delivery."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What happens if the shoot is postponed or the weather fails."
             }
           ]
         },
@@ -3689,7 +5134,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Building the number"
+              "text": "Pricing mistakes to avoid"
             }
           ],
           "props": {
@@ -3700,7 +5145,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "List crew days, gear days, locations, talent and post days as lines in Bookings."
+              "text": "Forgetting travel days, parking and meals."
             }
           ]
         },
@@ -3708,7 +5153,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Add a buffer of ten to fifteen percent for pickups and extra rounds."
+              "text": "Pricing post as a fixed number of hours with no round limit."
             }
           ]
         },
@@ -3716,7 +5161,15 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Compare Crew and gear costs against the budget on the production row and note the margin."
+              "text": "Leaving out captions and vertical versions, which every client now wants."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Not charging for pickups caused by client changes."
             }
           ]
         },
@@ -3724,7 +5177,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Terms to state"
+              "text": "After the job"
             }
           ],
           "props": {
@@ -3732,34 +5185,29 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Number of included revisions."
+              "text": "Compare the real crew and gear costs and edit days with the quote. Note what ran over, and price the next similar job with that in mind."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Usage rights and music licensing."
+              "text": "Example"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
         },
         {
-          "type": "bulleted",
+          "type": "quote",
           "text": [
             {
-              "text": "Cancellation and weather days."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "What the client must supply and by when."
+              "text": "Ironbark's safety training cutdowns are in brief. The producer prices one shoot day on the factory floor, two editor days, captions and three vertical cutdowns, with one edit round included, because the client already knows the style from the factory story."
             }
           ]
         }

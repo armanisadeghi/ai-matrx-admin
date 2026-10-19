@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0410",
-  "version": 4,
+  "version": 5,
   "title": "Personal Injury Intake and Cases",
   "description": "For injury lawyers: intakes, limitations dates, records, liens, offers and net to client.",
   "forWho": "Personal injury attorneys and case managers",
@@ -9,7 +9,7 @@
     "emoji": "🚑"
   },
   "cover": {
-    "url": "gallery:solid-yellow",
+    "url": "gallery:legal-courthouse-columns",
     "offsetY": 50
   },
   "category": "legal",
@@ -2350,7 +2350,7 @@
         "Beale Avenue"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2361,7 +2361,7 @@
         "emoji": "🚑"
       },
       "cover": {
-        "url": "gallery:solid-yellow",
+        "url": "gallery:legal-courthouse-columns",
         "offsetY": 50
       },
       "settings": {

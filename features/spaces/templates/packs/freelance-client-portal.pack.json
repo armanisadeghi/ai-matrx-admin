@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0302",
-  "version": 7,
+  "version": 8,
   "title": "Freelance Client Portal",
   "description": "Solo freelancers: a private page per client for deliverables, approvals and invoices.",
   "forWho": "Solo freelancers delivering work to clients",
@@ -9,7 +9,7 @@
     "emoji": "🪟"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:clients-home-office-desk-window",
     "offsetY": 50
   },
   "category": "clients",
@@ -1507,7 +1507,7 @@
         "Tallow Court"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1518,7 +1518,7 @@
         "emoji": "🪟"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:clients-home-office-desk-window",
         "offsetY": 50
       },
       "settings": {

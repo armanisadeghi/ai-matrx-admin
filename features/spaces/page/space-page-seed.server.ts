@@ -24,6 +24,7 @@ import "server-only";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import type { EntityColumn, SavedViewSpec } from "@ai-matrx/records-ui";
 import { asRecordsDataSource, createRecordsClient, recordingDataSource, storeDoors, type RecordsSeed } from "@ai-matrx/records/core";
+import { readObjectOrganizationAnswer } from "@ai-matrx/records/door-call";
 import { askChartSeed, askEntityBlockSeed, askTablePageSeed, askTileSeed, mergeSeeds, serverRowsOf } from "@ai-matrx/records-ui/first-page";
 import { headers } from "next/headers";
 
@@ -35,6 +36,7 @@ import type { SpaceBlock, SpaceDoc } from "../contract";
 import { activeView, chartTileSpecs, DEFAULT_CHART, ENTITY_PAGE, entityChartBy, entityRowsArgs, entityShownColumns, hasListFilter } from "../data/first-reads";
 import { viewSpec } from "../data/view-spec";
 import { usesThisRow } from "../data/this-row";
+import { opensNoteLine } from "../data/opens-note";
 import { readDatabaseProps, type DatabaseBlockProps, type SpaceDbView } from "../data/sources";
 import { SupabaseSpacesStore } from "../store-db/supabase-store";
 import { linkedPageIds } from "./linked-pages";
@@ -236,6 +238,10 @@ export interface SpacePageReads {
   expectedRows?: Record<string, number>;
   /** Per board block id: the cards each column holds, when its open view is the table's opening board. */
   expectedGroups?: Record<string, number[]>;
+  /** Per database block id whose table does not open for this person: the state its note is drawn from. */
+  expectedNotes?: Record<string, string>;
+  /** The server's clock when the page was read (ms): the page's relative times hydrate as the server drew them. */
+  servedAt?: number;
   /** Round 40: every page the blocks link to (null = cannot open); undefined = not read, the browser asks. */
   links?: SpaceLinks;
   /** Round 40: the pages mentioning this one (`content.space_backlinks`); undefined = the browser asks. */
@@ -298,6 +304,8 @@ export async function readSpacePage(spaceId: string): Promise<SpacePageReads> {
     seeds,
     ...(expected ? { expectedRows: expected.rows } : {}),
     ...(expected && Object.keys(expected.groups).length ? { expectedGroups: expected.groups } : {}),
+    ...(expected && Object.keys(expected.notes).length ? { expectedNotes: expected.notes } : {}),
+    servedAt: Date.now(),
     links,
     backlinks,
   };
@@ -328,18 +336,24 @@ function showsWholeTable(view: { filters?: unknown; where?: unknown }): boolean 
 async function readExpectedRows(
   ctx: Promise<PageReads>,
   doc: SpaceDoc,
-): Promise<{ rows: Record<string, number>; groups: Record<string, number[]> } | undefined> {
+): Promise<{ rows: Record<string, number>; groups: Record<string, number[]>; notes: Record<string, string> } | undefined> {
   const tables = databaseBlocks(doc.blocks).filter((b) => b.props.source.kind === "table" && isUuidShape(b.props.source.tableId) && !b.props.sample);
   if (!tables.length) return undefined;
-  const found = { rows: {} as Record<string, number>, groups: {} as Record<string, number[]> };
+  const found = { rows: {} as Record<string, number>, groups: {} as Record<string, number[]>, notes: {} as Record<string, string> };
   const asked = Promise.all(
     tables.map(async (b) => {
       if (b.props.source.kind !== "table") return;
       const view = activeView(b.props.views, b.props.activeViewId);
-      if (!showsWholeTable(view)) return;
       const reads = await ctx;
       const where = await reads.where(b.props.source.tableId);
       if (!where) return;
+      // A table that does not open draws its note whatever the view (DB-BLOCK-CHROME-2): its first paint is the note.
+      const opens = readObjectOrganizationAnswer(where.where, b.props.source.tableId).state;
+      if (opensNoteLine(opens) !== null) {
+        found.notes[b.blockId] = opens;
+        return;
+      }
+      if (!showsWholeTable(view)) return;
       const rows = rowsVisibleOf(where.where);
       if (rows !== null) found.rows[b.blockId] = rows;
       const groups = columnCardsOf(where.where, view);
@@ -349,7 +363,7 @@ async function readExpectedRows(
   // Whatever landed in time: a block whose count is late is drawn at the default size, as before.
   const landed = await within<typeof found | null>(ROWS_BUDGET_MS, asked, null);
   const out = landed ?? found;
-  return Object.keys(out.rows).length ? { rows: { ...out.rows }, groups: { ...out.groups } } : undefined;
+  return Object.keys(out.rows).length || Object.keys(out.notes).length ? { rows: { ...out.rows }, groups: { ...out.groups }, notes: { ...out.notes } } : undefined;
 }
 
 /** Round 40: "N backlinks" under the title, read with the page (the same door the browser asked). */

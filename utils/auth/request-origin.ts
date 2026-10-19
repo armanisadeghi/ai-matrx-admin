@@ -38,9 +38,20 @@ export function requestOrigin(
   const protocol =
     forwardedProtocol === "http" || forwardedProtocol === "https"
       ? forwardedProtocol
-      : /^(localhost|127\.0\.0\.1)(:\d{1,5})?$/i.test(host)
+      : /^(([a-z0-9-]+\.)*localhost|127\.0\.0\.1)(:\d{1,5})?$/i.test(host)
         ? "http"
         : "https";
 
   return `${protocol}://${host}`;
+}
+
+/**
+ * The site address the request was served on (x-forwarded-host, else host) — never the `Origin`
+ * header, which on an embedded form is the embedding page's site. Payment return URLs use this so a
+ * payer who started on book.theirbusiness.com comes back there, never to a configured base or localhost.
+ */
+export function requestHostOrigin(headersList: Pick<Headers, "get">): string | null {
+  return requestOrigin({
+    get: (name: string) => (name.toLowerCase() === "origin" ? null : headersList.get(name)),
+  });
 }

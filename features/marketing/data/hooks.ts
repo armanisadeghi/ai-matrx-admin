@@ -124,8 +124,9 @@ import {
   fetchResearchImageOrganization,
   fetchResearchImages,
   fetchResearchImagesPage,
+  fetchResearchImageTopics,
   RESEARCH_IMAGE_PAGE_SIZE,
-  type ResearchBrandScope,
+  type ResearchImageFilters,
   saveSiteMediaStandards,
   tagResearchImages,
   unlinkResearchImagesFromBrand,
@@ -177,6 +178,8 @@ export const marketingKeys = {
     [...marketingKeys.root, "research-images", organizationId] as const,
   researchImageOrganization: (organizationId: string) =>
     [...marketingKeys.root, "research-image-organization", organizationId] as const,
+  researchImageTopics: (organizationId: string) =>
+    [...marketingKeys.root, "research-image-topics", organizationId] as const,
   siteStructure: (siteId: string) =>
     [...marketingKeys.site(siteId), "structure"] as const,
   homepageMeta: (siteId: string) =>
@@ -756,51 +759,108 @@ export function useResearchImages(organizationId: string | null) {
 
 /**
  * Research images read a page at a time: the first page on mount, more only
- * when the person asks (Load more). `total` is the exact organization count.
+ * when the person asks (Load more). Every filter runs in the query, so `total`
+ * is the exact count of matching images. While a filter change loads, the
+ * previous pages stay on screen (no layout jump).
  */
 export function useResearchImagePages(
   organizationId: string | null,
-  scope: ResearchBrandScope | null = { kind: "all" },
+  filters: ResearchImageFilters | null,
 ) {
   return useInfiniteQuery({
     queryKey: [
       ...marketingKeys.researchImages(organizationId ?? "none"),
       "pages",
-      scope,
+      filters,
     ] as const,
     queryFn: ({ signal, pageParam }) =>
-      fetchResearchImagesPage(organizationId ?? "", pageParam, signal, scope ?? { kind: "all" }),
+      fetchResearchImagesPage(organizationId ?? "", pageParam, signal, filters ?? undefined),
     initialPageParam: 0,
     getNextPageParam: (last) => {
       const next = last.offset + RESEARCH_IMAGE_PAGE_SIZE;
       return next < last.total ? next : undefined;
     },
-    enabled: Boolean(organizationId) && scope !== null,
+    enabled: Boolean(organizationId) && filters !== null,
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
+  });
+}
+
+/** Topics in the organization that carry images — the Topic filter's options. */
+export function useResearchImageTopics(organizationId: string | null) {
+  return useQuery({
+    queryKey: marketingKeys.researchImageTopics(organizationId ?? "none"),
+    queryFn: ({ signal }) => fetchResearchImageTopics(organizationId ?? "", signal),
+    enabled: Boolean(organizationId),
     staleTime: 120_000,
   });
 }
 
+/** A short, stable fingerprint of an id set (order-insensitive) for a query key. */
+function idSetKey(ids: readonly string[]): string {
+  const sorted = [...ids].sort();
+  let hash = 5381;
+  for (const id of sorted) {
+    for (let i = 0; i < id.length; i += 1) hash = ((hash * 33) ^ id.charCodeAt(i)) >>> 0;
+  }
+  return `${sorted.length}:${hash.toString(36)}`;
+}
+
 /**
- * Brand links + categories for the research images on screen (one batched
- * association read per edge kind). Keyed by organization; invalidated by the
- * tag/untag mutations below.
+ * Brand links + this brand's category tags for the research images on screen
+ * (one batched association read per edge kind). Keyed on the exact id sets;
+ * invalidated by the tag/untag/unlink mutations below.
  */
 export function useResearchImageOrganization(
   organizationId: string | null,
+  brandId: string,
   imageIds: string[],
   topicIds: string[],
 ) {
   return useQuery({
     queryKey: [
       ...marketingKeys.researchImageOrganization(organizationId ?? "none"),
-      imageIds.length,
-      imageIds[0] ?? "",
-      topicIds.length,
+      brandId,
+      idSetKey(imageIds),
+      idSetKey(topicIds),
     ] as const,
-    queryFn: () => fetchResearchImageOrganization(imageIds, topicIds),
+    queryFn: () => fetchResearchImageOrganization(imageIds, topicIds, brandId),
     enabled: Boolean(organizationId) && (imageIds.length > 0 || topicIds.length > 0),
+    placeholderData: keepPreviousData,
     staleTime: 30_000,
   });
+}
+
+/**
+ * Wrap a link-list adapter so a topic ↔ brand link made anywhere (research
+ * Settings → Links, brand Relationships → Research) refreshes every research
+ * image list at once — the Brand filter reads those edges.
+ */
+export function useRefreshResearchImagesOnLink<
+  A extends {
+    attach: (...args: never[]) => Promise<{ ok: boolean }>;
+    detach: (...args: never[]) => Promise<{ ok: boolean }>;
+  },
+>(adapter: A): A {
+  const queryClient = useQueryClient();
+  const refresh = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: [...marketingKeys.root, "research-images"] }),
+      queryClient.invalidateQueries({ queryKey: [...marketingKeys.root, "research-image-organization"] }),
+    ]);
+  return {
+    ...adapter,
+    attach: async (...args: Parameters<A["attach"]>) => {
+      const result = await adapter.attach(...args);
+      if (result.ok) void refresh();
+      return result;
+    },
+    detach: async (...args: Parameters<A["detach"]>) => {
+      const result = await adapter.detach(...args);
+      if (result.ok) void refresh();
+      return result;
+    },
+  };
 }
 
 export function useTagResearchImages() {
@@ -824,6 +884,7 @@ export function useUntagResearchImages() {
     mutationFn: (input: {
       imageIds: string[];
       categoryId: string;
+      brandId: string;
       organizationId: string;
     }) => untagResearchImages(input),
     onSettled: (_data, _error, input) =>

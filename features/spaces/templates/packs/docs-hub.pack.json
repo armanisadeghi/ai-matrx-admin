@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0106",
-  "version": 5,
+  "version": 6,
   "title": "Docs Hub",
   "description": "Teams that write a lot: every document in one place with status, owner and review.",
   "forWho": "Teams that write and share lots of documents",
@@ -9,7 +9,7 @@
     "emoji": "📚"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:docs-library-bookshelves",
     "offsetY": 50
   },
   "category": "docs",
@@ -1187,7 +1187,7 @@
         "Ostrander Row"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1198,7 +1198,7 @@
         "emoji": "📚"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:docs-library-bookshelves",
         "offsetY": 50
       },
       "settings": {

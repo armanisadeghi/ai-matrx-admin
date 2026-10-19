@@ -1,24 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0564",
-  "version": 1,
+  "version": 3,
   "title": "Security Consultancy Engagement Desk",
-  "description": "Clients, security assessments, findings, fixes and retests for a consultancy.",
+  "description": "Security consultancy: engagements, scope, findings by severity, fixes and retests.",
   "forWho": "Cybersecurity consultancies and assessment firms",
   "icon": {
     "emoji": "🛡️"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:tech-cyber-security-padlock",
     "offsetY": 50
   },
   "category": "tech",
   "tags": [
+    "practice lead",
+    "lead assessor",
+    "client manager",
+    "report editor",
     "security",
-    "assessments",
-    "findings",
-    "remediation",
-    "consultancy"
+    "penetration testing"
   ],
   "spec": {
     "specVersion": 1,
@@ -468,6 +469,24 @@
             "contextPolicy": "include"
           },
           {
+            "key": "authorization",
+            "label": "Testing authorization",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not sent",
+              "Sent for signature",
+              "Signed"
+            ],
+            "choiceColors": {
+              "Not sent": "slate",
+              "Sent for signature": "amber",
+              "Signed": "green"
+            },
+            "description": "The signed letter that permits testing, naming the targets, dates and emergency contacts. No testing starts without it."
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -547,6 +566,44 @@
             "contextPolicy": "include"
           },
           {
+            "key": "days",
+            "label": "Testing days",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "method",
+            "label": "Method",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "OWASP testing guide",
+              "Penetration testing standard",
+              "CIS benchmarks",
+              "NIST framework",
+              "Custom scenario"
+            ],
+            "choiceColors": {
+              "OWASP testing guide": "blue",
+              "Penetration testing standard": "violet",
+              "CIS benchmarks": "teal",
+              "NIST framework": "slate",
+              "Custom scenario": "amber"
+            }
+          },
+          {
             "key": "lead",
             "label": "Lead assessor",
             "parityType": "relation",
@@ -564,6 +621,32 @@
             "agg": "count",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "critical_total",
+            "label": "Critical findings",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "findings",
+            "pick": "finding_title",
+            "agg": "count",
+            "filter": {
+              "severity": "Critical"
+            }
+          },
+          {
+            "key": "high_total",
+            "label": "High findings",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "findings",
+            "pick": "finding_title",
+            "agg": "count",
+            "filter": {
+              "severity": "High"
+            }
           },
           {
             "key": "findings_open",
@@ -601,6 +684,72 @@
                 "Fix in progress",
                 "Retest needed"
               ]
+            }
+          },
+          {
+            "key": "medium_low_open",
+            "label": "Medium or low still open",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "findings",
+            "pick": "finding_title",
+            "agg": "count",
+            "filter": {
+              "severity": [
+                "Medium",
+                "Low"
+              ],
+              "status": [
+                "Open",
+                "Fix in progress",
+                "Retest needed"
+              ]
+            }
+          },
+          {
+            "key": "resolved",
+            "label": "Findings resolved",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "findings",
+            "pick": "finding_title",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Open",
+                  "Fix in progress",
+                  "Retest needed"
+                ]
+              }
+            }
+          },
+          {
+            "key": "retests_due",
+            "label": "Retests scheduled",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "engagement_retests",
+            "pick": "retest_name",
+            "agg": "count",
+            "filter": {
+              "status": "Scheduled"
+            }
+          },
+          {
+            "key": "out_of_scope",
+            "label": "Targets out of scope",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "scope_items",
+            "pick": "target",
+            "agg": "count",
+            "filter": {
+              "in_scope": "Out of scope"
             }
           },
           {
@@ -829,7 +978,10 @@
               "report_due": "@today",
               "fee": 18500,
               "lead": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "authorization": "Signed",
+              "days": 8,
+              "method": "OWASP testing guide"
             }
           },
           {
@@ -842,7 +994,10 @@
               "starts_on": "@today-18d",
               "report_due": "@today-2d",
               "fee": 14000,
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "authorization": "Signed",
+              "days": 6,
+              "method": "Penetration testing standard"
             }
           },
           {
@@ -856,7 +1011,10 @@
               "report_due": "@today+35d",
               "fee": 6500,
               "lead": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "authorization": "Not sent",
+              "days": 4,
+              "method": "Custom scenario"
             }
           },
           {
@@ -869,7 +1027,10 @@
               "starts_on": "@today+3d",
               "report_due": "@today+20d",
               "fee": 12000,
-              "lead": "tm-3"
+              "lead": "tm-3",
+              "authorization": "Sent for signature",
+              "days": 5,
+              "method": "CIS benchmarks"
             }
           },
           {
@@ -884,7 +1045,10 @@
               "fee": 8500,
               "lead": "tm-3",
               "delivered_on": "@today-14d",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "authorization": "Signed",
+              "days": 5,
+              "method": "NIST framework"
             }
           },
           {
@@ -897,7 +1061,10 @@
               "starts_on": "@today+2d",
               "report_due": "@today+6d",
               "fee": 7500,
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "authorization": "Signed",
+              "days": 2,
+              "method": "Custom scenario"
             }
           },
           {
@@ -912,7 +1079,10 @@
               "fee": 11000,
               "lead": "tm-3",
               "delivered_on": "@today-28d",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "authorization": "Signed",
+              "days": 5,
+              "method": "Penetration testing standard"
             }
           },
           {
@@ -926,7 +1096,10 @@
               "report_due": "@today-170d",
               "fee": 9000,
               "lead": "tm-2",
-              "delivered_on": "@today-172d"
+              "delivered_on": "@today-172d",
+              "authorization": "Signed",
+              "days": 4,
+              "method": "OWASP testing guide"
             }
           }
         ]
@@ -1001,6 +1174,54 @@
               "Low": "violet",
               "Informational": "teal"
             },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Access control",
+              "Authentication",
+              "Configuration",
+              "Outdated software",
+              "Data exposure",
+              "Process and people"
+            ],
+            "choiceColors": {
+              "Access control": "red",
+              "Authentication": "orange",
+              "Configuration": "blue",
+              "Outdated software": "amber",
+              "Data exposure": "violet",
+              "Process and people": "teal"
+            }
+          },
+          {
+            "key": "cvss",
+            "label": "CVSS score",
+            "parityType": "decimal",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10
+              }
+            ],
+            "description": "Base score from 0 to 10 using the Common Vulnerability Scoring System; leave empty for process findings."
+          },
+          {
+            "key": "affected",
+            "label": "Affected system",
+            "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -1118,6 +1339,19 @@
             "contextPolicy": "include"
           },
           {
+            "key": "retests_failed",
+            "label": "Failed retests",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "retests",
+            "pick": "retest_name",
+            "agg": "count",
+            "filter": {
+              "status": "Failed"
+            }
+          },
+          {
             "key": "added_at",
             "label": "Added",
             "parityType": "created_time",
@@ -1227,7 +1461,10 @@
               "fix_by": "@today+7d",
               "client_owner": "Portal team lead",
               "author": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "category": "Access control",
+              "affected": "Patient portal admin area",
+              "cvss": 8.1
             }
           },
           {
@@ -1239,7 +1476,10 @@
               "status": "Fix in progress",
               "fix_by": "@today+14d",
               "client_owner": "Infrastructure lead",
-              "author": "tm-2"
+              "author": "tm-2",
+              "category": "Outdated software",
+              "affected": "Booking server",
+              "cvss": 5.3
             }
           },
           {
@@ -1252,7 +1492,10 @@
               "fix_by": "@today-3d",
               "client_owner": "Branch IT",
               "author": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "category": "Authentication",
+              "affected": "Branch teller workstations",
+              "cvss": 7.2
             }
           },
           {
@@ -1264,7 +1507,10 @@
               "status": "Fix in progress",
               "fix_by": "@today",
               "client_owner": "Branch IT",
-              "author": "tm-2"
+              "author": "tm-2",
+              "category": "Configuration",
+              "affected": "Branch firewall",
+              "cvss": 9.1
             }
           },
           {
@@ -1277,7 +1523,9 @@
               "fix_by": "@today+20d",
               "client_owner": "Operations",
               "author": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "category": "Process and people",
+              "affected": "Nightly backup job"
             }
           },
           {
@@ -1289,7 +1537,10 @@
               "status": "Retest needed",
               "fix_by": "@today-10d",
               "client_owner": "IT manager",
-              "author": "tm-3"
+              "author": "tm-3",
+              "category": "Authentication",
+              "affected": "Directory password policy",
+              "cvss": 5.0
             }
           },
           {
@@ -1302,7 +1553,10 @@
               "fix_by": "@today+2d",
               "client_owner": "IT manager",
               "author": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "category": "Configuration",
+              "affected": "Warehouse file server",
+              "cvss": 3.7
             }
           },
           {
@@ -1314,7 +1568,9 @@
               "status": "Accepted risk",
               "fix_by": "@today+60d",
               "client_owner": "HR",
-              "author": "tm-3"
+              "author": "tm-3",
+              "category": "Process and people",
+              "affected": "Training records"
             }
           },
           {
@@ -1328,7 +1584,10 @@
               "client_owner": "IT manager",
               "author": "tm-3",
               "fixed_on": "@today-18d",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "category": "Authentication",
+              "affected": "Staff email",
+              "cvss": 7.5
             }
           },
           {
@@ -1340,7 +1599,71 @@
               "status": "Open",
               "fix_by": "@today+5d",
               "client_owner": "IT manager",
-              "author": "tm-3"
+              "author": "tm-3",
+              "category": "Configuration",
+              "affected": "Warehouse guest wifi",
+              "cvss": 7.4
+            }
+          },
+          {
+            "key": "findings-11",
+            "values": {
+              "finding_title": "Customer records readable by changing a number in the address",
+              "engagement": "engagements-1",
+              "severity": "Critical",
+              "status": "Open",
+              "fix_by": "@today+2d",
+              "client_owner": "Portal team lead",
+              "author": "tm-2",
+              "category": "Data exposure",
+              "cvss": 9.4,
+              "affected": "Patient portal records page"
+            }
+          },
+          {
+            "key": "findings-12",
+            "values": {
+              "finding_title": "Session stays valid after sign-out",
+              "engagement": "engagements-1",
+              "severity": "Medium",
+              "status": "Open",
+              "fix_by": "@today+14d",
+              "client_owner": "Portal team lead",
+              "author": "tm-2",
+              "category": "Authentication",
+              "cvss": 5.4,
+              "affected": "Patient portal"
+            }
+          },
+          {
+            "key": "findings-13",
+            "values": {
+              "finding_title": "Error pages show internal server details",
+              "engagement": "engagements-1",
+              "severity": "Low",
+              "status": "Open",
+              "fix_by": "@today+30d",
+              "client_owner": "Portal team lead",
+              "author": "tm-2",
+              "category": "Configuration",
+              "cvss": 3.1,
+              "affected": "Patient portal"
+            }
+          },
+          {
+            "key": "findings-14",
+            "values": {
+              "finding_title": "Printer admin page open to all staff",
+              "engagement": "engagements-7",
+              "severity": "Medium",
+              "status": "Fixed",
+              "fix_by": "@today-30d",
+              "client_owner": "IT manager",
+              "author": "tm-2",
+              "category": "Configuration",
+              "cvss": 5.8,
+              "affected": "Warehouse printers",
+              "fixed_on": "@today-27d"
             }
           }
         ]
@@ -1691,6 +2014,404 @@
             }
           }
         ]
+      },
+      {
+        "token": "scope",
+        "name": "Scope items",
+        "labelSingular": "Scope item",
+        "labelPlural": "Scope items",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "crosshair",
+        "titleField": "target",
+        "describes": "What may and may not be tested on each engagement, who approved it and any conditions, as signed in the authorization letter.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "independentOf": {
+          "engagement": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "target",
+            "label": "Target",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "engagement",
+            "label": "Engagement",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "engagements",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Web application",
+              "API",
+              "External address range",
+              "Internal network segment",
+              "Cloud account",
+              "People"
+            ],
+            "choiceColors": {
+              "Web application": "blue",
+              "API": "violet",
+              "External address range": "teal",
+              "Internal network segment": "slate",
+              "Cloud account": "amber",
+              "People": "pink"
+            }
+          },
+          {
+            "key": "in_scope",
+            "label": "In scope",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "In scope",
+              "Out of scope"
+            ],
+            "choiceColors": {
+              "In scope": "green",
+              "Out of scope": "red"
+            }
+          },
+          {
+            "key": "approved_by",
+            "label": "Approved by",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "note",
+            "label": "Conditions",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "scope-1",
+            "values": {
+              "target": "Patient portal, public site",
+              "engagement": "engagements-1",
+              "kind": "Web application",
+              "in_scope": "In scope",
+              "approved_by": "Head of IT, signed letter",
+              "note": "Test accounts: one patient, one clinic admin"
+            }
+          },
+          {
+            "key": "scope-2",
+            "values": {
+              "target": "Patient portal API",
+              "engagement": "engagements-1",
+              "kind": "API",
+              "in_scope": "In scope",
+              "approved_by": "Head of IT, signed letter",
+              "note": "Mobile app calls only"
+            }
+          },
+          {
+            "key": "scope-3",
+            "values": {
+              "target": "Payment page run by the card processor",
+              "engagement": "engagements-1",
+              "kind": "Web application",
+              "in_scope": "Out of scope",
+              "approved_by": "Head of IT, signed letter",
+              "note": "Third party; needs their own permission"
+            }
+          },
+          {
+            "key": "scope-4",
+            "values": {
+              "target": "Branch office ranges, 14 sites",
+              "engagement": "engagements-2",
+              "kind": "Internal network segment",
+              "in_scope": "In scope",
+              "approved_by": "Chief information officer",
+              "note": "Testing after 6 pm only"
+            }
+          },
+          {
+            "key": "scope-5",
+            "values": {
+              "target": "Core banking system",
+              "engagement": "engagements-2",
+              "kind": "Internal network segment",
+              "in_scope": "Out of scope",
+              "approved_by": "Chief information officer",
+              "note": "Vendor-managed; no active scanning"
+            }
+          },
+          {
+            "key": "scope-6",
+            "values": {
+              "target": "Production cloud account",
+              "engagement": "engagements-4",
+              "kind": "Cloud account",
+              "in_scope": "In scope",
+              "approved_by": "Platform engineering lead",
+              "note": "Read-only review role"
+            }
+          },
+          {
+            "key": "scope-7",
+            "values": {
+              "target": "All office staff email addresses",
+              "engagement": "engagements-3",
+              "kind": "People",
+              "in_scope": "In scope",
+              "approved_by": "Superintendent's office",
+              "note": "Leaders told in advance; no payroll themes"
+            }
+          },
+          {
+            "key": "scope-8",
+            "values": {
+              "target": "Warehouse office network",
+              "engagement": "engagements-7",
+              "kind": "Internal network segment",
+              "in_scope": "In scope",
+              "approved_by": "IT manager",
+              "note": "Retest of the original findings only"
+            }
+          }
+        ]
+      },
+      {
+        "token": "retest",
+        "name": "Retests",
+        "labelSingular": "Retest",
+        "labelPlural": "Retests",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "refresh-cw",
+        "titleField": "retest_name",
+        "describes": "Each check that a client fix really works: the finding, the date, the result and the evidence.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "independentOf": {
+          "finding": "Either record can be created or change status before the other.",
+          "engagement": "Either record can be created or change status before the other.",
+          "tester": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "retest_name",
+            "label": "Retest",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "finding",
+            "label": "Finding",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "findings",
+            "relationMax": 1
+          },
+          {
+            "key": "engagement",
+            "label": "Engagement",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "engagements",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Result",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Scheduled",
+              "Passed",
+              "Failed",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Scheduled": "amber",
+              "Passed": "green",
+              "Failed": "red",
+              "Cancelled": "slate"
+            }
+          },
+          {
+            "key": "retest_on",
+            "label": "Retest on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "evidence",
+            "label": "Evidence",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "tester",
+            "label": "Tester",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "btn_pass",
+            "label": "Passed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "retest_pass"
+            }
+          },
+          {
+            "key": "btn_fail",
+            "label": "Failed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "retest_fail"
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "retest_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "retest-1",
+            "values": {
+              "retest_name": "Retest: password policy",
+              "finding": "findings-6",
+              "engagement": "engagements-5",
+              "status": "Scheduled",
+              "retest_on": "@today-2d",
+              "tester": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "retest-2",
+            "values": {
+              "retest_name": "Retest: open ports on file server",
+              "finding": "findings-7",
+              "engagement": "engagements-7",
+              "status": "Scheduled",
+              "retest_on": "@today",
+              "tester": "tm-3"
+            }
+          },
+          {
+            "key": "retest-3",
+            "values": {
+              "retest_name": "Retest: firewall rule",
+              "finding": "findings-4",
+              "engagement": "engagements-2",
+              "status": "Scheduled",
+              "retest_on": "@today+2d",
+              "tester": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "retest-4",
+            "values": {
+              "retest_name": "Retest: guest wifi separation",
+              "finding": "findings-10",
+              "engagement": "engagements-7",
+              "status": "Scheduled",
+              "retest_on": "@today+4d",
+              "tester": "tm-3"
+            }
+          },
+          {
+            "key": "retest-5",
+            "values": {
+              "retest_name": "Retest: email multi-factor",
+              "finding": "findings-9",
+              "engagement": "engagements-5",
+              "status": "Passed",
+              "retest_on": "@today-18d",
+              "evidence": "Sign-in now asks for a second factor on all 40 mailboxes sampled",
+              "tester": "tm-3"
+            }
+          },
+          {
+            "key": "retest-6",
+            "values": {
+              "retest_name": "First retest: password policy",
+              "finding": "findings-6",
+              "engagement": "engagements-5",
+              "status": "Failed",
+              "retest_on": "@today-9d",
+              "evidence": "Policy changed but old passwords not expired",
+              "tester": "tm-3"
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1763,6 +2484,46 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "deliverable_by_editor"
+      },
+      {
+        "describes": "A scope item belongs to one engagement.",
+        "fromTable": "scope",
+        "fromField": "engagement",
+        "toTable": "engagements",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "scope_items"
+      },
+      {
+        "describes": "A retest checks one finding.",
+        "fromTable": "retest",
+        "fromField": "finding",
+        "toTable": "findings",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "retests"
+      },
+      {
+        "describes": "A retest belongs to one engagement.",
+        "fromTable": "retest",
+        "fromField": "engagement",
+        "toTable": "engagements",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "engagement_retests"
+      },
+      {
+        "describes": "One person runs each retest.",
+        "fromTable": "retest",
+        "fromField": "tester",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "retest_by_tester"
       }
     ],
     "sharedBlocks": [
@@ -2028,6 +2789,48 @@
         "kind": "row_action",
         "token": "deliverables_claim",
         "table": "deliverables",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "retest_pass",
+        "table": "retest",
+        "name": "Passed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Passed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "retest_fail",
+        "table": "retest",
+        "name": "Failed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Failed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "retest_claim",
+        "table": "retest",
         "name": "Assign to me",
         "actionKind": "update",
         "steps": [
@@ -2383,6 +3186,94 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_scope",
+        "name": "All scope items",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "scope"
+      },
+      {
+        "token": "scope_board",
+        "name": "In or out",
+        "kind": "kanban",
+        "groupBy": "in_scope",
+        "table": "scope"
+      },
+      {
+        "token": "all_retest",
+        "name": "All retests",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "retest"
+      },
+      {
+        "token": "retest_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "retest"
+      },
+      {
+        "token": "retest_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "retest_on",
+        "allDay": true,
+        "table": "retest"
+      },
+      {
+        "token": "retest_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "retest_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        },
+        "table": "retest"
+      },
+      {
+        "token": "retest_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "retest_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        },
+        "table": "retest"
+      },
+      {
+        "token": "retest_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "retest_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        },
+        "table": "retest"
+      },
+      {
+        "token": "retest_mine",
+        "name": "My retests",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "retest"
       }
     ],
     "agent": {
@@ -2455,6 +3346,30 @@
           "surface": "findings_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open scope items.",
+        "action": {
+          "kind": "open",
+          "surface": "scope_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "scope_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open retests.",
+        "action": {
+          "kind": "open",
+          "surface": "retest_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "retest_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2471,7 +3386,7 @@
         "Sentinel Court"
       ]
     },
-    "version": 1
+    "version": 3
   },
   "pages": [
     {
@@ -2482,7 +3397,7 @@
         "emoji": "🛡️"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:tech-cyber-security-padlock",
         "offsetY": 50
       },
       "settings": {
@@ -2493,12 +3408,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Every engagement from scoping to retest, plus the findings and reports behind it. Start with the Dashboard each Monday. Written authorization must be on file before any testing starts; check it on the engagement before pressing Start testing. Keep evidence and client secrets out of these rows."
+              "text": "The practice in one place. Engagements hold each job with its authorization, method and fee; Scope items say exactly what may be tested; Findings carry severity, CVSS and the client owner; Retests prove each fix; Deliverables track the report through review. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -3046,6 +3967,453 @@
             ],
             "activeViewId": "del-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Scope items"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What is in and out of scope on each engagement, as signed."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "scope",
+              "view": "all_scope"
+            },
+            "inline": true,
+            "title": "Scope items",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sc-t",
+                "name": "All scope items",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "sc-b",
+                "name": "In or out",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "in_scope"
+              }
+            ],
+            "activeViewId": "sc-t"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Retests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Checks that client fixes really work."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "retest",
+              "view": "all_retest"
+            },
+            "inline": true,
+            "title": "Retests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "rt-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "rt-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "retest_on"
+              },
+              {
+                "id": "rt-t",
+                "name": "All retests",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "rt-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "retest_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "rt-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "retest_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "rt-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "retest_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "rt-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "rt-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "security-consultancy-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the practice in this workspace. Share it with client managers, assessors and the report editor."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": ": who we work for, their sector and the next review date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Engagements",
+              "bold": true
+            },
+            {
+              "text": ": each job with kind, method, authorization, testing days, fee, and finding counts by severity."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Scope items",
+              "bold": true
+            },
+            {
+              "text": ": every target in or out of scope, who approved it and under what conditions."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Findings",
+              "bold": true
+            },
+            {
+              "text": ": each issue with severity, CVSS score, category, affected system, client owner and fix-by date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Retests",
+              "bold": true
+            },
+            {
+              "text": ": each check that a fix works, with the result and evidence."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Deliverables",
+              "bold": true
+            },
+            {
+              "text": ": the executive summary, technical report, remediation plan, readout and retest letter."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: the dashboard. Authorizations not signed, reports due, critical and high findings still open, retests this week."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every testing day: start and stop times sent to the client; findings logged the same day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Thursday: report review. Every report has a second reader."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Friday: client managers chase overdue fixes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: retests due, reports due"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every engagement: scope written, authorization signed before day one"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every report: two people agree each severity"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: open critical and high findings reviewed with each client"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Client managers own scoping, authorization and follow-up. Lead assessors own testing, severities and retests. The report editor owns deliverables. The practice lead reads fees, utilization and what stays open."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ground rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "No testing without a signed authorization. Anything critical is phoned in the same day. Client data seen during testing stays out of chat, email and screenshots unless blurred."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Numbers we use"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Findings resolved",
+              "bold": true
+            },
+            {
+              "text": " counts everything not still open, fixed or accepted. "
+            },
+            {
+              "text": "Critical or high still open",
+              "bold": true
+            },
+            {
+              "text": " is the number clients and their auditors care about most."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename engagement kinds, methods and categories to match your services, set your own fix-by targets, and delete the sample rows once your first real engagement is in."
+            }
+          ]
         }
       ]
     },
@@ -3460,6 +4828,157 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Findings by severity"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "findings",
+              "view": "all_findings"
+            },
+            "inline": true,
+            "title": "Findings by severity",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dsx-1",
+                "name": "Findings by severity",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "severity",
+                  "op": "count"
+                }
+              },
+              {
+                "id": "dsx-2",
+                "name": "Findings by category",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "category",
+                  "op": "count",
+                  "centerValue": true
+                }
+              },
+              {
+                "id": "dsx-3",
+                "name": "Critical and high still open",
+                "layout": "list",
+                "icon": "ShieldAlert",
+                "anyOf": {
+                  "severity": [
+                    "Critical",
+                    "High"
+                  ],
+                  "status": [
+                    "Open",
+                    "Fix in progress",
+                    "Retest needed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dsx-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Retests coming up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "retest",
+              "view": "all_retest"
+            },
+            "inline": true,
+            "title": "Retests coming up",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dsx-4",
+                "name": "Retests in the next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "retest_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              }
+            ],
+            "activeViewId": "dsx-4"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before testing starts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "engagements",
+              "view": "all_engagements"
+            },
+            "inline": true,
+            "title": "Authorization",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dsx-5",
+                "name": "Authorization not signed",
+                "layout": "list",
+                "icon": "FileWarning",
+                "anyOf": {
+                  "authorization": [
+                    "Not sent",
+                    "Sent for signature"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dsx-5"
+          }
         }
       ]
     },
@@ -3478,7 +4997,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Every engagement follows the same stages. A client who knows the stages trusts the process and the price."
+              "text": "Every engagement follows the same path, from the first call to the closing letter. The order matters: nobody tests anything until the scope is written down and the authorization is signed."
             }
           ],
           "background": "blue",
@@ -3490,7 +5009,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Stages"
+              "text": "Scoping"
             }
           ],
           "props": {
@@ -3498,152 +5017,84 @@
           }
         },
         {
-          "type": "table",
-          "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Stage"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "What happens"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Done when"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Scoping"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Agree systems, dates, rules and fee"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Signed scope and written authorization"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Scheduled"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Assessors and test window booked"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Kickoff call held"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Testing"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Assessors work inside the agreed window"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "All planned areas covered"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Reporting"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Findings written, rated and reviewed"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Editor and lead approve"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Delivered"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Readout meeting held"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Client confirms receipt"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Retest"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Fixes checked after the client's remediation"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Findings Fixed or accepted"
-                    }
-                  ]
-                ]
-              }
-            ]
-          }
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Talk with the client about what worries them and what a good result looks like for them. A scanner report is not the goal; fixing the issues that matter is."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Choose the "
+            },
+            {
+              "text": "Kind",
+              "bold": true
+            },
+            {
+              "text": " of engagement and the "
+            },
+            {
+              "text": "Method",
+              "bold": true
+            },
+            {
+              "text": ". A web application assessment follows the OWASP testing guide; a cloud review checks against CIS benchmarks; a tabletop exercise follows a custom scenario."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "List every target as a "
+            },
+            {
+              "text": "Scope item",
+              "bold": true
+            },
+            {
+              "text": ": addresses, applications, accounts, people. Mark what is "
+            },
+            {
+              "text": "Out of scope",
+              "bold": true
+            },
+            {
+              "text": " just as clearly, with the reason. Third-party systems need their owner's permission, not only the client's."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Estimate "
+            },
+            {
+              "text": "Testing days",
+              "bold": true
+            },
+            {
+              "text": " and set the "
+            },
+            {
+              "text": "Fee",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Never skip"
+              "text": "Authorization"
             }
           ],
           "props": {
@@ -3651,26 +5102,169 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Written authorization from someone who can give it."
+              "text": "Send the authorization letter naming the targets, testing dates and times, source addresses, and emergency contacts on both sides. Set "
+            },
+            {
+              "text": "Testing authorization",
+              "bold": true
+            },
+            {
+              "text": " to Sent for signature, then "
+            },
+            {
+              "text": "Signed",
+              "bold": true
+            },
+            {
+              "text": " when it comes back. The dashboard lists every engagement still waiting for one."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "An emergency contact for the test window."
+              "text": "Testing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Start testing",
+              "bold": true
+            },
+            {
+              "text": " on day one. Tell the client's contact when you start and stop each day. If you find something critical, such as live customer data exposed, stop and call the client's emergency contact the same day; do not wait for the report."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "A stop word if something unexpected happens."
+              "text": "Log each finding as you go, while the evidence is fresh."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reporting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Move to reporting",
+              "bold": true
+            },
+            {
+              "text": ". Write the technical report, then the executive summary. Every report goes through a second reader before it is sent; "
+            },
+            {
+              "text": "Deliverables",
+              "bold": true
+            },
+            {
+              "text": " tracks drafting, review and sending."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Delivery and readout"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send the report and hold a readout meeting with the people who will do the fixing. Agree a "
+            },
+            {
+              "text": "Fix by",
+              "bold": true
+            },
+            {
+              "text": " date and a client owner for every finding. Press "
+            },
+            {
+              "text": "Mark delivered",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Retest and close"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When the client says fixes are in, book "
+            },
+            {
+              "text": "Retests",
+              "bold": true
+            },
+            {
+              "text": ". When every critical and high finding has passed or the client has formally accepted the risk, send the retest letter and close the engagement."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A clinic group asked for a portal assessment. Scoping put the portal and its API in scope and the card processor's payment page out. On day three a tester found patient records readable by changing a number in the address; the lead called the clinic's head of IT that afternoon and the page was taken offline within an hour."
             }
           ]
         }
@@ -3691,7 +5285,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A finding that is not fixed was not written well enough. Write for the person who has to fix it and the person who pays for it."
+              "text": "A finding is only useful if the client's team can understand it, reproduce it and fix it without calling us. Write every one for the person who will do the fixing, then add a sentence for their manager."
             }
           ],
           "background": "blue",
@@ -3703,7 +5297,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Every finding answers four questions"
+              "text": "The parts of a finding"
             }
           ],
           "props": {
@@ -3711,34 +5305,110 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "What did we find, in a sentence a manager understands?"
+              "text": "Title",
+              "bold": true
+            },
+            {
+              "text": ": what is wrong, in plain words. \"Customer records readable by changing a number in the address\", not a code name."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Why does it matter to this organization?"
+              "text": "Severity",
+              "bold": true
+            },
+            {
+              "text": ": Critical, High, Medium, Low or Informational, agreed by two people."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "What should they do, in the order they should do it?"
+              "text": "CVSS score",
+              "bold": true
+            },
+            {
+              "text": ": the standard 0 to 10 base score for technical findings. Process findings, such as untested backups, do not get one."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "How will we know it is fixed?"
+              "text": "Category",
+              "bold": true
+            },
+            {
+              "text": ": access control, authentication, configuration, outdated software, data exposure, or process and people."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Affected system",
+              "bold": true
+            },
+            {
+              "text": ": the exact page, server or process."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What we did",
+              "bold": true
+            },
+            {
+              "text": ": numbered steps someone else can follow."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What an attacker could do",
+              "bold": true
+            },
+            {
+              "text": ": the real-world effect for this client, not a textbook paragraph."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "How to fix it",
+              "bold": true
+            },
+            {
+              "text": ": the specific change, and a quicker stopgap if the full fix takes time."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Evidence",
+              "bold": true
+            },
+            {
+              "text": ": screenshots or output, with personal data blurred."
             }
           ]
         },
@@ -3746,111 +5416,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Rating severity"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "table",
-          "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Severity"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Meaning in plain words"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Critical"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Someone could do serious harm soon with little effort"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "High"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Serious harm is possible with moderate effort"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Medium"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Harm is possible but needs conditions to line up"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Low"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Small effect or hard to use"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Informational"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Not a flaw, but worth knowing"
-                    }
-                  ]
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Keep out of the row"
+              "text": "Choosing severity"
             }
           ],
           "props": {
@@ -3861,7 +5427,132 @@
           "type": "text",
           "text": [
             {
-              "text": "Never paste passwords, personal data or exploit detail into a finding row. Point to the evidence store instead."
+              "text": "Severity is about this client, not the bug in general. Ask:"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "How easy is it to find and use? Without signing in is worse than needing a staff account."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What does it reach? Patient or payment data, money, or the ability to stop operations is worse than a single page."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Is anything in place that limits it?"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A CVSS score helps compare findings, but the final severity is a judgment the lead assessor signs off."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Writing style"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Short sentences. No jargon without a one-line explanation. Never blame a named person. Never overstate: \"could allow\" when it could, \"allowed us to\" when it did."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before it goes in the report"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Two people agreed the severity"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Steps reproduced by a second tester"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fix advice is specific to their setup"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client owner named"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A tester first wrote \"IDOR on /records\". The finished finding reads: \"Customer records readable by changing a number in the address. Severity Critical, CVSS 9.4. Any signed-in patient could read any other patient's records by editing the record number in the page address. Fix: check that the record belongs to the signed-in patient before showing it.\""
             }
           ]
         }
@@ -3882,7 +5573,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "The report is the start of the client's work, not the end of ours. Retests are where the value is proved."
+              "text": "The report is not the end of the job. Clients pay us to be safer, and that happens only when findings are fixed and proven fixed. This is how we follow through."
             }
           ],
           "background": "blue",
@@ -3894,7 +5585,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Within two weeks of delivery"
+              "text": "After the readout"
             }
           ],
           "props": {
@@ -3902,26 +5593,56 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Send the remediation plan with owners and dates."
+              "text": "Every finding leaves the readout meeting with a "
+            },
+            {
+              "text": "Client owner",
+              "bold": true
+            },
+            {
+              "text": " and a "
+            },
+            {
+              "text": "Fix by",
+              "bold": true
+            },
+            {
+              "text": " date. Typical targets:"
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Add the fix-by date to each finding row."
+              "text": "Critical: within 7 days, with a stopgap the same day if possible."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Schedule a check-in with the sponsor."
+              "text": "High: within 30 days."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Medium: within 90 days."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Low: at the next planned update."
             }
           ]
         },
@@ -3929,7 +5650,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "When the client says it is fixed"
+              "text": "Tracking fixes"
             }
           ],
           "props": {
@@ -3940,7 +5661,14 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Press Needs retest."
+              "text": "When the client says work has started, press "
+            },
+            {
+              "text": "Fix in progress",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3948,7 +5676,21 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Retest only what the finding described."
+              "text": "When they say it is done, press "
+            },
+            {
+              "text": "Needs retest",
+              "bold": true
+            },
+            {
+              "text": " and book a "
+            },
+            {
+              "text": "Retest",
+              "bold": true
+            },
+            {
+              "text": " with a date and a tester."
             }
           ]
         },
@@ -3956,7 +5698,193 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Press Mark fixed with the retest date, or reopen it with the new evidence."
+              "text": "If the client decides not to fix something, record it as "
+            },
+            {
+              "text": "Accepted risk",
+              "bold": true
+            },
+            {
+              "text": " with the name of the person who accepted it and why. We never close a critical finding as accepted risk without a written note from someone senior."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Running a retest"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Repeat the exact steps from the finding."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Try the obvious ways around the fix: a different account, a different page, the mobile app."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write what you saw in "
+            },
+            {
+              "text": "Evidence",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Passed",
+              "bold": true
+            },
+            {
+              "text": " or "
+            },
+            {
+              "text": "Failed",
+              "bold": true
+            },
+            {
+              "text": ". A failed retest goes back to the client owner with a short note on what still works for an attacker."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When a retest passes, set the finding to "
+            },
+            {
+              "text": "Fixed",
+              "bold": true
+            },
+            {
+              "text": " and fill in "
+            },
+            {
+              "text": "Fixed on",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing the engagement"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The engagement closes when every critical and high finding is fixed or formally accepted. Send a short retest letter listing each finding and its final state; clients often need it for auditors or insurers."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Overdue findings chased with the client owner"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Retests booked for everything marked Needs retest"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Failed retests explained to the client within two days"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Engagements in Retest reviewed for closing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A credit union's password policy finding was marked ready for retest. The first retest failed: the new rule was in place but old passwords had not been expired. The client forced a reset that week, the second retest passed, and the finding closed with both retests on record."
             }
           ]
         }

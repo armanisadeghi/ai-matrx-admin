@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0203",
-  "version": 3,
+  "version": 4,
   "title": "Personal Goal Tracker",
   "description": "Individuals: break yearly goals into steps and review progress each quarter.",
   "forWho": "Individuals planning their year",
@@ -9,7 +9,7 @@
     "emoji": "🎯"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:planning-mountain-peak-sunrise",
     "offsetY": 50
   },
   "category": "planning",
@@ -1132,7 +1132,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -1143,7 +1143,7 @@
         "emoji": "🎯"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:planning-mountain-peak-sunrise",
         "offsetY": 50
       },
       "settings": {

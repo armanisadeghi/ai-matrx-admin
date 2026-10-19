@@ -34,7 +34,7 @@ import {
   OrganizationRequiredNotice,
 } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
-import { SectionCard } from "./SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { RecipientFitBadge } from "@/features/crm/pre-send-check/RecipientFitBadge";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
@@ -188,10 +188,10 @@ export function JournalistIntelligenceCard({ partyId, organizationId, storedActi
   const badge = activity ? activityBadge(activity.status) : null;
 
   return (
-    <SectionCard
+    <SectionCard dense bodyClassName="p-2"
       title="Journalist info"
-      Icon={Newspaper}
-      action={
+      icon={Newspaper}
+      headerExtra={
         <div className="flex w-full items-center gap-1 sm:w-auto">
           <Button
             icon={checking ? (

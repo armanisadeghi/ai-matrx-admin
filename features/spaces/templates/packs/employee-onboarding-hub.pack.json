@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0251",
-  "version": 6,
+  "version": 7,
   "title": "Employee Onboarding Hub",
   "description": "HR and managers: a new-hire portal with 30-60-90 goals, tool access and 1:1s.",
   "forWho": "HR teams and managers onboarding new hires",
@@ -9,7 +9,7 @@
     "emoji": "🚀"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:team-bright-open-plan-office",
     "offsetY": 50
   },
   "category": "team",
@@ -1363,7 +1363,7 @@
         "Tidewrack Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1374,7 +1374,7 @@
         "emoji": "🚀"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:team-bright-open-plan-office",
         "offsetY": 50
       },
       "settings": {

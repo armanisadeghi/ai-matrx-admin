@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0510",
-  "version": 4,
+  "version": 5,
   "title": "Yoga Studio HQ",
   "description": "For yoga studios: class schedule, memberships and class packs, teacher pay, students.",
   "forWho": "Yoga and pilates studios",
@@ -9,7 +9,7 @@
     "emoji": "🧘"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:wellness-yoga-mat-studio",
     "offsetY": 50
   },
   "category": "wellness",
@@ -2564,7 +2564,7 @@
         "Alder Walk"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2575,7 +2575,7 @@
         "emoji": "🧘"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:wellness-yoga-mat-studio",
         "offsetY": 50
       },
       "settings": {

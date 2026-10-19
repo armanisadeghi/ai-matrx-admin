@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0358",
-  "version": 3,
+  "version": 4,
   "title": "Annual Budget Planner",
   "description": "Households: plan the year's income, bills and savings, then compare with actuals.",
   "forWho": "Individuals and households",
@@ -9,7 +9,7 @@
     "emoji": "📅"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:finance-calculator-spreadsheet",
     "offsetY": 50
   },
   "category": "finance",
@@ -1221,7 +1221,7 @@
         "Cobble Mill Road"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -1232,7 +1232,7 @@
         "emoji": "📅"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:finance-calculator-spreadsheet",
         "offsetY": 50
       },
       "settings": {

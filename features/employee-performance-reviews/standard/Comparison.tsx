@@ -6,10 +6,10 @@
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { MatrxDataTable, type MatrxColumnDef, type MatrxDataTableCopyConfig } from "@ai-matrx/design-system/data-table";
 
-import { SectionCard } from "@/features/employee-performance-reviews/components/review-form-components";
 
 import { averageRatings, rankRatingDeltas } from "./deltas";
 import type { ReviewAnswers, ReviewGoal, TemplateSnapshot } from "./types";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 
 function Side({ title, answers, template, qKey, type, goals = [] }: { title: string; answers: ReviewAnswers; template: TemplateSnapshot; qKey: string; type: string; goals?: ReviewGoal[] }) {
   void template;
@@ -91,7 +91,7 @@ export function Comparison({
 
   return (
     <div className="space-y-3">
-      <SectionCard badge="Δ" title="Where you differ" description={differing.length === 0 ? "The two reviews rate every item the same." : "Largest gap first."}>
+      <SectionCard bodyClassName="p-4 pt-3" badge="Δ" title="Where you differ" about={differing.length === 0 ? "The two reviews rate every item the same." : "Largest gap first."}>
         {avg.self !== null && avg.manager !== null ? (
           <p className="mb-2 text-sm text-muted-foreground">
             Average rating: {employeeName} {avg.self.toFixed(1)}, {managerName} {avg.manager.toFixed(1)}
@@ -117,7 +117,7 @@ export function Comparison({
         section.questions
           .filter((q) => q.type !== "rating")
           .map((q) => (
-            <SectionCard key={q.key} badge={index + 1} title={q.label}>
+            <SectionCard bodyClassName="p-4 pt-3" key={q.key} badge={index + 1} title={q.label}>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Side title={employeeName} answers={self} template={template} qKey={q.key} type={q.type} goals={goals} />
                 <Side title={managerName} answers={manager} template={template} qKey={q.key} type={q.type} goals={goals} />
@@ -135,7 +135,7 @@ export function AnswerReadout({ template, answers, title, goals = [] }: { templa
     <div className="space-y-3">
       <p className="text-sm font-medium">{title}</p>
       {template.sections.map((section, index) => (
-        <SectionCard key={section.key} badge={index + 1} title={section.title}>
+        <SectionCard bodyClassName="p-4 pt-3" key={section.key} badge={index + 1} title={section.title}>
           <div className="space-y-4">
             {section.questions.map((q) =>
               q.type === "rating" ? (

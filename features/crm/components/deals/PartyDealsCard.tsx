@@ -21,7 +21,8 @@ import { createDeal, fetchDealsForParty } from "../../deals/service";
 import type { DealRow } from "../../deals/types";
 import { formatDealAmount } from "../../deals/types";
 import type { PartyListRow } from "../../types";
-import { SectionCard, SectionEmpty } from "../record/SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
+import { SectionEmpty } from "../record/SectionEmpty";
 import { dealStatusBadge } from "./columns";
 import { DealCreateDialog } from "./DealCreateDialog";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -112,13 +113,13 @@ export function PartyDealsCard({ party, onStateChange }: Props) {
   }, [party.id, generation]);
 
   return (
-    <SectionCard
+    <SectionCard dense bodyClassName="p-2"
       compactAction
       empty={!loadError && deals !== null && deals.length === 0}
       title="Deals"
-      Icon={Handshake}
+      icon={Handshake}
       count={loadError ? undefined : (deals?.length ?? undefined)}
-      action={
+      headerExtra={
         <PlusTapButton ariaLabel="New deal" onClick={() => setCreateOpen(true)} />
       }
     >

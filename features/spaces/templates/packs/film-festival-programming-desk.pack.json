@@ -1,24 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0568",
-  "version": 1,
+  "version": 3,
   "title": "Film Festival Programming Desk",
-  "description": "Submissions, screenings, venues, guests and volunteers for a film festival.",
+  "description": "Film festival: submissions, screener and jury scores, programming slots, venues, guests.",
   "forWho": "Film festival programmers and organizers",
   "icon": {
     "emoji": "🎬"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:media-cinema-seats-theater",
     "offsetY": 50
   },
   "category": "media",
   "tags": [
+    "festival director",
+    "programmer",
+    "pre-screener",
+    "guest services",
     "film festival",
-    "submissions",
-    "screenings",
-    "venues",
-    "guests"
+    "programming"
   ],
   "spec": {
     "specVersion": 1,
@@ -180,6 +181,72 @@
             "contextPolicy": "include"
           },
           {
+            "key": "premiere",
+            "label": "Premiere status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "World premiere",
+              "North American premiere",
+              "Regional premiere",
+              "Not a premiere"
+            ],
+            "choiceColors": {
+              "World premiere": "violet",
+              "North American premiere": "blue",
+              "Regional premiere": "teal",
+              "Not a premiere": "slate"
+            }
+          },
+          {
+            "key": "entry",
+            "label": "Entry fee",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Early deadline",
+              "Regular deadline",
+              "Late deadline",
+              "Waived"
+            ],
+            "choiceColors": {
+              "Early deadline": "green",
+              "Regular deadline": "blue",
+              "Late deadline": "amber",
+              "Waived": "slate"
+            }
+          },
+          {
+            "key": "screener_link",
+            "label": "Screener link",
+            "parityType": "url",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "exhibition",
+            "label": "Exhibition copy",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not requested",
+              "Requested",
+              "DCP received",
+              "File received",
+              "Tested"
+            ],
+            "choiceColors": {
+              "Not requested": "slate",
+              "Requested": "amber",
+              "DCP received": "blue",
+              "File received": "teal",
+              "Tested": "green"
+            }
+          },
+          {
             "key": "score",
             "label": "Reviewer score (1 to 10)",
             "parityType": "number",
@@ -195,6 +262,49 @@
             ],
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "prescreen_avg",
+            "label": "Average pre-screen score",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "reviews",
+            "pick": "score",
+            "agg": "avg",
+            "filter": {
+              "stage": "Pre-screen",
+              "status": "Scored"
+            }
+          },
+          {
+            "key": "scores_owed",
+            "label": "Scores still owed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "reviews",
+            "pick": "score_name",
+            "agg": "count",
+            "filter": {
+              "status": "Assigned"
+            }
+          },
+          {
+            "key": "program_votes",
+            "label": "Votes to program it",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "reviews",
+            "pick": "score_name",
+            "agg": "count",
+            "filter": {
+              "verdict": [
+                "Program it",
+                "Maybe"
+              ]
+            }
           },
           {
             "key": "decide_by",
@@ -486,7 +596,11 @@
               "decide_by": "@today-20d",
               "email": "imara@mailbox.net",
               "programmer": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "premiere": "World premiere",
+              "entry": "Early deadline",
+              "exhibition": "Tested",
+              "screener_link": "https://vimeo.com/showcase/fest-screeners"
             }
           },
           {
@@ -501,7 +615,11 @@
               "score": 8,
               "decide_by": "@today-18d",
               "email": "thorvald@mailbox.net",
-              "programmer": "tm-2"
+              "programmer": "tm-2",
+              "premiere": "North American premiere",
+              "entry": "Regular deadline",
+              "exhibition": "File received",
+              "screener_link": "https://vimeo.com/showcase/fest-screeners"
             }
           },
           {
@@ -517,7 +635,11 @@
               "decide_by": "@today-15d",
               "email": "beatriz@mailbox.net",
               "programmer": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "premiere": "Regional premiere",
+              "entry": "Regular deadline",
+              "exhibition": "DCP received",
+              "screener_link": "https://vimeo.com/showcase/fest-screeners"
             }
           },
           {
@@ -529,10 +651,13 @@
               "director": "Anand Deshpande",
               "country": "India",
               "minutes": 84,
-              "score": 0,
               "decide_by": "@today+3d",
               "email": "anand@mailbox.net",
-              "programmer": "tm-2"
+              "programmer": "tm-2",
+              "premiere": "World premiere",
+              "entry": "Late deadline",
+              "exhibition": "Not requested",
+              "screener_link": "https://vimeo.com/showcase/fest-screeners"
             }
           },
           {
@@ -548,7 +673,11 @@
               "decide_by": "@today",
               "email": "margot@mailbox.net",
               "programmer": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "premiere": "Regional premiere",
+              "entry": "Regular deadline",
+              "exhibition": "Not requested",
+              "screener_link": "https://vimeo.com/showcase/fest-screeners"
             }
           },
           {
@@ -563,7 +692,11 @@
               "score": 7,
               "decide_by": "@today+5d",
               "email": "wanjiru@mailbox.net",
-              "programmer": "tm-2"
+              "programmer": "tm-2",
+              "premiere": "Not a premiere",
+              "entry": "Early deadline",
+              "exhibition": "Not requested",
+              "screener_link": "https://vimeo.com/showcase/fest-screeners"
             }
           },
           {
@@ -575,11 +708,14 @@
               "director": "Diego Salazar",
               "country": "Mexico",
               "minutes": 14,
-              "score": 0,
               "decide_by": "@today+9d",
               "email": "diego@mailbox.net",
               "programmer": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "premiere": "Regional premiere",
+              "entry": "Waived",
+              "exhibition": "Not requested",
+              "screener_link": "https://vimeo.com/showcase/fest-screeners"
             }
           },
           {
@@ -591,10 +727,13 @@
               "director": "Min-jun Park",
               "country": "South Korea",
               "minutes": 102,
-              "score": 0,
               "decide_by": "@today-2d",
               "email": "minjun@mailbox.net",
-              "programmer": "tm-2"
+              "programmer": "tm-2",
+              "premiere": "North American premiere",
+              "entry": "Late deadline",
+              "exhibition": "Not requested",
+              "screener_link": "https://vimeo.com/showcase/fest-screeners"
             }
           },
           {
@@ -610,7 +749,11 @@
               "decide_by": "@today-25d",
               "email": "hallie@mailbox.net",
               "programmer": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "premiere": "Not a premiere",
+              "entry": "Early deadline",
+              "exhibition": "Not requested",
+              "screener_link": "https://vimeo.com/showcase/fest-screeners"
             }
           },
           {
@@ -625,7 +768,11 @@
               "score": 8.5,
               "decide_by": "@today-12d",
               "email": "ifeoma@mailbox.net",
-              "programmer": "tm-2"
+              "programmer": "tm-2",
+              "premiere": "North American premiere",
+              "entry": "Regular deadline",
+              "exhibition": "Requested",
+              "screener_link": "https://vimeo.com/showcase/fest-screeners"
             }
           }
         ]
@@ -675,6 +822,29 @@
             "relationMax": 1,
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "block",
+            "label": "Program block",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Opening night",
+              "Competition",
+              "Shorts program",
+              "Family matinee",
+              "Late night",
+              "Closing night"
+            ],
+            "choiceColors": {
+              "Opening night": "violet",
+              "Competition": "blue",
+              "Shorts program": "teal",
+              "Family matinee": "green",
+              "Late night": "slate",
+              "Closing night": "pink"
+            }
           },
           {
             "key": "status",
@@ -729,11 +899,45 @@
             "contextPolicy": "include"
           },
           {
+            "key": "comps",
+            "label": "Guest tickets held",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
             "key": "q_and_a",
             "label": "Q&A planned",
             "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "tech_check",
+            "label": "Tech check",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not checked",
+              "Passed",
+              "Problem"
+            ],
+            "choiceColors": {
+              "Not checked": "slate",
+              "Passed": "green",
+              "Problem": "red"
+            }
           },
           {
             "key": "host",
@@ -904,7 +1108,10 @@
               "tickets_sold": 310,
               "q_and_a": true,
               "host": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "block": "Opening night",
+              "tech_check": "Passed",
+              "comps": 40
             }
           },
           {
@@ -917,7 +1124,10 @@
               "starts_at": "@today+4d 14:00",
               "tickets_sold": 64,
               "q_and_a": true,
-              "host": "tm-4"
+              "host": "tm-4",
+              "block": "Shorts program",
+              "tech_check": "Passed",
+              "comps": 8
             }
           },
           {
@@ -931,7 +1141,10 @@
               "tickets_sold": 180,
               "q_and_a": false,
               "host": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "block": "Shorts program",
+              "tech_check": "Not checked",
+              "comps": 10
             }
           },
           {
@@ -944,7 +1157,10 @@
               "starts_at": "@today+5d 16:00",
               "tickets_sold": 120,
               "q_and_a": true,
-              "host": "tm-3"
+              "host": "tm-3",
+              "block": "Competition",
+              "tech_check": "Not checked",
+              "comps": 12
             }
           },
           {
@@ -958,7 +1174,10 @@
               "tickets_sold": 0,
               "q_and_a": false,
               "host": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "block": "Competition",
+              "tech_check": "Not checked",
+              "comps": 4
             }
           },
           {
@@ -968,10 +1187,13 @@
               "film": "film-5",
               "venue": "venue-2",
               "status": "Draft",
-              "starts_at": "@today",
+              "starts_at": "@today 21:30",
               "tickets_sold": 0,
               "q_and_a": false,
-              "host": "tm-2"
+              "host": "tm-2",
+              "block": "Shorts program",
+              "tech_check": "Not checked",
+              "comps": 4
             }
           },
           {
@@ -985,7 +1207,10 @@
               "tickets_sold": 0,
               "q_and_a": true,
               "host": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "block": "Competition",
+              "tech_check": "Problem",
+              "comps": 10
             }
           },
           {
@@ -998,7 +1223,10 @@
               "starts_at": "@today-20d 11:00",
               "tickets_sold": 205,
               "q_and_a": false,
-              "host": "tm-4"
+              "host": "tm-4",
+              "block": "Family matinee",
+              "tech_check": "Passed",
+              "comps": 6
             }
           },
           {
@@ -1012,7 +1240,26 @@
               "tickets_sold": 0,
               "q_and_a": false,
               "host": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "block": "Shorts program",
+              "tech_check": "Not checked",
+              "comps": 0
+            }
+          },
+          {
+            "key": "screenings-10",
+            "values": {
+              "screening_name": "Closing night: The Long Lunch",
+              "film": "film-10",
+              "venue": "venue-1",
+              "block": "Closing night",
+              "status": "Scheduled",
+              "starts_at": "@today+7d 19:30",
+              "tickets_sold": 260,
+              "comps": 40,
+              "q_and_a": true,
+              "tech_check": "Not checked",
+              "host": "tm-1"
             }
           }
         ]
@@ -1079,6 +1326,59 @@
             "contextPolicy": "include"
           },
           {
+            "key": "formats",
+            "label": "Projection",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "DCP and files",
+              "Files only",
+              "Outdoor rig"
+            ],
+            "choiceColors": {
+              "DCP and files": "blue",
+              "Files only": "teal",
+              "Outdoor rig": "green"
+            }
+          },
+          {
+            "key": "hire",
+            "label": "Hire cost per day (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "step_free",
+            "label": "Step-free access",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Yes",
+              "Partial",
+              "No"
+            ],
+            "choiceColors": {
+              "Yes": "green",
+              "Partial": "amber",
+              "No": "red"
+            }
+          },
+          {
             "key": "contact",
             "label": "Venue contact",
             "parityType": "text",
@@ -1115,6 +1415,23 @@
                 "Scheduled",
                 "Held"
               ]
+            }
+          },
+          {
+            "key": "comps_held",
+            "label": "Guest tickets held",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "screenings",
+            "pick": "comps",
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Cancelled"
+                ]
+              }
             }
           },
           {
@@ -1184,7 +1501,10 @@
               "venue_name": "Plaza Theater",
               "kind": "Main theater",
               "capacity": 420,
-              "contact": "Gloria Ansah"
+              "contact": "Gloria Ansah",
+              "formats": "DCP and files",
+              "hire": 2400,
+              "step_free": "Yes"
             }
           },
           {
@@ -1193,7 +1513,10 @@
               "venue_name": "Studio Six",
               "kind": "Small cinema",
               "capacity": 90,
-              "contact": "Terrence Obuya"
+              "contact": "Terrence Obuya",
+              "formats": "Files only",
+              "hire": 650,
+              "step_free": "Yes"
             }
           },
           {
@@ -1202,7 +1525,10 @@
               "venue_name": "Courtyard screen",
               "kind": "Outdoor screen",
               "capacity": 250,
-              "contact": "Bella Marchetti"
+              "contact": "Bella Marchetti",
+              "formats": "Outdoor rig",
+              "hire": 900,
+              "step_free": "Partial"
             }
           },
           {
@@ -1211,7 +1537,10 @@
               "venue_name": "Gallery Annex",
               "kind": "Gallery space",
               "capacity": 60,
-              "contact": "Ravi Kulkarni"
+              "contact": "Ravi Kulkarni",
+              "formats": "Files only",
+              "hire": 400,
+              "step_free": "No"
             }
           }
         ]
@@ -1280,6 +1609,27 @@
             "contextPolicy": "include"
           },
           {
+            "key": "badge",
+            "label": "Badge",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Filmmaker",
+              "Jury",
+              "Press",
+              "Industry",
+              "Panelist"
+            ],
+            "choiceColors": {
+              "Filmmaker": "blue",
+              "Jury": "violet",
+              "Press": "amber",
+              "Industry": "teal",
+              "Panelist": "green"
+            }
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -1332,6 +1682,13 @@
           {
             "key": "travel_booked",
             "label": "Travel booked",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pickup",
+            "label": "Airport pickup needed",
             "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
@@ -1506,7 +1863,9 @@
               "hotel_booked": true,
               "travel_booked": true,
               "host": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "badge": "Filmmaker",
+              "pickup": true
             }
           },
           {
@@ -1520,7 +1879,9 @@
               "departs_on": "@today+6d",
               "hotel_booked": false,
               "travel_booked": false,
-              "host": "tm-3"
+              "host": "tm-3",
+              "badge": "Filmmaker",
+              "pickup": false
             }
           },
           {
@@ -1535,7 +1896,9 @@
               "hotel_booked": true,
               "travel_booked": false,
               "host": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "badge": "Filmmaker",
+              "pickup": false
             }
           },
           {
@@ -1549,7 +1912,9 @@
               "departs_on": "@today+6d",
               "hotel_booked": true,
               "travel_booked": true,
-              "host": "tm-3"
+              "host": "tm-3",
+              "badge": "Filmmaker",
+              "pickup": true
             }
           },
           {
@@ -1563,7 +1928,9 @@
               "hotel_booked": true,
               "travel_booked": true,
               "host": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "badge": "Jury",
+              "pickup": true
             }
           },
           {
@@ -1576,7 +1943,9 @@
               "departs_on": "@today+3d",
               "hotel_booked": false,
               "travel_booked": false,
-              "host": "tm-3"
+              "host": "tm-3",
+              "badge": "Panelist",
+              "pickup": false
             }
           },
           {
@@ -1591,7 +1960,9 @@
               "hotel_booked": false,
               "travel_booked": false,
               "host": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "badge": "Filmmaker",
+              "pickup": false
             }
           },
           {
@@ -1605,7 +1976,367 @@
               "departs_on": "@today+6d",
               "hotel_booked": false,
               "travel_booked": false,
-              "host": "tm-3"
+              "host": "tm-3",
+              "badge": "Filmmaker",
+              "pickup": false
+            }
+          }
+        ]
+      },
+      {
+        "token": "review",
+        "name": "Screener and jury scores",
+        "labelSingular": "Score",
+        "labelPlural": "Screener and jury scores",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "star",
+        "titleField": "score_name",
+        "describes": "Each pre-screener's and juror's score for a film: who watched, by when, the score out of 10 and the verdict.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Scored"
+            ],
+            "filled": [
+              "score"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New score",
+            "values": {
+              "score_name": "New score",
+              "status": "Assigned"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What worked"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Story, craft, performances, sound."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What did not"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Be specific and kind; filmmakers sometimes ask for notes."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Fit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Which block or award it suits, and any audience it would draw."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "film": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "score_name",
+            "label": "Score",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "film",
+            "label": "Film",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "film",
+            "relationMax": 1
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pre-screen",
+              "Jury"
+            ],
+            "choiceColors": {
+              "Pre-screen": "blue",
+              "Jury": "violet"
+            }
+          },
+          {
+            "key": "reviewer",
+            "label": "Reviewer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Assigned",
+              "Scored"
+            ],
+            "choiceColors": {
+              "Assigned": "amber",
+              "Scored": "green"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Score due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "score",
+            "label": "Score (1 to 10)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 10
+              }
+            ]
+          },
+          {
+            "key": "verdict",
+            "label": "Verdict",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Program it",
+              "Maybe",
+              "Pass"
+            ],
+            "choiceColors": {
+              "Program it": "green",
+              "Maybe": "amber",
+              "Pass": "slate"
+            }
+          },
+          {
+            "key": "btn_scored",
+            "label": "Mark scored",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "review_scored"
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "review_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "review-1",
+            "values": {
+              "score_name": "Salt Flats Lullaby, pre-screen 1",
+              "film": "film-1",
+              "stage": "Pre-screen",
+              "reviewer": "Odette Larkin",
+              "status": "Scored",
+              "due_on": "@today-40d",
+              "score": 9,
+              "verdict": "Program it"
+            }
+          },
+          {
+            "key": "review-2",
+            "values": {
+              "score_name": "Salt Flats Lullaby, pre-screen 2",
+              "film": "film-1",
+              "stage": "Pre-screen",
+              "reviewer": "Marcus Feld",
+              "status": "Scored",
+              "due_on": "@today-39d",
+              "score": 8,
+              "verdict": "Program it"
+            }
+          },
+          {
+            "key": "review-3",
+            "values": {
+              "score_name": "A Quiet Harvest, pre-screen 1",
+              "film": "film-4",
+              "stage": "Pre-screen",
+              "reviewer": "Odette Larkin",
+              "status": "Scored",
+              "due_on": "@today-5d",
+              "score": 8,
+              "verdict": "Program it"
+            }
+          },
+          {
+            "key": "review-4",
+            "values": {
+              "score_name": "A Quiet Harvest, pre-screen 2",
+              "film": "film-4",
+              "stage": "Pre-screen",
+              "reviewer": "Yusuf Demir",
+              "status": "Assigned",
+              "due_on": "@today-2d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "review-5",
+            "values": {
+              "score_name": "Clay Hands, pre-screen 1",
+              "film": "film-7",
+              "stage": "Pre-screen",
+              "reviewer": "Marcus Feld",
+              "status": "Assigned",
+              "due_on": "@today"
+            }
+          },
+          {
+            "key": "review-6",
+            "values": {
+              "score_name": "Seoul After Rain, pre-screen 1",
+              "film": "film-8",
+              "stage": "Pre-screen",
+              "reviewer": "Yusuf Demir",
+              "status": "Assigned",
+              "due_on": "@today+2d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "review-7",
+            "values": {
+              "score_name": "Night Bus to Calgary, pre-screen 1",
+              "film": "film-5",
+              "stage": "Pre-screen",
+              "reviewer": "Odette Larkin",
+              "status": "Scored",
+              "due_on": "@today-6d",
+              "score": 7,
+              "verdict": "Maybe"
+            }
+          },
+          {
+            "key": "review-8",
+            "values": {
+              "score_name": "Orchard Ghosts, pre-screen 1",
+              "film": "film-9",
+              "stage": "Pre-screen",
+              "reviewer": "Marcus Feld",
+              "status": "Scored",
+              "due_on": "@today-30d",
+              "score": 4,
+              "verdict": "Pass"
+            }
+          },
+          {
+            "key": "review-9",
+            "values": {
+              "score_name": "Salt Flats Lullaby, jury",
+              "film": "film-1",
+              "stage": "Jury",
+              "reviewer": "Desmond Kwarteng",
+              "status": "Assigned",
+              "due_on": "@today+4d"
+            }
+          },
+          {
+            "key": "review-10",
+            "values": {
+              "score_name": "The Long Lunch, jury",
+              "film": "film-10",
+              "stage": "Jury",
+              "reviewer": "Desmond Kwarteng",
+              "status": "Assigned",
+              "due_on": "@today+5d"
             }
           }
         ]
@@ -1671,6 +2402,16 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "guest_by_host"
+      },
+      {
+        "describes": "A score is for one film.",
+        "fromTable": "review",
+        "fromField": "film",
+        "toTable": "film",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "reviews"
       }
     ],
     "sharedBlocks": [
@@ -1898,6 +2639,34 @@
         "kind": "row_action",
         "token": "guests_claim",
         "table": "guests",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "review_scored",
+        "table": "review",
+        "name": "Mark scored",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Scored"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "review_claim",
+        "table": "review",
         "name": "Assign to me",
         "actionKind": "update",
         "steps": [
@@ -2192,6 +2961,80 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_review",
+        "name": "All scores",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "review"
+      },
+      {
+        "token": "review_board",
+        "name": "By stage",
+        "kind": "kanban",
+        "groupBy": "stage",
+        "table": "review"
+      },
+      {
+        "token": "review_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true,
+        "table": "review"
+      },
+      {
+        "token": "review_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Assigned"
+        },
+        "table": "review"
+      },
+      {
+        "token": "review_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Assigned"
+        },
+        "table": "review"
+      },
+      {
+        "token": "review_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Assigned"
+        },
+        "table": "review"
+      },
+      {
+        "token": "review_mine",
+        "name": "My scores",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "review"
       }
     ],
     "agent": {
@@ -2264,6 +3107,18 @@
           "surface": "venue_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open screener and jury scores.",
+        "action": {
+          "kind": "open",
+          "surface": "review_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "review_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2280,7 +3135,7 @@
         "Adobe Lane"
       ]
     },
-    "version": 1
+    "version": 3
   },
   "pages": [
     {
@@ -2291,7 +3146,7 @@
         "emoji": "🎬"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:media-cinema-seats-theater",
         "offsetY": 50
       },
       "settings": {
@@ -2302,12 +3157,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "The festival from call for entries to closing night. Start with the Dashboard each morning. Decide submissions before their date, schedule only selected films, and confirm every guest's travel two weeks ahead."
+              "text": "The festival in one place. Film submissions holds every entry with premiere status and exhibition copy; Screener and jury scores is who watched what and what they thought; Screenings is the programme by block and venue; Venues and Guests hold the rooms and the people. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2795,6 +3656,407 @@
             ],
             "activeViewId": "gue-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Screener and jury scores"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Who watched each film, the score and the verdict."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "review",
+              "view": "all_review"
+            },
+            "inline": true,
+            "title": "Screener and jury scores",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "rv-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "rv-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "rv-t",
+                "name": "All scores",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "rv-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Assigned"
+                }
+              },
+              {
+                "id": "rv-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Assigned"
+                }
+              },
+              {
+                "id": "rv-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Assigned"
+                }
+              },
+              {
+                "id": "rv-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "rv-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "film-festival-programming-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the festival in this workspace. Share it with programmers, pre-screeners, guest services and venue managers."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Film submissions",
+              "bold": true
+            },
+            {
+              "text": ": every entry with category, director, country, runtime, premiere status, entry fee, screener link, exhibition copy and scores."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Screener and jury scores",
+              "bold": true
+            },
+            {
+              "text": ": each assignment to watch a film, the score out of 10 and the verdict."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Screenings",
+              "bold": true
+            },
+            {
+              "text": ": the programme, each with film, venue, program block, time, tickets sold, guest tickets and tech check."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Venues",
+              "bold": true
+            },
+            {
+              "text": ": each room with seats, projection, step-free access and hire cost."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Guests",
+              "bold": true
+            },
+            {
+              "text": ": filmmakers, jury, panelists and press, with travel, hotel and pickups."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The season"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call for entries: submissions arrive by deadline."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pre-screening: every film scored twice."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Selection: programmers build the line-up block by block."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Programme: screenings placed, guests invited, copies tested."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Festival week: daily stand-up and screening routine."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every day in season: scores due, films past their decide-by date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every week: programming meeting on split verdicts and high scores"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Month before: every copy tested, every guest booked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Festival week: 9 am stand-up with venues, guests and box office"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Programmers own selection and the programme. Pre-screeners own their scores. Guest services owns invitations, travel and hotels. Venue managers own tech checks and screening day. The festival director reads the whole picture and decides on awards logistics."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "House rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Screener links are for review only and never shared. Nobody scores a film by someone they know. Every filmmaker hears our decision from us, by email, before the line-up is public."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Numbers we use"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Average pre-screen score",
+              "bold": true
+            },
+            {
+              "text": " counts only scored pre-screens. "
+            },
+            {
+              "text": "Votes to program it",
+              "bold": true
+            },
+            {
+              "text": " counts Program it and Maybe verdicts. "
+            },
+            {
+              "text": "Guest tickets held",
+              "bold": true
+            },
+            {
+              "text": " must leave enough seats for paying audiences."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename categories, blocks and badges to fit your festival, and delete the sample rows once your call for entries opens."
+            }
+          ]
         }
       ]
     },
@@ -3207,6 +4469,138 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Scoring"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "review",
+              "view": "all_review"
+            },
+            "inline": true,
+            "title": "Scores owed",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "df-1",
+                "name": "Scores owed",
+                "layout": "list",
+                "icon": "Clock",
+                "filters": {
+                  "status": "Assigned"
+                }
+              },
+              {
+                "id": "df-2",
+                "name": "Verdicts",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "verdict",
+                  "op": "count",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "df-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Programme"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "screenings",
+              "view": "all_screenings"
+            },
+            "inline": true,
+            "title": "Programme by block",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "df-3",
+                "name": "Tickets by block",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "block",
+                  "op": "sum",
+                  "field": "tickets_sold"
+                }
+              },
+              {
+                "id": "df-4",
+                "name": "Tech check problems",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "filters": {
+                  "tech_check": "Problem"
+                }
+              }
+            ],
+            "activeViewId": "df-3"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "film",
+              "view": "all_film"
+            },
+            "inline": true,
+            "title": "Exhibition copies",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "df-5",
+                "name": "Selected films without a tested copy",
+                "layout": "list",
+                "icon": "Film",
+                "filters": {
+                  "status": "Selected"
+                },
+                "anyOf": {
+                  "exhibition": [
+                    "Not requested",
+                    "Requested",
+                    "DCP received",
+                    "File received"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "df-5"
+          }
         }
       ]
     },
@@ -3225,7 +4619,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A festival is a countdown. Work backward from opening night and tick off each phase."
+              "text": "A festival year runs on fixed dates. Filmmakers plan around your deadlines, and everything after the call for entries works backwards from opening night."
             }
           ],
           "background": "blue",
@@ -3237,7 +4631,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Phases"
+              "text": "Nine to six months out: call for entries"
             }
           ],
           "props": {
@@ -3245,131 +4639,250 @@
           }
         },
         {
-          "type": "table",
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Open submissions with three deadlines: early, regular and late, each with its own "
+            },
+            {
+              "text": "Entry fee",
+              "bold": true
+            },
+            {
+              "text": ". Offer fee waivers for local and student filmmakers."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Set the categories and the premiere rules. Many festivals give priority to world and North American premieres in competition."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Recruit pre-screeners and give them the scoring guide."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Six to three months out: screening the entries"
+            }
+          ],
           "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "When"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "What"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Six months out"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Open the call for entries and book the main venues"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Four months out"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Close submissions and finish reviews"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Three months out"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Announce selections and invite guests"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Six weeks out"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Publish the schedule and open ticket sales"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Two weeks out"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Confirm travel, lodging and volunteers"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Festival days"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Run, count and thank"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "After"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Send thank-yous, pay vendors and write the report"
-                    }
-                  ]
-                ]
-              }
-            ]
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every submission gets at least two "
+            },
+            {
+              "text": "Pre-screen",
+              "bold": true
+            },
+            {
+              "text": " scores before the late deadline closes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Programmers watch everything scoring 7 or above, plus anything with a split verdict."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Keep the "
+            },
+            {
+              "text": "Decide by",
+              "bold": true
+            },
+            {
+              "text": " date for each film honest; filmmakers are waiting on other festivals."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Three months out: selection"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Programmers meet to build the line-up block by block: opening night, competition, shorts programs, a family matinee, late night, closing night."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send acceptance letters, then decline letters the same week. Never let a filmmaker hear from social media first."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Waitlist a few films for each block in case a premiere is withdrawn."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Two months out: the programme"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Place each film in a "
+            },
+            {
+              "text": "Screening",
+              "bold": true
+            },
+            {
+              "text": " with a venue, time and "
+            },
+            {
+              "text": "Program block",
+              "bold": true
+            },
+            {
+              "text": ". Shorts are grouped into programs of 80 to 100 minutes."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Invite "
+            },
+            {
+              "text": "Guests",
+              "bold": true
+            },
+            {
+              "text": ": directors of selected films, the jury, panelists and press."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Request every "
+            },
+            {
+              "text": "Exhibition copy",
+              "bold": true
+            },
+            {
+              "text": ": DCP for the main theater, high-quality files for the smaller rooms."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "One month out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tickets on sale and the programme printed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every exhibition copy received and tested in its venue ("
+            },
+            {
+              "text": "Tech check",
+              "bold": true
+            },
+            {
+              "text": ")"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Travel and hotels booked for confirmed guests"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Jury briefed and screenings assigned"
+            }
+          ],
+          "props": {
+            "checked": false
           }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Every Monday"
+              "text": "Festival week"
             }
           ],
           "props": {
@@ -3380,7 +4893,45 @@
           "type": "text",
           "text": [
             {
-              "text": "Open the Dashboard. If a decision date has passed, decide it. If a guest has not confirmed, call."
+              "text": "Daily stand-up at 9 am with venue managers, guest services and the box office. Award winners are decided by the jury before closing night."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the festival"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Pay filmmakers' screening fees, return copies, send thank-you notes and a survey to audiences and guests. Write down what to change while it is fresh."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A world-premiere feature was withdrawn six weeks out when it sold to a streamer. The waitlisted Cornfield Opera's director had already declined, so programmers moved the strongest short documentary into the slot and told ticket holders the same day."
             }
           ]
         }
@@ -3401,7 +4952,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Fair review means every film gets the same attention. Use the same score sheet for everyone."
+              "text": "Hundreds of filmmakers trust you with their work. Pre-screening is how every one of them gets a fair, attentive viewing, even when there are a thousand entries."
             }
           ],
           "background": "blue",
@@ -3413,7 +4964,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "Assigning"
             }
           ],
           "props": {
@@ -3421,42 +4972,47 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Assign each film to two reviewers. Press Start review."
+              "text": "Each film gets at least two pre-screeners, one of whom knows the category well."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Each reviewer gives a score from 1 to 10 and writes two lines."
+              "text": "Create a "
+            },
+            {
+              "text": "Score",
+              "bold": true
+            },
+            {
+              "text": " row for each assignment with a "
+            },
+            {
+              "text": "Score due",
+              "bold": true
+            },
+            {
+              "text": " date and the "
+            },
+            {
+              "text": "Stage",
+              "bold": true
+            },
+            {
+              "text": " set to Pre-screen."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "The programmer averages the scores and enters one number."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Discuss borderline films together."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Press Select, Waitlist or Decline and send the notice."
+              "text": "Nobody scores a film by a friend, a former colleague or a company they work with. Say so and swap."
             }
           ]
         },
@@ -3464,7 +5020,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Keep in mind"
+              "text": "Watching"
             }
           ],
           "props": {
@@ -3472,10 +5028,45 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Balance categories, countries and lengths."
+              "text": "Watch the whole film in one sitting, with sound on headphones or decent speakers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Use the screener link only for review; never share or download it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Take notes on story, craft, performances and sound, then on fit: which block or audience it suits."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Scoring"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Score from 1 to 10:"
             }
           ]
         },
@@ -3483,7 +5074,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Write kind, specific declines."
+              "text": "9 to 10: a highlight of the year. Fight for it."
             }
           ]
         },
@@ -3491,7 +5082,176 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Confirm rights before announcing."
+              "text": "7 to 8: strong and ready for an audience."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "5 to 6: good work that may suit a particular block."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "1 to 4: not for this year."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Choose a "
+            },
+            {
+              "text": "Verdict",
+              "bold": true
+            },
+            {
+              "text": ": Program it, Maybe or Pass. Press "
+            },
+            {
+              "text": "Mark scored",
+              "bold": true
+            },
+            {
+              "text": " when done."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What programmers do with scores"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Average pre-screen score",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Votes to program it",
+              "bold": true
+            },
+            {
+              "text": " show on each film. Programmers watch every film averaging 7 or more and every film where two scorers disagree by three points or more. Scores guide; programmers decide."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Jury scores"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Juries score only films in competition, after the festival screening, against the award criteria. Jury scores and notes stay confidential until the awards are announced."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Notes for filmmakers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Some festivals offer short notes to declined filmmakers. Write every note as if the filmmaker will read it, because they may."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly check during the season"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every film has two pre-screen scores assigned"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Scores past their due date chased"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Split verdicts flagged to a programmer"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A Quiet Harvest scored 8 from one pre-screener while the second score is overdue. The programmer reassigned it to a third reader to keep the decide-by date, and both scores arrived in time for Thursday's programming meeting."
             }
           ]
         }
@@ -3512,7 +5272,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "On festival days the work is people and time. A written checklist keeps each venue calm."
+              "text": "Every screening during festival week follows the same routine. Audiences remember a late start or a missing subtitle far longer than the film."
             }
           ],
           "background": "blue",
@@ -3524,7 +5284,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Two hours before the first show"
+              "text": "Two days before"
             }
           ],
           "props": {
@@ -3535,7 +5295,14 @@
           "type": "todo",
           "text": [
             {
-              "text": "Test projection, sound and subtitles with the real file"
+              "text": "Exhibition copy tested in this venue, start to finish, at the right aspect ratio and sound level ("
+            },
+            {
+              "text": "Tech check",
+              "bold": true
+            },
+            {
+              "text": " set to Passed)"
             }
           ],
           "props": {
@@ -3546,7 +5313,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Brief greeters and ushers"
+              "text": "Subtitle file checked against the copy"
             }
           ],
           "props": {
@@ -3557,7 +5324,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Set up the box office and accessible seating"
+              "text": "Guest tickets held for the filmmaker and their team"
             }
           ],
           "props": {
@@ -3568,7 +5335,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Place signs and the schedule"
+              "text": "Q&A host briefed with three questions and the filmmaker's name pronunciation"
             }
           ],
           "props": {
@@ -3579,7 +5346,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Between shows"
+              "text": "Doors open (45 minutes before)"
             }
           ],
           "props": {
@@ -3587,26 +5354,34 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Reset the room and check the next film's file."
+              "text": "Venue manager walks the room: exits clear, step-free seating free, sound and light checked."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Count tickets and write the total on the screening."
+              "text": "Volunteers on scanning, the rush line and the information table, each with a phone number for the venue manager."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Walk the room and the lobby for safety."
+              "text": "The projectionist plays the opening minute to confirm picture and sound."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Release unclaimed guest tickets to the rush line ten minutes before start."
             }
           ]
         },
@@ -3614,7 +5389,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After the last show"
+              "text": "During the screening"
             }
           ],
           "props": {
@@ -3622,37 +5397,155 @@
           }
         },
         {
-          "type": "todo",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Press Mark held on each screening"
+              "text": "One volunteer stays at the back of the room for late arrivals and problems."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If anything goes wrong with picture or sound, the projectionist stops, the host apologizes, and the film restarts from a scene change."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The host counts the audience for "
+            },
+            {
+              "text": "Tickets sold",
+              "bold": true
+            },
+            {
+              "text": " if the box office count is in doubt."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Q&A"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Lock the booth and return keys"
+              "text": "Start on time and keep to 20 minutes. The host repeats each question into the microphone so everyone, and the recording, can hear it. Thank the filmmaker and remind the audience to vote for the audience award."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Thank the venue contact"
+              "text": "Set the screening to "
+            },
+            {
+              "text": "Held",
+              "bold": true
+            },
+            {
+              "text": " and record the final count."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Report any problem with the copy so the next venue can fix it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Walk the filmmaker to the next event or their ride."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Venue notes"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each "
+            },
+            {
+              "text": "Venue",
+              "bold": true
+            },
+            {
+              "text": " lists its "
+            },
+            {
+              "text": "Projection",
+              "bold": true
+            },
+            {
+              "text": " setup, "
+            },
+            {
+              "text": "Step-free access",
+              "bold": true
+            },
+            {
+              "text": " and daily hire cost. Outdoor screenings need a weather plan and a sunset start time; the courtyard screen cannot start before dark."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "At a competition screening the tech check flagged that the subtitle file drifted after the first reel. The projectionist got a corrected file from the director's producer the afternoon before, tested it in the venue, and the screening started on time."
+            }
+          ]
         }
       ]
     }

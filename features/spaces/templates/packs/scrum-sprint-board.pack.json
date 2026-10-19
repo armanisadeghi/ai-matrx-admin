@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0105",
-  "version": 7,
+  "version": 8,
   "title": "Scrum Sprint Board",
   "description": "Scrum teams: epics and stories with points, sprint ceremonies and retrospectives.",
   "forWho": "Scrum teams in software or game studios",
@@ -9,7 +9,7 @@
     "emoji": "🏴"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:projects-whiteboard-markers-office",
     "offsetY": 50
   },
   "category": "projects",
@@ -1627,7 +1627,7 @@
         "Quillmere Pier"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1638,7 +1638,7 @@
         "emoji": "🏴"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:projects-whiteboard-markers-office",
         "offsetY": 50
       },
       "settings": {

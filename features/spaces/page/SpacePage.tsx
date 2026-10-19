@@ -160,6 +160,8 @@ export function SpacePage({
   seeds,
   expectedRows,
   expectedGroups,
+  expectedNotes,
+  servedAt,
   links,
   backlinks,
 }: {
@@ -168,6 +170,9 @@ export function SpacePage({
   seeds?: SpaceBlockSeeds;
   expectedRows?: Record<string, number>;
   expectedGroups?: Record<string, number[]>;
+  expectedNotes?: Record<string, string>;
+  /** When the server drew the page (ms): "Edited 5m ago" hydrates as the server wrote it. */
+  servedAt?: number;
   links?: SpaceLinks;
   backlinks?: { spaceId: string; rows: SeededBacklink[] };
 }) {
@@ -178,19 +183,22 @@ export function SpacePage({
   const [servedKey] = useState(key);
   const served = key === servedKey && initialDoc?.id === spaceId ? initialDoc : undefined;
   return (
-    <SpaceSeedProvider seeds={key === servedKey ? seeds : undefined} {...(key === servedKey && expectedRows ? { expectedRows } : {})} {...(key === servedKey && expectedGroups ? { expectedGroups } : {})}>
+    <SpaceSeedProvider seeds={key === servedKey ? seeds : undefined} {...(key === servedKey && expectedRows ? { expectedRows } : {})} {...(key === servedKey && expectedGroups ? { expectedGroups } : {})} {...(key === servedKey && expectedNotes ? { expectedNotes } : {})}>
       <SpaceLinksProvider links={key === servedKey ? links : undefined} backlinks={key === servedKey ? backlinks : undefined}>
-        <SpacePageScreen key={key} spaceId={spaceId} initialDoc={served} />
+        <SpacePageScreen key={key} spaceId={spaceId} initialDoc={served} {...(served && servedAt ? { servedAt } : {})} />
       </SpaceLinksProvider>
     </SpaceSeedProvider>
   );
 }
 
-function SpacePageScreen({ spaceId, initialDoc }: { spaceId: string; initialDoc?: SpaceDoc }) {
+function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; initialDoc?: SpaceDoc; servedAt?: number }) {
   const spaces = useSpaces();
   const { store, pathTo, favorites, toggleFavorite, markVisited, openQuickFind, sidebarCollapsed, setSidebarCollapsed, setMobileSidebarOpen, patchSummary } = spaces;
   const [doc, setDoc] = useState<SpaceDoc | null | undefined>(initialDoc);
-  const [now, setNow] = useState(() => Date.now());
+  // "Edited 27m ago" is drawn on the server: the first render uses the server's clock, or the hydration
+  // a minute later (slow 4G) reads "28m ago", the text does not match, and React throws the whole served
+  // page away and draws it again in the browser — every database block empty (DB-BLOCK-CHROME-2).
+  const [now, setNow] = useState(() => servedAt ?? Date.now());
   const [saveState, setSaveState] = useState<SaveState>("saved");
   /** Why the last save failed — handed to the error menu beside "Not saved". */
   const [saveError, setSaveError] = useState<unknown>(null);
@@ -354,6 +362,7 @@ function SpacePageScreen({ spaceId, initialDoc }: { spaceId: string; initialDoc?
   }, [store, spaceId]);
 
   useEffect(() => {
+    setNow(Date.now());
     const t = window.setInterval(() => setNow(Date.now()), 30_000);
     return () => window.clearInterval(t);
   }, []);

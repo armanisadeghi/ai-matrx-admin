@@ -1,20 +1,22 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0559",
-  "version": 1,
+  "version": 3,
   "title": "Music School Studio Desk",
-  "description": "Students, teachers, lessons, recitals and rented instruments for a music school.",
+  "description": "Music school desk: students, weekly lessons, tuition owed, recitals, exams and rentals.",
   "forWho": "Music schools, studios and lesson programs",
   "icon": {
     "emoji": "🎻"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:education-piano-keys",
     "offsetY": 50
   },
   "category": "education",
   "tags": [
-    "music school",
+    "music teacher",
+    "school director",
+    "parents",
     "lessons",
     "recitals",
     "instrument rentals"
@@ -144,6 +146,58 @@
             },
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "practice_goal",
+            "label": "Practice goal (minutes a day)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 180
+              }
+            ]
+          },
+          {
+            "key": "makeups",
+            "label": "Make-up lessons owed",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10
+              }
+            ]
+          },
+          {
+            "key": "billed",
+            "label": "Billed to date (USD)",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "tuition",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Draft",
+                  "Waived"
+                ]
+              }
+            }
           },
           {
             "key": "teacher",
@@ -388,7 +442,9 @@
               "email": "priya.mehta@mailbox.net",
               "phone": "(615) 555-0131",
               "next_lesson": "@today+1d",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "practice_goal": 15,
+              "makeups": 0
             }
           },
           {
@@ -402,7 +458,9 @@
               "guardian": "Hector Rios",
               "email": "hector.rios@mailbox.net",
               "phone": "(615) 555-0132",
-              "next_lesson": "@today"
+              "next_lesson": "@today",
+              "practice_goal": 30,
+              "makeups": 0
             }
           },
           {
@@ -417,7 +475,9 @@
               "email": "ama.tetteh@mailbox.net",
               "phone": "(615) 555-0133",
               "next_lesson": "@today+3d",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "practice_goal": 10,
+              "makeups": 0
             }
           },
           {
@@ -431,7 +491,9 @@
               "guardian": "Gwen Okonkwo",
               "email": "gwen.o@mailbox.net",
               "phone": "(615) 555-0134",
-              "next_lesson": "@today+2d"
+              "next_lesson": "@today+2d",
+              "practice_goal": 45,
+              "makeups": 1
             }
           },
           {
@@ -446,7 +508,9 @@
               "email": "marisol.cruz@mailbox.net",
               "phone": "(615) 555-0135",
               "next_lesson": "@today-2d",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "practice_goal": 20,
+              "makeups": 0
             }
           },
           {
@@ -460,7 +524,9 @@
               "guardian": "Wen Li",
               "email": "wen.li@mailbox.net",
               "phone": "(615) 555-0136",
-              "next_lesson": "@today+4d"
+              "next_lesson": "@today+4d",
+              "practice_goal": 30,
+              "makeups": 0
             }
           },
           {
@@ -475,7 +541,9 @@
               "email": "esi.appiah@mailbox.net",
               "phone": "(615) 555-0137",
               "next_lesson": "@today+5d",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "practice_goal": 15,
+              "makeups": 1
             }
           },
           {
@@ -489,7 +557,9 @@
               "guardian": "Silvia Vitale",
               "email": "silvia.v@mailbox.net",
               "phone": "(615) 555-0138",
-              "next_lesson": "@today+30d"
+              "next_lesson": "@today+30d",
+              "practice_goal": 0,
+              "makeups": 0
             }
           },
           {
@@ -504,7 +574,9 @@
               "email": "takashi.h@mailbox.net",
               "phone": "(615) 555-0139",
               "next_lesson": "@today+6d",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "practice_goal": 20,
+              "makeups": 0
             }
           },
           {
@@ -516,7 +588,9 @@
               "level": "Intermediate",
               "teacher": "tm-2",
               "guardian": "Anja Brandt",
-              "phone": "(615) 555-0140"
+              "phone": "(615) 555-0140",
+              "practice_goal": 0,
+              "makeups": 0
             }
           }
         ]
@@ -611,6 +685,20 @@
               "Missed": "done",
               "Rescheduled": "done"
             },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "assigned",
+            "label": "Practice this week",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "makeup",
+            "label": "Make-up lesson",
+            "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -751,7 +839,8 @@
               "status": "Scheduled",
               "lesson_at": "@today 16:00",
               "minutes": 45,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "assigned": "Scales in G and D, two octaves; Seitz concerto first page"
             }
           },
           {
@@ -763,7 +852,8 @@
               "room": "Studio A",
               "status": "Scheduled",
               "lesson_at": "@today+1d 15:30",
-              "minutes": 30
+              "minutes": 30,
+              "assigned": "C position songs, hands together"
             }
           },
           {
@@ -776,7 +866,9 @@
               "status": "Scheduled",
               "lesson_at": "@today+2d 17:00",
               "minutes": 45,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "assigned": "Breath support exercise; the Schubert, verses one and two",
+              "makeup": true
             }
           },
           {
@@ -788,7 +880,8 @@
               "room": "Studio B",
               "status": "Scheduled",
               "lesson_at": "@today+3d 16:30",
-              "minutes": 30
+              "minutes": 30,
+              "assigned": "Open chords G, C, D; strum pattern one"
             }
           },
           {
@@ -801,7 +894,8 @@
               "status": "Scheduled",
               "lesson_at": "@today+4d 17:00",
               "minutes": 45,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "assigned": "Minuet in G, hands separate then together"
             }
           },
           {
@@ -813,7 +907,8 @@
               "room": "Studio B",
               "status": "Scheduled",
               "lesson_at": "@today+5d 15:30",
-              "minutes": 30
+              "minutes": 30,
+              "assigned": "D string bowing, Twinkle variation A"
             }
           },
           {
@@ -826,7 +921,8 @@
               "status": "Scheduled",
               "lesson_at": "@today+6d 16:00",
               "minutes": 30,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "assigned": "Low register long tones; the folk song"
             }
           },
           {
@@ -838,7 +934,8 @@
               "room": "Studio B",
               "status": "Scheduled",
               "lesson_at": "@today-2d 17:00",
-              "minutes": 30
+              "minutes": 30,
+              "assigned": "Barre chord F; twelve-bar blues"
             }
           },
           {
@@ -851,7 +948,8 @@
               "status": "Done",
               "lesson_at": "@today-7d 16:00",
               "minutes": 45,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "assigned": "Seitz first movement, slow practice"
             }
           },
           {
@@ -863,7 +961,8 @@
               "room": "Studio A",
               "status": "Done",
               "lesson_at": "@today-6d 15:30",
-              "minutes": 30
+              "minutes": 30,
+              "assigned": "Five-finger songs with the metronome at 80"
             }
           },
           {
@@ -876,7 +975,8 @@
               "status": "Missed",
               "lesson_at": "@today-5d 17:00",
               "minutes": 45,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "assigned": "Rest the voice; listening list"
             }
           },
           {
@@ -888,7 +988,8 @@
               "room": "Studio A",
               "status": "Done",
               "lesson_at": "@today-3d 17:00",
-              "minutes": 45
+              "minutes": 45,
+              "assigned": "Sonatina first movement up to the repeat"
             }
           }
         ]
@@ -1362,6 +1463,44 @@
             "contextPolicy": "include"
           },
           {
+            "key": "deposit",
+            "label": "Deposit held (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "condition",
+            "label": "Condition",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Like new",
+              "Good",
+              "Fair",
+              "Needs repair"
+            ],
+            "choiceColors": {
+              "Like new": "green",
+              "Good": "blue",
+              "Fair": "amber",
+              "Needs repair": "red"
+            }
+          },
+          {
             "key": "out_on",
             "label": "Out on",
             "parityType": "datetime",
@@ -1486,7 +1625,9 @@
               "out_on": "@today-120d",
               "return_by": "@today+5d",
               "serial": "V12",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "deposit": 100,
+              "condition": "Good"
             }
           },
           {
@@ -1499,7 +1640,9 @@
               "monthly": 30,
               "out_on": "@today-40d",
               "return_by": "@today+80d",
-              "serial": "C04"
+              "serial": "C04",
+              "deposit": 150,
+              "condition": "Like new"
             }
           },
           {
@@ -1513,7 +1656,9 @@
               "out_on": "@today-60d",
               "return_by": "@today",
               "serial": "F07",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "deposit": 100,
+              "condition": "Good"
             }
           },
           {
@@ -1526,7 +1671,9 @@
               "monthly": 18,
               "out_on": "@today-2d",
               "return_by": "@today+3d",
-              "serial": "G15"
+              "serial": "G15",
+              "deposit": 75,
+              "condition": "Fair"
             }
           },
           {
@@ -1537,7 +1684,9 @@
               "status": "Available",
               "monthly": 22,
               "serial": "V03",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "deposit": 0,
+              "condition": "Good"
             }
           },
           {
@@ -1547,7 +1696,9 @@
               "kind": "Keyboard",
               "status": "Available",
               "monthly": 15,
-              "serial": "K02"
+              "serial": "K02",
+              "deposit": 0,
+              "condition": "Like new"
             }
           },
           {
@@ -1558,7 +1709,9 @@
               "status": "In repair",
               "monthly": 20,
               "serial": "T01",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "deposit": 0,
+              "condition": "Needs repair"
             }
           },
           {
@@ -1571,7 +1724,328 @@
               "monthly": 18,
               "out_on": "@today-200d",
               "return_by": "@today-3d",
-              "serial": "G09"
+              "serial": "G09",
+              "deposit": 75,
+              "condition": "Good"
+            }
+          }
+        ]
+      },
+      {
+        "token": "performance",
+        "name": "Recitals and exams",
+        "labelSingular": "Performance",
+        "labelPlural": "Recitals and exams",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "music",
+        "titleField": "perf_name",
+        "describes": "Every recital piece, concert solo, graded exam and competition entry, with the date and accompanist.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New performance",
+            "values": {
+              "perf_name": "New performance",
+              "status": "Preparing"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Preparation"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Piece chosen four to six weeks ahead"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Memorized (if required) two weeks ahead"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "One run-through with the accompanist"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "A practice performance for family or the class"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "On the day"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Arrive 30 minutes early; tune; one slow run of the hardest passage."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "pupil": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "perf_name",
+            "label": "Performance",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "pupil",
+            "label": "Student",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "pupil",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Studio recital",
+              "Spring concert",
+              "Graded exam",
+              "Competition"
+            ],
+            "choiceColors": {
+              "Studio recital": "blue",
+              "Spring concert": "violet",
+              "Graded exam": "amber",
+              "Competition": "red"
+            }
+          },
+          {
+            "key": "piece",
+            "label": "Piece",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Preparing",
+              "Ready",
+              "Performed",
+              "Withdrawn"
+            ],
+            "choiceColors": {
+              "Preparing": "amber",
+              "Ready": "blue",
+              "Performed": "green",
+              "Withdrawn": "slate"
+            },
+            "required": true,
+            "statusGroups": {
+              "Preparing": "todo",
+              "Ready": "in_progress",
+              "Performed": "done",
+              "Withdrawn": "done"
+            }
+          },
+          {
+            "key": "perform_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "accompanist",
+            "label": "Needs an accompanist",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "performance_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "performance-1",
+            "values": {
+              "perf_name": "Hattie, spring concert solo",
+              "pupil": "pupil-4",
+              "kind": "Spring concert",
+              "piece": "Schubert, An die Musik",
+              "status": "Ready",
+              "perform_on": "@today+5d",
+              "accompanist": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "performance-2",
+            "values": {
+              "perf_name": "Fiona, graded exam",
+              "pupil": "pupil-2",
+              "kind": "Graded exam",
+              "piece": "Seitz concerto no. 5, first movement",
+              "status": "Preparing",
+              "perform_on": "@today+3d",
+              "accompanist": true
+            }
+          },
+          {
+            "key": "performance-3",
+            "values": {
+              "perf_name": "Ellis, studio recital",
+              "pupil": "pupil-1",
+              "kind": "Studio recital",
+              "piece": "Two pieces from the beginner book",
+              "status": "Preparing",
+              "perform_on": "@today",
+              "accompanist": false,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "performance-4",
+            "values": {
+              "perf_name": "Jade, studio recital",
+              "pupil": "pupil-6",
+              "kind": "Studio recital",
+              "piece": "Clementi sonatina, first movement",
+              "status": "Ready",
+              "perform_on": "@today+1d",
+              "accompanist": false
+            }
+          },
+          {
+            "key": "performance-5",
+            "values": {
+              "perf_name": "Isidro, studio recital",
+              "pupil": "pupil-5",
+              "kind": "Studio recital",
+              "piece": "Blues in E, with the class band",
+              "status": "Preparing",
+              "perform_on": "@today-2d",
+              "accompanist": false
+            }
+          },
+          {
+            "key": "performance-6",
+            "values": {
+              "perf_name": "Mina, youth competition",
+              "pupil": "pupil-9",
+              "kind": "Competition",
+              "piece": "Folk song suite",
+              "status": "Preparing",
+              "perform_on": "@today+6d",
+              "accompanist": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "performance-7",
+            "values": {
+              "perf_name": "Kofi, studio recital",
+              "pupil": "pupil-7",
+              "kind": "Studio recital",
+              "piece": "Song of the Wind",
+              "status": "Withdrawn",
+              "perform_on": "@today+1d",
+              "accompanist": false
+            }
+          },
+          {
+            "key": "performance-8",
+            "values": {
+              "perf_name": "Hattie, autumn graded exam",
+              "pupil": "pupil-4",
+              "kind": "Graded exam",
+              "piece": "Exam list pieces A1 and B3",
+              "status": "Performed",
+              "perform_on": "@today-90d",
+              "accompanist": true
             }
           }
         ]
@@ -1627,6 +2101,16 @@
         "cardinality": "one",
         "onDelete": "restrict",
         "inverseKey": "rentals"
+      },
+      {
+        "describes": "Each performance belongs to one student.",
+        "fromTable": "performance",
+        "fromField": "pupil",
+        "toTable": "pupil",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "performances"
       }
     ],
     "sharedBlocks": [
@@ -1865,6 +2349,20 @@
         "kind": "row_action",
         "token": "rentals_claim",
         "table": "rentals",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "performance_claim",
+        "table": "performance",
         "name": "Assign to me",
         "actionKind": "update",
         "steps": [
@@ -2195,6 +2693,89 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_performance",
+        "name": "All performances",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "performance"
+      },
+      {
+        "token": "performance_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "performance"
+      },
+      {
+        "token": "performance_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "perform_on",
+        "allDay": true,
+        "table": "performance"
+      },
+      {
+        "token": "performance_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "perform_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Preparing",
+            "Ready"
+          ]
+        },
+        "table": "performance"
+      },
+      {
+        "token": "performance_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "perform_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Preparing",
+            "Ready"
+          ]
+        },
+        "table": "performance"
+      },
+      {
+        "token": "performance_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "perform_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Preparing",
+            "Ready"
+          ]
+        },
+        "table": "performance"
+      },
+      {
+        "token": "performance_mine",
+        "name": "My performances",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "performance"
       }
     ],
     "agent": {
@@ -2267,6 +2848,18 @@
           "surface": "tuition_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open recitals and exams.",
+        "action": {
+          "kind": "open",
+          "surface": "performance_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "performance_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2283,7 +2876,7 @@
         "Cantor Row"
       ]
     },
-    "version": 1
+    "version": 3
   },
   "pages": [
     {
@@ -2294,7 +2887,7 @@
         "emoji": "🎻"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:education-piano-keys",
         "offsetY": 50
       },
       "settings": {
@@ -2305,12 +2898,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Lessons, tuition and instrument rentals for the whole school. Start with the Dashboard each Monday. Mark each lesson done or missed the same day, send tuition reminders on time and check the rentals due back this week."
+              "text": "The school in one place. Students holds each family's instrument, teacher, level and balance; Lessons is the weekly schedule with practice set; Tuition shows what is due; Recitals and exams keeps every performance on track; Instrument rentals tracks every instrument out. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2833,6 +3432,390 @@
             ],
             "activeViewId": "ren-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recitals and exams"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Recital pieces, concert solos, graded exams and competitions."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "performance",
+              "view": "performance_board"
+            },
+            "inline": true,
+            "title": "Recitals and exams",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pf-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pf-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "perform_on"
+              },
+              {
+                "id": "pf-t",
+                "name": "All performances",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pf-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "perform_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Preparing",
+                    "Ready"
+                  ]
+                }
+              },
+              {
+                "id": "pf-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "perform_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Preparing",
+                    "Ready"
+                  ]
+                }
+              },
+              {
+                "id": "pf-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "perform_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Preparing",
+                    "Ready"
+                  ]
+                }
+              },
+              {
+                "id": "pf-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "pf-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "music-school-studio",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the music school in this workspace. Share it with the director, every teacher and the front office."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Students",
+              "bold": true
+            },
+            {
+              "text": ": each student's instrument, level, teacher, parent, practice goal, make-up lessons owed, tuition owed and billed to date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Lessons",
+              "bold": true
+            },
+            {
+              "text": ": the weekly schedule with room, teacher and the practice set for the week."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tuition",
+              "bold": true
+            },
+            {
+              "text": ": monthly charges, due, overdue and paid."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Recitals and exams",
+              "bold": true
+            },
+            {
+              "text": ": every performance with the piece, the date and whether an accompanist is needed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Instrument rentals",
+              "bold": true
+            },
+            {
+              "text": ": every instrument, who has it, the deposit, the condition and when it is due back."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: lessons and make-ups for the week confirmed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every day: teachers mark lessons and set practice."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Thursday: overdue tuition followed up; rentals due back called."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Friday: the director reads the Dashboard: awaiting payment, performances in the next two weeks, rentals out."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: today's lessons and rooms"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every week: overdue tuition, make-ups owed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: tuition billed on the first, rentals reviewed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every term: recitals planned, levels reviewed, rental sizes checked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The director owns enrollment, the teacher schedule, recitals and policies. Teachers own lessons, practice plans, levels and performance choices. The front office owns tuition, rentals and make-up booking."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "New students"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every new student starts with a trial lesson. The teacher writes the level and a practice goal after it, and the office follows up within two days with a lesson time, the tuition plan and, if needed, a rental instrument in the right size."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Privacy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Students appear by first name and last initial. Parents' phone numbers and payment details are confidential and stay with the office."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename instruments, rooms and levels to match your school and delete the sample rows once your own are in. Edit any cell in place and drag cards between columns; totals update on their own."
+            }
+          ]
         }
       ]
     },
@@ -3238,6 +4221,92 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Awaiting payment (due and overdue)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "tuition",
+              "view": "all_tuition"
+            },
+            "inline": true,
+            "title": "Awaiting payment",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dt-1",
+                "name": "Due and overdue",
+                "layout": "list",
+                "icon": "Receipt",
+                "anyOf": {
+                  "status": [
+                    "Due",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dt-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Performances coming up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "performance",
+              "view": "all_performance"
+            },
+            "inline": true,
+            "title": "Performances coming up",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dt-2",
+                "name": "Next 14 days",
+                "layout": "list",
+                "icon": "Music",
+                "within": {
+                  "perform_on": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Preparing",
+                    "Ready"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dt-2"
+          }
         }
       ]
     },
@@ -3256,7 +4325,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A recital is a student's proudest hour. Plan it backward from the date so no one is rushed."
+              "text": "A recital is the moment families see what a term of lessons bought. Make it short, warm and well organized, and every child should leave proud."
             }
           ],
           "background": "blue",
@@ -3276,37 +4345,49 @@
           }
         },
         {
-          "type": "todo",
+          "type": "numbered",
           "text": [
             {
-              "text": "Book the hall and a piano tuner"
+              "text": "Book the hall and pick the date with the director. Avoid school holidays and exam weeks."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         },
         {
-          "type": "todo",
+          "type": "numbered",
           "text": [
             {
-              "text": "Pick the date and send a save-the-date to families"
+              "text": "Each teacher chooses pieces with their students and adds a row in "
+            },
+            {
+              "text": "Recitals and exams",
+              "bold": true
+            },
+            {
+              "text": " for each one, with the "
+            },
+            {
+              "text": "Piece",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Needs an accompanist",
+              "bold": true
+            },
+            {
+              "text": "."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         },
         {
-          "type": "todo",
+          "type": "numbered",
           "text": [
             {
-              "text": "Ask teachers to choose the pieces"
+              "text": "Book an accompanist for every student who needs one."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         },
         {
           "type": "heading",
@@ -3320,43 +4401,34 @@
           }
         },
         {
-          "type": "todo",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Collect program names and piece titles"
+              "text": "Pieces are learned; now the work is polishing and memory."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         },
         {
-          "type": "todo",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Assign accompanists and rehearsal times"
+              "text": "Set the order: youngest and newest first, a mix of instruments, the strongest players at the end of each half."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         },
         {
-          "type": "todo",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Send the arrival and dress instructions"
+              "text": "Keep it under 75 minutes. Two short recitals beat one long one."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "The week of"
+              "text": "Two weeks out"
             }
           ],
           "props": {
@@ -3367,7 +4439,21 @@
           "type": "todo",
           "text": [
             {
-              "text": "Print programs"
+              "text": "Every performance set to "
+            },
+            {
+              "text": "Ready",
+              "bold": true
+            },
+            {
+              "text": " or "
+            },
+            {
+              "text": "Withdrawn",
+              "bold": true
+            },
+            {
+              "text": ", honestly"
             }
           ],
           "props": {
@@ -3378,7 +4464,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Run a short rehearsal in the hall"
+              "text": "One rehearsal with the accompanist for each student who needs one"
             }
           ],
           "props": {
@@ -3389,7 +4475,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Plan applause and flowers"
+              "text": "Program printed with names (first name and last initial) and pieces"
             }
           ],
           "props": {
@@ -3400,12 +4486,118 @@
           "type": "todo",
           "text": [
             {
-              "text": "Thank every teacher and volunteer afterwards"
+              "text": "Families told the time, the place and when to arrive"
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Students arrive 30 minutes early to tune and warm up."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A teacher backstage keeps the order and sends each student on."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Teach the bow: walk out, bow, play, bow, walk off. Applause for every performer."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Graded exams and competitions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "These need the right paperwork and fees by the board's deadline. Put the exam date in "
+            },
+            {
+              "text": "Date",
+              "bold": true
+            },
+            {
+              "text": " as soon as it is confirmed, and book the accompanist rehearsal at least a week before."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Mark each performance "
+            },
+            {
+              "text": "Performed",
+              "bold": true
+            },
+            {
+              "text": ". Teachers write one line in the next lesson's notes: what went well, what to work on."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Spring concert is in five days. Hattie is ready with her Schubert, the accompanist has rehearsed with her twice, and the program is printed. Kofi's teacher and parents decided he would rather play at the summer recital, so his row is Withdrawn with no fuss."
+            }
+          ]
         }
       ]
     },
@@ -3424,7 +4616,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Clear policies make awkward conversations short. Share this with every new family."
+              "text": "Clear policies, sent to every family at enrollment and applied the same way to everyone, prevent nearly all money conversations."
             }
           ],
           "background": "blue",
@@ -3447,7 +4639,14 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Tuition is billed monthly and due on the first."
+              "text": "Tuition is billed monthly for a set number of lessons, due on the first. Each charge is on "
+            },
+            {
+              "text": "Tuition",
+              "bold": true
+            },
+            {
+              "text": " with its status."
             }
           ]
         },
@@ -3455,7 +4654,14 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Missed lessons are not credited unless the teacher cancels."
+              "text": "A charge becomes "
+            },
+            {
+              "text": "Overdue",
+              "bold": true
+            },
+            {
+              "text": " a week after the due date. The office sends a friendly reminder, then calls."
             }
           ]
         },
@@ -3463,7 +4669,29 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Two overdue months pause lessons until the balance is cleared."
+              "text": "The student's "
+            },
+            {
+              "text": "Tuition owed",
+              "bold": true
+            },
+            {
+              "text": " shows what is due and overdue; "
+            },
+            {
+              "text": "Billed to date",
+              "bold": true
+            },
+            {
+              "text": " shows everything charged except drafts and waived items."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Siblings get a discount; families in hardship can ask the director for a reduced rate, privately."
             }
           ]
         },
@@ -3471,7 +4699,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Rentals"
+              "text": "Missed lessons"
             }
           ],
           "props": {
@@ -3479,83 +4707,203 @@
           }
         },
         {
-          "type": "table",
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cancelled 24 hours ahead for illness: one "
+            },
+            {
+              "text": "make-up lesson",
+              "bold": true
+            },
+            {
+              "text": " per term, booked within four weeks. The count is on "
+            },
+            {
+              "text": "Make-up lessons owed",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Missed without notice: the lesson is not made up."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Teacher cancels: always made up or credited."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Instrument rentals"
+            }
+          ],
           "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Rule"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Detail"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Fee"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "A monthly fee shown on the rental row"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Care"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Keep the instrument in its case; report damage at once"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Return"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "On the return-by date, in the same condition"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Lost or damaged"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Repair or replacement cost is agreed with the director"
-                    }
-                  ]
-                ]
-              }
-            ]
+            "level": 2
           }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Rentals start with a signed agreement, a "
+            },
+            {
+              "text": "Deposit held",
+              "bold": true
+            },
+            {
+              "text": " and the first month's rent."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write the instrument's "
+            },
+            {
+              "text": "Condition",
+              "bold": true
+            },
+            {
+              "text": " when it goes out and when it comes back."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Rent is billed with tuition. Rentals are reviewed each term: many beginners move up a size, especially violins and cellos."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Damage beyond normal wear is repaired at the family's cost from the deposit. Normal wear is ours."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Returning an instrument"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Checked against the condition when it went out"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cleaned and restrung or repadded as needed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Deposit returned within two weeks"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Instrument set to "
+            },
+            {
+              "text": "Available",
+              "bold": true
+            },
+            {
+              "text": ", or "
+            },
+            {
+              "text": "In repair",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Leaving the school"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ask for a month's notice, so the teacher can plan a last lesson that ends well. Prepaid tuition for lessons not yet taught is refunded."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Isidro's guitar charge is nine days late and his rental was due back three days ago. The office emails his parent, who pays that afternoon and asks to keep the guitar another term. The rental is extended and the condition is noted as good."
+            }
+          ]
         }
       ]
     },
@@ -3574,7 +4922,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Good lessons are repeatable. The same rhythm each week helps students practice at home."
+              "text": "Students stay with teachers they like, who make each week feel like progress. These habits make that happen."
             }
           ],
           "background": "blue",
@@ -3586,7 +4934,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Each lesson"
+              "text": "Every lesson"
             }
           ],
           "props": {
@@ -3597,7 +4945,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check the last homework and listen to the pieces."
+              "text": "Start on time and warm up with something the student can already play."
             }
           ]
         },
@@ -3605,7 +4953,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Teach one new idea and have the student play it back."
+              "text": "Work on one or two things in depth, not ten things lightly."
             }
           ]
         },
@@ -3613,7 +4961,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Write the homework down before the student leaves."
+              "text": "End with the assignment written in "
+            },
+            {
+              "text": "Practice this week",
+              "bold": true
+            },
+            {
+              "text": ", and tell the parent if they are there."
             }
           ]
         },
@@ -3621,7 +4976,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Mark the lesson done or missed."
+              "text": "Mark the lesson "
+            },
+            {
+              "text": "Done",
+              "bold": true
+            },
+            {
+              "text": ", or "
+            },
+            {
+              "text": "Missed",
+              "bold": true
+            },
+            {
+              "text": " if the student did not come."
             }
           ]
         },
@@ -3629,7 +4998,111 @@
           "type": "heading",
           "text": [
             {
-              "text": "Each term"
+              "text": "Practice"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every student has a "
+            },
+            {
+              "text": "Practice goal",
+              "bold": true
+            },
+            {
+              "text": " in minutes a day: ten to fifteen for young beginners, thirty or more for intermediate students, longer for exam candidates. Short daily practice beats one long session on Sunday. Show students how to practice: slow, in small sections, with a metronome."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Levels"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Move students up a "
+            },
+            {
+              "text": "Level",
+              "bold": true
+            },
+            {
+              "text": " when they are ready, not by the calendar. Tell the parent when it happens; it is good news."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Performances"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each student should perform at least twice a year: a studio recital, a concert, a graded exam or a competition. Add each to "
+            },
+            {
+              "text": "Recitals and exams",
+              "bold": true
+            },
+            {
+              "text": " as soon as you choose the piece."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Make-up lessons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Book make-ups in an open slot within four weeks and tick "
+            },
+            {
+              "text": "Make-up lesson",
+              "bold": true
+            },
+            {
+              "text": ". Keep the count on the student current."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Parents"
             }
           ],
           "props": {
@@ -3640,7 +5113,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Write a short progress note for each family."
+              "text": "A two-line note after each lesson for younger students, through the parent, never a private chat with the child."
             }
           ]
         },
@@ -3648,7 +5121,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Suggest a performance goal."
+              "text": "A short progress conversation each term."
             }
           ]
         },
@@ -3656,7 +5129,52 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Report equipment problems to the front desk."
+              "text": "Tell the office about any worry: a student who seems unhappy, a sudden drop in practice."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Instruments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Check rented instruments every few weeks: strings, bridges, pads. Report anything that needs repair so the rental's "
+            },
+            {
+              "text": "Condition",
+              "bold": true
+            },
+            {
+              "text": " stays honest."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Fiona's exam is in three days. Her teacher spends the lesson on the hardest passage, slowly, then a full run with the accompanist. The assignment says: slow practice of bars 32 to 48, then one full run each day. The parent hears the plan at pickup."
             }
           ]
         }

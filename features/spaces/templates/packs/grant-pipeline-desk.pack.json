@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0552",
-  "version": 2,
+  "version": 4,
   "title": "Grant Pipeline and Reporting Desk",
   "description": "Grant pipeline: funders, LOIs, applications, awards, budgets vs. spending and reports due.",
   "forWho": "Nonprofit grant writers and development directors",
@@ -9,7 +9,7 @@
     "emoji": "📑"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:nonprofit-documents-folders-desk",
     "offsetY": 50
   },
   "category": "nonprofit",
@@ -1901,7 +1901,7 @@
         "labelSingular": "Budget line",
         "labelPlural": "Grant budget lines",
         "type": "entity",
-        "display": "table",
+        "display": "grid",
         "weight": "light",
         "ordered": false,
         "icon": "wallet",
@@ -2116,17 +2116,6 @@
           {
             "key": "budgetline-3",
             "values": {
-              "line_name": "Studio coordinator, part time",
-              "grant": "grant-1",
-              "category": "Personnel",
-              "budgeted": 8000,
-              "spent": 5400,
-              "note": "Paid monthly"
-            }
-          },
-          {
-            "key": "budgetline-4",
-            "values": {
               "line_name": "Executive and finance salaries share",
               "grant": "grant-6",
               "category": "Personnel",
@@ -2136,18 +2125,18 @@
             }
           },
           {
-            "key": "budgetline-5",
+            "key": "budgetline-4",
             "values": {
               "line_name": "Rent and utilities share",
               "grant": "grant-6",
               "category": "Rent and utilities",
-              "budgeted": 15000,
+              "budgeted": 12000,
               "spent": 3800,
               "note": "Two months charged"
             }
           },
           {
-            "key": "budgetline-6",
+            "key": "budgetline-5",
             "values": {
               "line_name": "Audit and insurance",
               "grant": "grant-6",
@@ -2158,7 +2147,7 @@
             }
           },
           {
-            "key": "budgetline-7",
+            "key": "budgetline-6",
             "values": {
               "line_name": "Festival safety staffing",
               "grant": "grant-7",
@@ -2169,7 +2158,7 @@
             }
           },
           {
-            "key": "budgetline-8",
+            "key": "budgetline-7",
             "values": {
               "line_name": "Fencing and barrier rental",
               "grant": "grant-7",
@@ -2180,13 +2169,13 @@
             }
           },
           {
-            "key": "budgetline-9",
+            "key": "budgetline-8",
             "values": {
               "line_name": "Event permit fees",
               "grant": "grant-7",
               "category": "Permits and fees",
-              "budgeted": 1500,
-              "spent": 1500,
+              "budgeted": 500,
+              "spent": 500,
               "note": "Paid in full"
             }
           }
@@ -2913,7 +2902,7 @@
         "Tamarack Street"
       ]
     },
-    "version": 2
+    "version": 4
   },
   "pages": [
     {
@@ -2924,7 +2913,7 @@
         "emoji": "📑"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:nonprofit-documents-folders-desk",
         "offsetY": 50
       },
       "settings": {
@@ -3597,7 +3586,7 @@
               "bold": true
             },
             {
-              "text": ": the approved budget of each award, line by line, with what is spent and what is left."
+              "text": ": the lines of each award you watch closely, with what is spent and what is left."
             }
           ]
         },
@@ -3739,6 +3728,25 @@
           "text": [
             {
               "text": "The grants manager owns the calendar and the writing. The program director supplies the numbers and stories. The finance manager owns budgets and financial reports. The executive director signs, calls funders and hosts site visits."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Privacy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Amounts are shared with the board treasurer; keep program officers' personal numbers out of shared notes."
             }
           ]
         },
@@ -4688,14 +4696,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Enter the approved budget in "
+              "text": "Enter the lines you need to watch in "
             },
             {
               "text": "Grant budget lines",
               "bold": true
             },
             {
-              "text": ", line by line, in the funder's own categories."
+              "text": " (usually the larger ones, plus anything the funder restricted), in the funder's own categories. Small lines can stay in your accounting system."
             }
           ]
         },

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0361",
-  "version": 4,
+  "version": 5,
   "title": "Customer Interview Notes",
   "description": "Product and success teams: log customer calls with themes, mood and follow-ups.",
   "forWho": "Product and customer success teams",
@@ -9,7 +9,7 @@
     "emoji": "🎙️"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:meetings-cafe-interior-quiet",
     "offsetY": 50
   },
   "category": "meetings",
@@ -809,7 +809,7 @@
         "Piper Cove Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -820,7 +820,7 @@
         "emoji": "🎙️"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:meetings-cafe-interior-quiet",
         "offsetY": 50
       },
       "settings": {

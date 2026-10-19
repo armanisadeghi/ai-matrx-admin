@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0467",
-  "version": 4,
+  "version": 6,
   "title": "Coffee Shop Operations",
-  "description": "Menu margins, supplies and par levels, waste log, equipment service and orders for a cafe.",
+  "description": "For cafe owners and baristas: drink margins, dial-ins, pars, waste, orders, machine care.",
   "forWho": "Independent coffee shops and cafes",
   "icon": {
     "emoji": "☕"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:hospitality-coffee-shop-counter-espresso",
     "offsetY": 50
   },
   "category": "hospitality",
   "tags": [
+    "barista",
+    "cafe owner",
     "coffee shop",
-    "cafe",
-    "waste",
-    "inventory"
+    "dial-in",
+    "par levels",
+    "waste log"
   ],
   "spec": {
     "specVersion": 1,
@@ -115,6 +117,36 @@
               "Pastry": "violet",
               "Food": "teal",
               "Retail beans": "orange"
+            }
+          },
+          {
+            "key": "build",
+            "label": "Build",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "size",
+            "label": "Cup size",
+            "parityType": "select",
+            "choices": [
+              "4 oz",
+              "6 oz",
+              "8 oz",
+              "12 oz",
+              "16 oz",
+              "Not a drink"
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choiceColors": {
+              "4 oz": "blue",
+              "6 oz": "green",
+              "8 oz": "orange",
+              "12 oz": "violet",
+              "16 oz": "teal",
+              "Not a drink": "pink"
             }
           },
           {
@@ -274,7 +306,9 @@
               "category": "Espresso",
               "price": 4.75,
               "cost": 1.05,
-              "sold_week": 410
+              "sold_week": 410,
+              "build": "18 g in, 36 g out; 4 oz steamed whole milk",
+              "size": "6 oz"
             }
           },
           {
@@ -285,7 +319,9 @@
               "category": "Espresso",
               "price": 5.5,
               "cost": 1.4,
-              "sold_week": 365
+              "sold_week": 365,
+              "build": "18 g in, 36 g out; 9 oz steamed oat milk",
+              "size": "12 oz"
             }
           },
           {
@@ -296,7 +332,9 @@
               "category": "Espresso",
               "price": 3.5,
               "cost": 0.4,
-              "sold_week": 150
+              "sold_week": 150,
+              "build": "18 g in, 36 g out; 8 oz hot water",
+              "size": "12 oz"
             }
           },
           {
@@ -307,7 +345,9 @@
               "category": "Brewed",
               "price": 5,
               "cost": 1.2,
-              "sold_week": 120
+              "sold_week": 120,
+              "build": "22 g coffee, 350 g water, 3 minutes 30",
+              "size": "12 oz"
             }
           },
           {
@@ -318,7 +358,9 @@
               "category": "Brewed",
               "price": 4.75,
               "cost": 0.9,
-              "sold_week": 205
+              "sold_week": 205,
+              "build": "Batch steeped 18 hours at 1 to 8, served 1 to 1 over ice",
+              "size": "16 oz"
             }
           },
           {
@@ -329,7 +371,9 @@
               "category": "Tea",
               "price": 5.25,
               "cost": 1.1,
-              "sold_week": 95
+              "sold_week": 95,
+              "build": "4 oz chai concentrate, 6 oz milk, ice",
+              "size": "16 oz"
             }
           },
           {
@@ -340,7 +384,9 @@
               "category": "Tea",
               "price": 3.75,
               "cost": 0.35,
-              "sold_week": 40
+              "sold_week": 40,
+              "build": "One sachet, 3 minutes at 205 degrees",
+              "size": "12 oz"
             }
           },
           {
@@ -351,7 +397,9 @@
               "category": "Pastry",
               "price": 4.25,
               "cost": 1.3,
-              "sold_week": 260
+              "sold_week": 260,
+              "build": "Baked from frozen dough, 22 minutes",
+              "size": "Not a drink"
             }
           },
           {
@@ -362,7 +410,9 @@
               "category": "Pastry",
               "price": 3.75,
               "cost": 0.95,
-              "sold_week": 115
+              "sold_week": 115,
+              "build": "One slice from a 10-slice loaf",
+              "size": "Not a drink"
             }
           },
           {
@@ -373,7 +423,9 @@
               "category": "Food",
               "price": 8.5,
               "cost": 2.8,
-              "sold_week": 98
+              "sold_week": 98,
+              "build": "Toasted brioche, folded egg, cheddar",
+              "size": "Not a drink"
             }
           },
           {
@@ -384,7 +436,9 @@
               "category": "Retail beans",
               "price": 16,
               "cost": 7.2,
-              "sold_week": 64
+              "sold_week": 64,
+              "build": "Bagged and dated on roast day",
+              "size": "Not a drink"
             }
           },
           {
@@ -395,7 +449,9 @@
               "category": "Espresso",
               "price": 5.75,
               "cost": 1.5,
-              "sold_week": 0
+              "sold_week": 0,
+              "build": "18 g in, 36 g out; 2 oz milk; pumpkin spice syrup",
+              "size": "6 oz"
             }
           },
           {
@@ -405,7 +461,9 @@
               "status": "Retired",
               "category": "Pastry",
               "price": 4.75,
-              "cost": 1.7
+              "cost": 1.7,
+              "build": "Day-old croissant, almond cream, baked again",
+              "size": "Not a drink"
             }
           }
         ]
@@ -495,6 +553,34 @@
                 "value": 5000
               }
             ]
+          },
+          {
+            "key": "unit_cost",
+            "label": "Cost per unit (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "stock_value",
+            "label": "Stock value (USD)",
+            "parityType": "formula",
+            "unit": "USD",
+            "formula": "ROUND({On hand} * {Cost per unit (USD)}, 2)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "to_order",
@@ -626,7 +712,8 @@
               "counted_on": "@today-1d",
               "ordered_on": "@today-6d",
               "vendor": "Fernwood roastery",
-              "counter": "tm-4"
+              "counter": "tm-4",
+              "unit_cost": 9.8
             }
           },
           {
@@ -640,7 +727,8 @@
               "counted_on": "@today-1d",
               "ordered_on": "@today-9d",
               "vendor": "Fernwood roastery",
-              "counter": "tm-4"
+              "counter": "tm-4",
+              "unit_cost": 13.5
             }
           },
           {
@@ -654,7 +742,8 @@
               "counted_on": "@today-1d",
               "ordered_on": "@today-2d",
               "vendor": "Cascadia Dairy",
-              "counter": "tm-4"
+              "counter": "tm-4",
+              "unit_cost": 4.6
             }
           },
           {
@@ -668,7 +757,8 @@
               "counted_on": "@today-1d",
               "ordered_on": "@today-4d",
               "vendor": "Cascadia Dairy",
-              "counter": "tm-4"
+              "counter": "tm-4",
+              "unit_cost": 38
             }
           },
           {
@@ -682,7 +772,8 @@
               "counted_on": "@today-1d",
               "ordered_on": "@today-20d",
               "vendor": "Lantern Beverage",
-              "counter": "tm-4"
+              "counter": "tm-4",
+              "unit_cost": 11
             }
           },
           {
@@ -696,7 +787,8 @@
               "counted_on": "@today-1d",
               "ordered_on": "@today-11d",
               "vendor": "Lantern Beverage",
-              "counter": "tm-4"
+              "counter": "tm-4",
+              "unit_cost": 7.5
             }
           },
           {
@@ -710,7 +802,8 @@
               "counted_on": "@today-1d",
               "ordered_on": "@today-1d",
               "vendor": "Fernwood bakery",
-              "counter": "tm-5"
+              "counter": "tm-5",
+              "unit_cost": 42
             }
           },
           {
@@ -724,7 +817,8 @@
               "counted_on": "@today-1d",
               "ordered_on": "@today-1d",
               "vendor": "Fernwood bakery",
-              "counter": "tm-5"
+              "counter": "tm-5",
+              "unit_cost": 9
             }
           },
           {
@@ -738,7 +832,8 @@
               "counted_on": "@today-3d",
               "ordered_on": "@today-12d",
               "vendor": "Greenware Packaging",
-              "counter": "tm-2"
+              "counter": "tm-2",
+              "unit_cost": 6.2
             }
           },
           {
@@ -752,7 +847,8 @@
               "counted_on": "@today-3d",
               "ordered_on": "@today-12d",
               "vendor": "Greenware Packaging",
-              "counter": "tm-2"
+              "counter": "tm-2",
+              "unit_cost": 4.8
             }
           },
           {
@@ -766,7 +862,8 @@
               "counted_on": "@today-8d",
               "ordered_on": "@today-30d",
               "vendor": "Tidy Supply Co.",
-              "counter": "tm-2"
+              "counter": "tm-2",
+              "unit_cost": 24
             }
           }
         ]
@@ -927,7 +1024,7 @@
             "key": "waste-1",
             "values": {
               "waste_name": "Unsold croissants",
-              "logged_on": "@today-1d",
+              "logged_on": "@today+0d",
               "qty": 6,
               "reason": "Expired",
               "value": 7.8,
@@ -1109,6 +1206,14 @@
             "format": "date"
           },
           {
+            "key": "filter_changed",
+            "label": "Water filter changed",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "next_service",
             "label": "Next service due",
             "parityType": "datetime",
@@ -1119,6 +1224,13 @@
           {
             "key": "technician",
             "label": "Technician",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "daily_care",
+            "label": "Daily care",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
@@ -1229,7 +1341,9 @@
               "kind": "Espresso machine",
               "last_service": "@today-70d",
               "next_service": "@today+20d",
-              "technician": "Bellwether Coffee Service"
+              "technician": "Bellwether Coffee Service",
+              "filter_changed": "@today-80d",
+              "daily_care": "Backflush with cleaner at close; soak portafilters and baskets"
             }
           },
           {
@@ -1240,7 +1354,8 @@
               "kind": "Grinder",
               "last_service": "@today-160d",
               "next_service": "@today-10d",
-              "technician": "Bellwether Coffee Service"
+              "technician": "Bellwether Coffee Service",
+              "daily_care": "Brush the chute; purge 5 g after any setting change"
             }
           },
           {
@@ -1251,7 +1366,8 @@
               "kind": "Grinder",
               "last_service": "@today-90d",
               "next_service": "@today+90d",
-              "technician": "Bellwether Coffee Service"
+              "technician": "Bellwether Coffee Service",
+              "daily_care": "Brush the chute; check the hopper is sealed"
             }
           },
           {
@@ -1261,8 +1377,10 @@
               "status": "Working",
               "kind": "Brewer",
               "last_service": "@today-45d",
-              "next_service": "@today+135d",
-              "technician": "In-house"
+              "next_service": "@today+4d",
+              "technician": "In-house",
+              "filter_changed": "@today-80d",
+              "daily_care": "Rinse the brew basket and urn; descale monthly"
             }
           },
           {
@@ -1273,7 +1391,8 @@
               "kind": "Refrigeration",
               "last_service": "@today-200d",
               "next_service": "@today+165d",
-              "technician": "Coldline Repair"
+              "technician": "Coldline Repair",
+              "daily_care": "Log temperature at open and close; 41 degrees or below"
             }
           },
           {
@@ -1284,7 +1403,8 @@
               "kind": "Oven",
               "last_service": "@today-380d",
               "next_service": "@today-15d",
-              "technician": "Coldline Repair"
+              "technician": "Coldline Repair",
+              "daily_care": "Wipe crumbs from the door seal; empty the tray"
             }
           },
           {
@@ -1294,8 +1414,9 @@
               "status": "Working",
               "kind": "Refrigeration",
               "last_service": "@today-120d",
-              "next_service": "@today+60d",
-              "technician": "Coldline Repair"
+              "next_service": "@mon+2d",
+              "technician": "Coldline Repair",
+              "daily_care": "Log temperature at open and close; keep the door shut"
             }
           }
         ]
@@ -1560,8 +1681,268 @@
               "by": "tm-4",
               "arrived_on": "@today-6d"
             }
+          },
+          {
+            "key": "order-7",
+            "values": {
+              "order_name": "Bakery standing order, short three trays",
+              "status": "Placed",
+              "placed_on": "@today-3d",
+              "arrives_on": "@today-1d",
+              "total": 126,
+              "vendor": "Fernwood bakery",
+              "by": "tm-4"
+            }
           }
         ]
+      },
+      {
+        "token": "dial_in",
+        "name": "Dial-in log",
+        "labelSingular": "Dial-in",
+        "labelPlural": "Dial-in log",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "gauge",
+        "titleField": "dial_name",
+        "describes": "Each espresso dial-in: coffee, dose, yield, time, grind setting and how it tasted.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "dial_name",
+            "label": "Dial-in",
+            "parityType": "text",
+            "required": true,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "dialed_on",
+            "label": "Dialed in on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "dose",
+            "label": "Dose (g)",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 10
+              },
+              {
+                "kind": "max",
+                "value": 25
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "yield_g",
+            "label": "Yield (g)",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 15
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ratio",
+            "label": "Ratio",
+            "parityType": "formula",
+            "formula": "IF({Dose (g)} > 0, ROUND({Yield (g)} / {Dose (g)}, 2), 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "seconds",
+            "label": "Shot time (seconds)",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 10
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "grind",
+            "label": "Grind setting",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "taste",
+            "label": "Taste",
+            "parityType": "select",
+            "choices": [
+              "Balanced",
+              "Sour",
+              "Bitter",
+              "Thin",
+              "Harsh"
+            ],
+            "choiceColors": {
+              "Balanced": "green",
+              "Sour": "yellow",
+              "Bitter": "brown",
+              "Thin": "slate",
+              "Harsh": "red"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "coffee",
+            "label": "Coffee",
+            "parityType": "relation",
+            "relationTarget": "supply",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "barista",
+            "label": "Barista",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "dial-1",
+            "values": {
+              "dial_name": "House blend, opening dial-in",
+              "coffee": "supply-1",
+              "dialed_on": "@today+0d",
+              "dose": 18,
+              "yield_g": 36,
+              "seconds": 29,
+              "grind": "2.8",
+              "taste": "Balanced",
+              "barista": "tm-4"
+            }
+          },
+          {
+            "key": "dial-2",
+            "values": {
+              "dial_name": "House blend, after the lunch rush",
+              "coffee": "supply-1",
+              "dialed_on": "@today+0d",
+              "dose": 18,
+              "yield_g": 38,
+              "seconds": 26,
+              "grind": "2.7",
+              "taste": "Sour",
+              "barista": "tm-2"
+            }
+          },
+          {
+            "key": "dial-3",
+            "values": {
+              "dial_name": "House blend, new bag opened",
+              "coffee": "supply-1",
+              "dialed_on": "@today-1d",
+              "dose": 18,
+              "yield_g": 36,
+              "seconds": 31,
+              "grind": "2.9",
+              "taste": "Bitter",
+              "barista": "tm-4"
+            }
+          },
+          {
+            "key": "dial-4",
+            "values": {
+              "dial_name": "Guatemala, new bag",
+              "coffee": "supply-2",
+              "dialed_on": "@today-1d",
+              "dose": 17,
+              "yield_g": 38,
+              "seconds": 28,
+              "grind": "3.1",
+              "taste": "Balanced",
+              "barista": "tm-3"
+            }
+          },
+          {
+            "key": "dial-5",
+            "values": {
+              "dial_name": "House blend, humid morning",
+              "coffee": "supply-1",
+              "dialed_on": "@today-2d",
+              "dose": 18,
+              "yield_g": 35,
+              "seconds": 30,
+              "grind": "2.8",
+              "taste": "Balanced",
+              "barista": "tm-4"
+            }
+          },
+          {
+            "key": "dial-6",
+            "values": {
+              "dial_name": "Guatemala, second day",
+              "coffee": "supply-2",
+              "dialed_on": "@today-2d",
+              "dose": 17,
+              "yield_g": 40,
+              "seconds": 25,
+              "grind": "3.0",
+              "taste": "Thin",
+              "barista": "tm-3"
+            }
+          },
+          {
+            "key": "dial-7",
+            "values": {
+              "dial_name": "House blend, training session",
+              "coffee": "supply-1",
+              "dialed_on": "@today-4d",
+              "dose": 18,
+              "yield_g": 36,
+              "seconds": 28,
+              "grind": "2.8",
+              "taste": "Balanced",
+              "barista": "tm-5"
+            }
+          }
+        ],
+        "independentOf": {
+          "coffee": "Either record can be created or change status before the other.",
+          "barista": "Either record can be created or change status before the other."
+        }
       }
     ],
     "relationships": [
@@ -1604,6 +1985,26 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "order_by"
+      },
+      {
+        "describes": "Each dial-in is for one coffee.",
+        "fromTable": "dial_in",
+        "fromField": "coffee",
+        "toTable": "supply",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "dial_ins"
+      },
+      {
+        "describes": "Each dial-in has one barista.",
+        "fromTable": "dial_in",
+        "fromField": "barista",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "dial_in_by"
       }
     ],
     "sharedBlocks": [
@@ -1947,6 +2348,13 @@
             "Placed"
           ]
         }
+      },
+      {
+        "token": "all_dial_in",
+        "name": "All dial-in log",
+        "table": "dial_in",
+        "kind": "grid",
+        "isDefault": true
       }
     ],
     "agent": {
@@ -2035,7 +2443,7 @@
         "Almond Street"
       ]
     },
-    "version": 4
+    "version": 6
   },
   "pages": [
     {
@@ -2046,7 +2454,7 @@
         "emoji": "☕"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:hospitality-coffee-shop-counter-espresso",
         "offsetY": 50
       },
       "settings": {
@@ -2057,7 +2465,14 @@
           "type": "callout",
           "text": [
             {
-              "text": "The daily running of the shop in one page: the menu with margins, supplies against par, the waste log, machines and their service dates, and orders on the way. Start with the Dashboard, order whatever the Order? column flags and log waste before you close."
+              "text": "The back office of a neighborhood cafe: every drink and bake with its build, price, cost and margin, the espresso dial-in log, supplies with pars and stock value, the waste log, orders, and machine care. Open "
+            },
+            {
+              "text": "Start here",
+              "bold": true
+            },
+            {
+              "text": " first."
             }
           ],
           "background": "blue",
@@ -2078,6 +2493,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
                   }
                 }
               ]
@@ -2521,6 +2942,48 @@
             ],
             "activeViewId": "ord-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Dial-in log"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every espresso dial-in, so the next barista starts from the last good setting."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "dial_in",
+              "view": "all_dial_in"
+            },
+            "inline": true,
+            "title": "Dial-in log",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dial_i-t",
+                "name": "All dial-in log",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "dial_i-t"
+          }
         }
       ]
     },
@@ -2941,6 +3404,46 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Latest dial-ins"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "dial_in",
+              "view": "all_dial_in"
+            },
+            "inline": true,
+            "title": "Latest dial-ins",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "vdi",
+                "name": "Latest dial-ins",
+                "layout": "list",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "dialed_on",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vdi"
+          }
         }
       ]
     },
@@ -2949,157 +3452,26 @@
       "parent": "coffee-shop-operations",
       "title": "Opening and closing checklist",
       "icon": {
-        "emoji": "🌅"
+        "emoji": "🔑"
       },
       "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Opening"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Machine on, grinders purged, shots dialed in"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Fridge temperatures logged"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Pastry case filled and priced"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Cash drawer counted"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Closing"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Waste logged before anything leaves the building"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Milk and syrups counted; low items flagged"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Machines cleaned and backflushed"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Floors, counters and bathrooms done"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Tomorrow's bake order checked"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
         {
           "type": "callout",
           "text": [
             {
-              "text": "The shop in the morning is the shop you left it in the night before."
+              "text": "The first and last half hour decide how the day goes. Doing them the same way every day means anyone can open or close."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
           }
-        }
-      ]
-    },
-    {
-      "key": "dialing-in-and-training",
-      "parent": "coffee-shop-operations",
-      "title": "Dialing in and training baristas",
-      "icon": {
-        "emoji": "🎓"
-      },
-      "blocks": [
+        },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Dialing in"
+              "text": "Opening, 45 minutes before doors"
             }
           ],
           "props": {
@@ -3107,125 +3479,109 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Weigh the dose and the yield; time the shot."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Taste and adjust grind first, then dose."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Write the recipe on the card: dose, yield, time."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Training week one"
+              "text": "Lights, music, door mat out, tables wiped"
             }
           ],
           "props": {
-            "level": 2
+            "checked": false
           }
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "Learn the menu by tasting every drink."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Practice milk steaming with water, then milk."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Shadow the shift lead on opening and closing."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Signing off"
+              "text": "Espresso machine on (it needs 20 to 30 minutes to heat)"
             }
           ],
           "props": {
-            "level": 2
+            "checked": false
           }
         },
         {
-          "type": "text",
+          "type": "todo",
           "text": [
             {
-              "text": "A barista is signed off when they can make the top five drinks to spec, in order, at pace."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "waste-and-ordering",
-      "parent": "coffee-shop-operations",
-      "title": "Waste and ordering routine",
-      "icon": {
-        "emoji": "♻️"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Logging waste"
+              "text": "Fridge and walk-in temperatures written down; 41 degrees or below"
             }
           ],
           "props": {
-            "level": 2
+            "checked": false
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Log it when it happens, with the reason."
+              "text": "Grinders filled; first shots pulled to season them"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Choose the menu item so cost rolls up on the Menu."
+              "text": "Dial in the house espresso and log it"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Batch brew started; cold brew checked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pastries baked or set out to the day's par"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Milk, oat milk, syrups and cups stocked at the bar"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Till counted and ready"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Weekly review"
+              "text": "During the day"
             }
           ],
           "props": {
@@ -3236,7 +3592,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Open Wasted this month and look at the top two items."
+              "text": "Restock cups, lids and milk at quiet moments, not during a rush."
             }
           ]
         },
@@ -3244,7 +3600,15 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "If it is bakery, reduce the next order; if it is milk, check the par."
+              "text": "Wipe steam wands after every drink; purge before and after."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Log waste as it happens."
             }
           ]
         },
@@ -3252,7 +3616,95 @@
           "type": "heading",
           "text": [
             {
-              "text": "Ordering"
+              "text": "Closing, after the last order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Backflush the espresso machine with cleaner; soak portafilters and baskets"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Brush grinders; empty and wipe the hoppers if they hold coffee overnight"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Empty and rinse the batch brewer"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Wrap, label and date anything kept for the next day; log the rest as waste"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Milk and bakery counted for the morning order"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Floors swept and mopped; trash and recycling out"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Till counted; doors locked; alarm set"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Times"
             }
           ],
           "props": {
@@ -3269,12 +3721,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Day"
+                      "text": "Task"
                     }
                   ],
                   [
                     {
-                      "text": "Order"
+                      "text": "About"
                     }
                   ]
                 ]
@@ -3283,12 +3735,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Monday"
+                      "text": "Open"
                     }
                   ],
                   [
                     {
-                      "text": "Dairy"
+                      "text": "45 minutes"
                     }
                   ]
                 ]
@@ -3297,12 +3749,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Tuesday"
+                      "text": "Close"
                     }
                   ],
                   [
                     {
-                      "text": "Bakery"
+                      "text": "45 to 60 minutes"
                     }
                   ]
                 ]
@@ -3311,26 +3763,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Thursday"
+                      "text": "Deep clean, weekly"
                     }
                   ],
                   [
                     {
-                      "text": "Cups, lids, cleaning"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Friday"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Syrups and retail beans"
+                      "text": "90 minutes"
                     }
                   ]
                 ]
@@ -3339,10 +3777,904 @@
           }
         },
         {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If the opener is late"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
           "type": "text",
           "text": [
             {
-              "text": "Use the Quantity to order column to build each list."
+              "text": "The first person in starts the machine and the oven before anything else; everything else on the list can wait 20 minutes, but a cold machine cannot. Keep the opening list printed by the door."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The opener owns the dial-in and the pastry par; the closer owns the clean and the counts. Write their names on the shift plan so it is clear."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly deep clean"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Pick the quietest afternoon: pull the fridge out and clean behind it, descale the kettle, wash the syrup pumps, and clean the grinder burrs with grinder cleaning tablets."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The closer counted 3 trays of croissant dough against a par of 6, so the morning order includes three more trays, and the waste log shows 6 unsold croissants, which suggests the par for that weekday is too high."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dialing-in-and-training",
+      "parent": "coffee-shop-operations",
+      "title": "Dialing in and training baristas",
+      "icon": {
+        "emoji": "☕"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every cup should taste the same no matter who makes it. A written recipe, a scale, a timer and a dial-in log make that possible."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The house recipe"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Measure"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "House blend"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Dose"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "18 grams"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Yield"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "36 grams (ratio 1 to 2)"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Time"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "27 to 31 seconds"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Taste"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sweet, balanced, no sour edge, no bitter finish"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to dial in"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Weigh the dose; level and tamp the same way every time."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pull a shot; weigh the yield and time it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Taste it straight."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Adjust one thing at a time:"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "If it tastes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "And runs"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Change"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Sour, thin"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fast"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Grind finer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Bitter, harsh"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Slow"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Grind coarser"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Sour and bitter"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Uneven"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check distribution and tamp"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log the final dose, yield, time, grind and taste."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When to dial in"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "At opening, after the rush, and whenever a new bag is opened."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "When the weather changes; humidity moves grind."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "When a guest says the coffee tastes different."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Milk"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Steam to 140 to 150 degrees; never reheat. Stretch less for a flat white than for a latte. Oat milk needs a lower temperature to avoid a burnt taste."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Training a new barista"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Day one: watch, clean, learn the bar layout and the menu builds."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Days two to five: espresso only, logging every shot until five in a row are in range."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Week two: milk drinks, then rush shifts with a trainer beside them."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "A taste test with the lead before working the bar alone."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Consistency checks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Once a week, the lead tastes a flat white from each barista. Note what to adjust, kindly and specifically."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Guatemala on its second day ran 25 seconds and tasted thin at 40 grams out. The barista should have cut the yield to 36 grams before changing the grind, and the log now shows that for the next person."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "waste-and-ordering",
+      "parent": "coffee-shop-operations",
+      "title": "Waste and ordering routine",
+      "icon": {
+        "emoji": "🗑️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Waste is margin thrown in the bin. Logging it honestly, and ordering to pars, is the cheapest way to make a cafe more profitable."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Logging waste"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every item thrown out goes in the waste log the same shift: what, how many, why, and the cost."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reasons: "
+            },
+            {
+              "text": "Expired",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Spill",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mistake",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Quality",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Staff meal",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mistakes are not punished; they are counted, so training can fix them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the log weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pattern"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Likely cause"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Try"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Many expired pastries on one weekday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Par too high for that day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lower the par for that day"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Remakes of one drink"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Unclear build or new staff"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Retrain; post the build at the bar"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Batch coffee off taste"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Held too long or old beans"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Smaller batches; date the beans"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Milk spills"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pitcher too full"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Use the right pitcher size"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pars and ordering"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Count beans, milk, bakery and cups at close; enter "
+            },
+            {
+              "text": "On hand",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The "
+            },
+            {
+              "text": "Order?",
+              "bold": true
+            },
+            {
+              "text": " flag shows what is below par."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Order on a fixed day per vendor, with enough lead time."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Raise a par when you run out twice in a month; lower it when you throw out the same item twice in a week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Order days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Vendor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Order"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Arrives"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Dairy"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Monday and Thursday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Next morning"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Roastery"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tuesday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Thursday"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Bakery"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Daily"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Next morning"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cups and lids"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every other week"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Three days later"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Late or short deliveries"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "An order still Placed after its arrival date shows under Overdue. Call the vendor the same morning and decide what to swap or take off the board."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Receiving"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Check the delivery against the order, look at dates on milk, and put new stock behind old stock. Set the order to "
+            },
+            {
+              "text": "Arrived",
+              "bold": true
+            },
+            {
+              "text": " with the date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Unsold croissants appear twice in the last week. The owner drops the croissant par on Mondays from 24 to 18 and watches whether they sell out before 2 pm."
             }
           ]
         }
@@ -3353,9 +4685,21 @@
       "parent": "coffee-shop-operations",
       "title": "Machine care and service",
       "icon": {
-        "emoji": "🔧"
+        "emoji": "🛠️"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The espresso machine and grinders are the heart of the bar. Daily care keeps the coffee tasting right; scheduled service prevents the breakdown that shuts the cafe."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
         {
           "type": "heading",
           "text": [
@@ -3368,10 +4712,538 @@
           }
         },
         {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Backflush with cleaner at close; plain water backflush mid-day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Purge and wipe steam wands after every drink"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Soak portafilters and baskets overnight"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Brush grinder chutes; purge after setting changes"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fridge temperatures logged at open and close"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Remove and clean group gaskets and shower screens"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Clean the drip tray and drain"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Wipe grinder hoppers with a dry cloth"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Descale the kettle and clean the batch brewer"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Water"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Hard water damages machines faster than anything else. Change the water filter on schedule, often every three to six months, and write the date on the equipment."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Scheduled service"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Machine"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "By"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Espresso machine"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "3 months"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Service technician"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Grinder burrs"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "6 to 12 months, by volume"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Service technician"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Refrigeration"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "6 months"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Refrigeration company"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Oven"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "12 months"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Oven technician"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The equipment list shows "
+            },
+            {
+              "text": "Days to service",
+              "bold": true
+            },
+            {
+              "text": "; anything past due is on the overdue list."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When something breaks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the status to "
+            },
+            {
+              "text": "Needs service",
+              "bold": true
+            },
+            {
+              "text": " or "
+            },
+            {
+              "text": "Out of order",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call the technician; note the call on the machine."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Decide on a workaround: a backup grinder, batch brew only, or bought-in pastries."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Put a short note on the menu board if a drink is off."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cleaning products"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Use the cleaner the machine maker recommends, at the strength on the label. Too much leaves a taste; too little leaves oils that turn rancid and make every shot bitter."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Spare parts on the shelf"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Group gaskets, shower screens, a steam wand tip, grinder brushes, a spare portafilter basket, and the technician's number on the wall."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The main grinder is 10 days past its service date and now drifts during the rush. Service is booked; until then the decaf grinder is set up with the house blend as a backup."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "coffee-shop-operations",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A cafe lives on small margins repeated hundreds of times a day. A few cents of waste per drink, or a grinder that drifts, adds up to real money. This workspace keeps those small things visible."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it holds"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Menu"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Each drink and bake: build, cup size, price, cost to make, margin, sold last week, value wasted this month"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Dial-in log"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every espresso dial-in: coffee, dose, yield, ratio, time, grind and taste"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Supplies"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Beans, milk, syrups, bakery, cups and cleaning: on hand, par, cost per unit, stock value, order flag"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Waste log"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What was thrown out, why, and what it cost"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Equipment"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Machines with status, service dates, water filter, daily care"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Orders"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What is ordered, from whom, when it arrives"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the numbers work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
           "type": "bulleted",
           "text": [
             {
-              "text": "Backflush the group heads and wipe steam wands after every use."
+              "text": "Margin per sale",
+              "bold": true
+            },
+            {
+              "text": " is price minus cost to make. Espresso drinks usually run at 70 to 80 percent margin; food lower."
             }
           ]
         },
@@ -3379,7 +5251,113 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Purge the grinders and check the burrs."
+              "text": "Stock value",
+              "bold": true
+            },
+            {
+              "text": " is on hand times cost per unit, so the weekly count shows how much money sits on the shelves."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Value wasted this month",
+              "bold": true
+            },
+            {
+              "text": " on each menu item adds up its waste log entries."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter your menu with the build, price and cost to make. Weigh your real recipes, not the ones on the wall."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter supplies with pars and cost per unit from your last invoices."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log every dial-in and every bit of waste from day one."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add machines with their last service and filter dates."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The daily rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Open:",
+              "bold": true
+            },
+            {
+              "text": " temperatures logged, espresso dialed in and logged, pastries baked to the par for that day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "After the rush:",
+              "bold": true
+            },
+            {
+              "text": " check the dial-in again; grinders drift as the hopper empties and the room warms."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Close:",
+              "bold": true
+            },
+            {
+              "text": " waste logged, machines cleaned, counts for milk and bakery."
             }
           ]
         },
@@ -3395,18 +5373,10 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Descale the batch brewer."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Check water filter indicators and replace as needed."
+              "text": "Count supplies, check what to order, compare waste by item, and look at the dashboard for margin and sales."
             }
           ]
         },
@@ -3414,7 +5384,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Service plan"
+              "text": "Example"
             }
           ],
           "props": {
@@ -3422,26 +5392,10 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "quote",
           "text": [
             {
-              "text": "Keep service dates on the Equipment table."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Book the technician a month ahead."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "After a visit, press Service done, update the dates and note what was changed."
+              "text": "After the lunch rush the house blend ran fast and tasted sour at 26 seconds. The barista tightened the grind one step and logged it, and the afternoon shots came back to balanced."
             }
           ]
         }

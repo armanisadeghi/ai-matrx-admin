@@ -378,10 +378,10 @@ def print_result(result: Dict[str, Any]) -> None:
     print(f"fixture check {pb}: {'MATCH, every fixture equals the manifest' if result['ok'] else f'{n} difference(s)'}")
 
 
-def require_fixtures(playbook: str, accept_drift: Optional[str]) -> Dict[str, Any]:
+def require_fixtures(playbook: str, accept_drift: Optional[str], reader: Optional[Reader] = None) -> Dict[str, Any]:
     """Run by every sender before it sends. Prints the check; exits 3 on any difference unless the runner gave
     --accept-drift <reason>. Returns the record the run identity stores."""
-    result = check(playbook)
+    result = check(playbook, reader=reader)
     print_result(result)
     record = {"playbook": playbook, "ok": result["ok"], "differences": result["differences"],
               "accepted_drift": None, "fixtures": {}}
@@ -402,6 +402,19 @@ def require_fixtures(playbook: str, accept_drift: Optional[str]) -> Dict[str, An
         record["accepted_drift"] = accept_drift
         print(f"fixture check {playbook}: DRIFT ACCEPTED by the runner, reason: {accept_drift}")
     return record
+
+
+def shared_live_agent_ids(manifest: Optional[Dict[str, Any]] = None) -> set:
+    """Every agent the manifest names (Settings Desk A/O/G, the Kestrel desk, ...): shared live agents other runs read."""
+    manifest = manifest or load_manifest()
+    return {str(e["id"]) for e in manifest["fixtures"].values() if e.get("kind") == "agent" and e.get("id")}
+
+
+def refuse_shared_agent_write(agent_id: str, manifest: Optional[Dict[str, Any]] = None) -> None:
+    """A grader script that saves settings may only write a DISPOSABLE agent made for its run, never a shared live agent
+    (Arman's ruling 2026-10-19: PB-03 reset the Settings Desk agents to high reasoning again and again)."""
+    if str(agent_id) in shared_live_agent_ids(manifest):
+        raise SystemExit(f"REFUSED: {agent_id} is a shared live fixture agent; write settings only on a disposable agent made for this run")
 
 
 def add_accept_drift_arg(ap: argparse.ArgumentParser) -> None:

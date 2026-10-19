@@ -315,7 +315,7 @@ export function KwGuidelinesPanel({
               : {})}
             spellCheck
             placeholder={PLACEHOLDER}
-            className="min-h-[20rem] resize-y font-mono text-xs leading-relaxed"
+            className="min-h-[20rem] resize-y text-sm leading-relaxed"
           />
 
           <div className="flex flex-wrap items-center justify-between gap-1.5">

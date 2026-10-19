@@ -64,11 +64,11 @@ const SELECTION_GROUPS: Array<{ title: string; items: Item[] }> = [
   {
     title: "Edit or review selection",
     items: [
-      { action: "improve", label: "Improve writing", icon: <PenLine size={16} /> },
-      { action: "fix_spelling", label: "Fix spelling & grammar", icon: <SpellCheck size={16} /> },
-      { action: "shorter", label: "Make shorter", icon: <ListCollapse size={16} /> },
-      { action: "longer", label: "Make longer", icon: <WrapText size={16} /> },
-      { action: "tone", label: "Change tone", icon: <Mic size={16} />, sub: { key: "tone", values: TONES } },
+      { action: "improve_writing", label: "Improve writing", icon: <PenLine size={16} /> },
+      { action: "fix_spelling_grammar", label: "Fix spelling & grammar", icon: <SpellCheck size={16} /> },
+      { action: "make_shorter", label: "Make shorter", icon: <ListCollapse size={16} /> },
+      { action: "make_longer", label: "Make longer", icon: <WrapText size={16} /> },
+      { action: "change_tone", label: "Change tone", icon: <Mic size={16} />, sub: { key: "tone", values: TONES } },
       { action: "simplify", label: "Simplify language", icon: <Text size={16} /> },
     ],
   },
@@ -86,7 +86,7 @@ const EMPTY_LINE_GROUPS: Array<{ title: string; items: Item[] }> = [
   {
     title: "Write",
     items: [
-      { action: "continue", label: "Continue writing", icon: <PenLine size={16} /> },
+      { action: "continue_writing", label: "Continue writing", icon: <PenLine size={16} /> },
       { action: "summarize", label: "Summarize this page", icon: <AlignLeft size={16} /> },
       { action: "translate", label: "Translate this page", icon: <Languages size={16} />, sub: { key: "targetLanguage", values: LANGUAGES } },
     ],
@@ -218,7 +218,7 @@ export function AskAiMenu({
           className="spaces-ai-input"
           onSubmit={(e) => {
             e.preventDefault();
-            if (prompt.trim()) start("prompt");
+            if (prompt.trim()) start("custom");
           }}
         >
           <AGENT_ICON size={16} className="text-[var(--spaces-ink-soft)]" />

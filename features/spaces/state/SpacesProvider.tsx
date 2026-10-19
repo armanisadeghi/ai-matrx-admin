@@ -22,7 +22,7 @@ import { createLiveSpacesStore, type LiveSpacesStore } from "./live-store";
 import { hasSignedInSession, isRefusal, onSignedIn, readWhenSignedIn, type LoadAccess } from "./load-access";
 import { listTemplateIds, setTemplate, copyTemplate } from "./templates";
 import { bringTemplateTables } from "./template-tables";
-import { installTemplateTables, makeTemplatePages, packRunJournal, readSpaceTemplate, readStarterTemplate, timed, type PreviewSizes } from "../templates/use-pack";
+import { installTemplateTables, olderTemplateCopies, packRunJournal, readSpaceTemplate, readStarterTemplate, runUseTemplate, timed, type PreviewSizes } from "../templates/use-pack";
 
 const FAVORITES_KEY = "spaces:favorites";
 /** The sidebar's open rows (written by SpacesSidebar): the tree's first read loads their children too. */
@@ -497,37 +497,28 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
   };
   /**
    * "Use template" (ADVERSARIAL-1 #2: ~30 s, then the page jumped). The template read and the organization are
-   * fetched together; the tables install WHILE the page tree is made; the root opens the moment its content is
-   * written (its database blocks holding the preview's sizes, `sizes`), and the sub-pages are filled behind it.
-   * Every step streams into the stage text. Phases are `performance.measure` entries (use-pack.ts `timed`).
+   * fetched together; then use-pack.ts `runUseTemplate` does the run: a fresh copy of the tables installs WHILE the
+   * page tree is made, the root opens the moment its content is written (holding the preview's sizes), and the
+   * sub-pages are filled behind it. USE-TEMPLATE-FAILURES: every way it can end reaches the person: the reason
+   * with "Try again" (which resumes the same copy and pages), and Cancel once nothing has moved for a while.
    */
   const applyPack = async (templateId: string, sizes?: PreviewSizes | null) => {
     if (packStage) return;
     setPackStage("Planning…");
     const started = typeof performance === "undefined" ? 0 : performance.now();
     let opened = false;
-    let tableStage = "Making tables…";
-    let pageStage = "";
-    const show = () => setPackStage([tableStage, pageStage].filter(Boolean).join(" · ") || "Finishing…");
+    let stallToast: string | number | null = null;
+    const failed = (message: string) =>
+      toast.error(message, {
+        duration: Infinity,
+        action: { label: "Try again", onClick: () => void applyPack(templateId, sizes) },
+      });
     try {
       const [template, orgId] = await Promise.all([
         timed("read", () => readSpaceTemplate(templateId)),
         // org-filter: write-target the template's tables and pages are filed in the active organization
         ensureOrgId(orgRef.current),
       ]);
-      show();
-      const tables = timed("tables", () =>
-        installTemplateTables(template, orgId, dispatch, (stage) => {
-          tableStage = stage;
-          show();
-        }),
-      ).then((made) => {
-        tableStage = "";
-        show();
-        return made;
-      });
-      // Its failure is answered through makeTemplatePages (which moves the pages to Trash); never unhandled.
-      tables.catch(() => undefined);
       const openRoot = (doc: SpaceDoc) => {
         store.notifyTree();
         reopenWith(doc);
@@ -535,33 +526,56 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
         opened = true;
         if (typeof performance !== "undefined") performance.measure("spaces:use-template:opened", { start: started, end: performance.now() });
       };
-      const root = await timed("pages", () =>
-        makeTemplatePages(
+      const result = await timed("pages", () =>
+        runUseTemplate({
+          template,
           store,
-          async (title) => {
+          createRoot: async (title) => {
             const doc = await createDatabaseSpacesStore(orgId).create({ parentId: null, title });
             store.notifyTree();
             return doc;
           },
-          template,
-          tables,
-          (done, total) => {
-            pageStage = `Pages ${done}/${total}`;
-            show();
+          install: (onStage, signal, fresh) => timed("tables", () => installTemplateTables(template, orgId, dispatch, onStage, signal, fresh)),
+          journal: packRunJournal(orgId, templateId),
+          sizes,
+          onStage: (stage) => setPackStage(stage),
+          onRootReady: openRoot,
+          onStalled: (cancel) => {
+            if (stallToast !== null) toast.dismiss(stallToast);
+            stallToast = cancel
+              ? toast.info("Still making the template", { duration: Infinity, action: { label: "Cancel", onClick: cancel } })
+              : null;
           },
-          packRunJournal(orgId, templateId),
-          { sizes, onRootReady: openRoot },
-        ),
+        }),
       );
       store.notifyTree();
-      if (!opened) openRoot(root);
+      if (!result.ok) {
+        failed(result.message);
+        return;
+      }
+      if (!opened) openRoot(result.root);
       if (typeof performance !== "undefined") performance.measure("spaces:use-template:total", { start: started, end: performance.now() });
+      // TEMPLATE-FRESH: a new copy is made at the newest version; earlier copies are upgraded only when asked.
+      void olderTemplateCopies(template, orgId).then(
+        (older) => {
+          if (!older.count) return;
+          toast.info(older.count === 1 ? "An earlier copy uses an older version" : `${older.count} earlier copies use an older version`, {
+            action: {
+              label: "Upgrade",
+              onClick: () =>
+                void older.upgrade().then(
+                  ({ upgraded, refused }) => (refused.length ? toast.error(`Upgraded ${upgraded}; not upgraded: ${refused.join("; ")}`) : toast.success(`Upgraded ${upgraded}`)),
+                  (err: unknown) => toast.error(`We couldn't upgrade the earlier copies: ${errorSentence(err)}`),
+                ),
+            },
+          });
+        },
+        () => undefined,
+      );
     } catch (err) {
-      toast.error(err instanceof Error && err.message ? err.message : `We couldn't use this template: ${errorSentence(err)}`, {
-        duration: Infinity,
-        action: { label: "Try again", onClick: () => void applyPack(templateId) },
-      });
+      failed(err instanceof Error && err.message ? err.message : `We couldn't use this template: ${errorSentence(err)}`);
     } finally {
+      if (stallToast !== null) toast.dismiss(stallToast);
       setPackStage(null);
     }
   };

@@ -222,7 +222,7 @@ function FilterViewsPanel({ api, filterViews, onFilterViews, editable }: SheetTo
     setName("");
   };
   return (
-    <div className="grid gap-3" data-sheet-filter-views="">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-3" data-sheet-filter-views="">
       {editable && (
         <div className="flex gap-2">
           <Field aria-label="View name" placeholder="View name" value={name} onChange={(e) => setName(e.target.value)} className="flex-1" />
@@ -234,11 +234,11 @@ function FilterViewsPanel({ api, filterViews, onFilterViews, editable }: SheetTo
       {filterViews.length === 0 ? (
         <Empty>No saved views yet.</Empty>
       ) : (
-        <ul className="grid gap-1">
+        <ul className="grid grid-cols-[minmax(0,1fr)] gap-1">
           {filterViews.map((v) => (
             <li key={v.id} className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2 text-sm" data-filter-view="">
-              <span className="truncate">{v.name}</span>
-              <span className="flex gap-1">
+              <span className="min-w-0 flex-1 truncate">{v.name}</span>
+              <span className="flex shrink-0 gap-1">
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -288,14 +288,14 @@ function NamedFunctionsPanel({ api, editable }: SheetToolPanelsProps) {
     setTick((t) => t + 1);
   };
   return (
-    <div className="grid gap-3" data-sheet-named-functions="">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-3" data-sheet-named-functions="">
       {functions.length === 0 ? (
         <Empty>No named functions yet.</Empty>
       ) : (
-        <ul className="grid gap-1">
+        <ul className="grid grid-cols-[minmax(0,1fr)] gap-1">
           {functions.map((f) => (
             <li key={f.name} className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2 font-mono text-xs" data-named-function="">
-              <span className="truncate">
+              <span className="min-w-0 flex-1 truncate">
                 {f.name}({f.args.join(", ")}) = {f.body}
               </span>
               {editable && (
@@ -431,7 +431,7 @@ function ConnectorsPanel({ api, connectors, onConnectors, editable, linkedTableI
           </div>
         )}
       </section>
-      <section className="grid gap-2">
+      <section className="grid grid-cols-[minmax(0,1fr)] gap-2">
         <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">CSV from a link</h3>
         {editable && (
           <div className="flex gap-2">
@@ -444,13 +444,13 @@ function ConnectorsPanel({ api, connectors, onConnectors, editable, linkedTableI
         {connectors.length === 0 ? (
           <Empty>No linked files yet. They land at the selected cell and can be refreshed here.</Empty>
         ) : (
-          <ul className="grid gap-1">
+          <ul className="grid grid-cols-[minmax(0,1fr)] gap-1">
             {connectors.map((c) => (
               <li key={c.id} className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2 text-sm" data-connector="">
-                <span className="truncate" title={c.source}>
+                <span className="min-w-0 flex-1 truncate" title={c.source}>
                   {c.label}
                 </span>
-                <span className="flex gap-1">
+                <span className="flex shrink-0 gap-1">
                   <Button variant="outline" disabled={busy || !editable} onClick={() => void refresh(c)}>
                     Refresh
                   </Button>
@@ -505,11 +505,11 @@ function FormPanel({ linkedTableId, makeTable, editable, onClose }: SheetToolPan
 function MacrosPanel({ macros, onReplayMacro, onDeleteMacro, editable, onClose }: SheetToolPanelsProps) {
   if (macros.length === 0) return <Empty>No macros yet. Extensions → Macros → Record macro, do the steps, then Stop and save.</Empty>;
   return (
-    <ul className="grid gap-1" data-sheet-macros="">
+    <ul className="grid grid-cols-[minmax(0,1fr)] gap-1" data-sheet-macros="">
       {macros.map((m) => (
         <li key={m.id} className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2 text-sm" data-macro="">
-          <span className="truncate">{m.name}</span>
-          <span className="flex gap-1">
+          <span className="min-w-0 flex-1 truncate">{m.name}</span>
+          <span className="flex shrink-0 gap-1">
             <Button
               variant="outline"
               disabled={!editable}

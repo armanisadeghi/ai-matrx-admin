@@ -21,12 +21,12 @@ jest.mock("./CrmRecordCopyButtons", () => ({
     return null;
   },
 }));
-jest.mock("./SectionCard", () => ({
+jest.mock("@/features/marketing/components/shared/MarketingUi", () => ({
   SectionCard: ({
-    action,
+    headerExtra: action,
     children,
   }: {
-    action: React.ReactNode;
+    headerExtra: React.ReactNode;
     children: React.ReactNode;
   }) => (
     <section>
@@ -34,6 +34,8 @@ jest.mock("./SectionCard", () => ({
       {children}
     </section>
   ),
+}));
+jest.mock("./SectionEmpty", () => ({
   SectionEmpty: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),

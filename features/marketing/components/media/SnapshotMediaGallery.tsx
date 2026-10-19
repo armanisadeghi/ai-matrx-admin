@@ -52,8 +52,8 @@ function SectionHeader({
   return (
     <div className="flex items-baseline gap-2 px-1">
       <div className="flex items-center gap-1.5">
-        <Icon className="h-3.5 w-3.5 text-foreground/60" />
-        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-foreground/70">
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           {title}
         </h3>
       </div>
@@ -61,7 +61,7 @@ function SectionHeader({
         {count}
       </span>
       {description ? (
-        <span className="hidden text-[10px] text-muted-foreground/70 sm:inline">
+        <span className="hidden text-[10px] text-muted-foreground sm:inline">
           · {description}
         </span>
       ) : null}
@@ -73,7 +73,7 @@ function MissingAltBadge() {
   return (
     <Badge
       variant="outline"
-      className="h-4 shrink-0 border-amber-500/50 px-1 text-[9px] text-amber-600 dark:text-amber-400"
+      className="h-4 shrink-0 border-warning/40 px-1 text-[9px] text-warning-ink"
     >
       no alt
     </Badge>
@@ -107,7 +107,7 @@ function PhotoTile({
     <div
       className={cn(
         "group relative overflow-hidden rounded-lg border bg-card transition-all",
-        asset.missingAlt ? "border-amber-500/40" : "border-border",
+        asset.missingAlt ? "border-warning/40" : "border-border",
         onSelect &&
           "cursor-pointer hover:border-primary/50 hover:shadow-sm",
       )}
@@ -155,12 +155,12 @@ function PhotoTile({
             {srcTail(asset.src)}
           </p>
           {asset.sizeLabel ? (
-            <span className="shrink-0 text-[9px] tabular-nums text-muted-foreground/70">
+            <span className="shrink-0 text-[9px] tabular-nums text-muted-foreground">
               {asset.sizeLabel}
             </span>
           ) : null}
           {asset.loading ? (
-            <span className="shrink-0 text-[9px] text-muted-foreground/70">
+            <span className="shrink-0 text-[9px] text-muted-foreground">
               {asset.loading}
             </span>
           ) : null}
@@ -176,7 +176,7 @@ function PhotoTile({
         ) : null}
         {showPages && asset.pages.length > 0 ? (
           <p
-            className="truncate text-[9px] text-muted-foreground/70"
+            className="truncate text-[9px] text-muted-foreground"
             title={asset.pages.map((page) => page.path ?? page.url).join("\n")}
           >
             {asset.pages.length === 1 && asset.pages[0]
@@ -200,7 +200,7 @@ function GraphicTile({
     <div
       className={cn(
         "group relative inline-flex h-20 items-center justify-center overflow-hidden rounded-lg border bg-muted/20 transition-all",
-        asset.missingAlt ? "border-amber-500/40" : "border-border",
+        asset.missingAlt ? "border-warning/40" : "border-border",
         onSelect && "cursor-pointer hover:border-primary/50",
       )}
       title={assetTooltip(asset)}
@@ -226,12 +226,12 @@ function GraphicTile({
         loading="lazy"
       />
       {asset.sizeLabel ? (
-        <span className="absolute bottom-1 left-1 rounded bg-background/70 px-1 text-[9px] tabular-nums text-muted-foreground/80 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
+        <span className="absolute bottom-1 left-1 rounded bg-background/70 px-1 text-[9px] tabular-nums text-muted-foreground opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
           {asset.sizeLabel}
         </span>
       ) : null}
       {asset.missingAlt ? (
-        <span className="absolute right-1 top-1 rounded bg-background/70 px-1 text-[9px] font-medium text-amber-600 backdrop-blur-sm dark:text-amber-400">
+        <span className="absolute right-1 top-1 rounded bg-background/70 px-1 text-[9px] font-medium text-warning-ink backdrop-blur-sm">
           no alt
         </span>
       ) : null}
@@ -250,7 +250,7 @@ function IconTile({
     <div
       className={cn(
         "flex h-11 w-11 items-center justify-center overflow-hidden rounded-md border bg-card transition-transform hover:z-10 hover:scale-110",
-        asset.missingAlt ? "border-amber-500/40" : "border-border/60",
+        asset.missingAlt ? "border-warning/40" : "border-border/60",
         onSelect && "cursor-pointer hover:border-primary/50",
       )}
       title={assetTooltip(asset)}
@@ -470,10 +470,10 @@ export function MediaEmptyState({
   return (
     <div className="flex min-h-[160px] flex-col items-center justify-center gap-3 px-4 py-6 text-center">
       <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/8">
-        <ImageIcon className="h-5 w-5 text-primary/40" />
+        <ImageIcon className="h-5 w-5 text-primary" />
       </div>
       <div>
-        <p className="text-xs font-medium text-foreground/70">{title}</p>
+        <p className="text-xs font-medium text-muted-foreground">{title}</p>
         {detail ? (
           <p className="mx-auto mt-1 max-w-[320px] text-[10px] text-muted-foreground">
             {detail}

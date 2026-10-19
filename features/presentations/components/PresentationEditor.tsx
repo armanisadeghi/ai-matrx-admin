@@ -265,7 +265,17 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
   const pastePlain = async () => {
     try {
       const { readText } = await import("@ai-matrx/kit/clipboard");
-      insertAtCaret(plainTextOf({ text: (await readText()) ?? "" }));
+      const text = await readText();
+      // null = the browser would not let the page read the clipboard (not the same as an empty one): say so.
+      if (text === null) {
+        toast.error("The browser would not let this page read the clipboard", { description: "Press Cmd/Ctrl+Shift+V in the text instead." });
+        return;
+      }
+      if (text === "") {
+        toast.error("The clipboard is empty");
+        return;
+      }
+      insertAtCaret(plainTextOf({ text }));
     } catch (err) {
       toast.error("Could not read the clipboard", { description: err instanceof Error ? err.message : String(err) });
     }

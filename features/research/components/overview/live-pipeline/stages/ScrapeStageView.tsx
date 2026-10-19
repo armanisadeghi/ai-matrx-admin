@@ -17,7 +17,7 @@ import type {
   PipelineState,
   WorkItem,
 } from "../../../../hooks/usePipelineProgress";
-import { SectionCard } from "../ui/SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { StageHeader } from "../ui/StageHeader";
 import { WorkItemCard } from "../ui/WorkItemCard";
 import { CaptureLevelChip } from "../ui/CaptureLevelChip";

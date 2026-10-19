@@ -38,18 +38,20 @@ export const AUTOFILL_KEY = declaredKey("spaces__autofill");
 const SURFACE_KEY = "spaces-page";
 const SOURCE_FEATURE = "documents" as const;
 
+/** Exactly the action names the `spaces.writing_assist` provision declares (aidream `SPACES_WRITING_ASSIST_ACTIONS`)
+ *  and its Holder reads; "custom" = the person's own typed instruction. Never rename one side alone. */
 export type WritingAction =
-  | "improve"
-  | "fix_spelling"
-  | "shorter"
-  | "longer"
-  | "tone"
+  | "improve_writing"
+  | "fix_spelling_grammar"
+  | "make_shorter"
+  | "make_longer"
+  | "change_tone"
   | "simplify"
   | "summarize"
   | "translate"
   | "explain"
-  | "continue"
-  | "prompt";
+  | "continue_writing"
+  | "custom";
 
 export interface WritingRequest {
   action: WritingAction;

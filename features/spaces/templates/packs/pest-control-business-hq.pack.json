@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0507",
-  "version": 4,
+  "version": 5,
   "title": "Pest Control Business HQ",
   "description": "For pest control operators: service plans, routes, application records, callbacks.",
   "forWho": "Pest control and extermination companies",
@@ -9,7 +9,7 @@
     "emoji": "🐜"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:trades-garden-hedge-backyard",
     "offsetY": 50
   },
   "category": "trades",
@@ -2671,7 +2671,7 @@
         "Plover Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2682,7 +2682,7 @@
         "emoji": "🐜"
       },
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:trades-garden-hedge-backyard",
         "offsetY": 50
       },
       "settings": {

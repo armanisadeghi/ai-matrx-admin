@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0313",
-  "version": 5,
+  "version": 6,
   "title": "Invoicing & Expenses for Small Business",
   "description": "Small business owners: bill clients, chase late payers and watch monthly spending.",
   "forWho": "Small business owners",
@@ -9,7 +9,7 @@
     "emoji": "💵"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:finance-receipts-calculator-desk",
     "offsetY": 50
   },
   "category": "finance",
@@ -1396,7 +1396,7 @@
         "Linnet Row"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1407,7 +1407,7 @@
         "emoji": "💵"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:finance-receipts-calculator-desk",
         "offsetY": 50
       },
       "settings": {

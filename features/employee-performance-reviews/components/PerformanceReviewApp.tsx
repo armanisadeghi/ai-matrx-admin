@@ -79,13 +79,13 @@ import {
 } from "@/features/employee-performance-reviews/schema";
 import { useReviews, type ReviewPersistence } from "@/features/employee-performance-reviews/use-reviews";
 import {
-  SectionCard,
   Field,
   ListEditor,
   RatingScale,
   AvgBadge,
   StatTile,
 } from "@/features/employee-performance-reviews/components/review-form-components";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 
 const L = surfaceValueLabels(organizationPerformanceReviewsManifest);
 const G = surfaceGroupLabels(organizationPerformanceReviewsManifest);
@@ -648,7 +648,7 @@ export default function PerformanceReviewApp({
                 </div>
 
                 {/* Employee details */}
-                <SectionCard
+                <SectionCard bodyClassName="p-4 pt-3"
                   badge="01"
                   title={G.employee_details}
                   anchor="active_review"
@@ -716,11 +716,11 @@ export default function PerformanceReviewApp({
 
                 {/* List sections */}
                 {LIST_SECTIONS.map((section) => (
-                  <SectionCard
+                  <SectionCard bodyClassName="p-4 pt-3"
                     key={section.key}
                     badge={section.index}
                     title={L[section.key]}
-                    description={section.description}
+                    about={section.description}
                     anchor={section.key}
                   >
                     <ListEditor
@@ -737,10 +737,10 @@ export default function PerformanceReviewApp({
                 ))}
 
                 {/* Ratings */}
-                <SectionCard
+                <SectionCard bodyClassName="p-4 pt-3"
                   badge="06"
                   title={G.performance_ratings}
-                  description="Rate each item from 1 (lowest) to 5 (highest). Click a selected number again to clear it."
+                  about="Rate each item from 1 (lowest) to 5 (highest). Click a selected number again to clear it."
                   anchor="ratings"
                 >
                   <div className="mb-4 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
@@ -817,7 +817,7 @@ export default function PerformanceReviewApp({
                 </SectionCard>
 
                 {/* Goals */}
-                <SectionCard badge="07" title={L.goals} anchor="goals">
+                <SectionCard bodyClassName="p-4 pt-3" badge="07" title={L.goals} anchor="goals">
                   <ProTextarea
                     value={r.goals}
                     onChange={(e) => store.updateField("goals", e.target.value)}
@@ -832,7 +832,7 @@ export default function PerformanceReviewApp({
                 </SectionCard>
 
                 {/* Overall rating */}
-                <SectionCard
+                <SectionCard bodyClassName="p-4 pt-3"
                   badge="08"
                   title={L.overall_rating}
                   anchor="overall_rating"
@@ -875,7 +875,7 @@ export default function PerformanceReviewApp({
                 </SectionCard>
 
                 {/* Additional comments */}
-                <SectionCard
+                <SectionCard bodyClassName="p-4 pt-3"
                   badge="09"
                   title={L.additional_comments}
                   anchor="additional_comments"

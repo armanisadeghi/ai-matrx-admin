@@ -25,6 +25,7 @@ import { NextResponse } from "next/server";
 import { publicForm, submitPublicForm } from "@/features/forms/service";
 import { typedAnswersFor } from "@ai-matrx/records/forms";
 import { checkoutIfAsked } from "@/features/payments/server";
+import { requestHostOrigin } from "@/utils/auth/request-origin";
 import { pathOnRequestHost } from "@/lib/custom-domains/request-host";
 
 export const dynamic = "force-dynamic";
@@ -114,7 +115,7 @@ export async function POST(
           subjectKind: "form",
           subjectId: formId,
           recordId: outcome.record_id,
-          origin: new URL(request.url).origin,
+          origin: requestHostOrigin(request.headers) ?? new URL(request.url).origin,
           back: await pathOnRequestHost(request, `/f/${formId}`),
         }).catch((thrown: unknown) => {
           // A store/Stripe failure is logged, never handed to an anonymous payer verbatim (M3).

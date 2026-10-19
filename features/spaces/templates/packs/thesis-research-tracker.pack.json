@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0262",
-  "version": 6,
+  "version": 7,
   "title": "Thesis & Research Tracker",
   "description": "Graduate students: chapters, sources, tasks and advisor meetings, from outline to defence.",
   "forWho": "Graduate students and researchers",
@@ -9,7 +9,7 @@
     "emoji": "🎓"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:education-library-reading-room",
     "offsetY": 50
   },
   "category": "education",
@@ -1672,7 +1672,7 @@
         "Quillfeather Place"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1683,7 +1683,7 @@
         "emoji": "🎓"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:education-library-reading-room",
         "offsetY": 50
       },
       "settings": {

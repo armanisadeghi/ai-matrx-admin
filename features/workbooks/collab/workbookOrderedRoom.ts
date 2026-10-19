@@ -1,0 +1,95 @@
+/**
+ * A workbook seat on the ordered co-editing log (COLLAB-DESIGN §6, unit C6): this editor's Univer services lent to
+ * the office package's Sheets room. Host-side only — the package owns capture, transform, saves and restore;
+ * this file resolves Univer's services with the app's own tokens, and says what a co-editing notice means in
+ * plain words. Loaded on demand with the room (it pulls Yjs through `@ai-matrx/office/univer/collab`).
+ */
+import { ICommandService, IResourceLoaderService, IUndoRedoService, IUniverInstanceService, type Univer } from "@univerjs/core";
+import { IDefinedNamesService } from "@univerjs/engine-formula";
+import type { AwarenessState, OpSessionIncident } from "@ai-matrx/data/realtime/collab";
+import {
+  startWorkbookOtRoom,
+  univerSheetsOtPort,
+  type SheetsCommandService,
+  type SheetsOtNotice,
+  type SheetsWorkbookLike,
+  type WorkbookOtRoomHandle,
+} from "@ai-matrx/office/univer/collab";
+
+import { toast } from "@/components/ui/use-toast";
+
+/** What a co-editing notice says, in plain words (our toast). */
+export function showWorkbookCollabNotice(n: SheetsOtNotice): void {
+  switch (n.kind) {
+    case "rolled_back":
+      toast({
+        title: n.reason === "replace" ? "This workbook was restored" : "Your last change was undone",
+        description:
+          n.reason === "replace" ? "Someone restored an earlier version while you were editing." : "It clashed with a change someone else made at the same moment.",
+        variant: n.reason === "replace" ? "default" : "destructive",
+      });
+      return;
+    case "overridden":
+      toast({ title: "Someone changed the same cells", description: "Their change came in last, so it was kept." });
+      return;
+    case "dropped":
+      toast({ title: "Part of your change was removed", description: "Someone deleted those rows or columns at the same moment." });
+      return;
+    case "read_only":
+      toast({ title: "This workbook stopped syncing", description: "Reload the page to keep editing.", variant: "destructive" });
+      return;
+    case "not_shared":
+      toast({ title: "That change was undone", description: "It can't be shared with other editors yet." });
+      return;
+    case "not_live":
+      toast({ title: "Reconnecting", description: "Your last change was made while reconnecting and was not kept." });
+      return;
+  }
+}
+
+export interface WorkbookOrderedRoomArgs {
+  univer: Univer;
+  workbookId: string;
+  uid: string;
+  clientId: string;
+  displayName?: string;
+  /** The unit id of the workbook this editor shows now. */
+  unitId: () => string | null;
+  /** Replace the shown workbook's whole content, keeping its unit id (the editor's guarded swap). */
+  load: (snapshot: unknown) => void;
+  /** Ask for the editor's coalesced save (the room decides whether this seat writes). */
+  markDirty: () => void;
+  readAntiEntropyIntervalMs?: () => Promise<number>;
+  onAwareness: (states: Map<number, AwarenessState>) => void;
+}
+
+export async function startWorkbookOrderedRoom(a: WorkbookOrderedRoomArgs): Promise<WorkbookOtRoomHandle> {
+  const injector = a.univer.__getInjector();
+  const commandService = injector.get(ICommandService) as unknown as SheetsCommandService;
+  const instances = injector.get(IUniverInstanceService);
+  const undo = injector.get(IUndoRedoService);
+  const loader = injector.get(IResourceLoaderService);
+  const definedNames = injector.get(IDefinedNamesService);
+  const port = univerSheetsOtPort({
+    commandService,
+    workbook: () => {
+      const id = a.unitId();
+      return id ? ((instances.getUnit(id) as unknown as SheetsWorkbookLike | undefined) ?? null) : null;
+    },
+    definedNames: (unitId) => definedNames.getDefinedNameMap(unitId) as Record<string, { name?: string }> | undefined,
+    saveUnit: (unitId) => loader.saveUnit(unitId),
+    undoRedo: () => undo,
+    load: a.load,
+    markDirty: a.markDirty,
+  });
+  return startWorkbookOtRoom(port, {
+    workbookId: a.workbookId,
+    uid: a.uid,
+    clientId: a.clientId,
+    ...(a.displayName ? { displayName: a.displayName } : {}),
+    ...(a.readAntiEntropyIntervalMs ? { readAntiEntropyIntervalMs: a.readAntiEntropyIntervalMs } : {}),
+    onAwareness: a.onAwareness,
+    onNotice: showWorkbookCollabNotice,
+    onIncident: (i: OpSessionIncident) => console.warn(`[workbook] co-editing incident ${i.kind} at rev ${i.rev}`, i.detail ?? ""),
+  });
+}

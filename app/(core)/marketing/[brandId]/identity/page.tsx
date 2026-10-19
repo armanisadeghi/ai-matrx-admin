@@ -19,9 +19,6 @@ import { Card } from "@/components/ui/card";
 import { marketingSeg } from "@/features/marketing/lib/keys";
 import { resolveBrandParam } from "@/features/marketing/lib/keys-server";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
-import { createClient } from "@/utils/supabase/server";
-import { researchThisHref } from "@/features/research/utils/init-route";
-import { subjectFromBrandProperties } from "@/features/research/utils/subject";
 import { brandKindCopy, type BrandRoom } from "@/features/marketing/lib/brand-kind";
 import { BrandIdentityBuilderFeed } from "@/features/marketing/brand-guide/BrandIdentityBuilderFeed";
 import { BrandVisualSuggestions } from "@/features/marketing/brand-guide/BrandVisualSuggestions";
@@ -41,20 +38,6 @@ export default async function BrandIdentityPage({
   if (!brand) return <MarketingAddressUnavailable token="web_brand" address={brandId} />;
   const seg = marketingSeg(brand);
   const identity = marketingRoutes.brandIdentity(seg);
-  // "Research this brand": the intake opens with the brand's own website and
-  // social handles (web.property) as the typed research subject.
-  const supabase = await createClient();
-  const { data: properties } = await supabase
-    .schema("web")
-    .from("property")
-    .select("kind, url, handle")
-    .eq("brand_id", brand.id)
-    .is("deleted_at", null);
-  const researchHref = researchThisHref({
-    name: brand.name,
-    subject: subjectFromBrandProperties(brand.id, properties ?? []),
-    returnTo: identity,
-  });
 
   // Names and lines per brand kind (company | person) come from the one config.
   const roomCopy = brandKindCopy(brand).rooms;
@@ -104,8 +87,10 @@ export default async function BrandIdentityPage({
       icon: PenLine,
     },
     {
+      // The brand's own research (Media → Research, filtered to this brand);
+      // "New research" for the brand is one click from there.
       room: "research",
-      href: researchHref,
+      href: marketingRoutes.brandAssets(seg, "research"),
       icon: Telescope,
     },
     {

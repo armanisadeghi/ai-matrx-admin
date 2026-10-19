@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0571",
-  "version": 1,
+  "version": 2,
   "title": "Trucking Fleet Desk",
   "description": "Trucks, loads, maintenance and driver paperwork for a small trucking company.",
   "forWho": "Small trucking companies and owner-operator fleets",
@@ -9,7 +9,7 @@
     "emoji": "🚛"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:manufacturing-truck-highway",
     "offsetY": 50
   },
   "category": "manufacturing",
@@ -2402,7 +2402,7 @@
         "Terminal Road"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2413,7 +2413,7 @@
         "emoji": "🚛"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:manufacturing-truck-highway",
         "offsetY": 50
       },
       "settings": {

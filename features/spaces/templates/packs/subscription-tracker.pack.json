@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0356",
-  "version": 4,
+  "version": 5,
   "title": "Subscription Tracker",
   "description": "Individuals and teams: every recurring payment with cost, renewal date and reminders.",
   "forWho": "Individuals and small teams",
@@ -9,7 +9,7 @@
     "emoji": "🔁"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:finance-credit-card-laptop",
     "offsetY": 50
   },
   "category": "finance",
@@ -809,7 +809,7 @@
         "Quillon Terrace"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -820,7 +820,7 @@
         "emoji": "🔁"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:finance-credit-card-laptop",
         "offsetY": 50
       },
       "settings": {

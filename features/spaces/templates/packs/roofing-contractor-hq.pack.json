@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0506",
-  "version": 4,
+  "version": 5,
   "title": "Roofing Contractor HQ",
   "description": "For roofing companies: leads, inspections, estimates by the square, crews, claims.",
   "forWho": "Roofing contractors and exterior remodelers",
@@ -9,7 +9,7 @@
     "emoji": "🏠"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:trades-roof-shingles",
     "offsetY": 50
   },
   "category": "trades",
@@ -2553,7 +2553,7 @@
         "Quarry Hill"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2564,7 +2564,7 @@
         "emoji": "🏠"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:trades-roof-shingles",
         "offsetY": 50
       },
       "settings": {

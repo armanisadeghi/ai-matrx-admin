@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0206",
-  "version": 3,
+  "version": 4,
   "title": "Reading List",
   "description": "Readers: a bookshelf with status and ratings, a reading log and genre totals.",
   "forWho": "Readers who like to track",
@@ -9,7 +9,7 @@
     "emoji": "📚"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:personal-stack-of-books-cozy",
     "offsetY": 50
   },
   "category": "personal",
@@ -1157,7 +1157,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -1168,7 +1168,7 @@
         "emoji": "📚"
       },
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:personal-stack-of-books-cozy",
         "offsetY": 50
       },
       "settings": {

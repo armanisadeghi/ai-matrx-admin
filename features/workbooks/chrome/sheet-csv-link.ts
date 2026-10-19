@@ -32,7 +32,11 @@ function refusalSentence(error: unknown): string {
   if (typeof fromBody === "string" && fromBody) return fromBody;
   const d = e?.detail as { message?: unknown } | string | undefined;
   if (d && typeof d === "object" && typeof d.message === "string") return d.message;
-  if (typeof e?.status === "number") return "The link could not be read. The server refused it.";
+  const status = e?.status;
+  if (status === 404 || status === 405) return "The link reader is not available on this server yet, so the file was never fetched.";
+  if (status === 401 || status === 403) return "You need to be signed in to import from a link. Sign in again and retry.";
+  if (typeof status === "number" && status >= 500) return "The server hit a problem reading that link. Try again in a moment.";
+  if (typeof status === "number") return `The link could not be read (the server answered ${status}).`;
   return "The link could not be reached from here. Check your connection and try again.";
 }
 

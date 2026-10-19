@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0463",
-  "version": 4,
+  "version": 6,
   "title": "Restaurant Operations Hub",
-  "description": "Dishes with food cost, inventory with par levels, suppliers, orders and shifts.",
+  "description": "For chefs and restaurant owners: recipe costs, food cost, pars, prep lists, inspections.",
   "forWho": "Independent restaurants and small restaurant groups",
   "icon": {
     "emoji": "🍽️"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:hospitality-restaurant-interior-dining",
     "offsetY": 50
   },
   "category": "hospitality",
   "tags": [
-    "restaurant",
+    "chef",
+    "restaurant owner",
+    "kitchen manager",
     "food cost",
-    "inventory",
-    "suppliers"
+    "prep list",
+    "health inspection"
   ],
   "spec": {
     "specVersion": 1,
@@ -754,6 +756,104 @@
               "supplier": "supplier-7",
               "counter": "tm-2"
             }
+          },
+          {
+            "key": "ingredient-16",
+            "values": {
+              "ingredient_name": "Sourdough loaves",
+              "category": "Dry goods",
+              "unit": "loaf",
+              "on_hand": 6,
+              "par": 8,
+              "unit_cost": 6.5,
+              "counted_on": "@today-1d",
+              "supplier": "supplier-5",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-17",
+            "values": {
+              "ingredient_name": "Cremini mushrooms",
+              "category": "Produce",
+              "unit": "lb",
+              "on_hand": 8,
+              "par": 10,
+              "unit_cost": 5.2,
+              "counted_on": "@today-1d",
+              "supplier": "supplier-1",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-18",
+            "values": {
+              "ingredient_name": "Smoked trout",
+              "category": "Protein",
+              "unit": "lb",
+              "on_hand": 3,
+              "par": 4,
+              "unit_cost": 16,
+              "counted_on": "@today-1d",
+              "supplier": "supplier-2",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-19",
+            "values": {
+              "ingredient_name": "Parmesan",
+              "category": "Dairy",
+              "unit": "lb",
+              "on_hand": 4,
+              "par": 5,
+              "unit_cost": 14,
+              "counted_on": "@today-1d",
+              "supplier": "supplier-4",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-20",
+            "values": {
+              "ingredient_name": "Shallots",
+              "category": "Produce",
+              "unit": "lb",
+              "on_hand": 7,
+              "par": 6,
+              "unit_cost": 2.8,
+              "counted_on": "@today-1d",
+              "supplier": "supplier-1",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-21",
+            "values": {
+              "ingredient_name": "Dark cherries, frozen",
+              "category": "Produce",
+              "unit": "lb",
+              "on_hand": 5,
+              "par": 4,
+              "unit_cost": 6.4,
+              "counted_on": "@today-1d",
+              "supplier": "supplier-1",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-22",
+            "values": {
+              "ingredient_name": "Duck breast",
+              "category": "Protein",
+              "unit": "lb",
+              "on_hand": 0,
+              "par": 0,
+              "unit_cost": 14.5,
+              "counted_on": "@today-1d",
+              "supplier": "supplier-3",
+              "counter": "tm-3"
+            }
           }
         ]
       },
@@ -844,11 +944,19 @@
             ]
           },
           {
-            "key": "plate_cost",
-            "label": "Plate cost (USD)",
+            "key": "recipe_cost",
+            "label": "Recipe cost (USD)",
+            "parityType": "rollup",
+            "via": "recipe_lines",
+            "pick": "line_cost",
+            "agg": "sum",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "garnish",
+            "label": "Garnish and waste allowance (USD)",
             "parityType": "currency",
-            "sensitivity": "confidential",
-            "contextPolicy": "include",
             "unit": "USD",
             "format": "currency",
             "rules": [
@@ -858,9 +966,11 @@
               },
               {
                 "kind": "max",
-                "value": 500
+                "value": 20
               }
-            ]
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "food_cost_pct",
@@ -868,7 +978,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Menu price (USD)} > 0, ROUND({Plate cost (USD)} / {Menu price (USD)} * 100, 1), 0)"
+            "formula": "IF({Menu price (USD)} > 0, ROUND(({Recipe cost (USD)} + {Garnish and waste allowance (USD)}) / {Menu price (USD)} * 100, 1), 0)"
           },
           {
             "key": "margin",
@@ -876,7 +986,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Menu price (USD)} - {Plate cost (USD)}"
+            "formula": "{Menu price (USD)} - {Recipe cost (USD)} - {Garnish and waste allowance (USD)}"
           },
           {
             "key": "cost_flag",
@@ -993,10 +1103,10 @@
               "status": "On menu",
               "course": "Starter",
               "price": 14,
-              "plate_cost": 3.4,
               "sold_week": 85,
               "costed_on": "@today-14d",
-              "chef": "tm-3"
+              "chef": "tm-3",
+              "garnish": 0.35
             }
           },
           {
@@ -1006,10 +1116,10 @@
               "status": "On menu",
               "course": "Starter",
               "price": 17,
-              "plate_cost": 5.9,
               "sold_week": 64,
               "costed_on": "@today-14d",
-              "chef": "tm-3"
+              "chef": "tm-3",
+              "garnish": 0.35
             }
           },
           {
@@ -1019,10 +1129,10 @@
               "status": "On menu",
               "course": "Main",
               "price": 34,
-              "plate_cost": 12.9,
               "sold_week": 92,
               "costed_on": "@today-14d",
-              "chef": "tm-3"
+              "chef": "tm-3",
+              "garnish": 0.35
             }
           },
           {
@@ -1032,10 +1142,10 @@
               "status": "On menu",
               "course": "Main",
               "price": 32,
-              "plate_cost": 12.4,
               "sold_week": 118,
               "costed_on": "@today-14d",
-              "chef": "tm-3"
+              "chef": "tm-3",
+              "garnish": 0.35
             }
           },
           {
@@ -1045,10 +1155,10 @@
               "status": "On menu",
               "course": "Main",
               "price": 26,
-              "plate_cost": 7.7,
               "sold_week": 74,
               "costed_on": "@today-14d",
-              "chef": "tm-3"
+              "chef": "tm-3",
+              "garnish": 0.35
             }
           },
           {
@@ -1058,10 +1168,10 @@
               "status": "On menu",
               "course": "Main",
               "price": 24,
-              "plate_cost": 5.6,
               "sold_week": 61,
               "costed_on": "@today-14d",
-              "chef": "tm-3"
+              "chef": "tm-3",
+              "garnish": 0.35
             }
           },
           {
@@ -1071,10 +1181,10 @@
               "status": "On menu",
               "course": "Dessert",
               "price": 11,
-              "plate_cost": 2.5,
               "sold_week": 70,
               "costed_on": "@today-30d",
-              "chef": "tm-3"
+              "chef": "tm-3",
+              "garnish": 0.35
             }
           },
           {
@@ -1084,10 +1194,10 @@
               "status": "On menu",
               "course": "Side",
               "price": 9,
-              "plate_cost": 2.9,
               "sold_week": 88,
               "costed_on": "@today-14d",
-              "chef": "tm-3"
+              "chef": "tm-3",
+              "garnish": 0.35
             }
           },
           {
@@ -1097,10 +1207,10 @@
               "status": "On menu",
               "course": "Brunch",
               "price": 16,
-              "plate_cost": 4.4,
               "sold_week": 58,
               "costed_on": "@today-30d",
-              "chef": "tm-3"
+              "chef": "tm-3",
+              "garnish": 0.35
             }
           },
           {
@@ -1110,9 +1220,9 @@
               "status": "Testing",
               "course": "Starter",
               "price": 15,
-              "plate_cost": 6.1,
               "costed_on": "@today-3d",
-              "chef": "tm-3"
+              "chef": "tm-3",
+              "garnish": 0.35
             }
           },
           {
@@ -1122,9 +1232,9 @@
               "status": "Retired",
               "course": "Main",
               "price": 36,
-              "plate_cost": 16.5,
               "costed_on": "@today-120d",
-              "chef": "tm-3"
+              "chef": "tm-3",
+              "garnish": 0.6
             }
           }
         ]
@@ -1363,7 +1473,7 @@
               "order_name": "Dairy and eggs",
               "status": "Sent",
               "ordered_on": "@today-2d",
-              "delivery_on": "@today+0d",
+              "delivery_on": "@today-1d",
               "total": 410,
               "supplier": "supplier-4",
               "placed_by": "tm-3"
@@ -1512,6 +1622,34 @@
             ]
           },
           {
+            "key": "rate",
+            "label": "Hourly rate (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "labor_cost",
+            "label": "Labor cost (USD)",
+            "parityType": "formula",
+            "unit": "USD",
+            "formula": "ROUND({Hours} * {Hourly rate (USD)}, 2)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "person",
             "label": "Person",
             "parityType": "relation",
@@ -1575,7 +1713,8 @@
               "role": "Line",
               "shift_on": "@mon+4d",
               "hours": 9,
-              "person": "tm-3"
+              "person": "tm-3",
+              "rate": 24
             }
           },
           {
@@ -1586,7 +1725,8 @@
               "role": "Server",
               "shift_on": "@mon+4d",
               "hours": 8,
-              "person": "tm-4"
+              "person": "tm-4",
+              "rate": 12
             }
           },
           {
@@ -1597,7 +1737,8 @@
               "role": "Bar",
               "shift_on": "@mon+4d",
               "hours": 8,
-              "person": "tm-5"
+              "person": "tm-5",
+              "rate": 13
             }
           },
           {
@@ -1608,7 +1749,8 @@
               "role": "Line",
               "shift_on": "@mon+5d",
               "hours": 7,
-              "person": "tm-3"
+              "person": "tm-3",
+              "rate": 24
             }
           },
           {
@@ -1619,7 +1761,8 @@
               "role": "Server",
               "shift_on": "@mon+5d",
               "hours": 8,
-              "person": "tm-4"
+              "person": "tm-4",
+              "rate": 12
             }
           },
           {
@@ -1630,7 +1773,8 @@
               "role": "Prep",
               "shift_on": "@mon+1d",
               "hours": 8,
-              "person": "tm-3"
+              "person": "tm-3",
+              "rate": 21
             }
           },
           {
@@ -1641,7 +1785,8 @@
               "role": "Server",
               "shift_on": "@mon+3d",
               "hours": 7,
-              "person": "tm-2"
+              "person": "tm-2",
+              "rate": 12
             }
           },
           {
@@ -1650,9 +1795,10 @@
               "shift_name": "Last Friday dinner line",
               "status": "Worked",
               "role": "Line",
-              "shift_on": "@today-5d",
+              "shift_on": "@mon-3d",
               "hours": 9,
-              "person": "tm-3"
+              "person": "tm-3",
+              "rate": 24
             }
           },
           {
@@ -1661,9 +1807,10 @@
               "shift_name": "Last Saturday bar",
               "status": "Worked",
               "role": "Bar",
-              "shift_on": "@today-4d",
+              "shift_on": "@mon-2d",
               "hours": 8,
-              "person": "tm-5"
+              "person": "tm-5",
+              "rate": 13
             }
           },
           {
@@ -1672,11 +1819,964 @@
               "shift_name": "Last Sunday brunch floor",
               "status": "Worked",
               "role": "Server",
-              "shift_on": "@today-3d",
+              "shift_on": "@mon-1d",
               "hours": 7,
-              "person": "tm-4"
+              "person": "tm-4",
+              "rate": 12
+            }
+          },
+          {
+            "key": "shift-11",
+            "values": {
+              "shift_name": "Next Friday dinner line",
+              "status": "Scheduled",
+              "role": "Line",
+              "shift_on": "@mon+11d",
+              "hours": 9,
+              "person": "tm-3",
+              "rate": 24
+            }
+          },
+          {
+            "key": "shift-12",
+            "values": {
+              "shift_name": "Next Saturday dish",
+              "status": "Scheduled",
+              "role": "Dish",
+              "shift_on": "@mon+12d",
+              "hours": 8,
+              "person": "tm-2",
+              "rate": 18
             }
           }
+        ]
+      },
+      {
+        "token": "recipe_line",
+        "name": "Recipe lines",
+        "labelSingular": "Recipe line",
+        "labelPlural": "Recipe lines",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list",
+        "titleField": "line_name",
+        "describes": "One ingredient in one dish, with the amount used per plate, so the plate cost follows ingredient prices.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "line_name",
+            "label": "Line",
+            "parityType": "text",
+            "required": true,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "qty",
+            "label": "Amount per plate",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "unit",
+            "label": "Unit",
+            "parityType": "lookup",
+            "via": "ingredient",
+            "pick": "unit",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "unit_cost",
+            "label": "Ingredient cost per unit (USD)",
+            "parityType": "lookup",
+            "via": "ingredient",
+            "pick": "unit_cost",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "line_cost",
+            "label": "Line cost (USD)",
+            "parityType": "formula",
+            "unit": "USD",
+            "formula": "ROUND({Amount per plate} * {Ingredient cost per unit (USD)}, 2)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "dish",
+            "label": "Dish",
+            "parityType": "relation",
+            "relationTarget": "dish",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ingredient",
+            "label": "Ingredient",
+            "parityType": "relation",
+            "relationTarget": "ingredient",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "line-1",
+            "values": {
+              "line_name": "Heirloom tomato salad: heirloom tomatoes",
+              "qty": 0.45,
+              "dish": "dish-1",
+              "ingredient": "ingredient-1"
+            }
+          },
+          {
+            "key": "line-2",
+            "values": {
+              "line_name": "Heirloom tomato salad: olive oil",
+              "qty": 0.008,
+              "dish": "dish-1",
+              "ingredient": "ingredient-12"
+            }
+          },
+          {
+            "key": "line-3",
+            "values": {
+              "line_name": "Heirloom tomato salad: shallots",
+              "qty": 0.05,
+              "dish": "dish-1",
+              "ingredient": "ingredient-20"
+            }
+          },
+          {
+            "key": "line-4",
+            "values": {
+              "line_name": "Heirloom tomato salad: sourdough loaves",
+              "qty": 0.15,
+              "dish": "dish-1",
+              "ingredient": "ingredient-16"
+            }
+          },
+          {
+            "key": "line-5",
+            "values": {
+              "line_name": "Littleneck clams, white wine: littleneck clams",
+              "qty": 0.5,
+              "dish": "dish-2",
+              "ingredient": "ingredient-5"
+            }
+          },
+          {
+            "key": "line-6",
+            "values": {
+              "line_name": "Littleneck clams, white wine: butter, unsalted",
+              "qty": 0.12,
+              "dish": "dish-2",
+              "ingredient": "ingredient-8"
+            }
+          },
+          {
+            "key": "line-7",
+            "values": {
+              "line_name": "Littleneck clams, white wine: shallots",
+              "qty": 0.06,
+              "dish": "dish-2",
+              "ingredient": "ingredient-20"
+            }
+          },
+          {
+            "key": "line-8",
+            "values": {
+              "line_name": "Littleneck clams, white wine: sourdough loaves",
+              "qty": 0.15,
+              "dish": "dish-2",
+              "ingredient": "ingredient-16"
+            }
+          },
+          {
+            "key": "line-9",
+            "values": {
+              "line_name": "Pan-roasted striped bass: striped bass fillet",
+              "qty": 0.44,
+              "dish": "dish-3",
+              "ingredient": "ingredient-4"
+            }
+          },
+          {
+            "key": "line-10",
+            "values": {
+              "line_name": "Pan-roasted striped bass: butter, unsalted",
+              "qty": 0.1,
+              "dish": "dish-3",
+              "ingredient": "ingredient-8"
+            }
+          },
+          {
+            "key": "line-11",
+            "values": {
+              "line_name": "Pan-roasted striped bass: baby kale",
+              "qty": 0.15,
+              "dish": "dish-3",
+              "ingredient": "ingredient-2"
+            }
+          },
+          {
+            "key": "line-12",
+            "values": {
+              "line_name": "Pan-roasted striped bass: lemons",
+              "qty": 0.02,
+              "dish": "dish-3",
+              "ingredient": "ingredient-3"
+            }
+          },
+          {
+            "key": "line-13",
+            "values": {
+              "line_name": "Hanger steak, herb butter: hanger steak",
+              "qty": 0.55,
+              "dish": "dish-4",
+              "ingredient": "ingredient-7"
+            }
+          },
+          {
+            "key": "line-14",
+            "values": {
+              "line_name": "Hanger steak, herb butter: butter, unsalted",
+              "qty": 0.12,
+              "dish": "dish-4",
+              "ingredient": "ingredient-8"
+            }
+          },
+          {
+            "key": "line-15",
+            "values": {
+              "line_name": "Hanger steak, herb butter: shallots",
+              "qty": 0.08,
+              "dish": "dish-4",
+              "ingredient": "ingredient-20"
+            }
+          },
+          {
+            "key": "line-16",
+            "values": {
+              "line_name": "Slow pork shoulder: pork shoulder",
+              "qty": 0.85,
+              "dish": "dish-5",
+              "ingredient": "ingredient-6"
+            }
+          },
+          {
+            "key": "line-17",
+            "values": {
+              "line_name": "Slow pork shoulder: shallots",
+              "qty": 0.1,
+              "dish": "dish-5",
+              "ingredient": "ingredient-20"
+            }
+          },
+          {
+            "key": "line-18",
+            "values": {
+              "line_name": "Slow pork shoulder: olive oil",
+              "qty": 0.01,
+              "dish": "dish-5",
+              "ingredient": "ingredient-12"
+            }
+          },
+          {
+            "key": "line-19",
+            "values": {
+              "line_name": "Mushroom arborio: arborio rice",
+              "qty": 0.25,
+              "dish": "dish-6",
+              "ingredient": "ingredient-11"
+            }
+          },
+          {
+            "key": "line-20",
+            "values": {
+              "line_name": "Mushroom arborio: cremini mushrooms",
+              "qty": 0.3,
+              "dish": "dish-6",
+              "ingredient": "ingredient-17"
+            }
+          },
+          {
+            "key": "line-21",
+            "values": {
+              "line_name": "Mushroom arborio: parmesan",
+              "qty": 0.08,
+              "dish": "dish-6",
+              "ingredient": "ingredient-19"
+            }
+          },
+          {
+            "key": "line-22",
+            "values": {
+              "line_name": "Mushroom arborio: heavy cream",
+              "qty": 0.1,
+              "dish": "dish-6",
+              "ingredient": "ingredient-9"
+            }
+          },
+          {
+            "key": "line-23",
+            "values": {
+              "line_name": "Mushroom arborio: butter, unsalted",
+              "qty": 0.06,
+              "dish": "dish-6",
+              "ingredient": "ingredient-8"
+            }
+          },
+          {
+            "key": "line-24",
+            "values": {
+              "line_name": "Lemon pot de creme: heavy cream",
+              "qty": 0.2,
+              "dish": "dish-7",
+              "ingredient": "ingredient-9"
+            }
+          },
+          {
+            "key": "line-25",
+            "values": {
+              "line_name": "Lemon pot de creme: eggs",
+              "qty": 0.08,
+              "dish": "dish-7",
+              "ingredient": "ingredient-10"
+            }
+          },
+          {
+            "key": "line-26",
+            "values": {
+              "line_name": "Lemon pot de creme: lemons",
+              "qty": 0.015,
+              "dish": "dish-7",
+              "ingredient": "ingredient-3"
+            }
+          },
+          {
+            "key": "line-27",
+            "values": {
+              "line_name": "Charred greens: baby kale",
+              "qty": 0.35,
+              "dish": "dish-8",
+              "ingredient": "ingredient-2"
+            }
+          },
+          {
+            "key": "line-28",
+            "values": {
+              "line_name": "Charred greens: olive oil",
+              "qty": 0.008,
+              "dish": "dish-8",
+              "ingredient": "ingredient-12"
+            }
+          },
+          {
+            "key": "line-29",
+            "values": {
+              "line_name": "Charred greens: lemons",
+              "qty": 0.01,
+              "dish": "dish-8",
+              "ingredient": "ingredient-3"
+            }
+          },
+          {
+            "key": "line-30",
+            "values": {
+              "line_name": "Fried egg brunch plate: eggs",
+              "qty": 0.12,
+              "dish": "dish-9",
+              "ingredient": "ingredient-10"
+            }
+          },
+          {
+            "key": "line-31",
+            "values": {
+              "line_name": "Fried egg brunch plate: sourdough loaves",
+              "qty": 0.2,
+              "dish": "dish-9",
+              "ingredient": "ingredient-16"
+            }
+          },
+          {
+            "key": "line-32",
+            "values": {
+              "line_name": "Fried egg brunch plate: baby kale",
+              "qty": 0.1,
+              "dish": "dish-9",
+              "ingredient": "ingredient-2"
+            }
+          },
+          {
+            "key": "line-33",
+            "values": {
+              "line_name": "Fried egg brunch plate: butter, unsalted",
+              "qty": 0.05,
+              "dish": "dish-9",
+              "ingredient": "ingredient-8"
+            }
+          },
+          {
+            "key": "line-34",
+            "values": {
+              "line_name": "Duck breast, cherry jus: duck breast",
+              "qty": 0.75,
+              "dish": "dish-11",
+              "ingredient": "ingredient-22"
+            }
+          },
+          {
+            "key": "line-35",
+            "values": {
+              "line_name": "Duck breast, cherry jus: dark cherries, frozen",
+              "qty": 0.15,
+              "dish": "dish-11",
+              "ingredient": "ingredient-21"
+            }
+          },
+          {
+            "key": "line-36",
+            "values": {
+              "line_name": "Duck breast, cherry jus: shallots",
+              "qty": 0.05,
+              "dish": "dish-11",
+              "ingredient": "ingredient-20"
+            }
+          },
+          {
+            "key": "line-37",
+            "values": {
+              "line_name": "Smoked trout toast: smoked trout",
+              "qty": 0.2,
+              "dish": "dish-10",
+              "ingredient": "ingredient-18"
+            }
+          },
+          {
+            "key": "line-38",
+            "values": {
+              "line_name": "Smoked trout toast: sourdough loaves",
+              "qty": 0.15,
+              "dish": "dish-10",
+              "ingredient": "ingredient-16"
+            }
+          },
+          {
+            "key": "line-39",
+            "values": {
+              "line_name": "Smoked trout toast: heavy cream",
+              "qty": 0.05,
+              "dish": "dish-10",
+              "ingredient": "ingredient-9"
+            }
+          },
+          {
+            "key": "line-40",
+            "values": {
+              "line_name": "Smoked trout toast: shallots",
+              "qty": 0.03,
+              "dish": "dish-10",
+              "ingredient": "ingredient-20"
+            }
+          }
+        ],
+        "independentOf": {
+          "dish": "Either record can be created or change status before the other.",
+          "ingredient": "Either record can be created or change status before the other."
+        }
+      },
+      {
+        "token": "prep",
+        "name": "Prep list",
+        "labelSingular": "Prep item",
+        "labelPlural": "Prep list",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "chef-hat",
+        "titleField": "prep_name",
+        "describes": "Each batch the kitchen preps for service, with its par, what is on hand and how much to make.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "prep_name",
+            "label": "Prep item",
+            "parityType": "text",
+            "required": true,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "To prep",
+              "In progress",
+              "Done"
+            ],
+            "statusGroups": {
+              "To prep": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            },
+            "required": true,
+            "choiceColors": {
+              "To prep": "slate",
+              "In progress": "blue",
+              "Done": "green"
+            },
+            "default": "To prep",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "station",
+            "label": "Station",
+            "parityType": "select",
+            "choices": [
+              "Garde manger",
+              "Grill",
+              "Saute",
+              "Pastry",
+              "Brunch"
+            ],
+            "choiceColors": {
+              "Garde manger": "blue",
+              "Grill": "green",
+              "Saute": "orange",
+              "Pastry": "violet",
+              "Brunch": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "prep_on",
+            "label": "Prep for",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "unit",
+            "label": "Unit",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "par",
+            "label": "Par",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "to_make",
+            "label": "To make",
+            "parityType": "formula",
+            "formula": "IF({Par} > {On hand}, {Par} - {On hand}, 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "shelf_days",
+            "label": "Keeps for (days)",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "cook",
+            "label": "Cook",
+            "parityType": "relation",
+            "relationTarget": "team_member",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "dish",
+            "label": "For dish",
+            "parityType": "relation",
+            "relationTarget": "dish",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "prep-1",
+            "values": {
+              "prep_name": "Herb butter",
+              "status": "Done",
+              "station": "Grill",
+              "prep_on": "@today+0d",
+              "unit": "quart",
+              "par": 2,
+              "on_hand": 2.5,
+              "shelf_days": 5,
+              "cook": "tm-3",
+              "dish": "dish-4"
+            }
+          },
+          {
+            "key": "prep-2",
+            "values": {
+              "prep_name": "Pickled shallots",
+              "status": "In progress",
+              "station": "Garde manger",
+              "prep_on": "@today+0d",
+              "unit": "quart",
+              "par": 3,
+              "on_hand": 1,
+              "shelf_days": 14,
+              "cook": "tm-3",
+              "dish": "dish-1"
+            }
+          },
+          {
+            "key": "prep-3",
+            "values": {
+              "prep_name": "Bass portioned, 7 oz",
+              "status": "To prep",
+              "station": "Saute",
+              "prep_on": "@today+0d",
+              "unit": "portion",
+              "par": 24,
+              "on_hand": 6,
+              "shelf_days": 2,
+              "cook": "tm-3",
+              "dish": "dish-3"
+            }
+          },
+          {
+            "key": "prep-4",
+            "values": {
+              "prep_name": "Pork shoulder braise",
+              "status": "To prep",
+              "station": "Grill",
+              "prep_on": "@today+1d",
+              "unit": "pan",
+              "par": 3,
+              "on_hand": 1,
+              "shelf_days": 4,
+              "cook": "tm-3",
+              "dish": "dish-5"
+            }
+          },
+          {
+            "key": "prep-5",
+            "values": {
+              "prep_name": "Mushroom stock",
+              "status": "To prep",
+              "station": "Saute",
+              "prep_on": "@today+1d",
+              "unit": "gallon",
+              "par": 2,
+              "on_hand": 0.5,
+              "shelf_days": 4,
+              "cook": "tm-3",
+              "dish": "dish-6"
+            }
+          },
+          {
+            "key": "prep-6",
+            "values": {
+              "prep_name": "Pot de creme base",
+              "status": "To prep",
+              "station": "Pastry",
+              "prep_on": "@today+1d",
+              "unit": "batch",
+              "par": 2,
+              "on_hand": 0,
+              "shelf_days": 3,
+              "cook": "tm-3",
+              "dish": "dish-7"
+            }
+          },
+          {
+            "key": "prep-7",
+            "values": {
+              "prep_name": "Brunch potatoes, blanched",
+              "status": "To prep",
+              "station": "Brunch",
+              "prep_on": "@mon+5d",
+              "unit": "hotel pan",
+              "par": 4,
+              "on_hand": 0,
+              "shelf_days": 2,
+              "cook": "tm-3",
+              "dish": "dish-9"
+            }
+          },
+          {
+            "key": "prep-8",
+            "values": {
+              "prep_name": "Clam broth",
+              "status": "Done",
+              "station": "Saute",
+              "prep_on": "@today-1d",
+              "unit": "quart",
+              "par": 4,
+              "on_hand": 4,
+              "shelf_days": 2,
+              "cook": "tm-3",
+              "dish": "dish-2"
+            }
+          }
+        ],
+        "independentOf": {
+          "cook": "Either record can be created or change status before the other.",
+          "dish": "Either record can be created or change status before the other."
+        }
+      },
+      {
+        "token": "inspection",
+        "name": "Inspections",
+        "labelSingular": "Inspection",
+        "labelPlural": "Inspections",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-check",
+        "titleField": "inspection_name",
+        "describes": "Health, fire and self-inspections, with the result and any corrections owed by a date.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "inspection_name",
+            "label": "Inspection",
+            "parityType": "text",
+            "required": true,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Scheduled",
+              "Corrections due",
+              "Passed"
+            ],
+            "statusGroups": {
+              "Scheduled": "todo",
+              "Corrections due": "in_progress",
+              "Passed": "done"
+            },
+            "required": true,
+            "choiceColors": {
+              "Scheduled": "slate",
+              "Corrections due": "orange",
+              "Passed": "green"
+            },
+            "default": "Scheduled",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "choices": [
+              "Health department",
+              "Fire marshal",
+              "Self-inspection",
+              "Pest control",
+              "Hood cleaning"
+            ],
+            "choiceColors": {
+              "Health department": "blue",
+              "Fire marshal": "green",
+              "Self-inspection": "orange",
+              "Pest control": "violet",
+              "Hood cleaning": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "inspected_on",
+            "label": "Inspection date",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "score",
+            "label": "Score",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "findings",
+            "label": "Findings",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fix_by",
+            "label": "Fix by",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "insp-1",
+            "values": {
+              "inspection_name": "City health inspection, routine",
+              "status": "Passed",
+              "kind": "Health department",
+              "inspected_on": "@today-140d",
+              "score": 94,
+              "findings": "Hand sink blocked by a sheet pan rack; fixed on the spot."
+            }
+          },
+          {
+            "key": "insp-2",
+            "values": {
+              "inspection_name": "Monthly self-inspection",
+              "status": "Corrections due",
+              "kind": "Self-inspection",
+              "inspected_on": "@today-6d",
+              "score": 88,
+              "findings": "Walk-in door gasket torn; two unlabeled containers in the reach-in.",
+              "fix_by": "@today+4d"
+            }
+          },
+          {
+            "key": "insp-3",
+            "values": {
+              "inspection_name": "Hood and duct cleaning",
+              "status": "Scheduled",
+              "kind": "Hood cleaning",
+              "inspected_on": "@today+12d"
+            }
+          },
+          {
+            "key": "insp-4",
+            "values": {
+              "inspection_name": "Quarterly pest control service",
+              "status": "Passed",
+              "kind": "Pest control",
+              "inspected_on": "@today-20d",
+              "findings": "No activity; one door sweep worn on the back door."
+            }
+          },
+          {
+            "key": "insp-5",
+            "values": {
+              "inspection_name": "Annual fire inspection",
+              "status": "Scheduled",
+              "kind": "Fire marshal",
+              "inspected_on": "@today+33d"
+            }
+          }
+        ],
+        "before": [
+          [
+            "inspected_on",
+            "fix_by"
+          ]
         ]
       }
     ],
@@ -1740,6 +2840,46 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "shift_by_person"
+      },
+      {
+        "describes": "Each recipe line belongs to one dish.",
+        "fromTable": "recipe_line",
+        "fromField": "dish",
+        "toTable": "dish",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "recipe_lines"
+      },
+      {
+        "describes": "Each recipe line uses one ingredient.",
+        "fromTable": "recipe_line",
+        "fromField": "ingredient",
+        "toTable": "ingredient",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "used_in"
+      },
+      {
+        "describes": "Each prep item has one cook.",
+        "fromTable": "prep",
+        "fromField": "cook",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "prep_by_cook"
+      },
+      {
+        "describes": "Each prep item serves one dish.",
+        "fromTable": "prep",
+        "fromField": "dish",
+        "toTable": "dish",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "prep_items"
       }
     ],
     "sharedBlocks": [
@@ -2008,6 +3148,53 @@
             "relative": "next_week"
           }
         }
+      },
+      {
+        "token": "all_recipe_line",
+        "name": "All recipe lines",
+        "table": "recipe_line",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_prep",
+        "name": "All prep list",
+        "table": "prep",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "prep_board",
+        "name": "Prep list board",
+        "table": "prep",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "prep_next2",
+        "name": "Next two days",
+        "table": "prep",
+        "kind": "grid",
+        "within": {
+          "prep_on": {
+            "relative": "next_days",
+            "n": 2
+          }
+        }
+      },
+      {
+        "token": "all_inspection",
+        "name": "All inspections",
+        "table": "inspection",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "inspection_board",
+        "name": "Inspections board",
+        "table": "inspection",
+        "kind": "kanban",
+        "groupBy": "status"
       }
     ],
     "agent": {
@@ -2096,7 +3283,7 @@
         "Foundry Street"
       ]
     },
-    "version": 4
+    "version": 6
   },
   "pages": [
     {
@@ -2107,7 +3294,7 @@
         "emoji": "🍽️"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:hospitality-restaurant-interior-dining",
         "offsetY": 50
       },
       "settings": {
@@ -2118,7 +3305,14 @@
           "type": "callout",
           "text": [
             {
-              "text": "Run the restaurant from one page: every dish with its food cost, the inventory counted against par, suppliers and their order days, purchase orders on the way, and the shifts this week. Start with the Dashboard, order whatever the Order? column flags, and review any dish marked High cost."
+              "text": "The back office of a full-service restaurant: every dish costed from its recipe, food cost percent and margin, inventory with par levels, suppliers and orders, the prep list for each station, inspections and corrections owed, and the shift schedule with labor cost. Open "
+            },
+            {
+              "text": "Start here",
+              "bold": true
+            },
+            {
+              "text": " first."
             }
           ],
           "background": "blue",
@@ -2140,6 +3334,12 @@
                   "props": {
                     "spaceId": "page:dashboard"
                   }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
                 }
               ]
             },
@@ -2153,6 +3353,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:menu-costing"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:prep-lists"
                   }
                 }
               ]
@@ -2529,6 +3735,146 @@
               }
             ],
             "activeViewId": "shi-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recipe lines"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every dish broken into its ingredients and amounts per plate. Change a cost on Inventory and every plate cost follows."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "recipe_line",
+              "view": "all_recipe_line"
+            },
+            "inline": true,
+            "title": "Recipe lines",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "recipe-t",
+                "name": "All recipe lines",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "recipe-t"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Prep list"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What each station makes before service, with par and on-hand amounts."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "prep",
+              "view": "all_prep"
+            },
+            "inline": true,
+            "title": "Prep list",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "prep-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "prep-t",
+                "name": "All prep list",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "prep-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inspections"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Health, fire and self-inspections, with corrections owed."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "inspection",
+              "view": "all_inspection"
+            },
+            "inline": true,
+            "title": "Inspections",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "inspec-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "inspec-t",
+                "name": "All inspections",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "inspec-b"
           }
         }
       ]
@@ -2947,6 +4293,89 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Dishes above 32% food cost"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "dish",
+              "view": "all_dish"
+            },
+            "inline": true,
+            "title": "Dishes by food cost",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "vfc",
+                "name": "Highest food cost first",
+                "layout": "list",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "food_cost_pct",
+                    "direction": "desc"
+                  }
+                ],
+                "anyOf": {
+                  "status": [
+                    "On menu",
+                    "Testing"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vfc"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Corrections owed"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "inspection",
+              "view": "all_inspection"
+            },
+            "inline": true,
+            "title": "Corrections owed",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "vco",
+                "name": "Corrections due",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Corrections due"
+                }
+              }
+            ],
+            "activeViewId": "vco"
+          }
         }
       ]
     },
@@ -2955,14 +4384,14 @@
       "parent": "restaurant-operations-hub",
       "title": "Costing a dish",
       "icon": {
-        "emoji": "🧾"
+        "emoji": "🧮"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "A plate cost is a number you keep current. Prices move; costs drift."
+              "text": "Every dish should be costed before it goes on the menu, and again whenever a main ingredient's price moves. Costing from the recipe makes that automatic."
             }
           ],
           "background": "blue",
@@ -2974,7 +4403,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "Build the recipe"
             }
           ],
           "props": {
@@ -2985,7 +4414,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "List every ingredient in the recipe, including oil, salt, garnish and cooking loss."
+              "text": "Weigh the real portion as it goes on the plate, not the recipe card's guess."
             }
           ]
         },
@@ -2993,7 +4422,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Multiply each by its cost per unit from Inventory."
+              "text": "Add one recipe line per ingredient that matters: the protein, the starch, the sauce base, the expensive garnish."
             }
           ]
         },
@@ -3001,7 +4430,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Add them up; enter the total as the plate cost."
+              "text": "Enter the amount in the same unit the ingredient is counted in. If bass is counted in pounds, a 7-ounce portion is 0.44."
             }
           ]
         },
@@ -3009,7 +4438,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Read Food cost (%) and the Cost check."
+              "text": "Put oil, salt, pepper, herbs and trim into the "
+            },
+            {
+              "text": "garnish and waste allowance",
+              "bold": true
+            },
+            {
+              "text": ", usually 25 to 60 cents."
             }
           ]
         },
@@ -3017,7 +4453,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Reading the result"
+              "text": "Read the result"
             }
           ],
           "props": {
@@ -3039,12 +4475,12 @@
                   ],
                   [
                     {
-                      "text": "Reading"
+                      "text": "Meaning"
                     }
                   ],
                   [
                     {
-                      "text": "What to do"
+                      "text": "Action"
                     }
                   ]
                 ]
@@ -3053,17 +4489,17 @@
                 "cells": [
                   [
                     {
-                      "text": "Under 30"
+                      "text": "Under 28 percent"
                     }
                   ],
                   [
                     {
-                      "text": "Good"
+                      "text": "Strong"
                     }
                   ],
                   [
                     {
-                      "text": "Keep an eye on supplier changes"
+                      "text": "Keep it; feature it"
                     }
                   ]
                 ]
@@ -3072,7 +4508,26 @@
                 "cells": [
                   [
                     {
-                      "text": "30 to 35"
+                      "text": "28 to 32 percent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Healthy"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Watch prices"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "32 to 35 percent"
                     }
                   ],
                   [
@@ -3082,7 +4537,7 @@
                   ],
                   [
                     {
-                      "text": "Trim the portion or add a cheaper component"
+                      "text": "Check portion, waste and price"
                     }
                   ]
                 ]
@@ -3091,7 +4546,7 @@
                 "cells": [
                   [
                     {
-                      "text": "Over 35"
+                      "text": "Over 35 percent"
                     }
                   ],
                   [
@@ -3101,7 +4556,7 @@
                   ],
                   [
                     {
-                      "text": "Raise the price or rework the dish"
+                      "text": "Re-cost, re-plate or re-price"
                     }
                   ]
                 ]
@@ -3113,7 +4568,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Keep it current"
+              "text": "Yield matters"
             }
           ],
           "props": {
@@ -3124,7 +4579,129 @@
           "type": "text",
           "text": [
             {
-              "text": "Recost every dish when a supplier raises a price, and at least once a quarter. Update the Last costed date."
+              "text": "Many ingredients lose weight in trimming and cooking. A whole fish yields maybe 45 percent as fillet; a pork shoulder loses a third in the braise. Cost on the trimmed amount, or include the loss in the amount per plate."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Price and mix"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Food cost percent is not the whole story. A steak at 38 percent can make more dollars per plate than a salad at 22 percent. Look at "
+            },
+            {
+              "text": "Margin per plate",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Sold last week",
+              "bold": true
+            },
+            {
+              "text": " together: popular dishes with a good margin are the ones to protect."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When to re-cost"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Supplier price change of 5 percent or more on a main ingredient"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "New portion size or plating"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every three months for every dish, even if nothing seems to change"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Testing a new dish"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "New dishes start as "
+            },
+            {
+              "text": "Testing",
+              "bold": true
+            },
+            {
+              "text": ". Cost them before the first tasting, not after the menu is printed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The smoked trout toast tests at 15 dollars with a recipe cost of about 4.30. The chef is happy with the food cost but asks for a thicker slice of bread, which adds 20 cents per plate."
             }
           ]
         }
@@ -3135,14 +4712,26 @@
       "parent": "restaurant-operations-hub",
       "title": "Weekly inventory count",
       "icon": {
-        "emoji": "📋"
+        "emoji": "📦"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Counting is how a kitchen finds money it is losing. Count the same way, at the same time, every week."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "The count"
+              "text": "When and how"
             }
           ],
           "props": {
@@ -3153,7 +4742,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Count at the same time each week, after close."
+              "text": "Count Monday morning before deliveries, or Sunday night after close."
             }
           ]
         },
@@ -3161,7 +4750,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Count by location: walk-in, dry storage, bar, then paper goods."
+              "text": "Walk the same route each week: walk-in, reach-ins, freezer, dry storage, bar, paper."
             }
           ]
         },
@@ -3169,7 +4758,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Enter On hand and Last counted for each ingredient."
+              "text": "Count in the unit on the sheet (pounds, cases, bottles). Partial cases count in tenths."
             }
           ]
         },
@@ -3177,7 +4766,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Look at the Order? column; anything marked Order goes on the next supplier list."
+              "text": "Enter "
+            },
+            {
+              "text": "On hand",
+              "bold": true
+            },
+            {
+              "text": " and the count date. The "
+            },
+            {
+              "text": "Order?",
+              "bold": true
+            },
+            {
+              "text": " column flags anything below par."
             }
           ]
         },
@@ -3185,34 +4788,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Rules"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "First in, first out: label dates, rotate stock."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Record waste and spills during service, not only at the count."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Par levels"
+              "text": "Setting pars"
             }
           ],
           "props": {
@@ -3223,7 +4799,249 @@
           "type": "text",
           "text": [
             {
-              "text": "Set par from actual use plus a small buffer for the delivery lead time. Adjust after holidays and seasonal changes."
+              "text": "Par is the amount you need to get from one delivery to the next, plus a little cushion."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Item"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Example par logic"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fresh fish"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two nights of sales; deliveries Wednesday and Friday"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Produce"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Three days; most spoil quickly"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Dry goods"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One to two weeks"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Bar spirits"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two weeks of pours"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Review pars every month. A par that is always overstocked ties up money and goes to waste."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Food cost for the week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Cost of goods used is the opening inventory value, plus purchases, minus the closing inventory value. Divide it by food sales for the week. If it is much higher than the menu's average food cost, the gap is waste, over-portioning, theft or comps."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keeping waste down"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "First in, first out: new deliveries go behind older stock."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Label and date everything that is opened or prepped."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Turn what is close to its date into a special or staff meal."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write down what is thrown out and why."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who counts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The same two people count every week, one calling and one writing, so the numbers are comparable. The chef spot-checks five expensive items each week, such as fish, steak and spirits."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Count checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every item counted, none estimated"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Units match the sheet"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Prepped items counted on the prep list, not here"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Anything damaged or spoiled written off with a note"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Striped bass is at 9 pounds against a par of 18, so it is flagged for the Wednesday fish order. Arborio is above par, so dry goods can skip it this week."
             }
           ]
         }
@@ -3234,14 +5052,26 @@
       "parent": "restaurant-operations-hub",
       "title": "Ordering routine",
       "icon": {
-        "emoji": "📦"
+        "emoji": "🚚"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Ordering on a schedule keeps the walk-in full but not overflowing, and makes delivery minimums easy to meet."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Weekly rhythm"
+              "text": "The weekly calendar"
             }
           ],
           "props": {
@@ -3319,7 +5149,7 @@
                   ],
                   [
                     {
-                      "text": "Dairy; bar"
+                      "text": "Dairy and bar"
                     }
                   ]
                 ]
@@ -3345,7 +5175,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Placing an order"
+              "text": "How to place an order"
             }
           ],
           "props": {
@@ -3356,7 +5186,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Open the Inventory table, read the Order? column and group the flagged items by supplier."
+              "text": "Open Inventory and filter to the supplier. Items flagged Order show "
+            },
+            {
+              "text": "Quantity to order",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3364,7 +5201,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Create an order for each supplier with the lines and a delivery date."
+              "text": "Adjust for the week ahead: a holiday, a private party, a menu change."
             }
           ]
         },
@@ -3372,7 +5209,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check the delivery floor on the supplier row before sending."
+              "text": "Make sure the order meets the supplier's "
+            },
+            {
+              "text": "delivery minimum",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3380,7 +5224,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "After the delivery, check against the invoice and press Log delivery."
+              "text": "Draft the order with the delivery date; send it and set "
+            },
+            {
+              "text": "Sent",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3388,18 +5239,164 @@
           "type": "heading",
           "text": [
             {
-              "text": "Short deliveries"
+              "text": "Receiving"
             }
           ],
           "props": {
-            "level": 3
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check every item against the order and the invoice"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Temperatures: chilled food at 41 degrees Fahrenheit or below, frozen solid"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Quality: reject soft fish, wilted greens, damaged cases"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Weigh proteins that are sold by weight"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Note shorts and substitutions on the invoice before the driver leaves"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Put away cold food first, then dry goods"
+            }
+          ],
+          "props": {
+            "checked": false
           }
         },
         {
           "type": "text",
           "text": [
             {
-              "text": "Note any shortage on the order and on the supplier's notes. Three problems in a month is a reason to change suppliers."
+              "text": "Set the order to "
+            },
+            {
+              "text": "Received",
+              "bold": true
+            },
+            {
+              "text": " with the date, and update costs on Inventory if prices changed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When an order is late or short"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A Sent order whose delivery date has passed shows under Overdue. Call the supplier before service, decide what to 86 or substitute, and tell the floor team at line-up. Note the miss on the supplier's page; a supplier who is short three times in a month gets compared with the backup."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Supplier relationships"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pay on time; it is the best way to get the best product when supply is short."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask for price lists every month and compare two suppliers on your top ten items twice a year."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep one backup supplier for each category."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The weekend fish order is still a draft for Friday's delivery. The chef adds two extra pounds of bass for a party of twelve on Saturday and sends it before the Wednesday cut-off."
             }
           ]
         }
@@ -3408,11 +5405,23 @@
     {
       "key": "opening-and-closing",
       "parent": "restaurant-operations-hub",
-      "title": "Opening and closing checklists",
+      "title": "Opening, closing and inspections",
       "icon": {
         "emoji": "🔑"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Opening and closing the same way every day protects the food, the building and the inspection score."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
         {
           "type": "heading",
           "text": [
@@ -3428,7 +5437,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Walk-in temperatures logged"
+              "text": "Walk-in, reach-ins and freezer temperatures logged"
             }
           ],
           "props": {
@@ -3439,7 +5448,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Prep list read at line-up"
+              "text": "Hand sinks stocked with soap and towels; sanitizer buckets at the right strength"
             }
           ],
           "props": {
@@ -3450,7 +5459,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Stations stocked and sanitizer buckets set"
+              "text": "Prep list printed and assigned"
             }
           ],
           "props": {
@@ -3461,7 +5470,18 @@
           "type": "todo",
           "text": [
             {
-              "text": "Reservations and allergy notes reviewed"
+              "text": "Deliveries expected this day noted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Floor: tables set, restrooms checked, menus clean"
             }
           ],
           "props": {
@@ -3483,7 +5503,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Leftovers labelled and dated"
+              "text": "Food covered, labeled, dated and put away"
             }
           ],
           "props": {
@@ -3494,7 +5514,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Prep list for tomorrow written"
+              "text": "Hot food cooled correctly before going in the walk-in"
             }
           ],
           "props": {
@@ -3505,7 +5525,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Stock counts updated for anything low"
+              "text": "Equipment off; hood filters cleaned on schedule"
             }
           ],
           "props": {
@@ -3516,24 +5536,955 @@
           "type": "todo",
           "text": [
             {
-              "text": "Equipment off, doors locked, alarm set"
+              "text": "Floors swept and mopped; trash and recycling out"
             }
           ],
           "props": {
             "checked": false
           }
         },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "On-hand counts entered for the next prep list"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Doors and alarm set"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Temperature log"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Twice a day, write the temperature of every cooler and freezer. Coolers hold 41 degrees Fahrenheit or below, freezers 0 or below. A cooler reading high twice in a row is moved to the backup cooler and a repair is called the same day. Inspectors ask to see this log."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inspections"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Inspections are easier when every day looks like inspection day."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Type"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How often"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What they look at"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Health department"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Once or twice a year, unannounced"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Temperatures, hand washing, storage, labeling, pests"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fire marshal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Yearly"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Extinguishers, exits, hood suppression"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hood cleaning"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every three to six months"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Grease build-up in hoods and ducts"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pest control"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Monthly or quarterly"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Activity, entry points"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Self-inspection"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Monthly"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The health inspector's checklist, done by the chef"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After an inspection"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log it with the date, score and findings."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Anything to fix becomes "
+            },
+            {
+              "text": "Corrections due",
+              "bold": true
+            },
+            {
+              "text": " with a "
+            },
+            {
+              "text": "Fix by",
+              "bold": true
+            },
+            {
+              "text": " date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Fix, photograph the fix, and set "
+            },
+            {
+              "text": "Passed",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Talk through the findings at the next staff meeting, so the whole team knows what the inspector saw and why it matters."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The monthly self-inspection found a torn walk-in door gasket and two unlabeled containers. Labels were fixed on the spot; the gasket is ordered and due to be fitted before the fix-by date."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "restaurant-operations-hub",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Small checklists done every day prevent the large problems you cannot afford."
+              "text": "A restaurant makes or loses money in small amounts: a few cents a plate, an hour of overtime, a case of herbs thrown out. This workspace puts those numbers where the chef and the owner see them every week."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it holds"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Menu"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Each dish with price, recipe cost, garnish allowance, food cost percent, margin per plate and what sold last week"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Recipe lines"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Each ingredient in each dish and the amount per plate"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Inventory"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every item with unit, on hand, par, cost per unit, order flag and supplier"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Suppliers"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What they sell, order day, lead time, delivery minimum"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Orders"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Each order with delivery date and total"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Prep list"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What each station makes, with par, on hand and how much to make"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Inspections"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Health, fire, pest and self-inspections, with corrections and fix-by dates"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Shifts"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who works when, hours, rate and labor cost"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the costing works"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "A recipe line says how much of an ingredient goes on one plate, in that ingredient's counting unit."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Line cost",
+              "bold": true
+            },
+            {
+              "text": " multiplies the amount by the ingredient's cost per unit."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Recipe cost",
+              "bold": true
+            },
+            {
+              "text": " adds the lines; the "
+            },
+            {
+              "text": "garnish and waste allowance",
+              "bold": true
+            },
+            {
+              "text": " covers oil, salt, herbs and trim."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Food cost",
+              "bold": true
+            },
+            {
+              "text": " is recipe cost plus allowance, divided by the menu price. Most kitchens aim for 28 to 32 percent per dish."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When a supplier raises a price, update the cost on Inventory and every dish that uses it changes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter suppliers, then inventory with units, pars and current costs."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add recipe lines for your best sellers first; they matter most."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Build the prep list for each station with pars for a normal night."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter your last inspection and the next ones due."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monday:",
+              "bold": true
+            },
+            {
+              "text": " inventory count, sales numbers into Sold last week, orders drafted."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Daily:",
+              "bold": true
+            },
+            {
+              "text": " prep list set before the morning crew arrives; temperature log kept."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Thursday:",
+              "bold": true
+            },
+            {
+              "text": " next week's schedule checked against expected covers."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Striped bass went up a dollar a pound. The chef updates the cost on Inventory, sees the bass dish move from 35 to 36 percent food cost, and trims the portion slightly rather than raise the price mid-season."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "prep-lists",
+      "parent": "restaurant-operations-hub",
+      "title": "Prep lists and pars",
+      "icon": {
+        "emoji": "🔪"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A good prep list means service starts calm. It says what each station makes, how much, and who makes it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Building the list"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "For each station, list what must be ready before service: sauces, portioned proteins, pickles, doughs, garnishes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set a "
+            },
+            {
+              "text": "par",
+              "bold": true
+            },
+            {
+              "text": " for a normal night in the unit you prep in (quarts, portions, pans)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The night before, the closing cook enters "
+            },
+            {
+              "text": "On hand",
+              "bold": true
+            },
+            {
+              "text": ". "
+            },
+            {
+              "text": "To make",
+              "bold": true
+            },
+            {
+              "text": " is the difference."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "In the morning, the sous chef assigns items to cooks and the first crew works top to bottom."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules of the list"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Longest jobs first: braises, stocks and doughs start before anything else."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Label every container with the item, the date made and the cook's initials."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keeps for",
+              "bold": true
+            },
+            {
+              "text": " sets the use-by. Anything past it is thrown out and noted."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Busy nights get a higher par; slow nights a lower one. Change pars on the list, not in people's heads."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Station example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Station"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Typical items"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Garde manger"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pickled shallots, dressings, sliced tomatoes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Grill"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Herb butter, braised pork, steak portions"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Saute"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fish portions, stocks, sauces"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pastry"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Custard bases, cookie dough, fruit"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Brunch"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Blanched potatoes, hollandaise base, fruit cups"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who owns the list"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The sous chef owns the list and changes pars; cooks own their items. When something runs out during service, the cook tells the sous chef, and the par goes up for the next night. Two nights in a row with leftovers means the par goes down."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Food safety in prep"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Hot food cooled from 135 to 70 degrees within two hours, and to 41 within four more"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Raw proteins stored below ready-to-eat food"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Hands washed and gloves changed between raw and ready-to-eat items"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cutting boards color-coded and sanitized between uses"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Bass portions are at 6 against a par of 24, so 18 more need cutting before service. Pickled shallots are in progress; the pork braise and mushroom stock are set up for the morning crew."
+            }
+          ]
         }
       ]
     }

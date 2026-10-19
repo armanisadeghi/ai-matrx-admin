@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0208",
-  "version": 3,
+  "version": 4,
   "title": "Personal Budget",
   "description": "Individuals: track monthly income and spending by category, plus savings goals.",
   "forWho": "Individuals tracking their money",
@@ -9,7 +9,7 @@
     "emoji": "💵"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:finance-coins-jar-savings",
     "offsetY": 50
   },
   "category": "finance",
@@ -1469,7 +1469,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -1480,7 +1480,7 @@
         "emoji": "💵"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:finance-coins-jar-savings",
         "offsetY": 50
       },
       "settings": {

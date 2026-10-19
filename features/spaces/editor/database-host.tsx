@@ -14,6 +14,8 @@
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
+import { useBlockHeightKnown } from "../page/space-seed-context";
+
 /** The database block's own element: everything inside it is the table's. */
 export const DATABASE_HOST_CLASS = "spaces-db-host";
 
@@ -111,14 +113,16 @@ export function pickPainted(list: PaintedSize[], at: { width?: number; vw?: numb
   return exact ?? (anyWidth ? (list[0] ?? null) : (list.find((p) => p.any === 1) ?? null));
 }
 
-function useHeldHeight(blockId: string | undefined, ref: React.RefObject<HTMLDivElement | null>, painted: PaintedSize[], firstFrame = true, layout?: string): number | undefined {
+function useHeldHeight(blockId: string | undefined, ref: React.RefObject<HTMLDivElement | null>, painted: PaintedSize[], firstFrame = true, layout?: string, stored = true): number | undefined {
   // The first frame already holds the stored size (before any effect): the block is never drawn short.
   // A block drawn on the server (the static first paint, round 34) holds it by CSS instead — the server
   // has no window, and the hydrating pass must draw what the server drew.
-  const [hold, setHold] = useState<number | undefined>(() => (!firstFrame || typeof window === "undefined" ? undefined : pickPainted(painted, { vw: window.innerWidth }, layout === "chart")?.h));
+  // `stored` false: the live answers give the block's height (DB-BLOCK-CHROME-2) — no stored size is held, so
+  // the first paint is the final height and nothing is let go later.
+  const [hold, setHold] = useState<number | undefined>(() => (!stored || !firstFrame || typeof window === "undefined" ? undefined : pickPainted(painted, { vw: window.innerWidth }, layout === "chart")?.h));
   useLayoutEffect(() => {
     const el = ref.current;
-    if (!el || !blockId) return;
+    if (!el || !blockId || !stored) return;
     let key = "";
     let done = false;
     let quiet: number | undefined;
@@ -197,7 +201,7 @@ function useHeldHeight(blockId: string | undefined, ref: React.RefObject<HTMLDiv
       ro.disconnect();
     };
     // The stored size is read once, at mount (a later save's new size is for the next visit).
-  }, [blockId, ref]);
+  }, [blockId, ref, stored]);
   return hold;
 }
 
@@ -252,7 +256,9 @@ function paintedHeightOf(blockId: string | undefined): number {
 /** The block's element. It stops nothing: every press and key reaches the table and React above it. */
 export function DatabaseHost({ children, blockId, layout, painted, serverDrawn }: { children: ReactNode; blockId?: string; layout?: string; painted?: PaintedSize[]; serverDrawn?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
-  const hold = useHeldHeight(blockId, ref, painted ?? [], !serverDrawn, layout);
+  // A stored painted size is held only while the server's live answers cannot give the block's height.
+  const known = useBlockHeightKnown(blockId ?? "", layout);
+  const hold = useHeldHeight(blockId, ref, painted ?? [], !serverDrawn, layout, !known);
   useKeepPaintedHeight(ref, blockId);
   return (
     <div
@@ -266,6 +272,45 @@ export function DatabaseHost({ children, blockId, layout, painted, serverDrawn }
       {children}
     </div>
   );
+}
+
+/** A block of the static first paint, as far as its stored sizes go. */
+export interface StaticBlock {
+  id: string;
+  type: string;
+  props?: Record<string, unknown>;
+  children?: StaticBlock[];
+}
+
+/**
+ * Each database block's stored painted height, held by CSS per window width (the server knows no width):
+ * the same sizes the editor's first frame holds (`pickPainted` by window width), as media rules (static-body.tsx).
+ * A block whose height the server's live answers give (`known`) gets none.
+ */
+export function staticPaintedCss(
+  blocks: StaticBlock[],
+  dataOf: (raw: unknown) => Record<string, unknown>,
+  known: (blockId: string, layout: string | undefined) => boolean,
+): string {
+  const rules: string[] = [];
+  const walk = (list: StaticBlock[]) => {
+    for (const b of list) {
+      // A block the server's live answers size (its rows, its cards, its note) is drawn at that size: no stored one (DB-BLOCK-CHROME-2).
+      if (b.type === "database" && !known(b.id, activeLayout(dataOf(b.props?.data)))) {
+        const sizes = paintedSizesOf(dataOf(b.props?.data));
+        for (const size of sizes) {
+          if (!size.vw) continue;
+          const id = b.id.replace(/["\\]/g, "\\$&");
+          // A chart tile's height does not follow the window: a width nobody saved at holds the first stored size.
+          if (size === sizes[0] && activeLayout(dataOf(b.props?.data)) === "chart") rules.push(`.spaces-static-body .bn-block-outer[data-id="${id}"] .spaces-db-host{min-height:${size.h}px}`);
+          rules.push(`@media (min-width:${size.vw - PAINTED_WIDTH_SLACK}px) and (max-width:${size.vw + PAINTED_WIDTH_SLACK}px){.spaces-static-body .bn-block-outer[data-id="${id}"] .spaces-db-host{min-height:${size.h}px}}`);
+        }
+      }
+      if (b.children?.length) walk(b.children);
+    }
+  };
+  walk(blocks);
+  return rules.join("\n");
 }
 
 /** The layout of a stored database block's open view (its frame's geometry is known before any data). */

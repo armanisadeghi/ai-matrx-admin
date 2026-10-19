@@ -33,7 +33,7 @@ import {
   EXPERT_STATUS_LABEL,
 } from "../../types";
 import { expertBadge } from "../columns";
-import { SectionCard } from "./SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 
 interface Props {
   party: PartyListRow;
@@ -118,7 +118,7 @@ export function ExpertStatusCard({ party, onChanged }: Props) {
   };
 
   return (
-    <SectionCard title="Expert" Icon={GraduationCap}>
+    <SectionCard dense bodyClassName="p-2" title="Expert" Icon={GraduationCap}>
       <div className="space-y-2.5">
         <div className="flex flex-wrap items-center gap-2">
           {status ? (

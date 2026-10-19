@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0202",
-  "version": 3,
+  "version": 4,
   "title": "Habit Tracker",
   "description": "Anyone building routines: check habits off daily and watch streaks and monthly progress.",
   "forWho": "Anyone building routines",
@@ -9,7 +9,7 @@
     "emoji": "✅"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:personal-morning-coffee-window-light",
     "offsetY": 50
   },
   "category": "personal",
@@ -1525,7 +1525,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -1536,7 +1536,7 @@
         "emoji": "✅"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:personal-morning-coffee-window-light",
         "offsetY": 50
       },
       "settings": {

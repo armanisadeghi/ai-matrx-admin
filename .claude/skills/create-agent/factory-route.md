@@ -28,7 +28,9 @@ Per [agents-never-author-agents](/policies/agents-never-author-agents.md) you st
 These map onto `agent_author create` as `goals`, `variables` (with teaching help text) and
 `output_format` / `output_schema`. The factory's own writers produce the prompt; you do not.
 
-## 2. Gather at least 3 REAL inputs BEFORE you call create
+## 2. Gather at least 3 REAL inputs BEFORE you call create (6 for a Mandate's Holder)
+
+**A build for a Mandate (`mandate_key` set, e.g. `POST /agent-factory/builds` door `mandate_holder_draft`) needs 6 usable real cases, not 3.** The floor is the knob `agent_factory.representative_min_pool`, default 6 (aidream `aidream/services/agent_factory/pipeline.py:107`). Below it the build is refused before any step runs: "the proof pool is below its floor". The pool counts the Mandate's captured runs plus your samples. A Mandate on a provision also needs its default binding (consumption map) written first, or the build fails with `BindingRequired`.
 
 Real = taken from real runs, chats, records, files or pages of the job. Never invented, never
 paraphrased into tidier ones, never placeholders (the no-fake-data rule). Where to look: the

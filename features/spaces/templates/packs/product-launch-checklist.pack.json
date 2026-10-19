@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0354",
-  "version": 6,
+  "version": 7,
   "title": "Product Launch Checklist",
   "description": "Product marketers: a phased launch checklist with owners and a progress count.",
   "forWho": "Product marketing teams",
@@ -9,7 +9,7 @@
     "emoji": "🚀"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:projects-rocket-launch",
     "offsetY": 50
   },
   "category": "projects",
@@ -1165,7 +1165,7 @@
         "Marlowe Quay"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1176,7 +1176,7 @@
         "emoji": "🚀"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:projects-rocket-launch",
         "offsetY": 50
       },
       "settings": {

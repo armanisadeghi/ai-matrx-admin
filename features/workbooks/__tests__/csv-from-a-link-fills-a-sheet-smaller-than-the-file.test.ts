@@ -31,6 +31,14 @@ describe("CSV from a link", () => {
     expect(state.cells.get("9,0")).toBe("total_bill");
     expect(state.cells.get("10,0")).toBe(10.5);
   });
+  it("a missing route is not described as a refusal", async () => {
+    const missing = Object.assign(new Error("Not Found"), { status: 404 });
+    const err = await readCsvLink("https://x.test/a.csv", async () => Promise.reject(missing)).catch((e) => e);
+    expect(err.message).toMatch(/not available on this server/);
+    expect(err.message).not.toMatch(/refused/);
+    const unauth = Object.assign(new Error("x"), { status: 401 });
+    await expect(readCsvLink("https://x.test/a.csv", async () => Promise.reject(unauth))).rejects.toThrow(/signed in/);
+  });
   it("names the step that failed instead of the generic words", async () => {
     const refused = Object.assign(new Error("x"), { details: { detail: { message: "That address cannot be fetched." } } });
     await expect(readCsvLink("http://10.0.0.1/a.csv", async () => Promise.reject(refused))).rejects.toThrow("That address cannot be fetched.");

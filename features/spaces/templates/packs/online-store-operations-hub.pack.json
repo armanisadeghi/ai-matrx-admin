@@ -1,29 +1,31 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0516",
-  "version": 3,
+  "version": 5,
   "title": "Online Store Operations Hub",
-  "description": "Run orders, fulfillment, stock levels, suppliers and returns for an online store.",
-  "forWho": "Shopify-style online store owners",
+  "description": "For online shops: SKUs and stock, purchase orders, fulfillment, returns, sales by channel.",
+  "forWho": "Small online shops selling their own goods",
   "icon": {
     "emoji": "🛍️"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:retail-parcels-packages-shipping",
     "offsetY": 50
   },
   "category": "retail",
   "tags": [
-    "online store",
-    "orders",
+    "online store owner",
+    "ecommerce",
     "inventory",
-    "fulfillment"
+    "purchase orders",
+    "fulfillment",
+    "returns"
   ],
   "spec": {
     "specVersion": 1,
     "id": "spaces-online-store-operations-hub",
     "catalogueId": "SP0516",
-    "useCase": "The owner of Hearth and Hollow Goods uses this to see what is booked, what is owed and what needs ordering.",
+    "useCase": "The founder of Hearth and Hollow Goods uses this to see what ships today, which SKUs need reordering, what is on order and which returns are open.",
     "industry": "retail_ecommerce",
     "vertical": "Online store",
     "job": "inventory",
@@ -33,7 +35,7 @@
     "requires": [],
     "business": {
       "name": "Hearth and Hollow Goods",
-      "describes": "A two-person online home goods store selling candles, ceramics and linens through its own website and two marketplaces, shipping from a spare room.",
+      "describes": "A two-person online home goods shop in Providence selling candles, ceramics and linens on its own website, one marketplace and a social shop, shipping from a rented back room.",
       "address": {
         "line1": "19 Cobbler Row",
         "city": "Providence",
@@ -59,9 +61,10 @@
         "ordered": false,
         "icon": "truck",
         "titleField": "supplier_name",
-        "describes": "Makers and wholesalers you buy from, with lead times and terms.",
+        "describes": "Makers and wholesalers you buy from: contact, lead time, terms, minimum order and what is on order now.",
         "subject": "thing",
         "statusImplies": [],
+        "rowTemplates": [],
         "fields": [
           {
             "key": "supplier_name",
@@ -70,6 +73,13 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "required": true
+          },
+          {
+            "key": "contact",
+            "label": "Contact",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "email",
@@ -120,8 +130,27 @@
             }
           },
           {
+            "key": "min_order",
+            "label": "Minimum order (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
             "key": "product_n",
-            "label": "Products active",
+            "label": "Active products",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -129,20 +158,27 @@
             "pick": "product_name",
             "agg": "count",
             "filter": {
-              "status": "Active"
+              "status": [
+                "Active",
+                "Seasonal"
+              ]
             }
           },
           {
-            "key": "draft_n",
-            "label": "Products in draft",
+            "key": "on_order",
+            "label": "On order now (USD)",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "via": "products",
-            "pick": "product_name",
-            "agg": "count",
+            "via": "purchase_orders",
+            "pick": "po_total",
+            "agg": "sum",
             "filter": {
-              "status": "Draft"
+              "po_status": [
+                "Sent",
+                "Confirmed",
+                "Partly received"
+              ]
             }
           },
           {
@@ -153,46 +189,53 @@
             "contextPolicy": "include"
           }
         ],
-        "rowTemplates": [],
         "rows": [
           {
             "key": "suppli-1",
             "values": {
               "supplier_name": "Tideline Ceramics",
-              "email": "marisol.rosenthal@hearthandhollow.net",
+              "contact": "Marisol Rosenthal",
+              "email": "marisol@tidelineceramics.net",
               "phone": "(401) 555-0149",
               "lead_days": 21,
-              "terms": "Net 30"
+              "terms": "Net 30",
+              "min_order": 400
             }
           },
           {
             "key": "suppli-2",
             "values": {
               "supplier_name": "Wick and Wax Studio",
-              "email": "teodor.whitlock@hearthandhollow.net",
+              "contact": "Teodor Whitlock",
+              "email": "teodor@wickandwax.net",
               "phone": "(401) 555-0186",
               "lead_days": 10,
-              "terms": "Prepaid"
+              "terms": "Prepaid",
+              "min_order": 250
             }
           },
           {
             "key": "suppli-3",
             "values": {
               "supplier_name": "Loomhouse Textiles",
-              "email": "kwame.carrow@hearthandhollow.net",
+              "contact": "Kwame Carrow",
+              "email": "kwame@loomhousetextiles.net",
               "phone": "(401) 555-0123",
               "lead_days": 28,
-              "terms": "Net 30"
+              "terms": "Net 30",
+              "min_order": 600
             }
           },
           {
             "key": "suppli-4",
             "values": {
               "supplier_name": "Boxcar Packaging",
-              "email": "ingrid.halvorsen@hearthandhollow.net",
+              "contact": "Ingrid Halvorsen",
+              "email": "orders@boxcarpackaging.net",
               "phone": "(401) 555-0160",
               "lead_days": 7,
-              "terms": "Net 15"
+              "terms": "Net 15",
+              "min_order": 150
             }
           }
         ]
@@ -208,204 +251,9 @@
         "ordered": false,
         "icon": "package",
         "titleField": "product_name",
-        "describes": "Everything you sell, with price, cost, margin and stock against the reorder level.",
+        "describes": "Each product you list: price, landed cost, margin, supplier, units on hand across its SKUs, units sold and sales.",
         "subject": "thing",
-        "independentOf": {
-          "supplier_rel": "Either record can be created or change status before the other."
-        },
         "statusImplies": [],
-        "fields": [
-          {
-            "key": "product_name",
-            "label": "Product",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "required": true
-          },
-          {
-            "key": "sku",
-            "label": "SKU",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          },
-          {
-            "key": "category",
-            "label": "Category",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "Ceramics",
-              "Candles",
-              "Linens",
-              "Packaging"
-            ],
-            "choiceColors": {
-              "Ceramics": "slate",
-              "Candles": "blue",
-              "Linens": "amber",
-              "Packaging": "violet"
-            }
-          },
-          {
-            "key": "price",
-            "label": "Price (USD)",
-            "parityType": "currency",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "unit": "USD",
-            "format": "currency",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 5000
-              }
-            ]
-          },
-          {
-            "key": "cost",
-            "label": "Cost (USD)",
-            "parityType": "currency",
-            "sensitivity": "confidential",
-            "contextPolicy": "include",
-            "unit": "USD",
-            "format": "currency",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 5000
-              }
-            ]
-          },
-          {
-            "key": "on_hand",
-            "label": "On hand",
-            "parityType": "number",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 50000
-              }
-            ]
-          },
-          {
-            "key": "reorder_at",
-            "label": "Reorder at",
-            "parityType": "number",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 50000
-              }
-            ]
-          },
-          {
-            "key": "supplier_rel",
-            "label": "Supplier",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "supplier",
-            "relationMax": 1
-          },
-          {
-            "key": "status",
-            "label": "Status",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "Active",
-              "Draft",
-              "Discontinued"
-            ],
-            "choiceColors": {
-              "Active": "slate",
-              "Draft": "blue",
-              "Discontinued": "amber"
-            },
-            "default": "Active"
-          },
-          {
-            "key": "margin_pct",
-            "label": "Margin (%)",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "IF({Price (USD)} > 0, ROUND(({Price (USD)} - {Cost (USD)}) / {Price (USD)} * 100, 0), 0)"
-          },
-          {
-            "key": "reorder_flag",
-            "label": "Reorder?",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "IF({On hand} <= {Reorder at}, \"Reorder\", \"OK\")"
-          },
-          {
-            "key": "stock_value",
-            "label": "Stock value (USD)",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "{On hand} * {Cost (USD)}"
-          },
-          {
-            "key": "sold",
-            "label": "Units delivered",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "orders",
-            "pick": "quantity",
-            "agg": "sum",
-            "filter": {
-              "status": "Delivered"
-            }
-          },
-          {
-            "key": "revenue",
-            "label": "Revenue (USD)",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "orders",
-            "pick": "total",
-            "agg": "sum",
-            "filter": {
-              "status": "Delivered"
-            }
-          },
-          {
-            "key": "added_at",
-            "label": "Added",
-            "parityType": "created_time",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          }
-        ],
         "rowTemplates": [
           {
             "name": "Product",
@@ -431,7 +279,7 @@
                   "type": "text",
                   "text": [
                     {
-                      "text": "Title, description, photos and variants."
+                      "text": "Title, description, photos and the options (colour, size, scent)."
                     }
                   ]
                 },
@@ -439,7 +287,7 @@
                   "type": "heading",
                   "text": [
                     {
-                      "text": "Costing"
+                      "text": "Before it goes live"
                     }
                   ],
                   "props": {
@@ -450,7 +298,7 @@
                   "type": "todo",
                   "text": [
                     {
-                      "text": "Cost per unit entered"
+                      "text": "Landed cost per unit entered (goods plus freight)"
                     }
                   ],
                   "props": {
@@ -461,7 +309,7 @@
                   "type": "todo",
                   "text": [
                     {
-                      "text": "Shipping weight added"
+                      "text": "Packed weight measured for postage"
                     }
                   ],
                   "props": {
@@ -472,7 +320,18 @@
                   "type": "todo",
                   "text": [
                     {
-                      "text": "Margin checked above 50 percent"
+                      "text": "One SKU row per option, with a shelf and a reorder point"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Margin checked above 60 percent"
                     }
                   ],
                   "props": {
@@ -483,6 +342,201 @@
             }
           }
         ],
+        "independentOf": {
+          "supplier_rel": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "product_name",
+            "label": "Product",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "sku",
+            "label": "Style code",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Ceramics",
+              "Candles",
+              "Linens",
+              "Packaging"
+            ],
+            "choiceColors": {
+              "Ceramics": "slate",
+              "Candles": "blue",
+              "Linens": "amber",
+              "Packaging": "violet"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Seasonal",
+              "Draft",
+              "Discontinued"
+            ],
+            "default": "Draft",
+            "choiceColors": {
+              "Active": "slate",
+              "Seasonal": "blue",
+              "Draft": "amber",
+              "Discontinued": "violet"
+            }
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "cost",
+            "label": "Landed cost per unit (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "supplier_rel",
+            "label": "Supplier",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "supplier",
+            "relationMax": 1
+          },
+          {
+            "key": "weight_oz",
+            "label": "Packed weight (oz)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 400
+              }
+            ]
+          },
+          {
+            "key": "margin_pct",
+            "label": "Margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Price (USD)} > 0, ROUND(({Price (USD)} - {Landed cost per unit (USD)}) / {Price (USD)} * 100, 0), 0)"
+          },
+          {
+            "key": "variant_n",
+            "label": "SKUs",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "variants",
+            "pick": "sku_name",
+            "agg": "count"
+          },
+          {
+            "key": "units",
+            "label": "Units on hand",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "variants",
+            "pick": "on_hand",
+            "agg": "sum"
+          },
+          {
+            "key": "sold",
+            "label": "Units sold",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "quantity",
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Cancelled",
+                  "Returned"
+                ]
+              }
+            }
+          },
+          {
+            "key": "revenue",
+            "label": "Sales (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "total",
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Cancelled",
+                  "Returned",
+                  "New"
+                ]
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
         "rows": [
           {
             "key": "produc-1",
@@ -490,12 +544,11 @@
               "product_name": "Ceramic mug, speckled",
               "sku": "HH-101",
               "category": "Ceramics",
+              "status": "Active",
               "price": 28,
               "cost": 9.5,
-              "on_hand": 42,
-              "reorder_at": 15,
               "supplier_rel": "suppli-1",
-              "status": "Active"
+              "weight_oz": 22
             }
           },
           {
@@ -504,12 +557,11 @@
               "product_name": "Stoneware serving bowl",
               "sku": "HH-108",
               "category": "Ceramics",
+              "status": "Active",
               "price": 46,
-              "cost": 16,
-              "on_hand": 18,
-              "reorder_at": 8,
+              "cost": 16.75,
               "supplier_rel": "suppli-1",
-              "status": "Active"
+              "weight_oz": 48
             }
           },
           {
@@ -518,12 +570,11 @@
               "product_name": "Soy candle, cedar and smoke",
               "sku": "HH-115",
               "category": "Candles",
+              "status": "Active",
               "price": 24,
-              "cost": 7,
-              "on_hand": 64,
-              "reorder_at": 25,
+              "cost": 7.2,
               "supplier_rel": "suppli-2",
-              "status": "Active"
+              "weight_oz": 18
             }
           },
           {
@@ -532,12 +583,11 @@
               "product_name": "Soy candle, fig and tea",
               "sku": "HH-122",
               "category": "Candles",
+              "status": "Active",
               "price": 24,
-              "cost": 7,
-              "on_hand": 9,
-              "reorder_at": 25,
+              "cost": 7.2,
               "supplier_rel": "suppli-2",
-              "status": "Active"
+              "weight_oz": 18
             }
           },
           {
@@ -546,12 +596,11 @@
               "product_name": "Linen napkin set of 4",
               "sku": "HH-129",
               "category": "Linens",
+              "status": "Active",
               "price": 36,
-              "cost": 12.5,
-              "on_hand": 30,
-              "reorder_at": 12,
+              "cost": 12.4,
               "supplier_rel": "suppli-3",
-              "status": "Active"
+              "weight_oz": 10
             }
           },
           {
@@ -560,12 +609,11 @@
               "product_name": "Waffle bath towel",
               "sku": "HH-136",
               "category": "Linens",
+              "status": "Active",
               "price": 32,
-              "cost": 11,
-              "on_hand": 22,
-              "reorder_at": 10,
+              "cost": 11.1,
               "supplier_rel": "suppli-3",
-              "status": "Active"
+              "weight_oz": 20
             }
           },
           {
@@ -574,12 +622,11 @@
               "product_name": "Linen throw blanket",
               "sku": "HH-143",
               "category": "Linens",
+              "status": "Active",
               "price": 88,
-              "cost": 31,
-              "on_hand": 6,
-              "reorder_at": 6,
+              "cost": 31.5,
               "supplier_rel": "suppli-3",
-              "status": "Active"
+              "weight_oz": 42
             }
           },
           {
@@ -588,12 +635,11 @@
               "product_name": "Gift box, medium",
               "sku": "HH-150",
               "category": "Packaging",
-              "price": 3.2,
+              "status": "Active",
+              "price": 4,
               "cost": 1.1,
-              "on_hand": 200,
-              "reorder_at": 80,
               "supplier_rel": "suppli-4",
-              "status": "Active"
+              "weight_oz": 6
             }
           },
           {
@@ -602,12 +648,11 @@
               "product_name": "Seasonal wreath ornament",
               "sku": "HH-157",
               "category": "Ceramics",
+              "status": "Seasonal",
               "price": 18,
-              "cost": 6,
-              "on_hand": 0,
-              "reorder_at": 10,
+              "cost": 6.3,
               "supplier_rel": "suppli-1",
-              "status": "Draft"
+              "weight_oz": 5
             }
           },
           {
@@ -616,12 +661,403 @@
               "product_name": "Tea towel, plaid",
               "sku": "HH-164",
               "category": "Linens",
+              "status": "Discontinued",
               "price": 16,
               "cost": 5.5,
-              "on_hand": 35,
-              "reorder_at": 15,
               "supplier_rel": "suppli-3",
-              "status": "Discontinued"
+              "weight_oz": 7
+            }
+          }
+        ]
+      },
+      {
+        "token": "variant",
+        "name": "SKUs and stock",
+        "labelSingular": "SKU",
+        "labelPlural": "SKUs and stock",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "boxes",
+        "titleField": "sku_name",
+        "describes": "One row per sellable option: stock on hand, reorder point, what is on order and where it sits on the shelf.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "independentOf": {
+          "product": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "sku_name",
+            "label": "SKU",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "sku_code",
+            "label": "SKU code",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "product",
+            "label": "Product",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "product",
+            "relationMax": 1
+          },
+          {
+            "key": "option",
+            "label": "Option",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "reorder_qty",
+            "label": "Reorder quantity",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "incoming",
+            "label": "Incoming on POs",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "bin",
+            "label": "Shelf",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "counted_on",
+            "label": "Last counted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "reorder_flag",
+            "label": "Stock",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} = 0, \"Sold out\", IF({On hand} + {Incoming on POs} <= {Reorder at}, \"Reorder\", \"OK\"))"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "sku-1",
+            "values": {
+              "sku_name": "Speckled mug - oat",
+              "sku_code": "HH-101-OAT",
+              "product": "produc-1",
+              "option": "Oat glaze",
+              "on_hand": 26,
+              "reorder_at": 15,
+              "reorder_qty": 48,
+              "incoming": 0,
+              "bin": "A1",
+              "counted_on": "@today-3d"
+            }
+          },
+          {
+            "key": "sku-2",
+            "values": {
+              "sku_name": "Speckled mug - slate",
+              "sku_code": "HH-101-SLT",
+              "product": "produc-1",
+              "option": "Slate glaze",
+              "on_hand": 11,
+              "reorder_at": 15,
+              "reorder_qty": 48,
+              "incoming": 48,
+              "bin": "A1",
+              "counted_on": "@today-3d"
+            }
+          },
+          {
+            "key": "sku-3",
+            "values": {
+              "sku_name": "Serving bowl - large",
+              "sku_code": "HH-108-L",
+              "product": "produc-2",
+              "option": "Large, 10 in",
+              "on_hand": 18,
+              "reorder_at": 8,
+              "reorder_qty": 24,
+              "incoming": 0,
+              "bin": "A2",
+              "counted_on": "@today-3d"
+            }
+          },
+          {
+            "key": "sku-4",
+            "values": {
+              "sku_name": "Cedar and smoke - 8 oz",
+              "sku_code": "HH-115-8",
+              "product": "produc-3",
+              "option": "8 oz tin",
+              "on_hand": 41,
+              "reorder_at": 25,
+              "reorder_qty": 72,
+              "incoming": 0,
+              "bin": "B1",
+              "counted_on": "@today-10d"
+            }
+          },
+          {
+            "key": "sku-5",
+            "values": {
+              "sku_name": "Cedar and smoke - 14 oz",
+              "sku_code": "HH-115-14",
+              "product": "produc-3",
+              "option": "14 oz jar",
+              "on_hand": 23,
+              "reorder_at": 20,
+              "reorder_qty": 48,
+              "incoming": 0,
+              "bin": "B1",
+              "counted_on": "@today-10d"
+            }
+          },
+          {
+            "key": "sku-6",
+            "values": {
+              "sku_name": "Fig and tea - 8 oz",
+              "sku_code": "HH-122-8",
+              "product": "produc-4",
+              "option": "8 oz tin",
+              "on_hand": 9,
+              "reorder_at": 25,
+              "reorder_qty": 72,
+              "incoming": 72,
+              "bin": "B2",
+              "counted_on": "@today-10d"
+            }
+          },
+          {
+            "key": "sku-7",
+            "values": {
+              "sku_name": "Fig and tea - 14 oz",
+              "sku_code": "HH-122-14",
+              "product": "produc-4",
+              "option": "14 oz jar",
+              "on_hand": 0,
+              "reorder_at": 20,
+              "reorder_qty": 48,
+              "incoming": 48,
+              "bin": "B2",
+              "counted_on": "@today-10d"
+            }
+          },
+          {
+            "key": "sku-8",
+            "values": {
+              "sku_name": "Napkin set - natural",
+              "sku_code": "HH-129-NAT",
+              "product": "produc-5",
+              "option": "Natural",
+              "on_hand": 18,
+              "reorder_at": 12,
+              "reorder_qty": 30,
+              "incoming": 0,
+              "bin": "C1",
+              "counted_on": "@today-17d"
+            }
+          },
+          {
+            "key": "sku-9",
+            "values": {
+              "sku_name": "Napkin set - rust",
+              "sku_code": "HH-129-RST",
+              "product": "produc-5",
+              "option": "Rust",
+              "on_hand": 12,
+              "reorder_at": 12,
+              "reorder_qty": 30,
+              "incoming": 0,
+              "bin": "C1",
+              "counted_on": "@today-17d"
+            }
+          },
+          {
+            "key": "sku-10",
+            "values": {
+              "sku_name": "Waffle towel - white",
+              "sku_code": "HH-136-WHT",
+              "product": "produc-6",
+              "option": "White",
+              "on_hand": 14,
+              "reorder_at": 10,
+              "reorder_qty": 24,
+              "incoming": 0,
+              "bin": "C2",
+              "counted_on": "@today-17d"
+            }
+          },
+          {
+            "key": "sku-11",
+            "values": {
+              "sku_name": "Waffle towel - sage",
+              "sku_code": "HH-136-SGE",
+              "product": "produc-6",
+              "option": "Sage",
+              "on_hand": 8,
+              "reorder_at": 10,
+              "reorder_qty": 24,
+              "incoming": 0,
+              "bin": "C2",
+              "counted_on": "@today-17d"
+            }
+          },
+          {
+            "key": "sku-12",
+            "values": {
+              "sku_name": "Throw blanket - oatmeal",
+              "sku_code": "HH-143-OAT",
+              "product": "produc-7",
+              "option": "Oatmeal",
+              "on_hand": 4,
+              "reorder_at": 6,
+              "reorder_qty": 12,
+              "incoming": 0,
+              "bin": "C3",
+              "counted_on": "@today-17d"
+            }
+          },
+          {
+            "key": "sku-13",
+            "values": {
+              "sku_name": "Throw blanket - charcoal",
+              "sku_code": "HH-143-CHR",
+              "product": "produc-7",
+              "option": "Charcoal",
+              "on_hand": 2,
+              "reorder_at": 6,
+              "reorder_qty": 12,
+              "incoming": 12,
+              "bin": "C3",
+              "counted_on": "@today-17d"
+            }
+          },
+          {
+            "key": "sku-14",
+            "values": {
+              "sku_name": "Gift box - medium",
+              "sku_code": "HH-150-M",
+              "product": "produc-8",
+              "option": "Medium, kraft",
+              "on_hand": 190,
+              "reorder_at": 80,
+              "reorder_qty": 250,
+              "incoming": 0,
+              "bin": "D1",
+              "counted_on": "@today-24d"
+            }
+          },
+          {
+            "key": "sku-15",
+            "values": {
+              "sku_name": "Wreath ornament - set of 3",
+              "sku_code": "HH-157-3",
+              "product": "produc-9",
+              "option": "Set of three",
+              "on_hand": 0,
+              "reorder_at": 10,
+              "reorder_qty": 60,
+              "incoming": 60,
+              "bin": "A3",
+              "counted_on": "@today-24d"
+            }
+          },
+          {
+            "key": "sku-16",
+            "values": {
+              "sku_name": "Plaid tea towel - red",
+              "sku_code": "HH-164-RED",
+              "product": "produc-10",
+              "option": "Red plaid",
+              "on_hand": 35,
+              "reorder_at": 0,
+              "reorder_qty": 0,
+              "incoming": 0,
+              "bin": "Clearance",
+              "counted_on": "@today-24d"
             }
           }
         ]
@@ -637,136 +1073,9 @@
         "ordered": false,
         "icon": "users",
         "titleField": "customer_name",
-        "describes": "Everyone who has bought, with spend, returns and a tier.",
+        "describes": "Everyone who has bought: orders, spend, returns and whether they are happy to get emails.",
         "subject": "thing",
         "statusImplies": [],
-        "fields": [
-          {
-            "key": "customer_name",
-            "label": "Customer",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "required": true
-          },
-          {
-            "key": "segment",
-            "label": "Segment",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "Retail",
-              "Repeat buyer",
-              "Gift buyer",
-              "Wholesale enquiry"
-            ],
-            "choiceColors": {
-              "Retail": "slate",
-              "Repeat buyer": "blue",
-              "Gift buyer": "amber",
-              "Wholesale enquiry": "violet"
-            }
-          },
-          {
-            "key": "email",
-            "label": "Email",
-            "parityType": "email",
-            "sensitivity": "confidential",
-            "contextPolicy": "include"
-          },
-          {
-            "key": "phone",
-            "label": "Phone",
-            "parityType": "phone",
-            "sensitivity": "confidential",
-            "contextPolicy": "include"
-          },
-          {
-            "key": "first_order",
-            "label": "Customer since",
-            "parityType": "datetime",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "format": "date"
-          },
-          {
-            "key": "area",
-            "label": "Neighborhood",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          },
-          {
-            "key": "order_n",
-            "label": "Orders delivered",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "orders",
-            "pick": "order_name",
-            "agg": "count",
-            "filter": {
-              "status": "Delivered"
-            }
-          },
-          {
-            "key": "spent",
-            "label": "Spent to date",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "orders",
-            "pick": "total",
-            "agg": "sum",
-            "filter": {
-              "status": "Delivered"
-            }
-          },
-          {
-            "key": "returns_n",
-            "label": "Returns",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "orders",
-            "pick": "order_name",
-            "agg": "count",
-            "filter": {
-              "status": "Returned"
-            }
-          },
-          {
-            "key": "tier",
-            "label": "Tier",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "IF({Spent to date} >= 300, \"Best\", IF({Spent to date} > 0, \"Regular\", \"New\"))"
-          },
-          {
-            "key": "add_order_btn",
-            "label": "New order",
-            "parityType": "button",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "button": {
-              "do": "add_row",
-              "table": "order",
-              "template": "Order sheet",
-              "prefill": {
-                "customer": "@row"
-              }
-            }
-          },
-          {
-            "key": "added_at",
-            "label": "Added",
-            "parityType": "created_time",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          }
-        ],
         "rowTemplates": [
           {
             "name": "Customer record",
@@ -809,7 +1118,7 @@
                   "type": "text",
                   "text": [
                     {
-                      "text": "Preferences, past issues and gifts."
+                      "text": "Preferences, past problems and gifts sent."
                     }
                   ]
                 }
@@ -817,16 +1126,157 @@
             }
           }
         ],
+        "fields": [
+          {
+            "key": "customer_name",
+            "label": "Customer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "segment",
+            "label": "Segment",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Repeat buyer",
+              "Gift buyer",
+              "Wholesale buyer"
+            ],
+            "choiceColors": {
+              "New": "slate",
+              "Repeat buyer": "blue",
+              "Gift buyer": "amber",
+              "Wholesale buyer": "violet"
+            }
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "first_order",
+            "label": "First order",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ship_state",
+            "label": "Ships to (state)",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "emails_ok",
+            "label": "Emails OK",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "order_n",
+            "label": "Orders",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "order_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Cancelled"
+                ]
+              }
+            }
+          },
+          {
+            "key": "spent",
+            "label": "Spent to date (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "total",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Paid",
+                "Packing",
+                "Shipped",
+                "Delivered"
+              ]
+            }
+          },
+          {
+            "key": "returns_n",
+            "label": "Returns",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "return_requests",
+            "pick": "return_name",
+            "agg": "count"
+          },
+          {
+            "key": "tier",
+            "label": "Tier",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Spent to date (USD)} >= 300, \"Best\", IF({Spent to date (USD)} > 0, \"Regular\", \"New\"))"
+          },
+          {
+            "key": "add_order_btn",
+            "label": "New order",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "order",
+              "template": "Order sheet",
+              "prefill": {
+                "customer": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
         "rows": [
           {
             "key": "custom-1",
             "values": {
               "customer_name": "Fenella Mbeki",
-              "segment": "Retail",
+              "segment": "New",
               "email": "fenella.mbeki@inbox-mail.net",
               "phone": "(401) 555-0199",
               "first_order": "@today-20d",
-              "area": "Lakeview"
+              "ship_state": "RI",
+              "emails_ok": true
             }
           },
           {
@@ -837,7 +1287,8 @@
               "email": "leopold.thackeray@inbox-mail.net",
               "phone": "(401) 555-0136",
               "first_order": "@today-63d",
-              "area": "Foxglove Court"
+              "ship_state": "MA",
+              "emails_ok": true
             }
           },
           {
@@ -848,29 +1299,32 @@
               "email": "imelda.boateng@inbox-mail.net",
               "phone": "(401) 555-0173",
               "first_order": "@today-106d",
-              "area": "Stonebridge"
+              "ship_state": "NY",
+              "emails_ok": false
             }
           },
           {
             "key": "custom-4",
             "values": {
               "customer_name": "Anders Jessup",
-              "segment": "Wholesale enquiry",
+              "segment": "Wholesale buyer",
               "email": "anders.jessup@inbox-mail.net",
               "phone": "(401) 555-0110",
               "first_order": "@today-149d",
-              "area": "Harbor Heights"
+              "ship_state": "CT",
+              "emails_ok": true
             }
           },
           {
             "key": "custom-5",
             "values": {
               "customer_name": "Ottoline Rutherford",
-              "segment": "Retail",
+              "segment": "New",
               "email": "ottoline.rutherford@inbox-mail.net",
               "phone": "(401) 555-0147",
               "first_order": "@today-192d",
-              "area": "Willow Creek"
+              "ship_state": "RI",
+              "emails_ok": false
             }
           },
           {
@@ -881,7 +1335,8 @@
               "email": "humphrey.aldercott@inbox-mail.net",
               "phone": "(401) 555-0184",
               "first_order": "@today-235d",
-              "area": "North Ridge"
+              "ship_state": "VT",
+              "emails_ok": true
             }
           },
           {
@@ -892,29 +1347,32 @@
               "email": "tamsin.iyer@inbox-mail.net",
               "phone": "(401) 555-0121",
               "first_order": "@today-278d",
-              "area": "Sunset Flats"
+              "ship_state": "NJ",
+              "emails_ok": true
             }
           },
           {
             "key": "custom-8",
             "values": {
               "customer_name": "Desmond Pemberton",
-              "segment": "Wholesale enquiry",
+              "segment": "Wholesale buyer",
               "email": "desmond.pemberton@inbox-mail.net",
               "phone": "(401) 555-0158",
               "first_order": "@today-321d",
-              "area": "Maple Hollow"
+              "ship_state": "ME",
+              "emails_ok": true
             }
           },
           {
             "key": "custom-9",
             "values": {
               "customer_name": "Noor Whitlock",
-              "segment": "Retail",
+              "segment": "Repeat buyer",
               "email": "noor.whitlock@inbox-mail.net",
               "phone": "(401) 555-0195",
               "first_order": "@today-364d",
-              "area": "Eastgate"
+              "ship_state": "PA",
+              "emails_ok": true
             }
           },
           {
@@ -925,7 +1383,8 @@
               "email": "silas.fontaine@inbox-mail.net",
               "phone": "(401) 555-0132",
               "first_order": "@today-407d",
-              "area": "Riverbend"
+              "ship_state": "RI",
+              "emails_ok": true
             }
           },
           {
@@ -936,18 +1395,20 @@
               "email": "kasia.montague@inbox-mail.net",
               "phone": "(401) 555-0169",
               "first_order": "@today-450d",
-              "area": "Old Mill"
+              "ship_state": "IL",
+              "emails_ok": false
             }
           },
           {
             "key": "custom-12",
             "values": {
               "customer_name": "Tobias Valdez",
-              "segment": "Wholesale enquiry",
+              "segment": "Wholesale buyer",
               "email": "tobias.valdez@inbox-mail.net",
               "phone": "(401) 555-0106",
               "first_order": "@today-493d",
-              "area": "Cedar Park"
+              "ship_state": "NH",
+              "emails_ok": true
             }
           }
         ]
@@ -963,13 +1424,8 @@
         "ordered": false,
         "icon": "shopping-bag",
         "titleField": "order_name",
-        "describes": "Every order from paid to delivered, with who is packing it and when it ships.",
+        "describes": "Every order from paid to delivered: channel, SKU, shipping charged against label cost, packer and tracking.",
         "subject": "thing",
-        "independentOf": {
-          "customer": "Either record can be created or change status before the other.",
-          "product": "Either record can be created or change status before the other.",
-          "handler": "Either record can be created or change status before the other."
-        },
         "statusImplies": [
           {
             "field": "status",
@@ -979,186 +1435,16 @@
             "filled": [
               "shipped_on"
             ]
-          }
-        ],
-        "fields": [
-          {
-            "key": "order_name",
-            "label": "Order",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "required": true
           },
           {
-            "key": "status",
-            "label": "Status",
-            "parityType": "status",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "New",
-              "Paid",
-              "Packing",
-              "Shipped",
-              "Delivered",
-              "Returned",
-              "Cancelled"
+            "field": "status",
+            "when": [
+              "Paid"
             ],
-            "choiceColors": {
-              "New": "slate",
-              "Paid": "blue",
-              "Packing": "amber",
-              "Shipped": "violet",
-              "Delivered": "teal",
-              "Returned": "red",
-              "Cancelled": "pink"
-            },
-            "required": true,
-            "default": "New",
-            "statusGroups": {
-              "New": "todo",
-              "Paid": "todo",
-              "Packing": "in_progress",
-              "Shipped": "in_progress",
-              "Delivered": "done",
-              "Returned": "done",
-              "Cancelled": "done"
-            }
-          },
-          {
-            "key": "customer",
-            "label": "Customer",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "customer",
-            "relationMax": 1
-          },
-          {
-            "key": "product",
-            "label": "Product",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "product",
-            "relationMax": 1
-          },
-          {
-            "key": "handler",
-            "label": "Packer (staff)",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "team_member",
-            "relationMax": 1
-          },
-          {
-            "key": "quantity",
-            "label": "Quantity",
-            "parityType": "number",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 1
-              },
-              {
-                "kind": "max",
-                "value": 5000
-              }
+            "filled": [
+              "ship_paid",
+              "total"
             ]
-          },
-          {
-            "key": "total",
-            "label": "Total (USD)",
-            "parityType": "currency",
-            "sensitivity": "confidential",
-            "contextPolicy": "include",
-            "unit": "USD",
-            "format": "currency",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 100000
-              }
-            ]
-          },
-          {
-            "key": "channel",
-            "label": "Channel",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "Website",
-              "Marketplace",
-              "Pop-up market",
-              "Wholesale"
-            ],
-            "choiceColors": {
-              "Website": "slate",
-              "Marketplace": "blue",
-              "Pop-up market": "amber",
-              "Wholesale": "violet"
-            }
-          },
-          {
-            "key": "ship_by",
-            "label": "Ship by",
-            "parityType": "datetime",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "format": "date"
-          },
-          {
-            "key": "shipped_on",
-            "label": "Shipped on",
-            "parityType": "datetime",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "format": "date"
-          },
-          {
-            "key": "packer",
-            "label": "Packer",
-            "parityType": "member",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          },
-          {
-            "key": "ship_btn",
-            "label": "Mark shipped",
-            "parityType": "button",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "button": {
-              "do": "run_action",
-              "action": "order_shipped"
-            }
-          },
-          {
-            "key": "take_btn",
-            "label": "Assign to me",
-            "parityType": "button",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "button": {
-              "do": "run_action",
-              "action": "order_take"
-            }
-          },
-          {
-            "key": "added_at",
-            "label": "Added",
-            "parityType": "created_time",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
           }
         ],
         "rowTemplates": [
@@ -1206,7 +1492,7 @@
                   "type": "todo",
                   "text": [
                     {
-                      "text": "Picked and counted"
+                      "text": "Picked and counted against the order"
                     }
                   ],
                   "props": {
@@ -1217,7 +1503,7 @@
                   "type": "todo",
                   "text": [
                     {
-                      "text": "Packed with the slip"
+                      "text": "Wrapped and packed with the slip"
                     }
                   ],
                   "props": {
@@ -1228,7 +1514,7 @@
                   "type": "todo",
                   "text": [
                     {
-                      "text": "Label printed"
+                      "text": "Label printed and tracking added"
                     }
                   ],
                   "props": {
@@ -1239,7 +1525,7 @@
                   "type": "todo",
                   "text": [
                     {
-                      "text": "Tracking added"
+                      "text": "Customer told it is on its way"
                     }
                   ],
                   "props": {
@@ -1250,6 +1536,282 @@
             }
           }
         ],
+        "independentOf": {
+          "customer": "Either record can be created or change status before the other.",
+          "product": "Either record can be created or change status before the other.",
+          "variant": "Either record can be created or change status before the other.",
+          "handler": "Either record can be created or change status before the other."
+        },
+        "datesIndependent": "The ship-by date is set when the order comes in; the shipped date is stamped when the label is printed.",
+        "fields": [
+          {
+            "key": "order_name",
+            "label": "Order",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Paid",
+              "Packing",
+              "Shipped",
+              "Delivered",
+              "Returned",
+              "Cancelled"
+            ],
+            "required": true,
+            "statusGroups": {
+              "New": "todo",
+              "Paid": "todo",
+              "Packing": "in_progress",
+              "Shipped": "in_progress",
+              "Delivered": "done",
+              "Returned": "done",
+              "Cancelled": "done"
+            },
+            "choiceColors": {
+              "New": "slate",
+              "Paid": "blue",
+              "Packing": "amber",
+              "Shipped": "violet",
+              "Delivered": "green",
+              "Returned": "orange",
+              "Cancelled": "gray"
+            },
+            "default": "New"
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "product",
+            "label": "Product",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "product",
+            "relationMax": 1
+          },
+          {
+            "key": "variant",
+            "label": "SKU",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "variant",
+            "relationMax": 1
+          },
+          {
+            "key": "handler",
+            "label": "Handled by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "quantity",
+            "label": "Quantity",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "total",
+            "label": "Order total (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "ship_paid",
+            "label": "Shipping charged (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "postage",
+            "label": "Label cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "discount",
+            "label": "Discount code",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "channel",
+            "label": "Channel",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Website",
+              "Marketplace",
+              "Social shop",
+              "Pop-up market",
+              "Wholesale"
+            ],
+            "choiceColors": {
+              "Website": "slate",
+              "Marketplace": "blue",
+              "Social shop": "amber",
+              "Pop-up market": "violet",
+              "Wholesale": "green"
+            }
+          },
+          {
+            "key": "ship_by",
+            "label": "Ship by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "shipped_on",
+            "label": "Shipped on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "carrier",
+            "label": "Carrier",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Postal ground",
+              "Postal priority",
+              "Courier",
+              "Local pickup"
+            ],
+            "choiceColors": {
+              "Postal ground": "slate",
+              "Postal priority": "blue",
+              "Courier": "amber",
+              "Local pickup": "violet"
+            }
+          },
+          {
+            "key": "tracking",
+            "label": "Tracking number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "gift",
+            "label": "Gift message",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "packer",
+            "label": "Packer",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ship_btn",
+            "label": "Mark shipped",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "order_shipped"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "order_take"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
         "rows": [
           {
             "key": "order-1",
@@ -1258,11 +1820,18 @@
               "status": "Delivered",
               "customer": "custom-2",
               "product": "produc-2",
-              "handler": "tm-3",
+              "variant": "sku-3",
+              "handler": "tm-2",
               "quantity": 1,
-              "total": 45,
+              "total": 46,
+              "ship_paid": 8.5,
+              "postage": 9.8,
               "channel": "Website",
-              "ship_by": "@today-17d"
+              "ship_by": "@today-17d",
+              "shipped_on": "@today-17d",
+              "carrier": "Postal priority",
+              "tracking": "9405 5110 2241 0081",
+              "gift": false
             }
           },
           {
@@ -1272,11 +1841,19 @@
               "status": "Delivered",
               "customer": "custom-7",
               "product": "produc-5",
-              "handler": "tm-4",
+              "variant": "sku-8",
+              "handler": "tm-2",
               "quantity": 2,
-              "total": 70,
+              "total": 72,
+              "ship_paid": 0,
+              "postage": 6.1,
+              "discount": "FREESHIP60",
               "channel": "Marketplace",
-              "ship_by": "@today-13d"
+              "ship_by": "@today-13d",
+              "shipped_on": "@today-14d",
+              "carrier": "Postal ground",
+              "tracking": "9405 5110 2241 0136",
+              "gift": true
             }
           },
           {
@@ -1286,11 +1863,17 @@
               "status": "Delivered",
               "customer": "custom-12",
               "product": "produc-8",
-              "handler": "tm-5",
-              "quantity": 3,
-              "total": 9.6,
-              "channel": "Pop-up market",
-              "ship_by": "@today-10d"
+              "variant": "sku-14",
+              "handler": "tm-1",
+              "quantity": 60,
+              "total": 192,
+              "ship_paid": 0,
+              "postage": 0,
+              "channel": "Wholesale",
+              "ship_by": "@today-10d",
+              "shipped_on": "@today-10d",
+              "carrier": "Local pickup",
+              "gift": false
             }
           },
           {
@@ -1300,11 +1883,18 @@
               "status": "Delivered",
               "customer": "custom-5",
               "product": "produc-1",
-              "handler": "tm-1",
+              "variant": "sku-1",
+              "handler": "tm-4",
               "quantity": 1,
-              "total": 30,
-              "channel": "Wholesale",
-              "ship_by": "@today-7d"
+              "total": 28,
+              "ship_paid": 6,
+              "postage": 5.4,
+              "channel": "Pop-up market",
+              "ship_by": "@today-7d",
+              "shipped_on": "@today-8d",
+              "carrier": "Postal ground",
+              "tracking": "9405 5110 2241 0221",
+              "gift": false
             }
           },
           {
@@ -1314,11 +1904,19 @@
               "status": "Delivered",
               "customer": "custom-10",
               "product": "produc-4",
+              "variant": "sku-6",
               "handler": "tm-2",
               "quantity": 2,
-              "total": 50,
+              "total": 48,
+              "ship_paid": 6,
+              "postage": 5.9,
+              "discount": "WELCOME10",
               "channel": "Website",
-              "ship_by": "@today-5d"
+              "ship_by": "@today-5d",
+              "shipped_on": "@today-6d",
+              "carrier": "Postal ground",
+              "tracking": "9405 5110 2241 0304",
+              "gift": false
             }
           },
           {
@@ -1328,11 +1926,18 @@
               "status": "Returned",
               "customer": "custom-3",
               "product": "produc-7",
-              "handler": "tm-3",
-              "quantity": 3,
-              "total": 265,
+              "variant": "sku-12",
+              "handler": "tm-2",
+              "quantity": 1,
+              "total": 88,
+              "ship_paid": 0,
+              "postage": 12.4,
               "channel": "Marketplace",
-              "ship_by": "@today-6d"
+              "ship_by": "@today-9d",
+              "shipped_on": "@today-9d",
+              "carrier": "Postal priority",
+              "tracking": "9405 5110 2241 0355",
+              "gift": true
             }
           },
           {
@@ -1342,10 +1947,15 @@
               "status": "Cancelled",
               "customer": "custom-8",
               "product": "produc-10",
-              "handler": "tm-4",
-              "quantity": 1,
-              "total": 16,
-              "channel": "Pop-up market"
+              "variant": "sku-16",
+              "handler": "tm-3",
+              "quantity": 12,
+              "total": 115.2,
+              "ship_paid": 0,
+              "postage": 0,
+              "channel": "Wholesale",
+              "ship_by": "@today-12d",
+              "gift": false
             }
           },
           {
@@ -1355,11 +1965,16 @@
               "status": "Packing",
               "customer": "custom-1",
               "product": "produc-3",
-              "handler": "tm-5",
+              "variant": "sku-4",
+              "handler": "tm-4",
               "quantity": 2,
-              "total": 50,
-              "channel": "Wholesale",
-              "ship_by": "@today-1d"
+              "total": 54,
+              "ship_paid": 6,
+              "channel": "Website",
+              "ship_by": "@today-1d",
+              "carrier": "Postal ground",
+              "gift": true,
+              "packer": "@installer"
             }
           },
           {
@@ -1369,11 +1984,16 @@
               "status": "Paid",
               "customer": "custom-6",
               "product": "produc-6",
-              "handler": "tm-1",
+              "variant": "sku-10",
+              "handler": "tm-2",
               "quantity": 3,
-              "total": 95,
+              "total": 96,
+              "ship_paid": 0,
+              "discount": "FREESHIP60",
               "channel": "Website",
               "ship_by": "@today",
+              "carrier": "Postal ground",
+              "gift": false,
               "packer": "@installer"
             }
           },
@@ -1384,12 +2004,18 @@
               "status": "Shipped",
               "customer": "custom-11",
               "product": "produc-9",
+              "variant": "sku-15",
               "handler": "tm-2",
               "quantity": 1,
               "total": 18,
-              "channel": "Marketplace",
-              "ship_by": "@today",
-              "shipped_on": "@today-7d"
+              "ship_paid": 5,
+              "postage": 4.6,
+              "channel": "Social shop",
+              "ship_by": "@today-3d",
+              "shipped_on": "@today-3d",
+              "carrier": "Postal ground",
+              "tracking": "9405 5110 2241 0412",
+              "gift": true
             }
           },
           {
@@ -1399,11 +2025,15 @@
               "status": "Packing",
               "customer": "custom-4",
               "product": "produc-2",
-              "handler": "tm-3",
-              "quantity": 2,
-              "total": 90,
-              "channel": "Pop-up market",
+              "variant": "sku-3",
+              "handler": "tm-1",
+              "quantity": 6,
+              "total": 193.2,
+              "ship_paid": 0,
+              "channel": "Wholesale",
               "ship_by": "@mon",
+              "carrier": "Courier",
+              "gift": false,
               "packer": "@installer"
             }
           },
@@ -1414,11 +2044,16 @@
               "status": "Paid",
               "customer": "custom-9",
               "product": "produc-5",
+              "variant": "sku-9",
               "handler": "tm-4",
               "quantity": 3,
-              "total": 110,
-              "channel": "Wholesale",
-              "ship_by": "@tue"
+              "total": 108,
+              "ship_paid": 0,
+              "discount": "FREESHIP60",
+              "channel": "Website",
+              "ship_by": "@tue",
+              "carrier": "Postal ground",
+              "gift": false
             }
           },
           {
@@ -1428,11 +2063,14 @@
               "status": "New",
               "customer": "custom-2",
               "product": "produc-8",
-              "handler": "tm-5",
+              "variant": "sku-14",
+              "handler": "tm-3",
               "quantity": 1,
-              "total": 3.2,
+              "total": 4,
+              "ship_paid": 0,
               "channel": "Website",
               "ship_by": "@wed",
+              "gift": false,
               "packer": "@installer"
             }
           },
@@ -1443,11 +2081,15 @@
               "status": "Paid",
               "customer": "custom-7",
               "product": "produc-1",
-              "handler": "tm-1",
+              "variant": "sku-2",
+              "handler": "tm-2",
               "quantity": 2,
-              "total": 55,
+              "total": 56,
+              "ship_paid": 6,
               "channel": "Marketplace",
-              "ship_by": "@thu"
+              "ship_by": "@thu",
+              "carrier": "Postal ground",
+              "gift": true
             }
           },
           {
@@ -1457,11 +2099,15 @@
               "status": "New",
               "customer": "custom-12",
               "product": "produc-4",
-              "handler": "tm-2",
-              "quantity": 3,
-              "total": 70,
-              "channel": "Pop-up market",
+              "variant": "sku-6",
+              "handler": "tm-1",
+              "quantity": 24,
+              "total": 345.6,
+              "ship_paid": 0,
+              "channel": "Wholesale",
               "ship_by": "@fri",
+              "carrier": "Courier",
+              "gift": false,
               "packer": "@installer"
             }
           },
@@ -1472,11 +2118,15 @@
               "status": "Paid",
               "customer": "custom-5",
               "product": "produc-7",
-              "handler": "tm-3",
+              "variant": "sku-12",
+              "handler": "tm-4",
               "quantity": 1,
-              "total": 90,
-              "channel": "Wholesale",
-              "ship_by": "@sat"
+              "total": 88,
+              "ship_paid": 0,
+              "channel": "Social shop",
+              "ship_by": "@sat",
+              "carrier": "Postal priority",
+              "gift": false
             }
           },
           {
@@ -1485,12 +2135,16 @@
               "order_name": "HH-4148",
               "status": "New",
               "customer": "custom-10",
-              "product": "produc-10",
-              "handler": "tm-4",
+              "product": "produc-3",
+              "variant": "sku-5",
+              "handler": "tm-2",
               "quantity": 2,
-              "total": 32,
+              "total": 64,
+              "ship_paid": 6,
+              "discount": "WELCOME10",
               "channel": "Website",
-              "ship_by": "@sun"
+              "ship_by": "@sun",
+              "gift": false
             }
           },
           {
@@ -1500,11 +2154,16 @@
               "status": "Paid",
               "customer": "custom-3",
               "product": "produc-3",
-              "handler": "tm-5",
+              "variant": "sku-4",
+              "handler": "tm-2",
               "quantity": 3,
-              "total": 70,
+              "total": 72,
+              "ship_paid": 0,
+              "discount": "FREESHIP60",
               "channel": "Marketplace",
-              "ship_by": "@tue+1w"
+              "ship_by": "@tue+1w",
+              "carrier": "Postal ground",
+              "gift": true
             }
           },
           {
@@ -1514,11 +2173,14 @@
               "status": "New",
               "customer": "custom-8",
               "product": "produc-6",
+              "variant": "sku-11",
               "handler": "tm-1",
-              "quantity": 1,
-              "total": 30,
-              "channel": "Pop-up market",
-              "ship_by": "@thu+1w"
+              "quantity": 10,
+              "total": 224,
+              "ship_paid": 0,
+              "channel": "Wholesale",
+              "ship_by": "@thu+1w",
+              "gift": false
             }
           },
           {
@@ -1527,12 +2189,16 @@
               "order_name": "HH-4157",
               "status": "Paid",
               "customer": "custom-1",
-              "product": "produc-9",
-              "handler": "tm-2",
+              "product": "produc-1",
+              "variant": "sku-1",
+              "handler": "tm-4",
               "quantity": 2,
-              "total": 36,
-              "channel": "Wholesale",
+              "total": 62,
+              "ship_paid": 6,
+              "channel": "Pop-up market",
               "ship_by": "@today+1d",
+              "carrier": "Postal ground",
+              "gift": false,
               "packer": "@installer"
             }
           },
@@ -1543,11 +2209,14 @@
               "status": "New",
               "customer": "custom-6",
               "product": "produc-2",
-              "handler": "tm-3",
-              "quantity": 3,
-              "total": 140,
+              "variant": "sku-3",
+              "handler": "tm-2",
+              "quantity": 1,
+              "total": 54.5,
+              "ship_paid": 8.5,
               "channel": "Website",
-              "ship_by": "@today+3d"
+              "ship_by": "@today+3d",
+              "gift": true
             }
           },
           {
@@ -1557,20 +2226,613 @@
               "status": "New",
               "customer": "custom-11",
               "product": "produc-5",
+              "variant": "sku-8",
+              "handler": "tm-3",
+              "quantity": 1,
+              "total": 41,
+              "ship_paid": 5,
+              "channel": "Social shop",
+              "ship_by": "@today+4d",
+              "gift": false
+            }
+          },
+          {
+            "key": "order-23",
+            "values": {
+              "order_name": "HH-4166",
+              "status": "Packing",
+              "customer": "custom-9",
+              "product": "produc-6",
+              "variant": "sku-11",
               "handler": "tm-4",
               "quantity": 1,
-              "total": 35,
+              "total": 38,
+              "ship_paid": 6,
+              "channel": "Website",
+              "ship_by": "@today-4d",
+              "carrier": "Postal ground",
+              "gift": false
+            }
+          },
+          {
+            "key": "order-24",
+            "values": {
+              "order_name": "HH-4169",
+              "status": "Paid",
+              "customer": "custom-2",
+              "product": "produc-4",
+              "variant": "sku-7",
+              "handler": "tm-2",
+              "quantity": 1,
+              "total": 30,
+              "ship_paid": 6,
               "channel": "Marketplace",
-              "ship_by": "@today+4d"
+              "ship_by": "@today+2d",
+              "carrier": "Postal ground",
+              "gift": true
             }
           }
+        ]
+      },
+      {
+        "token": "purchase_order",
+        "name": "Purchase orders",
+        "labelSingular": "Purchase order",
+        "labelPlural": "Purchase orders",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-list",
+        "titleField": "po_name",
+        "describes": "Stock you have ordered from suppliers: what, how much, freight, when it is due and when it arrived.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "po_status",
+            "when": [
+              "Received"
+            ],
+            "filled": [
+              "received_on"
+            ]
+          }
         ],
-        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
+        "rowTemplates": [],
+        "before": [
+          [
+            "ordered_on",
+            "expected_on"
+          ]
+        ],
+        "independentOf": {
+          "supplier": "Either record can be created or change status before the other."
+        },
+        "datesIndependent": "The received date is stamped when the boxes are counted in; it can fall before or after the expected date.",
+        "fields": [
+          {
+            "key": "po_name",
+            "label": "Purchase order",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "supplier",
+            "label": "Supplier",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "supplier",
+            "relationMax": 1
+          },
+          {
+            "key": "po_status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Confirmed",
+              "Partly received",
+              "Received",
+              "Cancelled"
+            ],
+            "required": true,
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Confirmed": "in_progress",
+              "Partly received": "in_progress",
+              "Received": "done",
+              "Cancelled": "done"
+            },
+            "choiceColors": {
+              "Draft": "slate",
+              "Sent": "blue",
+              "Confirmed": "violet",
+              "Partly received": "amber",
+              "Received": "green",
+              "Cancelled": "gray"
+            },
+            "default": "Draft"
+          },
+          {
+            "key": "ordered_on",
+            "label": "Ordered",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "expected_on",
+            "label": "Expected",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "received_on",
+            "label": "Received on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "units",
+            "label": "Units",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "po_total",
+            "label": "Goods (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "freight",
+            "label": "Freight (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "po_notes",
+            "label": "What is on it",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "po-1",
+            "values": {
+              "po_name": "Tideline restock - slate mugs",
+              "supplier": "suppli-1",
+              "po_status": "Confirmed",
+              "ordered_on": "@today-16d",
+              "expected_on": "@today+5d",
+              "units": 48,
+              "po_total": 456,
+              "freight": 38,
+              "po_notes": "48 slate mugs"
+            }
+          },
+          {
+            "key": "po-2",
+            "values": {
+              "po_name": "Wick and Wax - fig and tea",
+              "supplier": "suppli-2",
+              "po_status": "Sent",
+              "ordered_on": "@today-4d",
+              "expected_on": "@today+6d",
+              "units": 120,
+              "po_total": 864,
+              "freight": 0,
+              "po_notes": "72 small tins, 48 large jars"
+            }
+          },
+          {
+            "key": "po-3",
+            "values": {
+              "po_name": "Tideline - holiday ornaments",
+              "supplier": "suppli-1",
+              "po_status": "Partly received",
+              "ordered_on": "@today-30d",
+              "expected_on": "@today-2d",
+              "units": 60,
+              "po_total": 378,
+              "freight": 22,
+              "po_notes": "First 30 sets in; rest promised this week"
+            }
+          },
+          {
+            "key": "po-4",
+            "values": {
+              "po_name": "Loomhouse - charcoal throws",
+              "supplier": "suppli-3",
+              "po_status": "Sent",
+              "ordered_on": "@today-9d",
+              "expected_on": "@today+19d",
+              "units": 12,
+              "po_total": 378,
+              "freight": 45,
+              "po_notes": "12 charcoal throws"
+            }
+          },
+          {
+            "key": "po-5",
+            "values": {
+              "po_name": "Boxcar - gift boxes and tissue",
+              "supplier": "suppli-4",
+              "po_status": "Received",
+              "ordered_on": "@today-25d",
+              "expected_on": "@today-18d",
+              "received_on": "@today-17d",
+              "units": 250,
+              "po_total": 275,
+              "freight": 18,
+              "po_notes": "250 medium boxes, 4 reams tissue"
+            }
+          },
+          {
+            "key": "po-6",
+            "values": {
+              "po_name": "Loomhouse - autumn napkins",
+              "supplier": "suppli-3",
+              "po_status": "Received",
+              "ordered_on": "@today-60d",
+              "expected_on": "@today-32d",
+              "received_on": "@today-30d",
+              "units": 60,
+              "po_total": 744,
+              "freight": 52,
+              "po_notes": "30 natural, 30 rust"
+            }
+          },
+          {
+            "key": "po-7",
+            "values": {
+              "po_name": "Wick and Wax - cedar restock",
+              "supplier": "suppli-2",
+              "po_status": "Draft",
+              "ordered_on": "@today",
+              "expected_on": "@today+10d",
+              "units": 72,
+              "po_total": 518.4,
+              "freight": 0,
+              "po_notes": "Wait for the fig and tea order first"
+            }
+          }
+        ]
+      },
+      {
+        "token": "return",
+        "name": "Returns",
+        "labelSingular": "Return",
+        "labelPlural": "Returns",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "undo-2",
+        "titleField": "return_name",
+        "describes": "Every return and exchange: why, what you offered, where the item goes and the refund.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "before": [
+          [
+            "requested_on",
+            "due_back"
+          ]
+        ],
+        "independentOf": {
+          "order": "Either record can be created or change status before the other.",
+          "customer": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "return_name",
+            "label": "Return",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "order",
+            "label": "Order",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "order",
+            "relationMax": 1
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "reason",
+            "label": "Reason",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Arrived damaged",
+              "Wrong item sent",
+              "Not as pictured",
+              "Changed mind",
+              "Gift return"
+            ],
+            "choiceColors": {
+              "Arrived damaged": "slate",
+              "Wrong item sent": "blue",
+              "Not as pictured": "amber",
+              "Changed mind": "violet",
+              "Gift return": "green"
+            }
+          },
+          {
+            "key": "outcome",
+            "label": "Outcome",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Refund",
+              "Exchange",
+              "Store credit",
+              "Replacement sent"
+            ],
+            "choiceColors": {
+              "Refund": "slate",
+              "Exchange": "blue",
+              "Store credit": "amber",
+              "Replacement sent": "violet"
+            }
+          },
+          {
+            "key": "ret_status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Requested",
+              "Label sent",
+              "Received",
+              "Refunded",
+              "Closed"
+            ],
+            "required": true,
+            "statusGroups": {
+              "Requested": "todo",
+              "Label sent": "in_progress",
+              "Received": "in_progress",
+              "Refunded": "done",
+              "Closed": "done"
+            },
+            "choiceColors": {
+              "Requested": "slate",
+              "Label sent": "blue",
+              "Received": "amber",
+              "Refunded": "violet",
+              "Closed": "gray"
+            },
+            "default": "Requested"
+          },
+          {
+            "key": "requested_on",
+            "label": "Asked on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_back",
+            "label": "Due back by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "refund",
+            "label": "Refund (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "restock",
+            "label": "Goes to",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Back to stock",
+              "Seconds shelf",
+              "Write off"
+            ],
+            "choiceColors": {
+              "Back to stock": "slate",
+              "Seconds shelf": "blue",
+              "Write off": "amber"
+            }
+          },
+          {
+            "key": "ret_notes",
+            "label": "Notes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ret-1",
+            "values": {
+              "return_name": "Throw blanket - snag in weave",
+              "order": "order-6",
+              "customer": "custom-3",
+              "reason": "Not as pictured",
+              "outcome": "Refund",
+              "ret_status": "Refunded",
+              "requested_on": "@today-6d",
+              "due_back": "@today+8d",
+              "refund": 88,
+              "restock": "Seconds shelf",
+              "ret_notes": "Pulled thread along one edge; photos on file"
+            }
+          },
+          {
+            "key": "ret-2",
+            "values": {
+              "return_name": "Serving bowl - chipped rim",
+              "order": "order-1",
+              "customer": "custom-2",
+              "reason": "Arrived damaged",
+              "outcome": "Replacement sent",
+              "ret_status": "Closed",
+              "requested_on": "@today-15d",
+              "due_back": "@today-1d",
+              "refund": 0,
+              "restock": "Write off",
+              "ret_notes": "Photos showed the chip; no need to send it back"
+            }
+          },
+          {
+            "key": "ret-3",
+            "values": {
+              "return_name": "Napkins - wrong colour",
+              "order": "order-2",
+              "customer": "custom-7",
+              "reason": "Wrong item sent",
+              "outcome": "Exchange",
+              "ret_status": "Label sent",
+              "requested_on": "@today-3d",
+              "due_back": "@today+11d",
+              "refund": 0,
+              "restock": "Back to stock",
+              "ret_notes": "Sent rust, ordered natural; our mistake, we pay postage"
+            }
+          },
+          {
+            "key": "ret-4",
+            "values": {
+              "return_name": "Fig and tea candle - gift return",
+              "order": "order-5",
+              "customer": "custom-10",
+              "reason": "Gift return",
+              "outcome": "Store credit",
+              "ret_status": "Requested",
+              "requested_on": "@today-1d",
+              "due_back": "@today+13d",
+              "refund": 24,
+              "restock": "Back to stock",
+              "ret_notes": "Unopened; credit to the giver"
+            }
+          },
+          {
+            "key": "ret-5",
+            "values": {
+              "return_name": "Mug - changed mind",
+              "order": "order-4",
+              "customer": "custom-5",
+              "reason": "Changed mind",
+              "outcome": "Refund",
+              "ret_status": "Received",
+              "requested_on": "@today-5d",
+              "due_back": "@today+2d",
+              "refund": 28,
+              "restock": "Back to stock",
+              "ret_notes": "Back in good condition; refund less postage"
+            }
+          }
+        ]
       }
     ],
     "relationships": [
       {
-        "describes": "Each product belongs to one supplier.",
+        "describes": "Each product comes from one supplier.",
         "fromTable": "product",
         "fromField": "supplier_rel",
         "toTable": "supplier",
@@ -1580,17 +2842,27 @@
         "inverseKey": "products"
       },
       {
+        "describes": "Each SKU is an option of one product.",
+        "fromTable": "variant",
+        "fromField": "product",
+        "toTable": "product",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "variants"
+      },
+      {
         "describes": "Each order belongs to one customer.",
         "fromTable": "order",
         "fromField": "customer",
         "toTable": "customer",
         "flavor": "referenced",
         "cardinality": "one",
-        "onDelete": "restrict",
+        "onDelete": "set_null",
         "inverseKey": "orders"
       },
       {
-        "describes": "Each order belongs to one product.",
+        "describes": "Each order is for one product.",
         "fromTable": "order",
         "fromField": "product",
         "toTable": "product",
@@ -1600,7 +2872,17 @@
         "inverseKey": "orders"
       },
       {
-        "describes": "Each order belongs to one packer (staff).",
+        "describes": "Each order is for one SKU.",
+        "fromTable": "order",
+        "fromField": "variant",
+        "toTable": "variant",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "sales"
+      },
+      {
+        "describes": "One person handles each order.",
         "fromTable": "order",
         "fromField": "handler",
         "toTable": "team_member",
@@ -1608,6 +2890,36 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "orders_handled"
+      },
+      {
+        "describes": "Each purchase order goes to one supplier.",
+        "fromTable": "purchase_order",
+        "fromField": "supplier",
+        "toTable": "supplier",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "purchase_orders"
+      },
+      {
+        "describes": "Each return is against one order.",
+        "fromTable": "return",
+        "fromField": "order",
+        "toTable": "order",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "returns"
+      },
+      {
+        "describes": "Each return is from one customer.",
+        "fromTable": "return",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "return_requests"
       }
     ],
     "sharedBlocks": [
@@ -1669,33 +2981,36 @@
     ],
     "forms": [
       {
-        "token": "order_request",
-        "name": "Place an order",
-        "describes": "How a customer or the team enters a new order.",
+        "token": "intake",
+        "name": "Return request",
+        "describes": "What support fills in when a customer asks to send something back.",
         "audience": "staff",
-        "table": "order",
+        "table": "return",
         "fields": [
           {
-            "fieldKey": "order_name",
-            "ask": "Order reference?",
+            "fieldKey": "return_name",
+            "ask": "Item and what is wrong",
             "required": true
+          },
+          {
+            "fieldKey": "order",
+            "ask": "Which order?"
           },
           {
             "fieldKey": "customer",
-            "ask": "Who is it for?",
-            "required": true
+            "ask": "Which customer?"
           },
           {
-            "fieldKey": "product",
-            "ask": "Which item?"
+            "fieldKey": "reason",
+            "ask": "Why are they returning it?"
           },
           {
-            "fieldKey": "quantity",
-            "ask": "How many?"
+            "fieldKey": "outcome",
+            "ask": "Refund, exchange or credit?"
           }
         ],
-        "submitLabel": "Send the order",
-        "confirmation": "Thanks. The order is on the board as New."
+        "submitLabel": "Log return",
+        "confirmation": "Logged. Support sends the return label within a day."
       }
     ],
     "dimensions": [],
@@ -1744,7 +3059,7 @@
       },
       {
         "token": "supplier_board",
-        "name": "Suppliers board",
+        "name": "Suppliers by terms",
         "table": "supplier",
         "kind": "kanban",
         "groupBy": "terms"
@@ -1758,10 +3073,26 @@
       },
       {
         "token": "product_board",
-        "name": "Products board",
+        "name": "Products by category",
         "table": "product",
         "kind": "kanban",
         "groupBy": "category"
+      },
+      {
+        "token": "all_variant",
+        "name": "All SKUs",
+        "table": "variant",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "variant_low",
+        "name": "Reorder",
+        "table": "variant",
+        "kind": "grid",
+        "filters": {
+          "reorder_flag": "Reorder"
+        }
       },
       {
         "token": "all_customer",
@@ -1772,7 +3103,7 @@
       },
       {
         "token": "customer_board",
-        "name": "Customers board",
+        "name": "Customers by segment",
         "table": "customer",
         "kind": "kanban",
         "groupBy": "segment"
@@ -1793,7 +3124,7 @@
       },
       {
         "token": "order_cal",
-        "name": "Orders calendar",
+        "name": "Ship-by calendar",
         "table": "order",
         "kind": "calendar",
         "dateField": "ship_by",
@@ -1801,7 +3132,7 @@
       },
       {
         "token": "order_over",
-        "name": "Overdue",
+        "name": "Late to ship",
         "table": "order",
         "kind": "grid",
         "within": {
@@ -1819,7 +3150,7 @@
       },
       {
         "token": "order_week",
-        "name": "Due this week",
+        "name": "Ship this week",
         "table": "order",
         "kind": "grid",
         "within": {
@@ -1837,7 +3168,7 @@
       },
       {
         "token": "order_next7",
-        "name": "Next 7 days",
+        "name": "Ship in the next 7 days",
         "table": "order",
         "kind": "grid",
         "within": {
@@ -1856,12 +3187,77 @@
       },
       {
         "token": "order_mine",
-        "name": "My orders",
+        "name": "My orders to pack",
         "table": "order",
         "kind": "grid",
         "me": [
           "packer"
         ]
+      },
+      {
+        "token": "all_po",
+        "name": "All purchase orders",
+        "table": "purchase_order",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "po_board",
+        "name": "Purchase orders board",
+        "table": "purchase_order",
+        "kind": "kanban",
+        "groupBy": "po_status"
+      },
+      {
+        "token": "po_late",
+        "name": "Late from supplier",
+        "table": "purchase_order",
+        "kind": "grid",
+        "within": {
+          "expected_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "po_status": [
+            "Sent",
+            "Confirmed",
+            "Partly received"
+          ]
+        }
+      },
+      {
+        "token": "po_next7",
+        "name": "Arriving in the next 7 days",
+        "table": "purchase_order",
+        "kind": "grid",
+        "within": {
+          "expected_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "po_status": [
+            "Sent",
+            "Confirmed",
+            "Partly received"
+          ]
+        }
+      },
+      {
+        "token": "all_return",
+        "name": "All returns",
+        "table": "return",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "return_board",
+        "name": "Returns board",
+        "table": "return",
+        "kind": "kanban",
+        "groupBy": "ret_status"
       }
     ],
     "agent": {
@@ -1873,65 +3269,81 @@
       "variables": [
         {
           "name": "primary_table",
-          "table": "product",
-          "describes": "Everything you sell, with price, cost, margin and stock against the reorder level."
+          "table": "order",
+          "describes": "Orders with status, channel, SKU, totals and shipping."
         },
         {
           "name": "related_tables",
-          "table": "supplier",
-          "describes": "The records the first table connects to."
+          "table": "variant",
+          "describes": "SKUs with stock on hand and reorder points."
         }
       ],
       "question": {
-        "ask": "How many orders are still waiting to be packed?",
-        "whyItMatters": "The packer starts each day with these.",
+        "ask": "How many orders are waiting to ship?",
+        "whyItMatters": "The packer plans the morning from this count.",
         "expect": {
           "table": "order",
           "measure": {
             "op": "count"
           },
           "filter": {
-            "status": "Packing"
+            "status": [
+              "New",
+              "Paid",
+              "Packing"
+            ]
           },
-          "answer": 2,
+          "answer": 16,
           "unit": "orders"
         }
       }
     },
     "walk": [
       {
-        "says": "Open suppliers.",
+        "says": "Open orders.",
         "action": {
           "kind": "open",
-          "surface": "supplier_board"
+          "surface": "order_board"
         },
         "expect": {
           "kind": "renders",
-          "surface": "supplier_board",
+          "surface": "order_board",
           "minItems": 3
         }
       },
       {
-        "says": "Open products.",
+        "says": "Open SKUs and stock.",
         "action": {
           "kind": "open",
-          "surface": "product_board"
+          "surface": "all_variant"
         },
         "expect": {
           "kind": "renders",
-          "surface": "product_board",
+          "surface": "all_variant",
           "minItems": 3
         }
       },
       {
-        "says": "Open customers.",
+        "says": "Open purchase orders.",
         "action": {
           "kind": "open",
-          "surface": "customer_board"
+          "surface": "po_board"
         },
         "expect": {
           "kind": "renders",
-          "surface": "customer_board",
+          "surface": "po_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open returns.",
+        "action": {
+          "kind": "open",
+          "surface": "return_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "return_board",
           "minItems": 3
         }
       }
@@ -1940,18 +3352,22 @@
     "provenance": {
       "kind": "synthesized",
       "authoredBy": "Spaces industry template author (Claude)",
-      "authoredOn": "2026-10-18",
+      "authoredOn": "2026-10-19",
       "noRealPeople": true,
       "sources": [],
       "fictionalDomains": [
+        "boxcarpackaging.net",
         "hearthandhollow.net",
-        "inbox-mail.net"
+        "inbox-mail.net",
+        "loomhousetextiles.net",
+        "tidelineceramics.net",
+        "wickandwax.net"
       ],
       "fictionalStreets": [
         "Cobbler Row"
       ]
     },
-    "version": 3
+    "version": 5
   },
   "pages": [
     {
@@ -1961,24 +3377,51 @@
       "icon": {
         "emoji": "🛍️"
       },
-      "cover": {
-        "url": "gallery:photo-ocean-horizon",
-        "offsetY": 50
-      },
-      "settings": {
-        "fullWidth": true
-      },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Run the store from one page. Orders move from New to Delivered, the packer sees their own list under Mine, and Mark shipped updates the board. Products flags what to reorder and Suppliers shows lead times. Start on the Dashboard."
+              "text": "Run the shop from here. "
+            },
+            {
+              "text": "Orders",
+              "bold": true
+            },
+            {
+              "text": " shows what ships today. "
+            },
+            {
+              "text": "SKUs and stock",
+              "bold": true
+            },
+            {
+              "text": " holds every option with its reorder point, "
+            },
+            {
+              "text": "Purchase orders",
+              "bold": true
+            },
+            {
+              "text": " what is coming from suppliers, and "
+            },
+            {
+              "text": "Returns",
+              "bold": true
+            },
+            {
+              "text": " every send-back. Start with the tour below."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -1995,38 +3438,11 @@
                   "props": {
                     "spaceId": "page:dashboard"
                   }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
+                },
                 {
                   "type": "page",
                   "props": {
                     "spaceId": "page:daily-fulfillment"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "columnList",
-          "children": [
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "page",
-                  "props": {
-                    "spaceId": "page:returns-and-exchanges"
                   }
                 }
               ]
@@ -2042,6 +3458,12 @@
                   "props": {
                     "spaceId": "page:weekly-stock-count"
                   }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:returns-and-exchanges"
+                  }
                 }
               ]
             }
@@ -2051,7 +3473,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Suppliers"
+              "text": "Orders"
             }
           ],
           "props": {
@@ -2062,7 +3484,21 @@
           "type": "text",
           "text": [
             {
-              "text": "Makers and wholesalers you buy from, with lead times and terms."
+              "text": "Ship-by dates drive the day. Press "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": " before you pack and "
+            },
+            {
+              "text": "Mark shipped",
+              "bold": true
+            },
+            {
+              "text": " when the label is on."
             }
           ]
         },
@@ -2071,29 +3507,285 @@
           "props": {
             "source": {
               "kind": "template",
-              "table": "supplier",
-              "view": "supplier_board"
+              "table": "order",
+              "view": "order_board"
             },
             "inline": true,
-            "title": "Suppliers",
+            "title": "Orders",
             "linked": true,
             "showTitle": false,
             "views": [
               {
-                "id": "sup-b",
+                "id": "ord-b",
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "terms"
+                "groupField": "status"
               },
               {
-                "id": "sup-t",
-                "name": "All suppliers",
+                "id": "ord-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "ship_by"
+              },
+              {
+                "id": "ord-t",
+                "name": "All orders",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "ord-o",
+                "name": "Late to ship",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "ship_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Paid",
+                    "Packing"
+                  ]
+                }
+              },
+              {
+                "id": "ord-w",
+                "name": "Ship this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "ship_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Paid",
+                    "Packing"
+                  ]
+                }
+              },
+              {
+                "id": "ord-n",
+                "name": "Ship in the next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "ship_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Paid",
+                    "Packing"
+                  ]
+                }
+              },
+              {
+                "id": "ord-m",
+                "name": "My orders to pack",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "packer"
+                ]
+              }
+            ],
+            "activeViewId": "ord-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "SKUs and stock"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The Stock column reads Reorder when what is on hand plus what is on order falls to the reorder point."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "variant",
+              "view": "all_variant"
+            },
+            "inline": true,
+            "title": "SKUs and stock",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sku-t",
+                "name": "All SKUs",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "bin",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "sku-r",
+                "name": "Reorder",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "filters": {
+                  "reorder_flag": "Reorder"
+                }
+              },
+              {
+                "id": "sku-s",
+                "name": "Sold out",
+                "layout": "list",
+                "icon": "CircleSlash",
+                "filters": {
+                  "reorder_flag": "Sold out"
+                }
+              }
+            ],
+            "activeViewId": "sku-t"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Purchase orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "purchase_order",
+              "view": "po_board"
+            },
+            "inline": true,
+            "title": "Purchase orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "po-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "po_status"
+              },
+              {
+                "id": "po-t",
+                "name": "All purchase orders",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "po-l",
+                "name": "Late from supplier",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "expected_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "po_status": [
+                    "Sent",
+                    "Confirmed",
+                    "Partly received"
+                  ]
+                }
+              },
+              {
+                "id": "po-n",
+                "name": "Arriving in the next 7 days",
+                "layout": "list",
+                "icon": "Truck",
+                "within": {
+                  "expected_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "po_status": [
+                    "Sent",
+                    "Confirmed",
+                    "Partly received"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "po-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Returns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "return",
+              "view": "return_board"
+            },
+            "inline": true,
+            "title": "Returns",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ret-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "ret_status"
+              },
+              {
+                "id": "ret-t",
+                "name": "All returns",
                 "layout": "grid",
                 "icon": "Table"
               }
             ],
-            "activeViewId": "sup-b"
+            "activeViewId": "ret-b"
           }
         },
         {
@@ -2106,14 +3798,6 @@
           "props": {
             "level": 2
           }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Everything you sell, with price, cost, margin and stock against the reorder level."
-            }
-          ]
         },
         {
           "type": "database",
@@ -2157,14 +3841,6 @@
           }
         },
         {
-          "type": "text",
-          "text": [
-            {
-              "text": "Everyone who has bought, with spend, returns and a tier."
-            }
-          ]
-        },
-        {
           "type": "database",
           "props": {
             "source": {
@@ -2198,7 +3874,374 @@
           "type": "heading",
           "text": [
             {
-              "text": "Orders"
+              "text": "Suppliers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "supplier",
+              "view": "all_supplier"
+            },
+            "inline": true,
+            "title": "Suppliers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sup-t",
+                "name": "All suppliers",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "sup-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "terms"
+              }
+            ],
+            "activeViewId": "sup-t"
+          }
+        }
+      ],
+      "settings": {
+        "fullWidth": true
+      },
+      "cover": {
+        "url": "gallery:retail-parcels-packages-shipping",
+        "offsetY": 50
+      }
+    },
+    {
+      "key": "start-here",
+      "parent": "online-store-operations-hub",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour for everyone who packs, answers customers or orders stock. Read it once; the checklists at the end are the weekly rhythm."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Products",
+              "bold": true
+            },
+            {
+              "text": ": one row per thing you list, with price, landed cost (goods plus freight, per unit), margin, supplier and packed weight. Units on hand, units sold and sales add up from the rows below."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "SKUs and stock",
+              "bold": true
+            },
+            {
+              "text": ": one row per option you can actually pick off a shelf: a colour, a size, a scent. Each has its stock, reorder point, reorder quantity, what is already on order and its shelf."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Orders",
+              "bold": true
+            },
+            {
+              "text": ": every order with channel, SKU, quantity, shipping charged against what the label cost, carrier, tracking and who is packing it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Purchase orders",
+              "bold": true
+            },
+            {
+              "text": ": what you have ordered from suppliers and when it is due."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Returns",
+              "bold": true
+            },
+            {
+              "text": ": every send-back and exchange, why, and where the item goes."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Customers",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Suppliers",
+              "bold": true
+            },
+            {
+              "text": ": who buys and who you buy from."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "An order's path"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "An order comes in from the website, the marketplace, the social shop, a market stall or a wholesale buyer. It lands as "
+            },
+            {
+              "text": "New",
+              "bold": true
+            },
+            {
+              "text": " or "
+            },
+            {
+              "text": "Paid",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "In the morning the packer assigns orders to themselves, picks from the shelf named on the SKU, and moves them to "
+            },
+            {
+              "text": "Packing",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Label printed, tracking pasted in, "
+            },
+            {
+              "text": "Mark shipped",
+              "bold": true
+            },
+            {
+              "text": ". The shipped date fills itself."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Take the units off the SKU's "
+            },
+            {
+              "text": "On hand",
+              "bold": true
+            },
+            {
+              "text": ". If its Stock column now says Reorder, it goes on the next purchase order."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If the customer sends it back, log it in "
+            },
+            {
+              "text": "Returns",
+              "bold": true
+            },
+            {
+              "text": " from the return request form."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Fulfillment lead",
+              "bold": true
+            },
+            {
+              "text": ": orders, packing, stock counts, receiving purchase orders."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Customer support",
+              "bold": true
+            },
+            {
+              "text": ": returns, exchanges, order questions."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Founder",
+              "bold": true
+            },
+            {
+              "text": ": purchase orders, new products, prices."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Bookkeeper",
+              "bold": true
+            },
+            {
+              "text": ": refunds, supplier bills, postage costs."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: Late to ship, then today's ship-by orders"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every afternoon: shipped orders marked, tracking added"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Monday: stock count of the fast SKUs; reorder list; late purchase orders"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: margin by product, shipping charged against label cost, return reasons"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
             }
           ],
           "props": {
@@ -2209,110 +4252,16 @@
           "type": "text",
           "text": [
             {
-              "text": "Every order from paid to delivered, with who is packing it and when it ships."
+              "text": "Replace the sample suppliers and products with your own, then add one SKU row for every option you stock. Delete the sample orders once real ones come in. The "
+            },
+            {
+              "text": "Landed cost",
+              "bold": true
+            },
+            {
+              "text": " should include freight and duty split across the units, or your margins will look better than they are."
             }
           ]
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "order",
-              "view": "order_board"
-            },
-            "inline": true,
-            "title": "Orders",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "ord-b",
-                "name": "Board",
-                "layout": "kanban",
-                "icon": "SquareKanban",
-                "groupField": "status"
-              },
-              {
-                "id": "ord-c",
-                "name": "Calendar",
-                "layout": "calendar",
-                "icon": "Calendar",
-                "dateField": "ship_by"
-              },
-              {
-                "id": "ord-t",
-                "name": "All orders",
-                "layout": "grid",
-                "icon": "Table"
-              },
-              {
-                "id": "ord-o",
-                "name": "Overdue",
-                "layout": "list",
-                "icon": "TriangleAlert",
-                "within": {
-                  "ship_by": {
-                    "relative": "before_today"
-                  }
-                },
-                "anyOf": {
-                  "status": [
-                    "New",
-                    "Paid",
-                    "Packing"
-                  ]
-                }
-              },
-              {
-                "id": "ord-w",
-                "name": "Due this week",
-                "layout": "list",
-                "icon": "CalendarDays",
-                "within": {
-                  "ship_by": {
-                    "relative": "this_week"
-                  }
-                },
-                "anyOf": {
-                  "status": [
-                    "New",
-                    "Paid",
-                    "Packing"
-                  ]
-                }
-              },
-              {
-                "id": "ord-n",
-                "name": "Next 7 days",
-                "layout": "list",
-                "icon": "Clock",
-                "within": {
-                  "ship_by": {
-                    "relative": "next_days",
-                    "n": 7
-                  }
-                },
-                "anyOf": {
-                  "status": [
-                    "New",
-                    "Paid",
-                    "Packing"
-                  ]
-                }
-              },
-              {
-                "id": "ord-m",
-                "name": "Mine",
-                "layout": "list",
-                "icon": "User",
-                "me": [
-                  "packer"
-                ]
-              }
-            ],
-            "activeViewId": "ord-b"
-          }
         }
       ]
     },
@@ -2323,15 +4272,12 @@
       "icon": {
         "emoji": "📊"
       },
-      "settings": {
-        "fullWidth": true
-      },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Orders by status, sales by channel and products by category."
+              "text": "Orders, stock, purchasing and returns at a glance."
             }
           ],
           "background": "gray",
@@ -2345,7 +4291,7 @@
             {
               "type": "column",
               "props": {
-                "width": 0.33
+                "width": 0.5
               },
               "children": [
                 {
@@ -2362,19 +4308,19 @@
                     "showTitle": false,
                     "views": [
                       {
-                        "id": "view-c0",
+                        "id": "d-c1",
                         "name": "Orders by status",
                         "layout": "chart",
+                        "icon": "ChartPie",
                         "chart": {
                           "type": "donut",
                           "groupBy": "status",
                           "op": "count",
                           "centerValue": true
-                        },
-                        "icon": "ChartPie"
+                        }
                       }
                     ],
-                    "activeViewId": "view-c0"
+                    "activeViewId": "d-c1"
                   }
                 }
               ]
@@ -2382,7 +4328,7 @@
             {
               "type": "column",
               "props": {
-                "width": 0.33
+                "width": 0.5
               },
               "children": [
                 {
@@ -2399,27 +4345,32 @@
                     "showTitle": false,
                     "views": [
                       {
-                        "id": "view-c1",
+                        "id": "d-c2",
                         "name": "Sales by channel",
                         "layout": "chart",
+                        "icon": "ChartColumn",
                         "chart": {
-                          "type": "bar",
+                          "type": "hbar",
                           "groupBy": "channel",
                           "op": "sum",
                           "field": "total"
-                        },
-                        "icon": "ChartColumn"
+                        }
                       }
                     ],
-                    "activeViewId": "view-c1"
+                    "activeViewId": "d-c2"
                   }
                 }
               ]
-            },
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
             {
               "type": "column",
               "props": {
-                "width": 0.34
+                "width": 0.5
               },
               "children": [
                 {
@@ -2436,19 +4387,56 @@
                     "showTitle": false,
                     "views": [
                       {
-                        "id": "view-c2",
-                        "name": "Products by category",
+                        "id": "d-c3",
+                        "name": "Units sold by product",
                         "layout": "chart",
+                        "icon": "ChartColumn",
                         "chart": {
-                          "type": "donut",
-                          "groupBy": "category",
-                          "op": "count",
-                          "centerValue": true
-                        },
-                        "icon": "ChartPie"
+                          "type": "hbar",
+                          "groupBy": "product_name",
+                          "op": "sum",
+                          "field": "sold"
+                        }
                       }
                     ],
-                    "activeViewId": "view-c2"
+                    "activeViewId": "d-c3"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "return",
+                      "view": "all_return"
+                    },
+                    "inline": true,
+                    "title": "Returns",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d-c4",
+                        "name": "Returns by reason",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "reason",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "d-c4"
                   }
                 }
               ]
@@ -2480,10 +4468,10 @@
             "showTitle": false,
             "views": [
               {
-                "id": "view-l0",
+                "id": "d-l1",
                 "name": "Late to ship",
                 "layout": "list",
-                "icon": "Table",
+                "icon": "TriangleAlert",
                 "within": {
                   "ship_by": {
                     "relative": "before_today"
@@ -2498,14 +4486,14 @@
                 }
               }
             ],
-            "activeViewId": "view-l0"
+            "activeViewId": "d-l1"
           }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "My orders"
+              "text": "SKUs to reorder"
             }
           ],
           "props": {
@@ -2517,65 +4505,119 @@
           "props": {
             "source": {
               "kind": "template",
-              "table": "order",
-              "view": "all_order"
+              "table": "variant",
+              "view": "all_variant"
             },
             "inline": true,
-            "title": "Orders",
+            "title": "SKUs and stock",
             "linked": true,
             "showTitle": false,
             "views": [
               {
-                "id": "view-l1",
-                "name": "My orders",
+                "id": "d-l2",
+                "name": "Reorder",
                 "layout": "list",
-                "icon": "Table",
-                "me": [
-                  "packer"
-                ]
-              }
-            ],
-            "activeViewId": "view-l1"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Returns"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "order",
-              "view": "all_order"
-            },
-            "inline": true,
-            "title": "Orders",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "view-l2",
-                "name": "Returns",
-                "layout": "list",
-                "icon": "Table",
+                "icon": "TriangleAlert",
                 "filters": {
-                  "status": "Returned"
+                  "reorder_flag": "Reorder"
                 }
               }
             ],
-            "activeViewId": "view-l2"
+            "activeViewId": "d-l2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stock arriving in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "purchase_order",
+              "view": "all_po"
+            },
+            "inline": true,
+            "title": "Purchase orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d-l3",
+                "name": "Arriving soon",
+                "layout": "list",
+                "icon": "Truck",
+                "within": {
+                  "expected_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "po_status": [
+                    "Sent",
+                    "Confirmed",
+                    "Partly received"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d-l3"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Open returns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "return",
+              "view": "all_return"
+            },
+            "inline": true,
+            "title": "Returns",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d-l4",
+                "name": "Open returns",
+                "layout": "list",
+                "icon": "Undo2",
+                "anyOf": {
+                  "ret_status": [
+                    "Requested",
+                    "Label sent",
+                    "Received"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d-l4"
           }
         }
-      ]
+      ],
+      "settings": {
+        "fullWidth": true
+      }
     },
     {
       "key": "daily-fulfillment",
@@ -2589,7 +4631,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Same-day shipping is the cheapest marketing you can do. Ship everything paid before 2 pm the same day."
+              "text": "Orders that ship on the day promised are the cheapest marketing you have. Work the list top to bottom, every morning."
             }
           ],
           "background": "blue",
@@ -2601,7 +4643,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Every morning"
+              "text": "Before 10 am"
             }
           ],
           "props": {
@@ -2612,7 +4654,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Open the Orders board and look at New and Paid."
+              "text": "Open "
+            },
+            {
+              "text": "Late to ship",
+              "bold": true
+            },
+            {
+              "text": " on the main page. Anything there ships first, with a short note to the customer if it is more than a day late."
             }
           ]
         },
@@ -2620,7 +4669,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Print pick lists and pack by the oldest ship-by date first."
+              "text": "Open "
+            },
+            {
+              "text": "Ship this week",
+              "bold": true
+            },
+            {
+              "text": " and take today's ship-by orders. Press "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": " on the ones you will pack so nobody packs the same order twice."
             }
           ]
         },
@@ -2628,15 +4691,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check each order against the pick list before sealing the box."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "Print the pick list: the SKU, the quantity and the shelf from "
+            },
             {
-              "text": "Add tracking and press Mark shipped."
+              "text": "SKUs and stock",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -2644,7 +4706,129 @@
           "type": "heading",
           "text": [
             {
-              "text": "Cutoffs"
+              "text": "Picking and packing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick by shelf, not by order: walk A to D once and fill a tray per order."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check each item against the order. Chips, scratches, a candle with a sunken top: set it aside for the seconds shelf and pick another."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ceramics go in a sleeve and a double-walled box with 2 inches of padding on every side. Candles stand upright. Linens are folded around tissue."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Gift orders: no price slip, the gift message on a card, a ribbon."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move the order to "
+            },
+            {
+              "text": "Packing",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Labels and shipping"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Weigh the parcel. If it is heavier than the product's packed weight says, update the product so postage stays right."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Buy the label. Write what it cost in "
+            },
+            {
+              "text": "Label cost",
+              "bold": true
+            },
+            {
+              "text": ". Over a month, the gap between shipping charged and what labels cost tells you if your shipping prices are right."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Paste the tracking number and press "
+            },
+            {
+              "text": "Mark shipped",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Take the units off "
+            },
+            {
+              "text": "On hand",
+              "bold": true
+            },
+            {
+              "text": " for that SKU."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The 2 pm cut-off"
             }
           ],
           "props": {
@@ -2655,7 +4839,390 @@
           "type": "text",
           "text": [
             {
-              "text": "Orders paid before 2 pm ship that day. Later ones ship the next business day and the customer is told so at checkout."
+              "text": "The carrier collects at 3. Anything not packed by 2 pm moves to the next morning's list; the packer tells support so they can answer if a customer asks."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Wholesale orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Wholesale orders ship by courier or are picked up. Count twice, pack by case, and put the invoice in the first box. Ask the buyer to count on arrival and report shortages within 48 hours."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "End of day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every order shipped today is marked and has tracking"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Seconds set aside are on the seconds shelf, logged on the SKU page"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Packing supplies checked: boxes, tissue, tape, labels"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "weekly-stock-count",
+      "parent": "online-store-operations-hub",
+      "title": "Weekly stock count and reorder",
+      "icon": {
+        "emoji": "📋"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Twenty minutes every Monday keeps you from selling something you do not have, or running out of your best seller in December."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Why count every week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Numbers in a system drift: a broken mug nobody logged, a candle given to a friend, a miscount when stock came in. Counting the fast sellers every week and everything else once a month keeps "
+            },
+            {
+              "text": "On hand",
+              "bold": true
+            },
+            {
+              "text": " honest, which keeps the Reorder flag honest."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The Monday count"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open "
+            },
+            {
+              "text": "SKUs and stock",
+              "bold": true
+            },
+            {
+              "text": ", sorted by shelf."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Count every SKU on the A and B shelves (mugs, bowls, candles: the fast sellers). Do the linens and packaging on the first Monday of the month."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Type the counted number into "
+            },
+            {
+              "text": "On hand",
+              "bold": true
+            },
+            {
+              "text": " and set "
+            },
+            {
+              "text": "Last counted",
+              "bold": true
+            },
+            {
+              "text": " to today."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If a count is more than two units off, write a line on the SKU page: what you found and the likely reason."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the Stock column"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "OK",
+              "bold": true
+            },
+            {
+              "text": ": on hand plus what is on order is above the reorder point."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Reorder",
+              "bold": true
+            },
+            {
+              "text": ": on hand plus on order has reached the reorder point. Put the reorder quantity on the next purchase order."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sold out",
+              "bold": true
+            },
+            {
+              "text": ": zero on hand. Mark the option as sold out on every channel the same day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Setting reorder points"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A reorder point is what you sell during the supplier's lead time, plus a cushion. Example: the fig and tea 8 oz tin sells about 12 a week. Wick and Wax takes 10 days. Twelve a week is about 17 in 10 days; add 8 for a busy week and the reorder point is 25. Raise points in October for the holiday rush and lower them again in January."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Writing a purchase order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Group the Reorder SKUs by supplier."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the supplier's "
+            },
+            {
+              "text": "Minimum order",
+              "bold": true
+            },
+            {
+              "text": ". If one SKU does not reach it, add slower SKUs from the same supplier."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a row to "
+            },
+            {
+              "text": "Purchase orders",
+              "bold": true
+            },
+            {
+              "text": ": what is on it, units, goods total, freight, the date ordered and the expected date (today plus lead time)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the units to "
+            },
+            {
+              "text": "Incoming on POs",
+              "bold": true
+            },
+            {
+              "text": " on each SKU, so it stops showing Reorder."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Receiving"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When boxes arrive, count them against the purchase order before you sign."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move the units from "
+            },
+            {
+              "text": "Incoming on POs",
+              "bold": true
+            },
+            {
+              "text": " to "
+            },
+            {
+              "text": "On hand",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the order to "
+            },
+            {
+              "text": "Received",
+              "bold": true
+            },
+            {
+              "text": " with today's date, or "
+            },
+            {
+              "text": "Partly received",
+              "bold": true
+            },
+            {
+              "text": " with a note on what is missing."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Check "
+            },
+            {
+              "text": "Late from supplier",
+              "bold": true
+            },
+            {
+              "text": " every Monday. A supplier who is late twice in a season needs a longer lead time in your numbers, or a second source."
             }
           ]
         }
@@ -2673,7 +5240,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A friendly return policy sells more than it costs. Make it easy and fast."
+              "text": "A fair, fast return turns a disappointed customer into a repeat one. Decide quickly, explain clearly, refund on the day the item arrives."
             }
           ],
           "background": "blue",
@@ -2685,7 +5252,58 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "The policy, in plain words"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Thirty days from delivery to ask for a return."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Unused and in its packaging for a refund or exchange; candles must be unlit."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If it arrived damaged or we sent the wrong thing, we pay return postage or send a replacement without asking for it back."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If they changed their mind, they pay return postage."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Gift returns get store credit for the person who bought the gift."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a request comes in"
             }
           ],
           "props": {
@@ -2696,7 +5314,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Ask for the order number and a photo if something arrived damaged."
+              "text": "Log it with the "
+            },
+            {
+              "text": "Return request",
+              "bold": true
+            },
+            {
+              "text": " form: the item, the order, the customer, the reason and what they would like."
             }
           ]
         },
@@ -2704,7 +5329,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send a prepaid label for damage or errors; the customer pays return shipping for change of mind."
+              "text": "Damaged or wrong item: ask for one photo. For anything under 40 dollars, send the replacement and skip the return; the postage costs more than the item."
             }
           ]
         },
@@ -2712,15 +5337,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "On receipt, inspect, restock if sellable and mark the order Returned."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "Everything else: send a return label or the return address, set the status to "
+            },
             {
-              "text": "Refund within two business days."
+              "text": "Label sent",
+              "bold": true
+            },
+            {
+              "text": ", and fill in "
+            },
+            {
+              "text": "Due back by",
+              "bold": true
+            },
+            {
+              "text": ", 14 days out."
             }
           ]
         },
@@ -2728,7 +5359,92 @@
           "type": "heading",
           "text": [
             {
-              "text": "Review"
+              "text": "When it arrives"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open it the same day. Check it against the reason given."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the status to "
+            },
+            {
+              "text": "Received",
+              "bold": true
+            },
+            {
+              "text": " and choose where it goes: "
+            },
+            {
+              "text": "Back to stock",
+              "bold": true
+            },
+            {
+              "text": " (add it to On hand), "
+            },
+            {
+              "text": "Seconds shelf",
+              "bold": true
+            },
+            {
+              "text": " (sold at markets), or "
+            },
+            {
+              "text": "Write off",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Refund or credit the same day, enter the amount, set the status to "
+            },
+            {
+              "text": "Refunded",
+              "bold": true
+            },
+            {
+              "text": ", and set the order to "
+            },
+            {
+              "text": "Returned",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send a two-line note: it arrived, the refund is on its way, thank you."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Exchanges"
             }
           ],
           "props": {
@@ -2739,72 +5455,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Every Friday, look at the Returns list for a pattern: one product, one supplier or one description."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "weekly-stock-count",
-      "parent": "online-store-operations-hub",
-      "title": "Weekly stock count and reorder",
-      "icon": {
-        "emoji": "📋"
-      },
-      "blocks": [
-        {
-          "type": "callout",
-          "text": [
-            {
-              "text": "Selling something you do not have is the most expensive mistake an online shop makes."
-            }
-          ],
-          "background": "blue",
-          "props": {
-            "icon": "Lightbulb"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Steps"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Count one shelf at a time on Monday."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Update On hand on the Products list."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Reorder anything marked Reorder, using the supplier lead time to decide the quantity."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Hide a product online when it hits zero."
+              "text": "Treat an exchange as a new order at no charge, linked in the return's notes. Ship the new item as soon as the return is in transit, not when it arrives. Customers notice."
             }
           ]
         },
@@ -2812,7 +5463,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Lead times"
+              "text": "What to look at each month"
             }
           ],
           "props": {
@@ -2823,7 +5474,14 @@
           "type": "text",
           "text": [
             {
-              "text": "Ceramics take three weeks. Candles ten days. Order with enough room for a surprise sale."
+              "text": "The Dashboard's "
+            },
+            {
+              "text": "Returns by reason",
+              "bold": true
+            },
+            {
+              "text": " chart. Many Arrived damaged returns mean the packing needs work. Not as pictured means the photos or description are misleading. Wrong item sent means picking needs a second check. One fix at the source saves a dozen returns."
             }
           ]
         }

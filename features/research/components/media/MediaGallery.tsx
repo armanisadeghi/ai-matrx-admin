@@ -252,10 +252,10 @@ export default function MediaGallery() {
       ) : totalEmpty ? (
         <div className="flex flex-col items-center justify-center min-h-[280px] gap-3 text-center px-4">
           <div className="h-12 w-12 rounded-2xl bg-primary/8 flex items-center justify-center">
-            <ImageIcon className="h-6 w-6 text-primary/40" />
+            <ImageIcon className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <p className="type-secondary font-medium text-foreground/70">
+            <p className="type-secondary font-medium text-muted-foreground">
               {mediaList.length === 0 ? "No media yet" : "No matches"}
             </p>
             <p className="type-meta text-muted-foreground mt-1 max-w-[240px]">
@@ -519,9 +519,9 @@ function SectionHeader({
   return (
     <div className="flex items-baseline gap-2 px-1">
       <div className="flex items-center gap-1.5">
-        <Icon className="h-3.5 w-3.5 text-foreground/60" />
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
         <h3
-          className="type-meta font-semibold uppercase tracking-wider text-foreground/70"
+          className="type-meta font-semibold uppercase tracking-wider text-muted-foreground"
           title={description}
         >
           {title}
@@ -691,7 +691,7 @@ function PhotoCard({
             className={cn("w-full h-full", onOpen && "cursor-zoom-in")}
           />
         ) : (
-          <Icon className="h-6 w-6 text-muted-foreground/30" />
+          <Icon className="h-6 w-6 text-disabled-foreground" />
         )}
       </div>
       <div className="p-1.5 flex items-center justify-between gap-1">
@@ -699,7 +699,7 @@ function PhotoCard({
           {item.alt_text || item.caption || item.url}
         </p>
         {dims && (
-          <span className="text-[9px] tabular-nums text-muted-foreground/60 shrink-0">
+          <span className="text-[9px] tabular-nums text-disabled-foreground shrink-0">
             {dims}
           </span>
         )}
@@ -750,11 +750,11 @@ function GraphicCard({
         />
       ) : (
         <div className="h-full w-24 flex items-center justify-center">
-          <ImageIcon className="h-5 w-5 text-muted-foreground/30" />
+          <ImageIcon className="h-5 w-5 text-disabled-foreground" />
         </div>
       )}
       {dims && (
-        <span className="absolute bottom-1 left-1 px-1 rounded bg-background/70 backdrop-blur-sm text-[9px] tabular-nums text-muted-foreground/80 opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="absolute bottom-1 left-1 px-1 rounded bg-background/70 backdrop-blur-sm text-[9px] tabular-nums text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
           {dims}
         </span>
       )}
@@ -804,11 +804,11 @@ function IconTile({
           className="h-full w-full"
         />
       ) : (
-        <ImageIcon className="h-3 w-3 text-muted-foreground/30" />
+        <ImageIcon className="h-3 w-3 text-disabled-foreground" />
       )}
       {!item.is_relevant && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/0 group-hover:bg-background/40 transition-colors">
-          <X className="h-3 w-3 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors" />
+          <X className="h-3 w-3 text-transparent group-hover:text-muted-foreground transition-colors" />
         </div>
       )}
     </div>
@@ -859,23 +859,23 @@ function ResourceCard({
           {owned || item.thumbnail_url ? (
             <ResearchMediaImage item={item} className="w-full h-full" />
           ) : (
-            <Icon className="h-7 w-7 text-muted-foreground/40" />
+            <Icon className="h-7 w-7 text-disabled-foreground" />
           )}
           {item.media_type === "video" && (
             <span className="absolute inset-0 flex items-center justify-center">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-background/70 backdrop-blur-sm">
-                <Play className="h-3.5 w-3.5 text-foreground/80" />
+                <Play className="h-3.5 w-3.5 text-foreground" />
               </span>
             </span>
           )}
           <span className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <ExternalLink className="h-3 w-3 text-foreground/60" />
+            <ExternalLink className="h-3 w-3 text-muted-foreground" />
           </span>
         </div>
         <div className="p-1.5">
-          <p className="type-meta truncate text-foreground/80">{label}</p>
+          <p className="type-meta truncate text-foreground">{label}</p>
           {kind && (
-            <p className="text-[9px] uppercase tracking-wider text-muted-foreground/60">
+            <p className="text-[9px] uppercase tracking-wider text-disabled-foreground">
               {kind}
             </p>
           )}
@@ -995,14 +995,14 @@ function YouTubeVideoCard({
             />
             <span className="absolute inset-0 flex items-center justify-center">
               {/* ui-exception: play glyph sits on a photo — fixed white on a dark scrim. */}
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-black/60 transition-colors group-hover:bg-black/75">
-                <Play className="h-5 w-5 text-white" />
+              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card/90 transition-colors group-hover:bg-card">
+                <Play className="h-5 w-5 text-foreground" />
               </span>
             </span>
             {identity?.published_at && (
               <VideoPublishDate
                 publishedAt={identity.published_at}
-                className="pointer-events-none absolute bottom-1.5 left-1.5 z-10 rounded bg-black/75 px-1 py-0.5 text-white shadow-sm"
+                className="pointer-events-none absolute bottom-1.5 left-1.5 z-10 rounded border border-border bg-card/90 px-1 py-0.5 text-foreground shadow-sm"
               />
             )}
           </button>
@@ -1316,7 +1316,7 @@ function VideoCard({
         item.is_relevant ? "border-primary/20" : "border-border/50 opacity-60",
       )}
     >
-      <div className="relative aspect-video bg-black/50 flex items-center justify-center overflow-hidden">
+      <div className="relative aspect-video bg-muted flex items-center justify-center overflow-hidden">
         {playing && embed ? (
           <iframe
             src={embed.embedUrl}
@@ -1366,11 +1366,11 @@ function VideoCard({
                 loading="lazy"
               />
             ) : (
-              <Video className="h-7 w-7 text-muted-foreground/40" />
+              <Video className="h-7 w-7 text-disabled-foreground" />
             )}
             <span className="absolute inset-0 flex items-center justify-center">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-black/60 backdrop-blur-sm group-hover:bg-black/75 transition-colors">
-                <Play className="h-5 w-5 text-white" />
+              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card/90 backdrop-blur-sm group-hover:bg-card transition-colors">
+                <Play className="h-5 w-5 text-foreground" />
               </span>
             </span>
           </button>
@@ -1378,14 +1378,14 @@ function VideoCard({
       </div>
       <div className="p-1.5 flex items-center justify-between gap-1">
         <p
-          className="type-meta truncate text-foreground/80 flex-1"
+          className="type-meta truncate text-foreground flex-1"
           title={label}
         >
           {label}
         </p>
         <ResearchMediaOpen
           item={item}
-          className="shrink-0 text-muted-foreground/50 hover:text-foreground transition-colors"
+          className="shrink-0 text-disabled-foreground hover:text-foreground transition-colors"
           title={owned ? "Open the file" : "Open on source site"}
         >
           <ExternalLink className="h-3 w-3" />
@@ -1567,16 +1567,16 @@ function DocumentCard({
     >
       <div className="flex items-start gap-2 p-2.5">
         <div className="h-10 w-10 shrink-0 rounded-lg bg-primary/8 flex items-center justify-center">
-          <DocIcon item={item} className="h-5 w-5 text-primary/70" />
+          <DocIcon item={item} className="h-5 w-5 text-primary" />
         </div>
         <div className="min-w-0 flex-1">
           <p
-            className="type-meta font-medium text-foreground/90 line-clamp-2 break-words"
+            className="type-meta font-medium text-foreground line-clamp-2 break-words"
             title={name}
           >
             {name}
           </p>
-          <p className="mt-0.5 truncate text-[9px] text-muted-foreground/70">
+          <p className="mt-0.5 truncate text-[9px] text-muted-foreground">
             {[host, ext && ext.toUpperCase()].filter(Boolean).join(" · ")}
           </p>
         </div>

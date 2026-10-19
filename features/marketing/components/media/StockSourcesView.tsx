@@ -525,7 +525,7 @@ export function StockSourcesView({
                         ) : (
                           <FolderPlus
                             className={
-                              saved ? "h-3 w-3 text-emerald-500" : "h-3 w-3"
+                              saved ? "h-3 w-3 text-success-ink" : "h-3 w-3"
                             }
                           />
                         )} aria-label={saved

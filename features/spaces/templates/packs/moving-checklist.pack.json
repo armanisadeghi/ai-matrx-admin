@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0214",
-  "version": 5,
+  "version": 6,
   "title": "Moving Checklist",
   "description": "Anyone moving house: a timeline checklist, box inventory and address-change tracker.",
   "forWho": "Anyone moving house",
@@ -9,7 +9,7 @@
     "emoji": "📦"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:personal-cardboard-moving-boxes",
     "offsetY": 50
   },
   "category": "personal",
@@ -1351,7 +1351,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1362,7 +1362,7 @@
         "emoji": "📦"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:personal-cardboard-moving-boxes",
         "offsetY": 50
       },
       "settings": {

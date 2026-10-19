@@ -10,7 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
 
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { Field, ListEditor, RatingScale, SectionCard } from "@/features/employee-performance-reviews/components/review-form-components";
+import { Field, ListEditor, RatingScale } from "@/features/employee-performance-reviews/components/review-form-components";
 import { isRatingValue } from "@/features/employee-performance-reviews/schema";
 import { toast } from "@/lib/toast";
 
@@ -22,6 +22,7 @@ import type { AnswerProblem, ResponseRole, ReviewAnswers, ReviewGoal, TemplateQu
 import { emptyAnswers } from "./types";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 const AUTOSAVE_MS = 1200;
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -262,7 +263,7 @@ export function AnswerForm({
         <ErrorAlchemyMenu /></div>
       ) : null}
       {template.sections.map((section, index) => (
-        <SectionCard key={section.key} badge={index + 1} title={section.title} description={section.description ?? undefined} anchor={`section-${section.key}`}>
+        <SectionCard bodyClassName="p-4 pt-3" key={section.key} badge={index + 1} title={section.title} about={section.description ?? undefined} anchor={`section-${section.key}`}>
           <div className="space-y-4">
             {section.questions.map((q) => (
               <Field key={q.key} label={q.label} anchor={`question-${q.key}`}>

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0407",
-  "version": 4,
+  "version": 5,
   "title": "Optometry Practice",
   "description": "For optometrists and opticians: exams, recalls, vision plans, frames and lab orders.",
   "forWho": "Optometrists, opticians and eye care practices",
@@ -9,7 +9,7 @@
     "emoji": "👓"
   },
   "cover": {
-    "url": "gallery:gradient-ocean",
+    "url": "gallery:healthcare-eyeglasses-display-optician",
     "offsetY": 50
   },
   "category": "healthcare",
@@ -2174,7 +2174,7 @@
         "Piedmont Row"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2185,7 +2185,7 @@
         "emoji": "👓"
       },
       "cover": {
-        "url": "gallery:gradient-ocean",
+        "url": "gallery:healthcare-eyeglasses-display-optician",
         "offsetY": 50
       },
       "settings": {

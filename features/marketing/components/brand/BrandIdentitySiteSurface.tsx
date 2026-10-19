@@ -19,10 +19,9 @@
 import { useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Globe2 } from "lucide-react";
+import { Globe2, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { NoWebsiteState } from "@/features/marketing/components/shared/NoWebsiteState";
 import {
   CreatablePicker,
   type CreatableOption,
@@ -36,6 +35,7 @@ import { MarketingSiteSurfaceProvider } from "@/features/marketing/lib/scopes/si
 import {
   LoadingSurface,
   QueryError,
+  SectionCard,
 } from "@/features/marketing/components/shared/MarketingUi";
 import { marketingSeg } from "@/features/marketing/lib/keys";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
@@ -119,23 +119,32 @@ export function BrandIdentitySiteSurface({
   const roomTitle = pathname.endsWith("/guidelines") ? "Guidelines" : "Knowledge";
   if (!site) {
     return (
-      <div className="flex h-full items-center justify-center p-6 pt-[var(--shell-header-h)]">
+      <div className="mx-auto w-full max-w-6xl space-y-3 px-3 pb-3 pt-[calc(var(--shell-header-h)+0.75rem)] sm:px-4">
         <h1 className="sr-only">
           {brand.name} · {roomTitle}
         </h1>
-        <NoWebsiteState
-          brandId={brand.id}
-          brandName={brand.name}
-          needs={
+        <SectionCard
+          title={roomTitle}
+          about={`${roomTitle} is read from the brand's website. ${
             pathname.endsWith("/guidelines")
-              ? "the writing and style rules it reads from the site's own pages"
-              : "reading the business cold: what it is, what it sells and how it must be written about"
-          }
-          alternatives={[
-            { label: "Brand voice from socials", href: `${marketingRoutes.brandIdentity(brand.id)}/voice` },
-            { label: "Open Socials", href: marketingRoutes.brandSocials(brand.id) },
-          ]}
-        />
+              ? "Guidelines come from the writing and style rules on the site's own pages."
+              : "Knowledge reads the business cold: what it is, what it sells and how it must be written about."
+          }`}
+        >
+          <div
+            data-testid="no-website-state"
+            className="flex flex-col items-center gap-3 p-8 text-center"
+          >
+            <Globe2 className="size-5 text-muted-foreground" aria-hidden />
+            <p className="text-sm font-medium text-foreground">Needs a website</p>
+            <Button variant="primary" asChild>
+              <Link href={marketingRoutes.newSite(brand.id)}>
+                <Plus className="h-3.5 w-3.5" />
+                Add website
+              </Link>
+            </Button>
+          </div>
+        </SectionCard>
       </div>
     );
   }

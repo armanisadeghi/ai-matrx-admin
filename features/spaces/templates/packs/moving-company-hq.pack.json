@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0508",
-  "version": 4,
+  "version": 5,
   "title": "Moving Company HQ",
   "description": "For local movers: surveys, hourly quotes, crews and trucks, move day, damage claims.",
   "forWho": "Local moving companies",
@@ -9,7 +9,7 @@
     "emoji": "🚚"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:trades-moving-truck",
     "offsetY": 50
   },
   "category": "trades",
@@ -2738,7 +2738,7 @@
         "Depot Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2749,7 +2749,7 @@
         "emoji": "🚚"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:trades-moving-truck",
         "offsetY": 50
       },
       "settings": {

@@ -1,6 +1,6 @@
 {
   "name": "app-matrx",
-  "version": "0.4.3352",
+  "version": "0.4.3358",
   "private": true,
   "scripts": {
     "check:dnd-context-id": "node scripts/check-dnd-context-id.mjs",
@@ -679,6 +679,7 @@
     "check:mandate-pin-names-agent:strict": "tsx scripts/check-mandate-pin-names-agent.ts --strict",
     "check:cost-tier-hold": "tsx scripts/check-cost-tier-hold.ts",
     "check:cost-tier-hold:strict": "tsx scripts/check-cost-tier-hold.ts --strict",
+    "check:data-home-search-in-budget": "node scripts/check-data-home-search-in-budget.mjs",
     "check:migration-slot-guard": "tsx scripts/check-migration-slot-guard.ts",
     "check:list-counts": "tsx scripts/check-list-counts.ts",
     "check:list-counts:self-test": "tsx scripts/check-list-counts.ts --self-test",

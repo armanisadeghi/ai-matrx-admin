@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0468",
-  "version": 4,
+  "version": 6,
   "title": "Food Truck Operations",
-  "description": "Service stops and sales, permits, commissary prep and private bookings for a food truck.",
+  "description": "For food truck owners: stops, sales, menu food cost, permits, commissary prep, bookings.",
   "forWho": "Food trucks, mobile kitchens and pop-up vendors",
   "icon": {
     "emoji": "🚚"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:hospitality-food-truck-street",
     "offsetY": 50
   },
   "category": "hospitality",
   "tags": [
-    "food truck",
+    "food truck owner",
+    "mobile vendor",
+    "street food",
     "permits",
-    "locations",
-    "prep"
+    "catering bookings",
+    "food cost"
   ],
   "spec": {
     "specVersion": 1,
@@ -178,6 +180,87 @@
                 "value": 20000
               }
             ]
+          },
+          {
+            "key": "orders",
+            "label": "Orders",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "avg_ticket",
+            "label": "Average ticket (USD)",
+            "parityType": "formula",
+            "unit": "USD",
+            "formula": "IF({Orders} > 0, ROUND({Sales (USD)} / {Orders}, 2), 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "food_cost",
+            "label": "Food cost (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "food_pct",
+            "label": "Food cost (%)",
+            "parityType": "formula",
+            "formula": "IF({Sales (USD)} > 0, ROUND({Food cost (USD)} / {Sales (USD)} * 100, 0), 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "weather",
+            "label": "Weather",
+            "parityType": "select",
+            "choices": [
+              "Clear",
+              "Hot",
+              "Windy",
+              "Rain",
+              "Cold"
+            ],
+            "choiceColors": {
+              "Clear": "green",
+              "Hot": "orange",
+              "Windy": "teal",
+              "Rain": "blue",
+              "Cold": "slate"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "sold_out",
+            "label": "Sold out at",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "spot_fee",
@@ -453,13 +536,16 @@
               "status": "Served",
               "kind": "Brewery",
               "address": "812 Rainey Street",
-              "stop_on": "@today-6d",
+              "stop_on": "@mon-6d",
               "target": 1400,
               "sales": 1620,
               "spot_fee": 0,
               "hours": 5,
               "lead": "tm-1",
-              "closed_on": "@today-6d"
+              "closed_on": "@mon-6d",
+              "orders": 118,
+              "food_cost": 470,
+              "weather": "Clear"
             }
           },
           {
@@ -469,13 +555,17 @@
               "status": "Served",
               "kind": "Market",
               "address": "Republic Square",
-              "stop_on": "@today-2d",
+              "stop_on": "@mon-2d",
               "target": 2200,
               "sales": 2480,
               "spot_fee": 120,
               "hours": 6,
               "lead": "tm-2",
-              "closed_on": "@today-2d"
+              "closed_on": "@mon-2d",
+              "orders": 205,
+              "food_cost": 705,
+              "weather": "Hot",
+              "sold_out": "Brisket by 12:40"
             }
           },
           {
@@ -485,13 +575,16 @@
               "status": "Served",
               "kind": "Street spot",
               "address": "1200 Barton Springs Road",
-              "stop_on": "@today-5d",
+              "stop_on": "@mon-4d",
               "target": 900,
               "sales": 760,
               "spot_fee": 60,
               "hours": 3,
               "lead": "tm-2",
-              "closed_on": "@today-5d"
+              "closed_on": "@mon-4d",
+              "orders": 66,
+              "food_cost": 240,
+              "weather": "Windy"
             }
           },
           {
@@ -506,7 +599,10 @@
               "sales": 0,
               "spot_fee": 0,
               "hours": 0,
-              "lead": "tm-1"
+              "lead": "tm-1",
+              "closed_on": "@today-12d",
+              "orders": 0,
+              "weather": "Rain"
             }
           },
           {
@@ -516,13 +612,45 @@
               "status": "Served",
               "kind": "Brewery",
               "address": "2400 Manor Road",
-              "stop_on": "@today-9d",
+              "stop_on": "@mon-1d",
               "target": 1500,
               "sales": 1710,
               "spot_fee": 0,
               "hours": 5,
               "lead": "tm-1",
-              "closed_on": "@today-9d"
+              "closed_on": "@mon-1d",
+              "orders": 131,
+              "food_cost": 505,
+              "weather": "Clear",
+              "sold_out": "Pork by 4:15"
+            }
+          },
+          {
+            "key": "stop-11",
+            "values": {
+              "stop_name": "Next Tuesday brewery night, Hopscotch",
+              "status": "Planned",
+              "kind": "Brewery",
+              "address": "812 Rainey Street",
+              "stop_on": "@mon+8d",
+              "target": 1400,
+              "spot_fee": 0,
+              "hours": 4,
+              "lead": "tm-1"
+            }
+          },
+          {
+            "key": "stop-12",
+            "values": {
+              "stop_name": "Night market at the rail yard",
+              "status": "Confirmed",
+              "kind": "Market",
+              "address": "Saltillo Plaza",
+              "stop_on": "@today-1d",
+              "target": 1800,
+              "spot_fee": 90,
+              "hours": 5,
+              "lead": "tm-1"
             }
           }
         ],
@@ -792,7 +920,7 @@
               "status": "Valid",
               "kind": "Event permit",
               "issued_on": "@today-60d",
-              "expires_on": "@today+120d",
+              "expires_on": "@mon+6d",
               "fee": 0,
               "office": "Hopscotch Brewing"
             }
@@ -804,7 +932,7 @@
               "status": "Renewal due",
               "kind": "Insurance",
               "issued_on": "@today-350d",
-              "expires_on": "@today+15d",
+              "expires_on": "@today+5d",
               "fee": 1240,
               "office": "Pinnacle Mutual"
             }
@@ -819,6 +947,18 @@
               "expires_on": "@today-55d",
               "fee": 300,
               "office": "Festival committee"
+            }
+          },
+          {
+            "key": "permit-8",
+            "values": {
+              "permit_name": "Propane system certification",
+              "status": "Renewal due",
+              "kind": "Fire inspection",
+              "issued_on": "@today-369d",
+              "expires_on": "@today-4d",
+              "fee": 75,
+              "office": "Fire marshal, mobile vendor desk"
             }
           }
         ]
@@ -1069,6 +1209,27 @@
               "stop": "stop-7",
               "cook": "tm-2"
             }
+          },
+          {
+            "key": "prep_item-10",
+            "values": {
+              "prep_name": "Salsa verde, weekly batch",
+              "status": "To prep",
+              "portions": 8,
+              "prep_on": "@today+2d",
+              "cook": "tm-2"
+            }
+          },
+          {
+            "key": "prep_item-11",
+            "values": {
+              "prep_name": "Pickled jalapenos, left in the walk-in",
+              "status": "Prepped",
+              "portions": 4,
+              "prep_on": "@today-1d",
+              "stop": "stop-12",
+              "cook": "tm-2"
+            }
           }
         ]
       },
@@ -1164,6 +1325,61 @@
                 "value": 100000
               }
             ]
+          },
+          {
+            "key": "minimum",
+            "label": "Sales minimum (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "deposit",
+            "label": "Deposit paid (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "payment",
+            "label": "Who pays",
+            "parityType": "select",
+            "choices": [
+              "Host pays all",
+              "Guests pay, host covers minimum",
+              "Guests pay"
+            ],
+            "choiceColors": {
+              "Host pays all": "green",
+              "Guests pay, host covers minimum": "amber",
+              "Guests pay": "blue"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "email",
@@ -1275,7 +1491,10 @@
               "quote": 2800,
               "email": "okonkwo.fam@mailpost.net",
               "phone": "(512) 555-0181",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "minimum": 2800,
+              "payment": "Host pays all",
+              "deposit": 1400
             }
           },
           {
@@ -1288,7 +1507,9 @@
               "quote": 3600,
               "email": "pta@greenevalley.net",
               "phone": "(512) 555-0182",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "minimum": 3200,
+              "payment": "Host pays all"
             }
           },
           {
@@ -1300,7 +1521,9 @@
               "guests": 90,
               "email": "events@bellamyco.net",
               "phone": "(512) 555-0183",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "minimum": 1500,
+              "payment": "Guests pay, host covers minimum"
             }
           },
           {
@@ -1313,7 +1536,9 @@
               "quote": 1900,
               "email": "torres.party@mailpost.net",
               "phone": "(512) 555-0184",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "minimum": 1900,
+              "payment": "Host pays all"
             }
           },
           {
@@ -1326,7 +1551,9 @@
               "quote": 4200,
               "email": "ops@ridgelinestudio.net",
               "phone": "(512) 555-0185",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "minimum": 3500,
+              "payment": "Host pays all"
             }
           },
           {
@@ -1338,7 +1565,246 @@
               "guests": 200,
               "email": "blockparty@pecanstreetnb.net",
               "phone": "(512) 555-0186",
+              "owner": "tm-4",
+              "minimum": 1200,
+              "payment": "Guests pay"
+            }
+          },
+          {
+            "key": "booking-7",
+            "values": {
+              "booking_name": "Lakeline church fall festival",
+              "status": "Quoted",
+              "event_on": "@today-3d",
+              "guests": 150,
+              "quote": 2400,
+              "minimum": 2000,
+              "payment": "Guests pay, host covers minimum",
               "owner": "tm-4"
+            }
+          },
+          {
+            "key": "booking-8",
+            "values": {
+              "booking_name": "Hartwell birthday cookout",
+              "status": "Inquiry",
+              "event_on": "@today+4d",
+              "guests": 35,
+              "minimum": 900,
+              "payment": "Host pays all",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "booking-9",
+            "values": {
+              "booking_name": "Maple Hill neighborhood movie night",
+              "status": "Quoted",
+              "event_on": "@mon+5d",
+              "guests": 120,
+              "quote": 1600,
+              "minimum": 1200,
+              "payment": "Guests pay, host covers minimum",
+              "owner": "tm-4"
+            }
+          }
+        ]
+      },
+      {
+        "token": "menu",
+        "name": "Menu",
+        "labelSingular": "Menu item",
+        "labelPlural": "Menu",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "utensils",
+        "titleField": "item_name",
+        "describes": "Each item on the truck menu with its price, cost per serving, food cost percent and average sold per stop.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "item_name",
+            "label": "Dish",
+            "parityType": "text",
+            "required": true,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "On menu",
+              "Special",
+              "Retired"
+            ],
+            "statusGroups": {
+              "On menu": "in_progress",
+              "Special": "todo",
+              "Retired": "done"
+            },
+            "required": true,
+            "choiceColors": {
+              "On menu": "green",
+              "Special": "orange",
+              "Retired": "slate"
+            },
+            "default": "On menu",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "cost",
+            "label": "Cost per serving (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "food_pct",
+            "label": "Food cost (%)",
+            "parityType": "formula",
+            "formula": "IF({Price (USD)} > 0, ROUND({Cost per serving (USD)} / {Price (USD)} * 100, 0), 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "per_stop",
+            "label": "Sold per stop, average",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "menu-1",
+            "values": {
+              "item_name": "Pork al pastor tacos, three",
+              "status": "On menu",
+              "price": 12,
+              "cost": 3.6,
+              "per_stop": 46
+            }
+          },
+          {
+            "key": "menu-2",
+            "values": {
+              "item_name": "Adobo chicken tacos, three",
+              "status": "On menu",
+              "price": 11,
+              "cost": 3.1,
+              "per_stop": 38
+            }
+          },
+          {
+            "key": "menu-3",
+            "values": {
+              "item_name": "Smoked brisket plate",
+              "status": "On menu",
+              "price": 16,
+              "cost": 5.9,
+              "per_stop": 52
+            }
+          },
+          {
+            "key": "menu-4",
+            "values": {
+              "item_name": "Black bean and squash bowl",
+              "status": "On menu",
+              "price": 11,
+              "cost": 2.4,
+              "per_stop": 21
+            }
+          },
+          {
+            "key": "menu-5",
+            "values": {
+              "item_name": "Chips, salsa trio",
+              "status": "On menu",
+              "price": 5,
+              "cost": 0.9,
+              "per_stop": 30
+            }
+          },
+          {
+            "key": "menu-6",
+            "values": {
+              "item_name": "Agua fresca",
+              "status": "On menu",
+              "price": 4,
+              "cost": 0.6,
+              "per_stop": 44
+            }
+          },
+          {
+            "key": "menu-7",
+            "values": {
+              "item_name": "Green chile mac, weekend special",
+              "status": "Special",
+              "price": 9,
+              "cost": 2.2,
+              "per_stop": 18
+            }
+          },
+          {
+            "key": "menu-8",
+            "values": {
+              "item_name": "Fish tacos",
+              "status": "Retired",
+              "price": 13,
+              "cost": 5.2
             }
           }
         ]
@@ -1856,6 +2322,20 @@
             "Quoted"
           ]
         }
+      },
+      {
+        "token": "all_menu",
+        "name": "All menu",
+        "table": "menu",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "menu_board",
+        "name": "Menu board",
+        "table": "menu",
+        "kind": "kanban",
+        "groupBy": "status"
       }
     ],
     "agent": {
@@ -1944,7 +2424,7 @@
         "Depot Street"
       ]
     },
-    "version": 4
+    "version": 6
   },
   "pages": [
     {
@@ -1955,7 +2435,7 @@
         "emoji": "🚚"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:hospitality-food-truck-street",
         "offsetY": 50
       },
       "settings": {
@@ -1966,7 +2446,14 @@
           "type": "callout",
           "text": [
             {
-              "text": "The truck's whole business in one page: service stops with sales, permits that must never lapse, the commissary prep list for each stop and private booking requests. Check the Dashboard before every service, load the truck from the prep list and look at permits expiring in the next 30 days every Monday."
+              "text": "The office of a taco and barbecue truck: every stop with sales, orders, average ticket and food cost, the menu with cost per serving, permits and their renewal dates, commissary prep for each stop, and private event bookings. Open "
+            },
+            {
+              "text": "Start here",
+              "bold": true
+            },
+            {
+              "text": " first."
             }
           ],
           "background": "blue",
@@ -1987,6 +2474,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
                   }
                 }
               ]
@@ -2499,6 +2992,55 @@
             ],
             "activeViewId": "boo-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Menu"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What the truck sells, with price, cost per serving and food cost percent."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "menu",
+              "view": "all_menu"
+            },
+            "inline": true,
+            "title": "Menu",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "menu-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "menu-t",
+                "name": "All menu",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "menu-b"
+          }
         }
       ]
     },
@@ -2922,6 +3464,52 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Menu by food cost"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "menu",
+              "view": "all_menu"
+            },
+            "inline": true,
+            "title": "Menu by food cost",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "vmf",
+                "name": "Highest food cost first",
+                "layout": "list",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "food_pct",
+                    "direction": "desc"
+                  }
+                ],
+                "anyOf": {
+                  "status": [
+                    "On menu",
+                    "Special"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vmf"
+          }
         }
       ]
     },
@@ -2930,142 +3518,280 @@
       "parent": "food-truck-operations",
       "title": "Pre-service routine",
       "icon": {
-        "emoji": "🧰"
+        "emoji": "🌮"
       },
       "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "The night before"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Prep list read and divided between cooks"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Propane, water and ice checked"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Cash float and card reader charged"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Morning at the commissary"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Cook and cool items in the order on the prep list."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Label every container with the item, date and time."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Load the truck coldest and heaviest first; press Load it as items go on."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Before leaving"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Check the truck lights, tires and fire extinguisher."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Confirm the stop address and arrival time with the contact."
-            }
-          ]
-        },
         {
           "type": "callout",
           "text": [
             {
-              "text": "The best stop in the world fails if the truck leaves without the tortillas."
+              "text": "Most bad service days start before the truck leaves the commissary. A fixed routine means you open on time with everything aboard."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
           }
-        }
-      ]
-    },
-    {
-      "key": "picking-locations",
-      "parent": "food-truck-operations",
-      "title": "Choosing where to park",
-      "icon": {
-        "emoji": "📍"
-      },
-      "blocks": [
+        },
         {
           "type": "heading",
           "text": [
             {
-              "text": "What to compare"
+              "text": "The day before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the stop: address, arrival time, power or generator, spot fee, contact."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Build the prep list for the stop from the expected orders and last time's sell-out times."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Confirm staff and who drives."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check permits in the window: health permit, event permit for that location, insurance certificate if the host asked."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the commissary"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Prep items made and labeled with date and time"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cold items at 41 degrees Fahrenheit or below; hot holding equipment working"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Each prep item set to "
+            },
+            {
+              "text": "Loaded",
+              "bold": true
+            },
+            {
+              "text": " as it goes on the truck"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Water tank full; gray water tank empty"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Propane checked; spare tank aboard"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Generator fueled; oil checked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cash float, card reader charged, menu board updated"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Staffing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Two people can run a small menu; three keeps a long line moving. Whoever leads the stop owns the cash, the temperatures and the close."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Arrival"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Park level and legally; leave room for the line and for neighbors."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Set up the generator downwind and away from the line."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Fire extinguisher reachable; first aid kit aboard."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Hand washing station running before any food is touched."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Service"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Post sold-out items on the board straight away."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep the line moving: one person takes orders and payment, one cooks, one assembles."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Temperatures checked and written down every two hours."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cash and cards"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Start every stop with the same cash float, and make sure the card reader is charged with a spare battery. Most sales are by card now; a dead reader costs more than a dead burner."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Packing list"
             }
           ],
           "props": {
@@ -3082,12 +3808,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Factor"
+                      "text": "Area"
                     }
                   ],
                   [
                     {
-                      "text": "Question to ask"
+                      "text": "Items"
                     }
                   ]
                 ]
@@ -3096,12 +3822,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Foot traffic"
+                      "text": "Cooking"
                     }
                   ],
                   [
                     {
-                      "text": "How many people walk past during our hours?"
+                      "text": "Tongs, spatulas, thermometers, gloves, towels, sanitizer"
                     }
                   ]
                 ]
@@ -3110,12 +3836,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Competition"
+                      "text": "Service"
                     }
                   ],
                   [
                     {
-                      "text": "Who else sells similar food nearby?"
+                      "text": "Boats, foil, napkins, forks, sauce cups, bags"
                     }
                   ]
                 ]
@@ -3124,26 +3850,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Cost"
+                      "text": "Safety"
                     }
                   ],
                   [
                     {
-                      "text": "Spot fee, parking and permits"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Rules"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Is vending allowed, and for how long?"
+                      "text": "Extinguisher, first aid kit, wheel chocks, cones"
                     }
                   ]
                 ]
@@ -3155,7 +3867,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Learning from results"
+              "text": "Example"
             }
           ],
           "props": {
@@ -3163,44 +3875,40 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "quote",
           "text": [
             {
-              "text": "After each stop, enter sales and hours."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Compare Sales after spot fee by kind of stop each month."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Keep the top three places, test one new place a week, and drop what misses its target."
+              "text": "For the Tuesday brewery night the marinated pork is still to prep. The cook starts it first thing so it marinates at least six hours before loading."
             }
           ]
         }
       ]
     },
     {
-      "key": "permit-calendar",
+      "key": "picking-locations",
       "parent": "food-truck-operations",
-      "title": "Keeping permits current",
+      "title": "Choosing where to park",
       "icon": {
-        "emoji": "🗂️"
+        "emoji": "📍"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The best food can fail in the wrong place. Choose stops with data, not hope, and drop the ones that do not pay."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "The calendar"
+              "text": "What makes a good stop"
             }
           ],
           "props": {
@@ -3211,7 +3919,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Every permit sits in the Permits table with an expiry date."
+              "text": "Hungry people with time to wait: breweries, markets, office parks at lunch, festivals."
             }
           ]
         },
@@ -3219,7 +3927,23 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "On the first of each month, open Permits expiring in 45 days."
+              "text": "A host who promotes you on their own channels."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A fee that leaves room for profit, or a sales share instead of a flat fee."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Shade, power and somewhere for guests to sit or stand."
             }
           ]
         },
@@ -3227,7 +3951,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Renewing"
+              "text": "Kinds of stop"
             }
           ],
           "props": {
@@ -3235,34 +3959,103 @@
           }
         },
         {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Start at 45 days; gather the forms and the fee."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Send the application and note the date."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "When the new document arrives, press Renewed and update the dates."
-            }
-          ]
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Kind"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Typical pattern"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Brewery"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Evenings and weekends; steady, loyal crowd; often no fee"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Market"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Morning to early afternoon; big volume; spot fee"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Street spot"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Weekday lunch; short, intense rush"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Festival"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Very high volume; high fees; long day"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Private event"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Guaranteed income; set guest count"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Never"
+              "text": "Judging a stop"
             }
           ],
           "props": {
@@ -3273,25 +4066,63 @@
           "type": "text",
           "text": [
             {
-              "text": "Serve with an expired permit or insurance. One inspection can cost a season."
+              "text": "Enter sales, orders and food cost after every service. After three visits, compare:"
             }
           ]
-        }
-      ]
-    },
-    {
-      "key": "end-of-day-close",
-      "parent": "food-truck-operations",
-      "title": "End of day close",
-      "icon": {
-        "emoji": "🌙"
-      },
-      "blocks": [
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Sales after spot fee",
+              "bold": true
+            },
+            {
+              "text": " against the target."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Average ticket",
+              "bold": true
+            },
+            {
+              "text": ": low tickets mean people buy one item; try a combo."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Sold out at",
+              "bold": true
+            },
+            {
+              "text": ": early sell-outs mean more prep next time."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Weather",
+              "bold": true
+            },
+            {
+              "text": ": rainy or windy days explain dips; judge on normal days."
+            }
+          ]
+        },
         {
           "type": "heading",
           "text": [
             {
-              "text": "At the stop"
+              "text": "Rules of thumb"
             }
           ],
           "props": {
@@ -3302,7 +4133,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Count the cash, run the card report and note what sold out."
+              "text": "Three misses on normal-weather days, and the stop comes off the plan."
             }
           ]
         },
@@ -3310,9 +4141,555 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Wipe down surfaces, empty grease and greywater into approved containers."
+              "text": "Never take two stops on one day without two crews."
             }
           ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep one regular stop for each weekday so customers know where to find you."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Private events"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Private bookings pay a guaranteed amount. Quote with a "
+            },
+            {
+              "text": "sales minimum",
+              "bold": true
+            },
+            {
+              "text": ": if guests buy less, the host covers the difference. Ask for a deposit to hold the date, and confirm power, parking and the guest count a week before."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Booking stops"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Confirm in writing: date, hours, spot location, fee, power, exclusivity (no second taco truck), and the cancellation rule for bad weather."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Thursday office park lunch made 760 dollars against a 900 target on a windy day, with only 66 orders. One more visit on a calm day decides whether it stays."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "permit-calendar",
+      "parent": "food-truck-operations",
+      "title": "Keeping permits current",
+      "icon": {
+        "emoji": "📋"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A lapsed permit can close the truck on the spot. Track every permit with its expiry and renew early."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What most trucks need"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Permit"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Usually from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Renew"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Mobile food unit health permit"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "County or city health department"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Yearly, with an inspection"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Vending or business licence"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "City clerk"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Yearly"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fire safety inspection"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fire marshal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Yearly, often with a propane check"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Commissary agreement"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Your commissary kitchen"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Yearly"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Event permits"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Festival or event organizer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Per event"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Liability insurance"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Insurance carrier"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Yearly"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Vehicle registration and insurance"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "State motor vehicle office and carrier"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Yearly"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rules differ by city and county; check with your local health department."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The renewal routine"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Each Monday, open Permits and look at "
+            },
+            {
+              "text": "Days left",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Anything under 45 days: start the renewal and set the status to "
+            },
+            {
+              "text": "Renewal due",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book inspections early; inspectors fill up in spring."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the new permit arrives, update the issued and expiry dates and set "
+            },
+            {
+              "text": "Valid",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Keep copies of every permit on the truck and in this workspace."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Event permits"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Some events require their own permit or a temporary health permit. Ask the organizer at booking, and add it as a permit with the event date as the expiry."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When something lapses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A permit past its expiry shows under Overdue. Stop serving where that permit applies, call the issuing office the same day, and book the earliest inspection. Note the call on the permit."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inspection ready, every day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Hand washing sink stocked, hot water working"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Food temperatures logged"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Food covered and raised off the floor"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Sanitizer at the right strength"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Permits displayed where customers can see them"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The vending licence expires in 25 days and liability insurance in five. The propane certification already lapsed four days ago, so the truck does not run until the fire marshal signs it off. Both are marked Renewal due; the insurance renewal goes first because a market organizer has asked for a current certificate."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "end-of-day-close",
+      "parent": "food-truck-operations",
+      "title": "End of day close",
+      "icon": {
+        "emoji": "🧽"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The close sets up the next day. Done well, the truck is clean, the numbers are in, and nothing spoils overnight."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On site"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Last orders called; sold-out items posted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Generator off and cooled before packing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Trash and recycling bagged; the spot left cleaner than found"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Gray water held for proper disposal, never dumped on site"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
           "type": "heading",
@@ -3329,7 +4706,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Unload leftovers and log what must be thrown away."
+              "text": "Unload food; cool hot food quickly and label it with the date, or throw it out."
             }
           ]
         },
@@ -3337,7 +4714,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Clean the truck, restock cups and napkins."
+              "text": "Clean and sanitize every surface, the flat top, the fryer and the hood filters."
             }
           ]
         },
@@ -3345,7 +4722,15 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Enter sales and hours on the stop and press Close out the day."
+              "text": "Empty gray water; refill fresh water."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Charge the card reader; count cash."
             }
           ]
         },
@@ -3353,7 +4738,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The next morning"
+              "text": "Money"
             }
           ],
           "props": {
@@ -3364,7 +4749,553 @@
           "type": "text",
           "text": [
             {
-              "text": "Read the notes from the last stop before writing the prep list."
+              "text": "Cash is counted by two people and bagged with the stop name and total. Card totals are checked against the sales report before the stop is closed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Enter on the stop the same night:"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sales",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Orders",
+              "bold": true
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Food cost",
+              "bold": true
+            },
+            {
+              "text": " for what was used"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Weather",
+              "bold": true
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sold out at",
+              "bold": true
+            },
+            {
+              "text": " for any item that ran out"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Then set the stop to "
+            },
+            {
+              "text": "Served",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Waste and leftovers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Item"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rule"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cooked proteins"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cooled within two hours; used within three days, or thrown out"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Salsas and crema"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Labeled; used within the time on the label"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Open tortillas"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Kept dry and sealed; used the next day"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stops not closed out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A stop whose date has passed but is still Planned or Confirmed shows under Overdue. Enter its numbers or mark it rained out the next morning, so the monthly comparison stays honest."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly truck care"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Deep clean the hood and filters"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check tires, lights and brakes"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Service the generator by its hour meter"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check propane lines for leaks with soapy water"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "After the Sunday brewery patio, pork sold out by 4:15 and 131 orders came through. The prep par for that stop goes up and the leftover salsa is labeled for Tuesday."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "food-truck-operations",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A food truck is a restaurant that moves every day. Where you park, what you prep and which permits are current decide whether a day makes money. This workspace keeps all three in view."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it holds"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stops"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Each service: place, kind, date, sales target, sales, orders, average ticket, spot fee, food cost and percent, weather, when it sold out, prep loaded"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Menu"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Each item: price, cost per serving, food cost percent, sold per stop"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Permits"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Health permit, licences, fire inspection, commissary agreement, insurance, event permits, with expiry and days left"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Prep"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What the commissary prepares for each stop, by whom, and whether it is loaded"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Bookings"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Private events: date, guests, quote, sales minimum, deposit and who pays"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the numbers work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Average ticket",
+              "bold": true
+            },
+            {
+              "text": " is sales divided by orders."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Food cost",
+              "bold": true
+            },
+            {
+              "text": " on a stop is what you spent on food for that service; the percent is against sales. Most trucks aim for 28 to 32 percent."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sales after spot fee",
+              "bold": true
+            },
+            {
+              "text": " is what the stop really brought in before labor and fuel."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter your menu with price and cost per serving."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add every permit with its expiry date and the office that issues it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Plan the next two weeks of stops with a sales target for each."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After each service, enter sales, orders, food cost, weather and the time you sold out."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sunday:",
+              "bold": true
+            },
+            {
+              "text": " plan next week's stops; confirm with breweries and markets."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Day before each stop:",
+              "bold": true
+            },
+            {
+              "text": " prep list for the commissary; generator fueled, propane checked."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "After each stop:",
+              "bold": true
+            },
+            {
+              "text": " numbers entered; prep loaded status reset."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monthly:",
+              "bold": true
+            },
+            {
+              "text": " look at sales by stop kind and weather; drop stops that miss target three times."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Last Saturday's market sold out of brisket by 12:40 on a hot day with an average ticket around 12 dollars. For this Saturday, the cook smokes 20 more portions and the agua fresca batch is doubled."
             }
           ]
         }

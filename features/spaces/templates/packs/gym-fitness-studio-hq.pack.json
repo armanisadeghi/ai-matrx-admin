@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0509",
-  "version": 4,
+  "version": 6,
   "title": "Gym and Fitness Studio HQ",
   "description": "For gyms: memberships, freezes, class capacity, PT packages, failed dues.",
   "forWho": "Gyms and boutique fitness studios",
@@ -9,7 +9,7 @@
     "emoji": "🏋️"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:wellness-gym-interior-equipment",
     "offsetY": 50
   },
   "category": "wellness",
@@ -616,6 +616,13 @@
         "independentOf": {
           "plan": "Either record can be created or change status before the other."
         },
+        "before": [
+          [
+            "joined_on",
+            "term_ends"
+          ]
+        ],
+        "datesIndependent": "Waiver, last visit, freeze and last-day dates are each set when that thing happens; only the joining date and the end of the minimum term have a fixed order.",
         "fields": [
           {
             "key": "client_name",
@@ -900,7 +907,7 @@
           {
             "key": "client-2",
             "values": {
-              "client_name": "Kwame and Adaeze Montague",
+              "client_name": "Kwame Montague",
               "kind": "Couple",
               "client_status": "Active",
               "plan": "plan-2",
@@ -955,12 +962,12 @@
           {
             "key": "client-5",
             "values": {
-              "client_name": "Sigrid Lindqvist",
+              "client_name": "Imelda Lindqvist",
               "kind": "Individual",
               "client_status": "Active",
               "plan": "plan-1",
               "phone": "(612) 555-0153",
-              "email": "sigrid.lindqvist@inbox-mail.net",
+              "email": "imelda.lindqvist@inbox-mail.net",
               "joined_on": "@today-2y",
               "fob": "F-0871",
               "billing_day": 8,
@@ -972,18 +979,18 @@
           {
             "key": "client-6",
             "values": {
-              "client_name": "Tobias Ferreira",
+              "client_name": "Anders Sandoval",
               "kind": "Individual",
               "client_status": "Frozen",
               "plan": "plan-1",
               "phone": "(612) 555-0162",
-              "email": "tobias.ferreira@inbox-mail.net",
+              "email": "anders.sandoval@inbox-mail.net",
               "joined_on": "@today-11m",
               "freeze_until": "@today+5d",
               "fob": "F-1011",
               "billing_day": 20,
               "waiver_on": "@today-11m",
-              "emergency": "Ana Ferreira (612) 555-0163",
+              "emergency": "Ana Sandoval (612) 555-0163",
               "health": "Broken wrist, in a cast until the freeze ends",
               "last_visit": "@today-40d"
             }
@@ -991,30 +998,30 @@
           {
             "key": "client-7",
             "values": {
-              "client_name": "Priyanka Ramaswamy",
+              "client_name": "Ottoline Boateng",
               "kind": "Individual",
               "client_status": "Active",
               "plan": "plan-2",
               "phone": "(612) 555-0119",
-              "email": "priyanka.r@inbox-mail.net",
+              "email": "ottoline.boateng@inbox-mail.net",
               "joined_on": "@today-10m",
               "term_ends": "@today+2m",
               "fob": "F-1055",
               "billing_day": 5,
               "waiver_on": "@today-10m",
-              "emergency": "Arjun Ramaswamy (612) 555-0110",
+              "emergency": "Arjun Boateng (612) 555-0110",
               "last_visit": "@today-3d"
             }
           },
           {
             "key": "client-8",
             "values": {
-              "client_name": "Desmond Ibarra",
+              "client_name": "Humphrey Ibarra",
               "kind": "Individual",
               "client_status": "Active",
               "plan": "plan-3",
               "phone": "(612) 555-0177",
-              "email": "desmond.ibarra@inbox-mail.net",
+              "email": "humphrey.ibarra@inbox-mail.net",
               "joined_on": "@today-6w",
               "fob": "F-1160",
               "billing_day": 28,
@@ -1026,15 +1033,15 @@
           {
             "key": "client-9",
             "values": {
-              "client_name": "Marguerite Oyelaran",
+              "client_name": "Tamsin Prescott",
               "kind": "Senior",
               "client_status": "Active",
               "plan": "plan-4",
               "phone": "(612) 555-0131",
-              "email": "m.oyelaran@inbox-mail.net",
+              "email": "tamsin.prescott@inbox-mail.net",
               "joined_on": "@today-4m",
               "waiver_on": "@today-4m",
-              "emergency": "Femi Oyelaran (612) 555-0132",
+              "emergency": "Femi Prescott (612) 555-0132",
               "health": "Osteoporosis: no loaded spinal flexion; prefers mobility classes",
               "last_visit": "@today-2d"
             }
@@ -1042,30 +1049,30 @@
           {
             "key": "client-10",
             "values": {
-              "client_name": "Callum Hartigan",
+              "client_name": "Desmond Aldercott",
               "kind": "Individual",
               "client_status": "Cancelling",
               "plan": "plan-1",
               "phone": "(612) 555-0188",
-              "email": "callum.hartigan@inbox-mail.net",
+              "email": "desmond.aldercott@inbox-mail.net",
               "joined_on": "@today-19m",
               "last_day": "@today+12d",
               "fob": "F-0954",
               "billing_day": 10,
               "waiver_on": "@today-19m",
-              "emergency": "Erin Hartigan (612) 555-0189",
+              "emergency": "Erin Aldercott (612) 555-0189",
               "last_visit": "@today-6d"
             }
           },
           {
             "key": "client-11",
             "values": {
-              "client_name": "Yusuf Adeyemi-Clarke",
+              "client_name": "Noor Hartigan",
               "kind": "Individual",
               "client_status": "Active",
               "plan": "plan-1",
               "phone": "(612) 555-0125",
-              "email": "yusuf.ac@inbox-mail.net",
+              "email": "noor.hartigan@inbox-mail.net",
               "joined_on": "@today-7m",
               "fob": "F-1089",
               "billing_day": 1,
@@ -1077,48 +1084,48 @@
           {
             "key": "client-12",
             "values": {
-              "client_name": "Hollis Brandvold",
+              "client_name": "Silas Okafor",
               "kind": "Individual",
               "client_status": "Frozen",
               "plan": "plan-2",
               "phone": "(612) 555-0139",
-              "email": "hollis.brandvold@inbox-mail.net",
+              "email": "silas.okafor@inbox-mail.net",
               "joined_on": "@today-9m",
               "term_ends": "@today+3m",
               "freeze_until": "@today+26d",
               "fob": "F-1063",
               "billing_day": 9,
               "waiver_on": "@today-9m",
-              "emergency": "Karin Brandvold (612) 555-0140",
+              "emergency": "Karin Okafor (612) 555-0140",
               "last_visit": "@today-35d"
             }
           },
           {
             "key": "client-13",
             "values": {
-              "client_name": "Celestine Mbatha",
+              "client_name": "Kasia Whitlock",
               "kind": "Individual",
               "client_status": "Cancelled",
               "plan": "plan-3",
               "phone": "(612) 555-0158",
-              "email": "celestine.mbatha@inbox-mail.net",
+              "email": "kasia.whitlock@inbox-mail.net",
               "joined_on": "@today-13m",
               "last_day": "@today-20d",
               "billing_day": 22,
               "waiver_on": "@today-13m",
-              "emergency": "Sipho Mbatha (612) 555-0159",
+              "emergency": "Sipho Whitlock (612) 555-0159",
               "last_visit": "@today-30d"
             }
           },
           {
             "key": "client-14",
             "values": {
-              "client_name": "Arturo Villaseñor",
+              "client_name": "Tobias Eriksen",
               "kind": "Individual",
               "client_status": "Lead",
               "plan": "plan-6",
               "phone": "(612) 555-0102",
-              "email": "arturo.villasenor@inbox-mail.net"
+              "email": "tobias.eriksen@inbox-mail.net"
             }
           },
           {
@@ -1135,12 +1142,12 @@
           {
             "key": "client-16",
             "values": {
-              "client_name": "Ottoline Grieve",
+              "client_name": "Beatrix Grieve",
               "kind": "Individual",
               "client_status": "Active",
               "plan": "plan-1",
               "phone": "(612) 555-0114",
-              "email": "ottoline.grieve@inbox-mail.net",
+              "email": "beatrix.grieve@inbox-mail.net",
               "joined_on": "@today-3w",
               "fob": "F-1172",
               "billing_day": 25,
@@ -1666,7 +1673,7 @@
           {
             "key": "ptpk-4",
             "values": {
-              "package_name": "Ramaswamy 5-pack starter",
+              "package_name": "Boateng 5-pack starter",
               "client": "client-7",
               "trainer": "tm-4",
               "pkg_status": "Used up",
@@ -1680,7 +1687,7 @@
           {
             "key": "ptpk-5",
             "values": {
-              "package_name": "Oyelaran 10-pack",
+              "package_name": "Prescott 10-pack",
               "client": "client-9",
               "trainer": "tm-4",
               "pkg_status": "Active",
@@ -1694,8 +1701,8 @@
           {
             "key": "ptpk-6",
             "values": {
-              "package_name": "Grieve 5-pack starter",
-              "client": "client-16",
+              "package_name": "Fontaine 5-pack starter",
+              "client": "client-1",
               "trainer": "tm-3",
               "pkg_status": "Active",
               "sessions_bought": 5,
@@ -2005,7 +2012,7 @@
           {
             "key": "bookin-4",
             "values": {
-              "booking_name": "Oyelaran PT - balance circuit",
+              "booking_name": "Prescott PT - balance circuit",
               "status": "Late cancel",
               "client": "client-9",
               "package": "ptpk-5",
@@ -2030,7 +2037,7 @@
           {
             "key": "bookin-6",
             "values": {
-              "booking_name": "Sunrise HIIT - Yusuf A-C",
+              "booking_name": "Sunrise HIIT - Noor Hartigan",
               "status": "No-show",
               "client": "client-11",
               "class_slot": "class-1",
@@ -2055,7 +2062,7 @@
           {
             "key": "bookin-8",
             "values": {
-              "booking_name": "Friday fight club - Hartigan",
+              "booking_name": "Friday fight club - Aldercott",
               "status": "Checked in",
               "client": "client-10",
               "class_slot": "class-5",
@@ -2068,7 +2075,7 @@
           {
             "key": "bookin-9",
             "values": {
-              "booking_name": "Saturday strength - Ramaswamy",
+              "booking_name": "Saturday strength - Boateng",
               "status": "No-show",
               "client": "client-7",
               "class_slot": "class-6",
@@ -2080,7 +2087,7 @@
           {
             "key": "bookin-10",
             "values": {
-              "booking_name": "Mobility and core - Oyelaran",
+              "booking_name": "Mobility and core - Prescott",
               "status": "Checked in",
               "client": "client-9",
               "class_slot": "class-4",
@@ -2130,9 +2137,9 @@
           {
             "key": "bookin-14",
             "values": {
-              "booking_name": "Grieve PT - squat pattern",
+              "booking_name": "Fontaine PT - squat pattern",
               "status": "Booked",
-              "client": "client-16",
+              "client": "client-1",
               "package": "ptpk-6",
               "staff": "tm-3",
               "when_on": "@today",
@@ -2142,7 +2149,7 @@
           {
             "key": "bookin-15",
             "values": {
-              "booking_name": "Tour for Arturo Villaseñor",
+              "booking_name": "Tour for Tobias Eriksen",
               "status": "Booked",
               "client": "client-14",
               "staff": "tm-6",
@@ -2165,7 +2172,7 @@
           {
             "key": "bookin-17",
             "values": {
-              "booking_name": "Friday fight club - Yusuf A-C",
+              "booking_name": "Friday fight club - Noor Hartigan",
               "status": "Waitlist",
               "client": "client-11",
               "class_slot": "class-5",
@@ -2189,7 +2196,7 @@
           {
             "key": "bookin-19",
             "values": {
-              "booking_name": "Oyelaran PT - stairs and grip",
+              "booking_name": "Prescott PT - stairs and grip",
               "status": "Booked",
               "client": "client-9",
               "package": "ptpk-5",
@@ -2224,7 +2231,7 @@
           {
             "key": "bookin-22",
             "values": {
-              "booking_name": "Sunday ride - Priyanka R",
+              "booking_name": "Sunday ride - Ottoline Boateng",
               "status": "Booked",
               "client": "client-7",
               "class_slot": "class-7",
@@ -2516,7 +2523,7 @@
           {
             "key": "paymen-5",
             "values": {
-              "payment_name": "Freeze fee - Ferreira",
+              "payment_name": "Freeze fee - Sandoval",
               "status": "Paid",
               "client": "client-6",
               "for_what": "Freeze fee",
@@ -2530,7 +2537,7 @@
           {
             "key": "paymen-6",
             "values": {
-              "payment_name": "Dues - Hartigan",
+              "payment_name": "Dues - Aldercott",
               "status": "Failed",
               "client": "client-10",
               "for_what": "Monthly dues",
@@ -2544,7 +2551,7 @@
           {
             "key": "paymen-7",
             "values": {
-              "payment_name": "Dues - Yusuf Adeyemi-Clarke",
+              "payment_name": "Dues - Noor Hartigan",
               "status": "Failed",
               "client": "client-11",
               "for_what": "Monthly dues",
@@ -2572,7 +2579,7 @@
           {
             "key": "paymen-9",
             "values": {
-              "payment_name": "Class pack - Oyelaran",
+              "payment_name": "Class pack - Prescott",
               "status": "Refunded",
               "client": "client-9",
               "for_what": "Class pack",
@@ -2612,7 +2619,7 @@
           {
             "key": "paymen-12",
             "values": {
-              "payment_name": "Day pass - Villaseñor",
+              "payment_name": "Day pass - Eriksen",
               "status": "Pending",
               "client": "client-14",
               "for_what": "Day pass",
@@ -2869,7 +2876,7 @@
           {
             "key": "req-1",
             "values": {
-              "request_name": "Ferreira freeze - broken wrist",
+              "request_name": "Sandoval freeze - broken wrist",
               "client": "client-6",
               "handled_by": "tm-2",
               "req_type": "Freeze",
@@ -2886,7 +2893,7 @@
           {
             "key": "req-2",
             "values": {
-              "request_name": "Brandvold freeze - winter travel",
+              "request_name": "Okafor freeze - winter travel",
               "client": "client-12",
               "handled_by": "tm-6",
               "req_type": "Freeze",
@@ -2903,7 +2910,7 @@
           {
             "key": "req-3",
             "values": {
-              "request_name": "Hartigan cancellation",
+              "request_name": "Aldercott cancellation",
               "client": "client-10",
               "handled_by": "tm-2",
               "req_type": "Cancellation",
@@ -2920,7 +2927,7 @@
           {
             "key": "req-4",
             "values": {
-              "request_name": "Mbatha cancellation",
+              "request_name": "Whitlock cancellation",
               "client": "client-13",
               "handled_by": "tm-2",
               "req_type": "Cancellation",
@@ -2937,7 +2944,7 @@
           {
             "key": "req-5",
             "values": {
-              "request_name": "Ramaswamy plan change",
+              "request_name": "Boateng plan change",
               "client": "client-7",
               "handled_by": "tm-6",
               "req_type": "Plan change",
@@ -2954,7 +2961,7 @@
           {
             "key": "req-6",
             "values": {
-              "request_name": "Yusuf A-C freeze request",
+              "request_name": "Noor Hartigan freeze request",
               "client": "client-11",
               "handled_by": "tm-6",
               "req_type": "Freeze",
@@ -2965,7 +2972,7 @@
               "ends_on": "@today+33d",
               "save_offer": "Corporate rate",
               "fee": 10,
-              "notes": "Check if his new employer is a partner"
+              "notes": "Check whether the new employer is a partner"
             }
           },
           {
@@ -3610,7 +3617,7 @@
         "Mercer Street"
       ]
     },
-    "version": 4
+    "version": 6
   },
   "pages": [
     {
@@ -4238,6 +4245,10 @@
       ],
       "settings": {
         "fullWidth": true
+      },
+      "cover": {
+        "url": "gallery:wellness-gym-interior-equipment",
+        "offsetY": 50
       }
     },
     {

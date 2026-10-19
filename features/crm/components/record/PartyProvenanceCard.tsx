@@ -40,7 +40,7 @@ import { CRM_RECORD_SURFACE_NAME } from "@/features/surfaces/manifests/crm-recor
 import { updateParty } from "../../service";
 import { platformWord } from "../../reachability";
 import type { PartyRow } from "../../types";
-import { SectionCard } from "./SectionCard";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
@@ -266,14 +266,14 @@ export function PartyProvenanceCard({
   };
 
   return (
-    <SectionCard
+    <SectionCard dense bodyClassName="p-2"
       title="Why this is in your CRM"
-      Icon={Compass}
+      icon={Compass}
       // The count is of provenance edges; a "0" beside an explanation that
       // IS showing (origin stamp, discovered banner) reads as a contradiction.
       count={items?.length ? items.length : undefined}
       compactAction
-      action={
+      headerExtra={
         // COMPACT: the sensible next step sits on the card's own header row,
         // and the explanation is one line below it — not a paragraph that
         // spans the whole column.

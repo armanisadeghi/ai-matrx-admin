@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0112",
-  "version": 6,
+  "version": 7,
   "title": "Weekly Agenda",
   "description": "Solo consultants and small teams: tasks and meetings by day, with a Friday review.",
   "forWho": "Solo consultants and small teams",
@@ -9,7 +9,7 @@
     "emoji": "🗓️"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:planning-desk-calendar-coffee",
     "offsetY": 50
   },
   "category": "planning",
@@ -1214,7 +1214,7 @@
         "Sumac Hollow Road"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1225,7 +1225,7 @@
         "emoji": "🗓️"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:planning-desk-calendar-coffee",
         "offsetY": 50
       },
       "settings": {

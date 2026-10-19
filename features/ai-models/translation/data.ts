@@ -15,6 +15,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { IncompleteReadError, readAllRows } from "@ai-matrx/data/db";
 import { supabase } from "@/utils/supabase/client";
 import { withAdminFeature } from "@/utils/auth/adminFeaturesOnUserPages";
+import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import type { ControlRule } from "../types";
 import type { OfferingCellRow } from "../controls/resolveControls";
 import type {
@@ -438,11 +439,16 @@ export async function isPlatformAdmin(): Promise<boolean> {
  */
 export type TranslationCellDetailRow = {
   id: string;
+  state: string | null;
   evidence: unknown;
   metadata: Record<string, unknown> | null;
   created_at: string | null;
   created_by: string | null;
   updated_by: string | null;
+  /** read with the evidence so the proof check compares the rule the evidence was read beside */
+  rule: unknown;
+  conflict: unknown;
+  rejection_fingerprint: string | null;
 };
 
 export async function readTranslationCellDetail(
@@ -452,10 +458,43 @@ export async function readTranslationCellDetail(
     "ai.translation-approvals",
     ai()
       .from("translation_cell")
-      .select("id, evidence, metadata, created_at, created_by, updated_by")
+      .select(
+        "id, state, rule, conflict, rejection_fingerprint, evidence, metadata, created_at, created_by, updated_by",
+      )
       .eq("id", cellId)
       .maybeSingle(),
   );
   if (error) throw error;
   return (data as TranslationCellDetailRow | null) ?? null;
+}
+
+/**
+ * The auto-accept threshold exactly as the database gate reads it:
+ * `platform.knob_resolve('ai.translation', 'agent_confidence_threshold', <system org>)`
+ * — PLATFORM scope, never the reading admin's organization or user rung (the
+ * shared knob hook resolves for the signed-in person, which is not what the
+ * gate compares against). Throws on a refused read or a non-number value.
+ */
+export async function readConfidenceThreshold(): Promise<number> {
+  const { data, error } = await withAdminFeature(
+    "ai.translation-approvals",
+    supabase.schema("platform").rpc("knob_resolve", {
+      p_feature: "ai.translation",
+      p_key: "agent_confidence_threshold",
+      p_organization_id: SYSTEM_ORGANIZATION_ID,
+    }),
+  );
+  if (error) throw error;
+  const n =
+    typeof data === "number"
+      ? data
+      : typeof data === "string"
+        ? Number(data)
+        : NaN;
+  if (!Number.isFinite(n)) {
+    throw new Error(
+      `The threshold knob answered ${JSON.stringify(data)}, not a number.`,
+    );
+  }
+  return n;
 }

@@ -4,6 +4,7 @@ import {
   ArrowRight,
   ChevronDown,
   Plus,
+  type LucideIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -443,8 +444,34 @@ export function SectionCard({
   defaultOpen = true,
   anchor,
   about,
+  icon: Icon,
+  iconClassName,
+  badge,
+  count,
+  bodyClassName,
+  dense = false,
+  empty = false,
+  compactAction = false,
+  tabIndex,
 }: {
-  title: string;
+  title: React.ReactNode;
+  /** Leading icon chip before the title. */
+  icon?: LucideIcon;
+  /** Tint classes for the icon chip (background + colour); defaults to a quiet muted chip. */
+  iconClassName?: string;
+  /** Leading badge before the title: a string or number renders as a step chip; a node renders as given. */
+  badge?: React.ReactNode;
+  /** Item count shown beside the title. */
+  count?: number;
+  /** Wraps `children` in a padded body; omit when children bring their own padding. */
+  bodyClassName?: string;
+  /** Compact record-page shell: 32px header, small uppercase title. */
+  dense?: boolean;
+  /** Nothing to show: the card collapses to its header line; children stay mounted (hidden) so portals work. */
+  empty?: boolean;
+  /** Keep the header actions on the title row at every width. */
+  compactAction?: boolean;
+  tabIndex?: number;
   /** What this card is for — opens in a Peek beside the title, never as text on the card. */
   about?: string;
   /** Link action (`href`) or in-place action (`onClick`). */
@@ -466,22 +493,30 @@ export function SectionCard({
   /** Surface value name — rendered as `data-surface-value` (locate-on-page). */
   anchor?: string;
 }) {
+  const titleText = typeof title === "string" ? title : "section";
+  const body =
+    bodyClassName || empty ? (
+      <div className={empty ? "hidden" : bodyClassName}>{children}</div>
+    ) : (
+      children
+    );
   const content = collapsible ? (
     <CollapsibleContent
       forceMount
       data-section-card-content
       className="data-[state=closed]:hidden"
     >
-      {children}
+      {body}
     </CollapsibleContent>
   ) : (
-    children
+    body
   );
   const card = (
     <section
       // `id` as well as the locate-on-page attribute: a card is a destination,
       // so every cross-surface door can deep-link straight to it (`#link_plan`).
       id={anchor}
+      tabIndex={tabIndex}
       data-surface-value={anchor}
       data-section-card
       className={cn(
@@ -490,12 +525,55 @@ export function SectionCard({
         className,
       )}
     >
-      <div className="flex min-h-10 shrink-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 border-b border-border px-3 py-1">
-        <div className="flex min-w-0 items-center gap-1">
-          <h2 className="min-w-0 type-title text-foreground">{title}</h2>
-          {about ? <AboutPeek title={title} about={about} /> : null}
+      <div
+        className={cn(
+          "flex shrink-0 items-center justify-between gap-x-2 gap-y-1 px-3 py-1",
+          dense ? "min-h-8" : "min-h-10",
+          compactAction || empty ? "flex-nowrap" : "flex-wrap",
+          !empty && "border-b border-border",
+        )}
+      >
+        <div className="flex min-w-0 items-center gap-1.5">
+          {Icon ? (
+            <span
+              className={cn(
+                "flex h-6 w-6 shrink-0 items-center justify-center rounded-md",
+                iconClassName ?? "bg-muted text-muted-foreground",
+              )}
+            >
+              <Icon className="h-3.5 w-3.5" />
+            </span>
+          ) : null}
+          {typeof badge === "string" || typeof badge === "number" ? (
+            <span className="grid h-6 min-w-6 shrink-0 place-items-center rounded-md bg-primary/10 px-1 text-xs font-bold text-primary-ink">
+              {badge}
+            </span>
+          ) : (
+            badge
+          )}
+          <h2
+            className={cn(
+              "flex min-w-0 items-center gap-1.5 text-foreground",
+              dense
+                ? "truncate text-xs font-semibold uppercase tracking-wider"
+                : "type-title",
+            )}
+          >
+            {title}
+          </h2>
+          {count !== undefined ? (
+            <span className="text-xs tabular-nums text-muted-foreground">
+              {count}
+            </span>
+          ) : null}
+          {about ? <AboutPeek title={titleText} about={about} /> : null}
         </div>
-        <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-x-2 gap-y-1">
+        <div
+          className={cn(
+            "ml-auto flex min-w-0 items-center justify-end gap-x-2 gap-y-1",
+            compactAction || empty ? "flex-nowrap" : "flex-wrap",
+          )}
+        >
           {copy ? <CopyButtons size="icon" {...copy} /> : null}
           {headerExtra}
           {action && "href" in action ? (
@@ -521,8 +599,8 @@ export function SectionCard({
               <button
                 type="button"
                 data-section-card-toggle
-                aria-label={`Toggle ${title}`}
-                title={`Toggle ${title}`}
+                aria-label={`Toggle ${titleText}`}
+                title={`Toggle ${titleText}`}
                 className="group flex h-6 w-7 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:text-foreground"
               >
                 <ChevronDown className="h-3.5 w-3.5 transition-transform group-data-[state=closed]:-rotate-90" />

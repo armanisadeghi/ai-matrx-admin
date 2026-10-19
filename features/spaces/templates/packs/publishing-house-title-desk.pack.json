@@ -1,24 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0567",
-  "version": 1,
+  "version": 3,
   "title": "Publishing House Title Desk",
-  "description": "Authors, titles in production, schedule steps and royalty statements for a publisher.",
+  "description": "Publisher: manuscripts, titles by editorial stage, rights, print runs and royalties.",
   "forWho": "Independent book publishers and small presses",
   "icon": {
     "emoji": "📖"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:media-old-books-printing",
     "offsetY": 50
   },
   "category": "media",
   "tags": [
-    "publishing",
-    "books",
-    "production schedule",
-    "royalties",
-    "authors"
+    "publisher",
+    "acquiring editor",
+    "managing editor",
+    "production manager",
+    "rights manager",
+    "royalties"
   ],
   "spec": {
     "specVersion": 1,
@@ -521,6 +522,30 @@
             "contextPolicy": "include"
           },
           {
+            "key": "isbn",
+            "label": "ISBN",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pages",
+            "label": "Page count",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 3000
+              }
+            ]
+          },
+          {
             "key": "delivery_due",
             "label": "Manuscript due",
             "parityType": "datetime",
@@ -573,6 +598,105 @@
               }
             ],
             "contextPolicy": "include"
+          },
+          {
+            "key": "royalty_rate",
+            "label": "Royalty rate (% of list)",
+            "parityType": "decimal",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50
+              }
+            ]
+          },
+          {
+            "key": "units_sold",
+            "label": "Copies sold, net of returns",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000000
+              }
+            ]
+          },
+          {
+            "key": "earned",
+            "label": "Royalties earned (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND({Copies sold, net of returns} * {List price (USD)} * {Royalty rate (% of list)} / 100, 0)"
+          },
+          {
+            "key": "unearned",
+            "label": "Advance still to earn out (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "MAX(0, {Advance (USD)} - {Royalties earned (USD)})"
+          },
+          {
+            "key": "copies_printed",
+            "label": "Copies printed or on order",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "print_runs",
+            "pick": "quantity",
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Quoted"
+                ]
+              }
+            }
+          },
+          {
+            "key": "rights_income",
+            "label": "Rights income (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "title_rights",
+            "pick": "fee",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Licensed",
+                "Under option"
+              ]
+            }
+          },
+          {
+            "key": "rights_open",
+            "label": "Rights still to sell",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "title_rights",
+            "pick": "right_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Available",
+                "Offered"
+              ]
+            }
           },
           {
             "key": "editor",
@@ -882,7 +1006,11 @@
               "advance": 8000,
               "list_price": 26,
               "editor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "royalty_rate": 10,
+              "units_sold": 0,
+              "isbn": "978-1-946812-01-4",
+              "pages": 312
             }
           },
           {
@@ -896,7 +1024,11 @@
               "pub_date": "@today+5d",
               "advance": 6000,
               "list_price": 18,
-              "editor": "tm-2"
+              "editor": "tm-2",
+              "royalty_rate": 7.5,
+              "units_sold": 0,
+              "isbn": "978-1-946812-02-1",
+              "pages": 288
             }
           },
           {
@@ -911,7 +1043,11 @@
               "advance": 7500,
               "list_price": 29,
               "editor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "royalty_rate": 10,
+              "units_sold": 4180,
+              "isbn": "978-1-946812-03-8",
+              "pages": 344
             }
           },
           {
@@ -925,7 +1061,11 @@
               "pub_date": "@today",
               "advance": 4500,
               "list_price": 17,
-              "editor": "tm-2"
+              "editor": "tm-2",
+              "royalty_rate": 5,
+              "units_sold": 0,
+              "isbn": "978-1-946812-04-5",
+              "pages": 32
             }
           },
           {
@@ -940,7 +1080,11 @@
               "advance": 9000,
               "list_price": 27,
               "editor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "royalty_rate": 10,
+              "units_sold": 0,
+              "isbn": "978-1-946812-05-2",
+              "pages": 384
             }
           },
           {
@@ -954,7 +1098,11 @@
               "pub_date": "@today-420d",
               "advance": 5000,
               "list_price": 16,
-              "editor": "tm-2"
+              "editor": "tm-2",
+              "royalty_rate": 7.5,
+              "units_sold": 6920,
+              "isbn": "978-1-946812-06-9",
+              "pages": 256
             }
           },
           {
@@ -969,7 +1117,9 @@
               "advance": 12000,
               "list_price": 28,
               "editor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "royalty_rate": 10,
+              "units_sold": 0
             }
           },
           {
@@ -983,7 +1133,11 @@
               "pub_date": "@today-2d",
               "advance": 4500,
               "list_price": 17,
-              "editor": "tm-2"
+              "editor": "tm-2",
+              "royalty_rate": 5,
+              "units_sold": 0,
+              "isbn": "978-1-946812-07-6",
+              "pages": 32
             }
           },
           {
@@ -998,7 +1152,11 @@
               "advance": 2000,
               "list_price": 14,
               "editor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "royalty_rate": 7.5,
+              "units_sold": 1310,
+              "isbn": "978-1-946812-08-3",
+              "pages": 224
             }
           }
         ]
@@ -1714,14 +1872,889 @@
           {
             "key": "statements-7",
             "values": {
-              "statement_name": "Castellano, advance earn-out check",
-              "author": "author-7",
+              "statement_name": "Olawale-Finch, audio income query",
+              "author": "author-1",
               "period": "Second half",
-              "amount": 0,
+              "amount": 620,
               "status": "Disputed",
               "pay_by": "@today+3d",
               "preparer": "tm-3",
               "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "manuscript",
+        "name": "Manuscripts",
+        "labelSingular": "Manuscript",
+        "labelPlural": "Manuscripts",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-text",
+        "titleField": "ms_title",
+        "describes": "Submissions from agents and authors: who sent it, who is reading, and the date the agent is owed an answer.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New manuscript",
+            "values": {
+              "ms_title": "New manuscript",
+              "status": "Unread"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Reader's report"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the book is, in two sentences. What works. What does not."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Comparable titles"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Two or three recent books it sits beside, and how they sold."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Recommendation"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Pass, second read, or take it to the acquisitions meeting, and why."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "before": [
+          [
+            "received_on",
+            "respond_by"
+          ]
+        ],
+        "independentOf": {
+          "reader": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "ms_title",
+            "label": "Manuscript",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "author_name",
+            "label": "Author",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "agent",
+            "label": "Agent",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "genre",
+            "label": "Genre",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Literary fiction",
+              "Mystery",
+              "Memoir",
+              "History",
+              "Children's picture books",
+              "Poetry"
+            ],
+            "choiceColors": {
+              "Literary fiction": "violet",
+              "Mystery": "slate",
+              "Memoir": "amber",
+              "History": "teal",
+              "Children's picture books": "pink",
+              "Poetry": "blue"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Unread",
+              "Reading",
+              "Second read",
+              "Acquisitions meeting",
+              "Offer made",
+              "Acquired",
+              "Passed"
+            ],
+            "choiceColors": {
+              "Unread": "slate",
+              "Reading": "blue",
+              "Second read": "teal",
+              "Acquisitions meeting": "amber",
+              "Offer made": "orange",
+              "Acquired": "green",
+              "Passed": "gray"
+            }
+          },
+          {
+            "key": "received_on",
+            "label": "Received on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "respond_by",
+            "label": "Respond by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "words",
+            "label": "Word count",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "reader",
+            "label": "Reader",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "btn_meeting",
+            "label": "To acquisitions meeting",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "ms_meeting"
+            }
+          },
+          {
+            "key": "btn_pass",
+            "label": "Pass",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "ms_pass"
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "manuscript_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "manuscript-1",
+            "values": {
+              "ms_title": "The Weight of Bells",
+              "author_name": "Tobias Eriksen-Mbeki",
+              "agent": "Unagented",
+              "genre": "Poetry",
+              "status": "Second read",
+              "received_on": "@today-40d",
+              "respond_by": "@today-2d",
+              "words": 18000,
+              "reader": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "manuscript-2",
+            "values": {
+              "ms_title": "Harbor Lights Out",
+              "author_name": "Rosalie Achterberg",
+              "agent": "Quill and Key Agency",
+              "genre": "Mystery",
+              "status": "Reading",
+              "received_on": "@today-21d",
+              "respond_by": "@today",
+              "words": 86000,
+              "reader": "tm-2"
+            }
+          },
+          {
+            "key": "manuscript-3",
+            "values": {
+              "ms_title": "Field Notes on Grief",
+              "author_name": "Dmitri Holloway-Asante",
+              "agent": "Thorne Literary",
+              "genre": "Memoir",
+              "status": "Acquisitions meeting",
+              "received_on": "@today-35d",
+              "respond_by": "@today+2d",
+              "words": 72000,
+              "reader": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "manuscript-4",
+            "values": {
+              "ms_title": "The Orchard Census",
+              "author_name": "Beatriz Lindgren",
+              "agent": "Brightpage Agency",
+              "genre": "Literary fiction",
+              "status": "Unread",
+              "received_on": "@today-3d",
+              "respond_by": "@today+4d",
+              "words": 94000,
+              "reader": "tm-2"
+            }
+          },
+          {
+            "key": "manuscript-5",
+            "values": {
+              "ms_title": "Ships in Bottles",
+              "author_name": "Okonkwo Pemberton",
+              "agent": "Unagented",
+              "genre": "Children's picture books",
+              "status": "Unread",
+              "received_on": "@today-1d",
+              "respond_by": "@today+5d",
+              "words": 600,
+              "reader": "tm-2"
+            }
+          },
+          {
+            "key": "manuscript-6",
+            "values": {
+              "ms_title": "Salt, Iron and Rope",
+              "author_name": "Wilhelmina Atwater",
+              "agent": "Thorne Literary",
+              "genre": "History",
+              "status": "Offer made",
+              "received_on": "@today-60d",
+              "respond_by": "@today-14d",
+              "words": 110000,
+              "reader": "tm-2"
+            }
+          },
+          {
+            "key": "manuscript-7",
+            "values": {
+              "ms_title": "Murder at the Book Fair",
+              "author_name": "Jasper Kettleworth",
+              "agent": "Unagented",
+              "genre": "Mystery",
+              "status": "Passed",
+              "received_on": "@today-50d",
+              "respond_by": "@today-20d",
+              "words": 79000,
+              "reader": "tm-2"
+            }
+          },
+          {
+            "key": "manuscript-8",
+            "values": {
+              "ms_title": "The Cartographer's Daughter",
+              "author_name": "Elias Brandvold",
+              "agent": "Quill and Key Agency",
+              "genre": "Memoir",
+              "status": "Acquired",
+              "received_on": "@today-150d",
+              "respond_by": "@today-120d",
+              "words": 81000,
+              "reader": "tm-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "rights",
+        "name": "Rights",
+        "labelSingular": "Right",
+        "labelPlural": "Rights",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "globe",
+        "titleField": "right_name",
+        "describes": "Subsidiary rights for each title: audio, translation, film, large print and book club, who holds them and the fee.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "independentOf": {
+          "title": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "right_name",
+            "label": "Right",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "title",
+            "label": "Title",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "titles",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Audio",
+              "Translation",
+              "Film and TV",
+              "Large print",
+              "Book club",
+              "Serial"
+            ],
+            "choiceColors": {
+              "Audio": "violet",
+              "Translation": "blue",
+              "Film and TV": "red",
+              "Large print": "teal",
+              "Book club": "amber",
+              "Serial": "slate"
+            }
+          },
+          {
+            "key": "territory",
+            "label": "Territory",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "licensee",
+            "label": "Licensee",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Available",
+              "Offered",
+              "Under option",
+              "Licensed",
+              "Reverted"
+            ],
+            "choiceColors": {
+              "Available": "slate",
+              "Offered": "amber",
+              "Under option": "blue",
+              "Licensed": "green",
+              "Reverted": "orange"
+            }
+          },
+          {
+            "key": "fee",
+            "label": "Fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ]
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "rights-1",
+            "values": {
+              "right_name": "Audio, The Salt Road",
+              "title": "titles-1",
+              "kind": "Audio",
+              "territory": "World English",
+              "licensee": "Harrow Audio",
+              "status": "Licensed",
+              "fee": 3500
+            }
+          },
+          {
+            "key": "rights-2",
+            "values": {
+              "right_name": "German translation, A Small History of Harbors",
+              "title": "titles-3",
+              "kind": "Translation",
+              "territory": "Germany, Austria, Switzerland",
+              "licensee": "Verlag Lindenhof",
+              "status": "Licensed",
+              "fee": 4200
+            }
+          },
+          {
+            "key": "rights-3",
+            "values": {
+              "right_name": "Film and TV, The Salt Road",
+              "title": "titles-1",
+              "kind": "Film and TV",
+              "territory": "World",
+              "licensee": "Northlight Pictures",
+              "status": "Under option",
+              "fee": 2500
+            }
+          },
+          {
+            "key": "rights-4",
+            "values": {
+              "right_name": "Large print, Winter at Larkspur",
+              "title": "titles-6",
+              "kind": "Large print",
+              "territory": "North America",
+              "licensee": "Wide Margin Editions",
+              "status": "Licensed",
+              "fee": 900
+            }
+          },
+          {
+            "key": "rights-5",
+            "values": {
+              "right_name": "Korean translation, Moss and the Moon",
+              "title": "titles-4",
+              "kind": "Translation",
+              "territory": "South Korea",
+              "licensee": "Haneul Kids",
+              "status": "Offered",
+              "fee": 1800
+            }
+          },
+          {
+            "key": "rights-6",
+            "values": {
+              "right_name": "Audio, Letters from the Night Ferry",
+              "title": "titles-2",
+              "kind": "Audio",
+              "territory": "World English",
+              "status": "Available"
+            }
+          },
+          {
+            "key": "rights-7",
+            "values": {
+              "right_name": "Book club, Winter at Larkspur",
+              "title": "titles-6",
+              "kind": "Book club",
+              "territory": "United States",
+              "licensee": "Readers' Circle Club",
+              "status": "Reverted"
+            }
+          }
+        ]
+      },
+      {
+        "token": "printrun",
+        "name": "Print runs",
+        "labelSingular": "Print run",
+        "labelPlural": "Print runs",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "printer",
+        "titleField": "run_name",
+        "describes": "Each printing of each title: quantity, unit cost, the printer, when files are due and when books reach the warehouse.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "before": [
+          [
+            "files_due",
+            "delivery_on"
+          ]
+        ],
+        "independentOf": {
+          "title": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "run_name",
+            "label": "Print run",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "title",
+            "label": "Title",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "titles",
+            "relationMax": 1
+          },
+          {
+            "key": "printing",
+            "label": "Printing",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "First printing",
+              "Second printing",
+              "Third printing",
+              "Fourth or later"
+            ],
+            "choiceColors": {
+              "First printing": "blue",
+              "Second printing": "teal",
+              "Third printing": "violet",
+              "Fourth or later": "slate"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Quoted",
+              "Ordered",
+              "Printing",
+              "In warehouse"
+            ],
+            "choiceColors": {
+              "Quoted": "slate",
+              "Ordered": "amber",
+              "Printing": "blue",
+              "In warehouse": "green"
+            }
+          },
+          {
+            "key": "quantity",
+            "label": "Copies",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ]
+          },
+          {
+            "key": "unit_cost",
+            "label": "Unit cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "run_cost",
+            "label": "Run cost (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND({Copies} * {Unit cost (USD)}, 0)"
+          },
+          {
+            "key": "printer",
+            "label": "Printer",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Ridgeway Press",
+              "Harbor Offset",
+              "Lakeside Color Printing"
+            ],
+            "choiceColors": {
+              "Ridgeway Press": "blue",
+              "Harbor Offset": "teal",
+              "Lakeside Color Printing": "pink"
+            }
+          },
+          {
+            "key": "files_due",
+            "label": "Files due at printer",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "delivery_on",
+            "label": "Due at warehouse",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "btn_delivered",
+            "label": "Books arrived",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "run_delivered"
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "printrun_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "printrun-1",
+            "values": {
+              "run_name": "The Salt Road, first printing",
+              "title": "titles-1",
+              "printing": "First printing",
+              "status": "Ordered",
+              "quantity": 6000,
+              "unit_cost": 3.85,
+              "printer": "Ridgeway Press",
+              "files_due": "@today+15d",
+              "delivery_on": "@today+32d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "printrun-2",
+            "values": {
+              "run_name": "Letters from the Night Ferry, first printing",
+              "title": "titles-2",
+              "printing": "First printing",
+              "status": "Printing",
+              "quantity": 4000,
+              "unit_cost": 2.6,
+              "printer": "Harbor Offset",
+              "files_due": "@today-20d",
+              "delivery_on": "@today-2d"
+            }
+          },
+          {
+            "key": "printrun-3",
+            "values": {
+              "run_name": "Counting Stars Backwards, first printing",
+              "title": "titles-8",
+              "printing": "First printing",
+              "status": "Printing",
+              "quantity": 5000,
+              "unit_cost": 2.9,
+              "printer": "Lakeside Color Printing",
+              "files_due": "@today-15d",
+              "delivery_on": "@today"
+            }
+          },
+          {
+            "key": "printrun-4",
+            "values": {
+              "run_name": "A Small History of Harbors, second printing",
+              "title": "titles-3",
+              "printing": "Second printing",
+              "status": "Ordered",
+              "quantity": 2500,
+              "unit_cost": 4.1,
+              "printer": "Ridgeway Press",
+              "files_due": "@today-6d",
+              "delivery_on": "@today+2d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "printrun-5",
+            "values": {
+              "run_name": "Winter at Larkspur, third printing",
+              "title": "titles-6",
+              "printing": "Third printing",
+              "status": "Quoted",
+              "quantity": 1500,
+              "unit_cost": 2.75,
+              "printer": "Harbor Offset",
+              "files_due": "@today-1d",
+              "delivery_on": "@today+4d"
+            }
+          },
+          {
+            "key": "printrun-6",
+            "values": {
+              "run_name": "A Small History of Harbors, first printing",
+              "title": "titles-3",
+              "printing": "First printing",
+              "status": "In warehouse",
+              "quantity": 5000,
+              "unit_cost": 3.95,
+              "printer": "Ridgeway Press",
+              "files_due": "@today-110d",
+              "delivery_on": "@today-80d"
+            }
+          },
+          {
+            "key": "printrun-7",
+            "values": {
+              "run_name": "Winter at Larkspur, second printing",
+              "title": "titles-6",
+              "printing": "Second printing",
+              "status": "In warehouse",
+              "quantity": 3000,
+              "unit_cost": 2.7,
+              "printer": "Harbor Offset",
+              "files_due": "@today-250d",
+              "delivery_on": "@today-230d"
             }
           }
         ]
@@ -1787,6 +2820,36 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "statement_by_preparer"
+      },
+      {
+        "describes": "One person reads each manuscript first.",
+        "fromTable": "manuscript",
+        "fromField": "reader",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "manuscript_by_reader"
+      },
+      {
+        "describes": "A right belongs to one title.",
+        "fromTable": "rights",
+        "fromField": "title",
+        "toTable": "titles",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "title_rights"
+      },
+      {
+        "describes": "A print run is one printing of one title.",
+        "fromTable": "printrun",
+        "fromField": "title",
+        "toTable": "titles",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "print_runs"
       }
     ],
     "sharedBlocks": [
@@ -2052,6 +3115,76 @@
         "kind": "row_action",
         "token": "statements_claim",
         "table": "statements",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "ms_meeting",
+        "table": "manuscript",
+        "name": "To acquisitions meeting",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Acquisitions meeting"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "ms_pass",
+        "table": "manuscript",
+        "name": "Pass",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Passed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "manuscript_claim",
+        "table": "manuscript",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "run_delivered",
+        "table": "printrun",
+        "name": "Books arrived",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In warehouse"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "printrun_claim",
+        "table": "printrun",
         "name": "Assign to me",
         "actionKind": "update",
         "steps": [
@@ -2350,6 +3483,195 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_manuscript",
+        "name": "All manuscripts",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "manuscript"
+      },
+      {
+        "token": "manuscript_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "manuscript"
+      },
+      {
+        "token": "manuscript_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "respond_by",
+        "allDay": true,
+        "table": "manuscript"
+      },
+      {
+        "token": "manuscript_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "respond_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Unread",
+            "Reading",
+            "Second read",
+            "Acquisitions meeting"
+          ]
+        },
+        "table": "manuscript"
+      },
+      {
+        "token": "manuscript_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "respond_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Unread",
+            "Reading",
+            "Second read",
+            "Acquisitions meeting"
+          ]
+        },
+        "table": "manuscript"
+      },
+      {
+        "token": "manuscript_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "respond_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Unread",
+            "Reading",
+            "Second read",
+            "Acquisitions meeting"
+          ]
+        },
+        "table": "manuscript"
+      },
+      {
+        "token": "manuscript_mine",
+        "name": "My manuscripts",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "manuscript"
+      },
+      {
+        "token": "all_rights",
+        "name": "All rights",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "rights"
+      },
+      {
+        "token": "rights_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "rights"
+      },
+      {
+        "token": "all_printrun",
+        "name": "All print runs",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "printrun"
+      },
+      {
+        "token": "printrun_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "printrun"
+      },
+      {
+        "token": "printrun_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "delivery_on",
+        "allDay": true,
+        "table": "printrun"
+      },
+      {
+        "token": "printrun_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "delivery_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Quoted",
+            "Ordered",
+            "Printing"
+          ]
+        },
+        "table": "printrun"
+      },
+      {
+        "token": "printrun_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "delivery_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Quoted",
+            "Ordered",
+            "Printing"
+          ]
+        },
+        "table": "printrun"
+      },
+      {
+        "token": "printrun_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "delivery_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Quoted",
+            "Ordered",
+            "Printing"
+          ]
+        },
+        "table": "printrun"
+      },
+      {
+        "token": "printrun_mine",
+        "name": "My print runs",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "printrun"
       }
     ],
     "agent": {
@@ -2422,6 +3744,42 @@
           "surface": "steps_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open manuscripts.",
+        "action": {
+          "kind": "open",
+          "surface": "manuscript_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "manuscript_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open rights.",
+        "action": {
+          "kind": "open",
+          "surface": "rights_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "rights_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open print runs.",
+        "action": {
+          "kind": "open",
+          "surface": "printrun_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "printrun_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2438,7 +3796,7 @@
         "Bookbinder Alley"
       ]
     },
-    "version": 1
+    "version": 3
   },
   "pages": [
     {
@@ -2449,7 +3807,7 @@
         "emoji": "📖"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:media-old-books-printing",
         "offsetY": 50
       },
       "settings": {
@@ -2460,12 +3818,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "The list in one place: authors, every title in production, the dated steps behind each, and the royalty statements owed. Start with the Dashboard each Monday. Anything marked Blocked gets a call that day, and nothing goes to the printer while Schedule health shows Blocked."
+              "text": "The list in one place. Manuscripts is the submissions pile; Titles carries each book from acquisition to publication with its advance, royalty rate and sales; Production steps and Print runs get it made; Rights tracks audio, translation and film; Royalty statements pay authors. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2957,6 +4321,595 @@
             ],
             "activeViewId": "sta-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Manuscripts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Submissions and the answer each agent is owed."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "manuscript",
+              "view": "all_manuscript"
+            },
+            "inline": true,
+            "title": "Manuscripts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ms-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "ms-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "respond_by"
+              },
+              {
+                "id": "ms-t",
+                "name": "All manuscripts",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "ms-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "respond_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Unread",
+                    "Reading",
+                    "Second read",
+                    "Acquisitions meeting"
+                  ]
+                }
+              },
+              {
+                "id": "ms-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "respond_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Unread",
+                    "Reading",
+                    "Second read",
+                    "Acquisitions meeting"
+                  ]
+                }
+              },
+              {
+                "id": "ms-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "respond_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Unread",
+                    "Reading",
+                    "Second read",
+                    "Acquisitions meeting"
+                  ]
+                }
+              },
+              {
+                "id": "ms-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "ms-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Print runs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every printing, its cost and when books arrive."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "printrun",
+              "view": "all_printrun"
+            },
+            "inline": true,
+            "title": "Print runs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pr-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pr-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "delivery_on"
+              },
+              {
+                "id": "pr-t",
+                "name": "All print runs",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pr-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "delivery_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Quoted",
+                    "Ordered",
+                    "Printing"
+                  ]
+                }
+              },
+              {
+                "id": "pr-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "delivery_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Quoted",
+                    "Ordered",
+                    "Printing"
+                  ]
+                }
+              },
+              {
+                "id": "pr-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "delivery_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Quoted",
+                    "Ordered",
+                    "Printing"
+                  ]
+                }
+              },
+              {
+                "id": "pr-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "pr-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rights"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Audio, translation, film and other rights by title."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "rights",
+              "view": "all_rights"
+            },
+            "inline": true,
+            "title": "Rights",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "rg-t",
+                "name": "All rights",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "rg-b",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              }
+            ],
+            "activeViewId": "rg-t"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "publishing-house-title-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the house in this workspace. Share it with editors, production, rights and the person who runs royalties."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Authors",
+              "bold": true
+            },
+            {
+              "text": ": who we publish, their agent, advances, and royalties due and paid."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Manuscripts",
+              "bold": true
+            },
+            {
+              "text": ": the submissions pile with readers and respond-by dates."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Titles",
+              "bold": true
+            },
+            {
+              "text": ": each book through its editorial stages, with ISBN, page count, advance, list price, royalty rate, copies sold, royalties earned and what is still unearned."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Production steps",
+              "bold": true
+            },
+            {
+              "text": ": edits, design, proofs, index and metadata, with freelancers."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Print runs",
+              "bold": true
+            },
+            {
+              "text": ": each printing, the copies, the cost and when books arrive."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Rights",
+              "bold": true
+            },
+            {
+              "text": ": audio, translation, film, large print and book club."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Royalty statements",
+              "bold": true
+            },
+            {
+              "text": ": twice a year for every author."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: the dashboard. Steps due, books arriving, answers owed to agents."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tuesday: production meeting on every title publishing in the next six months."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Thursday: acquisitions meeting."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Twice a year: royalty statement season."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: production steps due and blocked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every week: manuscripts answered on time, print runs confirmed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every season: metadata out four months ahead"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every half year: statements prepared, checked and paid"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Acquiring editors own manuscripts and their titles' editorial stages. The managing editor owns the production calendar. Production owns print runs and printers. The rights manager owns rights. Finance owns royalty statements. The publisher reads the whole list."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Numbers we use"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Copies printed or on order",
+              "bold": true
+            },
+            {
+              "text": " counts every printing except quotes. "
+            },
+            {
+              "text": "Rights income",
+              "bold": true
+            },
+            {
+              "text": " adds licensed and optioned rights. "
+            },
+            {
+              "text": "Royalties earned",
+              "bold": true
+            },
+            {
+              "text": " is copies sold times list price times the royalty rate. "
+            },
+            {
+              "text": "Advance still to earn out",
+              "bold": true
+            },
+            {
+              "text": " is what must be earned before the author is paid more."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename formats, genres and rights kinds to fit your list, set your own royalty rates and printers, and delete the sample rows once your own list is in."
+            }
+          ]
         }
       ]
     },
@@ -3365,6 +5318,118 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Submissions and printing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "manuscript",
+              "view": "all_manuscript"
+            },
+            "inline": true,
+            "title": "Answers owed to agents",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dpb-1",
+                "name": "Answers owed in the next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "respond_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Unread",
+                    "Reading",
+                    "Second read",
+                    "Acquisitions meeting"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dpb-1"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "printrun",
+              "view": "all_printrun"
+            },
+            "inline": true,
+            "title": "Books arriving",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dpb-2",
+                "name": "Books arriving",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "delivery_on"
+              }
+            ],
+            "activeViewId": "dpb-2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rights"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "rights",
+              "view": "all_rights"
+            },
+            "inline": true,
+            "title": "Rights by kind",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dpb-3",
+                "name": "Rights income by kind",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "kind",
+                  "op": "sum",
+                  "field": "fee"
+                }
+              }
+            ],
+            "activeViewId": "dpb-3"
+          }
         }
       ]
     },
@@ -3383,7 +5448,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A book is a chain of handoffs. The calendar works backward from the publication date."
+              "text": "A book takes nine to eighteen months from signed contract to publication day. The dates work backwards from publication, and every one of them is in this workspace."
             }
           ],
           "background": "blue",
@@ -3395,7 +5460,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Typical schedule"
+              "text": "Working backwards from publication day"
             }
           ],
           "props": {
@@ -3403,117 +5468,320 @@
           }
         },
         {
-          "type": "table",
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Publication date",
+              "bold": true
+            },
+            {
+              "text": ": set at acquisition and protected. Booksellers order months ahead."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Due at warehouse",
+              "bold": true
+            },
+            {
+              "text": ": at least six weeks before publication, so stores and reviewers have copies. When they arrive, press "
+            },
+            {
+              "text": "Books arrived",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Files due at printer",
+              "bold": true
+            },
+            {
+              "text": ": four to eight weeks before books arrive; longer for colour picture books."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Proofs",
+              "bold": true
+            },
+            {
+              "text": ": two rounds, about four weeks."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Copyedit",
+              "bold": true
+            },
+            {
+              "text": ": three to four weeks."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Editing",
+              "bold": true
+            },
+            {
+              "text": ": two to four months with the author."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Manuscript due",
+              "bold": true
+            },
+            {
+              "text": ": in the contract."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The editorial stages"
+            }
+          ],
           "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Weeks before publication"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Step"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "52 to 40"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Manuscript delivered and developmental edit"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "36 to 28"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Copyedit and cover design"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "26 to 18"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Interior layout and first proofs"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "16 to 10"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Proofread, index and corrections"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "10 to 8"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Files to printer, metadata to retailers"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "0"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Publication day"
-                    }
-                  ]
-                ]
-              }
-            ]
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Acquired",
+              "bold": true
+            },
+            {
+              "text": ": the contract is signed and the title is created with its "
+            },
+            {
+              "text": "Advance",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Royalty rate",
+              "bold": true
+            },
+            {
+              "text": " and publication date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Editing",
+              "bold": true
+            },
+            {
+              "text": ": the developmental edit. The editor sends a letter on structure and character first, then line notes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Copyedit",
+              "bold": true
+            },
+            {
+              "text": ": a freelance copyeditor checks consistency, facts and style. The author answers every query."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Design",
+              "bold": true
+            },
+            {
+              "text": ": cover and interior. Cover approval needs the editor, sales and the author."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Proofs",
+              "bold": true
+            },
+            {
+              "text": ": a proofreader and the author read typeset pages. Changes now are costly; fix errors, not sentences."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "At printer",
+              "bold": true
+            },
+            {
+              "text": ": files sent, a "
+            },
+            {
+              "text": "Print run",
+              "bold": true
+            },
+            {
+              "text": " ordered."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Published",
+              "bold": true
+            },
+            {
+              "text": ": books in stores."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Production steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every stage becomes "
+            },
+            {
+              "text": "Production steps",
+              "bold": true
+            },
+            {
+              "text": " with a freelancer and a due date. A "
+            },
+            {
+              "text": "Blocked",
+              "bold": true
+            },
+            {
+              "text": " step shows on the title's "
+            },
+            {
+              "text": "Schedule health",
+              "bold": true
+            },
+            {
+              "text": ". When a step slips more than a week, the managing editor decides what moves; publication day is the last thing to move."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Metadata"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The ISBN, page count, price and description go to distributors at least four months before publication. Late metadata means fewer pre-orders."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Steps overdue or blocked, with a plan for each"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Print runs on order: files sent on time, delivery dates confirmed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Metadata sent for every title publishing in the next four months"
+            }
+          ],
+          "props": {
+            "checked": false
           }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "How to use it"
+              "text": "Example"
             }
           ],
           "props": {
@@ -3521,34 +5789,10 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Add the title and its publication date."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Add one production step for each row in the calendar and set due dates backward."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Press Mark blocked the moment a step cannot start."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Send the title forward only when the previous step is Done."
+              "text": "Moss and the Moon is a picture book publishing soon, but its cover is blocked while the illustrator revises the moon. The managing editor moved the interior layout forward so the designer is not idle, confirmed a colour print slot with Lakeside, and told sales the cover would be final within a week."
             }
           ]
         }
@@ -3569,7 +5813,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Authors trust a press that pays correctly and on time. Make the routine boring and dependable."
+              "text": "Authors judge a publisher by two things: how their book was treated and whether their statements are right and on time. Statements go out twice a year, for the first half and second half of the year, usually within three months of the period ending."
             }
           ],
           "background": "blue",
@@ -3581,7 +5825,80 @@
           "type": "heading",
           "text": [
             {
-              "text": "Twice a year"
+              "text": "How royalties work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Each title has a "
+            },
+            {
+              "text": "Royalty rate",
+              "bold": true
+            },
+            {
+              "text": " as a percentage of list price, set in the contract. Common rates are 10 percent for hardcovers, 7.5 percent for paperbacks and 5 percent each to author and illustrator on picture books."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Copies sold, net of returns",
+              "bold": true
+            },
+            {
+              "text": " is what the distributor reports, less books stores sent back."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Royalties earned",
+              "bold": true
+            },
+            {
+              "text": " is copies times list price times the rate."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The advance is paid against royalties. Until it is earned out, statements show a balance but no payment. "
+            },
+            {
+              "text": "Advance still to earn out",
+              "bold": true
+            },
+            {
+              "text": " shows the gap."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Rights income, such as audio or translation, is shared with the author at the split in the contract, usually half."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Preparing statements"
             }
           ],
           "props": {
@@ -3592,7 +5909,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Pull sales for the period by format and channel."
+              "text": "Download the distributor's sales and returns report for the period."
             }
           ]
         },
@@ -3600,7 +5917,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Apply returns reserves per the contract."
+              "text": "Update "
+            },
+            {
+              "text": "Copies sold",
+              "bold": true
+            },
+            {
+              "text": " on each title."
             }
           ]
         },
@@ -3608,7 +5932,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Create a statement for each author who earned or still owes an advance."
+              "text": "Create a "
+            },
+            {
+              "text": "Royalty statement",
+              "bold": true
+            },
+            {
+              "text": " for every author with a title on sale, even if nothing is owed. Authors want to know."
             }
           ]
         },
@@ -3616,7 +5947,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check each figure against the rates in the contract."
+              "text": "Hold a reserve against returns on new titles, usually 15 to 20 percent of the period's sales, and release it over the next two statements."
             }
           ]
         },
@@ -3624,7 +5955,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Press Mark ready to pay, pay it and press Mark paid."
+              "text": "A second person checks every statement before it moves to "
+            },
+            {
+              "text": "Ready to pay",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3632,7 +5970,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "If an author disputes"
+              "text": "Paying"
             }
           ],
           "props": {
@@ -3643,7 +5981,117 @@
           "type": "text",
           "text": [
             {
-              "text": "Mark the statement Disputed, write what they asked, and reply with the supporting numbers within five working days."
+              "text": "Pay everything ready by the "
+            },
+            {
+              "text": "Pay by",
+              "bold": true
+            },
+            {
+              "text": " date. Set "
+            },
+            {
+              "text": "Paid",
+              "bold": true
+            },
+            {
+              "text": " and fill in "
+            },
+            {
+              "text": "Paid on",
+              "bold": true
+            },
+            {
+              "text": ". Send the statement with a short note from the editor; a line about how the book is doing goes a long way."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Questions and disputes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If an author or agent queries a statement, set it to "
+            },
+            {
+              "text": "Disputed",
+              "bold": true
+            },
+            {
+              "text": " and answer within two weeks with the distributor's numbers. Most queries are about returns or rights income timing."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly check during statement season"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every author with a title on sale has a statement"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Statements checked by a second person"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Disputes answered within two weeks"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A Small History of Harbors sold 4,180 copies net at $29 and 10 percent, earning about $12,100 against a $7,500 advance. It has earned out, so Cornelius Adebayo's statement shows a payment, plus half the German translation fee."
             }
           ]
         }
@@ -3664,7 +6112,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Say yes to books you can sell and champion for years. A clear process makes the yes and the no both kinder."
+              "text": "Every book on the list started as a manuscript in the pile. A fair, quick process means agents send their best work to us first."
             }
           ],
           "background": "blue",
@@ -3676,7 +6124,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Reading a submission"
+              "text": "Logging submissions"
             }
           ],
           "props": {
@@ -3684,10 +6132,43 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Read the first fifty pages before reading the pitch."
+              "text": "Every manuscript that arrives goes into "
+            },
+            {
+              "text": "Manuscripts",
+              "bold": true
+            },
+            {
+              "text": " the day it lands, with the author, the agent, the genre, the word count and a "
+            },
+            {
+              "text": "Respond by",
+              "bold": true
+            },
+            {
+              "text": " date. Agented submissions get an answer within four to six weeks; unagented within three months. If you will be late, tell the agent before the date, not after."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First read"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The reader reads the first fifty pages and the synopsis. Three outcomes:"
             }
           ]
         },
@@ -3695,7 +6176,18 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Note the audience in one sentence."
+              "text": "Pass",
+              "bold": true
+            },
+            {
+              "text": ": a short, kind note. Press "
+            },
+            {
+              "text": "Pass",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3703,7 +6195,11 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Check the sample against titles already on the list."
+              "text": "Second read",
+              "bold": true
+            },
+            {
+              "text": ": another editor reads the whole manuscript."
             }
           ]
         },
@@ -3711,7 +6207,91 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Write a two line reason for yes or no."
+              "text": "Straight to the "
+            },
+            {
+              "text": "acquisitions meeting",
+              "bold": true
+            },
+            {
+              "text": " for something exceptional."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reader's report"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every manuscript past a first read gets a one-page report: what it is in two sentences, what works, what does not, two or three comparable recent titles and how they sold, and a recommendation."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The acquisitions meeting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Weekly, with editorial, sales, marketing and the publisher. For each manuscript:"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The editor makes the case in five minutes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Sales gives a realistic first-year estimate."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The publisher sets the offer: advance, royalty rates, territory, formats and the rights we want."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "To acquisitions meeting",
+              "bold": true
+            },
+            {
+              "text": " to put a manuscript on the agenda."
             }
           ]
         },
@@ -3727,10 +6307,43 @@
           }
         },
         {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set the status to "
+            },
+            {
+              "text": "Offer made",
+              "bold": true
+            },
+            {
+              "text": ". The agent may come back with a counter or an auction date. Decide your top number before the call."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When we acquire"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
           "type": "numbered",
           "text": [
             {
-              "text": "Agree the editor and publisher want it."
+              "text": "Set the manuscript to "
+            },
+            {
+              "text": "Acquired",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3738,7 +6351,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Calculate the break-even and the advance."
+              "text": "Create the author if new, and the "
+            },
+            {
+              "text": "Title",
+              "bold": true
+            },
+            {
+              "text": " with advance, royalty rate, format and a publication date."
             }
           ]
         },
@@ -3746,15 +6366,84 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Get approval and send the offer."
+              "text": "Add the subsidiary "
+            },
+            {
+              "text": "Rights",
+              "bold": true
+            },
+            {
+              "text": " you hold as "
+            },
+            {
+              "text": "Available",
+              "bold": true
+            },
+            {
+              "text": ", so the rights manager can start selling."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "heading",
           "text": [
             {
-              "text": "Add the author as Under contract and create the title row."
+              "text": "Weekly check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No manuscript past its respond-by date without a note to the agent"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every second read has a reader's report"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Offers followed up within two working days"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Field Notes on Grief came from an agent five weeks ago. The first reader moved it to a second read; both editors loved the voice but worried about the middle. It goes to Thursday's meeting with comparable memoirs and a plan for a structural edit."
             }
           ]
         }

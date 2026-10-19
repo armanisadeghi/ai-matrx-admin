@@ -45,6 +45,7 @@ import {
   bindConversationToBrand,
   prBrandContextValue,
 } from "./director-context";
+import { PrDirectorBrandContext } from "./peg-angles";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -528,14 +529,16 @@ export function PrDirectorPanel({
         </p>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col">
-          <AgentConversationColumn
-            conversationId={conversationId}
-            surfaceKey={surfaceKey}
-            aboveInput={landing}
-            smartInputProps={{
-              composer: { size: "compact", mode: composerMode, maxInputHeightPx },
-            }}
-          />
+          <PrDirectorBrandContext.Provider value={{ brandId, brandName, organizationId: organizationId ?? null }}>
+            <AgentConversationColumn
+              conversationId={conversationId}
+              surfaceKey={surfaceKey}
+              aboveInput={landing}
+              smartInputProps={{
+                composer: { size: "compact", mode: composerMode, maxInputHeightPx },
+              }}
+            />
+          </PrDirectorBrandContext.Provider>
         </div>
       )}
     </section>

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0551",
-  "version": 2,
+  "version": 3,
   "title": "Volunteer Program Desk",
   "description": "Recruit, screen, schedule and thank volunteers; track hours, checks and group days.",
   "forWho": "Volunteer coordinators at nonprofits and community groups",
@@ -9,7 +9,7 @@
     "emoji": "🙌"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:nonprofit-community-garden",
     "offsetY": 50
   },
   "category": "nonprofit",
@@ -3110,7 +3110,7 @@
         "Marlowe Court"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -3121,7 +3121,7 @@
         "emoji": "🙌"
       },
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:nonprofit-community-garden",
         "offsetY": 50
       },
       "settings": {

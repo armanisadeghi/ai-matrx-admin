@@ -76,6 +76,7 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 
 /** An episode length reads at a glance: "45 min" / "1h 30m". */
 function formatDuration(seconds: number): string {
@@ -100,31 +101,6 @@ function CopyButton({ value, label }: { value: string; label: string }) {
     <Button icon={copied ? <Check className="text-emerald-500" /> : <Copy />} type="button" variant="outline" onClick={onCopy}>
       Copy
     </Button>
-  );
-}
-
-function SectionCard({
-  title,
-  icon,
-  badge,
-  children,
-}: {
-  title: string;
-  icon: React.ReactNode;
-  badge?: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-2xl border border-border bg-card p-5 sm:p-6">
-      <div className="mb-4 flex items-center gap-2">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary-ink">
-          {icon}
-        </span>
-        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-        {badge}
-      </div>
-      {children}
-    </section>
   );
 }
 
@@ -343,7 +319,7 @@ export function ShowManageClient({ showId }: { showId: string }) {
 
       <div className="space-y-5">
         {/* ── Basics ─────────────────────────────────────────────────────── */}
-        <SectionCard title="Podcast details" icon={<Radio className="h-4 w-4" />}>
+        <SectionCard title="Podcast details" icon={Radio} bodyClassName="p-5 sm:p-6">
           <div className="grid gap-5 sm:grid-cols-[200px_1fr]">
             {/* Cover */}
             <div>
@@ -416,7 +392,7 @@ export function ShowManageClient({ showId }: { showId: string }) {
         </SectionCard>
 
         {/* ── Distribution / RSS ─────────────────────────────────────────── */}
-        <SectionCard title="RSS &amp; distribution" icon={<Rss className="h-4 w-4" />}>
+        <SectionCard title="RSS &amp; distribution" icon={Rss} bodyClassName="p-5 sm:p-6">
           <p className="mb-4 -mt-1 text-xs text-muted-foreground">
             Configure how your podcast appears in Apple Podcasts, Spotify, and other
             directories. These fields populate your public RSS feed.
@@ -563,7 +539,7 @@ export function ShowManageClient({ showId }: { showId: string }) {
         </SectionCard>
 
         {/* ── Episodes ───────────────────────────────────────────────────── */}
-        <SectionCard title={`Episodes (${episodes.length})`} icon={<Music className="h-4 w-4" />}>
+        <SectionCard title={`Episodes (${episodes.length})`} icon={Music} bodyClassName="p-5 sm:p-6">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
               {/* read-gate-exempt: a failed show/episodes read sets loadError + notFound and returns the AccessGate (with the error) before this renders */}

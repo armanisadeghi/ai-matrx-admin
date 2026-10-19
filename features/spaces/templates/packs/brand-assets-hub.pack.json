@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0162",
-  "version": 5,
+  "version": 6,
   "title": "Brand Assets Hub",
   "description": "Brand and design teams: a gallery of logos and photos with brand rules and approvals.",
   "forWho": "Brand managers, agencies and in-house design teams",
@@ -9,7 +9,7 @@
     "emoji": "🎨"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:marketing-color-swatches-palette",
     "offsetY": 50
   },
   "category": "marketing",
@@ -978,7 +978,7 @@
         "Cedar Tinsel Street"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1306,7 +1306,7 @@
         }
       ],
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:marketing-color-swatches-palette",
         "offsetY": 50
       }
     },

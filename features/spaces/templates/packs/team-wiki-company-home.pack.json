@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0101",
-  "version": 5,
+  "version": 6,
   "title": "Team Wiki & Company Home",
   "description": "Companies of 10 to 200: a company home with news, team pages and a wiki that stays fresh.",
   "forWho": "Companies of 10 to 200 people",
@@ -9,7 +9,7 @@
     "emoji": "🏠"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:docs-modern-office-interior-plants",
     "offsetY": 50
   },
   "category": "docs",
@@ -1117,7 +1117,7 @@
         "Alderkeep Wharf"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1128,7 +1128,7 @@
         "emoji": "🏠"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:docs-modern-office-interior-plants",
         "offsetY": 50
       },
       "settings": {

@@ -37,13 +37,23 @@ export function slideTextFormatCss(style: TextStyle, scope = ""): string {
   const rules: string[] = [];
   if (style.bold !== undefined) rules.push(`font-weight:${style.bold ? 700 : 400} !important`);
   if (style.italic !== undefined) rules.push(`font-style:${style.italic ? "italic" : "normal"} !important`);
-  if (style.underline) rules.push("text-decoration:underline !important");
   if (style.color && HEX.test(style.color)) rules.push(`color:${style.color} !important`, `-webkit-text-fill-color:${style.color} !important`, "background-image:none !important");
-  if (style.align) rules.push(`text-align:${style.align} !important`);
+  if (style.align) rules.push(`text-align:${style.align} !important`, "max-width:none !important");
   if (style.lineHeight) rules.push(`line-height:${style.lineHeight} !important`);
   if (style.scale && style.scale !== 1) rules.push(`zoom:${style.scale}`);
-  if (rules.length === 0) return "";
-  return `[data-slide-fmt${scope ? `="${scope}"` : ""}] :is(h1,h2,h3,h4,p,li,blockquote,figcaption){${rules.join(";")}}`;
+  const text = ":is(h1,h2,h3,h4,p,li,blockquote,figcaption)";
+  const root = `[data-slide-fmt${scope ? `="${scope}"` : ""}]`;
+  const out: string[] = [];
+  if (rules.length) out.push(`${root} ${text}{${rules.join(";")}}`);
+  // An underline set on the text block does not reach an inline-block child (the editor's in-place field), and a
+  // gradient title paints its text transparent, so its underline would be too: draw it on every descendant, in ink.
+  if (style.underline) {
+    const ink = style.color && HEX.test(style.color) ? "currentColor" : "hsl(var(--foreground))";
+    out.push(`${root} ${text}, ${root} ${text} *{text-decoration:underline !important;text-decoration-color:${ink} !important}`);
+  }
+  // A block that shrink-wraps its text (a centred title) has no room to align inside: let its wrapper span the row.
+  if (style.align) out.push(`${root} :has(> ${text}), ${root} :has(> * > ${text}){width:100%}`);
+  return out.join("\n");
 }
 
 /** A short stable id for one format rule set, so each look gets its own scope and one hoisted style tag. */

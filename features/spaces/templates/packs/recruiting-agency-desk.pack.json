@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0452",
-  "version": 4,
+  "version": 6,
   "title": "Recruiting Agency Desk",
-  "description": "Employer clients, job orders, candidates and submissions for a staffing and search firm.",
+  "description": "For recruiters: job orders, candidates by stage, placements, fees and guarantees.",
   "forWho": "Recruiting, staffing and executive search firms",
   "icon": {
     "emoji": "🧲"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:agencies-office-chairs-row",
     "offsetY": 50
   },
   "category": "agencies",
   "tags": [
-    "recruiting",
-    "staffing",
+    "recruiter",
+    "staffing agency",
+    "executive search",
     "job orders",
-    "placements"
+    "placements",
+    "placement fees"
   ],
   "spec": {
     "specVersion": 1,
@@ -128,6 +130,30 @@
                 "value": 40
               }
             ]
+          },
+          {
+            "key": "guarantee_days",
+            "label": "Guarantee (days)",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 365
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "agreement",
+            "label": "Fee agreement signed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "hiring_contact",
@@ -319,7 +345,9 @@
               "contact_email": "bernadette@hartwelllogistics.net",
               "since": "@today-700d",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "guarantee_days": 90,
+              "agreement": true
             }
           },
           {
@@ -332,7 +360,9 @@
               "hiring_contact": "Matthias Ferreira",
               "contact_email": "mferreira@pinecrestbilling.net",
               "since": "@today-300d",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "guarantee_days": 90,
+              "agreement": true
             }
           },
           {
@@ -346,7 +376,9 @@
               "contact_email": "jtakahashi@arclightfab.net",
               "since": "@today-180d",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "guarantee_days": 60,
+              "agreement": true
             }
           },
           {
@@ -359,7 +391,9 @@
               "hiring_contact": "Silas Whitcombe",
               "contact_email": "silas@brooklinepg.net",
               "since": "@today-900d",
-              "owner": "tm-1"
+              "owner": "tm-1",
+              "guarantee_days": 90,
+              "agreement": true
             }
           },
           {
@@ -373,7 +407,9 @@
               "contact_email": "imogen@tidewaterbrokers.net",
               "since": "@today-120d",
               "owner": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "guarantee_days": 90,
+              "agreement": true
             }
           },
           {
@@ -385,7 +421,9 @@
               "fee_pct": 20,
               "hiring_contact": "Ravi Subramanian",
               "contact_email": "ravi@quillanchorpub.net",
-              "owner": "tm-1"
+              "owner": "tm-1",
+              "guarantee_days": 90,
+              "agreement": false
             }
           },
           {
@@ -399,7 +437,9 @@
               "contact_email": "greta@northfieldcold.net",
               "since": "@today-60d",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "guarantee_days": 60,
+              "agreement": true
             }
           }
         ]
@@ -457,6 +497,30 @@
             }
           },
           {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "choices": [
+              "Hot",
+              "Warm",
+              "Cold"
+            ],
+            "choiceColors": {
+              "Hot": "blue",
+              "Warm": "green",
+              "Cold": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "exclusive",
+            "label": "Exclusive",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "level",
             "label": "Level",
             "parityType": "select",
@@ -476,6 +540,13 @@
             }
           },
           {
+            "key": "must_haves",
+            "label": "Must-haves from intake",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "salary",
             "label": "Pay budget (USD)",
             "parityType": "currency",
@@ -493,6 +564,23 @@
                 "value": 400000
               }
             ]
+          },
+          {
+            "key": "fee_rate",
+            "label": "Fee rate (%)",
+            "parityType": "lookup",
+            "via": "client",
+            "pick": "fee_pct",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fee_est",
+            "label": "Expected fee (USD)",
+            "parityType": "formula",
+            "formula": "ROUND({Pay budget (USD)} * {Fee rate (%)} / 100, 0)",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
           },
           {
             "key": "opened_on",
@@ -546,7 +634,7 @@
           },
           {
             "key": "interviews",
-            "label": "Interviewing now",
+            "label": "Interviewed or further",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -554,8 +642,30 @@
             "pick": "label",
             "agg": "count",
             "filter": {
-              "stage": "Interview"
+              "stage": [
+                "Interview",
+                "Offer",
+                "Placed"
+              ]
             }
+          },
+          {
+            "key": "active_subs",
+            "label": "Candidates in play",
+            "parityType": "rollup",
+            "via": "submissions",
+            "pick": "label",
+            "agg": "count",
+            "filter": {
+              "stage": {
+                "not": [
+                  "Declined",
+                  "Placed"
+                ]
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "placed_salary",
@@ -569,6 +679,19 @@
             "filter": {
               "stage": "Placed"
             }
+          },
+          {
+            "key": "fee_earned",
+            "label": "Fees from placements",
+            "parityType": "rollup",
+            "via": "submissions",
+            "pick": "fee",
+            "agg": "sum",
+            "filter": {
+              "stage": "Placed"
+            },
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
           },
           {
             "key": "client",
@@ -738,7 +861,10 @@
               "target_on": "@today+14d",
               "client": "client-1",
               "recruiter": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "priority": "Hot",
+              "exclusive": true,
+              "must_haves": "Three years running a dispatch floor; night-shift cover; routing software"
             }
           },
           {
@@ -751,7 +877,10 @@
               "opened_on": "@today-9d",
               "target_on": "@today+30d",
               "client": "client-2",
-              "recruiter": "tm-3"
+              "recruiter": "tm-3",
+              "priority": "Warm",
+              "exclusive": false,
+              "must_haves": "Medical billing codes; denial follow-up; payer portals"
             }
           },
           {
@@ -765,7 +894,10 @@
               "target_on": "@today+3d",
               "client": "client-3",
               "recruiter": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "priority": "Hot",
+              "exclusive": true,
+              "must_haves": "Planned maintenance software; shift scheduling; CMMS reports"
             }
           },
           {
@@ -778,7 +910,10 @@
               "opened_on": "@today-33d",
               "target_on": "@today-2d",
               "client": "client-3",
-              "recruiter": "tm-2"
+              "recruiter": "tm-2",
+              "priority": "Hot",
+              "exclusive": false,
+              "must_haves": "Certified welder; leads a crew of six; blueprint reading"
             }
           },
           {
@@ -792,7 +927,10 @@
               "target_on": "@today+35d",
               "client": "client-5",
               "recruiter": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "priority": "Warm",
+              "exclusive": false,
+              "must_haves": "Insurance office experience; licensed or willing to license"
             }
           },
           {
@@ -806,7 +944,8 @@
               "target_on": "@today-10d",
               "filled_on": "@today-16d",
               "client": "client-5",
-              "recruiter": "tm-3"
+              "recruiter": "tm-3",
+              "must_haves": "Claims entry; customer calls"
             }
           },
           {
@@ -820,7 +959,10 @@
               "target_on": "@today+20d",
               "client": "client-7",
               "recruiter": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "priority": "Hot",
+              "exclusive": true,
+              "must_haves": "Cold storage or food warehouse; team of 40; safety record"
             }
           },
           {
@@ -834,7 +976,9 @@
               "target_on": "@today-40d",
               "filled_on": "@today-44d",
               "client": "client-1",
-              "recruiter": "tm-2"
+              "recruiter": "tm-2",
+              "priority": "Cold",
+              "must_haves": "Fleet scheduling; DOT records"
             }
           },
           {
@@ -848,7 +992,10 @@
               "target_on": "@today+40d",
               "client": "client-7",
               "recruiter": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "priority": "Warm",
+              "exclusive": false,
+              "must_haves": "Night shift; forklift certified; leads eight"
             }
           },
           {
@@ -861,7 +1008,8 @@
               "opened_on": "@today-120d",
               "target_on": "@today-80d",
               "client": "client-4",
-              "recruiter": "tm-1"
+              "recruiter": "tm-1",
+              "must_haves": "Property accounting; multi-entity close"
             }
           }
         ]
@@ -987,6 +1135,32 @@
             ]
           },
           {
+            "key": "notice",
+            "label": "Notice period",
+            "parityType": "select",
+            "choices": [
+              "Available now",
+              "Two weeks",
+              "Four weeks",
+              "Longer"
+            ],
+            "choiceColors": {
+              "Available now": "blue",
+              "Two weeks": "green",
+              "Four weeks": "amber",
+              "Longer": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "relocate",
+            "label": "Open to relocating",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "last_contact",
             "label": "Last contact",
             "parityType": "datetime",
@@ -1012,6 +1186,24 @@
             "via": "submissions",
             "pick": "label",
             "agg": "count"
+          },
+          {
+            "key": "in_play",
+            "label": "Live submittals",
+            "parityType": "rollup",
+            "via": "submissions",
+            "pick": "label",
+            "agg": "count",
+            "filter": {
+              "stage": {
+                "not": [
+                  "Declined",
+                  "Placed"
+                ]
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "owner_me",
@@ -1129,7 +1321,9 @@
               "desired_salary": 66000,
               "last_contact": "@today-3d",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "notice": "Two weeks",
+              "relocate": false
             }
           },
           {
@@ -1144,7 +1338,9 @@
               "phone": "(614) 555-0102",
               "desired_salary": 58000,
               "last_contact": "@today-6d",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "notice": "Two weeks",
+              "relocate": true
             }
           },
           {
@@ -1160,7 +1356,9 @@
               "desired_salary": 81000,
               "last_contact": "@today-2d",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "notice": "Four weeks",
+              "relocate": false
             }
           },
           {
@@ -1175,7 +1373,9 @@
               "phone": "(614) 555-0104",
               "desired_salary": 74000,
               "last_contact": "@today-9d",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "notice": "Two weeks",
+              "relocate": false
             }
           },
           {
@@ -1191,7 +1391,9 @@
               "desired_salary": 47000,
               "last_contact": "@today-1d",
               "owner": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "notice": "Available now",
+              "relocate": true
             }
           },
           {
@@ -1222,7 +1424,9 @@
               "desired_salary": 80000,
               "last_contact": "@today-5d",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "notice": "Four weeks",
+              "relocate": true
             }
           },
           {
@@ -1237,7 +1441,9 @@
               "phone": "(614) 555-0108",
               "desired_salary": 60500,
               "last_contact": "@today-50d",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "notice": "Available now",
+              "relocate": false
             }
           },
           {
@@ -1253,7 +1459,9 @@
               "desired_salary": 85000,
               "last_contact": "@today-8d",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "notice": "Longer",
+              "relocate": false
             }
           },
           {
@@ -1284,7 +1492,9 @@
               "desired_salary": 53000,
               "last_contact": "@today-2d",
               "owner": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "notice": "Available now",
+              "relocate": false
             }
           },
           {
@@ -1299,7 +1509,9 @@
               "phone": "(614) 555-0112",
               "desired_salary": 62000,
               "last_contact": "@today-14d",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "notice": "Two weeks",
+              "relocate": true
             }
           }
         ]
@@ -1424,6 +1636,61 @@
                 "value": 400000
               }
             ]
+          },
+          {
+            "key": "fee",
+            "label": "Placement fee (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "guarantee",
+            "label": "Guarantee",
+            "parityType": "select",
+            "choices": [
+              "Not started",
+              "In guarantee",
+              "Passed",
+              "Replacement owed"
+            ],
+            "choiceColors": {
+              "Not started": "blue",
+              "In guarantee": "green",
+              "Passed": "amber",
+              "Replacement owed": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fee_status",
+            "label": "Fee invoice",
+            "parityType": "select",
+            "choices": [
+              "Not invoiced",
+              "Invoiced",
+              "Paid"
+            ],
+            "choiceColors": {
+              "Not invoiced": "blue",
+              "Invoiced": "green",
+              "Paid": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "added_at",
@@ -1554,7 +1821,9 @@
               "job_order": "job_order-3",
               "submitted_on": "@today-30d",
               "interview_on": "@today-14d",
-              "offer_salary": 79000
+              "offer_salary": 79000,
+              "guarantee": "Not started",
+              "fee_status": "Not invoiced"
             }
           },
           {
@@ -1600,7 +1869,10 @@
               "interview_on": "@today-30d",
               "start_on": "@today-20d",
               "offer_salary": 45000,
-              "placed_on": "@today-20d"
+              "placed_on": "@today-20d",
+              "fee": 9200,
+              "guarantee": "In guarantee",
+              "fee_status": "Paid"
             }
           },
           {
@@ -1624,7 +1896,10 @@
               "interview_on": "@today-60d",
               "start_on": "@today-30d",
               "offer_salary": 59000,
-              "placed_on": "@today-30d"
+              "placed_on": "@today-30d",
+              "fee": 11950,
+              "guarantee": "In guarantee",
+              "fee_status": "Invoiced"
             }
           },
           {
@@ -2110,7 +2385,7 @@
         "Morrow Street"
       ]
     },
-    "version": 4
+    "version": 6
   },
   "pages": [
     {
@@ -2121,7 +2396,7 @@
         "emoji": "🧲"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:agencies-office-chairs-row",
         "offsetY": 50
       },
       "settings": {
@@ -2149,6 +2424,12 @@
                 "width": 0.5
               },
               "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                },
                 {
                   "type": "page",
                   "props": {
@@ -2525,6 +2806,340 @@
             ],
             "activeViewId": "sub-b"
           }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "recruiting-agency-desk",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This workspace runs a recruiting desk: employer clients and their fee terms, every open job order, candidates and where each one stands, every submittal from first send to placement, and the fee and guarantee that follow. Your job boards and email stay where they are; this is where the desk sees every search at once."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One row is"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What you watch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clients"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "An employer you recruit for"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Terms, fee percent, guarantee days, fee agreement signed, roles open"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Job orders"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One role to fill"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Priority, exclusive, pay budget, expected fee, must-haves, candidates in play"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Candidates"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A person you represent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Status, expected pay, notice period, live submittals"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Submittals"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One candidate sent for one role"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Stage, interview date, agreed pay, placement fee, guarantee, fee invoice"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The numbers to watch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Expected fee",
+              "bold": true
+            },
+            {
+              "text": " on a job order is the pay budget times the client's fee rate."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Candidates in play",
+              "bold": true
+            },
+            {
+              "text": " counts submittals not yet declined or placed. A hot job order with fewer than three is at risk."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Interviewed or further",
+              "bold": true
+            },
+            {
+              "text": " counts interviews, offers and placements together."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Fees from placements",
+              "bold": true
+            },
+            {
+              "text": " adds placement fees on placed submittals."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter each client with terms, fee percent, guarantee days and whether the fee agreement is signed. No submittal goes to a client without one."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter open job orders with pay budget, priority and the must-haves from intake."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add candidates you are actively working, with notice period and expected pay."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter every submittal that is still alive."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happens"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Monday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pipeline review: every hot job order and its candidates in play"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Daily"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two hours of sourcing blocked before calls start"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every client gets a short update; every interviewed candidate gets feedback"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The warehouse manager search at Northfield is exclusive and hot. Henrietta interviews this week and Wilhelmina was just submitted, so the recruiter preps Henrietta on the safety-record questions the hiring manager cares about most."
+            }
+          ]
         }
       ]
     },
@@ -2955,7 +3570,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A rushed intake is the root of most failed searches. Fifteen extra minutes here saves two weeks later."
+              "text": "A strong intake call is the difference between three good submittals and twenty wasted ones. Never source for a role you have not taken properly."
             }
           ],
           "background": "blue",
@@ -2967,7 +3582,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Questions to cover"
+              "text": "Before the call"
             }
           ],
           "props": {
@@ -2975,42 +3590,222 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "Why is the role open and what happened to the last person?"
+              "text": "Fee agreement signed; "
+            },
+            {
+              "text": "Fee agreement signed",
+              "bold": true
+            },
+            {
+              "text": " ticked on the client"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Company website and any past roles with this client read"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Questions to ask"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Why is the role open: growth or a replacement? If a replacement, why did the last person leave?"
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "What would the first ninety days look like for a great hire?"
+              "text": "What will this person have achieved after six months?"
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Which two skills are non-negotiable and which can be taught?"
+              "text": "The three must-haves. Write them in "
+            },
+            {
+              "text": "Must-haves from intake",
+              "bold": true
+            },
+            {
+              "text": ", word for word."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Salary range and what could move it; benefits that candidates always ask about."
+              "text": "The nice-to-haves, and which one they would give up first."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Interview rounds, who is in them, and how many days between rounds."
+              "text": "Pay range, bonus and benefits. Enter the top of the range in "
+            },
+            {
+              "text": "Pay budget",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Interview steps, who decides, and how fast they can move."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Who else is working on this role: other agencies, internal recruiters, job ads."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deciding priority"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Priority"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hot"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Exclusive or retained, realistic pay, a manager who answers within two days"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Warm"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shared with one or two agencies, pay at market"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cold"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pay below market, slow manager or several agencies"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Spend your sourcing hours on hot roles first."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Exclusive roles"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ask for exclusivity for two to three weeks in return for a shortlist by a fixed date. Tick "
+            },
+            {
+              "text": "Exclusive",
+              "bold": true
+            },
+            {
+              "text": " when you get it."
             }
           ]
         },
@@ -3026,26 +3821,33 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Create the job order with salary, target fill date and level."
+              "text": "Send the client a one-page summary of what you heard and the date of your first shortlist."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Write the role page: the role, search plan and interview process."
+              "text": "Set "
+            },
+            {
+              "text": "Target fill",
+              "bold": true
+            },
+            {
+              "text": " honestly."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Send the employer a short summary of what you heard and ask them to correct it."
+              "text": "Write the job ad and the outreach message the same day."
             }
           ]
         },
@@ -3053,7 +3855,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Agree these before you source"
+              "text": "Example"
             }
           ],
           "props": {
@@ -3061,37 +3863,31 @@
           }
         },
         {
-          "type": "todo",
+          "type": "quote",
           "text": [
             {
-              "text": "Fee and guarantee period on the employer row"
+              "text": "The maintenance planner role at Arclight is exclusive with a 25 percent fee. The manager wants the planned maintenance software, a scheduling record and clean reports, so the recruiter screens on those three before anything else."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When to walk away"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "A named person who gives feedback within two working days"
+              "text": "If the pay budget is far below what the must-haves cost in your market, say so with numbers from recent placements. Taking a role you cannot fill costs you time and the client's trust."
             }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Whether the role is exclusive to us"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         }
       ]
     },
@@ -3100,125 +3896,349 @@
       "parent": "recruiting-agency-desk",
       "title": "Submission standards",
       "icon": {
-        "emoji": "📤"
+        "emoji": "📨"
       },
       "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "What goes to the employer"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "A short note: why this person, in three sentences."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Their resume, with any changes they approved."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Salary expectations and notice period, stated plainly."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Two lines on what they asked about the role."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "What never goes"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Anything the candidate asked you to keep private."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "A salary figure you have not confirmed with them this week."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "After you send"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Log the submission with the submitted date."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Set a reminder to call the employer in two working days."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Tell the candidate what happens next and by when."
-            }
-          ]
-        },
         {
           "type": "callout",
           "text": [
             {
-              "text": "A candidate who never hears back stops answering your calls. A short update is always better than silence."
+              "text": "Every candidate you send says something about your judgment. Fewer, better submittals win more placements than a stack of résumés."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before you submit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Phone or video screen done in the last two weeks"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "The three must-haves checked one by one"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Expected pay inside the budget, or the gap explained to both sides"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Notice period known"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Candidate agreed to be submitted to this client, in writing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No other agency has submitted them to this client"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The submittal"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send a short note with each résumé:"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Part"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it says"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fit"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How they meet each must-have, in one line each"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Why now"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Why they would move"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pay and notice"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Expected pay and when they could start"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Risks"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Anything the client should know, said plainly"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Add the submittal row with the date, then link the candidate and the job order."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Follow-up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask the client for feedback within two working days."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book interviews and set "
+            },
+            {
+              "text": "Interview",
+              "bold": true
+            },
+            {
+              "text": " with the date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Prep the candidate before every interview: who they meet, what the manager cares about, and two questions to ask."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Debrief both sides the same day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keeping candidates warm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every candidate in play hears from you at least twice a week."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A declined candidate gets a call, not just an email, with honest feedback."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Last contact",
+              "bold": true
+            },
+            {
+              "text": " on each candidate shows who has gone quiet."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Never send blind"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Do not send a résumé to a company that has not asked for it, and never send a candidate to a client without their consent for that client. Both damage trust on both sides, and in many places they start fee disputes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Quality check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each month, compare submittals with interviews for each recruiter. If fewer than one in three submittals gets an interview, screening needs tightening."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Tobias was submitted for the billing analyst role three days ago with no answer yet. The recruiter calls the hiring manager, learns he is out until Thursday, and tells Tobias so he does not accept another offer by mistake."
+            }
+          ]
         }
       ]
     },
@@ -3231,53 +4251,22 @@
       },
       "blocks": [
         {
-          "type": "heading",
+          "type": "callout",
           "text": [
             {
-              "text": "From offer to start date"
+              "text": "The offer stage is where most placements are lost, and the guarantee period is where most fees are refunded. Both need a firm routine."
             }
           ],
+          "background": "blue",
           "props": {
-            "level": 2
+            "icon": "Lightbulb"
           }
         },
         {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "When a submission reaches Offer, call both sides the same day and confirm the number."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Record the agreed pay on the submission only once the candidate has said yes."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Press Confirm placement after the written offer is signed and the start date is agreed."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Send the employer the fee invoice according to the terms on their row."
-            }
-          ]
-        },
-        {
           "type": "heading",
           "text": [
             {
-              "text": "During the guarantee period"
+              "text": "Before the offer"
             }
           ],
           "props": {
@@ -3288,7 +4277,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Call the new hire at day 7, day 30 and day 60."
+              "text": "Ask the candidate for the lowest offer they would accept, and what else they are waiting on."
             }
           ]
         },
@@ -3296,7 +4285,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Note anything that sounds like trouble and tell the employer early."
+              "text": "Ask the client for the offer they plan to make before they make it."
             }
           ]
         },
@@ -3304,7 +4293,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "If a hire leaves, open a replacement job order at no new fee and link it in the notes."
+              "text": "Close the gap before the written offer goes out, not after."
             }
           ]
         },
@@ -3312,18 +4301,301 @@
           "type": "heading",
           "text": [
             {
-              "text": "Why this matters"
+              "text": "The offer"
             }
           ],
           "props": {
-            "level": 3
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the submittal to "
+            },
+            {
+              "text": "Offer",
+              "bold": true
+            },
+            {
+              "text": " with the agreed pay in "
+            },
+            {
+              "text": "Agreed annual pay",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Prepare the candidate for a counter-offer from their current employer. Most counter-offers do not keep people for long; talk about why they wanted to move."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Once accepted in writing, set the start date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Placement"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Submittal set to "
+            },
+            {
+              "text": "Placed",
+              "bold": true
+            },
+            {
+              "text": " with the placement date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Placement fee",
+              "bold": true
+            },
+            {
+              "text": " entered: agreed pay times the client's fee percent"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fee invoice sent; "
+            },
+            {
+              "text": "Fee invoice",
+              "bold": true
+            },
+            {
+              "text": " set to Invoiced, then Paid"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Job order set to "
+            },
+            {
+              "text": "Filled",
+              "bold": true
+            },
+            {
+              "text": "; other candidates told kindly the same day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Guarantee",
+              "bold": true
+            },
+            {
+              "text": " set to In guarantee"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The guarantee"
+            }
+          ],
+          "props": {
+            "level": 2
           }
         },
         {
           "type": "text",
           "text": [
             {
-              "text": "Employers remember how replacements were handled far longer than they remember the original fee."
+              "text": "Most contingent fees carry a guarantee, often 60 or 90 days. If the person leaves in that time, the agency replaces them or refunds part of the fee."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "First day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call the candidate in the evening"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "End of week one"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call both the candidate and the manager"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day 30 and day 60"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check in with both"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Guarantee ends"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Set "
+                    },
+                    {
+                      "text": "Guarantee",
+                      "bold": true
+                    },
+                    {
+                      "text": " to Passed"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If someone leaves early, set "
+            },
+            {
+              "text": "Replacement owed",
+              "bold": true
+            },
+            {
+              "text": " and reopen the search at once."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Lazar started the fleet coordinator role a month ago. The fee is invoiced but not paid, so the desk chases the invoice this week, and the 30-day check-in call is booked with Lazar and his manager."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Fees"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Agree fees in the signed agreement before any submittal: percent of first-year pay, guarantee days, and when the invoice is due."
             }
           ]
         }
@@ -3334,14 +4606,70 @@
       "parent": "recruiting-agency-desk",
       "title": "Weekly pipeline review",
       "icon": {
-        "emoji": "📊"
+        "emoji": "📈"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Once a week, the desk looks at every open search together. The review is short, honest and ends with a named next step for every hot role."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Agenda for forty-five minutes"
+              "text": "Before the meeting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every submittal's stage up to date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Interviews booked for this week entered with dates"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Candidates' last contact dates current"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The agenda (45 minutes)"
             }
           ],
           "props": {
@@ -3352,7 +4680,11 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Past target fill date: each job order gets a plan or a decision to close."
+              "text": "Hot job orders.",
+              "bold": true
+            },
+            {
+              "text": " For each: candidates in play, interviews this week, the risk, the next step and who owns it."
             }
           ]
         },
@@ -3360,7 +4692,11 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Interviews this week: who is prepping each candidate?"
+              "text": "Offers out.",
+              "bold": true
+            },
+            {
+              "text": " What could stop each one; who calls whom."
             }
           ]
         },
@@ -3368,7 +4704,11 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Stale candidates: anyone available who has not been contacted this month gets a call."
+              "text": "Placements in guarantee.",
+              "bold": true
+            },
+            {
+              "text": " Any wobble from check-in calls."
             }
           ]
         },
@@ -3376,7 +4716,23 @@
           "type": "numbered",
           "text": [
             {
-              "text": "New searches: ownership and the first three actions for each."
+              "text": "Warm and cold roles.",
+              "bold": true
+            },
+            {
+              "text": " Keep, push harder, or give back?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Business development.",
+              "bold": true
+            },
+            {
+              "text": " New clients and job orders expected this month."
             }
           ]
         },
@@ -3384,7 +4740,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Rules"
+              "text": "The numbers"
             }
           ],
           "props": {
@@ -3392,26 +4748,184 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Healthy"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Candidates in play per hot role"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Three or more"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Submittals that reach interview"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One in three or better"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Interviews that reach offer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One in three or better"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Offers accepted"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Most"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
           "text": [
             {
-              "text": "Every open job order has a named recruiter and a next step with a date."
+              "text": "When one number drops, it shows where to work: sourcing, screening, interview prep or offer handling."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "If nothing has happened in ten days, the job order is discussed first."
+              "text": "Stalled roles"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A job order past its target date without an offer gets a straight conversation with the client: change the pay, widen the must-haves, or pause the search."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Update statuses before the meeting, not during it."
+              "text": "Fees"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Look at expected fees on hot roles, fees invoiced and not paid, and placements still in guarantee. Fees in guarantee are not safe until the guarantee passes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The welding lead role is past its target with one interview this week. The desk agrees to ask Arclight to consider strong welders who have led smaller crews, and Anders gets interview prep on blueprint reading."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keep it honest"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Say what is really happening. A role marked hot with no candidates in play for two weeks is not hot; change it. The review only works when the board matches reality."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the meeting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each recruiter writes their next steps on the job orders the same day, so the plan lives in the workspace and not in someone's notebook."
             }
           ]
         }

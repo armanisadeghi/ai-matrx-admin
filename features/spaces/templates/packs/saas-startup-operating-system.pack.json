@@ -1,24 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0562",
-  "version": 1,
+  "version": 3,
   "title": "SaaS Startup Operating System",
-  "description": "Customers, roadmap, support tickets and monthly metrics for a software startup.",
+  "description": "SaaS operating system: MRR by plan, churn by signup cohort, support SLAs and roadmap.",
   "forWho": "Founders running a small subscription software product",
   "icon": {
     "emoji": "🧭"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:tech-empty-modern-office-desks",
     "offsetY": 50
   },
   "category": "tech",
   "tags": [
+    "founder",
+    "customer success",
+    "product manager",
     "saas",
-    "customers",
-    "roadmap",
-    "support",
-    "metrics"
+    "mrr",
+    "churn"
   ],
   "spec": {
     "specVersion": 1,
@@ -63,7 +64,8 @@
         "describes": "Every account with its plan, monthly revenue, health and renewal date.",
         "subject": "thing",
         "independentOf": {
-          "owner": "Either record can be created or change status before the other."
+          "owner": "Either record can be created or change status before the other.",
+          "cohort": "Either record can be created or change status before the other."
         },
         "statusImplies": [],
         "before": [
@@ -126,6 +128,30 @@
             "contextPolicy": "include"
           },
           {
+            "key": "billing",
+            "label": "Billing",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Monthly",
+              "Annual"
+            ],
+            "choiceColors": {
+              "Monthly": "blue",
+              "Annual": "green"
+            }
+          },
+          {
+            "key": "cohort",
+            "label": "Signup cohort",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "cohort",
+            "relationMax": 1
+          },
+          {
             "key": "mrr",
             "label": "Monthly revenue (USD)",
             "parityType": "currency",
@@ -145,6 +171,14 @@
             "contextPolicy": "include"
           },
           {
+            "key": "arr",
+            "label": "Annual run rate (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Monthly revenue (USD)} * 12"
+          },
+          {
             "key": "seats",
             "label": "Seats",
             "parityType": "number",
@@ -160,6 +194,45 @@
             ],
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "health",
+            "label": "Health score",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "description": "0 to 100 from logins, seats used and open tickets; scored weekly by customer success."
+          },
+          {
+            "key": "churn_reason",
+            "label": "Churn reason",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Too expensive",
+              "Missing a feature",
+              "Went out of business",
+              "Switched to a competitor",
+              "Never got set up"
+            ],
+            "choiceColors": {
+              "Too expensive": "amber",
+              "Missing a feature": "violet",
+              "Went out of business": "slate",
+              "Switched to a competitor": "red",
+              "Never got set up": "orange"
+            }
           },
           {
             "key": "signed_up_on",
@@ -423,7 +496,10 @@
               "renews_on": "@today+11d",
               "email": "ops@harborphysio.net",
               "owner": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "billing": "Annual",
+              "cohort": "cohort-1",
+              "health": 88
             }
           },
           {
@@ -437,7 +513,10 @@
               "signed_up_on": "@today-300d",
               "renews_on": "@today+66d",
               "email": "office@fernhillclean.net",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "billing": "Monthly",
+              "cohort": "cohort-2",
+              "health": 81
             }
           },
           {
@@ -452,7 +531,10 @@
               "renews_on": "@today",
               "email": "admin@lumendental.net",
               "owner": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "billing": "Monthly",
+              "cohort": "cohort-2",
+              "health": 42
             }
           },
           {
@@ -466,7 +548,10 @@
               "signed_up_on": "@today-60d",
               "renews_on": "@today+30d",
               "email": "jo@oaklinelandscape.net",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "billing": "Monthly",
+              "cohort": "cohort-4",
+              "health": 74
             }
           },
           {
@@ -481,7 +566,10 @@
               "renews_on": "@today+5d",
               "email": "hello@pinecresttutor.net",
               "owner": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "billing": "Monthly",
+              "cohort": "cohort-4",
+              "health": 60
             }
           },
           {
@@ -495,7 +583,10 @@
               "signed_up_on": "@today-180d",
               "renews_on": "@today+3d",
               "email": "bookings@brightsidesalon.net",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "billing": "Monthly",
+              "cohort": "cohort-3",
+              "health": 79
             }
           },
           {
@@ -510,7 +601,10 @@
               "renews_on": "@today-4d",
               "email": "office@riversidevet.net",
               "owner": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "billing": "Annual",
+              "cohort": "cohort-1",
+              "health": 35
             }
           },
           {
@@ -524,7 +618,10 @@
               "signed_up_on": "@today-90d",
               "renews_on": "@today+60d",
               "email": "hello@copperkettle.net",
-              "owner": "tm-1"
+              "owner": "tm-1",
+              "billing": "Monthly",
+              "cohort": "cohort-3",
+              "health": 70
             }
           },
           {
@@ -539,7 +636,11 @@
               "renews_on": "@today-30d",
               "email": "q@quillbrushstudio.net",
               "owner": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "billing": "Monthly",
+              "cohort": "cohort-1",
+              "health": 0,
+              "churn_reason": "Never got set up"
             }
           },
           {
@@ -553,7 +654,125 @@
               "signed_up_on": "@today-3d",
               "renews_on": "@today+11d",
               "email": "dispatch@maplestmovers.net",
-              "owner": "tm-1"
+              "owner": "tm-1",
+              "billing": "Monthly",
+              "cohort": "cohort-4",
+              "health": 55
+            }
+          },
+          {
+            "key": "customer-11",
+            "values": {
+              "customer_name": "Northgate Plumbing",
+              "status": "Churned",
+              "plan": "Team",
+              "mrr": 0,
+              "seats": 4,
+              "signed_up_on": "@today-470d",
+              "renews_on": "@today-60d",
+              "cohort": "cohort-1",
+              "health": 0,
+              "billing": "Monthly",
+              "owner": "tm-3",
+              "churn_reason": "Too expensive"
+            }
+          },
+          {
+            "key": "customer-12",
+            "values": {
+              "customer_name": "Sunfield Physiotherapy",
+              "status": "Active",
+              "plan": "Business",
+              "mrr": 380,
+              "seats": 11,
+              "signed_up_on": "@today-440d",
+              "renews_on": "@today+20d",
+              "cohort": "cohort-1",
+              "health": 84,
+              "billing": "Annual",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "customer-13",
+            "values": {
+              "customer_name": "Bayview Daycare",
+              "status": "Churned",
+              "plan": "Team",
+              "mrr": 0,
+              "seats": 7,
+              "signed_up_on": "@today-330d",
+              "renews_on": "@today-90d",
+              "cohort": "cohort-2",
+              "health": 0,
+              "billing": "Monthly",
+              "owner": "tm-3",
+              "churn_reason": "Switched to a competitor"
+            }
+          },
+          {
+            "key": "customer-14",
+            "values": {
+              "customer_name": "Cedar Lane Bakery",
+              "status": "Active",
+              "plan": "Starter",
+              "mrr": 40,
+              "seats": 2,
+              "signed_up_on": "@today-310d",
+              "renews_on": "@today+9d",
+              "cohort": "cohort-2",
+              "health": 77,
+              "billing": "Monthly",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "customer-15",
+            "values": {
+              "customer_name": "Kestrel Fitness",
+              "status": "Churned",
+              "plan": "Team",
+              "mrr": 0,
+              "seats": 5,
+              "signed_up_on": "@today-200d",
+              "renews_on": "@today-40d",
+              "cohort": "cohort-3",
+              "health": 0,
+              "billing": "Monthly",
+              "owner": "tm-3",
+              "churn_reason": "Missing a feature"
+            }
+          },
+          {
+            "key": "customer-16",
+            "values": {
+              "customer_name": "Ironwood Auto Care",
+              "status": "Active",
+              "plan": "Team",
+              "mrr": 130,
+              "seats": 7,
+              "signed_up_on": "@today-190d",
+              "renews_on": "@today+12d",
+              "cohort": "cohort-3",
+              "health": 82,
+              "billing": "Monthly",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "customer-17",
+            "values": {
+              "customer_name": "Glenview Pet Grooming",
+              "status": "Active",
+              "plan": "Starter",
+              "mrr": 45,
+              "seats": 2,
+              "signed_up_on": "@today-70d",
+              "renews_on": "@today+25d",
+              "cohort": "cohort-4",
+              "health": 68,
+              "billing": "Monthly",
+              "owner": "tm-3"
             }
           }
         ]
@@ -666,6 +885,41 @@
             },
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "first_reply_hours",
+            "label": "Hours to first reply",
+            "parityType": "decimal",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "sla",
+            "label": "Reply target",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Met",
+              "Missed",
+              "Waiting for first reply"
+            ],
+            "choiceColors": {
+              "Met": "green",
+              "Missed": "red",
+              "Waiting for first reply": "amber"
+            },
+            "description": "Targets: High 4 business hours, Normal 1 business day, Low 2 business days."
           },
           {
             "key": "reply_by",
@@ -797,7 +1051,9 @@
               "priority": "High",
               "reply_by": "@today+1d 12:00",
               "assignee": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sla": "Met",
+              "first_reply_hours": 2.5
             }
           },
           {
@@ -810,7 +1066,8 @@
               "status": "New",
               "priority": "Normal",
               "reply_by": "@today 17:00",
-              "assignee": "tm-3"
+              "assignee": "tm-3",
+              "sla": "Waiting for first reply"
             }
           },
           {
@@ -823,7 +1080,8 @@
               "priority": "High",
               "reply_by": "@today-1d 17:00",
               "assignee": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sla": "Waiting for first reply"
             }
           },
           {
@@ -835,7 +1093,9 @@
               "status": "Waiting on customer",
               "priority": "Low",
               "reply_by": "@today+2d 12:00",
-              "assignee": "tm-3"
+              "assignee": "tm-3",
+              "sla": "Met",
+              "first_reply_hours": 5
             }
           },
           {
@@ -849,7 +1109,8 @@
               "priority": "Normal",
               "reply_by": "@today+3d 12:00",
               "assignee": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sla": "Waiting for first reply"
             }
           },
           {
@@ -861,7 +1122,9 @@
               "status": "In progress",
               "priority": "Normal",
               "reply_by": "@today 12:00",
-              "assignee": "tm-1"
+              "assignee": "tm-1",
+              "sla": "Met",
+              "first_reply_hours": 3
             }
           },
           {
@@ -875,7 +1138,9 @@
               "priority": "High",
               "reply_by": "@today-2d 12:00",
               "assignee": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sla": "Missed",
+              "first_reply_hours": 30
             }
           },
           {
@@ -887,7 +1152,8 @@
               "status": "New",
               "priority": "Low",
               "reply_by": "@today+4d 12:00",
-              "assignee": "tm-3"
+              "assignee": "tm-3",
+              "sla": "Waiting for first reply"
             }
           },
           {
@@ -901,7 +1167,9 @@
               "priority": "Normal",
               "reply_by": "@today+6d 12:00",
               "assignee": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sla": "Met",
+              "first_reply_hours": 12
             }
           },
           {
@@ -913,7 +1181,9 @@
               "status": "Solved",
               "priority": "High",
               "reply_by": "@today-6d 12:00",
-              "assignee": "tm-4"
+              "assignee": "tm-4",
+              "sla": "Met",
+              "first_reply_hours": 1.5
             }
           },
           {
@@ -926,7 +1196,9 @@
               "priority": "Normal",
               "reply_by": "@today-9d 12:00",
               "assignee": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sla": "Missed",
+              "first_reply_hours": 26
             }
           }
         ]
@@ -1417,6 +1689,71 @@
             "contextPolicy": "include"
           },
           {
+            "key": "new_mrr",
+            "label": "New MRR (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ]
+          },
+          {
+            "key": "expansion",
+            "label": "Expansion MRR (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ]
+          },
+          {
+            "key": "churned_mrr",
+            "label": "Churned MRR (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ]
+          },
+          {
+            "key": "churn_pct",
+            "label": "MRR churn (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Revenue at month end (USD)} - {New MRR (USD)} - {Expansion MRR (USD)} + {Churned MRR (USD)} > 0, ROUND({Churned MRR (USD)} / ({Revenue at month end (USD)} - {New MRR (USD)} - {Expansion MRR (USD)} + {Churned MRR (USD)}) * 100, 1), 0)"
+          },
+          {
             "key": "new_accounts",
             "label": "New accounts",
             "parityType": "number",
@@ -1564,7 +1901,10 @@
               "new_accounts": 9,
               "lost_accounts": 2,
               "spend": 210000,
-              "trend": "Up"
+              "trend": "Up",
+              "new_mrr": 820,
+              "expansion": 140,
+              "churned_mrr": 260
             }
           },
           {
@@ -1576,7 +1916,10 @@
               "new_accounts": 10,
               "lost_accounts": 3,
               "spend": 198000,
-              "trend": "Up"
+              "trend": "Up",
+              "new_mrr": 760,
+              "expansion": 160,
+              "churned_mrr": 220
             }
           },
           {
@@ -1588,7 +1931,10 @@
               "new_accounts": 6,
               "lost_accounts": 2,
               "spend": 187000,
-              "trend": "Up"
+              "trend": "Up",
+              "new_mrr": 560,
+              "expansion": 120,
+              "churned_mrr": 280
             }
           },
           {
@@ -1600,7 +1946,10 @@
               "new_accounts": 5,
               "lost_accounts": 4,
               "spend": 176000,
-              "trend": "Flat"
+              "trend": "Flat",
+              "new_mrr": 310,
+              "expansion": 90,
+              "churned_mrr": 300
             }
           },
           {
@@ -1612,7 +1961,10 @@
               "new_accounts": 11,
               "lost_accounts": 2,
               "spend": 168000,
-              "trend": "Up"
+              "trend": "Up",
+              "new_mrr": 910,
+              "expansion": 150,
+              "churned_mrr": 260
             }
           },
           {
@@ -1624,7 +1976,220 @@
               "new_accounts": 7,
               "lost_accounts": 3,
               "spend": 155000,
-              "trend": "Up"
+              "trend": "Up",
+              "new_mrr": 520,
+              "expansion": 180,
+              "churned_mrr": 300
+            }
+          }
+        ]
+      },
+      {
+        "token": "cohort",
+        "name": "Signup cohorts",
+        "labelSingular": "Cohort",
+        "labelPlural": "Signup cohorts",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "layers",
+        "titleField": "cohort_name",
+        "describes": "Customers grouped by the quarter they signed up, to see who stays and what they pay now.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New cohort",
+            "values": {
+              "cohort_name": "New cohort"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "How to read this cohort"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Accounts kept is the share of paying accounts still paying. Revenue kept above 100 percent means the accounts that stayed grew more than the ones that left."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What was different about how this cohort found us or was onboarded."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "cohort_name",
+            "label": "Cohort",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "started_on",
+            "label": "Cohort began",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "mrr_at_start",
+            "label": "MRR when the cohort closed (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ]
+          },
+          {
+            "key": "started",
+            "label": "Accounts that signed up",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "cohort_customers",
+            "pick": "customer_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Trial"
+                ]
+              }
+            }
+          },
+          {
+            "key": "still_paying",
+            "label": "Still paying",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "cohort_customers",
+            "pick": "customer_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Active",
+                "At risk"
+              ]
+            }
+          },
+          {
+            "key": "mrr_now",
+            "label": "MRR now (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "cohort_customers",
+            "pick": "mrr",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Active",
+                "At risk"
+              ]
+            }
+          },
+          {
+            "key": "logo_ret",
+            "label": "Accounts kept (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Accounts that signed up} > 0, ROUND({Still paying} / {Accounts that signed up} * 100, 0), 0)"
+          },
+          {
+            "key": "rev_ret",
+            "label": "Revenue kept (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({MRR when the cohort closed (USD)} > 0, ROUND({MRR now (USD)} / {MRR when the cohort closed (USD)} * 100, 0), 0)"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "cohort-1",
+            "values": {
+              "cohort_name": "Launch cohort",
+              "started_on": "@today-15m",
+              "mrr_at_start": 1020
+            }
+          },
+          {
+            "key": "cohort-2",
+            "values": {
+              "cohort_name": "Second-quarter cohort",
+              "started_on": "@today-12m",
+              "mrr_at_start": 380
+            }
+          },
+          {
+            "key": "cohort-3",
+            "values": {
+              "cohort_name": "Third-quarter cohort",
+              "started_on": "@today-9m",
+              "mrr_at_start": 260
+            }
+          },
+          {
+            "key": "cohort-4",
+            "values": {
+              "cohort_name": "Fourth-quarter cohort",
+              "started_on": "@today-3m",
+              "mrr_at_start": 90
             }
           }
         ]
@@ -1680,6 +2245,16 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "feature_by_owner"
+      },
+      {
+        "describes": "Each customer signed up in one cohort.",
+        "fromTable": "customer",
+        "fromField": "cohort",
+        "toTable": "cohort",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "cohort_customers"
       }
     ],
     "sharedBlocks": [
@@ -2203,6 +2778,13 @@
         "table": "metric_month",
         "kind": "kanban",
         "groupBy": "trend"
+      },
+      {
+        "token": "all_cohort",
+        "name": "All cohorts",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "cohort"
       }
     ],
     "agent": {
@@ -2275,6 +2857,18 @@
           "surface": "feature_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open signup cohorts.",
+        "action": {
+          "kind": "open",
+          "surface": "all_cohort"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_cohort",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2291,7 +2885,7 @@
         "Gantry Street"
       ]
     },
-    "version": 1
+    "version": 3
   },
   "pages": [
     {
@@ -2302,7 +2896,7 @@
         "emoji": "🧭"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:tech-empty-modern-office-desks",
         "offsetY": 50
       },
       "settings": {
@@ -2313,12 +2907,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "The company's operating view in one place: customers and their renewal dates, the roadmap and who asked for what, support tickets and the monthly numbers. Start every Monday with the Dashboard and the At risk view. Log a ticket the moment a customer asks, and link it to the roadmap item it is about."
+              "text": "The company in one place. Customers holds plan, MRR, health and cohort; Signup cohorts shows who stays and what they pay now; Support tickets tracks reply targets; Roadmap ties requests to what you build; Monthly metrics shows new, expansion and churned MRR. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2813,6 +3413,320 @@
             ],
             "activeViewId": "met-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Signup cohorts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Who stays, by the quarter they signed up."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "cohort",
+              "view": "all_cohort"
+            },
+            "inline": true,
+            "title": "Signup cohorts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "co-t",
+                "name": "Cohorts",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "started_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "co-t"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "saas-startup-operating-system",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the company in this workspace. Share it with the founders, customer success, support and engineering."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Customers",
+              "bold": true
+            },
+            {
+              "text": ": each account's plan, billing, MRR and annual run rate, seats, health score, signup cohort, renewal date, open tickets and, if they left, why."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Signup cohorts",
+              "bold": true
+            },
+            {
+              "text": ": customers grouped by signup quarter with accounts kept and revenue kept."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Support tickets",
+              "bold": true
+            },
+            {
+              "text": ": questions, bugs, requests and billing, with priority, reply target and hours to first reply."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Roadmap",
+              "bold": true
+            },
+            {
+              "text": ": features from idea to shipped, linked to the tickets asking for them."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monthly metrics",
+              "bold": true
+            },
+            {
+              "text": ": MRR at month end with new, expansion and churned MRR, and MRR churn."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: the founder review (see its page)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every day: support replies within target; customer success works the at-risk list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Thursday: roadmap check-in with engineering."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "First business day of each month: last month's metrics row filled in."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: tickets waiting for a first reply, High priority first"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every week: health scores, at-risk actions, founder review"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: metrics row, cohort table read, churn reasons reviewed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every quarter: roadmap chosen from evidence"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Founders own revenue, pricing and the roadmap. Customer success owns health, onboarding and renewals. Support owns reply targets. Engineering owns sizes and dates."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Definitions we use"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "MRR",
+              "bold": true
+            },
+            {
+              "text": " is what active customers pay each month, with annual plans divided by twelve. "
+            },
+            {
+              "text": "Churned MRR",
+              "bold": true
+            },
+            {
+              "text": " is the monthly revenue of customers who left or moved down a plan. "
+            },
+            {
+              "text": "Expansion MRR",
+              "bold": true
+            },
+            {
+              "text": " comes from customers who added seats or moved up. Trials count only once they pay."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename plans, cohorts and churn reasons to fit your product, set your own reply targets, and delete the sample rows once your own are in. Edit any cell in place; cohort numbers, run rate and churn update by themselves."
+            }
+          ]
         }
       ]
     },
@@ -3212,6 +4126,107 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "MRR by plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "customer",
+              "view": "all_customer"
+            },
+            "inline": true,
+            "title": "MRR by plan",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ds-1",
+                "name": "MRR by plan",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "plan",
+                  "op": "sum",
+                  "field": "mrr"
+                }
+              },
+              {
+                "id": "ds-2",
+                "name": "Why customers left",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "churn_reason",
+                  "op": "count",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "ds-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reply targets"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "tickets",
+              "view": "all_tickets"
+            },
+            "inline": true,
+            "title": "Reply targets",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ds-3",
+                "name": "Tickets by reply target",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "sla",
+                  "op": "count",
+                  "centerValue": true
+                }
+              },
+              {
+                "id": "ds-4",
+                "name": "Waiting for a first reply",
+                "layout": "list",
+                "icon": "Clock",
+                "filters": {
+                  "sla": "Waiting for first reply"
+                }
+              }
+            ],
+            "activeViewId": "ds-3"
+          }
         }
       ]
     },
@@ -3230,7 +4245,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Thirty minutes every Monday keeps a small company honest. Same agenda, same order."
+              "text": "Thirty minutes every Monday with the founders and customer success. The same five questions each week, answered from the tables, so decisions rest on numbers rather than the loudest customer."
             }
           ],
           "background": "blue",
@@ -3242,7 +4257,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Agenda"
+              "text": "1. Revenue"
             }
           ],
           "props": {
@@ -3250,42 +4265,45 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Metrics: open the Dashboard and read last month's row aloud."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "Open "
+            },
             {
-              "text": "Customers: walk through At risk and Renewing in the next 14 days."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "Monthly metrics",
+              "bold": true
+            },
             {
-              "text": "Support: any ticket older than two days and anything marked High."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": ". Last month's "
+            },
             {
-              "text": "Roadmap: what shipped, what is in build, what is stuck."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "New MRR",
+              "bold": true
+            },
             {
-              "text": "Decisions: write each decision in the weekly notes with an owner and date."
+              "text": ", "
+            },
+            {
+              "text": "Expansion MRR",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Churned MRR",
+              "bold": true
+            },
+            {
+              "text": " explain how MRR moved. A healthy small SaaS company keeps monthly MRR churn under about 2 to 3 percent; if "
+            },
+            {
+              "text": "MRR churn",
+              "bold": true
+            },
+            {
+              "text": " is above that, it is the first thing to fix, before more selling."
             }
           ]
         },
@@ -3293,7 +4311,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Rules"
+              "text": "2. Customers at risk"
             }
           ],
           "props": {
@@ -3301,26 +4319,219 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "No new roadmap items added during the review."
+              "text": "Filter "
+            },
+            {
+              "text": "Customers",
+              "bold": true
+            },
+            {
+              "text": " to "
+            },
+            {
+              "text": "At risk",
+              "bold": true
+            },
+            {
+              "text": " and sort by "
+            },
+            {
+              "text": "MRR",
+              "bold": true
+            },
+            {
+              "text": ". For each: what is the "
+            },
+            {
+              "text": "Health score",
+              "bold": true
+            },
+            {
+              "text": ", how many "
+            },
+            {
+              "text": "Open tickets",
+              "bold": true
+            },
+            {
+              "text": ", when does it "
+            },
+            {
+              "text": "renew",
+              "bold": true
+            },
+            {
+              "text": "? Agree one action and one owner for each."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Anything over 5 minutes of discussion becomes its own meeting."
+              "text": "3. Cohorts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open "
+            },
+            {
+              "text": "Signup cohorts",
+              "bold": true
+            },
+            {
+              "text": ". "
+            },
+            {
+              "text": "Accounts kept",
+              "bold": true
+            },
+            {
+              "text": " shows how many paying accounts from each quarter are still with you; "
+            },
+            {
+              "text": "Revenue kept",
+              "bold": true
+            },
+            {
+              "text": " shows whether those that stayed grew. If a newer cohort keeps fewer accounts than older ones at the same age, look at onboarding first."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "The meeting ends with three things nobody has to ask about again."
+              "text": "4. Support"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "How many tickets missed their "
+            },
+            {
+              "text": "Reply target",
+              "bold": true
+            },
+            {
+              "text": " last week, and why? A missed target on a High ticket from a Business customer is a call from a founder the same day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "5. Roadmap"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What shipped, what slipped, what is next. Every item on the roadmap should name the tickets and customers asking for it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the meeting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Customer success updates health scores"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Last month's metrics row filled in on the first business day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Ticket reply targets marked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Decisions log"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write each week's decisions as a short note at the bottom of this page: what, who, by when. Read last week's first."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "In Monday's review, MRR churn is 3.4 percent: two Team accounts left for a competitor that has calendar sync. Customer success has already called both. The founders move two-way calendar sync up the roadmap and the engineering lead gives a date. Next week the review checks the two at-risk Business accounts that asked for it too."
             }
           ]
         }
@@ -3341,7 +4552,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Churn rarely arrives as a surprise. The signals are usually there weeks before the cancellation email."
+              "text": "Most churn is visible weeks before the cancellation email. A weekly health score and a clear playbook for each signal let customer success act while there is still time."
             }
           ],
           "background": "blue",
@@ -3353,7 +4564,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Signals of trouble"
+              "text": "Scoring health"
             }
           ],
           "props": {
@@ -3361,114 +4572,255 @@
           }
         },
         {
-          "type": "table",
+          "type": "text",
+          "text": [
+            {
+              "text": "Each week, give every paying customer a "
+            },
+            {
+              "text": "Health score",
+              "bold": true
+            },
+            {
+              "text": " from 0 to 100. A simple recipe:"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Logins: did the admin and most seats log in this week? (up to 40)"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Seats used against seats paid (up to 30)"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Open tickets and their mood (up to 20)"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A recent conversation with the owner (up to 10)"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Below 50 is "
+            },
+            {
+              "text": "At risk",
+              "bold": true
+            },
+            {
+              "text": ". Keep the recipe the same so scores can be compared."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The playbook"
+            }
+          ],
           "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Signal"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "What it often means"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "What to do"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "No logins for 14 days"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "The tool is not part of their routine"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Offer a 20 minute re-setup call"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Two bugs in a month"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Trust is slipping"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Fix the bug, then call personally"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Seat count dropping"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "The team is shrinking or switching"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Ask about the business, not the product"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Renewal in 30 days with no contact"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "They have forgotten you"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Send a short value summary"
-                    }
-                  ]
-                ]
-              }
-            ]
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Trial",
+              "bold": true
+            },
+            {
+              "text": ": a setup call in the first three days; most trials that never import their staff never pay."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Low logins",
+              "bold": true
+            },
+            {
+              "text": ": email the admin with one useful tip, then call."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Seats unused",
+              "bold": true
+            },
+            {
+              "text": ": offer a training session for their team."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Unhappy tickets",
+              "bold": true
+            },
+            {
+              "text": ": a founder reads the thread and replies personally."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Renewal in 30 days",
+              "bold": true
+            },
+            {
+              "text": ": a check-in call for every annual customer; send what they achieved this year."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a customer leaves"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the customer to "
+            },
+            {
+              "text": "Churned",
+              "bold": true
+            },
+            {
+              "text": " and choose the "
+            },
+            {
+              "text": "Churn reason",
+              "bold": true
+            },
+            {
+              "text": " from the list. Be honest; \"too expensive\" often means \"not enough value\"."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask for fifteen minutes to hear why. Most will talk."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record the conversation in the customer's notes and link any feature they needed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Expansion"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Customers who add seats or move up a plan are the cheapest growth. When a customer's seats are full, offer the next plan before they hit the wall."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every At risk customer has an action and an owner"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Trials past day three have had a setup call"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Annual renewals in the next 30 days have a call booked"
+            }
+          ],
+          "props": {
+            "checked": false
           }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "When a customer cancels"
+              "text": "Example"
             }
           ],
           "props": {
@@ -3476,26 +4828,10 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Press Flag at risk early, not after the email."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Ask what would have changed their mind and write it on the customer row."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Thank them and leave the door open."
+              "text": "Lumen Dental's score falls to 42: only two of eight seats logged in and a bug ticket about duplicate texts. Customer success calls the office manager, learns the team never moved their schedule over, and books a training session. Three weeks later seven seats are active and the score is 76."
             }
           ]
         }
@@ -3516,7 +4852,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A roadmap is a list of bets, ranked. The ranking should be something you can defend in two sentences."
+              "text": "A small team can build only a few things a quarter. Choose them from evidence: who is asking, how much revenue asks, and what it costs to build."
             }
           ],
           "background": "blue",
@@ -3528,7 +4864,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Questions to ask"
+              "text": "Collecting requests"
             }
           ],
           "props": {
@@ -3536,34 +4872,17 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "How many customers asked, and how much revenue do they represent?"
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
+              "text": "Every feature request arrives as a ticket. Link it to a "
+            },
             {
-              "text": "Does it make the next sale easier?"
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
+              "text": "Roadmap",
+              "bold": true
+            },
             {
-              "text": "How big is it, honestly?"
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "What do we stop doing to make room?"
+              "text": " item, creating one if needed. Never promise a date in a ticket; promise that it is recorded."
             }
           ]
         },
@@ -3571,7 +4890,145 @@
           "type": "heading",
           "text": [
             {
-              "text": "Process"
+              "text": "Scoring each item"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "For every Idea or Planned item, look at:"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reach",
+              "bold": true
+            },
+            {
+              "text": ": how many customers' tickets link to it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Revenue",
+              "bold": true
+            },
+            {
+              "text": ": the MRR of those customers, and whether any churned for lack of it (see "
+            },
+            {
+              "text": "Churn reason",
+              "bold": true
+            },
+            {
+              "text": ")."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Size",
+              "bold": true
+            },
+            {
+              "text": ": Small, Medium or Large, agreed with engineering."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Fit",
+              "bold": true
+            },
+            {
+              "text": ": does it make the product better for the customers you want most?"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Build what scores high on reach and revenue for its size. Large items need a strong reason."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Planning the quarter"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Choose two or three items to build, plus one small item each month that customers will notice."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Set a "
+            },
+            {
+              "text": "target date",
+              "bold": true
+            },
+            {
+              "text": " with engineering; dates are honest estimates, not promises."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move them to "
+            },
+            {
+              "text": "Planned",
+              "bold": true
+            },
+            {
+              "text": ", then "
+            },
+            {
+              "text": "In build",
+              "bold": true
+            },
+            {
+              "text": " when work starts."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Shipping"
             }
           ],
           "props": {
@@ -3582,7 +5039,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Link every request ticket to a roadmap item."
+              "text": "When it ships, press the button so it is "
+            },
+            {
+              "text": "Shipped",
+              "bold": true
+            },
+            {
+              "text": " with the date stamped."
             }
           ]
         },
@@ -3590,7 +5054,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Review asks and size each month."
+              "text": "Reply to every linked ticket: \"You asked, we built it\", with a short how-to."
             }
           ]
         },
@@ -3598,15 +5062,71 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Move items to Planned only when someone owns them."
+              "text": "Mention it in the monthly customer email."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "heading",
           "text": [
             {
-              "text": "Tell the customers who asked when it ships."
+              "text": "Bugs come first"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A bug that loses customer data or blocks scheduling jumps the queue, always. Smaller bugs are batched and fixed in the first week of each month."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Saying no"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Move items you will not build to "
+            },
+            {
+              "text": "Dropped",
+              "bold": true
+            },
+            {
+              "text": " with a one-line reason. Tell the customers who asked. A clear no is kinder than a forever maybe."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Two-way calendar sync is linked to six tickets from customers worth $1,100 of MRR, and two churned accounts named it. It is Large, but the evidence is strong, so it moves into this quarter with a target date. Dark mode had one request and stays Dropped."
             }
           ]
         }

@@ -12,12 +12,20 @@
  * that were organized under it directly (research_media → web_brand) — this
  * brand by default, another brand, None (no brand link at all) or All. Select
  * images (one or many) and give them a brand-image category: one batched write
- * links each image to this brand and to the category (research_media →
- * category, role brand_image). All edges live in platform.associations.
+ * links each image to the brand and to the category (research_media →
+ * category, role brand_image:<brandId>). All edges live in platform.associations.
+ *
+ * 2026-10-19: every filter runs in the query (counts cover every image, not the
+ * loaded page); tags are brand-scoped — the tag brand is the Brand filter's
+ * brand when one is picked, else this page's brand; an image's last tag for a
+ * brand removed takes it out of that brand.
  */
 
-import { useMemo, useState } from "react";
-import { ExternalLink, FolderPlus, Search, X } from "lucide-react";
+import { useState } from "react";
+import { categorizeSizeTier } from "@/lib/media/categorization";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ExternalLink, FolderPlus, Search, Telescope, X } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,9 +40,11 @@ import { CategorySelect, useCategories } from "@ai-matrx/associations/react";
 import { CATEGORY_DIMENSIONS } from "@/features/scopes/categoryDimensions";
 import {
   useBrandOptions,
+  useBrandProperties,
   useCreateBrandAsset,
   useResearchImageOrganization,
   useResearchImagePages,
+  useResearchImageTopics,
   useTagResearchImages,
   useUnlinkResearchImagesFromBrand,
   useUntagResearchImages,
@@ -51,7 +61,14 @@ import {
   fileIdToMediaRef,
   urlToMediaRef,
 } from "@/features/files/redux/converters";
-import type { ResearchBrandScope, ResearchImageRow } from "@/features/marketing/data/media-library";
+import type {
+  ResearchBrandScope,
+  ResearchCategoryFilter,
+  ResearchImageRow,
+} from "@/features/marketing/data/media-library";
+import { useDebounce } from "@/features/tasks/hooks/useDebounce";
+import { researchThisHref } from "@/features/research/utils/init-route";
+import { subjectFromBrandProperties } from "@/features/research/utils/subject";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
@@ -89,17 +106,36 @@ export function ResearchMediaView({
 }) {
 
   const createAsset = useCreateBrandAsset();
+  const pathname = usePathname();
   const [topicFilter, setTopicFilter] = useState("all");
   const [originFilter, setOriginFilter] = useState<"all" | "own" | "external">(
     "all",
   );
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search.trim(), 300);
   const [promotingId, setPromotingId] = useState<string | null>(null);
   const [brandFilter, setBrandFilter] = useState<string>(brandId);
   const [categoryFilter, setCategoryFilter] = useState<string>(CATEGORY_ALL);
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const brands = useBrandOptions(organizationId);
-  // The Brand filter runs in the query (every image, not just the loaded page); None waits for the brand list.
+  const properties = useBrandProperties(brandId);
+  const topics = useResearchImageTopics(organizationId);
+  const categories = useCategories({
+    dimension: CATEGORY_DIMENSIONS.brandImage,
+  });
+  const tagImages = useTagResearchImages();
+  const untagImages = useUntagResearchImages();
+  const unlinkImages = useUnlinkResearchImagesFromBrand();
+
+  // Tags are brand-scoped: a picked brand's tags, else this page's brand.
+  const brandPicked = brandFilter !== BRAND_ALL && brandFilter !== BRAND_NONE;
+  const tagBrandId = brandPicked ? brandFilter : brandId;
+  const tagBrandName =
+    tagBrandId === brandId
+      ? brandName
+      : (brands.data?.find((b) => b.id === tagBrandId)?.name ?? "this brand");
+
+  // Every filter runs in the query (every image, not just the loaded page); None waits for its list.
   const brandScope: ResearchBrandScope | null =
     brandFilter === BRAND_ALL
       ? { kind: "all" }
@@ -108,120 +144,79 @@ export function ResearchMediaView({
           ? { kind: "none", brandIds: brands.data.map((b) => b.id) }
           : null
         : { kind: "brand", brandId: brandFilter };
-  const images = useResearchImagePages(organizationId, brandScope);
-  const categories = useCategories({
-    dimension: CATEGORY_DIMENSIONS.brandImage,
-  });
-  const tagImages = useTagResearchImages();
-  const untagImages = useUntagResearchImages();
-  const unlinkImages = useUnlinkResearchImagesFromBrand();
+  const categoryScope: ResearchCategoryFilter | null =
+    categoryFilter === CATEGORY_ALL
+      ? { kind: "any" }
+      : categoryFilter === CATEGORY_NONE
+        ? categories.status === "ready"
+          ? {
+              kind: "none",
+              brandId: tagBrandId,
+              categoryIds: categories.categories.map((c) => c.id),
+            }
+          : null
+        : { kind: "category", brandId: tagBrandId, categoryId: categoryFilter };
+  const siteHosts = siteRootUrls
+    .map(hostnameOf)
+    .filter((host): host is string => Boolean(host));
+  const images = useResearchImagePages(
+    organizationId,
+    brandScope && categoryScope
+      ? {
+          scope: brandScope,
+          category: categoryScope,
+          topicId: topicFilter === "all" ? null : topicFilter,
+          origin: originFilter,
+          siteHosts,
+          search: debouncedSearch,
+        }
+      : null,
+  );
+  const refreshing = images.isPlaceholderData || search.trim() !== debouncedSearch;
 
-  const siteHosts = useMemo(
-    () =>
-      siteRootUrls
-        .map(hostnameOf)
-        .filter((host): host is string => Boolean(host)),
-    [siteRootUrls],
-  );
-  const rows = useMemo(
-    () => images.data?.pages.flatMap((page) => page.rows) ?? [],
-    [images.data],
-  );
+  const rows = images.data?.pages.flatMap((page) => page.rows) ?? [];
   const total = images.data?.pages[0]?.total ?? rows.length;
-  const imageIds = useMemo(() => rows.map((row) => row.id), [rows]);
-  const topicIds = useMemo(
-    () => [
-      ...new Set(
-        rows.flatMap((row) => (row.topicId ? [row.topicId] : [])),
-      ),
-    ],
-    [rows],
-  );
+  const imageIds = rows.map((row) => row.id);
+  const topicIds = [
+    ...new Set(rows.flatMap((row) => (row.topicId ? [row.topicId] : []))),
+  ];
   const organization = useResearchImageOrganization(
     organizationId,
+    tagBrandId,
     imageIds,
     topicIds,
   );
   const links = organization.data;
 
-  const categoryName = useMemo(() => {
-    const byId = new Map<string, string>();
-    for (const category of categories.categories) {
-      byId.set(category.id, category.name);
-    }
-    return byId;
-  }, [categories.categories]);
-
-
+  const categoryName = new Map(
+    categories.categories.map((category) => [category.id, category.name]),
+  );
   const categoriesOf = (row: ResearchImageRow): string[] =>
     links?.imageCategories[row.id] ?? [];
 
-  const topics = useMemo(() => {
-    const byId = new Map<string, string>();
-    for (const row of rows) {
-      if (row.topicId) byId.set(row.topicId, row.topicName ?? "Untitled topic");
-    }
-    return [...byId.entries()].sort((a, b) => a[1].localeCompare(b[1]));
-  }, [rows]);
+  const isOwn = (row: ResearchImageRow) => {
+    if (siteHosts.length === 0) return false;
+    const sourceHost = (row.sourceHostname ?? "").replace(/^www\./, "");
+    const imageHost = hostnameOf(row.url);
+    return siteHosts.some((host) => host === sourceHost || host === imageHost);
+  };
 
-  const isOwn = useMemo(() => {
-    return (row: ResearchImageRow) => {
-      if (siteHosts.length === 0) return false;
-      const sourceHost = (row.sourceHostname ?? "").replace(/^www\./, "");
-      const imageHost = hostnameOf(row.url);
-      return siteHosts.some(
-        (host) => host === sourceHost || host === imageHost,
-      );
-    };
-  }, [siteHosts]);
-
-  const filtered = useMemo(() => {
-    let items = rows;
-    if (categoryFilter === CATEGORY_NONE) {
-      items = items.filter((row) => categoriesOf(row).length === 0);
-    } else if (categoryFilter !== CATEGORY_ALL) {
-      items = items.filter((row) => categoriesOf(row).includes(categoryFilter));
-    }
-    if (topicFilter !== "all") {
-      items = items.filter((row) => row.topicId === topicFilter);
-    }
-    if (originFilter !== "all") {
-      items = items.filter((row) =>
-        originFilter === "own" ? isOwn(row) : !isOwn(row),
-      );
-    }
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      items = items.filter(
-        (row) =>
-          row.url.toLowerCase().includes(q) ||
-          (row.alt ?? "").toLowerCase().includes(q) ||
-          (row.caption ?? "").toLowerCase().includes(q) ||
-          (row.sourceHostname ?? "").toLowerCase().includes(q),
-      );
-    }
-    return items;
-  }, [
-    rows,
-    topicFilter,
-    originFilter,
-    search,
-    isOwn,
-    brandFilter,
-    categoryFilter,
-    links,
-  ]);
-
-  // Selection only ever holds visible images: when the filtered list changes,
-  // drop ids that left it (adjust-state-during-render, no effect).
-  const [seenFiltered, setSeenFiltered] = useState(filtered);
-  if (seenFiltered !== filtered) {
-    setSeenFiltered(filtered);
-    const visible = new Set(filtered.map((row) => row.id));
+  // Selection only ever holds loaded images: when the result changes, drop
+  // ids that left it (adjust-state-during-render on the query's own data).
+  const [seenData, setSeenData] = useState(images.data);
+  if (seenData !== images.data) {
+    setSeenData(images.data);
+    const visible = new Set(imageIds);
     if ([...selected].some((id) => !visible.has(id))) {
       setSelected(new Set([...selected].filter((id) => visible.has(id))));
     }
   }
+
+  const newResearchHref = researchThisHref({
+    name: brandName,
+    subject: subjectFromBrandProperties(brandId, properties.data ?? []),
+    returnTo: pathname,
+  });
 
   const brandOptions: SelectOption[] = [
     { value: brandId, label: brandName },
@@ -243,7 +238,7 @@ export function ResearchMediaView({
   const selectedIds = [...selected];
   const selectedCategoryIds = [
     ...new Set(
-      filtered
+      rows
         .filter((row) => selected.has(row.id))
         .flatMap((row) => categoriesOf(row)),
     ),
@@ -270,7 +265,7 @@ export function ResearchMediaView({
     try {
       await tagImages.mutateAsync({
         imageIds: selectedIds,
-        brandId,
+        brandId: tagBrandId,
         categoryId,
         organizationId,
       });
@@ -284,17 +279,17 @@ export function ResearchMediaView({
     }
   };
 
-  const selectedLinkedToBrand = filtered.some(
+  const selectedLinkedToBrand = rows.some(
     (row) =>
       selected.has(row.id) &&
-      (links?.imageBrands[row.id] ?? []).includes(brandId),
+      (links?.imageBrands[row.id] ?? []).includes(tagBrandId),
   );
   const unlinkFromBrand = async () => {
     if (selectedIds.length === 0) return;
     try {
       await unlinkImages.mutateAsync({
         imageIds: selectedIds,
-        brandId,
+        brandId: tagBrandId,
         organizationId,
       });
     } catch (error) {
@@ -310,6 +305,7 @@ export function ResearchMediaView({
       await untagImages.mutateAsync({
         imageIds: selectedIds,
         categoryId,
+        brandId: tagBrandId,
         organizationId,
       });
     } catch (error) {
@@ -344,7 +340,13 @@ export function ResearchMediaView({
     }
   };
 
-  if (images.isLoading || brandScope === null) {
+  const narrowed =
+    categoryFilter !== CATEGORY_ALL ||
+    topicFilter !== "all" ||
+    originFilter !== "all" ||
+    debouncedSearch !== "";
+
+  if (images.isLoading || brandScope === null || categoryScope === null) {
     return <LoadingSurface label="Loading research images…" />;
   }
   if (images.isError) {
@@ -354,13 +356,13 @@ export function ResearchMediaView({
   }
 
   // Only an organization with no research at all gets the bare card; a brand with nothing linked keeps its filters.
-  if (rows.length === 0 && brandFilter === BRAND_ALL && !images.isPending) {
+  if (rows.length === 0 && brandFilter === BRAND_ALL && !narrowed && !refreshing) {
     return (
       <SectionCard title="Research images">
         <div className="p-3">
           <MediaEmptyState
             title="No research images for this organization yet"
-            detail="Run a research topic: every image its sources carry lands here."
+            detail="Images from your research topics land here."
           />
         </div>
       </SectionCard>
@@ -372,9 +374,19 @@ export function ResearchMediaView({
       title="Research images"
       about="Images from this brand's own websites can be reused directly. External images are competitor or reference material: use them as inspiration for a generated original, never verbatim."
       headerExtra={
-        <span className="type-meta tabular-nums text-muted-foreground">
-          {filtered.length}/{rows.length}
-          {total > rows.length ? ` of ${total}` : ""}
+        <span className="flex items-center gap-2">
+          <span
+            className="type-meta tabular-nums text-muted-foreground"
+            title={total > rows.length ? `${rows.length} loaded` : undefined}
+          >
+            {total} {total === 1 ? "image" : "images"}
+          </span>
+          <Button variant="quiet" asChild title={`Start new research for ${brandName}`}>
+            <Link href={newResearchHref}>
+              <Telescope className="h-3.5 w-3.5" aria-hidden />
+              New research
+            </Link>
+          </Button>
         </span>
       }
     >
@@ -384,7 +396,7 @@ export function ResearchMediaView({
           <ProInput
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search alt, caption, host"
+            placeholder="Search URL, alt, caption, host"
             aria-label="Search research images"
             startIcon={<Search className="h-4 w-4 text-muted-foreground" aria-hidden />}
           />
@@ -401,7 +413,10 @@ export function ResearchMediaView({
           value={topicFilter}
           options={[
             { value: "all", label: "All topics" },
-            ...topics.map(([id, name]) => ({ value: id, label: name })),
+            ...(topics.data ?? []).map((topic) => ({
+              value: topic.id,
+              label: topic.name,
+            })),
           ]}
           onValueChange={setTopicFilter}
           className="w-[12rem]"
@@ -424,6 +439,7 @@ export function ResearchMediaView({
           value={categoryFilter}
           options={categoryOptions}
           onValueChange={setCategoryFilter}
+          align="end"
           className="w-[10rem]"
         />
       </div>
@@ -437,7 +453,7 @@ export function ResearchMediaView({
             dimension={CATEGORY_DIMENSIONS.brandImage}
             value={null}
             onChange={(id) => void applyCategory(id)}
-            placeholder="Tag with category"
+            placeholder={`Tag for ${tagBrandName}`}
             orgId={organizationId}
             noun="category"
             allowNone={false}
@@ -452,7 +468,7 @@ export function ResearchMediaView({
                 asChild
                 label={categoryName.get(categoryId) ?? "Category"}
                 icon={<X />}
-                title="Remove from the selected images"
+                title={`Remove this ${tagBrandName} tag from the selected images`}
               >
                 <button
                   type="button"
@@ -467,10 +483,10 @@ export function ResearchMediaView({
           <Button
             variant="quiet"
             disabled={unlinkImages.isPending}
-            title={`Take the selected images out of ${brandName}`}
+            title={`Take the selected images and their tags out of ${tagBrandName}`}
             onClick={() => void unlinkFromBrand()}
           >
-            Unlink brand
+            Remove from brand
           </Button>
         ) : null}
         <Button
@@ -483,8 +499,8 @@ export function ResearchMediaView({
         </Button>
       </div>
 
-      {filtered.length === 0 ? (
-        brandFilter !== BRAND_ALL && brandFilter !== BRAND_NONE && rows.length === 0 ? (
+      {rows.length === 0 ? (
+        brandPicked && !narrowed ? (
           // Nothing is linked to this brand yet: one way out, never a dead end.
           <MediaEmptyState
             title={`No research linked to ${brands.data?.find((b) => b.id === brandFilter)?.name ?? "this brand"} yet`}
@@ -505,8 +521,15 @@ export function ResearchMediaView({
           />
         )
       ) : (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {filtered.map((row) => {
+        <div
+          aria-busy={refreshing}
+          className={
+            refreshing
+              ? "grid animate-ssr-shimmer-opacity grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+              : "grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+          }
+        >
+          {rows.map((row) => {
             const own = isOwn(row);
             return (
               <div
@@ -522,22 +545,7 @@ export function ResearchMediaView({
                     }
                     aria-label="Select image"
                   />
-                  {/* Owned uploads resolve from their file_id (the reader
-                      re-mints); third-party assets render their external
-                      URL. */}
-                  <InlineMediaRef
-                    ref={
-                      row.fileId
-                        ? fileIdToMediaRef(row.fileId)
-                        : urlToMediaRef(row.thumbnailUrl || row.url)
-                    }
-                    size="fill"
-                    fit="cover"
-                    as="img"
-                    rounded="none"
-                    alt={row.alt ?? ""}
-                    className="h-full w-full"
-                  />
+                  <ResearchTileImage row={row} />
                 </div>
                 <div className="space-y-0.5 p-1.5">
                   <div className="flex items-center gap-1">
@@ -631,5 +639,68 @@ export function ResearchMediaView({
       ) : null}
     </div>
     </SectionCard>
+  );
+}
+
+/**
+ * A research picture sized by what it is (the shared `categorizeSizeTier` rules, same as the brand
+ * Assets gallery): photos fill the tile and crop to it; logos, graphics and icons are never cropped
+ * and never drawn larger than their own pixels. Without stored dimensions the picture is measured on
+ * load; until then it is contained, so nothing is ever cropped or stretched while it waits.
+ */
+function ResearchTileImage({ row }: { row: ResearchImageRow }) {
+  const [measured, setMeasured] = useState<{ width: number; height: number } | null>(null);
+  const width = row.width ?? measured?.width ?? null;
+  const height = row.height ?? measured?.height ?? null;
+  const tier =
+    width && height
+      ? categorizeSizeTier({ url: row.url, width, height, alt: row.alt, kind: "image" })
+      : null;
+  const mediaRef = row.fileId
+    ? fileIdToMediaRef(row.fileId)
+    : urlToMediaRef(row.thumbnailUrl || row.url);
+  const onLoad = (event: { currentTarget: EventTarget }) => {
+    const img = event.currentTarget as HTMLImageElement;
+    if (!row.width && img.naturalWidth > 0) {
+      setMeasured({ width: img.naturalWidth, height: img.naturalHeight });
+    }
+  };
+  if (tier === "photo") {
+    return (
+      <InlineMediaRef
+        ref={mediaRef}
+        size="fill"
+        fit="cover"
+        as="img"
+        rounded="none"
+        alt={row.alt ?? ""}
+        className="h-full w-full"
+        onLoad={onLoad}
+      />
+    );
+  }
+  // Logos, graphics and icons: natural size at most, fully visible on a neutral backdrop.
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-card p-2">
+      <div
+        className="max-h-full max-w-full"
+        style={{
+          width: width ?? "100%",
+          height: width && height ? undefined : "100%",
+          aspectRatio: width && height ? `${width} / ${height}` : undefined,
+        }}
+      >
+        <InlineMediaRef
+          ref={mediaRef}
+          size="fill"
+          fit="contain"
+          as="img"
+          rounded="none"
+          alt={row.alt ?? ""}
+          className="h-full w-full"
+          onLoad={onLoad}
+        />
+      </div>
+    </div>
   );
 }

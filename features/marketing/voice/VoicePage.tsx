@@ -57,6 +57,7 @@ import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { BrandVoiceSurface } from "./BrandVoiceSurface";
 import { SpokespeoplePanel } from "./SpokespeoplePanel";
 import { PersonVoiceBar } from "./PersonVoiceBar";
+import { MeasuredVoice } from "./MeasuredVoice";
 import { brandKindCopy, isPersonBrand } from "@/features/marketing/lib/brand-kind";
 import {
   landSocialSample,
@@ -513,6 +514,7 @@ export function VoicePage({
               ) : current === null ? (
                 <p className="type-secondary text-muted-foreground">No voice measured yet</p>
               ) : (
+                <>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                   <PropertyRow label="Status">
                     <Badge variant={current.status === "confirmed" ? "default" : "secondary"}>
@@ -530,6 +532,8 @@ export function VoicePage({
                   />
                   <PropertyRow label="Refresh" data-testid="voice-refresh" value={refreshLabel(current.refresh_due_at)} />
                 </div>
+                <MeasuredVoice fingerprint={current.fingerprint} />
+                </>
               )}
               {saved ? (
                 <div className="mt-3 border-t border-border pt-3" data-testid="voice-saved">
@@ -686,7 +690,7 @@ export function VoicePage({
               <span className="type-secondary text-muted-foreground" data-testid="voice-picked">
                 {picked.length} of {MIN_SAMPLES}–{MAX_SAMPLES} picked
                 {picked.length < MIN_SAMPLES ? ` · ${MIN_SAMPLES - picked.length} more to measure` : ""}
-                {picked.length >= MAX_SAMPLES ? " · the most one voice uses" : ""}
+                {picked.length >= MAX_SAMPLES ? " · maximum reached" : ""}
               </span>
             </div>
             {measureError ? <p className="type-secondary text-destructive">{measureError}<ErrorAlchemyMenu error={measureError} /></p> : null}
@@ -935,11 +939,12 @@ function ConfirmCard({
             />
           </label>
           {emDash !== "never" && fp.mechanics?.em_dash_usage === "never" ? (
-            <span
-              className="type-secondary text-warning-ink"
-              title="Allowing em dashes the samples never use is the most common way a draft reads as AI."
-            >
+            <span className="inline-flex items-center gap-1 type-secondary text-warning-ink">
               Your samples never use an em dash
+              <AboutPeek
+                title="Em dash"
+                about="Allowing em dashes the samples never use is the most common way a draft reads as AI."
+              />
             </span>
           ) : null}
         </div>

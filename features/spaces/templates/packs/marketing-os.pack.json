@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0163",
-  "version": 5,
+  "version": 6,
   "title": "Marketing OS",
   "description": "Marketing teams: one home for campaigns, content, SEO, assets and leads.",
   "forWho": "Marketing teams that want everything in one place",
@@ -9,7 +9,7 @@
     "emoji": "🧭"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:marketing-neon-lights-abstract",
     "offsetY": 50
   },
   "category": "marketing",
@@ -1579,7 +1579,7 @@
         "Piñon Wash Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2041,7 +2041,7 @@
         }
       ],
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:marketing-neon-lights-abstract",
         "offsetY": 50
       }
     },

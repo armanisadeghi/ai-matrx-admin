@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0406",
-  "version": 4,
+  "version": 5,
   "title": "Home Care Agency",
   "description": "For home care agencies: referrals, clients, caregiver shifts, visit checks, credentials.",
   "forWho": "Home care and home health agencies",
@@ -9,7 +9,7 @@
     "emoji": "🏡"
   },
   "cover": {
-    "url": "gallery:gradient-sunset",
+    "url": "gallery:healthcare-cozy-home-interior-armchair",
     "offsetY": 50
   },
   "category": "healthcare",
@@ -2225,7 +2225,7 @@
         "Juniper Hollow"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2236,7 +2236,7 @@
         "emoji": "🏡"
       },
       "cover": {
-        "url": "gallery:gradient-sunset",
+        "url": "gallery:healthcare-cozy-home-interior-armchair",
         "offsetY": 50
       },
       "settings": {

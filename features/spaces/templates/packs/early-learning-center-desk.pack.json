@@ -1,24 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0558",
-  "version": 1,
+  "version": 3,
   "title": "Early Learning Center Desk",
-  "description": "Rooms, enrollment, the waitlist and the safety checks a daycare owes.",
+  "description": "Childcare center desk: rooms and ratios, enrollment, waitlist, tuition, licensing checks.",
   "forWho": "Daycares, preschools and early learning centers",
   "icon": {
     "emoji": "🧸"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:education-colorful-toy-blocks",
     "offsetY": 50
   },
   "category": "education",
   "tags": [
-    "daycare",
-    "preschool",
-    "waitlist",
+    "childcare director",
+    "preschool teacher",
+    "daycare owner",
     "enrollment",
-    "safety"
+    "tuition",
+    "licensing"
   ],
   "spec": {
     "specVersion": 1,
@@ -442,6 +443,47 @@
             "contextPolicy": "include"
           },
           {
+            "key": "subsidy",
+            "label": "State subsidy",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owed",
+            "label": "Awaiting payment (USD)",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "tuition_invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Sent",
+                "Overdue"
+              ]
+            }
+          },
+          {
+            "key": "billed",
+            "label": "Billed to date (USD)",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "tuition_invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Draft",
+                  "Waived"
+                ]
+              }
+            }
+          },
+          {
             "key": "start_on",
             "label": "Started on",
             "parityType": "datetime",
@@ -462,6 +504,27 @@
             "label": "Allergy or medical plan on file",
             "parityType": "checkbox",
             "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "immunized",
+            "label": "Immunization record current",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "allergy_notes",
+            "label": "Allergy and care plan",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pickup",
+            "label": "Authorized pickup",
+            "parityType": "text",
+            "sensitivity": "confidential",
             "contextPolicy": "include"
           },
           {
@@ -636,7 +699,10 @@
               "allergy": false,
               "guardian": "Marcus Lopez",
               "guardian_phone": "(801) 555-0111",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "immunized": true,
+              "pickup": "Marcus Lopez, Elena Lopez",
+              "subsidy": false
             }
           },
           {
@@ -650,7 +716,11 @@
               "review_on": "@today",
               "allergy": true,
               "guardian": "Katja Kowalski",
-              "guardian_phone": "(801) 555-0112"
+              "guardian_phone": "(801) 555-0112",
+              "immunized": true,
+              "pickup": "Katja Kowalski, grandmother Irena",
+              "subsidy": true,
+              "allergy_notes": "Peanut allergy; epinephrine in the Sprouts cabinet"
             }
           },
           {
@@ -665,7 +735,10 @@
               "allergy": false,
               "guardian": "Ngozi Adeyemi",
               "guardian_phone": "(801) 555-0113",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "immunized": true,
+              "pickup": "Ngozi Adeyemi, Tunde Adeyemi",
+              "subsidy": false
             }
           },
           {
@@ -679,7 +752,10 @@
               "review_on": "@today-2d",
               "allergy": false,
               "guardian": "Santiago Morales",
-              "guardian_phone": "(801) 555-0114"
+              "guardian_phone": "(801) 555-0114",
+              "immunized": false,
+              "pickup": "Santiago Morales",
+              "subsidy": true
             }
           },
           {
@@ -694,7 +770,11 @@
               "allergy": true,
               "guardian": "Giulia Ferrari",
               "guardian_phone": "(801) 555-0115",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "immunized": true,
+              "pickup": "Giulia Ferrari, Marco Ferrari",
+              "subsidy": false,
+              "allergy_notes": "Dairy-free meals"
             }
           },
           {
@@ -708,7 +788,10 @@
               "review_on": "@today+20d",
               "allergy": false,
               "guardian": "Olivia Hartman",
-              "guardian_phone": "(801) 555-0116"
+              "guardian_phone": "(801) 555-0116",
+              "immunized": true,
+              "pickup": "Olivia Hartman, nanny Dee Ruiz",
+              "subsidy": false
             }
           },
           {
@@ -723,7 +806,10 @@
               "allergy": false,
               "guardian": "Declan Thompson",
               "guardian_phone": "(801) 555-0117",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "immunized": true,
+              "pickup": "Declan Thompson, Aoife Thompson",
+              "subsidy": false
             }
           },
           {
@@ -737,7 +823,11 @@
               "review_on": "@today+40d",
               "allergy": true,
               "guardian": "Mika Saito",
-              "guardian_phone": "(801) 555-0118"
+              "guardian_phone": "(801) 555-0118",
+              "immunized": true,
+              "pickup": "Mika Saito, Ken Saito",
+              "subsidy": true,
+              "allergy_notes": "Egg allergy; inhaler for asthma"
             }
           },
           {
@@ -752,7 +842,10 @@
               "allergy": false,
               "guardian": "Fatou Bah",
               "guardian_phone": "(801) 555-0119",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "immunized": true,
+              "pickup": "Fatou Bah",
+              "subsidy": false
             }
           },
           {
@@ -765,7 +858,10 @@
               "start_on": "@today-900d",
               "allergy": false,
               "guardian": "Theodora Petrov",
-              "guardian_phone": "(801) 555-0120"
+              "guardian_phone": "(801) 555-0120",
+              "immunized": true,
+              "pickup": "Theodora Petrov",
+              "subsidy": false
             }
           }
         ]
@@ -1431,6 +1527,394 @@
             }
           }
         ]
+      },
+      {
+        "token": "tuition",
+        "name": "Tuition",
+        "labelSingular": "Tuition invoice",
+        "labelPlural": "Tuition",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "inv_name",
+        "describes": "Monthly tuition for each child, the part a subsidy pays, and what is still owed.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New tuition invoice",
+            "values": {
+              "inv_name": "New invoice",
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before sending"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Schedule changes this month applied"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Subsidy amount confirmed with the agency"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Sibling discount applied where it belongs"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Payment plans or late fees agreed with the family."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "child": "Either record can be created or change status before the other."
+        },
+        "before": [
+          [
+            "due_on",
+            "paid_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "inv_name",
+            "label": "Invoice",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "child",
+            "label": "Child",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "children",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Overdue",
+              "Paid",
+              "Waived"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Sent": "blue",
+              "Overdue": "red",
+              "Paid": "green",
+              "Waived": "amber"
+            },
+            "required": true,
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Overdue": "in_progress",
+              "Paid": "done",
+              "Waived": "done"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "amount",
+            "label": "Tuition (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "subsidy_part",
+            "label": "Paid by subsidy (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "family_part",
+            "label": "Family owes (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "MAX(0, {Tuition (USD)} - {Paid by subsidy (USD)})"
+          },
+          {
+            "key": "btn_paid",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "tuition_paid"
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "tuition_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "tuition-1",
+            "values": {
+              "inv_name": "Ada L., full week",
+              "child": "children-1",
+              "status": "Sent",
+              "due_on": "@today+2d",
+              "amount": 1650,
+              "subsidy_part": 0,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "tuition-2",
+            "values": {
+              "inv_name": "Bram K., full week",
+              "child": "children-2",
+              "status": "Sent",
+              "due_on": "@today",
+              "amount": 1650,
+              "subsidy_part": 900
+            }
+          },
+          {
+            "key": "tuition-3",
+            "values": {
+              "inv_name": "Chidi A., three days",
+              "child": "children-3",
+              "status": "Paid",
+              "due_on": "@today-4d",
+              "paid_on": "@today-3d",
+              "amount": 980,
+              "subsidy_part": 0
+            }
+          },
+          {
+            "key": "tuition-4",
+            "values": {
+              "inv_name": "Delia M., full week",
+              "child": "children-4",
+              "status": "Overdue",
+              "due_on": "@today-5d",
+              "amount": 1450,
+              "subsidy_part": 700,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "tuition-5",
+            "values": {
+              "inv_name": "Elio F., two days",
+              "child": "children-5",
+              "status": "Sent",
+              "due_on": "@today+4d",
+              "amount": 620,
+              "subsidy_part": 0
+            }
+          },
+          {
+            "key": "tuition-6",
+            "values": {
+              "inv_name": "Fenn H., full week",
+              "child": "children-6",
+              "status": "Overdue",
+              "due_on": "@today-2d",
+              "amount": 1350,
+              "subsidy_part": 0,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "tuition-7",
+            "values": {
+              "inv_name": "Gwen T., mornings",
+              "child": "children-7",
+              "status": "Paid",
+              "due_on": "@today-1d",
+              "paid_on": "@today-1d",
+              "amount": 780,
+              "subsidy_part": 0
+            }
+          },
+          {
+            "key": "tuition-8",
+            "values": {
+              "inv_name": "Hana S., full week",
+              "child": "children-8",
+              "status": "Sent",
+              "due_on": "@today+6d",
+              "amount": 1250,
+              "subsidy_part": 650
+            }
+          },
+          {
+            "key": "tuition-9",
+            "values": {
+              "inv_name": "Fenn H., earlier invoice",
+              "child": "children-6",
+              "status": "Paid",
+              "due_on": "@today-32d",
+              "paid_on": "@today-28d",
+              "amount": 1350,
+              "subsidy_part": 0
+            }
+          },
+          {
+            "key": "tuition-10",
+            "values": {
+              "inv_name": "Delia M., earlier invoice",
+              "child": "children-4",
+              "status": "Paid",
+              "due_on": "@today-32d",
+              "paid_on": "@today-20d",
+              "amount": 1450,
+              "subsidy_part": 700
+            }
+          },
+          {
+            "key": "tuition-11",
+            "values": {
+              "inv_name": "Idris B., during leave",
+              "child": "children-9",
+              "status": "Waived",
+              "due_on": "@today+3d",
+              "amount": 1250,
+              "subsidy_part": 0
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1473,6 +1957,16 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "safety_check_by_owner"
+      },
+      {
+        "describes": "Each tuition invoice is for one child.",
+        "fromTable": "tuition",
+        "fromField": "child",
+        "toTable": "children",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tuition_invoices"
       }
     ],
     "sharedBlocks": [
@@ -1681,6 +2175,39 @@
         "kind": "row_action",
         "token": "safety_check_claim",
         "table": "safety_check",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "tuition_paid",
+        "table": "tuition",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "tuition_claim",
+        "table": "tuition",
         "name": "Assign to me",
         "actionKind": "update",
         "steps": [
@@ -1952,6 +2479,89 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_tuition",
+        "name": "All invoices",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "tuition"
+      },
+      {
+        "token": "tuition_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "tuition"
+      },
+      {
+        "token": "tuition_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true,
+        "table": "tuition"
+      },
+      {
+        "token": "tuition_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Overdue"
+          ]
+        },
+        "table": "tuition"
+      },
+      {
+        "token": "tuition_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Overdue"
+          ]
+        },
+        "table": "tuition"
+      },
+      {
+        "token": "tuition_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Overdue"
+          ]
+        },
+        "table": "tuition"
+      },
+      {
+        "token": "tuition_mine",
+        "name": "My invoices",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "tuition"
       }
     ],
     "agent": {
@@ -2024,6 +2634,18 @@
           "surface": "inquiry_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open tuition.",
+        "action": {
+          "kind": "open",
+          "surface": "tuition_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "tuition_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2040,7 +2662,7 @@
         "Meadowlark Court"
       ]
     },
-    "version": 1
+    "version": 3
   },
   "pages": [
     {
@@ -2051,7 +2673,7 @@
         "emoji": "🧸"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:education-colorful-toy-blocks",
         "offsetY": 50
       },
       "settings": {
@@ -2062,12 +2684,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Classrooms, children, the waitlist and the safety checks behind your license, in one place. Start with the Dashboard each morning. Keep staffing ratios visible, answer inquiries within a day and mark every safety check done the day it is done. Use first names and last initials only."
+              "text": "The center in one place. Classrooms shows each room's ratio and openings; Children holds care plans and authorized pickups; Waitlist and tours fills openings in order; Tuition tracks what families and subsidies owe; Safety and licensing checks keeps you inspection-ready. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2532,6 +3160,390 @@
             ],
             "activeViewId": "saf-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tuition"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Monthly invoices, subsidy share and what is still owed."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "tuition",
+              "view": "tuition_board"
+            },
+            "inline": true,
+            "title": "Tuition",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tu-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "tu-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "tu-t",
+                "name": "All invoices",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tu-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "tu-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "tu-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "tu-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "tu-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "early-learning-center-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the center in this workspace. Share it with the director, each lead teacher and whoever runs the front desk."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Classrooms",
+              "bold": true
+            },
+            {
+              "text": ": each room's age group, capacity, ratio, teachers, lead and children enrolled."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Children",
+              "bold": true
+            },
+            {
+              "text": ": each child's room, schedule, subsidy, tuition owed and billed, review date, health record, allergy and care plan, and authorized pickup."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Waitlist and tours",
+              "bold": true
+            },
+            {
+              "text": ": every family from first call to enrolled, in fair order."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tuition",
+              "bold": true
+            },
+            {
+              "text": ": monthly invoices, the subsidy share, and what is still owed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Safety and licensing checks",
+              "bold": true
+            },
+            {
+              "text": ": drills, inspections, certifications and logs, each with a due date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every morning: the opening checklist and staffing against ratios."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: safety checks due this week; tours for the week confirmed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Wednesday: waitlist calls for any opening; enrollment packets chased."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Friday: tuition due next week sent; overdue tuition followed up kindly."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: ratios in every room, checks due today"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every week: medication log review, overdue tuition, tours"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: fire drill, playground inspection, invoices sent"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every year: licensing renewal, staff certifications, room moves"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The director owns enrollment, tuition and licensing. Lead teachers own their room, daily sheets and children's reviews. The front desk signs children in and out and checks pickup lists."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tuition and subsidies"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Invoices go out a week before the first of the month. When a state subsidy pays part, the invoice shows the subsidy share and the family's part separately, and the subsidy agency's attendance report is sent on time so payments are not held up."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Privacy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Children appear here by first name and last initial. Allergy plans, pickup lists and tuition are confidential and shared only with staff who need them. Never put photos of children in this workspace."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename rooms, age groups and checks to match your license and delete the sample rows once your own are in. Edit any cell in place and drag cards between columns; every count updates on its own."
+            }
+          ]
         }
       ]
     },
@@ -2938,6 +3950,84 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Awaiting payment (sent and overdue)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "tuition",
+              "view": "all_tuition"
+            },
+            "inline": true,
+            "title": "Awaiting payment",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dt-1",
+                "name": "Sent and overdue",
+                "layout": "list",
+                "icon": "Receipt",
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dt-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Health records"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "children",
+              "view": "all_children"
+            },
+            "inline": true,
+            "title": "Immunization records missing",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dt-2",
+                "name": "Record not current",
+                "layout": "list",
+                "icon": "Syringe",
+                "filters": {
+                  "immunized": false,
+                  "status": "Enrolled"
+                }
+              }
+            ],
+            "activeViewId": "dt-2"
+          }
         }
       ]
     },
@@ -2956,7 +4046,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "The same checks, every day, keep children safe and give inspectors something to see. Initial and date your copy."
+              "text": "Families hand you the most important people in their lives at 7:00 in the morning. The opening routine makes sure every room is safe, staffed and in ratio before the first child walks in."
             }
           ],
           "background": "blue",
@@ -2968,7 +4058,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Opening"
+              "text": "Before doors open"
             }
           ],
           "props": {
@@ -2979,7 +4069,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Walk each room for hazards, cleaned toys and working outlets covers"
+              "text": "Walk every classroom: outlets covered, no hazards on the floor, cribs clear of blankets and toys"
             }
           ],
           "props": {
@@ -2990,7 +4080,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Check temperatures of the refrigerator and freezer and write them down"
+              "text": "Check the playground before anyone goes out: gates latched, surfacing in place, nothing sharp or broken"
             }
           ],
           "props": {
@@ -3001,7 +4091,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Confirm each room's teachers are in and ratios are met"
+              "text": "Fridge and freezer temperatures written in the log"
             }
           ],
           "props": {
@@ -3012,12 +4102,148 @@
           "type": "todo",
           "text": [
             {
-              "text": "Review allergy and medical plans for the children arriving today"
+              "text": "Staff schedule against expected children in each room"
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ratios all day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each room shows its "
+            },
+            {
+              "text": "Ratio",
+              "bold": true
+            },
+            {
+              "text": " (children per teacher) and the number of "
+            },
+            {
+              "text": "Teachers",
+              "bold": true
+            },
+            {
+              "text": ". Common licensing limits are four infants, six toddlers, seven twos and ten preschoolers per adult, with smaller group sizes for the youngest; your state's rule is the one that counts. Count children at every transition: arrival, outdoor time, lunch, nap and pickup. If a room goes over, a floater or the director steps in at once."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Arrival"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every child is signed in by an adult, with the time."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Medicine is handed to a teacher with a signed permission form, never left in a bag."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Read the child's "
+            },
+            {
+              "text": "Allergy and care plan",
+              "bold": true
+            },
+            {
+              "text": " for anything new."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pickup"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Release children only to an adult on the "
+            },
+            {
+              "text": "Authorized pickup",
+              "bold": true
+            },
+            {
+              "text": " list, with photo ID for anyone the staff do not know. A parent who wants someone new added must tell the office in writing. Custody orders on file are followed exactly."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Through the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Diaper changes, meals and naps written on each child's daily sheet."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Infants sleep on their backs, in a crib, with nothing else in it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Any injury, however small, gets an incident report signed by the parent at pickup."
+            }
+          ]
         },
         {
           "type": "heading",
@@ -3034,7 +4260,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Take a head count and sign out every child"
+              "text": "Every child signed out; the sign-in sheet matches"
             }
           ],
           "props": {
@@ -3045,7 +4271,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Wipe tables, wash toys and take out the trash"
+              "text": "Rooms swept, toys sanitized, laundry started"
             }
           ],
           "props": {
@@ -3056,7 +4282,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Lock exterior doors and set the alarm"
+              "text": "Doors locked and alarm set"
             }
           ],
           "props": {
@@ -3064,15 +4290,23 @@
           }
         },
         {
-          "type": "todo",
+          "type": "heading",
           "text": [
             {
-              "text": "Note incidents and send a report to the director"
+              "text": "Example"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "At 7:40 the toddler room has nine children and one teacher because the second teacher's bus is late. The director moves the floater into the room until she arrives at 8:05, and notes the time in the staffing log."
+            }
+          ]
         }
       ]
     },
@@ -3091,7 +4325,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A fair, written waitlist protects the center and the families. Offer spots in order and say how the order works."
+              "text": "Most centers have more families waiting than spaces. A fair, written waitlist and a warm enrollment process protect your reputation and keep every room full."
             }
           ],
           "background": "blue",
@@ -3103,7 +4337,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "From inquiry to enrolled"
+              "text": "From inquiry to tour"
             }
           ],
           "props": {
@@ -3114,7 +4348,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Reply to the inquiry within one working day and offer a tour."
+              "text": "Every call or email becomes a row in "
+            },
+            {
+              "text": "Waitlist and tours",
+              "bold": true
+            },
+            {
+              "text": " with the age group and the start date the family wants."
             }
           ]
         },
@@ -3122,7 +4363,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "After the tour, press Mark tour booked or move to Waitlisted with the wanted start date."
+              "text": "Offer a tour within a week, during the day so they see rooms in action. Set it to "
+            },
+            {
+              "text": "Tour booked",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3130,15 +4378,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "When a spot opens, offer it to the first matching family and set a deadline to reply."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "After the tour, families who want a space pay the waitlist fee and become "
+            },
             {
-              "text": "On acceptance, complete the paperwork and press Mark enrolled, then add the child to the classroom."
+              "text": "Waitlisted",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3146,7 +4393,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Paperwork every child needs"
+              "text": "Order of the waitlist"
             }
           ],
           "props": {
@@ -3154,26 +4401,194 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Signed contract and fee schedule."
+              "text": "Write your rules down and follow them: siblings of enrolled children first, then children of staff, then by the date the family joined the list. Never skip a family because of who they are."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Immunization record and health form."
+              "text": "When a space opens"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Look at the classroom's openings and the waitlist for that age group."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Emergency contacts and authorized pick-up list."
+              "text": "Call the first family in order and set them to "
+            },
+            {
+              "text": "Offered",
+              "bold": true
+            },
+            {
+              "text": ", with a deadline of three to five days."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If they decline, move to the next family the same day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Enrollment packet"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Enrollment form and emergency contacts"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Immunization record or exemption on file; tick "
+            },
+            {
+              "text": "Immunization record current",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Doctor's form and any "
+            },
+            {
+              "text": "Allergy and care plan",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Authorized pickup",
+              "bold": true
+            },
+            {
+              "text": " list signed by the parent"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tuition agreement, deposit paid, and subsidy approval if the family has one"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Transition days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Start with two short visits with a parent, then a half day, then the full schedule. Infants and toddlers settle faster with a gradual start, and parents settle faster too."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Moving up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Review each child at "
+            },
+            {
+              "text": "Review on",
+              "bold": true
+            },
+            {
+              "text": " to decide when they move to the next room. Moves happen together with the receiving teacher, after a few visits."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A space opens in the Saplings room. The director calls the Mbatha family, first on the twos waitlist, who accept the next day. Their packet is complete within a week, two short visits follow, and their daughter starts on the first of the month."
             }
           ]
         }
@@ -3194,7 +4609,14 @@
           "type": "callout",
           "text": [
             {
-              "text": "Ratios are set by your licensing agency, not by this page. Enter your own numbers on each classroom row and check them every day."
+              "text": "Licensing visits are unannounced. The center that is ready every day never fears one. Keep each check on a date in "
+            },
+            {
+              "text": "Safety and licensing checks",
+              "bold": true
+            },
+            {
+              "text": " and close it when it is done."
             }
           ],
           "background": "blue",
@@ -3206,7 +4628,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Daily habits"
+              "text": "The checks and how often"
             }
           ],
           "props": {
@@ -3217,7 +4639,11 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Count children and teachers at every transition."
+              "text": "Fire drill",
+              "bold": true
+            },
+            {
+              "text": ": monthly, at different times of day, including nap time. Write how long it took to get everyone out."
             }
           ]
         },
@@ -3225,7 +4651,11 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Keep sleeping infants within sight and sound."
+              "text": "Playground inspection",
+              "bold": true
+            },
+            {
+              "text": ": daily walk-through, and a written inspection monthly."
             }
           ]
         },
@@ -3233,7 +4663,59 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Hold fire drills monthly and record each one as a safety check."
+              "text": "Staff certification",
+              "bold": true
+            },
+            {
+              "text": ": CPR and first aid current for every staff member; background checks before anyone starts."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Food safety",
+              "bold": true
+            },
+            {
+              "text": ": fridge temperatures daily; a kitchen review monthly."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Emergency kit",
+              "bold": true
+            },
+            {
+              "text": ": water, food, diapers, medicines and contact lists checked every quarter."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Medication log review",
+              "bold": true
+            },
+            {
+              "text": ": weekly. Every dose given matches a signed permission form."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Licensing visit",
+              "bold": true
+            },
+            {
+              "text": ": the yearly renewal and any surprise visit; keep the file ready."
             }
           ]
         },
@@ -3241,7 +4723,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "When something happens"
+              "text": "The licensing file"
             }
           ],
           "props": {
@@ -3249,83 +4731,168 @@
           }
         },
         {
-          "type": "table",
+          "type": "todo",
+          "text": [
+            {
+              "text": "Staff files: background checks, training hours, CPR and first aid"
+            }
+          ],
           "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Situation"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "First step"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "A child is hurt"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Care first, then notify the guardian and write the incident the same day"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "A teacher calls out"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Call the on-call teacher; combine rooms only if ratios stay safe"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "An unknown adult arrives"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Do not release any child; call the director"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "A fire alarm sounds"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Evacuate by the posted route and count children at the meeting spot"
-                    }
-                  ]
-                ]
-              }
-            ]
+            "checked": false
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Children's files: enrollment forms, immunizations, pickup lists, allergy plans"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Drill logs, playground and kitchen logs, incident reports"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Ratios and attendance records for the last three months"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Allergies"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each child's plan is posted (with the parent's permission) in their room and the kitchen. Medicines like epinephrine stay in the room and go outside with the group."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Incidents"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every injury gets a written report the same day, signed by the parent at pickup. Anything serious is reported to licensing within your state's deadline."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Safe sleep"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Infants sleep on their backs in a crib with a fitted sheet and nothing else. Check sleeping infants every fifteen minutes and write it down."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Overdue checks in the Dashboard: none"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Certifications expiring next month booked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Incident reports reviewed for patterns"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A licensing visitor arrives on a Tuesday. The director opens the file: the last fire drill was three weeks ago, playground logs are current, and every child's immunization record is on file except one, already flagged and requested. The visit ends with no findings."
+            }
+          ]
         }
       ]
     }

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0314",
-  "version": 6,
+  "version": 7,
   "title": "Event Planner",
   "description": "Event organisers: guests and RSVPs, vendors, tasks, budget and run of show.",
   "forWho": "Small organisers and event planners",
@@ -9,7 +9,7 @@
     "emoji": "🎉"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:operations-event-hall-string-lights",
     "offsetY": 50
   },
   "category": "operations",
@@ -2401,7 +2401,7 @@
         "Starling Passage"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2412,7 +2412,7 @@
         "emoji": "🎉"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:operations-event-hall-string-lights",
         "offsetY": 50
       },
       "settings": {
