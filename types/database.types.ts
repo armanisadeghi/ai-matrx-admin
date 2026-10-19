@@ -38752,6 +38752,33 @@ export type Database = {
         }
         Relationships: []
       }
+      record_follow: {
+        Row: {
+          changed_at: string
+          created_at: string
+          following: boolean
+          organization_id: string
+          record_id: string
+          user_id: string
+        }
+        Insert: {
+          changed_at?: string
+          created_at?: string
+          following?: boolean
+          organization_id: string
+          record_id: string
+          user_id: string
+        }
+        Update: {
+          changed_at?: string
+          created_at?: string
+          following?: boolean
+          organization_id?: string
+          record_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       record_p00: {
         Row: {
           created_at: string
@@ -42135,6 +42162,20 @@ export type Database = {
       _record_defaults_filled: {
         Args: { p_data: Json; p_organization_id: string; p_table_id: string }
         Returns: Json
+      }
+      _record_follow_notify: {
+        Args: {
+          p_actor: string
+          p_body: string
+          p_dedupe: string
+          p_link: string
+          p_organization_id: string
+          p_record_id: string
+          p_skip: string[]
+          p_table_id: string
+          p_what: string
+        }
+        Returns: number
       }
       _record_outside_projection: {
         Args: {
@@ -47205,6 +47246,18 @@ export type Database = {
             }
             Returns: string
           }
+      record_follow_set: {
+        Args: {
+          p_follow?: boolean
+          p_organization_id: string
+          p_record_id: string
+        }
+        Returns: Json
+      }
+      record_followers: {
+        Args: { p_organization_id: string; p_record_id: string }
+        Returns: Json
+      }
       record_headers: {
         Args: { p_ids: string[]; p_organization_id: string }
         Returns: {
