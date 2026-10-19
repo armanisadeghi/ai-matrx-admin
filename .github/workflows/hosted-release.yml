@@ -99,6 +99,16 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          # Run 39170774433 (v0.4.3346) went LIVE, then its verdict failed on two rows that could not
+          # run here: the surface mirror ("missing SUPABASE_MATRIX_USER, …") and the npm publish-lag
+          # check (`gh` had no token for AI-Matrix-Engine/aidream). Both secrets exist on this repo.
+          # check-npm-publish-lag.mjs hands AIDREAM_REPO_TOKEN to its aidream `gh` calls only.
+          AIDREAM_REPO_TOKEN: ${{ secrets.AIDREAM_REPO_TOKEN }}
+          SUPABASE_MATRIX_USER: ${{ secrets.SUPABASE_MATRIX_USER }}
+          SUPABASE_MATRIX_PASSWORD: ${{ secrets.SUPABASE_MATRIX_PASSWORD }}
+          SUPABASE_MATRIX_HOST: ${{ secrets.SUPABASE_MATRIX_HOST }}
+          SUPABASE_MATRIX_PORT: ${{ secrets.SUPABASE_MATRIX_PORT }}
+          SUPABASE_MATRIX_DATABASE_NAME: ${{ secrets.SUPABASE_MATRIX_DATABASE_NAME }}
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'

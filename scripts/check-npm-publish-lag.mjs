@@ -16,14 +16,20 @@ if (!existsSync(script)) {
   console.log(`[npm-publish-lag] UNMEASURED — no aidream checkout at ${aidream} (set AIDREAM_DIR).`);
   process.exit(2);
 }
-const r = spawnSync(process.execPath, [script, ...process.argv.slice(2)], { cwd: aidream, stdio: "inherit" });
+// Both aidream scripts call `gh` against aidream's own remote (AI-Matrix-Engine/aidream, another
+// owner). On a runner `gh` has no login, so it needs GH_TOKEN; the workflow's GITHUB_TOKEN cannot
+// see that org. The hosted release passes AIDREAM_REPO_TOKEN; hand it to these subprocesses ONLY,
+// so no other check's `gh` call against this repo runs under the aidream token. Locally a `gh`
+// login already answers and AIDREAM_REPO_TOKEN is unset, so nothing changes there.
+const env = process.env.AIDREAM_REPO_TOKEN ? { ...process.env, GH_TOKEN: process.env.AIDREAM_REPO_TOKEN } : process.env;
+const r = spawnSync(process.execPath, [script, ...process.argv.slice(2)], { cwd: aidream, stdio: "inherit", env });
 // The failed-publish classes (FAILING / VERIFY_FAILED / LATEST_BEHIND / NO_GITHEAD / UNBOUND /
 // GATE_BLOCKED / STUCK / STALE) used to be a paid GitHub workflow (publish-watch) that opened an
 // "NPM PUBLISH FAILING" issue nobody read; the same script runs here, locally, for free (2026-10-15).
 const health = join(aidream, "scripts", "check_ts_publish_health.mjs");
 let hs = 0;
 if (existsSync(health)) {
-  const h = spawnSync(process.execPath, [health], { cwd: aidream, stdio: "inherit" });
+  const h = spawnSync(process.execPath, [health], { cwd: aidream, stdio: "inherit", env });
   hs = h.status ?? 2;
   if (hs !== 0) console.log("[npm-publish-lag] ERROR publish health (check_ts_publish_health.mjs) reports a failed or stalled publish; read the linked run, fix the cause, re-run `node scripts/check_ts_publish_health.mjs` in aidream until it prints OK.");
 }
