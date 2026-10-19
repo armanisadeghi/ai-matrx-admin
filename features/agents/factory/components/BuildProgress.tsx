@@ -95,6 +95,48 @@ function decisionReason(state: FactoryBuildState): string | null {
   return null;
 }
 
+/**
+ * The contract step thought a workflow might serve better. The agent is built anyway (the
+ * default, already running); planning it as a workflow is one click away in a new tab.
+ */
+export function WorkflowSuggestion({ suggestion }: { suggestion: NonNullable<FactoryBuildState["workflow_suggestion"]> }) {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
+  const steps = (suggestion.proposed_steps ?? []).filter((x) => x.trim());
+  return (
+    <div data-testid="workflow-suggestion" className="flex min-w-0 flex-col gap-1.5 border-t border-border pt-2.5">
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
+        <span className="min-w-0 type-body">Building it as one agent. A workflow is an option.</span>
+        <span className="ml-auto flex items-center gap-2">
+          <Button variant="primary" onClick={() => setDismissed(true)}>
+            Continue as one agent
+          </Button>
+          <Button asChild variant="outline">
+            <Link href={WORKFLOW_PLAN_PATH} target="_blank" rel="noopener noreferrer">
+              Plan it as a workflow
+            </Link>
+          </Button>
+        </span>
+      </div>
+      {steps.length > 0 ? (
+        <details className="type-secondary text-muted-foreground">
+          <summary className="cursor-pointer">{`${steps.length} suggested steps`}</summary>
+          <ol className="mt-1 list-decimal pl-5">
+            {steps.map((step, i) => (
+              <li key={i} className="line-clamp-2">
+                {step}
+              </li>
+            ))}
+          </ol>
+        </details>
+      ) : null}
+    </div>
+  );
+}
+
+/** Where "Plan it as a workflow" opens: the Orchestras home (teams of agents under a conductor). */
+export const WORKFLOW_PLAN_PATH = "/agents/orchestras";
+
 /** The caller's format line for "Build it as text" — read by the factory as a text answer (R46). */
 export const TEXT_ANSWER_FORMAT = "Markdown text";
 
@@ -105,6 +147,7 @@ function OutcomePanel({
   onKeep,
   onBuildUnproven,
   onBuildAsText,
+  onRetry,
 }: {
   state: FactoryBuildState;
   /** The execution's real status — the checkpoint can still say running after a worker died. */
@@ -114,6 +157,8 @@ function OutcomePanel({
   onBuildUnproven: () => void;
   /** needs_new_kind: build it now with a text answer (the shape proposal stays filed). */
   onBuildAsText: () => void;
+  /** A build that stopped: the same request again. */
+  onRetry: () => void;
 }) {
   // A build whose worker died before the reaper settled it: the spine says failed or
   // canceled while the checkpoint never got an outcome — show it stopped, never blank.
@@ -174,12 +219,19 @@ function OutcomePanel({
         Build it as text
       </Button>
     );
-  } else if (outcome === "workflow_sized") {
-    line = "This job needs a workflow, not one agent.";
-  } else if (outcome === "worker_lost") {
-    line = "Stopped mid-build. Start it again to resume.";
   } else if (outcome) {
-    line = "The build stopped.";
+    // Every stop shows what happened, a retry and a way out — never a dead end (owner 2026-10-19).
+    line = outcome === "worker_lost" ? "Stopped mid-build." : "The build stopped.";
+    actions = (
+      <>
+        <Button variant="outline" onClick={onBuildUnproven} disabled={busy}>
+          Build unproven
+        </Button>
+        <Button variant="primary" onClick={onRetry} disabled={busy}>
+          Try again
+        </Button>
+      </>
+    );
   }
 
   const cases = (state.proof ?? []).filter((c) => c.preferred);
@@ -296,8 +348,8 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
     }
   };
 
-  /** A follow-up build of the same request: unproven (R34), or the same job as text (R46). */
-  const rebuild = async (how: "unproven" | "as_text") => {
+  /** A follow-up build of the same request: unproven (R34), the same job as text (R46), or a retry. */
+  const rebuild = async (how: "unproven" | "as_text" | "retry") => {
     const req = detail?.state?.request;
     if (!req?.spec) return;
     setBusy(true);
@@ -307,7 +359,7 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
       const next = await startAgentBuild({
         spec: how === "as_text" ? { ...req.spec, response_format: TEXT_ANSWER_FORMAT } : req.spec,
         mandateKey: req.mandate_key ? storedMandateKey(req.mandate_key) : null,
-        unproven: how === "unproven",
+        unproven: how === "unproven" || (how === "retry" && Boolean(req.unproven)),
         door: req.door ?? null,
         builtin: req.spec.owner === null,
       });
@@ -371,6 +423,8 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
         ))}
       </ol>
 
+      {state.workflow_suggestion ? <WorkflowSuggestion suggestion={state.workflow_suggestion} /> : null}
+
       {over ? (
         keptAgent ? (
           <div className="flex items-center gap-2 border-t border-border pt-2.5">
@@ -381,7 +435,7 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
             </Button>
           </div>
         ) : (
-          <OutcomePanel state={state} spineStatus={detail.spineStatus} busy={busy} onKeep={() => void keep()} onBuildUnproven={() => void rebuild("unproven")} onBuildAsText={() => void rebuild("as_text")} />
+          <OutcomePanel state={state} spineStatus={detail.spineStatus} busy={busy} onKeep={() => void keep()} onBuildUnproven={() => void rebuild("unproven")} onBuildAsText={() => void rebuild("as_text")} onRetry={() => void rebuild("retry")} />
         )
       ) : null}
     </div>
