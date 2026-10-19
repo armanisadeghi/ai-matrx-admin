@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0516",
-  "version": 2,
+  "version": 3,
   "title": "Online Store Operations Hub",
   "description": "Run orders, fulfillment, stock levels, suppliers and returns for an online store.",
   "forWho": "Shopify-style online store owners",
@@ -1951,7 +1951,7 @@
         "Cobbler Row"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
