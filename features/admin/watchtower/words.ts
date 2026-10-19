@@ -38,7 +38,7 @@ export function seconds(value: number | null): string {
 
 /** Features first that need a person, then the rest by group. */
 export function sortScorecards(rows: readonly ScorecardRow[]): ScorecardRow[] {
-  const rank: Record<AlarmState, number> = { failing: 0, degraded: 1, unknown: 2, ok: 3 };
+  const rank: Record<AlarmState, number> = { failing: 0, degraded: 1, ok: 2, unknown: 3 };
   return rows
     .filter((r) => r.feature_key !== "_daily_note")
     .slice()
