@@ -66,7 +66,8 @@ function selfTest() {
     "box-shadow: inset 0 0 0 1px var(--primary);",
     "color-mix(in srgb, var(--primary) 16%, transparent)",
     'fill="var(--background, #fff)"',
-    'className="shadow-md"',
+    // Built from parts so a find-and-replace sweep of the old invalid class cannot rewrite the planted break.
+    ["className=\"shadow-[var(--", "elevation-2)]\""].join(""),
     "hover:shadow-[var(--border)]",
   ];
   const fine = [
