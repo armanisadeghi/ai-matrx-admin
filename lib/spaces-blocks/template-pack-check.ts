@@ -19,6 +19,7 @@ import { Ajv2020 } from "ajv/dist/2020";
 import { allTables, validateTemplate, type AgentSnapshotRow, type TemplateSpec } from "@ai-matrx/records/templates";
 import { TEXT_CONTRAST, contrastRatio, readColorPair, readMotion, readOpacity, readShadowPair, readTypeStyle } from "@ai-matrx/design-system/field-formats";
 
+import { isKnownGalleryCover } from "./cover-library";
 import { buildSpaceSnapshotSchema } from "./jsonSchema";
 import { validateSnapshot } from "./schema";
 import {
@@ -72,6 +73,16 @@ function mediaOk(m: unknown): boolean {
   return ["fileId", "url", "icon", "emoji"].filter((k) => str(m[k])).length === 1;
 }
 
+/** A cover's finding, or null: one media value, and a `gallery:` key must name a cover we have (bundled or the library). */
+function coverFinding(c: unknown): string | null {
+  if (!mediaOk(c)) return 'A cover is { "url": "gallery:<name>" } (or null).';
+  const url = (c as { url?: unknown }).url;
+  if (typeof url === "string" && url.startsWith("gallery:") && !isKnownGalleryCover(url)) {
+    return `"${url}" is not a gallery cover: use a bundled one or a key from the cover library (lib/spaces-blocks/cover-library.json).`;
+  }
+  return null;
+}
+
 /** Every finding in one pack. Empty = it may be published. */
 export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFinding[] {
   const out: PackFinding[] = [];
@@ -91,7 +102,8 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
   if (!str(pack.forWho)) say("forWho", 'Say who it is for in a few words ("Small teams shipping client projects").');
   else if (pack.forWho.length > 60) say("forWho", `Keep forWho to 60 characters (it is ${pack.forWho.length}).`);
   if (!mediaOk(pack.icon)) say("icon", 'The template icon is one of { "emoji": "🗂️" } or { "icon": "<Lucide name>" }.');
-  if (pack.cover !== undefined && pack.cover !== null && !mediaOk(pack.cover)) say("cover", 'A cover is { "url": "gallery:<name>" } (or null).');
+  const packCover = pack.cover !== undefined && pack.cover !== null ? coverFinding(pack.cover) : null;
+  if (packCover) say("cover", packCover);
   const cats = SPACE_TEMPLATE_CATEGORIES.map((c) => c.key) as string[];
   if (!cats.includes(String(pack.category))) say("category", `"${String(pack.category)}" is not a category. Use one of: ${cats.join(", ")}.`);
   if (!Array.isArray(pack.tags) || pack.tags.length < 1 || pack.tags.length > 6) say("tags", "Give 1 to 6 search tags.");
@@ -140,6 +152,10 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
     if (i === 0 && p.parent !== null) say(`${at}.parent`, "pages[0] is the root: write \"parent\": null.");
     if (i > 0 && p.parent === null) say(`${at}.parent`, "Only pages[0] is the root; name this page's parent key.");
     if (p.icon !== undefined && p.icon !== null && !mediaOk(p.icon)) say(`${at}.icon`, 'A page icon is { "emoji": "…" } or { "icon": "<Lucide name>" }.');
+    const pageCover = p.cover !== undefined && p.cover !== null ? coverFinding(p.cover) : null;
+    if (pageCover) say(`${at}.cover`, pageCover);
+    // The installed root page is the template's face: it carries the template's cover.
+    if (i === 0 && pack.cover && JSON.stringify(p.cover ?? null) !== JSON.stringify(pack.cover)) say(`${at}.cover`, "The root page's cover is the template's cover: write the same value.");
     if (!Array.isArray(p.blocks)) say(`${at}.blocks`, "A page's blocks are a list (it may be empty).");
   });
   pages.forEach((p, i) => {

@@ -20,6 +20,27 @@ ROOT = "system-files/spaces-covers"
 NS = uuid.UUID("6b1c0d3e-5a0f-4c39-9a51-7c0e0a1b5c0d")
 
 
+def _thumb(content: bytes) -> bytes:
+    """A 480px-wide JPEG copy for pickers and gallery cards."""
+    import io
+
+    from PIL import Image
+
+    im = Image.open(io.BytesIO(content)).convert("RGB")
+    im.thumbnail((480, 480 * im.height // im.width))
+    buf = io.BytesIO()
+    im.save(buf, "JPEG", quality=78, optimize=True, progressive=True)
+    return buf.getvalue()
+
+
+def _size(content: bytes) -> tuple[int, int]:
+    import io
+
+    from PIL import Image
+
+    return Image.open(io.BytesIO(content)).size
+
+
 async def main() -> int:
     src, out = Path(sys.argv[1]), Path(sys.argv[2])
     sourced = json.loads((src / "sourced.json").read_text())
@@ -50,7 +71,7 @@ async def main() -> int:
     ):
         service = FileService(get_cloud_file_manager())
         for e in sourced:
-            if e["key"] in done and done[e["key"]].get("pexelsId") == e["pexelsId"]:
+            if e["key"] in done and done[e["key"]].get("pexelsId") == e["pexelsId"] and done[e["key"]].get("thumbUrl"):
                 continue
             file_id = str(uuid.uuid5(NS, f"spaces-cover:{e['key']}:{e['pexelsId']}"))
             content = await asyncio.to_thread((src / f"{e['key']}.jpg").read_bytes)
@@ -75,7 +96,27 @@ async def main() -> int:
             )
             if not result.cdn_url:
                 raise SystemExit(f"{e['key']}: no CDN url (is the public bucket configured?)")
-            done[e["key"]] = {**e, "fileId": str(result.file_id), "cdnUrl": result.cdn_url}
+            thumb = await service.upload_simple(
+                await asyncio.to_thread(_thumb, content),
+                file_path=f"{ROOT}/thumbs/{e['key']}.jpg",
+                user_id=owner,
+                organization_id=MATRX_SYSTEM_ORGANIZATION_ID,
+                mime_type="image/jpeg",
+                published_to_web=True,
+                metadata={"origin": "spaces-cover-library", "system_artifact": True, "thumbnail_of": str(result.file_id)},
+                auto_thumbnail=False,
+                file_id=str(uuid.uuid5(NS, f"spaces-cover-thumb:{e['key']}:{e['pexelsId']}")),
+            )
+            width, height = await asyncio.to_thread(_size, content)
+            done[e["key"]] = {
+                **e,
+                "fileId": str(result.file_id),
+                "cdnUrl": result.cdn_url,
+                "thumbFileId": str(thumb.file_id),
+                "thumbUrl": thumb.cdn_url,
+                "width": width,
+                "height": height,
+            }
             out.write_text(json.dumps(list(done.values()), indent=1))
             print(f"{e['key']}  {result.file_id}  {result.cdn_url}")
     keep = {e["key"] for e in sourced}
