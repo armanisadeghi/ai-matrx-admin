@@ -96,7 +96,8 @@ export async function startWorkbookOrderedRoom(a: WorkbookOrderedRoomArgs): Prom
     // and keeps a peer's write from growing it again here (office C5e)
     filterRange: (unitId, subUnitId) => {
       try {
-        return injector.get(SheetsFilterService).getFilterModel(unitId, subUnitId)?.getRange() ?? null;
+        const r = injector.get(SheetsFilterService).getFilterModel(unitId, subUnitId)?.getRange();
+        return r ? { startRow: r.startRow, endRow: r.endRow, startColumn: r.startColumn, endColumn: r.endColumn } : null;
       } catch {
         return null; // no filter plugin on this editor
       }
