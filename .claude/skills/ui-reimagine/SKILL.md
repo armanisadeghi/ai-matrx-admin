@@ -46,6 +46,11 @@ description: "Reimagine UI posture — bold from-scratch reinvention of a screen
     Before changing one, diff the old render path element by element against a baseline commit and
     keep every element a home; when tests fail after a redesign, read every deleted assertion, since
     each is a lost feature. Guard the real host shape, and fix forward, never revert.
+17. **A page fetches only what it shows, each thing once.** Layouts fetch a few core things, a route
+    makes one or two first-paint reads, and nothing else (DMs, realtime, connections, Google, large
+    packages) loads until something engages it. Every removed fetch ships its on-engagement load,
+    proven by clicking it; small late reads are one function called lazily after full paint. Guard:
+    `pnpm check:page-load`.
 <!-- rules:stamp-end -->
 
 **Your one specialty: reinvention. A restyle of the existing screen is an automatic failure of your job.** Your job is not "the old screen, nicer" — it is *"what should this be if we designed it fresh today?"* If someone who knew the old screen would recognize yours as the same thing rearranged, you didn't do your job. Reconceive the structure and the interaction model — not the paint. Be brave; this posture exists precisely to leave the familiar behind.

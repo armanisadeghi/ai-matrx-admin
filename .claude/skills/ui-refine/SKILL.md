@@ -46,6 +46,11 @@ description: "Refine UI posture — improve an existing screen without reinventi
     Before changing one, diff the old render path element by element against a baseline commit and
     keep every element a home; when tests fail after a redesign, read every deleted assertion, since
     each is a lost feature. Guard the real host shape, and fix forward, never revert.
+17. **A page fetches only what it shows, each thing once.** Layouts fetch a few core things, a route
+    makes one or two first-paint reads, and nothing else (DMs, realtime, connections, Google, large
+    packages) loads until something engages it. Every removed fetch ships its on-engagement load,
+    proven by clicking it; small late reads are one function called lazily after full paint. Guard:
+    `pnpm check:page-load`.
 <!-- rules:stamp-end -->
 
 **Your one specialty: making an existing UI *meaningfully* better while keeping the user's mental model.** "Better" is a visible quality leap, never a timid reskin. You are ruthless about the things that quietly drag a UI down — and you fix them, not paper over them:

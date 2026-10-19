@@ -46,6 +46,11 @@ description: "Lifecycle for AI Matrx agent-aware UI surfaces. Use when creating 
     Before changing one, diff the old render path element by element against a baseline commit and
     keep every element a home; when tests fail after a redesign, read every deleted assertion, since
     each is a lost feature. Guard the real host shape, and fix forward, never revert.
+17. **A page fetches only what it shows, each thing once.** Layouts fetch a few core things, a route
+    makes one or two first-paint reads, and nothing else (DMs, realtime, connections, Google, large
+    packages) loads until something engages it. Every removed fetch ships its on-engagement load,
+    proven by clicking it; small late reads are one function called lazily after full paint. Guard:
+    `pnpm check:page-load`.
 <!-- rules:stamp-end -->
 
 This is the ONE surface lifecycle skill. It owns the manifest contract, layered registration, runtime emission, canonical-menu rollout, Pro inputs, bindings, DB sync, and verification. Reference consumer for every registration layer: **`features/transcription-cleanup/`** (`/transcripts/cleanup`).

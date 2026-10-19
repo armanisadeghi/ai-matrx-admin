@@ -46,6 +46,11 @@ description: "WindowPanel (@ai-matrx/summon/window) and its window manager. Use 
     Before changing one, diff the old render path element by element against a baseline commit and
     keep every element a home; when tests fail after a redesign, read every deleted assertion, since
     each is a lost feature. Guard the real host shape, and fix forward, never revert.
+17. **A page fetches only what it shows, each thing once.** Layouts fetch a few core things, a route
+    makes one or two first-paint reads, and nothing else (DMs, realtime, connections, Google, large
+    packages) loads until something engages it. Every removed fetch ships its on-engagement load,
+    proven by clicking it; small late reads are one function called lazily after full paint. Guard:
+    `pnpm check:page-load`.
 <!-- rules:stamp-end -->
 
 `WindowPanel`, the window manager (`windowManager` slice), the tray, pop-out, the three phone presentations and window persistence are the **npm package `@ai-matrx/summon`** (source `../aidream/apps/shared/summon/src/window`, `src/core`, `src/persistence`; guides in the package `README.md` and `FEATURE.md`). This repo no longer contains that engine. What stays here: the **window components** (`features/window-panels/windows/**`), the **Tools grid**, **tray previews**, the **Detail primitive** host and the app's wiring. Deep reference for what stays: [`features/window-panels/FEATURE.md`](../../../features/window-panels/FEATURE.md).
