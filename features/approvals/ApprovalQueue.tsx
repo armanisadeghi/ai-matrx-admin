@@ -43,12 +43,15 @@ import {
   ExternalLink,
   X,
 } from "lucide-react";
+import {
+  MatrxDataTable,
+  type MatrxColumnDef,
+} from "@ai-matrx/design-system/data-table";
 import AppLink from "@/components/navigation/AppLink";
 import { formatCount } from "@ai-matrx/kit/format";
 import { Badge as KindBadge } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -198,10 +201,6 @@ function noDecisionControls(item: ApprovalItem): boolean {
   );
 }
 
-/** A stable DOM id per row, so a deep link can scroll to one. */
-function rowDomId(key: string): string {
-  return `approval-row-${key.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
-}
 
 interface PendingDecision {
   decision: Decision;
@@ -245,6 +244,379 @@ function ModeLine({ item }: { item: ApprovalItem }) {
   );
 }
 
+interface QueueSection {
+  kind: ApprovalKind;
+  slot: Slot | undefined;
+  items: ApprovalItem[];
+  total: number;
+}
+
+/** One short word for the row's state; its full sentence is in the opened row. */
+function statusLabel(item: ApprovalItem): string {
+  if (item.unreadable) return "Can't show";
+  if (item.unknownState) return "Unknown state";
+  if (item.inFlight) return "Applying";
+  if (item.lastAttempt?.state === "applied_unconfirmed") return "May be made";
+  if (item.lastAttempt?.state === "failed") return "Failed";
+  if (item.expired) return "Expired";
+  if (item.blocked) return "Not yours";
+  return "Waiting";
+}
+
+/** The sentences a row carries about its state — never hidden (THE NO-SILENT-FAILURE LAW). */
+function statusSentence(item: ApprovalItem): string | null {
+  if (item.blocked) return `${item.blocked.reason} ${item.blocked.whoCan}`;
+  return (
+    item.inFlight?.sentence ??
+    item.lastAttempt?.sentence ??
+    item.unreadable?.sentence ??
+    item.unknownState?.sentence ??
+    item.expired?.sentence ??
+    null
+  );
+}
+
+function modeText(item: ApprovalItem): string {
+  return item.mode === "unresolved" ? "Unresolved" : AUTONOMY_MODE_LABEL[item.mode];
+}
+
+/**
+ * A row opens by itself when what it holds must be read before deciding: a
+ * review card that IS the authorization, or a sentence about its state.
+ */
+function opensByItself(item: ApprovalItem): boolean {
+  return (
+    (Boolean(item.individualReview) && !noLiveAction(item)) ||
+    statusSentence(item) !== null
+  );
+}
+
+/**
+ * THE QUEUE'S LIST, on the shared table: search, sort, filters, one collapsible
+ * band per kind, URL state and paging. Everything a row used to show is either a
+ * column or in the opened row (click a row): its records, its full change, its
+ * state sentences, its body and its review card.
+ */
+function ApprovalTable({
+  tableId,
+  sections,
+  selectable,
+  selectedKeys,
+  onSelectedKeysChange,
+  busy,
+  batchRejectNeedsOneKind,
+  focusedKey,
+  onDecide,
+}: {
+  tableId: string;
+  sections: QueueSection[];
+  selectable: ApprovalItem[];
+  selectedKeys: ReadonlySet<string>;
+  onSelectedKeysChange: (keys: ReadonlySet<string>) => void;
+  busy: boolean;
+  batchRejectNeedsOneKind: boolean;
+  focusedKey: string | null;
+  onDecide: (decision: Decision, items: ApprovalItem[]) => void;
+}) {
+  const sectionByKind = new Map(sections.map((section) => [section.kind.id, section]));
+  const rows = sections.flatMap((section) => section.items);
+  const selectableKeys = new Set(selectable.map((item) => item.key));
+  const kindLabel = (item: ApprovalItem) =>
+    sectionByKind.get(item.kindId)?.kind.label ?? item.kindId;
+
+  const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
+  const [closed, setClosed] = useState<ReadonlySet<string>>(new Set());
+  const autoOpen = new Set(
+    rows
+      .filter((item) => opensByItself(item) || item.key === focusedKey)
+      .map((item) => item.key),
+  );
+  const expandedIds = new Set(
+    rows
+      .map((item) => item.key)
+      .filter((key) => (autoOpen.has(key) && !closed.has(key)) || opened.has(key)),
+  );
+
+  const columns: MatrxColumnDef<ApprovalItem>[] = [
+    {
+      id: "kind",
+      header: "Kind",
+      accessorFn: kindLabel,
+      format: { id: "choice" },
+      width: 170,
+      cell: (item) => (
+        <KindBadge className="shrink-0">{item.badge ?? kindLabel(item)}</KindBadge>
+      ),
+    },
+    {
+      id: "headline",
+      header: "Proposal",
+      accessorKey: "headline",
+      width: 300,
+    },
+    {
+      id: "change",
+      header: "Change",
+      accessorKey: "acceptEffect",
+      width: 320,
+    },
+    {
+      id: "status",
+      header: "Status",
+      accessorFn: statusLabel,
+      format: { id: "choice" },
+      width: 130,
+      tone: (item) =>
+        item.lastAttempt?.state === "failed"
+          ? "danger"
+          : statusLabel(item) === "Waiting"
+            ? undefined
+            : "warning",
+    },
+    {
+      id: "mode",
+      header: "Mode",
+      accessorFn: modeText,
+      format: { id: "choice" },
+      width: 240,
+      cell: (item) => <ModeLine item={item} />,
+    },
+    {
+      id: "proposedBy",
+      header: "Proposed by",
+      accessorFn: (item) => item.proposedBy ?? null,
+      width: 150,
+    },
+    {
+      id: "proposedAt",
+      header: "Proposed",
+      accessorFn: (item) => item.proposedAt ?? null,
+      format: { id: "date" },
+      width: 120,
+    },
+    {
+      // The decision words are each kind's own ("Add it", "Keep mine") — text
+      // buttons, never bare icons, exactly as the list showed them.
+      id: "decide",
+      header: "Decide",
+      accessorFn: statusLabel,
+      sortable: false,
+      // table-filter-off: the Status column already filters on what this column reads
+      filter: false,
+      width: 190,
+      cell: (item) => {
+        const section = sectionByKind.get(item.kindId);
+        if (!section || noDecisionControls(item)) return null;
+        return (
+          <span
+            className="inline-flex items-center gap-1"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {item.individualReview || item.blocked || item.expired ? null : (
+              <Button
+                variant="quiet"
+                disabled={busy}
+                onClick={() => onDecide("accept", [item])}
+              >
+                {/* After a failed apply the same door IS the retry, and the
+                    label says so. */}
+                {item.lastAttempt?.state === "failed"
+                  ? "Try again"
+                  : section.kind.accept.label}
+              </Button>
+            )}
+            <Button
+              variant="quiet"
+              disabled={busy}
+              onClick={() => onDecide("reject", [item])}
+            >
+              {section.kind.reject.label}
+            </Button>
+          </span>
+        );
+      },
+    },
+  ];
+
+  return (
+    <MatrxDataTable<ApprovalItem>
+      tableId={tableId}
+      data={rows}
+      columns={columns}
+      getRowId={(item) => item.key}
+      searchText={(item) =>
+        [
+          item.headline,
+          item.acceptEffect,
+          item.rejectEffect,
+          kindLabel(item),
+          item.badge ?? "",
+          item.proposedBy ?? "",
+          statusSentence(item) ?? "",
+        ].join(" ")
+      }
+      defaultSort={{ id: "proposedAt", direction: "desc" }}
+      grouping={{
+        columnId: "kind",
+        order: "value-asc",
+        rowNoun: "proposal",
+        selectable: true,
+        groupFacts: (group) => {
+          const section = sections.find(
+            (entry) => entry.kind.label === group.label,
+          );
+          return section && section.total > section.items.length
+            ? { count: section.total }
+            : undefined;
+        },
+        renderLabel: (group) => {
+          const section = sections.find(
+            (entry) => entry.kind.label === group.label,
+          );
+          const more =
+            section &&
+            section.total > section.items.length &&
+            section.slot?.source.moreHref
+              ? section.slot.source
+              : null;
+          return (
+            <span className="inline-flex min-w-0 items-center gap-2">
+              <span className="truncate">{group.label}</span>
+              {section && section.total > section.items.length ? (
+                <span className="type-meta text-muted-foreground">
+                  {`${section.items.length} of ${formatCount(section.total)} loaded`}
+                </span>
+              ) : null}
+              {more?.moreHref ? (
+                <AppLink
+                  href={more.moreHref}
+                  className="inline-flex items-center gap-1 type-meta text-primary underline-offset-2 hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  {more.moreLabel ?? "See them all"}
+                  <ExternalLink className="size-3" />
+                </AppLink>
+              ) : null}
+            </span>
+          );
+        },
+      }}
+      selection={{
+        selectedIds: [...selectedKeys],
+        onSelectedIdsChange: (ids) =>
+          onSelectedKeysChange(new Set(ids.filter((id) => selectableKeys.has(id)))),
+        // ONE predicate with the batch: reviewed-alone, blocked and no-live-action
+        // rows are never part of a batch (`selectable`, computed by the queue).
+        isRowSelectable: (item) => selectableKeys.has(item.key) && !busy,
+        noun: "proposal",
+        actions: (selected) => {
+          const items = selected.filter((item) => selectableKeys.has(item.key));
+          if (items.length === 0) return null;
+          return (
+            <span className="inline-flex flex-wrap items-center gap-1.5">
+              {batchRejectNeedsOneKind ? (
+                <span className="type-meta text-muted-foreground">
+                  This reject needs rows of one kind
+                </span>
+              ) : null}
+              <Button
+                icon={<Check />}
+                variant="primary"
+                disabled={busy}
+                onClick={() => onDecide("accept", items)}
+              >
+                Approve {items.length}
+              </Button>
+              <Button
+                icon={<X />}
+                variant="outline"
+                disabled={busy || batchRejectNeedsOneKind}
+                onClick={() => onDecide("reject", items)}
+              >
+                Reject {items.length}
+              </Button>
+            </span>
+          );
+        },
+      }}
+      focusRowId={focusedKey}
+      expandedDetail={{
+        expandedIds,
+        onExpandedIdsChange: (next) => {
+          setOpened(new Set([...next].filter((key) => !autoOpen.has(key))));
+          setClosed(new Set([...autoOpen].filter((key) => !next.has(key))));
+        },
+        render: (item) => <ApprovalRowDetail item={item} />,
+      }}
+      pageSize={50}
+      emptyState={{ title: "No proposals match" }}
+    />
+  );
+}
+
+/** Everything one row says, opened in place: nothing a row used to show is lost. */
+function ApprovalRowDetail({ item }: { item: ApprovalItem }) {
+  return (
+    <div className="min-w-0 space-y-1 px-2 py-2">
+      <p className="break-words type-heading text-foreground">{item.headline}</p>
+      {item.doors ? (
+        <div className="break-words type-secondary text-muted-foreground">{item.doors}</div>
+      ) : null}
+      <p className="break-words type-secondary text-muted-foreground">
+        {item.acceptEffect}
+        {item.proposedBy ? ` · proposed by ${item.proposedBy}` : ""}
+        {item.proposedAt ? ` · ${new Date(item.proposedAt).toLocaleDateString()}` : ""}
+      </p>
+      <p className="break-words type-meta">
+        <ModeLine item={item} />
+      </p>
+      {/* Not yours to approve — but never hidden, and never a disabled control
+          with no reason (THE NO-SILENT-FAILURE LAW). */}
+      {item.blocked ? (
+        <p className="break-words type-meta text-warning">
+          {item.blocked.reason} {item.blocked.whoCan}
+        </p>
+      ) : null}
+      {/* An approve is running on the server RIGHT NOW: no decision controls. */}
+      {item.inFlight ? (
+        <p className="break-words type-meta text-muted-foreground">{item.inFlight.sentence}</p>
+      ) : null}
+      {/* 🚨 THE LAST APPROVE FAILED AND THE CHANGE WAS NOT MADE (§ A-iii). */}
+      {item.lastAttempt?.state === "failed" ? (
+        <p className="break-words type-meta font-medium text-destructive">
+          {item.lastAttempt.sentence}
+          <ErrorAlchemyMenu />
+        </p>
+      ) : null}
+      {/* 🚨 THE WRITE REACHED GOOGLE AND THE ANSWER WAS LOST (§ A-N1): the
+          server's sentence, and no retry anywhere on the row. */}
+      {item.lastAttempt?.state === "applied_unconfirmed" ? (
+        <p className="break-words type-meta font-medium text-warning">{item.lastAttempt.sentence}</p>
+      ) : null}
+      {/* 🚨 SOMETHING IS WAITING AND THIS BUILD CANNOT SHOW IT (§ A-N6). */}
+      {item.unreadable ? (
+        <p className="break-words type-meta font-medium text-warning">{item.unreadable.sentence}</p>
+      ) : null}
+      {/* 🚨 A RECEIPT STATE THIS BUILD HAS NEVER HEARD OF (§ V14-4). */}
+      {item.unknownState ? (
+        <p className="break-words type-meta font-medium text-warning">{item.unknownState.sentence}</p>
+      ) : null}
+      {/* 🚨 PAST THE ORGANIZATION'S REVIEW WINDOW (§ A-N7). */}
+      {item.expired ? (
+        <p className="break-words type-meta font-medium text-warning">{item.expired.sentence}</p>
+      ) : null}
+      {item.body ? <div className="mt-1">{item.body}</div> : null}
+      {/* 🚨 A ROW THAT CANNOT BE ACTED ON MOUNTS NO KIND'S ACTION EITHER
+          (Bugbot round 11, frontend PR 228): one gate, here, for every kind. */}
+      {item.individualReview && !noLiveAction(item) ? (
+        <div className="mt-1">{item.individualReview}</div>
+      ) : null}
+    </div>
+  );
+}
+
 export function ApprovalQueue({
   scope,
   registry,
@@ -255,6 +627,7 @@ export function ApprovalQueue({
   onSummary,
   focusItemId,
   onFocusResolved,
+  tableId,
   className,
 }: {
   scope: ApprovalScope;
@@ -301,6 +674,12 @@ export function ApprovalQueue({
      */
     detail?: ApprovalFocusDetail,
   ) => void;
+  /**
+   * The list's stable table id — its search, sort, filters, page and collapsed
+   * groups live in the URL under `table.<id>.*`. Defaults to one derived from
+   * the kinds and scope, so two queues on one page never share a namespace.
+   */
+  tableId?: string;
   className?: string;
 }) {
   const all = registry ?? APPROVAL_KINDS;
@@ -523,12 +902,7 @@ export function ApprovalQueue({
         ? "Approve"
         : "Reject";
 
-  const toggle = (key: string) => {
-    const next = new Set(selected);
-    if (next.has(key)) next.delete(key);
-    else next.add(key);
-    setSelected(next);
-  };
+
 
   // The row a deep link points at (`?item=<assist id>`), matched on the id half
   // of the item key so a kind never has to know about linking.
@@ -543,13 +917,7 @@ export function ApprovalQueue({
     if (focusedKey && !expanded) setExpanded(true);
   }, [focusedKey]);
 
-  // … and scrolls in the turn AFTER the rows rendered.
-  useEffect(() => {
-    if (!focusedKey || !expanded) return;
-    document
-      .getElementById(rowDomId(focusedKey))
-      ?.scrollIntoView({ block: "center", behavior: "smooth" });
-  }, [focusedKey, expanded]);
+  // The table pages to, scrolls to and rings the focused row itself (`focusRowId`).
 
   /**
    * EVERY INPUT THE DEEP-LINK RESOLUTION READS, as one comparable string — the
@@ -690,276 +1058,17 @@ export function ApprovalQueue({
 
           {expanded && bodyReady && allItems.length > 0 ? (
             <div className="mt-2.5 border-t border-border pt-2">
-              {/* Select-all exists only when something CAN be selected — a
-                  "Select all 0" checkbox that never does anything is a dead
-                  control (rows reviewed alone are never selectable). */}
-              {selectable.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-2 pb-2">
-                  <Checkbox
-                    checked={allSelected}
-                    onCheckedChange={() =>
-                      setSelected(
-                        allSelected
-                          ? new Set()
-                          : new Set(selectable.map((item) => item.key)),
-                      )
-                    }
-                    aria-label="Select every proposal shown"
-                    disabled={busy}
-                  />
-                  <span className="type-secondary text-muted-foreground">
-                    {/* read-gate-exempt: the select-all label counts the proposals on screen and the person's own ticks, not a read's total */}
-                    {selectedItems.length > 0
-                      ? `${selectedItems.length} of ${allItems.length} shown selected`
-                      : `Select all ${selectable.length} shown`}
-                  </span>
-                  {selectedItems.length > 0 ? (
-                    <div className="ml-auto flex flex-wrap items-center gap-1.5">
-                      {batchRejectNeedsOneKind ? (
-                        <span className="type-meta text-muted-foreground">
-                          This reject needs rows of one kind
-                        </span>
-                      ) : null}
-                      <Button
-                        icon={<Check />}
-                        variant="primary"
-                        disabled={busy}
-                        onClick={() => begin("accept", selectedItems)}
-                      >
-                        Approve {selectedItems.length}
-                      </Button>
-                      <Button
-                        icon={<X />}
-                        variant="outline"
-                        disabled={busy || batchRejectNeedsOneKind}
-                        onClick={() => begin("reject", selectedItems)}
-                      >
-                        Reject {selectedItems.length}
-                      </Button>
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-
-              <div className="space-y-2.5">
-                {sections
-                  .filter((section) => section.items.length > 0)
-                  .map((section) => (
-                    <section key={section.kind.id} className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-2 px-1.5">
-                        <h3 className="type-title text-foreground">
-                          {section.kind.label}
-                        </h3>
-                        <span className="type-meta text-muted-foreground">
-                          {section.total > section.items.length
-                            ? `${section.items.length} of ${formatCount(section.total)} shown`
-                            : `${section.items.length}`}
-                        </span>
-                        {section.total > section.items.length &&
-                        section.slot?.source.moreHref ? (
-                          <AppLink
-                            href={section.slot.source.moreHref}
-                            className="ml-auto inline-flex items-center gap-1 type-meta text-primary underline-offset-2 hover:underline"
-                             target="_blank"
-                             rel="noopener noreferrer"
-                           >
-                            {section.slot.source.moreLabel ?? "See them all"}
-                            <ExternalLink className="size-3" />
-                          </AppLink>
-                        ) : null}
-                      </div>
-                      <ul className="space-y-1">
-                        {section.items.map((item) => (
-                          <li
-                            key={item.key}
-                            id={rowDomId(item.key)}
-                            className={cn(
-                              "rounded-md px-1.5 py-1.5 hover:bg-muted/50",
-                              item.key === focusedKey &&
-                                "ring-2 ring-primary ring-offset-1 ring-offset-card",
-                            )}
-                          >
-                            <div className="flex items-start gap-2 max-md:flex-wrap">
-                              <Checkbox
-                                className="mt-0.5"
-                                checked={selected.has(item.key)}
-                                onCheckedChange={() => toggle(item.key)}
-                                aria-label={`Select: ${item.headline}`}
-                                // Blocked rows are excluded from `selectable`,
-                                // so a tickable box here would look selected and
-                                // then be skipped by Approve/Reject — a control
-                                // that lies (Bugbot LOW #6, 2026-09-17).
-                                disabled={
-                                  busy ||
-                                  Boolean(item.individualReview) ||
-                                  Boolean(item.blocked) ||
-                                  // ONE predicate for every state in which no
-                                  // control on this row may still do something.
-                                  noLiveAction(item)
-                                }
-                              />
-                              <div className="min-w-0 flex-1 space-y-0.5">
-                                <div className="flex flex-wrap items-center gap-1.5">
-                                  <KindBadge className="shrink-0">
-                                    {item.badge ?? section.kind.label}
-                                  </KindBadge>
-                                  <span className="break-words type-heading text-foreground">
-                                    {item.headline}
-                                  </span>
-                                </div>
-                                {item.doors ? (
-                                  <div className="break-words type-secondary text-muted-foreground">
-                                    {item.doors}
-                                  </div>
-                                ) : null}
-                                <p className="break-words type-secondary text-muted-foreground">
-                                  {item.acceptEffect}
-                                  {item.proposedBy
-                                    ? ` · proposed by ${item.proposedBy}`
-                                    : ""}
-                                  {item.proposedAt
-                                    ? ` · ${new Date(item.proposedAt).toLocaleDateString()}`
-                                    : ""}
-                                </p>
-                                <p className="break-words type-meta">
-                                  <ModeLine item={item} />
-                                </p>
-                                {/* Not yours to approve — but never hidden, and
-                                    never a disabled control with no reason
-                                    (THE NO-SILENT-FAILURE LAW). */}
-                                {item.blocked ? (
-                                  <p className="break-words type-meta text-warning">
-                                    {item.blocked.reason} {item.blocked.whoCan}
-                                  </p>
-                                ) : null}
-                                {/* An approve is running on the server RIGHT NOW
-                                    (`receipt.state === "applying"`). No decision
-                                    controls: a second Approve does nothing and a
-                                    Reject cannot call a write back. */}
-                                {item.inFlight ? (
-                                  <p className="break-words type-meta text-muted-foreground">
-                                    {item.inFlight.sentence}
-                                  </p>
-                                ) : null}
-                                {/* 🚨 THE LAST APPROVE FAILED AND THE CHANGE WAS
-                                    NOT MADE (`receipt.state === "failed"`). The
-                                    screen used to say the opposite, in words:
-                                    "the change was made by that first approval"
-                                    (round-2 verification § A-iii). */}
-                                {item.lastAttempt?.state === "failed" ? (
-                                  <p className="break-words type-meta font-medium text-destructive">
-                                    {item.lastAttempt.sentence}
-                                    <ErrorAlchemyMenu />
-                                  </p>
-                                ) : null}
-                                {/* 🚨 THE WRITE REACHED GOOGLE AND THE ANSWER
-                                    WAS LOST (`receipt.state ===
-                                    "applied_unconfirmed"`, aidream lane B-10
-                                    § A-N1). The server's own sentence, verbatim,
-                                    and no retry anywhere on the row: an append
-                                    is not idempotent, so "Try again" here is a
-                                    second block in the person's document. */}
-                                {item.lastAttempt?.state ===
-                                "applied_unconfirmed" ? (
-                                  <p className="break-words type-meta font-medium text-warning">
-                                    {item.lastAttempt.sentence}
-                                  </p>
-                                ) : null}
-                                {/* 🚨 SOMETHING IS WAITING AND THIS BUILD CANNOT
-                                    SHOW IT. The page read used to subtract this
-                                    row from its own total, so the screen said
-                                    "Nothing is waiting on you" over it and only
-                                    the console disagreed (§ A-N6). */}
-                                {item.unreadable ? (
-                                  <p className="break-words type-meta font-medium text-warning">
-                                    {item.unreadable.sentence}
-                                  </p>
-                                ) : null}
-                                {/* 🚨 THE LAST ATTEMPT IS IN A STATE THIS BUILD
-                                    HAS NEVER HEARD OF (round-4 verification
-                                    § V14-4). aidream can add a receipt state at
-                                    any release; before this, such a row rendered
-                                    as an ordinary waiting row with a live
-                                    Approve on every kind. It now names the state
-                                    and offers nothing — honest, never dead. */}
-                                {item.unknownState ? (
-                                  <p className="break-words type-meta font-medium text-warning">
-                                    {item.unknownState.sentence}
-                                  </p>
-                                ) : null}
-                                {/* 🚨 PAST THE ORGANIZATION'S REVIEW WINDOW. The
-                                    apply door refuses this row with 403 carrying
-                                    this sentence; until 2026-09-17 the screen
-                                    could not say so until after the click
-                                    (§ A-N7). */}
-                                {item.expired ? (
-                                  <p className="break-words type-meta font-medium text-warning">
-                                    {item.expired.sentence}
-                                  </p>
-                                ) : null}
-                              </div>
-                              {/* Phones: the decisions drop to their own full-width
-                                  row of 40px targets under the text, instead of a
-                                  squeezed 24px column beside it. */}
-                              <div className="flex shrink-0 items-center gap-1 max-md:w-full max-md:justify-end max-md:pl-6">
-                                {noDecisionControls(item) ? null : (
-                                  <>
-                                    {item.individualReview ||
-                                    item.blocked ||
-                                    item.expired ? null : (
-                                      <Button
-                                        variant="quiet"
-                                        disabled={busy}
-                                        onClick={() => begin("accept", [item])}
-                                      >
-                                        {/* After a failed apply the same door IS
-                                            the retry, and the label says so —
-                                            "Approve" again would read as a
-                                            decision nobody has to make twice. */}
-                                        {item.lastAttempt?.state === "failed"
-                                          ? "Try again"
-                                          : section.kind.accept.label}
-                                      </Button>
-                                    )}
-                                    <Button
-                                      variant="quiet"
-                                      disabled={busy}
-                                      onClick={() => begin("reject", [item])}
-                                    >
-                                      {section.kind.reject.label}
-                                    </Button>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                            {item.body ? (
-                              <div className="mt-1 pl-6 max-md:pl-0">
-                                {item.body}
-                              </div>
-                            ) : null}
-                            {/* 🚨 A ROW THAT CANNOT BE ACTED ON MOUNTS NO KIND'S
-                                ACTION EITHER (Bugbot round 11, frontend PR 228).
-                                `expired` dropped the generic Approve — but Gmail
-                                never uses that button: its Send lives inside
-                                `individualReview`, which kept mounting, so an
-                                expired draft stayed sendable until the door
-                                returned 403. The gate belongs HERE, once, for
-                                every kind: the queue already knows the four
-                                states in which no control may be live, and a new
-                                kind inherits the rule instead of remembering it.
-                                Each state prints its own sentence above, so the
-                                row still says why. */}
-                            {item.individualReview && !noLiveAction(item) ? (
-                              <div className="mt-1 pl-6 max-md:pl-0">
-                                {item.individualReview}
-                              </div>
-                            ) : null}
-                          </li>
-                        ))}
-                      </ul>
-                    </section>
-                  ))}
-              </div>
+              <ApprovalTable
+                tableId={tableId ?? `approvals.${(kinds ?? ["all"]).join("+")}.${scope.key}`}
+                sections={sections}
+                selectable={selectable}
+                selectedKeys={selected}
+                onSelectedKeysChange={setSelected}
+                busy={busy}
+                batchRejectNeedsOneKind={batchRejectNeedsOneKind}
+                focusedKey={focusedKey}
+                onDecide={begin}
+              />
             </div>
           ) : null}
 
