@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0513",
-  "version": 2,
+  "version": 3,
   "title": "Barbershop HQ",
   "description": "Manage barbers, walk-ins and bookings, chair rent or commission, and payments.",
   "forWho": "Barbershops and grooming studios",
@@ -2142,7 +2142,7 @@
         "Tannery Square"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0306",
-  "version": 5,
+  "version": 6,
   "title": "Agency OS",
   "description": "Small agencies: clients, retainers, projects, capacity and proposals in one place.",
   "forWho": "Small design, marketing and dev agencies",
@@ -2734,7 +2734,7 @@
         "Ketterick Wharf"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

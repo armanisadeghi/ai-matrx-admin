@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0104",
-  "version": 5,
+  "version": 6,
   "title": "Bug Tracker",
   "description": "Engineering and support teams: report, triage and fix bugs by severity on a board.",
   "forWho": "Engineering and support teams",
@@ -1314,7 +1314,7 @@
         "Tamarack Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
