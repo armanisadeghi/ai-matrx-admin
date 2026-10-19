@@ -11,6 +11,7 @@
  *   M1  a partial refund keeps the payment paid and says "Partially refunded 10.00 USD"; the rest makes it Refunded
  *   M3  an amount from a question the public form asks is refused at save
  *   M3p an amount from a field a portal client can change is refused at save (and accepted when read-only)
+ *   M3pf an amount from a question a form on her portal asks is refused at save (and accepted off the portal)
  *   I2  a second pending payment for the same record is refused (23505) — one live session per record
  *
  *   pnpm check:payment-settle-rules
@@ -43,9 +44,12 @@ const PORTAL_TABLE_ROW = "1c8c1fcf-6d9e-4eaf-bbb8-43f5a396b1d2";
 const PRICE_TABLE = "f282a7f1-4fab-4741-84fb-fee1304025c1";
 
 /** As the admin, inside the scenario's rolled-back transaction: an open portal shows PRICE_TABLE with `editable`. */
-async function portalEdits(db: pg.Client, editable: string[]): Promise<string> {
+async function portalEdits(db: pg.Client, editable: string[], opts: { forms?: string[]; field?: string } = {}): Promise<string> {
   await db.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ sub: ADMIN, role: "authenticated" })]);
-  await db.query("update custom.portal set archived_at = null where id = (select portal_id from custom.portal_table where id = $1)", [PORTAL_TABLE_ROW]);
+  await db.query(
+    "update custom.portal set archived_at = null, config = jsonb_set(coalesce(config, '{}'::jsonb), '{forms}', $2::jsonb) where id = (select portal_id from custom.portal_table where id = $1)",
+    [PORTAL_TABLE_ROW, JSON.stringify((opts.forms ?? []).map((form_id, i) => ({ order: i + 1, form_id })))],
+  );
   const { rowCount } = await db.query(
     "update custom.portal_table set table_id = $2, editable_field_keys = $3::jsonb where id = $1",
     [PORTAL_TABLE_ROW, PRICE_TABLE, JSON.stringify(editable)],
@@ -54,7 +58,7 @@ async function portalEdits(db: pg.Client, editable: string[]): Promise<string> {
   await db.query("savepoint m3p");
   try {
     await db.query("select billing.payment_ask_set($1, 'table', $2, $3::jsonb)", [
-      ORG, PRICE_TABLE, JSON.stringify({ enabled: false, amount_mode: "field", amount_field: "value", currency: "usd" }),
+      ORG, PRICE_TABLE, JSON.stringify({ enabled: false, amount_mode: "field", amount_field: opts.field ?? "value", currency: "usd" }),
     ]);
     return "accepted";
   } catch (thrown) {
@@ -170,6 +174,17 @@ const SCENARIOS: Scenario[] = [
     name: "M3p an amount taken from a field a portal client can change is refused at save",
     run: (db) => portalEdits(db, ["value"]),
     expect: "refused",
+  },
+  {
+    name: "M3pf an amount taken from a question a portal form asks is refused at save",
+    // The Ashford Labs form asks "usage_note" and writes into PRICE_TABLE; here the portal carries it.
+    run: (db) => portalEdits(db, [], { forms: ["15c126ea-f561-4c7c-98ed-925a517612cd"], field: "usage_note" }),
+    expect: "refused",
+  },
+  {
+    name: "M3pf-ok the same field with the form off the portal is accepted",
+    run: (db) => portalEdits(db, [], { forms: [], field: "usage_note" }),
+    expect: "accepted",
   },
   {
     name: "M3p-ok the same amount field, read-only on the portal, is accepted",
