@@ -13,8 +13,8 @@
 
 import { useEffect, useMemo } from "react";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { useAppStore } from "@/lib/redux/hooks";
-import type { AppStore } from "@/lib/redux/store";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import type { AppDispatch } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 
@@ -83,7 +83,7 @@ export interface FeedbackWindowHandle {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createFeedbackWindowOpener(store: Pick<AppStore, "dispatch">) {
+export function createFeedbackWindowOpener(store: { dispatch: AppDispatch }) {
   const dispatch = store.dispatch;
   return (opts: OpenFeedbackWindowOptions = {}): FeedbackWindowHandle => {
     dispatch(
@@ -102,8 +102,8 @@ export function createFeedbackWindowOpener(store: Pick<AppStore, "dispatch">) {
 }
 
 export function useOpenFeedbackWindow() {
-  const store = useAppStore();
-  return useMemo(() => createFeedbackWindowOpener(store), [store]);
+  const dispatch = useAppDispatch();
+  return useMemo(() => createFeedbackWindowOpener({ dispatch }), [dispatch]);
 }
 
 /**

@@ -14,8 +14,8 @@
  */
 
 import { useMemo } from "react";
-import { useAppStore } from "@/lib/redux/hooks";
-import type { AppStore } from "@/lib/redux/store";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import type { AppDispatch } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import { createKnowledgeCommandBarCallbackGroup } from "./callbacks/knowledgeCommandBar";
 import type { KnowledgeAttachTarget } from "@/features/knowledge/command-bar/attachTarget";
@@ -46,7 +46,7 @@ export interface KnowledgeCommandBarHandle {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createKnowledgeCommandBarOpener(store: Pick<AppStore, "dispatch">) {
+export function createKnowledgeCommandBarOpener(store: { dispatch: AppDispatch }) {
   const dispatch = store.dispatch;
   return (opts: OpenKnowledgeCommandBarOptions = {}): KnowledgeCommandBarHandle => {
     const needsGroup = Boolean(opts.attach || opts.commands?.length);
@@ -69,8 +69,8 @@ export function createKnowledgeCommandBarOpener(store: Pick<AppStore, "dispatch"
 }
 
 export function useOpenKnowledgeCommandBar() {
-  const store = useAppStore();
-  return useMemo(() => createKnowledgeCommandBarOpener(store), [store]);
+  const dispatch = useAppDispatch();
+  return useMemo(() => createKnowledgeCommandBarOpener({ dispatch }), [dispatch]);
 }
 
 export type KnowledgeCommandBarDefinitionData = OpenKnowledgeCommandBarOptions;

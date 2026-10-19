@@ -21,7 +21,7 @@ import { createRoot } from "react-dom/client";
 
 const connectOpens: { reason?: string; initialConnectionId?: string }[] = [];
 jest.mock("@/features/overlays/definitions/googleConnectWindow.overlay", () => ({
-  useOpenGoogleConnectWindow: () => (options?: {
+  createGoogleConnectWindowOpener: () => (options?: {
     reason?: string;
     initialConnectionId?: string;
   }) => {

@@ -44,7 +44,7 @@ jest.mock("@/features/marketing/google/service", () => ({
  * (`an-unavailable-event-offers-every-real-action.test.tsx`).
  */
 jest.mock("@/features/overlays/definitions/googleConnectWindow.overlay", () => ({
-  useOpenGoogleConnectWindow: () => () => ({ close: () => {} }),
+  createGoogleConnectWindowOpener: () => () => ({ close: () => {} }),
 }));
 
 jest.mock("@/lib/api/organization-context", () => ({

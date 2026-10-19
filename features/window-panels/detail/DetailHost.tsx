@@ -71,7 +71,6 @@ import {
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
-import { useOpenGoogleConnectWindow } from "@/features/overlays/definitions/googleConnectWindow.overlay";
 import { useOptionalCanvas } from "@ai-matrx/canvas/react";
 import { openCanvasItem } from "@/features/canvas/host/openCanvasItem";
 import { recordPeekOpenInput } from "./canvas/recordPeek";
@@ -79,6 +78,7 @@ import { useCloseDetailWindow, useOpenDetailWindow } from "@/features/overlays/d
 import { encodeListQuery } from "@ai-matrx/detail";
 import { resolvedListContextMax } from "./listContextCap";
 import { stashPageSeed } from "./pageSeedHandoff";
+import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 
 /**
  * THE CUSTOM-FIELDS SECTION LOADS WHEN A RECORD OPENS (2026-10-13, "every page drags ~18 MB").
@@ -316,7 +316,9 @@ export function DetailHost({ children }: { children: ReactNode }) {
   const openWindow = useOpenDetailWindow();
   const closeWindow = useCloseDetailWindow();
   const canvas = useOptionalCanvas();
-  const openGoogleConnect = useOpenGoogleConnectWindow();
+  const openGoogleConnect = useLazyAppOpener("googleConnectWindow", () =>
+    import("@/features/overlays/definitions/googleConnectWindow.overlay").then((m) => m.createGoogleConnectWindowOpener),
+  );
 
   const ports: Omit<DetailHostPorts, "shells" | "resolveType"> = {
     usePresentationSetting,

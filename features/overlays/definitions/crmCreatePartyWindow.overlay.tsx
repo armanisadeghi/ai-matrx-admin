@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { useAppStore } from "@/lib/redux/hooks";
-import type { AppStore } from "@/lib/redux/store";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import type { AppDispatch } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { PartyKind } from "@/features/crm/types";
 import type { OverlayWire } from "./overlay-types";
@@ -21,7 +21,7 @@ export interface CrmCreatePartyWindowHandle {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createCrmCreatePartyWindowOpener(store: Pick<AppStore, "dispatch">) {
+export function createCrmCreatePartyWindowOpener(store: { dispatch: AppDispatch }) {
   const dispatch = store.dispatch;
   return (
     options: OpenCrmCreatePartyWindowOptions = {},
@@ -43,8 +43,8 @@ export function createCrmCreatePartyWindowOpener(store: Pick<AppStore, "dispatch
 }
 
 export function useOpenCrmCreatePartyWindow() {
-  const store = useAppStore();
-  return useMemo(() => createCrmCreatePartyWindowOpener(store), [store]);
+  const dispatch = useAppDispatch();
+  return useMemo(() => createCrmCreatePartyWindowOpener({ dispatch }), [dispatch]);
 }
 
 export function CrmCreatePartyWindowController(

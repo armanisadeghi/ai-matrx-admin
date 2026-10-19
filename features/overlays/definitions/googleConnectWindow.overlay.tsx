@@ -10,8 +10,8 @@
  */
 
 import { useMemo } from "react";
-import { useAppStore } from "@/lib/redux/hooks";
-import type { AppStore } from "@/lib/redux/store";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import type { AppDispatch } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   createGoogleConnectCallbackGroup,
@@ -40,7 +40,7 @@ export interface GoogleConnectWindowHandle {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createGoogleConnectWindowOpener(store: Pick<AppStore, "dispatch">) {
+export function createGoogleConnectWindowOpener(store: { dispatch: AppDispatch }) {
   const dispatch = store.dispatch;
   return (options?: OpenGoogleConnectOptions): GoogleConnectWindowHandle => {
     const callbacks =
@@ -79,8 +79,8 @@ export function createGoogleConnectWindowOpener(store: Pick<AppStore, "dispatch"
 }
 
 export function useOpenGoogleConnectWindow() {
-  const store = useAppStore();
-  return useMemo(() => createGoogleConnectWindowOpener(store), [store]);
+  const dispatch = useAppDispatch();
+  return useMemo(() => createGoogleConnectWindowOpener({ dispatch }), [dispatch]);
 }
 
 export type GoogleConnectWindowDefinitionData = OpenGoogleConnectOptions;

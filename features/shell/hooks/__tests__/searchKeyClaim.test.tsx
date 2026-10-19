@@ -7,7 +7,7 @@ import { createRoot } from "react-dom/client";
 const openBar = jest.fn();
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => false }));
 jest.mock("@ai-matrx/summon", () => ({ selectIsOverlayOpen: () => false }));
-jest.mock("@/features/overlays/definitions/knowledgeCommandBar.overlay", () => ({ useOpenKnowledgeCommandBar: () => openBar }));
+jest.mock("@/features/overlays/definitions/knowledgeCommandBar.overlay", () => ({ createKnowledgeCommandBarOpener: () => openBar }));
 
 function render(el: React.ReactElement) {
   const host = document.createElement("div");
@@ -87,15 +87,19 @@ describe("route-owned Cmd+K / Cmd+P", () => {
     expect(isSearchKeyClaimed("k")).toBe(false);
   });
 
-  it("the global Cmd+K opens the bar, unless a route claimed it", () => {
+  it("the global Cmd+K opens the bar, unless a route claimed it", async () => {
+    // The bar's opener module loads on the first press (useLazyAppOpener); let that import settle.
+    const settle = () => act(async () => { for (let i = 0; i < 10; i += 1) await Promise.resolve(); });
     const bar = render(<CommandBarHotkey />);
     openBar.mockClear();
     press("k");
+    await settle();
     expect(openBar).toHaveBeenCalledTimes(1);
 
     openBar.mockClear();
     const claim = render(<Claimer onKey={() => {}} />);
     press("k");
+    await settle();
     expect(openBar).not.toHaveBeenCalled();
     claim.unmount();
 
