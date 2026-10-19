@@ -1,0 +1,49 @@
+-- READ-SPEED-4 guard d: EVERY ACCESS-CHANGING DOOR MOVES THE ACCESS VERSION (chair ruling R2').
+-- The kept reader judgement (custom.computed_reader_judgement) is honoured only while custom._access_versions is unchanged,
+-- so a write to any table that decides who sees what must move it. For each access table: a statement that writes
+-- (a DELETE matching nothing still fires statement triggers) must raise the platform version; a Field change must raise
+-- the organization's. Run inside a transaction that is rolled back. RED before READ-SPEED-4 b, GREEN after.
+DO $guard$
+declare
+  t text;
+  v0 bigint; v1 bigint;
+  v_bad text[] := '{}';
+  v_org uuid;
+begin
+  foreach t in array array['iam.permissions', 'platform.entity_grants', 'iam.memberships', 'iam.membership_grant', 'iam.team',
+                           'platform.share_links', 'custom.portal', 'custom.portal_principal', 'custom.portal_table',
+                           'iam.access_setup', 'custom.carrying_rule', 'platform.knob_override', 'platform.entity_relationships',
+                           'platform.associations'] loop
+    begin
+      select coalesce((select version from custom.access_version where organization_id = '00000000-0000-0000-0000-000000000000'), 1) into v0;
+      execute format('delete from %s where false', t);
+      select coalesce((select version from custom.access_version where organization_id = '00000000-0000-0000-0000-000000000000'), 1) into v1;
+      if t <> 'platform.associations' and v1 <= v0 then
+        v_bad := v_bad || t;
+      end if;
+      raise exception using errcode = 'P0001', message = 'undo';
+    exception when sqlstate 'P0001' then
+      null;
+    end;
+  end loop;
+  -- a Field's change (a mask, a column) moves its organization's version
+  select f.organization_id into v_org from custom.record f
+   where f.table_id = custom.field_kernel_id() and f.deleted_at is null limit 1;
+  begin
+    select coalesce((select version from custom.access_version where organization_id = v_org), 1) into v0;
+    update custom.record f set data = f.data || jsonb_build_object('guard_d_probe', true)
+     where f.id = (select id from custom.record where table_id = custom.field_kernel_id() and organization_id = v_org and deleted_at is null limit 1);
+    select coalesce((select version from custom.access_version where organization_id = v_org), 1) into v1;
+    if v1 <= v0 then
+      v_bad := v_bad || 'custom.record (Field)'::text;
+    end if;
+    raise exception using errcode = 'P0001', message = 'undo';
+  exception when sqlstate 'P0001' then
+    null;
+  end;
+  if cardinality(v_bad) > 0 then
+    raise exception 'RED: these access doors do not move the access version: %', array_to_string(v_bad, ', ');
+  end if;
+  raise notice 'GREEN: every access door moves the access version';
+end
+$guard$;

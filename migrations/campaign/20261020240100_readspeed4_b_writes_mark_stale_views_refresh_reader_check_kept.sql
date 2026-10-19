@@ -330,40 +330,30 @@ declare
   c record;
   v_kernel uuid[];
 begin
-  -- a changed column, Table, relation or rule: the whole organization's kept values are stale
-  if tg_op = 'DELETE' then
-    select coalesce(array_agg(distinct o.organization_id), '{}') into v_kernel from old_rows o
-     where o.data_class is distinct from 'record' or o.table_id in (custom.field_kernel_id(), custom.table_kernel_id(), custom.rule_kernel_id(), custom.merge_field_kernel_id());
-  else
+  -- Each branch names only the transition tables its operation has (an INSERT has no old_rows, a DELETE no new_rows).
+  -- A changed column, Table, relation or rule: the whole organization's kept values are stale, and who sees what may
+  -- have moved (masks, confidentiality, archive of a Table).
+  if tg_op = 'INSERT' then
+    select coalesce(array_agg(distinct n.organization_id), '{}') into v_kernel from new_rows n
+     where n.data_class is distinct from 'record' or n.table_id in (custom.field_kernel_id(), custom.table_kernel_id(), custom.rule_kernel_id(), custom.merge_field_kernel_id());
+  elsif tg_op = 'UPDATE' then
     select coalesce(array_agg(distinct n.organization_id), '{}') into v_kernel from new_rows n
      where (n.data_class is distinct from 'record' or n.table_id in (custom.field_kernel_id(), custom.table_kernel_id(), custom.rule_kernel_id(), custom.merge_field_kernel_id()))
-       and (tg_op = 'INSERT' or exists (select 1 from old_rows o where o.id = n.id and o.organization_id = n.organization_id
-                                          and (o.data is distinct from n.data or o.deleted_at is distinct from n.deleted_at)));
+       and exists (select 1 from old_rows o where o.id = n.id and o.organization_id = n.organization_id
+                    and (o.data is distinct from n.data or o.deleted_at is distinct from n.deleted_at));
+  else
+    select coalesce(array_agg(distinct o.organization_id), '{}') into v_kernel from old_rows o
+     where o.data_class is distinct from 'record' or o.table_id in (custom.field_kernel_id(), custom.table_kernel_id(), custom.rule_kernel_id(), custom.merge_field_kernel_id());
   end if;
   for c in select unnest(v_kernel) org loop
     perform custom._computed_mark_org(c.org);
     perform custom._access_version_bump(c.org);
   end loop;
-  -- who may see what moved: an archive or restore (one bump per organization per transaction)
-  if tg_op = 'UPDATE' then
-    for c in select distinct n.organization_id org from new_rows n join old_rows o on o.id = n.id and o.organization_id = n.organization_id
-              where o.deleted_at is distinct from n.deleted_at loop
-      perform custom._access_version_bump(c.org);
-    end loop;
-  end if;
 
-  for c in
-    with ch as (
-      select n.organization_id org, n.id, n.data nd, null::jsonb od from new_rows n
-       where tg_op = 'INSERT' and n.data_class = 'record'
-      union all
-      select n.organization_id, n.id, n.data, o.data from new_rows n join old_rows o on o.id = n.id and o.organization_id = n.organization_id
-       where tg_op = 'UPDATE' and (n.data_class = 'record' or o.data_class = 'record')
-         and (o.data is distinct from n.data or o.deleted_at is distinct from n.deleted_at or o.table_id is distinct from n.table_id)
-      union all
-      select o.organization_id, o.id, null, o.data from old_rows o where tg_op = 'DELETE' and o.data_class = 'record')
-    select ch.org,
-           array_agg(distinct ch.id) || coalesce((
+  if tg_op = 'INSERT' then
+    for c in
+      with ch as (select n.organization_id org, n.id, n.data nd, null::jsonb od from new_rows n where n.data_class = 'record')
+      select ch.org, array_agg(distinct ch.id) || coalesce((
              select array_agg(distinct (x #>> '{}')::uuid)
                from ch c2
                cross join lateral jsonb_each(coalesce(c2.nd, '{}') || coalesce(c2.od, '{}')) kv
@@ -372,14 +362,51 @@ begin
                                                            else '[]'::jsonb end) x
               where c2.org = ch.org
                 and jsonb_typeof(x) = 'string'
-                and (x #>> '{}') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'), '{}') ids,
-           case when tg_op = 'DELETE' then array_agg(distinct ch.id) else '{}'::uuid[] end gone
-      from ch
-     where not (ch.org = any (v_kernel))
-     group by ch.org
-  loop
-    perform custom._computed_mark(c.org, c.ids, c.gone);
-  end loop;
+                and (x #>> '{}') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'), '{}') ids, '{}'::uuid[] gone
+        from ch where not (ch.org = any (v_kernel)) group by ch.org
+    loop
+      perform custom._computed_mark(c.org, c.ids, c.gone);
+    end loop;
+  elsif tg_op = 'UPDATE' then
+    -- an archive or restore moves who sees what (one bump per organization per transaction)
+    for c in select distinct n.organization_id org from new_rows n join old_rows o on o.id = n.id and o.organization_id = n.organization_id
+              where o.deleted_at is distinct from n.deleted_at loop
+      perform custom._access_version_bump(c.org);
+    end loop;
+    for c in
+      with ch as (select n.organization_id org, n.id, n.data nd, o.data od from new_rows n join old_rows o on o.id = n.id and o.organization_id = n.organization_id where (n.data_class = 'record' or o.data_class = 'record') and (o.data is distinct from n.data or o.deleted_at is distinct from n.deleted_at or o.table_id is distinct from n.table_id))
+      select ch.org, array_agg(distinct ch.id) || coalesce((
+             select array_agg(distinct (x #>> '{}')::uuid)
+               from ch c2
+               cross join lateral jsonb_each(coalesce(c2.nd, '{}') || coalesce(c2.od, '{}')) kv
+               cross join lateral jsonb_array_elements(case when jsonb_typeof(kv.value) = 'array' then kv.value
+                                                           when jsonb_typeof(kv.value) = 'string' then jsonb_build_array(kv.value)
+                                                           else '[]'::jsonb end) x
+              where c2.org = ch.org
+                and jsonb_typeof(x) = 'string'
+                and (x #>> '{}') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'), '{}') ids, '{}'::uuid[] gone
+        from ch where not (ch.org = any (v_kernel)) group by ch.org
+    loop
+      perform custom._computed_mark(c.org, c.ids, c.gone);
+    end loop;
+  else
+    for c in
+      with ch as (select o.organization_id org, o.id, null::jsonb nd, o.data od from old_rows o where o.data_class = 'record')
+      select ch.org, array_agg(distinct ch.id) || coalesce((
+             select array_agg(distinct (x #>> '{}')::uuid)
+               from ch c2
+               cross join lateral jsonb_each(coalesce(c2.nd, '{}') || coalesce(c2.od, '{}')) kv
+               cross join lateral jsonb_array_elements(case when jsonb_typeof(kv.value) = 'array' then kv.value
+                                                           when jsonb_typeof(kv.value) = 'string' then jsonb_build_array(kv.value)
+                                                           else '[]'::jsonb end) x
+              where c2.org = ch.org
+                and jsonb_typeof(x) = 'string'
+                and (x #>> '{}') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'), '{}') ids, array_agg(distinct ch.id) gone
+        from ch where not (ch.org = any (v_kernel)) group by ch.org
+    loop
+      perform custom._computed_mark(c.org, c.ids, c.gone);
+    end loop;
+  end if;
   return null;
 end;
 $function$;
@@ -394,26 +421,33 @@ CREATE FUNCTION custom._computed_assoc_stmt()
 AS $function$
 declare c record;
 begin
-  for c in
-    select x.org, array_agg(distinct x.id) ids from (
-      select n.organization_id org, n.source_id id from new_rows n where tg_op <> 'DELETE' and n.target_type = 'record'
-      union all select n.organization_id, n.target_id from new_rows n where tg_op <> 'DELETE' and n.target_type = 'record'
-      union all select o.organization_id, o.source_id from old_rows o where tg_op <> 'INSERT' and o.target_type = 'record'
-      union all select o.organization_id, o.target_id from old_rows o where tg_op <> 'INSERT' and o.target_type = 'record') x
-     where x.org is not null and x.id is not null
-     group by x.org
-  loop
-    perform custom._computed_mark(c.org, c.ids);
-  end loop;
-  -- an edge in a carrying role changes who sees what
-  for c in
-    select distinct x.org from (
-      select n.organization_id org, n.role from new_rows n where tg_op <> 'DELETE'
-      union all select o.organization_id, o.role from old_rows o where tg_op <> 'INSERT') x
-     where x.org is not null and exists (select 1 from custom.carrying_rule cr where cr.is_active and cr.role = x.role)
-  loop
-    perform custom._access_version_bump(c.org);
-  end loop;
+  -- An edge written on its own marks both ends stale; an edge in a carrying role moves who sees what.
+  -- Each branch names only the transition tables its operation has.
+  if tg_op = 'INSERT' then
+    for c in select x.org, array_agg(distinct x.id) ids from (select n.organization_id org, n.source_id id, n.role from new_rows n where n.target_type = 'record' union all select n.organization_id, n.target_id, n.role from new_rows n where n.target_type = 'record' union all select n.organization_id, null, n.role from new_rows n) x where x.org is not null and x.id is not null group by x.org loop
+      perform custom._computed_mark(c.org, c.ids);
+    end loop;
+    for c in select distinct x.org from (select n.organization_id org, n.source_id id, n.role from new_rows n where n.target_type = 'record' union all select n.organization_id, n.target_id, n.role from new_rows n where n.target_type = 'record' union all select n.organization_id, null, n.role from new_rows n) x
+              where x.org is not null and exists (select 1 from custom.carrying_rule cr where cr.is_active and cr.role = x.role) loop
+      perform custom._access_version_bump(c.org);
+    end loop;
+  elsif tg_op = 'UPDATE' then
+    for c in select x.org, array_agg(distinct x.id) ids from (select n.organization_id org, n.source_id id, n.role from new_rows n where n.target_type = 'record' union all select n.organization_id, n.target_id, n.role from new_rows n where n.target_type = 'record' union all select n.organization_id, null, n.role from new_rows n union all select o.organization_id org, o.source_id id, o.role from old_rows o where o.target_type = 'record' union all select o.organization_id, o.target_id, o.role from old_rows o where o.target_type = 'record' union all select o.organization_id, null, o.role from old_rows o) x where x.org is not null and x.id is not null group by x.org loop
+      perform custom._computed_mark(c.org, c.ids);
+    end loop;
+    for c in select distinct x.org from (select n.organization_id org, n.source_id id, n.role from new_rows n where n.target_type = 'record' union all select n.organization_id, n.target_id, n.role from new_rows n where n.target_type = 'record' union all select n.organization_id, null, n.role from new_rows n union all select o.organization_id org, o.source_id id, o.role from old_rows o where o.target_type = 'record' union all select o.organization_id, o.target_id, o.role from old_rows o where o.target_type = 'record' union all select o.organization_id, null, o.role from old_rows o) x
+              where x.org is not null and exists (select 1 from custom.carrying_rule cr where cr.is_active and cr.role = x.role) loop
+      perform custom._access_version_bump(c.org);
+    end loop;
+  else
+    for c in select x.org, array_agg(distinct x.id) ids from (select o.organization_id org, o.source_id id, o.role from old_rows o where o.target_type = 'record' union all select o.organization_id, o.target_id, o.role from old_rows o where o.target_type = 'record' union all select o.organization_id, null, o.role from old_rows o) x where x.org is not null and x.id is not null group by x.org loop
+      perform custom._computed_mark(c.org, c.ids);
+    end loop;
+    for c in select distinct x.org from (select o.organization_id org, o.source_id id, o.role from old_rows o where o.target_type = 'record' union all select o.organization_id, o.target_id, o.role from old_rows o where o.target_type = 'record' union all select o.organization_id, null, o.role from old_rows o) x
+              where x.org is not null and exists (select 1 from custom.carrying_rule cr where cr.is_active and cr.role = x.role) loop
+      perform custom._access_version_bump(c.org);
+    end loop;
+  end if;
   return null;
 end;
 $function$;
