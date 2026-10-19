@@ -72,11 +72,20 @@ const FLOW_BUTTONS: Array<[string, (tableId: string) => Step]> = [
   ["Post in Slack", () => ({ do: "slack_post", channel: "", message: "" })],
 ];
 
-function scriptInputs(lines: string): Record<string, string> {
+/**
+ * A property reference in a script input is `{{<property id or name>}}`. `{{record.x}}` / `{{trigger.record.x}}` are not
+ * references the run resolves (the script would get the literal text), so a person who types one is written the working
+ * form (AT-FIX-F).
+ */
+export function workingToken(value: string): string {
+  return value.replace(/\{\{\s*(?:trigger\.)?record\.([^{}]+?)\s*\}\}/g, "{{$1}}");
+}
+
+export function scriptInputs(lines: string): Record<string, string> {
   const out: Record<string, string> = {};
   for (const line of lines.split("\n")) {
     const at = line.indexOf("=");
-    if (at > 0) out[line.slice(0, at).trim()] = line.slice(at + 1).trim();
+    if (at > 0) out[line.slice(0, at).trim()] = workingToken(line.slice(at + 1).trim());
   }
   return out;
 }
@@ -939,7 +948,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
                 <div className="flex w-full flex-col gap-1" data-testid="spaces-automation-script">
                   <span className="type-secondary">Run a script</span>
                   <textarea aria-label="Script" className="min-h-24 w-full rounded border border-border bg-background p-1 font-mono text-xs" placeholder={'output.set("discount", input.total > 500 ? 5 : 0);'} value={d.code} onChange={(e) => put(i, { code: e.target.value })} />
-                  <textarea aria-label="Script inputs" className="min-h-10 w-full rounded border border-border bg-background p-1 font-mono text-xs" placeholder="total = {{trigger.body.total}}" value={d.inputs} onChange={(e) => put(i, { inputs: e.target.value })} />
+                  <textarea aria-label="Script inputs" className="min-h-10 w-full rounded border border-border bg-background p-1 font-mono text-xs" placeholder="total = {{Total}}" value={d.inputs} onChange={(e) => put(i, { inputs: e.target.value })} />
                 </div>
               ) : d.kind === "flow" ? (
                 <div className="w-full">

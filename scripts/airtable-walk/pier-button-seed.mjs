@@ -9,5 +9,5 @@ const fields = must(await client.fields({ table_id: t }), "fields");
 const go = fields.find((f) => f.key === "go").id;
 const rent = fields.find((f) => f.key === "rent").id;
 must(await client.recordWrite({ table_id: t, data: { unit: "1A", rent: 1800 } }), "row");
-must(await client.automationDeclare({ table_id: t, spec: { name: "Score rent", trigger: { on: "button_pressed", field: go }, actions: [{ do: "script", inputs: { rent: `{{record.${rent}}}` }, code: 'output.set("tier", input.rent > 1500 ? "Premium unit" : "Standard unit"); output.set("rent", input.rent);' }] } }), "declare");
+must(await client.automationDeclare({ table_id: t, spec: { name: "Score rent", trigger: { on: "button_pressed", field: go }, actions: [{ do: "script", inputs: { rent: `{{${rent}}}` }, code: 'output.set("tier", input.rent > 1500 ? "Premium unit" : "Standard unit"); output.set("rent", input.rent);' }] } }), "declare");
 console.log("TABLE", t);
