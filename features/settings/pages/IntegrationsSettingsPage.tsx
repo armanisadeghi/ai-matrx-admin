@@ -125,6 +125,10 @@ import type { MicrosoftConnection } from "@/features/microsoft-integration/types
 import { listStorageConnections } from "@/features/storage-connections/service";
 import type { StorageConnection } from "@/features/storage-connections/types";
 import { IntegrationDirectory } from "@/features/connectors/IntegrationDirectory";
+import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
+import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
+import { AbilitySections } from "@/features/connectors/AbilitySections";
+import { foldAbilities } from "@/features/connectors/provider-folds";
 import { useSettingsTabNavigate } from "@/features/settings/components/SettingsPresentationContext";
 import {
   DEFAULT_DIRECTORY_FILTERS,
@@ -591,7 +595,7 @@ export function IntegrationsWorkspace({
     ...summary,
     sharedBy: id === "google" ? googleSharedBy : undefined,
   });
-  const items: IntegrationDirectoryItem[] = [
+  const baseItems: IntegrationDirectoryItem[] = [
     nativeItem(
       "x",
       "X",
@@ -810,7 +814,6 @@ export function IntegrationsWorkspace({
       ),
     ),
     ...catalog
-      .filter((entry) => entry.slug !== "github")
       .map((entry): IntegrationDirectoryItem => {
         const presentation = catalogPresentation(entry);
         const saved = Boolean(entry.connectionId);
@@ -866,6 +869,7 @@ export function IntegrationsWorkspace({
         };
       }),
   ];
+  const items = foldAbilities(baseItems);
   const visible = filterDirectory(items, filters);
   const catalogLoading = status === "idle" || status === "loading";
   const loading =
@@ -1055,12 +1059,22 @@ export function IntegrationsWorkspace({
     }
   };
 
-  const renderDetail = (item: IntegrationDirectoryItem) => {
+  const renderDetail = (item: IntegrationDirectoryItem) =>
+    item.abilities?.length ? (
+      <AbilitySections
+        item={item}
+        renderAbility={(ability) => renderOwnDetail(ability.item, ability.label)}
+        renderOwn={() => renderOwnDetail({ ...item, abilities: undefined })}
+      />
+    ) : (
+      renderOwnDetail(item)
+    );
+  const renderOwnDetail = (item: IntegrationDirectoryItem, label?: string) => {
     const entry = item.server;
     if (entry)
       return (
         <ServerCard
-          entry={entry}
+          entry={label ? { ...entry, name: label, vendor: item.name } : entry}
           connectionPresentation={catalogPresentation(entry)}
           isExpanded
           onToggleExpand={() => selectDetail(null)}
@@ -1241,6 +1255,8 @@ function ServerCard({
     entry.authStrategy === "bearer" || entry.authStrategy === "api_key";
   const noAuth = entry.authStrategy === "none";
 
+  const showDeveloperDetail =
+    useAppSelector(selectIsAdminDebugger) && useAppSelector(selectIsDebugMode);
   const transport = TRANSPORT_META[entry.transport] ?? TRANSPORT_META.http;
   const connectionStatus =
     connectionPresentation.state &&
@@ -1711,22 +1727,31 @@ function ServerCard({
         {/* Expanded details */}
         {isExpanded && (
           <div className="mt-3 pt-3 border-t border-border space-y-2">
-            <DetailRow label="Transport" value={transport.label} />
-            <DetailRow
-              label="Auth"
-              value={AUTH_LABELS[entry.authStrategy] ?? entry.authStrategy}
-            />
-            {entry.endpointUrl && (
-              <DetailRow label="Endpoint" value={entry.endpointUrl} mono />
-            )}
-            {entry.hasLocal && entry.hasRemote && (
-              <DetailRow label="Availability" value="Remote + Local (stdio)" />
-            )}
-            {entry.hasLocal && !entry.hasRemote && (
-              <DetailRow label="Availability" value="Local only (stdio)" />
-            )}
-            {!entry.hasLocal && entry.hasRemote && (
-              <DetailRow label="Availability" value="Remote only" />
+            {showDeveloperDetail ? (
+              <>
+                <DetailRow label="Transport" value={transport.label} />
+                <DetailRow
+                  label="Auth"
+                  value={AUTH_LABELS[entry.authStrategy] ?? entry.authStrategy}
+                />
+                {entry.endpointUrl && (
+                  <DetailRow label="Endpoint" value={entry.endpointUrl} mono />
+                )}
+                {entry.hasLocal && entry.hasRemote && (
+                  <DetailRow label="Availability" value="Remote + Local (stdio)" />
+                )}
+                {entry.hasLocal && !entry.hasRemote && (
+                  <DetailRow label="Availability" value="Local only (stdio)" />
+                )}
+                {!entry.hasLocal && entry.hasRemote && (
+                  <DetailRow label="Availability" value="Remote only" />
+                )}
+              </>
+            ) : (
+              <DetailRow
+                label="Your agents"
+                value={isConnected ? "Can use this" : "Not connected yet"}
+              />
             )}
             {isConnected && entry.connectedAt && (
               <DetailRow
@@ -1734,7 +1759,7 @@ function ServerCard({
                 value={new Date(entry.connectedAt).toLocaleDateString()}
               />
             )}
-            {entry.tokenExpiresAt && (
+            {showDeveloperDetail && entry.tokenExpiresAt && (
               <DetailRow
                 label="Token expires"
                 value={new Date(entry.tokenExpiresAt).toLocaleString()}
@@ -1742,7 +1767,7 @@ function ServerCard({
             )}
 
             {/* Info for stdio-only */}
-            {isStdioOnly && (
+            {showDeveloperDetail && isStdioOnly && (
               <div className="flex items-start gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2.5 py-2 rounded-md mt-1">
                 <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                 <span>

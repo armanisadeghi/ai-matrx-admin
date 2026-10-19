@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The result of one Tool call, as its kind (the platform's one answer viewer), where the answer came from and — for builders — the raw data the agent would get. The call is a
+ * The result of one Tool call, as its kind (the platform's one answer viewer), where the answer came from and — for builders — (for an admin) the raw data the agent would get. The call is a
  * durable record: this panel only READS it, so a closed tab, a slow source or a refresh never loses
  * a paid answer. No price shows here: a result is work being done.
  */
@@ -14,6 +14,7 @@ import { ResultJson } from "@ai-matrx/chat/tool-call-visualization/result-fields
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AnswerValueView } from "@/components/official/structured-value/AnswerValueView";
+import { sourceLabel } from "./sourceNames";
 import { ToolResultTableBar } from "@/features/tool-result-tables/ToolResultTableBar";
 
 type Pane = "answer" | "raw";
@@ -29,7 +30,8 @@ export function ToolResult({
   onRunAgain,
   onCancel,
   onReopen,
-  showRaw = true,
+  jobFamily = null,
+  adminView = false,
 }: {
   view: ToolCallView | null;
   /** The call could not be sent or read at all (nothing reached the server). */
@@ -38,10 +40,13 @@ export function ToolResult({
   onCancel: () => void;
   /** Read the saved call again (after a lost connection). */
   onReopen?: () => void;
-  /** Builders see the raw data beside the answer; a marketer's look-up leaves it out. */
-  showRaw?: boolean;
+  /** The Tool's job family: names the source ("Matrx SEO") from the one mapping. */
+  jobFamily?: string | null;
+  /** The raw data is for an admin with the admin view on; a member never sees it. */
+  adminView?: boolean;
 }) {
   const [pane, setPane] = useState<Pane>("answer");
+  const showRaw = adminView;
 
   if (clientError && !view) {
     return (
@@ -174,7 +179,7 @@ export function ToolResult({
         ) : null}
         <span className="ml-auto flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground" data-tool-cost="">
           {view.cache !== "none" ? <Badge tone="neutral">Saved answer</Badge> : null}
-          {view.display_source ? <Badge tone="neutral">{view.display_source}</Badge> : null}
+          {view.display_source ? <Badge tone="neutral">{sourceLabel(view.display_source, jobFamily)}</Badge> : null}
         </span>
       </div>
       <div className="rounded-xl border border-border bg-card p-4">

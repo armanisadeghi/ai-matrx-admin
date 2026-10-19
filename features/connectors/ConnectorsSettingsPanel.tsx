@@ -158,6 +158,7 @@ function ProviderConnectorsPanel({
   const [cardConsent, setCardConsent] = useState<{
     accountId: string;
     productKeys: string[];
+    continuationProductKeys?: string[];
     press: number;
   } | null>(null);
   const [revokingId, setRevokingId] = useState<string | null>(null);
@@ -248,6 +249,15 @@ function ProviderConnectorsPanel({
         });
         return;
       }
+      const continuationProductKeys = plan.deferred.map((product) => product.key);
+      if (continuationProductKeys.length > 0) {
+        setCardConsent((previous) => ({
+          accountId: freshAccount.id,
+          productKeys: continuationProductKeys,
+          continuationProductKeys,
+          press: (previous?.press ?? 0) + 1,
+        }));
+      }
       const refused = consentOutcomes({
         provider,
         plan,
@@ -260,6 +270,10 @@ function ProviderConnectorsPanel({
           sentence: refused.map((outcome) => `${outcome.product.name}: ${outcome.message}`).join(" "),
           details: null,
         });
+        return;
+      }
+      if (continuationProductKeys.length > 0) {
+        toast.info("Continue with YouTube in the consent panel below.");
         return;
       }
       toast.success(verb === "Connect" ? "Connected." : "Reconnected.");
@@ -573,6 +587,7 @@ function ProviderConnectorsPanel({
           refetch={state.refetch}
           initialAccountId={cardConsent?.accountId ?? null}
           initialProductKeys={cardConsent?.productKeys}
+          initialContinuationProductKeys={cardConsent?.continuationProductKeys}
         />
       </section>
     </div>

@@ -39,6 +39,7 @@ import { toast } from "@/lib/toast";
 import { packageKnobClient } from "@/lib/knobs/packageKnobClient";
 import { supabase } from "@/utils/supabase/client";
 import { webVaultIdentity as identity, webVaultSignIn as signIn } from "../webVaultIdentity";
+import { useVaultInventory, VaultContextMenu } from "./VaultContextMenu";
 
 let sharedPort: VaultPort | null = null;
 /** One port per tab: it holds only the server client and caches, never a person's plaintext. */
@@ -52,6 +53,9 @@ function vaultPort(): VaultPort {
 }
 
 const openUrl = (url: string) => void openOutbound(url, "_blank", "noopener");
+/** "Open in new tab" for one item (the Authenticator's code rows): the item's own page. */
+const openItemInNewTab = (itemId: string) =>
+  void window.open(`/vault/${encodeURIComponent(itemId)}`, "_blank", "noopener");
 
 const notify: Notify = (message, kind) => {
   if (kind === "error") toast.error(message);
@@ -70,7 +74,9 @@ function useVaultHost(organizationId: string | null): VaultHostCapabilities {
     organizationId && userId
       ? createVaultKnobs(packageKnobClient(supabase), { organizationId, userId })
       : undefined;
-  return knobs ? { identity, openUrl, signIn, knobs } : { identity, openUrl, signIn };
+  return knobs
+    ? { identity, openUrl, openItemInNewTab, signIn, knobs }
+    : { identity, openUrl, openItemInNewTab, signIn };
 }
 
 export interface WebVaultProps {
@@ -90,22 +96,55 @@ export function WebVault({
 }: WebVaultProps) {
   const activeOrganizationId = useAppSelector(selectOrganizationId);
   const host = useVaultHost(organizationId ?? activeOrganizationId);
+  // The right-click menu and every agent opened here get the vault's non-secret shape.
+  const { inventory, onInventory, getSurfaceScope } = useVaultInventory();
   return (
-    <VaultApp
-      port={vaultPort()}
-      host={host}
-      layout={layout}
-      location={location}
-      onLocationChange={onLocationChange}
-      notify={notify}
-    />
+    <VaultContextMenu
+      inventory={inventory}
+      getSurfaceScope={getSurfaceScope}
+      onOpenItem={(id) =>
+        onLocationChange(
+          { ...location, itemId: id, mode: "view", kind: null, panel: null },
+          "push",
+        )
+      }
+    >
+      {/* A plain element for the menu's trigger to slot onto (VaultApp takes no DOM props). */}
+      <div className="h-full min-h-0 w-full">
+        <VaultApp
+          port={vaultPort()}
+          host={host}
+          layout={layout}
+          location={location}
+          onLocationChange={onLocationChange}
+          notify={notify}
+          onInventory={onInventory}
+        />
+      </div>
+    </VaultContextMenu>
   );
+}
+
+/** The Authenticator's own address: the workspace opened on its codes view. */
+export const AUTHENTICATOR_PATH = "/vault/authenticator";
+
+/** `/vault`, `/vault/<id>` or `/vault/authenticator` (+ query) → where the workspace is. */
+export function locationFromAddress(pathname: string | null, search: string): VaultLocation {
+  // `/vault/authenticator` is the Authenticator itself, never an item id.
+  const onAuthenticator = pathname === AUTHENTICATOR_PATH;
+  const pathItem = onAuthenticator
+    ? undefined
+    : /^\/vault\/([^/]+)$/.exec(pathname ?? "")?.[1];
+  const itemId = pathItem ? decodeURIComponent(pathItem) : null;
+  const query = new URLSearchParams(search);
+  if (onAuthenticator && !query.has("view")) query.set("view", "authenticator");
+  return locationFromParams(query, itemId);
 }
 
 /** Address parts the approve panel reads beside `panel=approve:<key>`. */
 const APPROVAL_PARAMS = ["label", "kind"] as const;
 
-function vaultHref(loc: VaultLocation, current: URLSearchParams): string {
+export function vaultHref(loc: VaultLocation, current: URLSearchParams): string {
   const q = locationToParams(loc);
   if (loc.panel?.startsWith("approve:")) {
     for (const key of APPROVAL_PARAMS) {
@@ -113,7 +152,14 @@ function vaultHref(loc: VaultLocation, current: URLSearchParams): string {
       if (value) q.set(key, value);
     }
   }
-  const path = loc.itemId ? `/vault/${encodeURIComponent(loc.itemId)}` : "/vault";
+  // The Authenticator keeps its own address while it is open.
+  const onAuthenticator = !loc.itemId && loc.view === "authenticator";
+  if (onAuthenticator) q.delete("view");
+  const path = loc.itemId
+    ? `/vault/${encodeURIComponent(loc.itemId)}`
+    : onAuthenticator
+      ? AUTHENTICATOR_PATH
+      : "/vault";
   const qs = q.toString();
   return qs ? `${path}?${qs}` : path;
 }
@@ -126,12 +172,7 @@ function vaultHref(loc: VaultLocation, current: URLSearchParams): string {
 export function VaultRouteBody() {
   const pathname = usePathname();
   const params = useSearchParams();
-  const pathItem = /^\/vault\/([^/]+)$/.exec(pathname ?? "")?.[1];
-  const itemId = pathItem ? decodeURIComponent(pathItem) : null;
-  const location = locationFromParams(
-    new URLSearchParams(params?.toString() ?? ""),
-    itemId,
-  );
+  const location = locationFromAddress(pathname, params?.toString() ?? "");
 
   return (
     <div className="h-full overflow-hidden" data-user-content>

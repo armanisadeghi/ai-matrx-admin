@@ -317,11 +317,11 @@ export function ShareModal({
       <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
       <div>
         <p className="text-sm font-medium">
-          You need Admin on this {resourceLabel.toLowerCase()} to change who can see it
+          You need Full access on this {resourceLabel.toLowerCase()} to change who can see it
         </p>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Deciding who else may is what the Admin level means (viewer &lt; commenter &lt;
-          editor &lt; admin). Ask whoever holds it, or an owner of the organization. The Access
+          Deciding who else may is what Full access means (View &lt; Comment &lt;
+          Edit &lt; Full access). Ask whoever has it, or an owner of the organization. The Access
           tab still shows you everyone who can reach this and why.
         </p>
       </div>

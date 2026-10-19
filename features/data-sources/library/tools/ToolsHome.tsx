@@ -1,17 +1,16 @@
 "use client";
 
 /**
- * The Tools home — one place to search thousands of Tools by the job you need done, see what each
- * costs and how often it works, try it, and give it to an agent. Champions: treg's catalog (task-first,
- * priced, measured) and Google's one box. Beaten by: points instead of vendor names, strong / closest /
- * none said in plain words, a card that shows its sample size, and "Give to an agent" on the card.
- * Search is server-side and paged (`useOwnToolSearch`); nothing here loads the whole catalog.
+ * The Tools home — one box and a handful of plain jobs. Champions: Google search (one box, nothing else
+ * competing) and the Apple Shortcuts gallery (a few big, plainly named jobs that open the thing). No store
+ * cards, no prices, no run counts, no success rates: a Tool is found by the job, never by who serves it,
+ * and points show only at the step where someone confirms a spend (law 14). Search is server-side and
+ * paged (`useOwnToolSearch`); nothing here loads the whole catalog.
  */
 
 import { createElement, useEffect, useRef, useState, type ReactNode } from "react";
-import { SearchX } from "lucide-react";
+import { ArrowLeft, SearchX } from "lucide-react";
 import { Button, EmptyState, RegionSkeleton, SearchField } from "@ai-matrx/design-system/controls";
-import { formatCount } from "@ai-matrx/kit/format";
 import type { CatalogSearchState, CatalogToolHit } from "@ai-matrx/agents/tools";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -19,8 +18,10 @@ import { cn } from "@/lib/utils";
 
 import { LookupSuggestion } from "./people/LookupSuggestion";
 import { lookupHelp, planLookup, type LookupPlan } from "./people/lookupPlan";
-import { ToolCard } from "./ToolCard";
-import { JOB_FAMILIES, verdictLine } from "./toolFacts";
+import { ToolRow } from "./ToolRow";
+import { ToolsAdminSlot } from "./ToolsAdminSlot";
+import { verdictLine } from "./toolFacts";
+import { TOOL_TASKS } from "./toolTasks";
 
 export type ToolsSearch = CatalogSearchState & { loadMore: () => void; retry: () => void };
 
@@ -49,9 +50,9 @@ export function ToolsHome({
 }) {
   const sentinel = useRef<HTMLDivElement | null>(null);
   const { status, tools, verdict, nextCursor, loadMore } = search;
-  const searching = query.trim().length > 0;
+  const searching = query.trim().length > 0 || family !== null;
 
-  // Page on scroll: the sentinel under the last card asks for the next page as it comes into view.
+  // Page on scroll: the sentinel under the last row asks for the next page as it comes into view.
   useEffect(() => {
     const node = sentinel.current;
     if (!node || !nextCursor || status !== "succeeded" || typeof IntersectionObserver === "undefined") return;
@@ -71,42 +72,53 @@ export function ToolsHome({
   const help = !lookup && (family === "people" || family === "company") ? lookupHelp(query) : null;
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-12 pt-5" data-tools-home="">
-      <section className="overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-6 sm:p-9">
-        <h1 className="text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-4xl">What do you need done?</h1>
-        <div className="mt-6 max-w-3xl">
-          <SearchField
-            value={query}
-            onChange={(e) => onQuery(e.target.value)}
-            placeholder="Backlinks, work emails, reviews…"
-            aria-label="Search Tools"
-            hero
-            className="w-full"
-            autoFocus
-          />
-        </div>
-        <div className="-mx-6 mt-5 flex items-center gap-1.5 overflow-x-auto px-6 pb-1 sm:-mx-9 sm:px-9" role="toolbar" aria-label="Browse by job">
-          <Button variant="quiet" className="shrink-0" pressed={family === null} onClick={() => onFamily(null)}>
-            All
-          </Button>
-          {JOB_FAMILIES.map((f) => (
-            <Button
-              key={f.slug}
-              variant="quiet"
-              className="shrink-0"
-              pressed={family === f.slug}
-              onClick={() => onFamily(family === f.slug ? null : f.slug)}
-              icon={createElement(f.icon, { className: "h-4 w-4" })}
-              data-job-family={f.slug}
-            >
-              {f.label}
-            </Button>
-          ))}
-        </div>
+    <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 pb-16 pt-8 sm:pt-14" data-tools-home="">
+      <ToolsAdminSlot where="home" />
+      <section className="flex flex-col items-center gap-5 text-center">
+        <h1 className="text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">What do you want to find?</h1>
+        <SearchField
+          value={query}
+          onChange={(e) => {
+            onQuery(e.target.value);
+            onFamily(null);
+          }}
+          placeholder="An email, a website, a business…"
+          aria-label="What do you want to find?"
+          hero
+          className="w-full"
+          autoFocus
+        />
       </section>
 
+      {!searching ? (
+        <section aria-label="Jobs" className="grid grid-cols-1 gap-3 sm:grid-cols-2" data-tool-tasks="">
+          {TOOL_TASKS.map((task) => (
+            <button
+              key={task.id}
+              type="button"
+              data-clickable=""
+              data-tool-task={task.id}
+              onClick={() => {
+                onQuery(task.query);
+                onFamily(task.family);
+              }}
+              className="group flex min-h-16 items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left transition-colors hover:border-primary/60 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden>
+                {createElement(task.icon, { className: "h-5 w-5" })}
+              </span>
+              <span className="text-base font-medium leading-snug text-foreground">{task.title}</span>
+            </button>
+          ))}
+        </section>
+      ) : null}
+
       {lookup ? <LookupSuggestion plan={lookup} onLookup={onLookup} /> : null}
-      {help ? <p className="text-sm text-muted-foreground" data-lookup-help="">{help}</p> : null}
+      {help ? (
+        <p className="text-sm text-muted-foreground" data-lookup-help="">
+          {help}
+        </p>
+      ) : null}
       {hideList ? (
         <div className="flex justify-center">
           <Button variant="quiet" onClick={() => setListOpenFor(query)} data-lookup-show-tools="">
@@ -115,50 +127,61 @@ export function ToolsHome({
         </div>
       ) : null}
 
-      <section className={cn("flex flex-col gap-3", hideList && "hidden")} aria-label="Tools">
-        <div className="flex items-baseline gap-2">
-          <h2 className="text-sm font-semibold text-foreground">{searching ? (verdict === "closest" ? "Closest Tools" : "Tools") : "Popular Tools"}</h2>
-          {tools.length > 0 ? <span className="text-xs text-muted-foreground">{formatCount(tools.length)}{nextCursor ? "+" : ""}</span> : null}
-        </div>
-        {line ? <p className="text-sm text-muted-foreground">{line}</p> : null}
-
-        {firstLoad ? (
-          <RegionSkeleton shape="cards" count={8} aria-label="Loading Tools" />
-        ) : status === "failed" && tools.length === 0 ? (
-          <EmptyState
-            icon={<SearchX className="h-5 w-5" />}
-            title="Couldn't load Tools"
-            line="Try again in a moment."
-            action={
-              <span className="inline-flex items-center gap-1">
-                <Button variant="outline" onClick={search.retry}>
-                  Try again
-                </Button>
-                <ErrorAlchemyMenu error={search.error ?? "The Tool search failed"} />
-              </span>
-            }
-          />
-        ) : tools.length === 0 ? (
-          <EmptyState icon={<SearchX className="h-5 w-5" />} title="No Tool does that yet" line="Try other words, or browse by job." />
-        ) : (
-          <div className={cn("grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3", status === "loading" && "opacity-60 transition-opacity")}>
-            {tools.map((hit) => (
-              <ToolCard key={hit.tool_id} hit={hit} onOpen={() => onOpenTool(hit)} onGive={() => onGive(hit)} />
-            ))}
-          </div>
-        )}
-
-        {status === "loading_more" ? <RegionSkeleton shape="cards" count={3} aria-label="Loading more Tools" /> : null}
-        {nextCursor && status === "succeeded" ? (
-          <div ref={sentinel} className="flex justify-center py-2">
-            <Button variant="outline" onClick={loadMore}>
-              Show more
+      {searching ? (
+        <section className={cn("flex flex-col gap-3", hideList && "hidden")} aria-label="Tools">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="quiet"
+              onClick={() => {
+                onQuery("");
+                onFamily(null);
+              }}
+              icon={<ArrowLeft className="h-4 w-4" />}
+            >
+              All jobs
             </Button>
           </div>
-        ) : null}
-      </section>
+          {line ? <p className="text-sm text-muted-foreground">{line}</p> : null}
 
-      {hideList ? null : dataSection}
+          {firstLoad ? (
+            <RegionSkeleton shape="cards" count={4} aria-label="Loading Tools" />
+          ) : status === "failed" && tools.length === 0 ? (
+            <EmptyState
+              icon={<SearchX className="h-5 w-5" />}
+              title="Couldn't load Tools"
+              line="Try again in a moment."
+              action={
+                <span className="inline-flex items-center gap-1">
+                  <Button variant="outline" onClick={search.retry}>
+                    Try again
+                  </Button>
+                  <ErrorAlchemyMenu error={search.error ?? "The Tool search failed"} />
+                </span>
+              }
+            />
+          ) : tools.length === 0 ? (
+            <EmptyState icon={<SearchX className="h-5 w-5" />} title="Nothing does that yet" line="Try other words." />
+          ) : (
+            <div className={cn("flex flex-col gap-2", status === "loading" && "opacity-60 transition-opacity")}>
+              {tools.map((hit) => (
+                <ToolRow key={hit.tool_id} hit={hit} onOpen={() => onOpenTool(hit)} onGive={() => onGive(hit)} />
+              ))}
+            </div>
+          )}
+
+          {status === "loading_more" ? <RegionSkeleton shape="cards" count={2} aria-label="Loading more Tools" /> : null}
+          {nextCursor && status === "succeeded" ? (
+            <div ref={sentinel} className="flex justify-center py-2">
+              <Button variant="outline" onClick={loadMore}>
+                Show more
+              </Button>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      {/* A job picked from the grid is answered by Tools alone; data sources join only words the person typed. */}
+      {hideList || family !== null ? null : dataSection}
     </div>
   );
 }

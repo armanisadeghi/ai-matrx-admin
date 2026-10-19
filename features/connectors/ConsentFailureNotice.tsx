@@ -16,8 +16,8 @@
 //
 // Provider-agnostic: it takes the translated answer, never an error.
 
-import { useId, useState } from "react";
-import { AlertTriangle, ChevronDown } from "lucide-react";
+import { useEffect, useId, useState } from "react";
+import { AlertTriangle, ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ConsentFailureAnswer } from "./google-adapter";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -25,14 +25,22 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 export function ConsentFailureNotice({
   failure,
   className,
+  action,
 }: {
   failure: ConsentFailureAnswer;
   className?: string;
+  action?: { label: string; onPress: () => void };
 }) {
   const [open, setOpen] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   // Both consent surfaces can be on screen at once (Settings mounts the panel's
   // own notice AND the dialog body), so the disclosure's id is per instance.
   const detailsId = useId();
+  useEffect(() => {
+    setDismissed(false);
+    setOpen(false);
+  }, [failure.details, failure.sentence]);
+  if (dismissed) return null;
   return (
     <div
       role="alert"
@@ -41,10 +49,27 @@ export function ConsentFailureNotice({
         className,
       )}
     >
-      <p className="flex items-start gap-1.5">
+      <div className="flex min-w-0 items-start gap-1.5">
         <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-        <span className="min-w-0 flex-1">{failure.sentence}</span>
-      </p>
+        <p className="min-w-0 flex-1 break-words">{failure.sentence}</p>
+        <button
+          type="button"
+          onClick={() => setDismissed(true)}
+          aria-label="Dismiss error"
+          className="-mr-1 -mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-destructive-ink hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <X className="h-3.5 w-3.5" aria-hidden />
+        </button>
+      </div>
+      {action ? (
+        <button
+          type="button"
+          onClick={action.onPress}
+          className="mt-1 inline-flex min-h-9 items-center text-xs font-medium underline underline-offset-2"
+        >
+          {action.label}
+        </button>
+      ) : null}
       {failure.details ? (
         <>
           <button
@@ -63,7 +88,7 @@ export function ConsentFailureNotice({
           {open ? (
             <p
               id={detailsId}
-              className="mt-1 break-words font-mono text-[11px] text-destructive/80"
+              className="mt-1 max-h-40 overflow-y-auto whitespace-pre-wrap break-all rounded bg-background/60 p-2 font-mono text-[11px] text-destructive-ink"
             >
               {failure.details}
             </p>

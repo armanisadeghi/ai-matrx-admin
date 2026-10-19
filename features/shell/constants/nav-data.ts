@@ -2059,6 +2059,18 @@ export const primaryNavItems: ShellNavItem[] = [
         guestHidden: true,
         group: "You",
       },
+      {
+        id: "account.authenticator",
+        label: "Authenticator",
+        href: "/vault/authenticator",
+        iconName: "KeyRound",
+        description: "Rotating six-digit sign-in codes: scan a QR code, paste a setup key, copy a code.",
+        color: "amber",
+        profileMenu: true,
+        dashboard: true,
+        guestHidden: true,
+        group: "You",
+      },
       // Not exact: every /user-settings/* page lights Account, not only the landing.
       { id: "account.settings", label: "Settings", href: SETTINGS_BASE, iconName: "Settings", color: "slate", group: "You" },
       { id: "account.welcome", label: "Welcome", href: "/welcome", iconName: "Rocket", guestHidden: true, group: "You" },

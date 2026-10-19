@@ -70,6 +70,7 @@ import { isGoogleAuthorizationCancelled } from "@/providers/google-provider/Goog
 import { ConnectorMark } from "./ConnectorMark";
 import { getConnector } from "./registry";
 import {
+  productByKey,
   productsInGroup,
   userOwnedGoogleProductNames,
   type ConnectorFirstActionContextKey,
@@ -252,7 +253,7 @@ function RowStatus({ health }: { health: ConnectorProductHealth }) {
       return <span className={cn(base, "text-destructive")}>Blocked</span>;
     case "pending_rollout":
       return (
-        <span className={cn(base, "text-muted-foreground")} title={health.reason ?? undefined}>
+        <span className={cn(base, "text-muted-foreground")}>
           <Lock className="h-3 w-3" aria-hidden />
           Coming soon
         </span>
@@ -309,7 +310,6 @@ function ProductRow({
         </div>
         <p
           className="mt-0.5 line-clamp-1 text-[13px] leading-snug text-muted-foreground"
-          title={health.product.promise}
         >
           {health.product.promise}
         </p>
@@ -371,11 +371,6 @@ function ProductRow({
             disabled={busy || health.state === "connected"}
             onCheckedChange={onToggle}
             aria-label={`${selected ? "Do not connect" : "Connect"} ${health.product.name}`}
-            title={
-              health.state === "connected"
-                ? `${health.product.name} is connected. Disconnect the account in Settings → Connectors to remove it.`
-                : undefined
-            }
           />
         ) : null}
       </div>
@@ -402,6 +397,10 @@ export interface ConnectorConsentBodyProps {
   defaultAccountIds?: readonly string[];
   /** Pre-switch-on these rows (a surface that knows what the person is using). */
   initialProductKeys?: readonly string[];
+  /** A caller continuing an already-finished first approval. */
+  initialContinuationProductKeys?: readonly string[];
+  /** Dialog mode owns a bounded scroller and a footer that never scrolls away. */
+  presentation?: "dialog" | "embedded";
   /** Stable anchors for Settings search; omitted inside the dialog. */
   rowAnchorPrefix?: string;
   searchFocus?: { productKey: string; request: number } | null;
@@ -510,7 +509,7 @@ function FirstAction({
         type="button"
         data-connector-first-action={product.key}
         disabled={organizationGate.disabled}
-        title={organizationGate.title}
+        aria-description={organizationGate.title}
         onClick={organizationGate.press(() => {})}
         className="inline-flex shrink-0 items-center gap-0.5 font-medium text-muted-foreground"
       >
@@ -556,6 +555,8 @@ export function ConnectorConsentBody({
   initialAccountId,
   defaultAccountIds,
   initialProductKeys,
+  initialContinuationProductKeys,
+  presentation = "embedded",
   rowAnchorPrefix,
   searchFocus,
   onDone,
@@ -621,6 +622,13 @@ export function ConnectorConsentBody({
   /** A first connection has no selected account until the exchange returns it. */
   const [attemptAccountId, setAttemptAccountId] = useState<string | null>(null);
   const [failure, setFailure] = useState<ConsentFailureAnswer | null>(null);
+  const [continuationProductKeys, setContinuationProductKeys] = useState<
+    string[] | null
+  >(() =>
+    initialContinuationProductKeys?.length
+      ? [...initialContinuationProductKeys]
+      : null,
+  );
   /**
    * D8: the answer a press gets when the press would do nothing. The button
    * stays pressable (see the footer) and says why, instead of sitting there
@@ -637,12 +645,17 @@ export function ConnectorConsentBody({
   const personalOnlySelected = personalOnlyNames.length > 0;
   const personalOnlyName = personalOnlyNames.join(", ");
 
+  const requestedProductKeys = continuationProductKeys ?? selected;
   const plan = buildConsentPlan({
     provider,
-    selectedProductKeys: selected,
+    selectedProductKeys: requestedProductKeys,
     account,
     rollout,
   });
+  const heldSelection = initialSelection(health);
+  const actionableProductKeys = health
+    .filter((row) => row.togglable)
+    .map((row) => row.product.key);
   const focusGroup = provider.products.find(
     (product) => product.key === searchFocus?.productKey,
   )?.group;
@@ -672,6 +685,7 @@ export function ConnectorConsentBody({
     setAttemptAccountId(null);
     setFailure(null);
     setAnswer(null);
+    setContinuationProductKeys(null);
     const nextAccount = accounts.find((row) => row.id === nextId) ?? null;
     setSelected([
       ...new Set([
@@ -689,11 +703,36 @@ export function ConnectorConsentBody({
     setAttemptAccountId(null);
     setFailure(null);
     setAnswer(null);
+    setContinuationProductKeys(null);
     setSelected((current) =>
       next
         ? [...new Set([...current, product.key])]
         : current.filter((key) => key !== product.key),
     );
+  };
+
+  const selectAll = () => {
+    selectionReady.current = true;
+    setAttempted(false);
+    setExchangeCompleted(false);
+    setAttemptPlan(null);
+    setAttemptAccountId(null);
+    setFailure(null);
+    setAnswer(null);
+    setContinuationProductKeys(null);
+    setSelected([...new Set([...heldSelection, ...actionableProductKeys])]);
+  };
+
+  const clearOptional = () => {
+    selectionReady.current = true;
+    setAttempted(false);
+    setExchangeCompleted(false);
+    setAttemptPlan(null);
+    setAttemptAccountId(null);
+    setFailure(null);
+    setAnswer(null);
+    setContinuationProductKeys(null);
+    setSelected(heldSelection);
   };
 
   const connect = async (inThisTab = false) => {
@@ -743,6 +782,11 @@ export function ConnectorConsentBody({
       setExchangeCompleted(true);
       setAttempted(true);
       await refetch();
+      setContinuationProductKeys(
+        plan.deferred.length > 0
+          ? plan.deferred.map((product) => product.key)
+          : null,
+      );
     } catch (cause) {
       if (isGoogleAuthorizationCancelled(cause)) {
         toast.info(`${provider.name} authorization canceled — nothing changed.`);
@@ -784,6 +828,8 @@ export function ConnectorConsentBody({
       : null;
   const grantedRows = resultRows?.filter((row) => row.state === "granted") ?? [];
   const hasGrantedResult = grantedRows.length > 0;
+  const hasContinuation = (continuationProductKeys?.length ?? 0) > 0;
+  const finished = hasGrantedResult && !hasContinuation;
   useEffect(() => {
     if (hasGrantedResult) toast.success(`${provider.name} connected.`);
   }, [hasGrantedResult, provider.name]);
@@ -797,23 +843,99 @@ export function ConnectorConsentBody({
     );
   }
 
+  const actionArea = (
+    <div className="flex w-full flex-col items-stretch gap-2">
+      {finished && onDone ? (
+        <Button
+          onClick={onDone}
+          className="h-11 w-full rounded-xl bg-foreground text-[15px] font-medium text-background hover:bg-foreground/90"
+        >
+          Done
+        </Button>
+      ) : (
+        <Button
+          onClick={() => void connect()}
+          disabled={busy || !runner.ready}
+          className="h-11 w-full rounded-xl bg-foreground text-[15px] font-medium text-background hover:bg-foreground/90"
+        >
+          {busy ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+              Waiting for {provider.name}…
+            </>
+          ) : !runner.ready ? (
+            `Loading ${provider.name}…`
+          ) : hasContinuation ? (
+            `Continue with ${continuationProductKeys
+              ?.map((key) => productByKey(provider, key)?.name)
+              .filter(Boolean)
+              .join(", ")}`
+          ) : (
+            provider.dialog.cta
+          )}
+        </Button>
+      )}
+      {!finished ? (
+        <button
+          type="button"
+          onClick={() => void connect(true)}
+          disabled={busy || !runner.ready}
+          className="mx-auto min-h-9 rounded-full px-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+        >
+          Pop-ups blocked? Continue in this tab
+        </button>
+      ) : null}
+      {presentation === "dialog" && onDone && !finished ? (
+        <Button variant="ghost" onClick={onDone} className="h-10 w-full">
+          Cancel
+        </Button>
+      ) : null}
+      {answer ? (
+        <p role="status" className="text-center text-xs text-warning">
+          {answer}
+        </p>
+      ) : hasContinuation ? (
+        <p role="status" className="text-center text-xs text-muted-foreground">
+          The first approval finished. YouTube needs its own approval before this connection is complete.
+        </p>
+      ) : plan.empty && !busy ? (
+        <p className="text-center text-xs text-muted-foreground">
+          {emptyPlanAnswer(plan, requestedProductKeys.length)}
+        </p>
+      ) : plan.request ? (
+        <p className="text-center text-xs text-muted-foreground">
+          {consentRequestSentence(provider.name, plan.request)}
+          {plan.deferred.length > 0
+            ? ` ${plan.deferred.map((product) => product.name).join(", ")} will follow in a separate approval.`
+            : ""}
+        </p>
+      ) : null}
+    </div>
+  );
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
+    <div
+      className={cn(
+        "flex min-h-0 flex-1 flex-col",
+        presentation === "embedded" && "gap-4",
+      )}
+    >
+      <div
+        data-connector-consent-scroll-region={presentation === "dialog" || undefined}
+        className={cn(
+          "flex min-h-0 flex-col gap-4",
+          presentation === "dialog" &&
+            "flex-1 overflow-y-auto overscroll-contain px-4 pb-4 pt-1 sm:px-5",
+        )}
+      >
         {errorMessage ? (
-          <div
-            role="alert"
-            className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive-ink"
-          >
-            {errorMessage}{" "}
-            <button
-              type="button"
-              onClick={() => void refetch()}
-              className="underline underline-offset-2"
-            >
-              Try again
-            </button>
-            <ErrorAlchemyMenu className="ml-auto" />
-          </div>
+          <ConsentFailureNotice
+            failure={{
+              sentence: `We could not load your ${provider.name} connections.`,
+              details: errorMessage,
+            }}
+            action={{ label: "Try again", onPress: () => void refetch() }}
+          />
         ) : null}
 
         {rolloutUnavailable ? (
@@ -904,7 +1026,28 @@ export function ConnectorConsentBody({
           </p>
         </div>
 
-        <div className="flex min-h-0 flex-col gap-4">
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={selectAll}
+            disabled={busy || actionableProductKeys.length === 0}
+          >
+            Select all
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={clearOptional}
+            disabled={busy || selected.every((key) => heldSelection.includes(key))}
+          >
+            Clear
+          </Button>
+        </div>
+
+        <div className="grid min-h-0 gap-4 lg:grid-cols-2 lg:items-start">
           {provider.groups.map((group) => {
             const products = productsInGroup(provider, group.key);
             if (products.length === 0) return null;
@@ -1038,60 +1181,15 @@ export function ConnectorConsentBody({
           </div>
         ) : null}
 
-        <div className="flex flex-col items-stretch gap-2 pt-1">
-          {/* D8 — THE PRESS ALWAYS ANSWERS. Disabled only while the Google
-              window is open or its script is loading (a press then would
-              double-fire); an empty selection is answered in words. */}
-          {hasGrantedResult && onDone ? (
-            <Button
-              onClick={onDone}
-              className="h-12 w-full rounded-xl bg-foreground text-[15px] font-medium text-background hover:bg-foreground/90"
-            >
-              Done
-            </Button>
-          ) : (
-            <Button
-              onClick={() => void connect()}
-              disabled={busy || !runner.ready}
-              className="h-12 w-full rounded-xl bg-foreground text-[15px] font-medium text-background hover:bg-foreground/90"
-            >
-              {busy ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
-                  Waiting for {provider.name}…
-                </>
-              ) : !runner.ready ? (
-                `Loading ${provider.name}…`
-              ) : (
-                provider.dialog.cta
-              )}
-            </Button>
-          )}
-          {!hasGrantedResult ? (
-            <button
-              type="button"
-              onClick={() => void connect(true)}
-              disabled={busy || !runner.ready}
-              className="mx-auto min-h-9 rounded-full px-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-            >
-              Pop-ups blocked? Continue in this tab
-            </button>
-          ) : null}
-        </div>
-        {answer ? (
-          <p role="status" className="text-center text-xs text-warning">
-            {answer}
-          </p>
-        ) : plan.empty && !busy ? (
-          <p className="text-center text-xs text-muted-foreground">
-            {emptyPlanAnswer(plan, selected.length)}
-          </p>
-        ) : plan.request ? (
-          <p className="text-center text-xs text-muted-foreground">
-            {consentRequestSentence(provider.name, plan.request)}
-          </p>
-        ) : null}
       </div>
+      {presentation === "dialog" ? (
+        <DialogFooter className="shrink-0 border-t border-border/70 px-4 sm:px-5">
+          {actionArea}
+        </DialogFooter>
+      ) : (
+        actionArea
+      )}
+    </div>
   );
 }
 
@@ -1145,12 +1243,14 @@ export function ConnectorConsentShell({
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => (open ? null : onClose())}>
-      <DialogContent className="flex max-h-[92dvh] w-full flex-col gap-0 overflow-hidden rounded-[28px] border-border/60 p-0 shadow-2xl sm:max-w-[30rem]">
+      <DialogContent
+        size="xl"
+        height="tall"
+        padding="none"
+        className="flex w-full flex-col overflow-hidden rounded-[24px] border-border/60 shadow-2xl"
+      >
         <ConnectHero provider={provider} />
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-1 pb-safe sm:px-6">
-          {children}
-        </div>
-        <DialogFooter className="sr-only" />
+        <div className="flex min-h-0 flex-1 flex-col">{children}</div>
       </DialogContent>
     </Dialog>
   );
@@ -1164,29 +1264,29 @@ export function ConnectorConsentShell({
 function ConnectHero({ provider }: { provider: ConnectorProviderConfig }) {
   const connector = getConnector(provider.markConnectorId);
   return (
-    <DialogHeader className="relative shrink-0 items-center gap-0 overflow-hidden px-6 pb-6 pt-9 text-center sm:text-center">
+    <DialogHeader className="relative shrink-0 items-center gap-0 overflow-hidden px-5 py-4 text-center sm:text-center">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute -left-10 -top-16 h-48 w-56 rounded-full bg-warning/30 blur-3xl" />
         <div className="absolute -right-8 -top-10 h-44 w-52 rounded-full bg-primary/25 blur-3xl" />
         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-background" />
       </div>
       <div aria-hidden className="relative flex items-center gap-3">
-        <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border/60 bg-background shadow-md">
-          <img src="/matrx/matrx-icon-blue.svg" alt="" className="h-9 w-9" />
+        <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-border/60 bg-background shadow-sm">
+          <img src="/matrx/matrx-icon-blue.svg" alt="" className="h-7 w-7" />
         </span>
         <span className="flex items-center gap-1">
           <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
           <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
           <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
         </span>
-        <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border/60 bg-background shadow-md">
-          {connector ? <ConnectorMark connector={connector} className="h-9 w-9" /> : null}
+        <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-border/60 bg-background shadow-sm">
+          {connector ? <ConnectorMark connector={connector} className="h-7 w-7" /> : null}
         </span>
       </div>
-      <DialogTitle className="relative mt-5 text-balance text-[26px] font-semibold leading-tight tracking-tight text-foreground">
+      <DialogTitle className="relative mt-2 text-balance text-xl font-semibold leading-tight tracking-tight text-foreground">
         {provider.dialog.title}
       </DialogTitle>
-      <DialogDescription className="relative mt-1.5 text-[15px] text-muted-foreground">
+      <DialogDescription className="relative mt-1 text-sm text-muted-foreground">
         {provider.dialog.subtitle}
       </DialogDescription>
     </DialogHeader>
@@ -1220,6 +1320,7 @@ export function ConnectorConsentDialogBody({
       refetch={state.refetch}
       initialAccountId={initialConnectionId ?? null}
       initialProductKeys={initialProductKeys}
+      presentation="dialog"
       onDone={onDone}
     />
   );

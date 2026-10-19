@@ -33666,6 +33666,7 @@ export type Database = {
           deleted_at: string | null
           engagement_breakdown: Json
           engagement_score: number | null
+          enrichment_call_id: string | null
           first_seen_at: string
           id: string
           is_role_address: boolean
@@ -33707,6 +33708,7 @@ export type Database = {
           deleted_at?: string | null
           engagement_breakdown?: Json
           engagement_score?: number | null
+          enrichment_call_id?: string | null
           first_seen_at?: string
           id?: string
           is_role_address?: boolean
@@ -33748,6 +33750,7 @@ export type Database = {
           deleted_at?: string | null
           engagement_breakdown?: Json
           engagement_score?: number | null
+          enrichment_call_id?: string | null
           first_seen_at?: string
           id?: string
           is_role_address?: boolean
@@ -33783,6 +33786,13 @@ export type Database = {
             columns: ["confirmed_contact_point_id"]
             isOneToOne: false
             referencedRelation: "party_contact_point"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_candidate_enrichment_call_id_fkey"
+            columns: ["enrichment_call_id"]
+            isOneToOne: false
+            referencedRelation: "enrichment_call"
             referencedColumns: ["id"]
           },
           {
@@ -34158,6 +34168,113 @@ export type Database = {
             columns: ["deal_id"]
             isOneToOne: false
             referencedRelation: "deal"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enrichment_call: {
+        Row: {
+          cache_key: string
+          created_at: string
+          created_by: string | null
+          credits_used: number | null
+          custom_fields: Json
+          deleted_at: string | null
+          error: string | null
+          estimated_cost_usd: number | null
+          expires_at: string | null
+          id: string
+          latency_ms: number | null
+          metadata: Json
+          operation: string
+          organization_id: string
+          party_id: string | null
+          provider: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          request: Json
+          response: Json
+          result_count: number
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          status: string
+          test_expires_at: string | null
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          cache_key: string
+          created_at?: string
+          created_by?: string | null
+          credits_used?: number | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          error?: string | null
+          estimated_cost_usd?: number | null
+          expires_at?: string | null
+          id?: string
+          latency_ms?: number | null
+          metadata?: Json
+          operation: string
+          organization_id: string
+          party_id?: string | null
+          provider: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          request?: Json
+          response?: Json
+          result_count?: number
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          cache_key?: string
+          created_at?: string
+          created_by?: string | null
+          credits_used?: number | null
+          custom_fields?: Json
+          deleted_at?: string | null
+          error?: string | null
+          estimated_cost_usd?: number | null
+          expires_at?: string | null
+          id?: string
+          latency_ms?: number | null
+          metadata?: Json
+          operation?: string
+          organization_id?: string
+          party_id?: string | null
+          provider?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          request?: Json
+          response?: Json
+          result_count?: number
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrichment_call_party_id_fkey"
+            columns: ["party_id"]
+            isOneToOne: false
+            referencedRelation: "party"
             referencedColumns: ["id"]
           },
         ]

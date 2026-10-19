@@ -133,6 +133,11 @@ export interface ConsentBlock {
 
 export interface ConsentPlan {
   request: ConsentRequest | null;
+  /**
+   * Eligible rows that need a later, explicit provider approval after this
+   * request completes. A deferred row is actionable, never blocked.
+   */
+  deferred: ConnectorProduct[];
   /** Rows that were switched on but cannot be asked for, each with its reason. */
   blocked: ConsentBlock[];
   /** Rows already fully granted on this account — nothing to ask for. */
@@ -322,7 +327,13 @@ export function buildConsentPlan({
   }
 
   if (wanted.length === 0) {
-    return { request: null, blocked, alreadyGranted, empty: true };
+    return {
+      request: null,
+      deferred: [],
+      blocked,
+      alreadyGranted,
+      empty: true,
+    };
   }
 
   // Google rejected a real Drive-file + YouTube authorization. A reconnect of
@@ -337,43 +348,67 @@ export function buildConsentPlan({
   // labeled step. Only a YouTube row that ADDS scopes gets the isolated request.
   const youtubeEntry = wanted.find(({ product }) => product.key === "youtube");
   const youtubeAdds = youtubeEntry !== undefined && !youtubeEntry.renewal;
-  // YouTube beside other products is NEVER one combined press — new grant or
-  // renewal (a renewal sends the same scope set Google rejected in dc39b03173).
   const isolatedProduct = youtubeEntry?.product;
-  if (youtubeEntry !== undefined && isolatedProduct !== undefined && wanted.length > 1) {
-    const others = wanted.filter(({ product }) => product.key !== "youtube");
-    const separately = `Connect ${isolatedProduct.name} separately from the other selected Google products. Your existing connections are unchanged.`;
-    if (youtubeEntry.renewal || others.some(({ renewal }) => renewal)) {
-      // Something here is a dead grant that only a reconnect can clear: never
-      // leave the person with nothing to press. Step one renews/adds the
-      // others; YouTube is its own labeled step after it.
-      const rest = buildConsentPlan({
-        provider,
-        selectedProductKeys: others.map(({ product }) => product.key),
-        account,
-        rollout,
-      });
-      return {
-        ...rest,
-        blocked: [
-          ...rest.blocked,
-          {
-            productKey: isolatedProduct.key,
-            productName: isolatedProduct.name,
-            reason: `Step 2 of 2 — ${separately} Press again once this step has finished and ${isolatedProduct.name} is all that is left.`,
-          },
-        ],
-      };
-    }
+  const otherWanted = wanted.filter(({ product }) => product.key !== "youtube");
+
+  // An older broad connection can already hold YouTube beside another Google
+  // product. Renewing that same row must preserve its literal grants, which is
+  // the exact combined scope set Google refused. Dropping the other scopes
+  // would damage the existing connection; calling a new isolated grant a
+  // repair would leave the old broken row in place. State that limit instead.
+  const legacyBroadYouTubeRenewal =
+    youtubeEntry?.renewal === true &&
+    account !== null &&
+    account.connectionPurpose !== "youtube_isolated" &&
+    provider.products
+      .filter((product) => product.key !== "youtube")
+      .some((product) =>
+        requiredScopesFor(provider, product, rollout).some((scope) =>
+          hasGoogleGrantedScope(account.grantedScopes, scope),
+        ),
+      );
+  if (
+    youtubeEntry !== undefined &&
+    isolatedProduct !== undefined &&
+    legacyBroadYouTubeRenewal
+  ) {
+    const reason =
+      "This older connection holds YouTube with other Google products. Manage that connection first; renewing it here would repeat the scope combination Google refused.";
     return {
       request: null,
-      blocked: wanted.map(({ product }) => ({
-        productKey: product.key,
-        productName: product.name,
-        reason: separately,
-      })),
+      deferred: [],
+      blocked: [
+        ...blocked,
+        ...wanted.map(({ product }) => ({
+          productKey: product.key,
+          productName: product.name,
+          reason,
+        })),
+      ],
       alreadyGranted,
       empty: true,
+    };
+  }
+
+  // YouTube beside other products is NEVER one combined press. Run the normal
+  // products first and carry YouTube as an explicit continuation. The caller
+  // opens no second provider window until the person presses again.
+  if (
+    youtubeEntry !== undefined &&
+    isolatedProduct !== undefined &&
+    otherWanted.length > 0
+  ) {
+    const rest = buildConsentPlan({
+      provider,
+      selectedProductKeys: otherWanted.map(({ product }) => product.key),
+      account,
+      rollout,
+    });
+    return {
+      ...rest,
+      deferred: [...rest.deferred, isolatedProduct],
+      blocked: [...blocked, ...rest.blocked],
+      alreadyGranted: [...alreadyGranted, ...rest.alreadyGranted],
     };
   }
 
@@ -424,6 +459,7 @@ export function buildConsentPlan({
         .map(({ product }) => product),
       targetAccountId: isolatedYouTube ? null : (account?.id ?? null),
     },
+    deferred: [],
     blocked,
     alreadyGranted,
     empty: false,

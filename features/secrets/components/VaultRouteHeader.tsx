@@ -1,11 +1,14 @@
 "use client";
 
 /**
- * Header for /vault. Identity only — the Vault workspace (`@ai-matrx/vault`)
- * owns its own search, vault switcher, One-time passwords, browsers and add
- * actions, so repeating them up here would give the route two toolbars.
+ * Header for /vault and /vault/authenticator. The Vault workspace
+ * (`@ai-matrx/vault`) owns its search, vault switcher and add actions; the
+ * header carries the Vault's name and its two doors people look for by name:
+ * the Authenticator (one press at every width, as the old Vault had) and the
+ * browsers that fill.
  */
-import { ShieldCheck } from "lucide-react";
+import { Globe, KeyRound, ShieldCheck } from "lucide-react";
+import { TapTargetButton } from "@ai-matrx/design-system/tap-target";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 
 /** Mounts itself into the shell header — render it bare, never inside <PageHeader>. */
@@ -18,6 +21,20 @@ export function VaultRouteHeader() {
           <h1 className="truncate text-sm font-semibold text-foreground">
             Vault
           </h1>
+        </div>
+      }
+      right={
+        <div className="flex items-center">
+          <TapTargetButton
+            href="/vault?panel=devices"
+            icon={<Globe className="h-4 w-4" />}
+            label="Browsers"
+          />
+          <TapTargetButton
+            href="/vault/authenticator"
+            icon={<KeyRound className="h-4 w-4" />}
+            label="Authenticator"
+          />
         </div>
       }
     />

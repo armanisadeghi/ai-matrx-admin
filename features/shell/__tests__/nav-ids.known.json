@@ -2,6 +2,7 @@
   "account",
   "account.access-log",
   "account.approvals",
+  "account.authenticator",
   "account.bring-your-export",
   "account.meet-matrx",
   "account.my-orgs",
