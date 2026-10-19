@@ -19,6 +19,14 @@ describe("the box understands things as well as jobs", () => {
     expect(readEntity("gargron@mastodon.social")?.kind).toBe("handle");
     expect(readEntity("https://www.instagram.com/nest.studio/")?.kind).toBe("social_link");
   });
+  it("the offer carries the platform it can tell, so the lookup is not blank", () => {
+    expect(readEntity("@Gargron@mastodon.social")?.offers[0]?.inputs).toEqual({ account: "@Gargron@mastodon.social", platform: "mastodon" });
+    expect(readEntity("https://www.instagram.com/nasa")?.offers[0]?.inputs).toMatchObject({ platform: "instagram" });
+    expect(readEntity("instagram.com/nasa.official")?.offers[0]?.inputs).toMatchObject({ platform: "instagram" });
+    expect(readEntity("https://www.tiktok.com/@name.surname")?.offers[0]?.inputs).toMatchObject({ platform: "tiktok" });
+    // A bare dotted handle names no platform: the person picks it, nothing is guessed.
+    expect(readEntity("name.surname")?.offers[0]?.inputs).toEqual({ account: "@name.surname" });
+  });
   it("a website offers the strength check; an email is not a handle", () => {
     expect(readEntity("zingermans.com")?.offers[0]).toMatchObject({ jobKey: "seo_domain_authority", inputs: { domain: "zingermans.com" } });
     expect(readEntity("ari@zingermans.com")?.kind).toBe("email");
