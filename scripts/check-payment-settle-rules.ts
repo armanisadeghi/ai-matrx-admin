@@ -83,6 +83,49 @@ const SCENARIOS: Scenario[] = [
     expect: "Refunded",
   },
   {
+    name: "M1c a full refund that arrives BEFORE the paid settle still ends Refunded",
+    run: async (db, pay) => {
+      await db.query("update billing.payment set deleted_at = now() where record_id = $1", [RECORD]);
+      await pay("cs_rule_early", "pending", 1);
+      await db.query("update billing.payment set stripe_payment_intent_id = 'pi_rule_early' where stripe_checkout_session_id = 'cs_rule_early'");
+      await db.query("select billing.payment_refund('pi_rule_early', 4000)");
+      await db.query("select billing.payment_settle('cs_rule_early', 'paid', 'pi_rule_early')");
+      const { rows } = await db.query("select status from billing.payment where stripe_checkout_session_id = 'cs_rule_early'");
+      return `${(rows[0] as { status: string }).status}`;
+    },
+    expect: "refunded",
+  },
+  {
+    name: "M1d a partial refund that arrives BEFORE the paid settle shows on the record",
+    run: async (db, pay) => {
+      await db.query("update billing.payment set deleted_at = now() where record_id = $1", [RECORD]);
+      await pay("cs_rule_early", "pending", 1);
+      await db.query("update billing.payment set stripe_payment_intent_id = 'pi_rule_early' where stripe_checkout_session_id = 'cs_rule_early'");
+      await db.query("select billing.payment_refund('pi_rule_early', 1000)");
+      await db.query("select billing.payment_settle('cs_rule_early', 'paid', 'pi_rule_early')");
+    },
+    expect: "Partially refunded 10.00 USD",
+  },
+  {
+    name: "M3  an amount taken from a question the payer answers is refused at save",
+    run: async (db) => {
+      // As the admin who owns the Ashford Labs form ask; the form asks "usage_note".
+      await db.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ sub: "87a6e699-3622-4869-8843-d0867456c0dd", role: "authenticated" })]);
+      await db.query("savepoint m3");
+      try {
+        await db.query(
+          "select billing.payment_ask_set('c19a81b7-f65f-4c01-b04c-00f97f8b7e4d', 'form', '15c126ea-f561-4c7c-98ed-925a517612cd', $1::jsonb)",
+          [JSON.stringify({ enabled: false, amount_mode: "field", amount_field: "usage_note", currency: "usd" })],
+        );
+        return "accepted";
+      } catch (thrown) {
+        await db.query("rollback to savepoint m3");
+        return (thrown as { code?: string }).code === "22023" ? "refused" : `error ${(thrown as Error).message}`;
+      }
+    },
+    expect: "refused",
+  },
+  {
     name: "I2  a second pending payment for one record is refused",
     run: async (db, pay) => {
       await pay("cs_rule_a", "pending", 2);
