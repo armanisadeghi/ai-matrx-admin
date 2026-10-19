@@ -138,6 +138,7 @@ export function BrandOfferingsEditor() {
     placement: null,
     draft,
     openDraft: setDraft,
+    siteActions: null,
   });
 
   if (catalog.isPending) return <LoadingSurface label="Loading offerings…" />;

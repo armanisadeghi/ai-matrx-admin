@@ -20,10 +20,31 @@ import { createMarketingBrandOfferingsScope } from "@/features/surfaces/manifest
 import type { TopicPlacementStatus } from "../topics/types";
 import type { CatalogOffering, OfferingPrice, OfferingStatRow } from "./data";
 import type { OfferingEditDraft } from "./OfferingEditDialog";
-import { PRICE_UNITS, formatOfferingPrice, priceProblems } from "./vocabulary";
+import type { OfferingWorthValues } from "./OfferingWorthDialog";
+import {
+  LEAD_QUALITY_OPTIONS,
+  OFFERING_MATCH_OPTIONS,
+  PRICE_UNITS,
+  formatOfferingPrice,
+  priceProblems,
+} from "./vocabulary";
 
 export const MARKETING_BRAND_OFFERINGS_SURFACE_NAME =
   "matrx-user/marketing-brand-offerings" as const;
+
+/**
+ * What the site view can do that the brand-only editor cannot. Each one runs the
+ * page's own mutation (offer, move: they save on click) or opens the page's own
+ * dialog (stop offering, worth: the person confirms there).
+ */
+export interface OfferingsSiteActions {
+  /** True while one of the page's mutations is running (the table refuses a move then). */
+  busy: boolean;
+  offer: (ids: string[]) => Promise<void>;
+  openStop: (offerings: { id: string; name: string }[]) => void;
+  openWorth: (offeringId: string, values: Partial<OfferingWorthValues>) => void;
+  move: (offeringId: string, parentId: string | null, siblingOrder: string[]) => Promise<void>;
+}
 
 /** What the page body holds right now. `site` is set only in the site view. */
 export interface OfferingsFeed {
@@ -35,6 +56,8 @@ export interface OfferingsFeed {
   placement: TopicPlacementStatus | null;
   draft: OfferingEditDraft | null;
   openDraft: (draft: OfferingEditDraft) => void;
+  /** Set only in the site view. */
+  siteActions: OfferingsSiteActions | null;
 }
 
 const FeedContext = createContext<RefObject<OfferingsFeed | null> | null>(null);
@@ -235,12 +258,163 @@ export function stageOfferingDraft(value: unknown, feed: OfferingsFeed | null): 
   return draft;
 }
 
+function siteView(feed: OfferingsFeed | null): { catalog: CatalogOffering[]; actions: OfferingsSiteActions } {
+  if (!feed?.catalog) throw new Error("The offerings have not loaded yet — try again in a moment.");
+  if (!feed.siteActions) {
+    throw new Error("This brand has no website yet, so there is no site view to change (availability, worth and moves are per website).");
+  }
+  return { catalog: feed.catalog, actions: feed.siteActions };
+}
+
+function onlyKeys(value: unknown, target: string, allowed: readonly string[]): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${target} takes an object.`);
+  }
+  const patch = value as Record<string, unknown>;
+  for (const key of Object.keys(patch)) {
+    if (!allowed.includes(key)) throw new Error(`${target} has no field "${key}".`);
+  }
+  return patch;
+}
+
+function offeringIn(catalog: CatalogOffering[], id: unknown, field: string): CatalogOffering {
+  if (typeof id !== "string") throw new Error(`${field} must be an offering id from offerings_catalog.`);
+  const found = catalog.find((offering) => offering.id === id);
+  if (!found) throw new Error(`${field} is not an offering in this brand's catalog.`);
+  return found;
+}
+
+function idList(value: unknown, field: string, catalog: CatalogOffering[]): CatalogOffering[] {
+  if (!Array.isArray(value) || value.length === 0) throw new Error(`${field} must be a non-empty list of offering ids.`);
+  const seen = new Set<string>();
+  return value.map((id) => {
+    const offering = offeringIn(catalog, id, field);
+    if (seen.has(offering.id)) throw new Error(`${field} lists "${offering.name}" twice.`);
+    seen.add(offering.id);
+    return offering;
+  });
+}
+
+/** Offerings to start offering here. Throws when every one is already offered. */
+export function checkOfferHere(value: unknown, feed: OfferingsFeed | null) {
+  const { catalog, actions } = siteView(feed);
+  const patch = onlyKeys(value, "offering_offer_here", ["offering_ids"]);
+  const chosen = idList(patch.offering_ids, "offering_ids", catalog);
+  const toOffer = chosen.filter((offering) => !offering.available);
+  if (toOffer.length === 0) throw new Error("This site already offers every one of those offerings.");
+  return { actions, ids: toOffer.map((offering) => offering.id) };
+}
+
+/** Offerings to stop offering here (opens the page's confirm dialog). */
+export function checkStopHere(value: unknown, feed: OfferingsFeed | null) {
+  const { catalog, actions } = siteView(feed);
+  const patch = onlyKeys(value, "offering_stop_draft", ["offering_ids"]);
+  const chosen = idList(patch.offering_ids, "offering_ids", catalog);
+  const toStop = chosen.filter((offering) => offering.available);
+  if (toStop.length === 0) throw new Error("None of those offerings is offered on this site.");
+  return { actions, offerings: toStop.map((offering) => ({ id: offering.id, name: offering.name })) };
+}
+
+const LEAD_VALUES: readonly string[] = LEAD_QUALITY_OPTIONS.map((option) => option.value);
+const MATCH_VALUES: readonly string[] = OFFERING_MATCH_OPTIONS.map((option) => option.value);
+
+/** A worth ruling to stage into the page's worth dialog. */
+export function checkWorthDraft(value: unknown, feed: OfferingsFeed | null) {
+  const { catalog, actions } = siteView(feed);
+  const patch = onlyKeys(value, "offering_worth_draft", [
+    "offering_id", "worth_points", "lead_quality", "offering_match", "notes",
+  ]);
+  const offering = offeringIn(catalog, patch.offering_id, "offering_id");
+  if (!offering.available) {
+    throw new Error(`Offer "${offering.name}" on this site first — a site values only what it offers.`);
+  }
+  const points = patch.worth_points;
+  if (typeof points !== "number" || !Number.isFinite(points)) {
+    throw new Error("worth_points must be a number (negative counts it down).");
+  }
+  const values: Partial<OfferingWorthValues> = { worthPoints: points };
+  if ("lead_quality" in patch) {
+    const lead = patch.lead_quality;
+    if (lead !== null && (typeof lead !== "string" || !LEAD_VALUES.includes(lead))) {
+      throw new Error(`lead_quality must be null or one of: ${LEAD_VALUES.join(", ")}.`);
+    }
+    values.leadQuality = lead;
+  }
+  if ("offering_match" in patch) {
+    const match = patch.offering_match;
+    if (match !== null && (typeof match !== "string" || !MATCH_VALUES.includes(match))) {
+      throw new Error(`offering_match must be null or one of: ${MATCH_VALUES.join(", ")}.`);
+    }
+    values.offeringMatch = match;
+  }
+  if ("notes" in patch) values.notes = text(patch.notes, "notes");
+  return { actions, offeringId: offering.id, values };
+}
+
+/** Re-parent / reorder one offering. Mirrors the table's drag-and-drop rules. */
+export function checkMove(value: unknown, feed: OfferingsFeed | null) {
+  const { catalog, actions } = siteView(feed);
+  const patch = onlyKeys(value, "offering_move", ["offering_id", "parent_id", "position"]);
+  const moved = offeringIn(catalog, patch.offering_id, "offering_id");
+  if (!("parent_id" in patch)) throw new Error("parent_id is required (an offering id, or null for the top level).");
+  const parentId = patch.parent_id;
+  if (parentId !== null) {
+    const parent = offeringIn(catalog, parentId, "parent_id");
+    // A branch cannot move under itself: walk the target's ancestry looking for the moved offering.
+    const byId = new Map(catalog.map((offering) => [offering.id, offering]));
+    for (let cursor: CatalogOffering | undefined = parent; cursor; cursor = cursor.parentId ? byId.get(cursor.parentId) : undefined) {
+      if (cursor.id === moved.id) throw new Error("An offering cannot move under itself or one of its own children.");
+    }
+  }
+  if (actions.busy) throw new Error("The page is saving another change — try again in a moment.");
+  const siblings = catalog
+    .filter((offering) => offering.id !== moved.id && (offering.parentId ?? null) === (parentId as string | null))
+    .sort((left, right) => left.sort - right.sort || left.name.localeCompare(right.name))
+    .map((offering) => offering.id);
+  let index = siblings.length;
+  if ("position" in patch) {
+    const position = patch.position;
+    if (typeof position !== "number" || !Number.isInteger(position) || position < 0 || position > siblings.length) {
+      throw new Error(`position must be a whole number from 0 to ${siblings.length} (0 = first among its new siblings).`);
+    }
+    index = position;
+  }
+  siblings.splice(index, 0, moved.id);
+  return { actions, offeringId: moved.id, parentId: parentId as string | null, siblingOrder: siblings };
+}
+
 function OfferingsWriteTargets({ feedRef }: { feedRef: RefObject<OfferingsFeed | null> }) {
   useSurfaceWriteHandlers(MARKETING_BRAND_OFFERINGS_SURFACE_NAME, {
     offering_draft: async (value: unknown) => {
       const feed = feedRef.current;
       const draft = stageOfferingDraft(value, feed);
       feed?.openDraft(draft);
+    },
+    offering_offer_here: {
+      validate: async (value: unknown) => {
+        checkOfferHere(value, feedRef.current);
+      },
+      apply: async (value: unknown) => {
+        const { actions, ids } = checkOfferHere(value, feedRef.current);
+        await actions.offer(ids);
+      },
+    },
+    offering_stop_draft: async (value: unknown) => {
+      const { actions, offerings } = checkStopHere(value, feedRef.current);
+      actions.openStop(offerings);
+    },
+    offering_worth_draft: async (value: unknown) => {
+      const { actions, offeringId, values } = checkWorthDraft(value, feedRef.current);
+      actions.openWorth(offeringId, values);
+    },
+    offering_move: {
+      validate: async (value: unknown) => {
+        checkMove(value, feedRef.current);
+      },
+      apply: async (value: unknown) => {
+        const { actions, offeringId, parentId, siblingOrder } = checkMove(value, feedRef.current);
+        await actions.move(offeringId, parentId, siblingOrder);
+      },
     },
   });
   return null;
