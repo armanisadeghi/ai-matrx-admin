@@ -22,7 +22,7 @@
 
 import type { TemplateSpec } from "@ai-matrx/records/templates";
 
-import { packFindWords, packLayouts } from "./template-search";
+import { packBodyWords, packFindWords, packLayouts } from "./template-search";
 import type { PageProperty, RichSpan, SpaceBlock, SpaceColor, SpaceMedia, SpacePageSettings } from "./types";
 
 export const SPACE_PACK_VERSION = 1 as const;
@@ -168,6 +168,8 @@ export interface SpaceTemplateCardFace extends PackIdentity {
   find?: string[];
   /** The layouts its database blocks open on, main first (template-search.ts packLayouts). */
   layouts?: string[];
+  /** The template's own text as search words, space-separated (template-search.ts packBodyWords). */
+  body?: string;
   /** Former public addresses (SpaceTemplatePack.formerSlugs): public.template_public_page answers them and the page redirects. */
   formerSlugs?: string[];
   /** Set when the pack makes a board: what the Board gallery lists (the Spaces gallery lists only packs with pages). */
@@ -271,6 +273,7 @@ export function packCardFace(pack: SpaceTemplatePack): SpaceTemplateCardFace {
     pages: pack.pages.length,
     find: packFindWords(pack),
     layouts: packLayouts(pack),
+    body: packBodyWords(pack),
     ...(pack.formerSlugs?.length ? { formerSlugs: [...pack.formerSlugs] } : {}),
     ...(pack.board
       ? { board: { title: pack.board.title, chapters: pack.board.chapters.length, pages: pack.board.pages?.length ?? 0 } }

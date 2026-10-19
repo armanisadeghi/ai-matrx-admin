@@ -71,8 +71,9 @@ describe("searchTemplates over the real library", () => {
     plumber: /plumbing/i,
     accountant: /accounting/i,
     dentist: /dental/i,
-    lawyer: /law firm/i,
-    attorney: /law firm/i,
+    // Any law practice: Estate Planning Practice carries "lawyer" as its own tag, so it may lead.
+    lawyer: /law firm|estate planning|immigration|injury/i,
+    attorney: /law firm|estate planning|immigration|injury/i,
     realtor: /real estate/i,
     "real estate agent": /real estate/i,
     salon: /salon|barber/i,
@@ -137,5 +138,51 @@ describe("searchTemplates over the real library", () => {
   it("answers cards matching any word when none matches every word", () => {
     const faces = [{ title: "Recipe box" }, { title: "Workout log" }];
     expect(searchTemplates(faces, "recipes zebra", (f) => f).map((f) => f.title)).toEqual(["Recipe box"]);
+  });
+});
+
+/**
+ * ADVERSARIAL-3 D5 (2026-10-19): the review's own queries, public and signed-in (one search). "freight" found nothing
+ * (the trucking desk's sample carrier is a freight line: its own text), and two-word queries required every word, so
+ * "church volunteers" dropped Volunteer Program Desk and "SaaS roadmap" dropped Product Roadmap and Public Roadmap.
+ * Now: every-word matches lead, some-word matches follow (never empty when any word matches), and the template's
+ * own text is searched. Each query names the template that must be in its first `top` answers.
+ */
+describe("the adversarial review's queries (ADVERSARIAL-3 D5)", () => {
+  const CASES: Array<[query: string, meant: RegExp, top: number]> = [
+    ["freight", /trucking/i, 3],
+    ["church volunteers", /faith community/i, 1],
+    ["church volunteers", /volunteer program/i, 3],
+    ["SaaS roadmap", /saas startup/i, 1],
+    ["SaaS roadmap", /^product roadmap/i, 4],
+    ["SaaS roadmap", /public roadmap/i, 4],
+    ["dental office", /dental/i, 1],
+    ["law firm intake", /law firm|injury intake/i, 2],
+    ["plumber jobs", /plumbing/i, 1],
+    ["food truck", /food truck/i, 1],
+    ["wedding planner", /wedding/i, 1],
+    ["gym members", /gym|fitness/i, 1],
+    ["nonprofit grants", /grant|nonprofit/i, 1],
+    ["hair salon", /hair salon/i, 1],
+    ["invoice", /invoic/i, 1],
+    ["dentist", /dental/i, 1],
+    ["contractor", /contractor/i, 1],
+    ["restaurant", /restaurant/i, 1],
+    ["trucking", /trucking/i, 1],
+    ["logistics", /trucking|warehouse|logistic/i, 3],
+  ];
+  it.each(CASES)("%s finds %s in its first %i", (q, meant, top) => {
+    expect(titles(q).slice(0, top).some((t) => meant.test(t))).toBe(true);
+  });
+
+  it("a query is never empty when any of its words matches, and every-word matches lead", () => {
+    const faces = [{ title: "Church hub", description: "volunteers and services" }, { title: "Volunteer desk" }, { title: "Church calendar" }];
+    expect(searchTemplates(faces, "church volunteers", (f) => f).map((f) => f.title)).toEqual(["Church hub", "Volunteer desk", "Church calendar"]);
+  });
+
+  it("the template's own text is searched by the exact word only, never a prefix or synonym", () => {
+    const faces = [{ title: "Carrier desk", body: "freight lanes" }, { title: "Vet", body: "boarding kennels" }];
+    expect(searchTemplates(faces, "freight", (f) => f).map((f) => f.title)).toEqual(["Carrier desk"]);
+    expect(searchTemplates(faces, "board", (f) => f).map((f) => f.title)).toEqual([]);
   });
 });
