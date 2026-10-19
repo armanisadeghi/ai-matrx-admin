@@ -39,8 +39,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 PACKS = HERE / "packs"
-STARTER_VERSION = 2
-BASE_VERSION = 6
+STARTER_VERSION = 3
+BASE_VERSION = 7
 TODAY = "2026-10-18"
 
 # ── WCAG contrast (same rounding as @ai-matrx/design-system contrastRatio: floored to one decimal) ──
