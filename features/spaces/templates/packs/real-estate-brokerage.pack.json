@@ -1,10 +1,10 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0413",
-  "version": 3,
+  "version": 4,
   "title": "Real Estate Brokerage",
-  "description": "Leads, listings, transactions and closing milestones for a small brokerage.",
-  "forWho": "Real estate brokerages and teams",
+  "description": "For realtors and brokers: leads, listings, contracts, contingency dates and commissions.",
+  "forWho": "Real estate agents, brokers and transaction coordinators",
   "icon": {
     "emoji": "🏠"
   },
@@ -14,10 +14,12 @@
   },
   "category": "realestate",
   "tags": [
-    "real estate",
-    "leads",
+    "realtor",
+    "real estate agent",
+    "broker",
     "listings",
-    "transactions"
+    "transactions",
+    "commissions"
   ],
   "spec": {
     "specVersion": 1,
@@ -88,6 +90,39 @@
               "Buy and sell": "amber",
               "Invest": "violet"
             }
+          },
+          {
+            "key": "preapproved",
+            "label": "Pre-approved",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "budget",
+            "label": "Budget or target price",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "areas",
+            "label": "Areas",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "stage",
@@ -235,7 +270,10 @@
               "source": "Website",
               "agent": "tm-aiyana",
               "follow_up_on": "@today",
-              "owner": "@installer"
+              "owner": "@installer",
+              "preapproved": true,
+              "budget": 450000,
+              "areas": "Eastside, near the park"
             }
           },
           {
@@ -249,7 +287,10 @@
               "source": "Sign call",
               "agent": "tm-desmond",
               "follow_up_on": "@today",
-              "owner": "@installer"
+              "owner": "@installer",
+              "preapproved": false,
+              "budget": 720000,
+              "areas": "Selling in Foxglove"
             }
           },
           {
@@ -262,7 +303,10 @@
               "email": "vosses@mailbox-demo.net",
               "source": "Referral",
               "agent": "tm-aiyana",
-              "follow_up_on": "@mon+2d"
+              "follow_up_on": "@mon+2d",
+              "preapproved": true,
+              "budget": 650000,
+              "areas": "Tamarind and Corbel"
             }
           },
           {
@@ -276,7 +320,10 @@
               "source": "Past client",
               "agent": "tm-desmond",
               "follow_up_on": "@mon+3d",
-              "owner": "@installer"
+              "owner": "@installer",
+              "preapproved": false,
+              "budget": 540000,
+              "areas": "Downsizing from Hillcrest"
             }
           },
           {
@@ -290,7 +337,10 @@
               "source": "Website",
               "agent": "tm-valentina",
               "follow_up_on": "@today-3d",
-              "owner": "@installer"
+              "owner": "@installer",
+              "preapproved": true,
+              "budget": 380000,
+              "areas": "Duplexes near the college"
             }
           },
           {
@@ -303,7 +353,10 @@
               "email": "delphine.a@mailbox-demo.net",
               "source": "Open house",
               "agent": "tm-aiyana",
-              "follow_up_on": "@today+10d"
+              "follow_up_on": "@today+10d",
+              "preapproved": true,
+              "budget": 470000,
+              "areas": "Townhomes with a garage"
             }
           },
           {
@@ -316,7 +369,10 @@
               "email": "whitlocks@mailbox-demo.net",
               "source": "Referral",
               "agent": "tm-aiyana",
-              "follow_up_on": "@today-1d"
+              "follow_up_on": "@today-1d",
+              "preapproved": true,
+              "budget": 760000,
+              "areas": "Cul-de-sacs, good schools"
             }
           },
           {
@@ -329,7 +385,10 @@
               "email": "seun.a@mailbox-demo.net",
               "source": "Past client",
               "agent": "tm-desmond",
-              "follow_up_on": "@today+14d"
+              "follow_up_on": "@today+14d",
+              "preapproved": false,
+              "budget": 875000,
+              "areas": "Selling Ridgeback Lane"
             }
           },
           {
@@ -342,7 +401,10 @@
               "email": "henrietta.l@mailbox-demo.net",
               "source": "Open house",
               "agent": "tm-aiyana",
-              "follow_up_on": "@today-60d"
+              "follow_up_on": "@today-60d",
+              "preapproved": true,
+              "budget": 390000,
+              "areas": "Marina condos"
             }
           },
           {
@@ -356,7 +418,10 @@
               "source": "Website",
               "agent": "tm-aiyana",
               "follow_up_on": "@today-40d",
-              "decided_on": "@today-40d"
+              "decided_on": "@today-40d",
+              "preapproved": false,
+              "budget": 560000,
+              "areas": "Hillside cottages"
             }
           }
         ],
@@ -518,6 +583,13 @@
             "contextPolicy": "include"
           },
           {
+            "key": "mls",
+            "label": "MLS number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -565,6 +637,23 @@
                 "value": 5000000
               }
             ]
+          },
+          {
+            "key": "reduced",
+            "label": "Price reductions",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "listed_on",
@@ -666,7 +755,9 @@
               "price": 649000,
               "listed_on": "@today-12d",
               "agent": "tm-desmond",
-              "beds": 3
+              "beds": 3,
+              "mls": "24-118320",
+              "reduced": 0
             }
           },
           {
@@ -678,7 +769,9 @@
               "price": 875000,
               "listed_on": "@today-30d",
               "agent": "tm-desmond",
-              "beds": 4
+              "beds": 4,
+              "mls": "24-117745",
+              "reduced": 0
             }
           },
           {
@@ -690,7 +783,9 @@
               "price": 512000,
               "listed_on": "@today-5d",
               "agent": "tm-desmond",
-              "beds": 2
+              "beds": 2,
+              "mls": "24-118502",
+              "reduced": 0
             }
           },
           {
@@ -702,7 +797,8 @@
               "price": 739000,
               "listed_on": "@today+6d",
               "agent": "tm-valentina",
-              "beds": 4
+              "beds": 4,
+              "reduced": 0
             }
           },
           {
@@ -715,7 +811,9 @@
               "listed_on": "@today-75d",
               "agent": "tm-desmond",
               "beds": 1,
-              "sold_on": "@today-75d"
+              "sold_on": "@today-75d",
+              "mls": "24-113906",
+              "reduced": 1
             }
           },
           {
@@ -727,7 +825,9 @@
               "price": 560000,
               "listed_on": "@today-50d",
               "agent": "tm-valentina",
-              "beds": 2
+              "beds": 2,
+              "mls": "24-116021",
+              "reduced": 2
             }
           },
           {
@@ -739,7 +839,9 @@
               "price": 468000,
               "listed_on": "@today-26d",
               "agent": "tm-desmond",
-              "beds": 3
+              "beds": 3,
+              "mls": "24-117890",
+              "reduced": 0
             }
           }
         ],
@@ -975,12 +1077,69 @@
           },
           {
             "key": "price",
-            "label": "Listing price",
+            "label": "List price",
             "parityType": "lookup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "listing",
             "pick": "price"
+          },
+          {
+            "key": "contract_price",
+            "label": "Contract price",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "earnest",
+            "label": "Earnest money",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "financing",
+            "label": "Financing",
+            "parityType": "select",
+            "choices": [
+              "Conventional",
+              "FHA",
+              "VA",
+              "Cash"
+            ],
+            "choiceColors": {
+              "Conventional": "blue",
+              "FHA": "green",
+              "VA": "purple",
+              "Cash": "yellow"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "commission_pct",
@@ -1005,7 +1164,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Listing price} * {Commission rate (%)} / 100"
+            "formula": "{Contract price} * {Commission rate (%)} / 100"
           },
           {
             "key": "accepted_on",
@@ -1095,7 +1254,7 @@
           {
             "key": "x01",
             "values": {
-              "txn_title": "Ridgeback Lane sale",
+              "txn_title": "91 Ridgeback Lane, seller side",
               "listing": "g02",
               "client": "l08",
               "side": "Listing side",
@@ -1103,13 +1262,16 @@
               "commission_pct": 2.5,
               "accepted_on": "@today-14d",
               "closing_on": "@today+16d",
-              "coordinator": "tm-bertrand"
+              "coordinator": "tm-bertrand",
+              "contract_price": 862000,
+              "earnest": 15000,
+              "financing": "Conventional"
             }
           },
           {
             "key": "x02",
             "values": {
-              "txn_title": "Corbel Street townhome sale",
+              "txn_title": "74 Corbel Street, seller side",
               "listing": "g07",
               "client": "l06",
               "side": "Listing side",
@@ -1117,13 +1279,16 @@
               "commission_pct": 2.5,
               "accepted_on": "@today-6d",
               "closing_on": "@today+27d",
-              "coordinator": "tm-bertrand"
+              "coordinator": "tm-bertrand",
+              "contract_price": 471500,
+              "earnest": 8000,
+              "financing": "FHA"
             }
           },
           {
             "key": "x03",
             "values": {
-              "txn_title": "Marina condo sale",
+              "txn_title": "15 Larkin Avenue condo, sold",
               "listing": "g05",
               "client": "l09",
               "side": "Listing side",
@@ -1132,13 +1297,16 @@
               "accepted_on": "@today-70d",
               "closing_on": "@today-40d",
               "coordinator": "tm-bertrand",
-              "closed_on": "@today-40d"
+              "closed_on": "@today-40d",
+              "contract_price": 380000,
+              "earnest": 5000,
+              "financing": "Cash"
             }
           },
           {
             "key": "x04",
             "values": {
-              "txn_title": "Tamarind Way purchase",
+              "txn_title": "418 Tamarind Way, buyer side",
               "listing": "g01",
               "client": "l03",
               "side": "Buyer side",
@@ -1146,13 +1314,16 @@
               "commission_pct": 2.5,
               "accepted_on": "@today-10d",
               "closing_on": "@mon+4d",
-              "coordinator": "tm-bertrand"
+              "coordinator": "tm-bertrand",
+              "contract_price": 640000,
+              "earnest": 12000,
+              "financing": "Conventional"
             }
           },
           {
             "key": "x05",
             "values": {
-              "txn_title": "Foxglove Court purchase",
+              "txn_title": "27 Foxglove Court, buyer side",
               "listing": "g04",
               "client": "l07",
               "side": "Buyer side",
@@ -1160,13 +1331,16 @@
               "commission_pct": 2.5,
               "accepted_on": "@today-1d",
               "closing_on": "@today+35d",
-              "coordinator": "tm-bertrand"
+              "coordinator": "tm-bertrand",
+              "contract_price": 745000,
+              "earnest": 20000,
+              "financing": "VA"
             }
           },
           {
             "key": "x06",
             "values": {
-              "txn_title": "Hillside cottage purchase",
+              "txn_title": "603 Tamarind Way, buyer walked",
               "listing": "g06",
               "client": "l10",
               "side": "Buyer side",
@@ -1174,7 +1348,10 @@
               "commission_pct": 2.5,
               "accepted_on": "@today-45d",
               "closing_on": "@today-15d",
-              "coordinator": "tm-bertrand"
+              "coordinator": "tm-bertrand",
+              "contract_price": 548000,
+              "earnest": 10000,
+              "financing": "Conventional"
             }
           }
         ],
@@ -1427,7 +1604,7 @@
           {
             "key": "m01",
             "values": {
-              "task_title": "Loan commitment - Ridgeback Lane",
+              "task_title": "Loan commitment letter",
               "transaction": "x01",
               "due_on": "@today+9d",
               "status": "Open",
@@ -1437,7 +1614,7 @@
           {
             "key": "m02",
             "values": {
-              "task_title": "Final walkthrough - Ridgeback Lane",
+              "task_title": "Final walkthrough with buyers",
               "transaction": "x01",
               "due_on": "@today+14d",
               "status": "Open"
@@ -1446,7 +1623,7 @@
           {
             "key": "m03",
             "values": {
-              "task_title": "Inspection report review - Corbel Street",
+              "task_title": "Inspection report review with sellers",
               "transaction": "x02",
               "due_on": "@today+1d",
               "status": "Open",
@@ -1456,7 +1633,7 @@
           {
             "key": "m04",
             "values": {
-              "task_title": "Repair request response - Corbel Street",
+              "task_title": "Answer the repair request",
               "transaction": "x02",
               "due_on": "@mon+4d",
               "status": "Open",
@@ -1466,7 +1643,7 @@
           {
             "key": "m05",
             "values": {
-              "task_title": "Appraisal visit - Tamarind Way",
+              "task_title": "Appraiser visit, let in by agent",
               "transaction": "x04",
               "due_on": "@today+3d",
               "status": "Open"
@@ -1475,7 +1652,7 @@
           {
             "key": "m06",
             "values": {
-              "task_title": "Earnest money - Foxglove Court",
+              "task_title": "Earnest money to escrow",
               "transaction": "x05",
               "due_on": "@today",
               "status": "Open",
@@ -1485,7 +1662,7 @@
           {
             "key": "m07",
             "values": {
-              "task_title": "Title commitment - Foxglove Court",
+              "task_title": "Title commitment review",
               "transaction": "x05",
               "due_on": "@today+12d",
               "status": "Open"
@@ -1494,7 +1671,7 @@
           {
             "key": "m08",
             "values": {
-              "task_title": "Lender approval - Tamarind Way",
+              "task_title": "Lender final approval",
               "transaction": "x04",
               "due_on": "@today-2d",
               "status": "Open",
@@ -1504,7 +1681,7 @@
           {
             "key": "m09",
             "values": {
-              "task_title": "Closing statement review - Marina condo",
+              "task_title": "Closing statement review",
               "transaction": "x03",
               "due_on": "@today-42d",
               "status": "Done",
@@ -1514,7 +1691,7 @@
           {
             "key": "m10",
             "values": {
-              "task_title": "Inspection - Tamarind Way",
+              "task_title": "Home inspection",
               "transaction": "x04",
               "due_on": "@today-4d",
               "status": "Done",
@@ -2218,7 +2395,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2293,6 +2470,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:sop-after-close"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-use"
                   }
                 }
               ]
@@ -3127,14 +3310,14 @@
       "parent": "real-estate-brokerage",
       "title": "Lead follow-up rhythm",
       "icon": {
-        "emoji": "📞"
+        "emoji": "📇"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Speed and consistency win clients. Set a follow-up date on every lead."
+              "text": "Most leads are not ready today. The agent who follows up steadily, with something useful each time, is the one they call when they are."
             }
           ],
           "background": "blue",
@@ -3146,7 +3329,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "New leads"
+              "text": "The first five minutes"
             }
           ],
           "props": {
@@ -3154,26 +3337,10 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Call within the hour; text if no answer."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Log what they want, their timeline and whether they have talked to a lender."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Set Follow up by to a specific day."
+              "text": "Call new web and sign-call leads within five minutes when you can; response time decides most online leads. Text if they do not answer, then email."
             }
           ]
         },
@@ -3181,7 +3348,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Nurturing"
+              "text": "The first conversation"
             }
           ],
           "props": {
@@ -3192,7 +3359,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Contact every Nurturing lead at least every two weeks."
+              "text": "Buying, selling or both? Timeline? Why now?"
             }
           ]
         },
@@ -3200,7 +3367,333 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "After three months of silence, move to Lost with a note."
+              "text": "Buyers: pre-approved? With which lender? Budget and must-haves? Fill in "
+            },
+            {
+              "text": "Pre-approved",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Budget or target price",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Areas",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sellers: address, what they owe, what they hope to get, when they need to move."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Are they working with another agent? If they signed with someone, stop."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stages"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stage"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Follow up"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "New lead"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Not yet reached"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Daily until reached, up to a week"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Nurturing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Real but six months or more away"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every two to four weeks with something useful"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Active search"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Touring homes or preparing to list"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Weekly at least"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Under contract"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "In a transaction"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Through the transaction"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Closed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Done"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Past-client plan"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Lost"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Chose someone else or stopped"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ask why; note it"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Useful touches for nurturing leads"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Three new listings in their areas with your one-line take on each."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What sold near them last month and for how much."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A rate change that moves their buying power."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Never send a generic newsletter alone; add a line written for them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buyer consultation before touring"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pre-approval letter in hand"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Buyer agreement signed as your state and brokerage require"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Must-haves and deal-breakers written down"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Search set up in their areas"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Whitlocks want to buy and sell. Their follow-up was yesterday. The agent sends three cul-de-sac listings this morning and suggests a pricing visit for their current home on Saturday."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every Monday"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Filter leads with a follow-up date before today. Each one gets contact this week or a new date with a reason. A lead without a date is a lead nobody owns."
             }
           ]
         }
@@ -3211,145 +3704,14 @@
       "parent": "real-estate-brokerage",
       "title": "Listing launch checklist",
       "icon": {
-        "emoji": "📸"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Before going live"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Listing agreement signed"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Photos, floor plan and description approved by the seller"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Disclosures collected"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Pricing agreed"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Launch week"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Live on the MLS"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Social posts and email to the lead list"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Open house booked"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Ongoing"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Weekly update call with the seller"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        }
-      ]
-    },
-    {
-      "key": "sop-transaction",
-      "parent": "real-estate-brokerage",
-      "title": "From offer to closing",
-      "icon": {
-        "emoji": "🔑"
+        "emoji": "🪧"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Add milestones the day an offer is accepted so nothing is missed."
+              "text": "A listing gets its best attention in the first two weeks. Launch it complete, priced right and well presented, or the market marks it down for you."
             }
           ],
           "background": "blue",
@@ -3361,7 +3723,99 @@
           "type": "heading",
           "text": [
             {
-              "text": "Day one"
+              "text": "Before it goes live"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Listing agreement signed; seller disclosures complete"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pricing based on recent closed sales nearby, with the seller's agreement in writing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Repairs and cleaning done; staging advice given"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Professional photos, floor plan and a short video or virtual tour"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Description written: lead with what buyers in that price range care about"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Showing instructions, lockbox and pets plan set"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Coming soon",
+              "bold": true
+            },
+            {
+              "text": " in this workspace with the expected list date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Launch day"
             }
           ],
           "props": {
@@ -3372,7 +3826,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Press Start transaction on the listing."
+              "text": "Go live on the MLS; enter the "
+            },
+            {
+              "text": "MLS number",
+              "bold": true
+            },
+            {
+              "text": "; press "
+            },
+            {
+              "text": "Go active",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3380,7 +3848,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Add milestones from the contract dates: inspection, appraisal, loan commitment, walkthrough, closing."
+              "text": "Share with your buyer agents and sphere the same day."
             }
           ]
         },
@@ -3388,7 +3856,371 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Introduce the client to title and the lender."
+              "text": "Schedule the first open house for the first weekend."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The first two weeks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Collect feedback from every showing agent within 24 hours."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send the seller a weekly update: showings, feedback, online views, any offers."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If it does not sell"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days active without an offer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "14"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Review feedback and showings with the seller"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "21"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Recommend price or presentation changes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "30+"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Price reduction; record it in "
+                    },
+                    {
+                      "text": "Price reductions",
+                      "bold": true
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "One meaningful reduction beats several small ones."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When offers arrive"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each offer becomes a transaction row only once accepted. Before that, compare offers on price, financing, earnest money, contingencies and closing date, and present them side by side to the seller."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The hillside cottage on Tamarind Way had two reductions and was withdrawn. Before relisting in spring, the agent plans new photos and a pre-listing inspection so buyers see fewer surprises."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-transaction",
+      "parent": "real-estate-brokerage",
+      "title": "From contract to closing",
+      "icon": {
+        "emoji": "🔑"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most deals that fall apart do so at a contingency date nobody was watching. Every date in the contract becomes a milestone the day the contract is accepted."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Day of acceptance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the transaction: listing, client, side, contract price, earnest money, financing, commission rate, acceptance and closing dates."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the contract to escrow or the closing attorney and the lender."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a milestone for every date in the contract: earnest money due, inspection period end, appraisal, loan commitment, title review, final walkthrough, closing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Assign an owner to each."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Typical sequence"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Milestone"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Typical timing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Earnest money delivered"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "1 to 3 days after acceptance"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Inspection and repair request"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "7 to 10 days"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Appraisal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2 to 3 weeks"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Loan commitment"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "3 to 4 weeks"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Final walkthrough"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "1 day before closing"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Use the contract's dates, not this table, for every real deal."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inspection and appraisal"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "After inspection, the buyer's agent sends a repair request; the listing agent answers by the deadline. Record any credit or price change, and update "
+            },
+            {
+              "text": "Contract price",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A low appraisal means renegotiation, a larger down payment, or a cancellation within the contingency."
             }
           ]
         },
@@ -3404,26 +4236,43 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "Review Open milestones for every deal."
+              "text": "Every transaction has its next milestone dated"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "Update clients after every milestone."
+              "text": "Milestones due in seven days confirmed with the lender, escrow and the other agent"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Clients updated every week, even when nothing changed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Closing"
+              "text": "If a deal falls through"
             }
           ],
           "props": {
@@ -3434,7 +4283,33 @@
           "type": "text",
           "text": [
             {
-              "text": "Mark the transaction Closed, the listing Sold and the lead Closed."
+              "text": "Press "
+            },
+            {
+              "text": "Fell through",
+              "bold": true
+            },
+            {
+              "text": ", write the reason, and make sure earnest money is handled as the contract says. Put the listing back on the market quickly and tell your buyer pool."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Corbel Street seller has the inspection report review tomorrow and the repair response due on Friday. The listing agent books a call with the seller this evening."
             }
           ]
         }
@@ -3445,14 +4320,26 @@
       "parent": "real-estate-brokerage",
       "title": "After closing",
       "icon": {
-        "emoji": "🎁"
+        "emoji": "🎉"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The commission is earned at closing; the next one starts there too. Most agents' best business comes from past clients and their referrals."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Within a week"
+              "text": "Closing day"
             }
           ],
           "props": {
@@ -3463,7 +4350,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Thank-you note sent"
+              "text": "Final closing statement reviewed for the right commission and credits"
             }
           ],
           "props": {
@@ -3474,7 +4361,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Review request sent"
+              "text": "Keys, codes, garage openers and manuals handed over"
             }
           ],
           "props": {
@@ -3485,7 +4372,26 @@
           "type": "todo",
           "text": [
             {
-              "text": "Client added to the annual anniversary list"
+              "text": "Mark closed",
+              "bold": true
+            },
+            {
+              "text": "; listing "
+            },
+            {
+              "text": "Mark sold",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Commission received and split recorded with the brokerage"
             }
           ],
           "props": {
@@ -3496,7 +4402,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Within a quarter"
+              "text": "The first month"
             }
           ],
           "props": {
@@ -3504,26 +4410,554 @@
           }
         },
         {
-          "type": "todo",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Check in on the move"
+              "text": "Day 1: thank-you note and a small, personal gift."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Day 7: check-in call. Anything not working? Need a plumber, painter or handyman?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Day 30: ask for a review and, if they were happy, for the names of friends thinking of moving."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The past-client plan"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Touch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Every quarter"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Short note with neighborhood sales"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Home anniversary"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Card and a value estimate"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Every year"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Invitation to a client event"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
           "text": [
             {
-              "text": "Ask for referrals"
+              "text": "Set the lead to "
+            },
+            {
+              "text": "Closed",
+              "bold": true
+            },
+            {
+              "text": " and add a follow-up date for the next touch, so past clients stay on the follow-up list."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Learn from the deal"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "At the Monday meeting, spend two minutes on each closing: where the lead came from, what nearly went wrong, and what to repeat. Use "
+            },
+            {
+              "text": "Source",
+              "bold": true
+            },
+            {
+              "text": " on leads to see which channels produce closings, not just inquiries."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Paperwork"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Store the full file as your brokerage and state require, usually for several years. Note on the transaction page where it is stored."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Larkin Avenue condo buyer closed 40 days ago. The day-30 check-in is overdue; the agent calls this week, asks how the move went and mentions a client event next month."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "how-to-use",
+      "parent": "real-estate-brokerage",
+      "title": "Using this workspace",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The working desk of a small brokerage: leads and how warm they are, listings and how long they have sat, every contract from acceptance to closing, and the dated milestones in between. Your transaction platform and MLS stay the official record."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Leads",
+              "bold": true
+            },
+            {
+              "text": ": buyers, sellers and investors with source, agent, stage, pre-approval, budget or target price, areas and the next follow-up date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Listings",
+              "bold": true
+            },
+            {
+              "text": ": address, MLS number, list price, price reductions, bedrooms, status, agent and offers received."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Transactions",
+              "bold": true
+            },
+            {
+              "text": ": each contract with side, list price, contract price, earnest money, financing, commission rate, expected commission, acceptance and closing dates, and open milestones."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Milestones",
+              "bold": true
+            },
+            {
+              "text": ": inspection, appraisal, loan commitment, title, walkthrough and closing steps, each with a due date and owner."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Why contract price matters"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Commission is paid on the price in the contract, not the list price. "
+            },
+            {
+              "text": "Expected commission",
+              "bold": true
+            },
+            {
+              "text": " uses "
+            },
+            {
+              "text": "Contract price",
+              "bold": true
+            },
+            {
+              "text": " times the rate. Update the contract price after any renegotiation following inspection or appraisal."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add your agents and transaction coordinator to the team list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter active listings with MLS numbers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter every open contract with contract price, earnest money and closing date, then add a milestone for each contingency date in the contract."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter leads you spoke to in the last 90 days with a follow-up date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Every morning"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Leads due today; milestones due in the next three days"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Monday sales meeting"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Listings over 21 days with no offer; contracts by stage"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Thursday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Open house plans; sellers get their weekly update"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Month end"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Closed volume, commission by agent, sources that produced closings"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Leads: "
+            },
+            {
+              "text": "Start search",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark lost",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Listings: "
+            },
+            {
+              "text": "Go active",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Start transaction",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark sold",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Transactions: "
+            },
+            {
+              "text": "Add milestone",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark closed",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Fell through",
+              "bold": true
+            },
+            {
+              "text": ". Milestones: "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Tamarind Way purchase has lender approval two days late and the appraisal visit in three days. The coordinator calls the loan officer today, because the financing contingency date in the contract is close behind."
+            }
+          ]
         }
       ]
     }
