@@ -21,18 +21,27 @@ import { seedShellLayoutState, type ShellLayoutState } from "./shellLayoutSlice"
 import { parseShellBootSeed } from "./seed";
 import { shellLandingHref } from "./resolve";
 import { parseShellLayoutBody } from "./validate";
+import { readEffectiveKnobOnServer } from "@/lib/scoped-config/effectiveKnobs.server";
+import { SHELL_MEMBERS_MAY_CUSTOMIZE_KNOB } from "./knob";
 
 export async function pickShellLayoutServer(seed: CoreBootSeed | null, search: string | null): Promise<ShellLayoutState> {
   const jar = await cookies();
   const standardView = jar.get(SHELL_VIEW_COOKIE)?.value === "standard";
   const customized = jar.get(SHELL_CUSTOM_COOKIE)?.value === "1";
+  // Only a seed carrying a layout needs the prediction (it picks the organization's layout).
+  const organizationId = seed?.shell ? predictedOrganizationId(seed, search) : null;
+  // The organization's lock matters only when BOTH a person layout and that organization's layout exist:
+  // only then is one knob read paid (everyone else pays nothing), so a locked member's first frame is the
+  // organization's menu, never her own and then a swap.
+  const contested = Boolean(seed?.shell?.person && organizationId && seed.shell.organizations[organizationId]);
+  const personAllowed = contested ? (await readEffectiveKnobOnServer(SHELL_MEMBERS_MAY_CUSTOMIZE_KNOB, { organizationId })) !== false : true;
   return seedShellLayoutState({
     seed: seed?.shell ?? null,
     seedLanded: seed !== null,
-    // Only a seed carrying a layout needs the prediction (it picks the organization's layout).
-    organizationId: seed?.shell ? predictedOrganizationId(seed, search) : null,
+    organizationId,
     standardView,
     reserved: seed === null && customized && !standardView,
+    personAllowed,
   });
 }
 

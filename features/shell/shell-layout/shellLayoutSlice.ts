@@ -40,6 +40,8 @@ export interface ShellLayoutState {
   standardView: boolean;
   /** The server reserved the nav column (customized cookie + seed miss): render a skeleton until known. */
   reserved: boolean;
+  /** The organization lets members use their own layout (knob `shell.members_may_customize`); false = locked. */
+  personAllowed: boolean;
 }
 
 export const initialShellLayoutState: ShellLayoutState = {
@@ -50,6 +52,7 @@ export const initialShellLayoutState: ShellLayoutState = {
   organizationId: null,
   standardView: false,
   reserved: false,
+  personAllowed: true,
 };
 
 /** True when anything is stored for this viewer (drives the `matrx_shell` cookie and the Standard view switch). */
@@ -98,6 +101,10 @@ const shellLayoutSlice = createSlice({
     shellStandardViewChanged(state, action: PayloadAction<boolean>) {
       state.standardView = action.payload;
     },
+    /** The organization's "Members may customize" knob, as this tab reads it for the applied organization. */
+    shellPersonAllowedChanged(state, action: PayloadAction<boolean>) {
+      state.personAllowed = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(REHYDRATE_ACTION_TYPE, (state, action: RehydrateAction) => {
@@ -127,6 +134,7 @@ export const {
   shellLayoutLoaded,
   shellLayoutOrganizationChanged,
   shellStandardViewChanged,
+  shellPersonAllowedChanged,
 } = shellLayoutSlice.actions;
 
 export default shellLayoutSlice.reducer;
@@ -139,6 +147,8 @@ export function seedShellLayoutState(input: {
   organizationId: string | null;
   standardView: boolean;
   reserved: boolean;
+  /** The server's read of `shell.members_may_customize` (absent = allowed). */
+  personAllowed?: boolean;
 }): ShellLayoutState {
   return {
     enabled: true,
@@ -148,6 +158,7 @@ export function seedShellLayoutState(input: {
     organizationId: input.organizationId,
     standardView: input.standardView,
     reserved: input.reserved,
+    personAllowed: input.personAllowed !== false,
   };
 }
 

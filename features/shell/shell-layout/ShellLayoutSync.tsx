@@ -17,7 +17,10 @@ import type { RootState } from "@/lib/redux/rootReducer";
 import { drainBootSeeds } from "@/lib/boot/bootSeedSlot";
 import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
 import { SHELL_CUSTOM_COOKIE, SHELL_VIEW_COOKIE } from "./contract";
-import { holdsShellLayout, initialShellLayoutState, shellLayoutOrganizationChanged } from "./shellLayoutSlice";
+import { holdsShellLayout, initialShellLayoutState, shellLayoutOrganizationChanged, shellPersonAllowedChanged } from "./shellLayoutSlice";
+import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { SHELL_MEMBERS_MAY_CUSTOMIZE_KNOB } from "./knob";
 
 /** The streamed seed's own deadline (`CORE_SEED_STREAM_DEADLINE_MS`) plus a margin. */
 const STREAMED_SEED_WAIT_MS = 5_000;
@@ -50,6 +53,16 @@ export default function ShellLayoutSync() {
       dispatch(shellLayoutOrganizationChanged(activeOrganizationId));
     }
   }, [dispatch, enabled, activeOrganizationId, held.organizationId]);
+
+  // 4. The organization's lock (`shell.members_may_customize`): read only when it can matter — the person
+  //    has her own layout AND the applied organization has one — from the knob snapshot every page holds.
+  const userId = useAppSelector(selectUserId);
+  const contested = enabled && held.person !== null && held.organizationId !== null && held.organizations[held.organizationId] !== undefined;
+  const allowedKnob = useEffectiveKnob(held.organizationId, userId, SHELL_MEMBERS_MAY_CUSTOMIZE_KNOB, undefined, { enabled: contested });
+  const personAllowed = contested && allowedKnob !== undefined ? allowedKnob !== false : null;
+  useEffect(() => {
+    if (personAllowed !== null && personAllowed !== held.personAllowed) dispatch(shellPersonAllowedChanged(personAllowed));
+  }, [dispatch, personAllowed, held.personAllowed]);
 
   const holds = enabled && held.status === "ready" ? holdsShellLayout(held) : null;
   useEffect(() => {

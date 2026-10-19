@@ -185,6 +185,18 @@ describe("resolver", () => {
     expect(orgOnly.sidebar.map((s) => s.id)).toEqual(["o"]);
   });
 
+  it("an organization that locks customizing (personAllowed false) shows its own layout to every member", () => {
+    const org = body({ sidebar: [{ kind: "nav", id: "o", ref: "chat" }] });
+    const person = body({ sidebar: [{ kind: "nav", id: "p", ref: "files" }] });
+    const locked = resolveShellLayout({ person, organization: org, standardView: false, isAdmin: false, isGuest: false, personAllowed: false });
+    expect(locked.source).toBe("organization");
+    expect(locked.sidebar.map((s) => s.id)).toEqual(["o"]);
+    const lockedNoOrg = resolveShellLayout({ person, organization: null, standardView: false, isAdmin: false, isGuest: false, personAllowed: false });
+    expect(lockedNoOrg.source).toBe("default");
+    const open = resolveShellLayout({ person, organization: org, standardView: false, isAdmin: false, isGuest: false, personAllowed: true });
+    expect(open.source).toBe("person");
+  });
+
   it("standard view and guests always get the default", () => {
     const person = body({ sidebar: [{ kind: "nav", id: "o", ref: "chat" }] });
     const standard = resolveShellLayout({ person, organization: null, standardView: true, isAdmin: false, isGuest: false });

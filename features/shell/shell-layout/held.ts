@@ -16,6 +16,8 @@ export interface HeldShellLayouts {
   organizations: Record<string, StoredShellLayout>;
   organizationId: string | null;
   standardView: boolean;
+  /** The organization lets members use their own layout (knob `shell.members_may_customize`). Absent = true. */
+  personAllowed?: boolean;
 }
 
 export interface ShellViewer {
@@ -48,5 +50,6 @@ export function resolveHeldShellLayout(held: HeldShellLayouts, viewer: ShellView
     standardView: held.standardView,
     isAdmin: viewer.isAdmin,
     isGuest: viewer.isGuest || !held.enabled,
+    personAllowed: held.personAllowed !== false,
   });
 }
