@@ -9,4 +9,9 @@ describe("dock run card picks the kind from the run's chat-stamp label", () => {
     expect(dockRunKind("Notion import of Players").hint).toBe("import");
     expect(dockRunKind("Copy Players").hint).toBe("copy");
   });
+  it("the recorded stamp tool decides, not the label's wording", () => {
+    expect(dockRunKind("Research on Lakes", "research_run")).toEqual({ hint: "workflow", name: "Research on Lakes" });
+    expect(dockRunKind("Notion import of Players", "records").hint).toBeNull();
+    expect(dockRunKind("Workflow Copy machine", "workflow_run").hint).toBe("workflow");
+  });
 });
