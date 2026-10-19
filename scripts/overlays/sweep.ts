@@ -70,11 +70,11 @@ async function signIn(page: Page, base: string): Promise<void> {
   const pass = env.AI_ADMIN_PASSWORD;
   if (!user || !pass) throw new Error("AI_ADMIN_USERNAME / AI_ADMIN_PASSWORD missing from the app's .env");
   await page.goto(`${base}/login`, { waitUntil: "domcontentloaded" });
-  await page.locator('button[type="submit"]:not([disabled]):not([data-preparing="true"])').first().waitFor({ timeout: 60_000 });
+  await page.locator('button[type="submit"]:not([disabled]):not([data-preparing="true"])').first().waitFor({ timeout: 300_000 });
   await page.locator('input[type="email"], input[name="email"]').first().fill(user);
   await page.locator('input[type="password"], input[name="password"]').first().fill(pass);
   await page.locator('button[type="submit"]').first().click();
-  await page.waitForURL((u) => !u.pathname.startsWith("/login"), { timeout: 60_000 });
+  await page.waitForURL((u) => !u.pathname.startsWith("/login"), { timeout: 300_000 });
 }
 
 /**

@@ -16,7 +16,6 @@
 
 import { useContext, useEffect, useState } from "react";
 import { LayoutTemplate, Pencil } from "lucide-react";
-import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
 import { HtmlSampleFrame } from "@ai-matrx/records-ui/html-frame";
 import { Button, Textarea } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
@@ -24,6 +23,7 @@ import type { NodeSource } from "../board/document";
 import type { BoardItemType, ItemBodyProps, TileMenuAction, TileMenuContext } from "./types";
 import { BoardCameraStoreContext } from "../engine/react";
 import { FaceLine, faceCopy } from "./face-text";
+import { MarkdownTileBody } from "../tiles/MarkdownTileBody";
 import { COVER_ENTITY, coverOf, coverSource, type CoverContent } from "./cover-source";
 
 export { COVER_ENTITY, coverOf, coverSource, type CoverContent } from "./cover-source";
@@ -52,7 +52,7 @@ export function coverMenuActions({ tileId }: TileMenuContext): TileMenuAction[] 
   return [{ key: "edit", label: "Edit", icon: Pencil, onSelect: () => requestCoverEdit(tileId) }];
 }
 
-function CoverBody({ tileId, source, onSource, title, interacting }: ItemBodyProps) {
+function CoverBody({ tileId, source, onSource, title, interacting, tier }: ItemBodyProps) {
   const cover = coverOf(source);
   const store = useContext(BoardCameraStoreContext);
   const [editing, setEditing] = useState(false);
@@ -106,9 +106,8 @@ function CoverBody({ tileId, source, onSource, title, interacting }: ItemBodyPro
 
   const hero = drawn.hero.trim() ? <HtmlSampleFrame html={drawn.hero} title={`${title} cover`} initialHeight={160} /> : null;
   const prose = drawn.markdown.trim() ? (
-    <div className="text-[15px] leading-7">
-      <MarkdownStream content={drawn.markdown} isStreamActive={false} />
-    </div>
+    // The board's one prose renderer (the write-up's): laid out at its content's height, never an inner scroll.
+    <MarkdownTileBody id={`${tileId}-prose`} text={drawn.markdown} tier={tier} fit />
   ) : null;
 
   if (!editing) {

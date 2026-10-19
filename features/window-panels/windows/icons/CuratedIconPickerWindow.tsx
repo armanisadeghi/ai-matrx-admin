@@ -249,6 +249,7 @@ function IconPickerTapestry({
         <TapTargetLabeled key={id} label={id}>
           <TapTargetButton
             type="button"
+            variant="transparent"
             ariaLabel={id}
             tooltip={false}
             onClick={() => onPick(id)}

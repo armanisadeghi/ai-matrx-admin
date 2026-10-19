@@ -27,30 +27,13 @@ description: "The universal v3 right-click menu (EditableContextMenu / NonEditab
 9. **Done means the menu opens clean.** The console shows no `INERT MENU` or
    `VALUE MAPPING GAP` scream.
 10. **Chat is a universal agent host.** Never bind a page-agent roster to it.
-11. **Anything with an id shows it through the one canonical id component** (display plus one-click
-    copy, in `@ai-matrx/design-system`). Never hand-built id text, never Copy ID buried in a menu;
-    Peek carries it for every record, and a guard refuses new hand-built id displays.
-12. **Flagship and first-run screens get a bespoke elevated stage**, not the 28px app-chrome controls:
-    display type, giant inputs, a living background, real-data animation, inside the feature folder
-    with theme and motion tokens. The brief names the champions; 3+ screenshot-critique rounds
-    precede any showing.
-13. **Before a link goes to Arman, every screen on its path is walked at the Steve Jobs bar** by an
-    Opus reviewer who fixes what it finds, then a fresh user walk confirms.
-14. **Admin tables filter, search and sort on the server** (controlled mode, footer total = server
-    total), and people are picked by name or email, never by an id input.
-15. **Wasted vertical space is the worst sin:** header rows collapse into the app header or one
-    toolbar, buttons are mostly icons with short text, a button can carry status and action
-    together, and every status shown is backed by real state.
-16. **A new output style or menu layout is a NEW function used only by the new path.** Never thin or
-    rewrite a shared builder (`buildAgentPayload`, the Alchemy menus) that other hosts go through.
-    Before changing one, diff the old render path element by element against a baseline commit and
-    keep every element a home; when tests fail after a redesign, read every deleted assertion, since
-    each is a lost feature. Guard the real host shape, and fix forward, never revert.
-17. **A page fetches only what it shows, each thing once.** Layouts fetch a few core things, a route
-    makes one or two first-paint reads, and nothing else (DMs, realtime, connections, Google, large
-    packages) loads until something engages it. Every removed fetch ships its on-engagement load,
-    proven by clicking it; small late reads are one function called lazily after full paint. Guard:
-    `pnpm check:page-load`.
+11. **Anything with an id shows it through the one canonical id component** (display plus one-click copy).
+12. **Flagship and first-run screens get a bespoke elevated stage**, not the 28px app-chrome controls.
+13. **Before a link goes to Arman, every screen on its path passes the Steve Jobs bar** (walked and fixed by an Opus reviewer).
+14. **Admin tables filter, search and sort on the server**, and people are picked by name or email, never by id.
+15. **Wasted vertical space is the worst sin;** every status shown is backed by real state.
+16. **A new output style or menu layout is a NEW function used only by the new path;** never thin a shared builder.
+17. **A page fetches only what it shows, each thing once;** every removed fetch ships its on-engagement load.
 <!-- rules:stamp-end -->
 
 The deep contract is **[`features/context-menu-host/FEATURE.md`](../../../features/context-menu-host/FEATURE.md)** — read it once. This skill is the rollout recipe; editing the v3 internals is that FEATURE.md's job, and a worker assigned a shard from `pnpm check:context-menu` follows the `context-menu-rollout` skill on top of this one. The proven reference is **`/demos/context-menu/canonical`** (every panel is a real v3 wiring; copy the one that matches your surface). The v2 menu (`UnifiedAgentContextMenu`) was deleted 2026-07-19 — every surface renders v3.

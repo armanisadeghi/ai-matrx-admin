@@ -74,6 +74,8 @@ export const REMOUNT_LEDGER: Record<string, RemountStatus> = {
   "image:quiet": { status: "passing" },
   "write-up": { status: "passing" },
   "write-up:quiet": { status: "passing" },
+  "cover": { status: "passing" },
+  "cover:quiet": { status: "passing" },
   "label": { status: "passing" },
   "label:quiet": { status: "passing" },
   "page": { status: "passing" },

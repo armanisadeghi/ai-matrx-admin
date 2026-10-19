@@ -307,9 +307,9 @@ it("previews free, runs only on a click with the confirmed center, then shows th
   expect(text()).toContain("Matched Bayside Orthodontics · 0 km from center");
   expect(markers().filter((m) => m.dataset.bubble === "·")).toHaveLength(9);
   const before = calls().length;
-  expect(button("Run grid · 180 points")).toBeDefined();
+  expect(button("Run grid")).toBeDefined();
 
-  await click("Run grid · 180 points");
+  await click("Run grid");
   const run = calls().slice(before);
   expect(run).toHaveLength(1);
   expect(run[0].arguments).toMatchObject({ preview: false, center_confirmed: "33.619,-117.93", grid_size: 3 });

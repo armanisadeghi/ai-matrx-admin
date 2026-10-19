@@ -1,7 +1,7 @@
 /**
  * The search page's catalog tabs (L12d): a lane runs the first LIVE Tool of its job; with none live it
  * says so in one line; a pasted store link picks its lane; a name where a link is wanted looks for it
- * (free) instead of buying a failed call; the price shows before the press.
+ * (free) instead of buying a failed call.
  */
 import * as React from "react";
 import { act } from "react";
@@ -106,7 +106,8 @@ describe("the Reviews tab", () => {
     press();
     expect(callRun).toHaveBeenCalledTimes(1);
     expect(callRun.mock.calls[0]?.[0]).toBe("t-trustpilot-page");
-    expect(host.querySelector("[data-tool-price]")?.textContent).toMatch(/40/);
+    // Searching is doing, not deciding: the press carries no price.
+    expect(host.querySelector("[data-tool-price]")).toBeNull();
   });
 
   it("says so in one line when no Tool of the lane is live", () => {

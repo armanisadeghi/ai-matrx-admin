@@ -19,24 +19,43 @@ timestamp: 2026-09-14T00:00:00Z
 <!-- rules:stamp -->
 > Rules from `common-docs/systems/masterwork/STATE.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
 
-1. **Basics before prompting.** Before any capture method or prompt work, build what a person does
+1. **Benchmark first.** Every trial measures against the same job done by telling the
+   agent-structure-builder agent what we want, updating that agent to Opus 5.5, fixing settings and
+   making minor instruction tweaks, then running it. If Masterwork output is not better, that is
+   the finding. Only exception: where one agent cannot do it (tools, access) (Arman, 2026-09-12).
+2. **Census the declared distillation methods (10-15) and drive EVERY one as a real user on the real
+   UI**, one Sonnet driver per method; log and report every UI bug the way he would see it, never
+   filtered as minor; fix the class. Never pick easy subjects to make a trial pass (2026-09-12).
+3. **Basics before prompting.** Before any capture method or prompt work, build what a person does
    first, in bulk, in seconds (a whole channel or library in, shorts vs longs, metrics, transcribe
    all or some, then actions) as an adapter-based platform primitive with a real screen; measure
-   time-to-result (Arman, 2026-09-17).
-2. **A block is the deliverable.** Never swap an easy target for a hard one: report the block
-   exactly, fix it or bring the decision. Agents gather and organize every source; when an AI step
-   is needed, say "we need an agent that does xyz" and hand it to Arman to guide (Arman, 2026-09-17).
-3. **Trials go beyond books:** expertise also lives in heads and in examples of work, so interview a
+   time-to-result (2026-09-17).
+4. **Division of labour.** Agents invent ways to gather information, list where expertise is stored,
+   make every source near-instantly available, and bulk extract and organize. Arman guides what to
+   say or leave out, one agent vs several, code vs agent, 50,000 emails to the 200 that matter. When
+   an AI step is needed, say "we need an agent that does xyz" and hand it to him; never author or
+   tune automations that fail silently (2026-09-17).
+5. **A block is the deliverable.** Never swap an easy target for a hard one (the cheat: a current book
+   blocked in 11 seconds, agents substituted a 100-year-old public-domain PDF). Report the block
+   exactly and fix it or bring the decision; legal or not-quite-legal routes are HIS decision;
+   ignoring is unacceptable. The listed blocks (Instagram, YouTube, LinkedIn, audiobooks, podcasts,
+   Google Docs, OneDrive, Meet history, legal databases) are the work (2026-09-17).
+6. **Every wave = acquisition breadth + human modalities + speed for the human.** Trials use the
+   current #1 authority on a hot topic, never what is convenient. Push the scraper (9 months) and
+   server browser (3 months) to their limits and report each limit as the next fix; propose human
+   modalities (interview-while-you-drive mobile page, record an employee interaction and learn from
+   it, mine all emails, better voice agents); expand massively on his concepts (2026-09-17).
+7. **Trials go beyond books:** expertise also lives in heads and in examples of work, so interview a
    person and distil from their work, and judge with withheld ground truth; pick what computers are
    bad at (judgment, questions, diagnosis) and real jobs; report what improved in the system, not
-   what happened to the run (Arman, 2026-09-11/12).
-4. **Drive every declared distillation method as a real user on the real UI** and report every UI bug
-   however small; never choose easy subjects to make a trial pass (Arman, 2026-09-12).
-5. **The guide is the plan plus a build book, never an archive.** A build book is not done until an
+   what happened to the run; keep running trials while they improve core systems (2026-09-11/12).
+8. **The guide is the plan plus a build book, never an archive.** A build book is not done until an
    agent that never saw it has tried to break it and its schedule adds up; no irreversible change
-   to production before rehearsal (Arman, 2026-09-15).
-6. **Status leads with the assigned core's state.** A locked ruling document is the go signal; never
-   park work on "awaiting his document" (Arman, 2026-09-14).
+   to production before rehearsal (2026-09-15).
+9. **Status leads with the assigned core's state.** A locked ruling document is the go signal; never
+   park work on "awaiting his document"; when reminding him what he owes, say "the information you
+   said you would share about what is lacking from the system to make the system real for humans",
+   never "findings A and B" (2026-09-14/17).
 <!-- rules:stamp-end -->
 
 **Companion file — read only the branch your run reaches:**
