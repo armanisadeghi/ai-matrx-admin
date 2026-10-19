@@ -2,6 +2,7 @@
 
 import type { RagAiCopyBundle, RagAiSectionKey } from "@/features/rag/components/search/ragAiCopy";
 import RagAiCopyWindow from "@/features/window-panels/windows/rag/RagAiCopyWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -15,6 +16,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
           | null
           | undefined;
         if (!isOpen) return null;
+        if (!data?.bundle) return <OverlayNeedsData overlayId="ragAiCopyWindow" onClose={close} />;
         return (
           <RagAiCopyWindow
             isOpen

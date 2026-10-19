@@ -1,6 +1,7 @@
 "use client";
 
 import BrandChannelWindow from "@/features/window-panels/windows/marketing/BrandChannelWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -15,7 +16,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
             : null;
         const brandId = str("brandId");
         // The panel's whole subject is one client's channel.
-        if (!brandId) return null;
+        if (!brandId) return <OverlayNeedsData overlayId="brandChannelWindow" onClose={close} />;
         return (
           <BrandChannelWindow
             isOpen

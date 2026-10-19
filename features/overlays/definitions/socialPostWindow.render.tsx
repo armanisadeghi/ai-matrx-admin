@@ -1,6 +1,7 @@
 "use client";
 
 import SocialPostWindow from "@/features/window-panels/windows/marketing/SocialPostWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -8,8 +9,8 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
         const data = overlayData as Record<string, unknown> | null | undefined;
         // No post or no organization = nothing to show; a stale persisted
         // session can carry that, the opener never produces it.
-        if (typeof data?.postId !== "string" || !data.postId) return null;
-        if (typeof data.organizationId !== "string" || !data.organizationId) return null;
+        if (typeof data?.postId !== "string" || !data.postId) return <OverlayNeedsData overlayId="socialPostWindow" onClose={close} />;
+        if (typeof data.organizationId !== "string" || !data.organizationId) return <OverlayNeedsData overlayId="socialPostWindow" onClose={close} />;
         return (
           <SocialPostWindow
             key={instanceId}

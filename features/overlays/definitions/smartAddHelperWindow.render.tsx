@@ -2,6 +2,7 @@
 
 import { isHelperMethod } from "@/features/marketing/smart-add/helpers/types";
 import SmartAddHelperWindow from "@/features/window-panels/windows/smart-add/SmartAddHelperWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -12,7 +13,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
           : isHelperMethod(instanceId)
             ? instanceId
             : null;
-        if (!method) return null;
+        if (!method) return <OverlayNeedsData overlayId="smartAddHelperWindow" onClose={close} />;
         return (
           <SmartAddHelperWindow
             key={instanceId}

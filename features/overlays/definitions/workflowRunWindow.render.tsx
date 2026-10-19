@@ -2,6 +2,7 @@
 
 import { parseStepLabels } from "./controller-helpers";
 import WorkflowRunWindow from "@/features/window-panels/windows/workflows/WorkflowRunWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -11,7 +12,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
         // No run id means there is nothing to adopt, so no frame opens at all —
         // validated here rather than inside the window, which would otherwise
         // have to render an empty shell pretending to be a run.
-        if (!runId) return null;
+        if (!runId) return <OverlayNeedsData overlayId="workflowRunWindow" onClose={close} />;
         return (
           <WorkflowRunWindow
             key={instanceId}

@@ -2,11 +2,13 @@
 
 import MarketingMediaAssetWindow from "@/features/window-panels/windows/marketing/MarketingMediaAssetWindow";
 import { isJsonObject } from "@/types/json";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
 
         const data = isJsonObject(overlayData) ? overlayData : null;
+        if (typeof data?.siteId !== "string" || !data.siteId || typeof data?.assetSrc !== "string" || !data.assetSrc) return <OverlayNeedsData overlayId="marketingMediaAssetWindow" onClose={close} />;
         return (
           <MarketingMediaAssetWindow
             key={instanceId}

@@ -1,6 +1,7 @@
 "use client";
 
 import PageResearchWindow from "@/features/window-panels/windows/marketing/PageResearchWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -15,7 +16,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
             : undefined;
         const nodeId = str("nodeId");
         // No page, no page research — the window's whole subject is the node.
-        if (!nodeId) return null;
+        if (!nodeId) return <OverlayNeedsData overlayId="pageResearchWindow" onClose={close} />;
         return (
           <PageResearchWindow
             isOpen

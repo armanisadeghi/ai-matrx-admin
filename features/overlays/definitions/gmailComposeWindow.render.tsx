@@ -2,6 +2,7 @@
 
 import { narrowGmailDraftedBy } from "@/features/crm/gmail/types";
 import GmailComposeWindow from "@/features/window-panels/windows/crm/GmailComposeWindow";
+import { OverlayNeedsData } from "@/features/overlays/components/OverlayNeedsData";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
@@ -13,7 +14,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
           typeof data?.organizationId === "string" ? data.organizationId : null;
         // A compose window with no record and no organization cannot write the
         // sent record it exists to write — it does not open half-alive.
-        if (!partyId || !organizationId) return null;
+        if (!partyId || !organizationId) return <OverlayNeedsData overlayId="gmailComposeWindow" onClose={close} />;
         const draftedBy = narrowGmailDraftedBy(data?.draftedBy);
         return (
           <GmailComposeWindow
