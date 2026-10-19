@@ -6,7 +6,7 @@
 //     Dismiss) when the organization's layout moved since she last looked. Only for a person with her own
 //     custom Sidebar; never a modal, never injected into her tree.
 //   • EditSidebarRow — at the bottom of the menu: "Edit sidebar…".
-import { useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { PanelLeft, X } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
@@ -57,24 +57,41 @@ export function WhatsNewSlot() {
   );
 }
 
-/** The organization's layout moved since this person last saw it (first sight only records the version). */
-function useOrgMoved(org: { organizationId: string; version: number } | undefined) {
-  const [, force] = useState(0);
-  if (!org || typeof window === "undefined") return { moved: false, dismiss: () => {} };
-  const key = SEEN_KEY(org.organizationId);
-  const seen = window.localStorage.getItem(key);
-  if (seen === null) {
-    window.localStorage.setItem(key, String(org.version));
-    return { moved: false, dismiss: () => {} };
-  }
-  return {
-    moved: Number(seen) < org.version,
-    dismiss: () => {
-      window.localStorage.setItem(key, String(org.version));
-      force((n) => n + 1);
-    },
+/**
+ * The organization's layout moved since this person last saw it (first sight only records the version).
+ * Read through useSyncExternalStore with a server snapshot of "not seen": the server cannot read
+ * localStorage, and reading it during the first client render made the hydrated HTML differ from the
+ * server's — React then threw the whole tree away and rebuilt it (the launchpad "reloading itself").
+ */
+function subscribeSeen(onChange: () => void): () => void {
+  window.addEventListener("storage", onChange);
+  window.addEventListener(SEEN_EVENT, onChange);
+  return () => {
+    window.removeEventListener("storage", onChange);
+    window.removeEventListener(SEEN_EVENT, onChange);
   };
 }
+const SEEN_EVENT = "matrx:shell:org-layout-seen";
+
+function useOrgMoved(org: { organizationId: string; version: number } | undefined) {
+  const key = org ? SEEN_KEY(org.organizationId) : null;
+  const seen = useSyncExternalStore(
+    subscribeSeen,
+    () => (key ? window.localStorage.getItem(key) : null),
+    () => SEEN_UNKNOWN,
+  );
+  const remember = (version: number) => {
+    if (!key) return;
+    window.localStorage.setItem(key, String(version));
+    window.dispatchEvent(new Event(SEEN_EVENT));
+  };
+  useEffect(() => {
+    if (key && org && seen === null) remember(org.version);
+  });
+  if (!org || seen === null || seen === SEEN_UNKNOWN) return { moved: false, dismiss: () => {} };
+  return { moved: Number(seen) < org.version, dismiss: () => remember(org.version) };
+}
+const SEEN_UNKNOWN = "server";
 
 function OfferRow({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
   return (

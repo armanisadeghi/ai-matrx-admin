@@ -86,3 +86,31 @@ it("renders nothing for a layout already based on the new catalog version", asyn
   expect(host.textContent).not.toContain("New:");
   unmount();
 });
+
+it("'Your organization updated its menu' hydrates without a mismatch (localStorage is read after hydration)", async () => {
+  const { renderToString } = await import("react-dom/server");
+  const { hydrateRoot } = await import("react-dom/client");
+  hold(personBody({ basedOnCatalogVersion: 2 }));
+  state.shellLayout = {
+    ...state.shellLayout,
+    organizationId: "o-1",
+    organizations: { "o-1": { recordId: "r-org", organizationId: "o-1", version: 5, updatedAt: "2026-10-19T00:00:00Z", body: serializeShellLayoutBody(personBody()) } },
+  };
+  window.localStorage.setItem("matrx:shell:org-layout-seen:o-1", "3");
+  const host = document.createElement("div");
+  // The server has no localStorage: render it as one (nothing stored, nothing written).
+  const get = jest.spyOn(Storage.prototype, "getItem").mockReturnValue(null);
+  const set = jest.spyOn(Storage.prototype, "setItem").mockImplementation(() => undefined);
+  host.innerHTML = renderToString(<WhatsNewSlot />);
+  get.mockRestore();
+  set.mockRestore();
+  document.body.appendChild(host);
+  const recoverable = jest.fn();
+  let root: ReturnType<typeof hydrateRoot> | null = null;
+  await act(async () => {
+    root = hydrateRoot(host, <WhatsNewSlot />, { onRecoverableError: recoverable });
+  });
+  expect(recoverable).not.toHaveBeenCalled();
+  expect(host.textContent).toContain("Your organization updated its menu");
+  act(() => root!.unmount());
+});
