@@ -330,12 +330,12 @@
    "name": "Settings Desk A",
    "spec_changed": [
     "tools: send_message added 2026-10-18 06:32:45Z by platform migration agent_call_to_agent_migration (every agent holding the agent tool); the playbook text names agent/agent_call only",
-    "reasoning_effort restored to high (the spec) 2026-10-18 through PATCH /agent-service/agents after aidream migration 20261018120000_agent_factory_birth_effort_knobs set it to low at 07:00:16Z; settings now equal the spec version key for key"
+    "reasoning_effort stays low (2026-10-19 ruling, Arman): the Settings Desk agents are shared live agents and are never reset to high; PB-03's extreme settings block is saved on a disposable agent made for the run (see core-chain/PB-03-unsupported-settings.md)"
    ],
-   "live_version": 5,
-   "live_version_id": "97992730-d2fb-420c-9010-a84eb1df412e",
+   "live_version": 6,
+   "live_version_id": "74dd348f-1d4e-46a3-bbd7-fcc8ba312cd3",
    "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
-   "settings_sha256": "24bcedc0e72c5146154faae5d8f74eb1b022df5063beca7c350977bfbad5f974",
+   "settings_sha256": "98f71848908f3ecb5f98a8a25ca913a4778e9a76a19432bbb2a8ab82f60610a6",
    "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
    "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
    "definition_sha256": "d700bd4a11a040379546e98c305f0eb68067a260df57982802ffaa13f6c5a0ff",
@@ -345,7 +345,7 @@
     "agent",
     "send_message"
    ],
-   "reasoning_effort": "high"
+   "reasoning_effort": "low"
   },
   "settings_o": {
    "kind": "agent",
@@ -354,12 +354,12 @@
    "version_may_advance": true,
    "spec_changed": [
     "tools: send_message added 2026-10-18 06:32:45Z by platform migration agent_call_to_agent_migration (every agent holding the agent tool); the playbook text names agent/agent_call only",
-    "reasoning_effort restored to high (the spec) 2026-10-18 through PATCH /agent-service/agents after aidream migration 20261018120000_agent_factory_birth_effort_knobs set it to low at 07:00:16Z; settings now equal the spec version key for key"
+    "reasoning_effort stays low (2026-10-19 ruling, Arman): the Settings Desk agents are shared live agents and are never reset to high; PB-03's extreme settings block is saved on a disposable agent made for the run (see core-chain/PB-03-unsupported-settings.md)"
    ],
-   "live_version": 7,
-   "live_version_id": "710b159b-e0c8-4ad4-8b9e-8bfac99977de",
+   "live_version": 10,
+   "live_version_id": "ee0ffae9-796c-4c16-9323-35a85d4d174b",
    "model_id": "e665a26a-6326-43ce-9a51-c24f6d468424",
-   "settings_sha256": "24bcedc0e72c5146154faae5d8f74eb1b022df5063beca7c350977bfbad5f974",
+   "settings_sha256": "98f71848908f3ecb5f98a8a25ca913a4778e9a76a19432bbb2a8ab82f60610a6",
    "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
    "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
    "definition_sha256": "d865b6d95092a6708e3eab6db3f202eada595a42e3e6d6e19411bd94747b6535",
@@ -369,7 +369,7 @@
     "agent",
     "send_message"
    ],
-   "reasoning_effort": "high"
+   "reasoning_effort": "low"
   },
   "settings_g": {
    "kind": "agent",
@@ -377,12 +377,12 @@
    "name": "Settings Desk G",
    "spec_changed": [
     "tools: send_message added 2026-10-18 06:32:45Z by platform migration agent_call_to_agent_migration (every agent holding the agent tool); the playbook text names agent/agent_call only",
-    "reasoning_effort restored to high (the spec) 2026-10-18 through PATCH /agent-service/agents after aidream migration 20261018120000_agent_factory_birth_effort_knobs set it to low at 07:00:16Z; settings now equal the spec version key for key"
+    "reasoning_effort stays low (2026-10-19 ruling, Arman): the Settings Desk agents are shared live agents and are never reset to high; PB-03's extreme settings block is saved on a disposable agent made for the run (see core-chain/PB-03-unsupported-settings.md)"
    ],
-   "live_version": 7,
-   "live_version_id": "197c9b8e-539c-48bd-b621-4c48e0f6baf0",
+   "live_version": 8,
+   "live_version_id": "f5e6a652-c74f-4226-a230-633d1d269346",
    "model_id": "7e2df678-5d36-46e1-854c-4ef017d8fb77",
-   "settings_sha256": "24bcedc0e72c5146154faae5d8f74eb1b022df5063beca7c350977bfbad5f974",
+   "settings_sha256": "98f71848908f3ecb5f98a8a25ca913a4778e9a76a19432bbb2a8ab82f60610a6",
    "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
    "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
    "definition_sha256": "cc303464b74aa9d36ea8182721c778bc68cd608a5b00b2f733d8aec6e92a5e73",
@@ -392,7 +392,7 @@
     "agent",
     "send_message"
    ],
-   "reasoning_effort": "high"
+   "reasoning_effort": "low"
   },
   "kestrel_desk": {
    "kind": "agent",

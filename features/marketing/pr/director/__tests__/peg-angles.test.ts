@@ -13,7 +13,12 @@ jest.mock("@ai-matrx/chat/agents/redux/execution-system/thunks/run-headless-agen
   mandateOutputUnusableSentence: () => null,
 }));
 
-import { prPlayMenuServerDataFromEnvelope, readPrPeg } from "@/features/content-ir/kinds/pr-play-menu";
+import { envelopeFromCompleteValue } from "@ai-matrx/content-ir";
+import {
+  PR_PLAY_MENU_KIND,
+  prPlayMenuServerDataFromEnvelope,
+  readPrPeg,
+} from "@/features/content-ir/kinds/pr-play-menu";
 import { findPegAngles, pegStanding, pegStory, readPegAngles } from "../peg-angles";
 
 const peg = { text: "Our founder ran the 2024 census count", passesNew: true, passesTimely: false, passesOthersCare: true };
@@ -57,11 +62,16 @@ test("zero angles is an answer, and a failed run says why", async () => {
 });
 
 test("the bridge carries the peg to the block", () => {
-  const data = prPlayMenuServerDataFromEnvelope({
-    __kind: "pr_play_menu",
-    plays: [],
-    peg: { __kind: "pr_peg_check", text: "A hook", passes_new: true, passes_timely: true, passes_others_care: false },
-    next_move: "",
-  } as never);
+  const data = prPlayMenuServerDataFromEnvelope(
+    envelopeFromCompleteValue(
+      {
+        __kind: PR_PLAY_MENU_KIND,
+        plays: [],
+        peg: { __kind: "pr_peg_check", text: "A hook", passes_new: true, passes_timely: true, passes_others_care: false },
+        next_move: "",
+      },
+      PR_PLAY_MENU_KIND,
+    ),
+  );
   expect(data?.peg).toEqual({ text: "A hook", passesNew: true, passesTimely: true, passesOthersCare: false });
 });

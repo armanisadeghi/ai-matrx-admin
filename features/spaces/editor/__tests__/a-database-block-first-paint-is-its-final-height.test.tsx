@@ -23,7 +23,7 @@ import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 import { SpaceSeedProvider, useHeightKnown } from "../../page/space-seed-context";
-import { DatabaseHost, staticPaintedCss } from "../database-host";
+import { DatabaseHost, staticPaintedCss, type PaintedSize } from "../database-host";
 import { DatabaseLoadingBox } from "../database-loading-box";
 import { ServerDrawnDatabase } from "../server-drawn-database";
 
@@ -47,7 +47,7 @@ const render = (node: ReactNode) => {
 };
 
 // Painted at this window's width (jsdom: 1024) when the table still had rows: 496 px.
-const PAINTED = [{ w: 0, h: 496, vw: 1024, nr: 1 }];
+const PAINTED: PaintedSize[] = [{ w: 0, h: 496, vw: 1024, nr: 1 }];
 const block = (layout = "grid") => ({
   source: { kind: "table", tableId: "t1" },
   title: "Investors",

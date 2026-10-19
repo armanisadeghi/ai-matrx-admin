@@ -837,6 +837,7 @@ export function UserBoard({
     board,
     store,
     boardTitle: title,
+    boardId: boardId ?? null,
     itemSurfaces,
     storedBasics: (tile) => tile.basics ?? null,
     createTile: (id, input, size) => agentTile(id, input, size),

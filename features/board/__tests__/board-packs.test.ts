@@ -36,9 +36,17 @@ jest.mock("@/lib/diagnostics/errorCaptureStore", () => ({ captureError: (...a: u
 
 import { listBoardPacks, makeBoardFromPack, type BoardPackRunJournal } from "../templates/board-packs";
 
-function memoryJournal(start: string[] | null = null): BoardPackRunJournal & { now: () => string[] | null } {
+function memoryJournal(start: string[] | null = null, install: string | null = null): BoardPackRunJournal & { now: () => string[] | null; installNow: () => string | null } {
   let ids = start;
-  return { read: () => ids, write: (next) => void (ids = next && next.length ? [...next] : null), now: () => ids };
+  let copy = install;
+  return {
+    read: () => ids,
+    write: (next) => void (ids = next && next.length ? [...next] : null),
+    readInstall: () => copy,
+    writeInstall: (next) => void (copy = next),
+    now: () => ids,
+    installNow: () => copy,
+  };
 }
 const dispatch = jest.fn() as never;
 
@@ -76,13 +84,28 @@ describe("makeBoardFromPack", () => {
     expect(journal.now()).toEqual(["stuck"]);
   });
 
-  it("a finished run clears its journal: Use again is a deliberate new board over the same tables", async () => {
+  it("every use is its own design system: a FRESH table copy named for the board, and Use again makes another", async () => {
     const journal = memoryJournal();
-    const a = await makeBoardFromPack("pack:t1", "org", "Design system", dispatch, undefined, () => journal);
+    const a = await makeBoardFromPack("pack:t1", "org", "Acme design system", dispatch, undefined, () => journal);
     expect(journal.now()).toBeNull();
-    const b = await makeBoardFromPack("pack:t1", "org", "Design system", dispatch, undefined, () => journal);
+    const fresh = (installTemplateTables.mock.calls[0] as unknown[])[5] as { title: string; installId: string | null };
+    expect(fresh).toMatchObject({ title: "Acme design system", installId: null });
+    const b = await makeBoardFromPack("pack:t1", "org", "Globex design system", dispatch, undefined, () => journal);
     expect(a.id).not.toBe(b.id);
+    expect(((installTemplateTables.mock.calls[1] as unknown[])[5] as { title: string }).title).toBe("Globex design system");
     expect(deleteBoard).not.toHaveBeenCalled();
+  });
+
+  it("Try again continues the SAME fresh copy an unfinished run started, and a finished run forgets it", async () => {
+    const journal = memoryJournal(null, "install-7");
+    installTemplateTables.mockImplementationOnce((async (...a: unknown[]) => {
+      const fresh = a[5] as { installId: string | null; onInstallId: (id: string) => void };
+      expect(fresh.installId).toBe("install-7");
+      fresh.onInstallId("install-7");
+      return TABLES;
+    }) as never);
+    await makeBoardFromPack("pack:t1", "org", "Acme design system", dispatch, undefined, () => journal);
+    expect(journal.installNow()).toBeNull();
   });
 });
 

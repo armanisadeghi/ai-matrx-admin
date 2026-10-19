@@ -66,6 +66,7 @@ export function BoardSurface<T extends BoardTileBase & { title: string }>({
         const selected = rows.find((row) => row.id === selectedId);
         return {
           board_title: host.boardTitle,
+          board_id: host.boardId ?? null,
           board_items: await boardItemsOverview(rows, host.itemSurfaces ?? null),
           selected_tile: selected
             ? { id: selected.id, title: selected.title, kind: selected.kind }

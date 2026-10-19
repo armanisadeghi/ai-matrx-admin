@@ -16,6 +16,6 @@ export default async function SpaceRoute({ params }: { params: Promise<{ spaceId
 }
 
 async function SpaceBody({ spaceId, reads }: { spaceId: string; reads: Promise<SpacePageReads> }) {
-  const { doc, seeds, expectedRows, expectedGroups, expectedNotes, links, backlinks } = await reads;
-  return <SpacePage spaceId={spaceId} initialDoc={doc} seeds={seeds} {...(expectedRows ? { expectedRows } : {})} {...(expectedGroups ? { expectedGroups } : {})} {...(expectedNotes ? { expectedNotes } : {})} links={links} backlinks={backlinks} />;
+  const { doc, seeds, expectedRows, expectedGroups, expectedNotes, servedAt, links, backlinks } = await reads;
+  return <SpacePage spaceId={spaceId} initialDoc={doc} seeds={seeds} {...(expectedRows ? { expectedRows } : {})} {...(expectedGroups ? { expectedGroups } : {})} {...(expectedNotes ? { expectedNotes } : {})} {...(servedAt ? { servedAt } : {})} links={links} backlinks={backlinks} />;
 }

@@ -87,6 +87,9 @@ const settingsFor = (layout: "page" | "canvas", parentId?: string): JsonObject =
 export interface BoardPackRunJournal {
   read(): string[] | null;
   write(boardIds: string[] | null): void;
+  /** The fresh table copy an unfinished run started, so Try again continues it and never makes a second. */
+  readInstall?(): string | null;
+  writeInstall?(installId: string | null): void;
 }
 
 /** A browser-tab journal for one pack in one organization. */
@@ -105,6 +108,8 @@ export function boardPackRunJournal(organizationId: string, templateId: string):
       }
     },
     write: (ids) => (ids && ids.length ? storage()?.setItem(key, JSON.stringify(ids)) : storage()?.removeItem(key)),
+    readInstall: () => storage()?.getItem(`${key}:install`) ?? null,
+    writeInstall: (id) => (id ? storage()?.setItem(`${key}:install`, id) : storage()?.removeItem(`${key}:install`)),
   };
 }
 
@@ -128,8 +133,9 @@ async function undoBoards(ids: readonly string[]): Promise<boolean> {
  * "Use template" for a board pack: tables first, then the top board, then its pages. Answers the top board.
  * ALL OR NOTHING: a failure part-way deletes the boards already made (restorable) and throws the reason; an
  * earlier run that never finished is deleted first, so a retry resumes from a clean slate and never leaves a
- * second half board. A finished run clears the journal: pressing Use again is asking for a NEW board (the
- * tables are the same — the install door answers `already`).
+ * second half board. EVERY USE IS ITS OWN DESIGN SYSTEM: the tables are a FRESH copy named for the board
+ * ("Colors · Acme design system"), so two brands' boards never share a row; the copy's id is journaled, so
+ * Try again continues the same copy. A finished run clears the journal.
  */
 export async function makeBoardFromPack(
   key: string,
@@ -152,7 +158,11 @@ export async function makeBoardFromPack(
     if (await undoBoards(unfinished)) journal.write(null);
     else throw new Error("An earlier unfinished copy of this board could not be deleted. Delete it from the boards list, then use the template again.");
   }
-  const tables = await installTemplateTables(template, orgId, dispatch, onStage);
+  const tables = await installTemplateTables(template, orgId, dispatch, onStage, undefined, {
+    title,
+    installId: journal.readInstall?.() ?? null,
+    onInstallId: (id) => journal.writeInstall?.(id),
+  });
   // Planned before anything is written: a tile whose table was not made stops here, with no board made.
   const [top, ...pages] = planPackBoards(board, tables);
   const made: string[] = [];
@@ -178,6 +188,8 @@ export async function makeBoardFromPack(
       journal.write(made);
     }
     journal.write(null);
+    // Finished: the next use is a NEW board with its own fresh copy, never this one again.
+    journal.writeInstall?.(null);
     return root;
   } catch (err) {
     const undone = await undoBoards(made);

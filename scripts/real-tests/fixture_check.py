@@ -404,6 +404,19 @@ def require_fixtures(playbook: str, accept_drift: Optional[str]) -> Dict[str, An
     return record
 
 
+def shared_live_agent_ids(manifest: Optional[Dict[str, Any]] = None) -> set:
+    """Every agent the manifest names (Settings Desk A/O/G, the Kestrel desk, ...): shared live agents other runs read."""
+    manifest = manifest or load_manifest()
+    return {str(e["id"]) for e in manifest["fixtures"].values() if e.get("kind") == "agent" and e.get("id")}
+
+
+def refuse_shared_agent_write(agent_id: str, manifest: Optional[Dict[str, Any]] = None) -> None:
+    """A grader script that saves settings may only write a DISPOSABLE agent made for its run, never a shared live agent
+    (Arman's ruling 2026-10-19: PB-03 reset the Settings Desk agents to high reasoning again and again)."""
+    if str(agent_id) in shared_live_agent_ids(manifest):
+        raise SystemExit(f"REFUSED: {agent_id} is a shared live fixture agent; write settings only on a disposable agent made for this run")
+
+
 def add_accept_drift_arg(ap: argparse.ArgumentParser) -> None:
     ap.add_argument("--accept-drift", metavar="REASON", default=None,
                     help="send even though the fixture check found differences; the reason is printed and recorded")

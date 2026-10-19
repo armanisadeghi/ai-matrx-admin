@@ -97,7 +97,7 @@ export function findPegAngles(args: { peg: PrPegView; brand: PrDirectorBrand }) 
       initiation: "user",
       mandateKey: MANDATE_KEYS.news__angles,
       surfaceKey: `pr-director-peg:${args.brand.brandId}`,
-      sourceFeature: "pr-director",
+      sourceFeature: "marketing",
       surfaceName: null,
       organizationId: args.brand.organizationId,
       variables: {
