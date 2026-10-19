@@ -608,6 +608,8 @@ export const transcriptsManifest: SurfaceManifest = {
   label: "Transcripts",
   groups,
   writeTargets,
+  // Which transcript, at a glance (a board tile that is not live).
+  briefValues: ["transcript_title", "transcript_duration_seconds", "segment_count", "transcript_recording_date"],
   values: mergeBaselineValues(
     // Baseline:
     //   `selection` — browser text selection on the rendered segments. Lazily

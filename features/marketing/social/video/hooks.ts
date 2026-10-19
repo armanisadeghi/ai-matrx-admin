@@ -2,7 +2,10 @@
 
 /** Video studio query hooks (TanStack Query, keys under the social namespace so `useInvalidateSocial` covers them). */
 
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { fetchOperationsByLink } from "@/lib/runtime-operations/operationsByLink";
 
 import { useSocials } from "../components/SocialsContext";
 import { getVideoProject, listVariants } from "./server";
@@ -53,4 +56,36 @@ export function useVideoStructure(postId: string | null) {
     queryFn: () => readVideoStructure(postId as string),
     enabled: Boolean(postId),
   });
+}
+
+/** The link kind the server stamps on a video analysis (id = the post): how a reloaded page finds the run still going. */
+export const VIDEO_ANALYSIS_LINK_KIND = "video_analysis";
+
+/**
+ * Is an analysis of this post running on the server right now (started from this page before a reload, or from another
+ * tab)? Reads the runtime's by-link operations; asks again every few seconds while one runs, and when it ends the
+ * stored structure is re-read so the finished analysis appears without a manual refresh.
+ */
+export function useRunningAnalysis(postId: string | null, enabled: boolean): boolean {
+  const queryClient = useQueryClient();
+  const wasRunning = useRef(false);
+  const q = useQuery({
+    queryKey: [...videoKeys.post(postId ?? ""), "analysis-running"],
+    enabled: Boolean(postId) && enabled,
+    queryFn: async () => {
+      const data = await fetchOperationsByLink(VIDEO_ANALYSIS_LINK_KIND, postId as string);
+      return (data?.operations ?? []).some((o) => !o.is_terminal);
+    },
+    refetchInterval: (query) => (query.state.data ? 4000 : false),
+    retry: false,
+  });
+  const running = Boolean(q.data);
+  useEffect(() => {
+    if (wasRunning.current && !running && postId) {
+      void queryClient.invalidateQueries({ queryKey: videoKeys.post(postId) });
+      void queryClient.invalidateQueries({ queryKey: ["marketing", "social", "video", "post-media", postId] });
+    }
+    wasRunning.current = running;
+  }, [running, postId, queryClient]);
+  return running;
 }

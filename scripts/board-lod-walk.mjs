@@ -140,9 +140,10 @@ if (!skipDemo) {
   await gotoBoard(`${origin}/demos/board`);
   await page.getByRole("button", { name: /^Board/ }).first().click();
   await page.getByRole("menuitem", { name: /Add 100 live streams/ }).click();
-  await page.waitForTimeout(3000);
-  await hud().nth(3).click();
+  await page.waitForTimeout(4000);
+  await zoomTo(Number(flag("--demo-steps", "9")));
   await page.waitForTimeout(1500);
+  report["demo-zoom"] = await page.locator("[data-board-zoom-hud] button").nth(1).innerText();
   report["demo-100-standing"] = await frames(() => page.waitForTimeout(3000));
   report["demo-100-panzoom"] = await frames(panZoom);
   report["demo-levels"] = await levels();

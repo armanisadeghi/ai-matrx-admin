@@ -125,3 +125,43 @@ remountType(
     }),
   (r) => expectRemountSafe(r, { record: true, loading: false }, [/^crm\./]),
 );
+
+// ─── Transcript ──────────────────────────────────────────────────────────────
+const TRANSCRIPT_ID = "e2d4f6a8-1b3c-4d5e-8f70-9a1b2c3d4e5f";
+const TRANSCRIPT_TITLE = "Walk-through, Unit 4B";
+const TRANSCRIPT_LINE = "The carpet in the second bedroom needs to be replaced.";
+const transcriptRow = {
+  id: TRANSCRIPT_ID,
+  created_by: PERSON.id,
+  organization_id: ORGANIZATION.id,
+  title: TRANSCRIPT_TITLE,
+  description: "Move-out inspection with the tenant.",
+  segments: [{ id: "s1", start: 0, end: 5, timecode: "00:00", speaker: "Dana", text: TRANSCRIPT_LINE }],
+  metadata: { duration: 5, wordCount: 10, segmentCount: 1, speakers: ["Dana"] },
+  audio_file_path: null,
+  video_file_path: null,
+  source_type: "other",
+  tags: [],
+  folder_name: "Transcripts",
+  is_draft: false,
+  draft_saved_at: null,
+  created_at: "2026-09-30T19:00:00.000Z",
+  updated_at: "2026-09-30T19:00:00.000Z",
+  deleted_at: null,
+};
+
+// Break: the transcript tile re-reads its transcript on wake / remount (it is read by id once and
+// kept in the transcripts store), or drops to its spinner while it does.
+remountType(
+  "transcript",
+  () =>
+    runCycle(type("transcript"), { kind: "entity", entity: "transcript", id: TRANSCRIPT_ID }, {
+      title: TRANSCRIPT_TITLE,
+      prepare: () => {
+        seed("transcripts.transcripts", [transcriptRow]);
+      },
+      loadMs: 1500,
+      kept: (tile) => ({ line: shows(tile.container, TRANSCRIPT_LINE), loading: tile.container.querySelector('[aria-busy="true"]') !== null }),
+    }),
+  (r) => expectRemountSafe(r, { line: true, loading: false }, [/^transcripts\.transcripts$/]),
+);

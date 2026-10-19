@@ -24,6 +24,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { toast } from "@/lib/toast";
+import { ShimmerText } from "@/components/loaders/ShimmerText";
 import { currentPathWithSearch, replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +43,7 @@ import {
   type ServerCloneBrief,
   type TeleprompterAnswer,
 } from "../../video/clone";
-import { useReferencePost, useVideoStructure, videoKeys } from "../../video/hooks";
+import { useReferencePost, useRunningAnalysis, useVideoStructure, videoKeys } from "../../video/hooks";
 import { attachReferenceVideo, createVideoProject, deleteVideoProject, estimateProject, fetchPostWords, getVideoProject } from "../../video/server";
 import { useBrandOfferings, useFileUrls, useOfferingFacts, useReferenceVideo, useScriptWriterReady } from "../../video/studio-hooks";
 import { useSocials } from "../SocialsContext";
@@ -165,6 +166,8 @@ function ReferencePanel({ postId }: { postId: string }) {
   const [busy, setBusy] = useState(false);
   // The platform refused the download: the person's own file of that video carries on from here.
   const [refused, setRefused] = useState(false);
+  // A reload mid-analysis loses this page's stream, not the server's run: ask the runtime whether one is still going.
+  const serverRunning = useRunningAnalysis(postId, !busy && !structure.data);
   const uploadReference = async (files: FileList | null) => {
     const f = files?.[0];
     if (!f) return;
@@ -235,6 +238,11 @@ function ReferencePanel({ postId }: { postId: string }) {
         <RegionSkeleton shape="rows" count={4} aria-label="Loading analysis" />
       ) : structure.isError ? (
         <ErrorAlchemyMenu error={structure.error} operation="read video analysis" />
+      ) : !s && serverRunning && !busy ? (
+        <div className="flex items-center gap-2" role="status">
+          <ShimmerText text="Analyzing the video" />
+          <span className="type-meta text-muted-foreground">Still running; the result appears here when it finishes.</span>
+        </div>
       ) : !s ? (
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">

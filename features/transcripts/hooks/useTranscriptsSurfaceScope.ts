@@ -43,6 +43,8 @@ export interface UseTranscriptsSurfaceScopeParams {
    * sidebar selection as if it were transcript content).
    */
   contentContainerRef?: RefObject<HTMLElement | null>;
+  /** The transcript to describe, when it is not the selected one (a board tile shows its own). */
+  transcriptId?: string | null;
 }
 
 function getSelectionInside(
@@ -70,8 +72,10 @@ export function useTranscriptsSurfaceScope(
     isEditingMetadata,
     isEditingContent = false,
     contentContainerRef,
+    transcriptId = null,
   } = params;
-  const { activeTranscript } = useTranscripts();
+  const { activeTranscript: selectedTranscript, transcripts } = useTranscripts();
+  const activeTranscript = transcriptId ? (transcripts.find((t) => t.id === transcriptId) ?? null) : selectedTranscript;
 
   return useCallback(() => {
     const audio = audioRef.current;

@@ -46,6 +46,8 @@ export const REMOUNT_LEDGER: Record<string, RemountStatus> = {
   "workbook:quiet": { status: "failing", owner: "board-office lane", why: "WorkbookRecord keeps its workbook row in component state and re-reads it (and the access check) on every wake and remount; it needs a kept answer keyed by workbook id before the tile may sleep" },
   "party": { status: "failing", owner: "board-office lane", why: "PartyRecordPage keeps the record detail, notes, deals and candidates in component state and re-reads about twenty tables on every wake and remount; it needs kept answers keyed by party id before the tile may sleep" },
   "party:quiet": { status: "failing", owner: "board-office lane", why: "PartyRecordPage keeps the record detail, notes, deals and candidates in component state and re-reads about twenty tables on every wake and remount; it needs kept answers keyed by party id before the tile may sleep" },
+  "transcript": { status: "passing" },
+  "transcript:quiet": { status: "passing" },
   "data-table": { status: "passing" },
   "data-table:quiet": { status: "passing" },
   "record": { status: "passing" },

@@ -117,8 +117,10 @@ function requireText(
   return raw.trim();
 }
 
-export function TranscriptViewer() {
-  const { activeTranscript, updateTranscript } = useTranscripts();
+export function TranscriptViewer({ transcriptId = null }: { transcriptId?: string | null } = {}) {
+  const { activeTranscript: selectedTranscript, transcripts, updateTranscript } = useTranscripts();
+  // A given id shows THAT transcript (a board tile); without one it shows the selected one (the processor page).
+  const activeTranscript = transcriptId ? (transcripts.find((t) => t.id === transcriptId) ?? null) : selectedTranscript;
   const toast = useToastManager("transcripts");
 
   const [isEditingMetadata, setIsEditingMetadata] = useState(false);
@@ -150,6 +152,7 @@ export function TranscriptViewer() {
     isEditingMetadata,
     isEditingContent,
     contentContainerRef: segmentContainerRef,
+    transcriptId,
   });
   const surfaceScope = buildSurfaceScope();
 
