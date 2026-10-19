@@ -1,6 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0151",
+  "formerSlugs": [
+    "spaces-sp0151"
+  ],
   "version": 5,
   "title": "Content Calendar",
   "description": "Content teams: plan blog posts, emails and videos across channels on one calendar.",
@@ -23,7 +26,7 @@
   ],
   "spec": {
     "specVersion": 1,
-    "id": "spaces-sp0151",
+    "id": "spaces-content-calendar",
     "catalogueId": "SP0151",
     "useCase": "Marisol Echeverria leads content at a garden supply shop and uses this to see what is publishing each week and where every piece stands.",
     "industry": "cross_industry",

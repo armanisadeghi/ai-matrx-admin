@@ -1,6 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0161",
+  "formerSlugs": [
+    "spaces-sp0161"
+  ],
   "version": 5,
   "title": "Partnerships Tracker",
   "description": "Partner and business development teams: partners, milestones and referral revenue share.",
@@ -23,7 +26,7 @@
   ],
   "spec": {
     "specVersion": 1,
-    "id": "spaces-sp0161",
+    "id": "spaces-partnerships-tracker",
     "catalogueId": "SP0161",
     "useCase": "Ottilie Brandt heads partnerships and uses this to manage partners, deliver on milestones and pay commissions accurately.",
     "industry": "cross_industry",

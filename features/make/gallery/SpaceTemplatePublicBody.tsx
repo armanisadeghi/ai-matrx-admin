@@ -120,7 +120,7 @@ export function SpaceTemplatePublicBody({
             <Link href={workspacesHref(space.category)}>
               <TemplateChip>{spaceCategoryLabel(space.category)}</TemplateChip>
             </Link>
-            {card.industry && card.industry !== "cross_industry" ? (
+            {card.industry && card.industry !== "cross_industry" && wordFor("industry", card.industry).toLowerCase() !== spaceCategoryLabel(space.category).toLowerCase() ? (
               <Link href={industryHref(card.industry)}>
                 <TemplateChip>{wordFor("industry", card.industry)}</TemplateChip>
               </Link>

@@ -1,172 +1,278 @@
-// features/make/gallery/PublicGalleryPage.tsx — lane CHAIR-GALLERY, 2026-10-05.
+// features/make/gallery/PublicGalleryPage.tsx — THE PUBLIC TEMPLATE GALLERY's one layout (/templates, its
+// workspace and category pages, the industry and job pages). Server-rendered from the one catalog read, so a
+// signed-out visitor, a signed-in person and a crawler read the same cards.
 //
-// THE GALLERY'S PAGES at /templates, /templates/category/<industry> and /templates/job/<job>: one
-// server-rendered layout (heading, industry and job links, the cards with their live thumbnails).
-// The index groups the catalog by industry; a category or job page lists every template in it.
-// WORKSPACES (Arman 2026-10-18 "Yes, public gallery"): Space templates (card.space with pages) come first in
-// their own section, filterable by Space category (/templates/workspaces/<category>); the table templates follow.
+// GALLERY-UX (ADVERSARIAL-2; bar: notion.com/templates — a search box, one category rail, a curated featured row,
+// a picture on every card; we add what it lacks: the search is a link that a crawler reads, results show the
+// template's real rows, and every category holds both workspaces and single tables):
+//   · SEARCH (?q=) through the one template search (publicGallery.ts searchGallery → lib/spaces-blocks/template-search.ts);
+//   · ONE category rail: the Space categories; a table template files under its industry's category
+//     (INDUSTRY_CATEGORY), so there is no second, industry rail. On a phone the rail is one scrolling row and the
+//     cards follow at once;
+//   · FEATURED: the hand-picked FEATURED_SPACE_TEMPLATES, never the first six alphabetically;
+//   · every card has a picture (TemplateCards), drawn on the server: no image loads, nothing moves.
 
 import Link from "next/link";
 
+import { siteConfig } from "@/config/extras/site";
 import { signUpHref } from "@/utils/auth/auth-destination";
 import { cn } from "@/lib/utils";
 
-import { facetValues, isSpaceCard, wordFor, type GalleryCard } from "./catalogue";
+import { isSpaceCard, wordFor, type GalleryCard } from "./catalogue";
+import { GallerySearch } from "./GallerySearch";
 import { SpaceTemplateCardGrid, TemplateCardGrid } from "./TemplateCards";
-import { industryHref, jobHref, PUBLIC_GALLERY_PATH, publicTemplateHref, spaceCategories, spaceCategoryLabel, workspacesHref } from "./publicGallery";
+import {
+  cardCategory,
+  featuredCards,
+  galleryCategories,
+  industryHref,
+  PUBLIC_GALLERY_PATH,
+  publicTemplateHref,
+  searchGallery,
+  spaceCategoryLabel,
+  workspacesHref,
+} from "./publicGallery";
 
-/** Cards per industry on the index; the industry's own page lists them all. */
-const PER_GROUP_ON_INDEX = 6;
+/** Cards per category on the hub; the category's own page lists them all. */
+const PER_CATEGORY_ON_HUB = 3;
+/** Cards named in a page's ItemList (JSON-LD). */
+const LISTED = 30;
 
 export function PublicGalleryPage({
   title,
   cards,
   all,
+  path,
+  query = "",
+  hub = false,
   active,
-  grouped = false,
-  workspaces = false,
   state,
 }: {
   title: string;
+  /** The cards this page lists (and searches). */
   cards: readonly GalleryCard[];
-  /** The whole catalog, for the industry and job links. */
+  /** The whole catalog, for the category rail and its counts. */
   all: readonly GalleryCard[];
-  active?: { industry?: string; job?: string; space?: string };
-  grouped?: boolean;
-  /** The Workspaces pages: Space categories instead of the industry and job links. */
-  workspaces?: boolean;
+  /** This page's address: where the search form goes. */
+  path: string;
+  /** The search (`?q=`); "" = none. */
+  query?: string;
+  /** /templates: featured + every category, a few cards each. */
+  hub?: boolean;
+  /** The category this page is (or files under), lit in the rail. */
+  active?: string | null;
   state: string;
 }) {
-  const industries = facetValues(all, "industry");
-  const jobs = facetValues(all, "job");
-  const spaceCards = cards.filter(isSpaceCard);
-  const tableCards = cards.filter((c) => !isSpaceCard(c));
-  const categories = spaceCategories(all.filter(isSpaceCard));
+  const q = query.trim();
+  const found = q ? searchGallery(cards, q) : [...cards];
+  const spaces = found.filter(isSpaceCard);
+  const tables = found.filter((c) => !isSpaceCard(c));
+  const categories = galleryCategories(all);
+  const listed = (q ? found : hub ? featuredCards(all) : found).slice(0, LISTED);
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: title,
+    url: `${siteConfig.url}${path}`,
+    isPartOf: { "@type": "WebSite", name: "AI Matrx", url: siteConfig.url },
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: found.length,
+      itemListElement: listed.map((c, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: c.space?.title ?? c.name,
+        url: `${siteConfig.url}${publicTemplateHref(c)}`,
+      })),
+    },
+  };
+
   return (
     <div className="bg-textured" data-public-templates={state}>
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8">
-        <header className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex min-w-0 flex-col gap-1">
-            {active ? (
-              <Link href={PUBLIC_GALLERY_PATH} className="type-body text-muted-foreground hover:text-foreground">
-                All templates
-              </Link>
-            ) : null}
-            <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
-            <span className="type-body text-muted-foreground tabular-nums">{cards.length} templates</span>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 pb-16 pt-8 sm:px-6 lg:gap-8 lg:px-8 lg:pt-12">
+        <header className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="flex min-w-0 flex-col gap-1">
+              {hub ? null : (
+                <Link href={PUBLIC_GALLERY_PATH} className="type-body text-muted-foreground hover:text-foreground">
+                  All templates
+                </Link>
+              )}
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{title}</h1>
+              <span className="type-body text-muted-foreground tabular-nums" data-public-templates-count="">
+                {q ? `${found.length} of ${cards.length} templates` : `${cards.length.toLocaleString("en-US")} templates`}
+              </span>
+            </div>
+            <Link
+              href={signUpHref(path)}
+              className="inline-flex h-9 shrink-0 items-center rounded-md bg-primary px-4 type-title text-primary-foreground hover:bg-primary/90"
+              data-public-templates-signup=""
+            >
+              Sign up free
+            </Link>
           </div>
-          <Link
-            href={signUpHref(PUBLIC_GALLERY_PATH)}
-            className="inline-flex h-9 items-center rounded-md bg-primary px-4 type-title text-primary-foreground hover:bg-primary/90"
-            data-public-templates-signup=""
-          >
-            Sign up free
-          </Link>
+          <GallerySearch key={path} path={path} query={q} placeholder="Search templates: plumber, kanban, budget…" />
         </header>
 
-        {workspaces && categories.length > 1 ? (
-          <nav aria-label="Workspace category" className="flex flex-wrap gap-2 type-body" data-public-templates-space-categories="">
-            <FacetLink href={workspacesHref()} active={!active?.space}>
-              All workspaces
-            </FacetLink>
-            {categories.map((v) => (
-              <FacetLink key={v} href={workspacesHref(v)} active={active?.space === v}>
-                {spaceCategoryLabel(v)}
-              </FacetLink>
-            ))}
-          </nav>
-        ) : null}
-        {!workspaces && industries.length > 1 ? (
-          <nav aria-label="Industry" className="flex flex-wrap gap-2 type-body" data-public-templates-industries="">
-            {industries.map((v) => (
-              <FacetLink key={v} href={industryHref(v)} active={active?.industry === v}>
-                {wordFor("industry", v)}
-              </FacetLink>
-            ))}
-          </nav>
-        ) : null}
-        {!workspaces && jobs.length > 1 ? (
-          <nav aria-label="Job" className="flex flex-wrap gap-2 type-body" data-public-templates-jobs="">
-            {jobs.map((v) => (
-              <FacetLink key={v} href={jobHref(v)} active={active?.job === v}>
-                {wordFor("job", v)}
-              </FacetLink>
-            ))}
-          </nav>
-        ) : null}
+        <div className="flex min-w-0 flex-col gap-5 lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:items-start lg:gap-10">
+          <CategoryRail categories={categories} active={hub && !q ? null : (active ?? null)} total={all.length} />
 
-        {cards.length === 0 ? (
-          <p className="type-body text-muted-foreground" data-public-templates-empty="">
-            No public templates yet
-          </p>
-        ) : null}
-
-        {spaceCards.length ? (
-          <section className="flex flex-col gap-3" aria-labelledby="templates-workspaces" data-public-templates-workspaces="">
-            {workspaces ? null : (
-              <div className="flex flex-wrap items-baseline justify-between gap-3">
-                <h2 id="templates-workspaces" className="text-lg font-semibold tracking-tight">
-                  Workspaces
-                </h2>
-                <Link href={workspacesHref()} className="type-body text-primary hover:underline">
-                  All {grouped ? all.filter(isSpaceCard).length : spaceCards.length}
+          <div className="flex min-w-0 flex-col gap-10" data-public-templates-results={q ? found.length : undefined}>
+            {cards.length === 0 ? (
+              <p className="type-body text-muted-foreground" data-public-templates-empty="">
+                No public templates yet
+              </p>
+            ) : q && !found.length ? (
+              <p className="type-body text-muted-foreground" data-public-templates-no-match="">
+                No templates match “{q}”.{" "}
+                <Link href={path} className="text-primary hover:underline">
+                  Show all
                 </Link>
-              </div>
+              </p>
+            ) : hub && !q ? (
+              <HubSections cards={found} />
+            ) : (
+              <>
+                {spaces.length ? (
+                  <Section id="templates-workspaces" title="Workspaces" count={spaces.length}>
+                    <SpaceTemplateCardGrid cards={spaces} hrefFor={(c) => publicTemplateHref(c)} attr="data-public-templates-space-cards" />
+                  </Section>
+                ) : null}
+                {tables.length ? (
+                  <Section id="templates-tables" title="Single tables" count={tables.length}>
+                    <TemplateCardGrid cards={tables} hrefFor={(c) => publicTemplateHref(c)} attr="data-public-templates-cards" />
+                  </Section>
+                ) : null}
+              </>
             )}
-            {grouped && categories.length > 1 ? (
-              <nav aria-label="Workspace category" className="flex flex-wrap gap-2 type-body" data-public-templates-space-categories="">
-                {categories.map((v) => (
-                  <FacetLink key={v} href={workspacesHref(v)} active={false}>
-                    {spaceCategoryLabel(v)}
-                  </FacetLink>
-                ))}
-              </nav>
-            ) : null}
-            <SpaceTemplateCardGrid
-              cards={grouped ? spaceCards.slice(0, PER_GROUP_ON_INDEX) : spaceCards}
-              hrefFor={(c) => publicTemplateHref(c)}
-              attr="data-public-templates-space-cards"
-            />
-          </section>
-        ) : null}
-
-        {tableCards.length === 0 ? null : grouped ? (
-          industries.map((industry) => {
-            const inGroup = tableCards.filter((c) => c.industry === industry);
-            if (!inGroup.length) return null;
-            return (
-              <section key={industry} className="flex flex-col gap-3" aria-labelledby={`templates-${industry}`}>
-                <div className="flex items-baseline justify-between gap-3">
-                  <h2 id={`templates-${industry}`} className="text-lg font-semibold tracking-tight">
-                    {wordFor("industry", industry)}
-                  </h2>
-                  <Link href={industryHref(industry)} className="type-body text-primary hover:underline">
-                    All {inGroup.length}
-                  </Link>
-                </div>
-                <TemplateCardGrid cards={inGroup.slice(0, PER_GROUP_ON_INDEX)} hrefFor={(c) => publicTemplateHref(c)} attr="data-public-templates-cards" />
-              </section>
-            );
-          })
-        ) : (
-          <TemplateCardGrid cards={tableCards} hrefFor={(c) => publicTemplateHref(c)} attr="data-public-templates-cards" />
-        )}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-function FacetLink({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
+/** /templates with no search: the featured row, then every category with its first few workspaces, then single tables by industry. */
+function HubSections({ cards }: { cards: readonly GalleryCard[] }) {
+  const featured = featuredCards(cards);
+  const categories = galleryCategories(cards.filter(isSpaceCard));
+  const tables = cards.filter((c) => !isSpaceCard(c));
+  const industries = [...new Set(tables.map((c) => c.industry).filter((i): i is string => Boolean(i)))].sort((a, b) =>
+    wordFor("industry", a).localeCompare(wordFor("industry", b)),
+  );
   return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={cn(
-        "max-w-[16rem] truncate rounded-full border px-3 py-1",
-        active ? "border-primary bg-primary/10 text-primary-ink" : "border-border bg-card text-muted-foreground hover:text-foreground",
-      )}
-    >
+    <>
+      {featured.length ? (
+        <Section id="templates-featured" title="Featured">
+          <SpaceTemplateCardGrid cards={featured} hrefFor={(c) => publicTemplateHref(c)} attr="data-public-templates-featured" />
+        </Section>
+      ) : null}
+      {categories.map(({ key, count }) => {
+        const inCategory = cards.filter((c) => isSpaceCard(c) && cardCategory(c) === key);
+        return (
+          <Section key={key} id={`templates-${key}`} title={spaceCategoryLabel(key)} count={count} more={{ href: workspacesHref(key), label: `All ${count}` }}>
+            <SpaceTemplateCardGrid cards={inCategory.slice(0, PER_CATEGORY_ON_HUB)} hrefFor={(c) => publicTemplateHref(c)} attr="data-public-templates-space-cards" />
+          </Section>
+        );
+      })}
+      {tables.length ? (
+        <section className="flex flex-col gap-6" aria-labelledby="templates-tables" data-public-templates-tables="">
+          <h2 id="templates-tables" className="text-xl font-semibold tracking-tight text-foreground">
+            Single tables <span className="type-body font-normal text-muted-foreground tabular-nums">{tables.length}</span>
+          </h2>
+          {industries.map((industry) => {
+            const inGroup = tables.filter((c) => c.industry === industry);
+            return (
+              <Section
+                key={industry}
+                id={`templates-industry-${industry}`}
+                title={wordFor("industry", industry)}
+                level={3}
+                count={inGroup.length}
+                more={{ href: industryHref(industry), label: `All ${inGroup.length}` }}
+              >
+                <TemplateCardGrid cards={inGroup.slice(0, PER_CATEGORY_ON_HUB)} hrefFor={(c) => publicTemplateHref(c)} attr="data-public-templates-cards" />
+              </Section>
+            );
+          })}
+        </section>
+      ) : null}
+    </>
+  );
+}
+
+function Section({
+  id,
+  title,
+  count,
+  more,
+  level = 2,
+  children,
+}: {
+  id: string;
+  title: string;
+  count?: number;
+  more?: { href: string; label: string };
+  level?: 2 | 3;
+  children: React.ReactNode;
+}) {
+  const Heading = level === 2 ? "h2" : "h3";
+  return (
+    <section className="flex min-w-0 flex-col gap-3" aria-labelledby={id}>
+      <div className="flex items-baseline justify-between gap-3">
+        <Heading id={id} className={cn("min-w-0 truncate font-semibold tracking-tight text-foreground", level === 2 ? "text-xl" : "text-base")}>
+          {title}
+          {count !== undefined && !more ? <span className="ml-2 type-body font-normal text-muted-foreground tabular-nums">{count}</span> : null}
+        </Heading>
+        {more ? (
+          <Link href={more.href} className="shrink-0 type-body text-primary hover:underline">
+            {more.label}
+          </Link>
+        ) : null}
+      </div>
       {children}
-    </Link>
+    </section>
+  );
+}
+
+/**
+ * THE ONE RAIL: every category with its count. Desktop: a sticky column beside the cards. Phone: one row that
+ * scrolls sideways, so the cards start right under it (ADVERSARIAL-2 #7: 25 wrapped chips pushed every card below the fold).
+ */
+function CategoryRail({ categories, active, total }: { categories: Array<{ key: string; count: number }>; active: string | null; total: number }) {
+  return (
+    <nav
+      aria-label="Template categories"
+      className="-mx-4 min-w-0 px-4 sm:-mx-6 sm:px-6 lg:sticky lg:top-[calc(var(--shell-header-h,3.5rem)+1.5rem)] lg:mx-0 lg:px-0"
+      data-public-templates-categories=""
+    >
+      <ul className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] lg:max-h-[calc(100dvh-var(--shell-header-h,3.5rem)-3rem)] lg:flex-col lg:gap-0.5 lg:overflow-y-auto lg:overflow-x-visible lg:pb-0">
+        <RailItem href={PUBLIC_GALLERY_PATH} active={active === null} label="All templates" count={total} />
+        {categories.map(({ key, count }) => (
+          <RailItem key={key} href={workspacesHref(key)} active={active === key} label={spaceCategoryLabel(key)} count={count} />
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+function RailItem({ href, active, label, count }: { href: string; active: boolean; label: string; count: number }) {
+  return (
+    <li className="shrink-0 lg:shrink">
+      <Link
+        href={href}
+        aria-current={active ? "page" : undefined}
+        className={cn(
+          "flex items-center gap-2 whitespace-nowrap rounded-full border px-3 py-1.5 type-body lg:justify-between lg:rounded-md lg:border-transparent lg:px-2.5",
+          active
+            ? "border-primary bg-primary/10 text-primary-ink lg:border-transparent"
+            : "border-border bg-card text-foreground hover:bg-muted lg:bg-transparent",
+        )}
+      >
+        <span className="truncate">{label}</span>
+        <span className="type-meta text-muted-foreground tabular-nums">{count}</span>
+      </Link>
+    </li>
   );
 }

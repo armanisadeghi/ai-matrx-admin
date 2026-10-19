@@ -7,7 +7,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { packCardFace, type SpaceTemplateCardFace, type SpaceTemplatePack } from "../template-pack";
-import { queryConcepts, searchTemplates, stem } from "../template-search";
+import { agentNounForms, queryConcepts, searchTemplates, stem } from "../template-search";
 
 const DIR = join(__dirname, "../../../features/spaces/templates/packs");
 const FACES: SpaceTemplateCardFace[] = readdirSync(DIR)
@@ -55,17 +55,59 @@ describe("searchTemplates over the real library", () => {
     expect(found.slice(0, 5).some((t) => MUST_LEAD[q].test(t))).toBe(true);
   });
 
-  it.each(["kanban", "board"])("%s finds every template with a board view, boards first", (q) => {
+  it.each(["kanban", "board"])("%s finds the templates that open on a board, main boards first, never the whole library", (q) => {
     const found = searchTemplates(FACES, q, (f) => f);
-    const withBoard = FACES.filter((f) => f.find?.includes("kanban"));
-    expect(found.length).toBeGreaterThanOrEqual(withBoard.length);
-    expect(found.slice(0, 5).every((f) => f.find?.includes("kanban"))).toBe(true);
+    const opensOnBoard = FACES.filter((f) => f.layouts?.includes("kanban"));
+    // ADVERSARIAL-2 #3: every table's install plan carries a spare board, so "kanban" matched 172 of 172.
+    expect(found.length).toBeLessThan(FACES.length);
+    expect(found.length).toBeGreaterThanOrEqual(opensOnBoard.length);
+    for (const f of found) expect(f.layouts?.includes("kanban") || /board|kanban/i.test(`${f.title} ${f.tags.join(" ")} ${f.description}`)).toBe(true);
+    const top = found.slice(0, 5);
+    expect(top.every((f) => f.layouts?.[0] === "kanban" || /board|kanban/i.test(f.title))).toBe(true);
+  });
+
+  /** ADVERSARIAL-2 #3: a person names their trade or job; the card names its business. */
+  const TRADE_LEADS: Record<string, RegExp> = {
+    plumber: /plumbing/i,
+    accountant: /accounting/i,
+    dentist: /dental/i,
+    lawyer: /law firm/i,
+    attorney: /law firm/i,
+    realtor: /real estate/i,
+    "real estate agent": /real estate/i,
+    salon: /salon|barber/i,
+    stylist: /salon|barber/i,
+    restaurant: /restaurant/i,
+    "law firm": /law firm/i,
+    roofer: /roofing/i,
+    landscaper: /landscaping/i,
+  };
+  it.each(Object.keys(TRADE_LEADS))("%s finds its industry template first", (q) => {
+    const found = titles(q);
+    expect(found.length).toBeGreaterThan(0);
+    expect(found[0]).toMatch(TRADE_LEADS[q]);
+  });
+
+  it("a short word never matches inside a longer one (law is not lawn), and gym is not a barbershop", () => {
+    expect(titles("law").some((t) => /lawn/i.test(t))).toBe(false);
+    expect(titles("gym").some((t) => /barber|salon|spa/i.test(t))).toBe(false);
   });
 
   it("finds far more than the old literal match for the queries it missed", () => {
     expect(literal("to do list")).toEqual([]);
     expect(titles("to do list").length).toBeGreaterThanOrEqual(3);
     expect(titles("kanban").length).toBeGreaterThan(literal("kanban").length * 3);
+  });
+
+  it("agent nouns reach their work: roofer → roofing, accountant → account…, never the bare root", () => {
+    expect([...agentNounForms("roofer").exact]).toEqual(["roofing"]);
+    expect(agentNounForms("accountant").starts).toEqual(["account"]);
+    expect(agentNounForms("tax").exact.size).toBe(0);
+    expect(searchTemplates([{ title: "Account Management" }, { title: "Accounting Desk" }], "accountant", (f) => f).map((f) => f.title)).toEqual(["Accounting Desk"]);
+  });
+
+  it("an older card without layouts still finds layouts through its contents words", () => {
+    expect(searchTemplates([{ title: "Old", find: ["kanban"] }, { title: "New", find: ["kanban"], layouts: ["grid"] }], "kanban", (f) => f).map((f) => f.title)).toEqual(["Old"]);
   });
 
   it("reads what is inside a template: a board view finds packs whose title never says board", () => {

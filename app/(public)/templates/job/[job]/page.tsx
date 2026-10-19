@@ -10,9 +10,9 @@ import { PublicGalleryPage } from "@/features/make/gallery/PublicGalleryPage";
 import { jobHref } from "@/features/make/gallery/publicGallery";
 import { readPublicCatalogue } from "@/features/make/gallery/publicCatalogue.server";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
-type Props = { params: Promise<{ job: string }> };
+type Props = { params: Promise<{ job: string }>; searchParams: Promise<{ q?: string }> };
 
 export function generateStaticParams() {
   return TEMPLATE_JOBS.map((job) => ({ job }));
@@ -28,11 +28,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function JobTemplatesPage({ params }: Props) {
+export default async function JobTemplatesPage({ params, searchParams }: Props) {
   const { job } = await params;
+  const { q } = await searchParams;
   if (!(TEMPLATE_JOBS as readonly string[]).includes(job)) notFound();
   const read = await readPublicCatalogue();
   const all = read.state === "open" ? read.cards : [];
   const cards = all.filter((c) => c.job === job);
-  return <PublicGalleryPage title={`${wordFor("job", job)} templates`} cards={cards} all={all} active={{ job }} state={read.state} />;
+  return <PublicGalleryPage title={`${wordFor("job", job)} templates`} cards={cards} all={all} path={jobHref(job)} query={q ?? ""} state={read.state} />;
 }

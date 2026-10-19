@@ -1,6 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0160",
+  "formerSlugs": [
+    "spaces-sp0160"
+  ],
   "version": 5,
   "title": "Proposals Tracker",
   "description": "Agencies and freelancers: track proposals from draft to decision, with line items.",
@@ -23,7 +26,7 @@
   ],
   "spec": {
     "specVersion": 1,
-    "id": "spaces-sp0160",
+    "id": "spaces-proposals-tracker",
     "catalogueId": "SP0160",
     "useCase": "Beatrix Montgomery runs an agency and uses this to see which proposals are out, which expire soon and which she wins.",
     "industry": "cross_industry",

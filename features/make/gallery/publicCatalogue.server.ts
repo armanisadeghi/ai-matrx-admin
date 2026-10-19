@@ -26,13 +26,15 @@ async function readOnce(): Promise<PublicRead> {
 // ONE catalog read per server process for a few minutes, not one per page. React `cache()` lasts a
 // single request, and the build prerenders every /templates/category/* and /templates/job/* page, so
 // each page re-read the whole paged catalog: 192 RPC calls, ~4 minutes of waiting per build
-// (measured 2026-10-08). The pages revalidate hourly, so a 5-minute shared read changes nothing a
-// visitor sees. A closed or failed read is never kept.
-const SHARED_READ_MS = 5 * 60 * 1000;
+// (measured 2026-10-08). FRESHNESS (GALLERY-UX, ADVERSARIAL-2 #11): a published or changed template shows within
+// a minute — the shared read lives 30 s and the pages revalidate every 60 s (it was 5 min + hourly, and the
+// gallery and sitemap trailed the catalog; a category page 404'd while its templates were live).
+// A closed or failed read is never kept.
+const SHARED_READ_MS = 30 * 1000;
 let sharedRead: { at: number; read: Promise<PublicRead> } | null = null;
 
-function readShared(): Promise<PublicRead> {
-  if (sharedRead && Date.now() - sharedRead.at < SHARED_READ_MS) return sharedRead.read;
+function readShared(fresh = false): Promise<PublicRead> {
+  if (!fresh && sharedRead && Date.now() - sharedRead.at < SHARED_READ_MS) return sharedRead.read;
   const read = readOnce();
   const entry = { at: Date.now(), read };
   sharedRead = entry;
@@ -46,6 +48,9 @@ function readShared(): Promise<PublicRead> {
   );
   return read;
 }
+
+/** The catalog read past the shared copy: before a page answers 404, it asks the catalog itself once. */
+export const readPublicCatalogueFresh = cache((): Promise<PublicRead> => readShared(true));
 
 export const readPublicCatalogue = cache(async (): Promise<PublicRead> => {
   const read = await readShared();

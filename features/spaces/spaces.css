@@ -2137,3 +2137,11 @@ button.spaces-page-prop-name:hover { background: var(--spaces-hover); }
 }
 .spaces-tg-page > .spaces-page { height: auto; }
 .spaces-tg-page .spaces-content { padding: 0 48px; }
+
+/* THE PUBLIC TEMPLATE PREVIEW ON A PHONE (GALLERY-UX, ADVERSARIAL-2 #7): squeezed under ~40rem the database
+   toolbars wrapped "Group by" one letter per line and clipped the row chips. Below 640px the preview page keeps
+   a 40rem canvas and the preview box scrolls sideways, so every view draws at a width it was built for. */
+@media (max-width: 639px) {
+  [data-space-template-preview] .spaces-tg-page { overflow-x: auto; }
+  [data-space-template-preview] .spaces-tg-page > .spaces-page { min-width: 40rem; }
+}

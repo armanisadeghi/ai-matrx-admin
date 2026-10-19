@@ -27,6 +27,12 @@ export interface TemplateSearchFace {
   category?: string | null;
   tags?: readonly string[] | null;
   find?: readonly string[] | null;
+  /**
+   * The layouts its database blocks OPEN on (the view a person sees first), main first: the root page's first
+   * database block leads (`packLayouts`). A layout query ("kanban", "calendar") matches these, never the
+   * install plan's spare views — every table carries a board there, so "kanban" used to match all 172 (ADVERSARIAL-2 #3).
+   */
+  layouts?: readonly string[] | null;
 }
 
 /**
@@ -57,6 +63,34 @@ export const TEMPLATE_SYNONYMS: readonly (readonly string[])[] = [
   ["workout", "fitness", "exercise", "gym"],
   ["travel", "trip", "itinerary", "vacation"],
   ["bug", "issue", "ticket"],
+  // Trades, practices and shops: the person names their job or business, the card names its work
+  // (ADVERSARIAL-2 #3: "plumber" and "accountant" found 0 while Plumbing Company HQ and Accounting Firm Desk exist).
+  ["plumber", "plumbing"],
+  ["accountant", "accounting", "accountancy", "bookkeeper", "bookkeeping", "cpa", "tax"],
+  ["lawyer", "attorney", "law", "legal", "paralegal", "litigation"],
+  ["realtor", "realestate", "realty", "brokerage"],
+  ["dentist", "dental", "dentistry", "orthodontist", "orthodontic"],
+  ["salon", "stylist", "hair", "hairdresser", "barber", "barbershop", "beauty", "nail"],
+  ["spa", "massage", "esthetician", "facial"],
+  ["restaurant", "cafe", "coffee", "catering", "caterer", "bakery", "brewery", "diner", "bistro", "foodtruck"],
+  ["doctor", "clinic", "medical", "physician", "healthcare", "patient"],
+  ["therapist", "therapy", "counselor", "counseling", "psychologist", "mentalhealth"],
+  ["contractor", "construction", "remodel", "remodeling", "renovation"],
+  ["electrician", "electrical"],
+  ["landscaper", "landscaping", "lawn", "gardener", "gardening"],
+  ["cleaner", "cleaning", "janitorial", "maid", "housekeeping"],
+  ["photographer", "photography", "photo"],
+  ["nonprofit", "charity", "donor", "fundraising"],
+  ["teacher", "teaching", "tutor", "tutoring", "lesson", "classroom"],
+  ["ecommerce", "shop", "store", "retail", "shopify"],
+  ["veterinarian", "vet", "veterinary", "pet"],
+  ["hotel", "hospitality", "lodging", "bnb", "inn"],
+  ["consultant", "consulting", "consultancy"],
+  ["freelancer", "freelance", "freelancing", "solopreneur"],
+  ["roofer", "roofing"],
+  ["mover", "moving"],
+  ["church", "faith", "ministry", "congregation"],
+  ["trainer", "fitness", "gym"],
 ];
 
 /** Typed phrases folded to one word before the query is cut ("to do" → "todo"). */
@@ -64,18 +98,29 @@ const PHRASES: ReadonlyArray<[RegExp, string]> = [
   [/\bto[\s-]+dos?\b/g, "todo"],
   [/\b1\s*[:-]?\s*on\s*[:-]?\s*1\b|\b1:1\b|\bone[\s-]+on[\s-]+one\b/g, "oneonone"],
   [/\bstand[\s-]+ups?\b/g, "standup"],
+  [/\breal[\s-]+estate\b/g, "realestate"],
+  [/\bfood[\s-]+trucks?\b/g, "foodtruck"],
+  [/\bmental[\s-]+health\b/g, "mentalhealth"],
+  [/\bnon[\s-]+profits?\b/g, "nonprofit"],
+  [/\be[\s-]+commerce\b/g, "ecommerce"],
 ];
 
 /** Words that carry no meaning in a template search. */
 const STOP = new Set(["a", "an", "the", "for", "my", "of", "and", "to", "in", "with", "on", "template", "page", "free", "notion", "app"]);
 /** Words that rank when they match but never exclude a card ("habit tracker" finds a "Habits" pack). */
-const SOFT = new Set(["list", "tracker", "track", "tracking", "manager", "management", "system", "os", "simple", "basic", "ultimate", "dashboard", "log", "plan", "planning", "organizer"]);
+const SOFT = new Set(["list", "tracker", "track", "tracking", "manager", "management", "system", "os", "simple", "basic", "ultimate", "dashboard", "log", "plan", "planning", "organizer", "business", "company", "firm", "hq"]);
 
 /** Field weights: where a concept matched. */
-const WEIGHT = { title: 10, tags: 7, category: 5, description: 4, forWho: 3, find: 2 } as const;
+const WEIGHT = { title: 10, tags: 7, main: 6, category: 5, description: 4, forWho: 3, layout: 3, find: 2 } as const;
 type Field = keyof typeof WEIGHT;
+/** Added when the template's main view is the layout a concept names (ADVERSARIAL-2 #3: main boards first). */
+const MAIN_BONUS = 4;
 /** A synonym's match counts for this share of the person's own word. */
 const SYNONYM_SHARE = 0.6;
+/** A form made from the person's own word ("plumber" → "plumbing") counts for this share. */
+const FORM_SHARE = 0.9;
+/** The person's own word also matches as a word start from this length ("invoic" → "invoices"; "law" never "lawn"). */
+const PREFIX_FROM = 4;
 
 /** Lower case, accents off, cut into words. */
 export function searchWords(text: string | null | undefined): string[] {
@@ -110,7 +155,27 @@ const GROUPS_OF = (() => {
 interface Concept {
   word: string;
   synonyms: Set<string>;
+  /** Forms of the person's own word: the work an agent noun names ("plumber" → "plumbing", "plumb…"). */
+  forms: { exact: Set<string>; starts: string[] };
   soft: boolean;
+}
+
+/**
+ * The work an agent noun names, so a job title finds its trade without a synonym listed for it:
+ * "roofer" → "roofing", "landscaper" → "landscaping", "accountant" → "account…", "electrician" → "electric…",
+ * "therapist" → "therap…". A root shorter than five letters only matches with "-ing" ("roof" never "roofline").
+ */
+export function agentNounForms(word: string): { exact: Set<string>; starts: string[] } {
+  const exact = new Set<string>();
+  const starts: string[] = [];
+  if (word.length >= 6) {
+    const root = /(?:er|or)$/.test(word) ? word.slice(0, -2) : /(?:ist|ian|ant)$/.test(word) ? word.slice(0, -3) : null;
+    if (root && root.length >= 3) {
+      exact.add(`${root}ing`);
+      if (root.length >= 5) starts.push(root);
+    }
+  }
+  return { exact, starts };
 }
 
 /** The query as concepts (each typed word with its synonyms). */
@@ -124,7 +189,7 @@ export function queryConcepts(query: string): Concept[] {
     const word = stem(raw);
     if (seen.has(word)) continue;
     seen.add(word);
-    out.push({ word, synonyms: GROUPS_OF.get(word) ?? new Set(), soft: SOFT.has(raw) || SOFT.has(word) });
+    out.push({ word, synonyms: GROUPS_OF.get(word) ?? new Set(), forms: agentNounForms(word), soft: SOFT.has(raw) || SOFT.has(word) });
   }
   return out;
 }
@@ -140,22 +205,33 @@ function foldPhrases(s: string | null | undefined): string {
 
 function faceWords(face: TemplateSearchFace): Record<Field, string[]> {
   const of = (s: string | null | undefined) => searchWords(foldPhrases(s)).map(stem);
+  const layoutWords = (k: string | undefined) => (k ? (LAYOUT_WORDS[k] ?? []) : []);
+  const layouts = face.layouts ?? null;
+  // A card that names its opening layouts is searched by those for a layout word; its contents words keep
+  // only the names (an older card, published before `layouts`, still matches layouts through `find`).
+  const find = (face.find ?? []).flatMap((t) => of(t));
   return {
+    main: layouts ? layoutWords(layouts[0]) : [],
+    layout: layouts ? layouts.flatMap(layoutWords) : [],
     title: of(face.title),
     tags: (face.tags ?? []).flatMap((t) => of(t)),
     category: of(categoryLabel(face.category)),
     description: of(face.description),
     forWho: of(face.forWho),
-    find: (face.find ?? []).flatMap((t) => of(t)),
+    find: layouts ? find.filter((w) => !LAYOUT_WORD_SET.has(w)) : find,
   };
 }
 
-/** How well one concept matches a word list: 1 own word, SYNONYM_SHARE a synonym, 0 none. */
-function conceptHit(c: Concept, words: string[]): number {
+/**
+ * How well one concept matches a word list: 1 own word, FORM_SHARE a form of it, SYNONYM_SHARE a synonym, 0 none.
+ * `ownOnly`: the category label is broad ("Fitness & wellness" holds the barbershop), so only the person's own word counts there.
+ */
+function conceptHit(c: Concept, words: string[], ownOnly = false): number {
   let best = 0;
   for (const w of words) {
-    if (w === c.word || (c.word.length >= 3 && w.startsWith(c.word))) return 1;
-    if (c.synonyms.has(w)) best = SYNONYM_SHARE;
+    if (w === c.word || (c.word.length >= PREFIX_FROM && w.startsWith(c.word))) return 1;
+    if (c.forms.exact.has(w) || c.forms.starts.some((r) => w.length > r.length && w.startsWith(r))) best = Math.max(best, FORM_SHARE);
+    else if (!ownOnly && c.synonyms.has(w)) best = Math.max(best, SYNONYM_SHARE);
   }
   return best;
 }
@@ -171,7 +247,9 @@ function matchConcepts(words: Record<Field, string[]>, title: string, concepts: 
   const hard = concepts.filter((c) => !c.soft);
   for (const c of concepts) {
     let best = 0;
-    for (const f of Object.keys(WEIGHT) as Field[]) best = Math.max(best, WEIGHT[f] * conceptHit(c, words[f]));
+    for (const f of Object.keys(WEIGHT) as Field[]) best = Math.max(best, WEIGHT[f] * conceptHit(c, words[f], f === "category"));
+    // A template whose MAIN view is the layout asked for ranks above one that only names it (a "kanban" tag).
+    if (best > 0) best += MAIN_BONUS * conceptHit(c, words.main);
     if (best > 0 && !c.soft) matched++;
     score += c.soft ? best / 2 : best;
   }
@@ -213,6 +291,7 @@ const LAYOUT_WORDS: Record<string, string[]> = {
   chart: ["chart"],
   form: ["form"],
 };
+const LAYOUT_WORD_SET = new Set(Object.values(LAYOUT_WORDS).flat());
 
 interface FindPack {
   spec: { tables?: Array<{ name?: string }>; views?: Array<{ name?: string; kind?: string }> };
@@ -228,20 +307,17 @@ export function packFindWords(pack: FindPack): string[] {
   const add = (s: string | undefined | null) => searchWords(s).forEach((w) => w.length > 1 && !STOP.has(w) && out.add(w));
   const layout = (k: string | undefined) => (k ? (LAYOUT_WORDS[k] ?? []).forEach((w) => out.add(w)) : undefined);
   for (const t of pack.spec.tables ?? []) add(t.name);
-  for (const v of pack.spec.views ?? []) {
-    add(v.name);
-    layout(v.kind);
-  }
+  // The install plan's views are names only: every table carries a spare board there (ADVERSARIAL-2 #3).
+  for (const v of pack.spec.views ?? []) add(v.name);
   const walk = (node: unknown): void => {
     if (Array.isArray(node)) return node.forEach(walk);
     if (!node || typeof node !== "object") return;
     const b = node as { type?: string; props?: { title?: string; views?: Array<{ name?: string; layout?: string }> }; children?: unknown };
     if (b.type === "database") {
       add(b.props?.title);
-      for (const v of b.props?.views ?? []) {
-        add(v.name);
-        layout(v.layout);
-      }
+      for (const v of b.props?.views ?? []) add(v.name);
+      // The layout a person sees when the block opens (its first view).
+      layout(b.props?.views?.[0]?.layout);
     }
     if (b.children) walk(b.children);
   };
@@ -249,5 +325,25 @@ export function packFindWords(pack: FindPack): string[] {
     add(p.title);
     walk(p.blocks);
   }
+  return [...out];
+}
+
+/**
+ * The layouts a pack's database blocks open on, main first: pages in order (the root page first), each
+ * database block's first view, unique ("board" folded into "kanban"). `layouts[0]` is the template's main view.
+ */
+export function packLayouts(pack: FindPack): string[] {
+  const out = new Set<string>();
+  const walk = (node: unknown): void => {
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (!node || typeof node !== "object") return;
+    const b = node as { type?: string; props?: { views?: Array<{ layout?: string }> }; children?: unknown };
+    if (b.type === "database") {
+      const first = b.props?.views?.[0]?.layout ?? "grid";
+      out.add(first === "board" ? "kanban" : first);
+    }
+    if (b.children) walk(b.children);
+  };
+  for (const p of pack.pages) walk(p.blocks);
   return [...out];
 }

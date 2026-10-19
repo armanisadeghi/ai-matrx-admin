@@ -1,6 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0162",
+  "formerSlugs": [
+    "spaces-sp0162"
+  ],
   "version": 4,
   "title": "Brand Assets Hub",
   "description": "Brand and design teams: a gallery of logos and photos with brand rules and approvals.",
@@ -23,7 +26,7 @@
   ],
   "spec": {
     "specVersion": 1,
-    "id": "spaces-sp0162",
+    "id": "spaces-brand-assets-hub",
     "catalogueId": "SP0162",
     "useCase": "Solveig Hartmann is the brand manager and uses this so everyone finds approved logos and templates without asking.",
     "industry": "cross_industry",

@@ -7,7 +7,7 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { permanentRedirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { siteConfig } from "@/config/extras/site";
@@ -27,7 +27,10 @@ import {
 import { readPublicCatalogue, readTemplatePage } from "@/features/make/gallery/publicCatalogue.server";
 import { SpaceTemplatePublicBody } from "@/features/make/gallery/SpaceTemplatePublicBody";
 
-export const revalidate = 3600;
+export const revalidate = 60;
+
+/** An organization's own saved template opens here by its id (signed in); any other unknown key is a real 404. */
+const TEMPLATE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -36,7 +39,7 @@ const RELATED = 6;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const page = await readTemplatePage(decodeURIComponent(slug));
-  if (!page) return { title: "Template", robots: { index: false, follow: true } };
+  if (!page) return { title: "Template not found", robots: { index: false, follow: true } };
   const { card, spec } = page;
   const path = publicTemplateHref(card);
   const space = page.pack ? card.space : null;
@@ -44,9 +47,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // template's title is its own (one per catalog id).
   const title = space ? space.title : spec.business?.name ? `${card.name}: ${spec.business.name}` : card.name;
   const image = { url: `${path}/social-image`, width: 1200, height: 630, alt: title };
+  // One separator: "HVAC Company HQ template — AI Matrx" (ADVERSARIAL-2: "Template | HVAC Company HQ — AI Matrx").
   const meta = createRouteMetadata(path, {
-    title,
-    titlePrefix: "Template",
+    title: `${title} template`,
     description: templateDescription(card),
     canonicalPath: path,
     keywords: [
@@ -81,7 +84,9 @@ export default async function PublicTemplatePage({ params, searchParams }: Props
   const page = await readTemplatePage(key);
 
   if (!page) {
-    // Not a published platform template: an organization's own saved template opens here signed in.
+    // ADVERSARIAL-2 #12: an unknown address answered 200. Only a template id can be an organization's own
+    // saved template (it opens here signed in); anything else is a real 404 with the gallery one click away.
+    if (!TEMPLATE_ID.test(key)) notFound();
     return (
       <div className="bg-textured">
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-10 sm:px-6">

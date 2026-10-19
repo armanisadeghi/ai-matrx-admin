@@ -18,6 +18,7 @@ import { templateDeclaration, type TemplateSpec } from "@ai-matrx/records/templa
 
 import { packDeclaration, type SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
 import { checkPack } from "@/lib/spaces-blocks/template-pack-check";
+import { slugFindings, type SlugPack } from "@/lib/spaces-blocks/template-slug";
 
 import { agentSnapshot, packFilesIn, readPack } from "./pack-files";
 
@@ -27,10 +28,13 @@ async function main(): Promise<number> {
   const files = packFilesIn(args.filter((a) => a !== "--dry"));
   const agents = agentSnapshot();
   const ready: Array<{ name: string; pack: SpaceTemplatePack }> = [];
+  // The public address (spec.id) is checked over the WHOLE library: readable, unique, its own (template-slug.ts).
+  const library = packFilesIn([]).map((f) => ({ file: relative(process.cwd(), f), ...(readPack(f) as Omit<SlugPack, "file">) }));
+  const slugIssues = slugFindings(library);
   for (const file of files) {
     const name = relative(process.cwd(), file);
     const raw = readPack(file);
-    const findings = checkPack(raw, { agents });
+    const findings = [...checkPack(raw, { agents }), ...slugIssues.filter((line) => line.startsWith(`${name}:`))];
     if (findings.length) {
       console.log(`SKIP ${name}: ${findings.length} finding(s) — run pnpm spaces:templates:check ${name}`);
       continue;

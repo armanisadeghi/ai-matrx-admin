@@ -12,9 +12,10 @@
 // show a stitched-in second list.
 
 import { SPACE_TEMPLATE_CATEGORIES } from "@/lib/spaces-blocks/template-pack";
+import { searchTemplates, type TemplateSearchFace } from "@/lib/spaces-blocks/template-search";
 import { signUpHref } from "@/utils/auth/auth-destination";
 
-import { GALLERY_PAGE, type GalleryAnswer, type GalleryCard } from "./catalogue";
+import { GALLERY_PAGE, isSpaceCard, wordFor, type GalleryAnswer, type GalleryCard } from "./catalogue";
 
 export const PUBLIC_GALLERY_PATH = "/templates";
 
@@ -116,3 +117,92 @@ export function templateDescription(card: Pick<GalleryCard, "persona" | "busines
   const text = card.space?.description ?? card.persona ?? card.business ?? card.name;
   return text.length > 160 ? `${text.slice(0, 157).trimEnd()}…` : text;
 }
+
+// ── One gallery: categories, featured, search (GALLERY-UX, ADVERSARIAL-2 #2 #6 #7) ─────────────────────────────
+
+/**
+ * ONE CATEGORY SYSTEM: the Space categories (incl. the industry ones) are the gallery's only rail. A table
+ * template files under the category its industry belongs to, so a category page holds both kinds and /templates
+ * no longer shows a second, industry rail beside it. `cross_industry` files under none (it shows under "All").
+ */
+export const INDUSTRY_CATEGORY: Readonly<Record<string, string | null>> = {
+  healthcare: "healthcare",
+  legal_professional: "legal",
+  construction_trades: "trades",
+  field_home_services: "trades",
+  automotive: "trades",
+  real_estate_property: "realestate",
+  hospitality_food: "hospitality",
+  agencies_creative: "agencies",
+  retail_ecommerce: "retail",
+  manufacturing_logistics: "manufacturing",
+  agriculture_environment: "operations",
+  education: "education",
+  nonprofit_community: "nonprofit",
+  software_it: "tech",
+  fitness_beauty_wellness: "wellness",
+  media_creators: "media",
+  staffing_hr_recruiting: "team",
+  personal_family: "personal",
+  events_weddings: "planning",
+  cross_industry: null,
+};
+
+/** The one category a card files under: a workspace's own, else its industry's. */
+export function cardCategory(card: Pick<GalleryCard, "space" | "industry">): string | null {
+  if (isSpaceCard(card)) return card.space?.category ?? null;
+  return card.industry ? (INDUSTRY_CATEGORY[card.industry] ?? null) : null;
+}
+
+/** Every category the cards fill, in the library's order (unknown keys last, by label), with how many each holds. */
+export function galleryCategories(cards: readonly GalleryCard[]): Array<{ key: string; count: number }> {
+  const counts = new Map<string, number>();
+  for (const c of cards) {
+    const k = cardCategory(c);
+    if (k) counts.set(k, (counts.get(k) ?? 0) + 1);
+  }
+  const known = SPACE_TEMPLATE_CATEGORIES.map((c) => c.key as string).filter((k) => counts.has(k));
+  const rest = [...counts.keys()].filter((k) => !known.includes(k)).sort((a, b) => spaceCategoryLabel(a).localeCompare(spaceCategoryLabel(b)));
+  return [...known, ...rest].map((key) => ({ key, count: counts.get(key) ?? 0 }));
+}
+
+/**
+ * FEATURED (a knob: edit this list): eight strong workspaces across categories, chosen by hand for quality — never
+ * the first six alphabetically (ADVERSARIAL-2 #13). Catalog ids, so a slug or title change keeps the pick.
+ * A pick that is not published is skipped.
+ */
+export const FEATURED_SPACE_TEMPLATES: readonly string[] = [
+  "SP0002", // Projects & Tasks
+  "SP0150", // Sales CRM
+  "SP0151", // Content Calendar
+  "SP0101", // Team Wiki & Company Home
+  "SP0003", // Meeting Notes
+  "SP0300", // Freelancer OS
+  "SP0103", // OKRs & Goals
+  "SP0202", // Habit Tracker
+];
+
+export function featuredCards(cards: readonly GalleryCard[]): GalleryCard[] {
+  const byId = new Map(cards.filter(isSpaceCard).map((c) => [c.catalogue_id, c]));
+  return FEATURED_SPACE_TEMPLATES.flatMap((id) => byId.get(id) ?? []);
+}
+
+/** What the one template search reads of a table template's card (lib/spaces-blocks/template-search.ts). */
+export function tableSearchFace(card: GalleryCard): TemplateSearchFace {
+  return {
+    title: card.name,
+    description: card.persona,
+    forWho: card.business,
+    tags: [card.vertical, card.industry ? wordFor("industry", card.industry) : null, card.job ? wordFor("job", card.job) : null].filter(
+      (t): t is string => Boolean(t),
+    ),
+  };
+}
+
+/** THE GALLERY SEARCH (?q=): the one template search over both kinds, best first; "" answers every card. */
+export function searchGallery(cards: readonly GalleryCard[], query: string): GalleryCard[] {
+  return searchTemplates(cards, query, (c) => (isSpaceCard(c) && c.space ? c.space : tableSearchFace(c)));
+}
+
+/** The address of a gallery page with a search: `?q=` only when there is one (linkable, crawlable). */
+export const searchHref = (path: string, query: string) => (query.trim() ? `${path}?q=${encodeURIComponent(query.trim())}` : path);

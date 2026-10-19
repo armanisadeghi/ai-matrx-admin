@@ -22,7 +22,7 @@
 
 import type { TemplateSpec } from "@ai-matrx/records/templates";
 
-import { packFindWords } from "./template-search";
+import { packFindWords, packLayouts } from "./template-search";
 import type { PageProperty, RichSpan, SpaceBlock, SpaceColor, SpaceMedia, SpacePageSettings } from "./types";
 
 export const SPACE_PACK_VERSION = 1 as const;
@@ -139,6 +139,11 @@ export interface SpaceTemplatePack extends PackIdentity {
   catalogueId: string;
   /** Equals spec.version; bumped on every published change. */
   version: number;
+  /**
+   * Addresses this template was published at before (`spec.id` is its address, template-slug.ts): each still
+   * answers and redirects (308) to the current one. A slug that changes goes here, never away.
+   */
+  formerSlugs?: string[];
   /** The tables, views, relationships and sample rows. */
   spec: TemplateSpec;
   /** pages[0] is the root page; "Use template" opens it. Empty only when the pack carries a `board`. */
@@ -161,6 +166,10 @@ export interface SpaceTemplateCardFace extends PackIdentity {
   pages: number;
   /** What is inside, as search words (table names, view names and layouts, page titles): template-search.ts packFindWords. */
   find?: string[];
+  /** The layouts its database blocks open on, main first (template-search.ts packLayouts). */
+  layouts?: string[];
+  /** Former public addresses (SpaceTemplatePack.formerSlugs): public.template_public_page answers them and the page redirects. */
+  formerSlugs?: string[];
   /** Set when the pack makes a board: what the Board gallery lists (the Spaces gallery lists only packs with pages). */
   board?: { title: string; chapters: number; pages: number };
 }
@@ -240,6 +249,8 @@ export function packCardFace(pack: SpaceTemplatePack): SpaceTemplateCardFace {
     tags: [...pack.tags],
     pages: pack.pages.length,
     find: packFindWords(pack),
+    layouts: packLayouts(pack),
+    ...(pack.formerSlugs?.length ? { formerSlugs: [...pack.formerSlugs] } : {}),
     ...(pack.board
       ? { board: { title: pack.board.title, chapters: pack.board.chapters.length, pages: pack.board.pages?.length ?? 0 } }
       : {}),

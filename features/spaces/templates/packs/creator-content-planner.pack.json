@@ -23,7 +23,7 @@
   ],
   "spec": {
     "specVersion": 1,
-    "id": "spaces-content-calendar",
+    "id": "spaces-creator-content-planner",
     "catalogueId": "SP0301",
     "useCase": "Dagny Reyes runs content for a plant shop and uses this to see what is publishing on which channel, what is stuck in review and which campaign each piece belongs to.",
     "industry": "cross_industry",

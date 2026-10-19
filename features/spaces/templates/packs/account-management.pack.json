@@ -1,6 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0159",
+  "formerSlugs": [
+    "spaces-sp0159"
+  ],
   "version": 5,
   "title": "Account Management",
   "description": "Customer success teams: keep health, renewals and contacts for existing customers.",
@@ -23,7 +26,7 @@
   ],
   "spec": {
     "specVersion": 1,
-    "id": "spaces-sp0159",
+    "id": "spaces-account-management",
     "catalogueId": "SP0159",
     "useCase": "Winifred Osei heads customer success and uses this to see which accounts are at risk and which renewals are coming up.",
     "industry": "cross_industry",

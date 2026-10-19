@@ -58,7 +58,12 @@ export function TemplateCardGrid({
   );
 }
 
-/** Space templates (card.space): the template's own icon, title, one line, and how many pages it makes. */
+/**
+ * Space templates (card.space): a picture of the template — its main table with the first sample rows, drawn on
+ * the server (`card.thumb`, the same rows the social image draws; ADVERSARIAL-2 #13: cards had no picture) — then
+ * its icon, title, one line, and how many pages it makes. The picture frame has one fixed height on every card,
+ * so a grid never moves and no image loads.
+ */
 export function SpaceTemplateCardGrid({
   cards,
   hrefFor,
@@ -69,7 +74,7 @@ export function SpaceTemplateCardGrid({
   attr: string;
 }) {
   return (
-    <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))] gap-3" {...{ [attr]: "" }}>
+    <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,15rem),1fr))] gap-4" {...{ [attr]: "" }}>
       {cards.map((card) =>
         card.space ? (
           <li key={card.id} className="min-w-0">
@@ -77,15 +82,31 @@ export function SpaceTemplateCardGrid({
               href={hrefFor(card)}
               data-make-gallery-card={card.catalogue_id}
               data-space-category={card.space.category}
-              className="flex h-full min-h-[9.5rem] min-w-0 flex-col gap-1.5 rounded-xl border border-border bg-card p-3 shadow-sm transition hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="group flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <span className="flex h-9 w-9 items-center justify-center" aria-hidden="true">
-                <SpaceTemplateIcon media={card.space.icon} size={28} />
+              <span className="relative block h-36 shrink-0 overflow-hidden border-b border-border bg-muted p-3" data-space-card-picture="">
+                {card.thumb?.columns.length ? (
+                  <span className="block origin-top-left transition group-hover:-translate-y-0.5">
+                    <TemplateThumb thumb={card.thumb} />
+                  </span>
+                ) : (
+                  <span className="flex h-full items-center justify-center" aria-hidden="true">
+                    <SpaceTemplateIcon media={card.space.icon} size={40} />
+                  </span>
+                )}
+                <span className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-muted to-transparent" aria-hidden="true" />
               </span>
-              <span className="truncate text-sm font-medium text-foreground">{card.space.title}</span>
-              <span className="line-clamp-2 text-xs text-muted-foreground">{card.space.description}</span>
-              <span className="mt-auto truncate text-xs text-muted-foreground tabular-nums">
-                {card.space.pages === 1 ? "1 page" : `${card.space.pages} pages`} · {spaceCategoryLabel(card.space.category)}
+              <span className="flex min-w-0 flex-1 flex-col gap-1 p-3">
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">
+                    <SpaceTemplateIcon media={card.space.icon} size={18} />
+                  </span>
+                  <span className="min-w-0 flex-1 truncate type-title text-foreground">{card.space.title}</span>
+                </span>
+                <span className="line-clamp-2 type-body text-muted-foreground">{card.space.description}</span>
+                <span className="mt-auto truncate pt-1 type-meta text-muted-foreground tabular-nums">
+                  {card.space.pages === 1 ? "1 page" : `${card.space.pages} pages`} · {spaceCategoryLabel(card.space.category)}
+                </span>
               </span>
             </Link>
           </li>

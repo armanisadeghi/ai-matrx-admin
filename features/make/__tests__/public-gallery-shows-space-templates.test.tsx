@@ -47,6 +47,7 @@ jest.mock("../gallery/publicCatalogue.server", () => {
   const readPublicCatalogue = () => readPublicCatalogueWith(async (offset: number) => ({ data: { total: 3, limit: 200, offset, cards: offset ? [] : cards() }, error: null }));
   return {
     readPublicCatalogue,
+    readPublicCatalogueFresh: readPublicCatalogue,
     readTemplatePage: async (key: string) => {
       const card = cards().find((c) => c.slug === key || c.catalogue_id === key);
       if (!card) return null;
@@ -59,6 +60,8 @@ jest.mock("../gallery/publicCatalogue.server", () => {
   };
 });
 
+// The search box's island moves the address with the app router, which a static render does not mount.
+jest.mock("next/navigation", () => ({ ...jest.requireActual("next/navigation"), useRouter: () => ({ replace: () => undefined }) }));
 // The Spaces fence's browser islands: the editor preview draws its pages here as their titles, the icon as nothing.
 jest.mock("@/features/spaces/public/TemplatePackPreview", () => ({
   TemplatePackPreview: ({ template, outlines }: { template: { catalogue_id: string; pack: { pages: Array<{ key: string; title: string }> } }; outlines: Record<string, React.ReactNode> }) => (
@@ -96,22 +99,22 @@ const slugHref = `href="/templates/${PACK.spec.id}"`;
 describe("Space templates on the public gallery", () => {
   it("shows a Workspaces section on /templates beside the table templates", async () => {
     const page = await html(PublicTemplatesPage({ searchParams: Promise.resolve({}) }));
-    expect(page).toContain("data-public-templates-workspaces");
-    expect(page).toContain(">Workspaces</h2>");
+    expect(page).toContain("data-public-templates-space-cards");
     expect(page).toContain(slugHref);
     expect(page).toContain(PACK.description.replace(/&/g, "&amp;").replace(/'/g, "&#x27;"));
-    expect(page).toContain('href="/templates/workspaces"');
     expect(page).toContain('href="/templates/workspaces/projects"');
     expect(page).toContain(`href="/templates/workspaces/${OTHER.category}"`);
-    // Still the table templates, and the Space card is drawn once, as a workspace.
+    // Still the table templates, and the Space card is drawn once, as a workspace (it is featured, so its category row repeats it).
     expect(page).toContain('href="/templates/T0001"');
-    expect(page.split(slugHref).length - 1).toBe(1);
+    const tables = page.slice(page.indexOf("data-public-templates-tables"));
+    expect(tables).toContain('href="/templates/T0001"');
+    expect(tables).not.toContain(slugHref);
   });
 
   it("lists every workspace and each category the catalog holds", async () => {
-    expect(await html(WorkspaceTemplatesPage())).toContain(slugHref);
-    const category = await html(WorkspaceCategoryPage({ params: Promise.resolve({ category: "projects" }) }));
-    expect(category).toContain("Projects &amp; tasks workspaces");
+    expect(await html(WorkspaceTemplatesPage({ searchParams: Promise.resolve({}) }))).toContain(slugHref);
+    const category = await html(WorkspaceCategoryPage({ params: Promise.resolve({ category: "projects" }), searchParams: Promise.resolve({}) }));
+    expect(category).toContain("Projects &amp; tasks templates");
     expect(category).toContain(slugHref);
     expect(category).not.toContain('href="/templates/T0001"');
     expect(category).not.toContain(`href="/templates/${OTHER.spec.id}"`);

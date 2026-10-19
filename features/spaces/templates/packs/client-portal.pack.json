@@ -1,6 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0155",
+  "formerSlugs": [
+    "spaces-sp0155"
+  ],
   "version": 4,
   "title": "Agency Client Portal",
   "description": "Agencies: a private home page per client with projects, deliverables and invoices.",
@@ -23,7 +26,7 @@
   ],
   "spec": {
     "specVersion": 1,
-    "id": "spaces-sp0155",
+    "id": "spaces-agency-client-portal",
     "catalogueId": "SP0155",
     "useCase": "Imelda Voss runs a design studio and gives each client a private home page with their projects, files, requests and invoices.",
     "industry": "cross_industry",
