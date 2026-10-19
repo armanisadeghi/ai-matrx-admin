@@ -12,12 +12,11 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { getClientClaimsUserCached } from "@/utils/supabase/clientClaimsCache";
-import { getFingerprint } from "@/lib/services/fingerprint-service";
-import { toast } from "@/lib/toast";
-import { loadGoogleIdentityId } from "@/providers/google-provider/googleIdentityId";
-import { signInWithGoogleOneTap } from "./actions";
-import { landAfterSignIn } from "./landAfterSignIn";
+
+// The prompt's machinery (claims cache, fingerprint, Google's script loader, the sign-in action,
+// toasts) loads through ONE import() after the page is idle, so a marketing page's first load
+// never carries it (PUBLIC-LAYOUT-PERF, 2026-10-19). Guard: app/__tests__/public-layout-stays-light.test.ts
+type OneTapModule = typeof import("./oneTapPrompt");
 
 export interface GoogleOneTapProps {
   /** Sign a returning Google account in on arrival (`auth.one_tap_auto_select`). */
@@ -28,16 +27,6 @@ export interface GoogleOneTapProps {
   landing?: { redirectTo: string | null };
   /** Paths (by prefix) where this mount stays quiet — a layout that covers errand links. */
   skipPrefixes?: readonly string[];
-}
-
-function randomNonce(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(32));
-  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-async function sha256Hex(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
-  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 export function GoogleOneTap({ autoSelect, context = "use", landing, skipPrefixes }: GoogleOneTapProps) {
@@ -51,54 +40,20 @@ export function GoogleOneTap({ autoSelect, context = "use", landing, skipPrefixe
     // React's dev double-mount cancels the first pass; the second one prompts.
     let cancelled = false;
 
-    void (async () => {
-      const { data } = await getClientClaimsUserCached();
-      const user = data.user as { is_anonymous?: boolean } | null;
-      if (cancelled || (user && user.is_anonymous !== true)) return;
-
-      if (!(await loadGoogleIdentityId()) || cancelled) {
-        console.warn("[one-tap] Google's sign-in script did not load; the sign-in buttons remain.");
-        return;
-      }
-      const id = window.google?.accounts?.id;
-      if (!id) return;
-
-      const rawNonce = randomNonce();
-      const hashedNonce = await sha256Hex(rawNonce);
-      if (cancelled) return;
-
-      id.initialize({
-        client_id: clientId,
-        nonce: hashedNonce,
-        auto_select: autoSelect,
-        context,
-        use_fedcm_for_prompt: true,
-        itp_support: true,
-        cancel_on_tap_outside: false,
-        callback: (response) => {
-          void (async () => {
-            const visitorId = await getFingerprint().catch(() => null);
-            const result = await signInWithGoogleOneTap({
-              credential: response.credential,
-              nonce: rawNonce,
-              visitorId,
-              ...(landingRedirectTo !== null ? { landing: { redirectTo: landingRedirectTo || null } } : {}),
-            });
-            if (!result.ok) {
-              // An automatic sign-in that failed must not fail again on every page load.
-              window.google?.accounts?.id?.disableAutoSelect();
-              toast.error(`Google sign-in failed: ${result.error}`);
-              return;
-            }
-            landAfterSignIn(result.destination ?? undefined);
-          })();
-        },
-      });
-      id.prompt();
-    })();
+    const run = () => {
+      void import("./oneTapPrompt")
+        .then((m: OneTapModule) =>
+          m.runOneTapPrompt({ clientId, autoSelect, context, landingRedirectTo, isCancelled: () => cancelled }),
+        )
+        .catch((error: unknown) => console.warn("[one-tap] the prompt did not load; the sign-in buttons remain.", error));
+    };
+    const idle = typeof window.requestIdleCallback === "function";
+    const handle = idle ? window.requestIdleCallback(run, { timeout: 3000 }) : window.setTimeout(run, 1500);
 
     return () => {
       cancelled = true;
+      if (idle) window.cancelIdleCallback(handle);
+      else window.clearTimeout(handle);
       window.google?.accounts?.id?.cancel();
     };
   }, [autoSelect, context, landingRedirectTo, skipped]);
