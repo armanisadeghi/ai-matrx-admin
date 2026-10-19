@@ -1,14 +1,17 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0498",
-  "version": 3,
+  "version": 4,
   "title": "Design system — Playful consumer",
   "description": "Coral, sunny yellow and sky blue with pill buttons and a bounce in its step.",
   "forWho": "Consumer apps, games, food and delivery, social products",
   "icon": {
     "icon": "Palette"
   },
-  "cover": null,
+  "cover": {
+    "url": "gallery:retail-market-stall",
+    "offsetY": 50
+  },
   "category": "docs",
   "tags": [
     "design system",
@@ -1265,7 +1268,7 @@
         "Peppercorn Avenue"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [],
   "board": {

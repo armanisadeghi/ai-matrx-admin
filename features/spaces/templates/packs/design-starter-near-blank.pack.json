@@ -1,14 +1,17 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0490",
-  "version": 3,
+  "version": 4,
   "title": "Design system — Near blank",
   "description": "The floor: grays, graphite actions and one blue accent. Complete, but plain.",
   "forWho": "Anyone starting a design system from almost nothing",
   "icon": {
     "icon": "Palette"
   },
-  "cover": null,
+  "cover": {
+    "url": "gallery:services-office-desk-minimal",
+    "offsetY": 50
+  },
   "category": "docs",
   "tags": [
     "design system",
@@ -1250,7 +1253,7 @@
         "Hollis Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [],
   "board": {

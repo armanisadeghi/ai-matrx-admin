@@ -1,14 +1,17 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0497",
-  "version": 3,
+  "version": 4,
   "title": "Design system — Care",
   "description": "Calm lagoon blue, warm peach, 17px text and 44px targets, accessible by default.",
   "forWho": "Healthcare, clinics, therapy, wellness and care services",
   "icon": {
     "icon": "Palette"
   },
-  "cover": null,
+  "cover": {
+    "url": "gallery:nonprofit-volunteers-sunrise-field",
+    "offsetY": 50
+  },
   "category": "docs",
   "tags": [
     "design system",
@@ -1268,7 +1271,7 @@
         "Larkspur Road"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [],
   "board": {
