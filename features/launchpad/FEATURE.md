@@ -114,6 +114,9 @@ and favorites into an always-open launcher.
 
 ## Change log
 
+- `2026-10-19` — Lane H (custom-experience): the Agents widget reads which of its agents the person can open in ONE
+  `agent.definition` select and asks the access gate (`access_denied_context`, one round trip per id) only about the
+  rest — a launchpad load asked it 18 times (`idsNeedingAnAnswer`, `agentsFallback.test.ts`).
 - `2026-10-19` — Lane F (custom-experience): local first — `paintCache.ts` keeps this device's last-drawn
   launchpad (`matrx:client:launchpad.last-drawn:<user>:<key>`, kind cache) and `LaunchpadPage` paints it while
   the cloud read runs (read in an effect, after hydration); no copy → a neutral `RegionSkeleton`, never the
