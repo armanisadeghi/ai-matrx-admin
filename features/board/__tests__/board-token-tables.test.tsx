@@ -39,7 +39,7 @@ jest.mock("@/features/data-tables/records-ui-host/recordsUiLazy", () => {
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { BoardTokenTablesContext, boardTokenTableIds } from "../items/board-token-tables";
-import { BoardTokensMount, SectionWithBoardTokens } from "../items/data-items";
+import { BoardTokensMount, SectionWithBoardTokens, tileNameOf } from "../items/data-items";
 import { TABLE_ENTITY, entityTableOf } from "../items/table-tile";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -105,5 +105,13 @@ describe("a board's design tokens", () => {
     expect(entityTableOf({ kind: "entity", entity: TABLE_ENTITY, id: null, meta: { token: "web_brand_choice" } } as never)).toEqual({ token: "web_brand_choice" });
     // Boards made on 2026-10-19 (token beside an id) still feed their token tables.
     expect(boardTokenTableIds([{ id: "k", rect: { x: 0, y: 0, w: 1, h: 1 }, source: { kind: "entity", entity: TABLE_ENTITY, id: "colors", meta: { token: "color" } } }])).toEqual(["colors"]);
+  });
+
+  it("a fresh copy's table reads by its own name on its board, never '<Table> · <board title>'", () => {
+    const pack = { kind: "entity", entity: TABLE_ENTITY, id: "t", meta: { table_token: "color" } } as never;
+    const plain = { kind: "entity", entity: TABLE_ENTITY, id: "t", meta: {} } as never;
+    expect(tileNameOf("Colors · Acme design system", pack)).toBe("Colors");
+    expect(tileNameOf("Colors", pack)).toBe("Colors");
+    expect(tileNameOf("Q3 · Sales", plain)).toBe("Q3 · Sales");
   });
 });

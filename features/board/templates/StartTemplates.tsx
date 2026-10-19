@@ -15,7 +15,8 @@ import { boardHref, isBoardError } from "../persistence/boardsService";
 import { BoardTemplateGallery } from "./BoardTemplateGallery";
 import { makeBoardFromTemplate, templateBoardTitle } from "./board-templates";
 import { BUILTIN_BOARD_TEMPLATES } from "./builtin";
-import { listBoardPacks } from "./board-packs";
+import { isPackKey, listBoardPacks } from "./board-packs";
+import { TextInputDialog } from "@ai-matrx/design-system";
 
 /** Built-ins with the starter (when it names one) first. Exported for the test. */
 export function orderedStarters(starterKey: string | undefined) {
@@ -41,10 +42,16 @@ export function StartTemplates({ starterKey }: { starterKey?: string }) {
     };
   }, []);
 
-  const use = async (key: string, title: string) => {
+  // A template that makes its own tables is named first (the name titles the board and its tables).
+  const [naming, setNaming] = useState<{ key: string; title: string } | null>(null);
+  const use = async (key: string, title: string, name?: string) => {
+    if (name === undefined && isPackKey(key)) {
+      setNaming({ key, title });
+      return;
+    }
     setBusy(key);
     try {
-      const board = await makeBoardFromTemplate(key, organizationId, templateBoardTitle(title), undefined, undefined, { dispatch });
+      const board = await makeBoardFromTemplate(key, organizationId, name?.trim() || templateBoardTitle(title), undefined, undefined, { dispatch });
       router.push(boardHref(board));
     } catch (e) {
       toast.error(isBoardError(e) ? e.message : e instanceof Error ? e.message : "The template could not be used. Try again.");
@@ -54,6 +61,23 @@ export function StartTemplates({ starterKey }: { starterKey?: string }) {
 
   return (
     <>
+      <TextInputDialog
+        open={naming !== null}
+        onOpenChange={(open) => {
+          if (!open) setNaming(null);
+        }}
+        title="Name this board"
+        description="Its tables take the same name."
+        placeholder="e.g. Acme design system"
+        defaultValue={naming?.title ?? ""}
+        confirmLabel="Make board"
+        validate={(value) => (value.trim() ? null : "Name the board")}
+        onConfirm={(value: string) => {
+          const picked = naming;
+          setNaming(null);
+          if (picked) void use(picked.key, picked.title, value);
+        }}
+      />
       <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Start from a template</h3>
       <div className="mt-2 flex flex-wrap gap-2">
         {[...orderedStarters(starterKey), ...packs].map((t) => (
