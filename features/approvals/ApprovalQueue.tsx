@@ -381,7 +381,7 @@ function ApprovalTable({
       header: "Type",
       accessorFn: (item) => item.badge ?? kindLabel(item),
       format: { id: "choice" },
-      width: 110,
+      width: 120,
       cell: (item) => (
         <KindBadge className="shrink-0">{item.badge ?? kindLabel(item)}</KindBadge>
       ),
@@ -391,7 +391,7 @@ function ApprovalTable({
       header: "What",
       accessorKey: "headline",
       // What takes most of the row (the table fits its width; widths are shares).
-      width: 600,
+      width: 520,
       // A row in any state but waiting says so on its title (Status is a hidden column).
       tone: (item) =>
         item.lastAttempt?.state === "failed"
@@ -451,7 +451,7 @@ function ApprovalTable({
       id: "proposedBy",
       header: "Proposed by",
       accessorFn: (item) => item.proposedBy ?? null,
-      width: 140,
+      width: 130,
       // Shown when any row in view names who proposed it.
       hidden: !rows.some((item) => item.proposedBy),
     },
@@ -460,7 +460,7 @@ function ApprovalTable({
       header: "When",
       accessorFn: (item) => item.proposedAt ?? null,
       format: { id: "relative_time" },
-      width: 100,
+      width: 125,
     },
     {
       // The decision words are each kind's own ("Approve", "Archive", "Decline").
