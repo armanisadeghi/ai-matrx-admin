@@ -28,6 +28,7 @@ import { lazyToolRenderer } from "./lazyToolRenderer";
 import { resolveDocumentContentView } from "./renderers/document-content/documentContentView";
 import { parseSiteData } from "./renderers/site-data/parseSiteData";
 import { parseCompare } from "./renderers/compare/parseCompare";
+import { compareInlineVisibility, comparePhaseLabels } from "./renderers/compare/runStatus";
 import {
   TOPICAL_MAP_ACTION_LABELS,
   humanizeAction,
@@ -571,6 +572,8 @@ const FEATURE_TOOL_RENDERERS: ToolRegistry = {
     InlineComponent: CompareInline,
     keepExpandedOnStream: true,
     displayMode: "stay-open",
+    getPhaseLabels: comparePhaseLabels,
+    getInlineVisibility: compareInlineVisibility,
     getHeaderSubtitle: (entry) => {
       const d = parseCompare(entry);
       if (!d) return null;

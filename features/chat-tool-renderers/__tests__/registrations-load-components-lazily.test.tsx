@@ -89,6 +89,7 @@ const LIGHT_RENDERER_HELPERS = [
   "./renderers/document-content/documentContentView",
   "./renderers/site-data/parseSiteData",
   "./renderers/compare/parseCompare",
+  "./renderers/compare/runStatus",
 ];
 
 /** An app module (never a package's own light helpers, e.g. the chat `renderers/_shared`). */
