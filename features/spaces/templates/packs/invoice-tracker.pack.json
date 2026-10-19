@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0359",
-  "version": 4,
+  "version": 5,
   "title": "Invoice Tracker",
   "description": "Freelancers: track invoices from draft to paid, flag late ones, see what clients owe.",
   "forWho": "Freelancers and solo consultants",
@@ -1177,7 +1177,7 @@
         "Juniper Grist Road"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

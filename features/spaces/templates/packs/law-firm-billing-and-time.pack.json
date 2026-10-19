@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0412",
-  "version": 2,
+  "version": 3,
   "title": "Law Firm Billing and Time",
   "description": "Time entries, invoices and outstanding balances for a small law firm's billing desk.",
   "forWho": "Small law firms and billing administrators",
@@ -1765,7 +1765,7 @@
         "Wacker Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
