@@ -16,9 +16,11 @@
 //   2. HYDRATION — the submit button stops saying data-preparing="true" and enables within --timeout
 //      (components/submit-button.tsx shows "Getting ready…" until React hydrates).
 // Prints page errors either way. Exit 0 green, 1 red, 2 could not run.
+// Self-test of the asset reader: node --test scripts/build-lab/next-assets.test.mjs
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
+import { referencedAssets } from "./next-assets.mjs";
 
 const args = process.argv.slice(2);
 const base = args.find((a) => !a.startsWith("--") && /^https?:/.test(a));
@@ -34,7 +36,8 @@ let html;
 try { const r = await fetch(`${base}/login`); html = await r.text(); if (!r.ok) throw new Error(`HTTP ${r.status}`); }
 catch (e) { console.error(`could not load ${base}/login: ${e.message}`); process.exit(2); }
 
-const assets = [...new Set([...html.matchAll(/\/_next\/static\/[^"'\s)\\]+/g)].map((m) => m[0]))];
+// Markup + the JOINED RSC payload: a chunk name may be split across two __next_f pushes.
+const assets = referencedAssets(html);
 const bad = [];
 for (const a of assets) {
   const r = await fetch(`${base}${a}`, { method: "HEAD" }).catch(() => null);

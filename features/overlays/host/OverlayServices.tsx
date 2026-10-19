@@ -16,7 +16,7 @@ ensureAppOverlaysRegistered();
 
 declare global {
   interface Window {
-    /** Dev builds only: the overlay sweep (scripts/overlays-convert/sweep.ts) opens overlays through it. */
+    /** Dev builds, or a build made with NEXT_PUBLIC_OVERLAYS_SWEEP=1: the overlay sweep (scripts/overlays/sweep.ts) opens overlays through it. */
     __overlaysTest?: {
       ids(): string[];
       open(id: string, data?: Record<string, unknown>): string;
@@ -29,7 +29,8 @@ declare global {
 export function OverlayServices() {
   const store = useAppStore();
   useEffect(() => {
-    if (process.env.NODE_ENV !== "development") return;
+    // NEXT_PUBLIC_* is inlined at build time: a normal production build compiles this hook out.
+    if (process.env.NODE_ENV !== "development" && process.env.NEXT_PUBLIC_OVERLAYS_SWEEP !== "1") return;
     window.__overlaysTest = {
       ids: () => allOverlayMeta().map((m) => m.id),
       open: (id, data) => {

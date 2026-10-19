@@ -308,6 +308,8 @@ if $STRICT; then
         # the build twice in October 2026 — a set that loads together gets ONE lazy module.
         "One file fans out too many lazy import() targets|pnpm check:import-fanout"
         "Import-fanout guard self-test|pnpm check:import-fanout:self-test"
+        # The sign-in gate read half a chunk name out of a split RSC payload push and cried "stale server" (W5, 2026-10-18).
+        "Login-hydrates asset reader self-test|pnpm check:login-hydrates:self-test"
         "The records-ui root is imported only through its one front door|pnpm check:records-ui-front-door"
         "Records-ui front-door guard self-test|pnpm check:records-ui-front-door:self-test"
         # A server-only module calling a "use client" export throws when the page renders, failing
@@ -1295,6 +1297,8 @@ else
         # the build twice in October 2026 — a set that loads together gets ONE lazy module.
         "One file fans out too many lazy import() targets|pnpm check:import-fanout"
         "Import-fanout guard self-test|pnpm check:import-fanout:self-test"
+        # The sign-in gate read half a chunk name out of a split RSC payload push and cried "stale server" (W5, 2026-10-18).
+        "Login-hydrates asset reader self-test|pnpm check:login-hydrates:self-test"
         "The records-ui root is imported only through its one front door|pnpm check:records-ui-front-door"
         "Records-ui front-door guard self-test|pnpm check:records-ui-front-door:self-test"
         # A server-only module calling a "use client" export throws when the page renders, failing

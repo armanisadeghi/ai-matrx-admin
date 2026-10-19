@@ -109,7 +109,7 @@ Set `link: { key, hydrate }` on the definition (heavy hydrators go in `<id>.link
 2. Is the render chunk failing? The package shows its error card (retry; admins get "Copy for AI" from `host/OverlayErrorCopyForAi.tsx`). A chunk that never loads becomes a `ChunkLoadError` after 12 s.
 3. Did it open and never render? The package render watchdog announces an overlay that opened with nothing mounted (console error + toast).
 4. Did the render module refuse? `parse` returning `null` closes the overlay with a warning.
-5. Runtime sweep: in a dev build `window.__overlaysTest` has `ids/open/close/isOpen`; `npx tsx scripts/overlays-convert/sweep.ts --url http://<session>.localhost:3001 [--only id1,id2] [--data data.json]` opens every registered overlay and classifies it.
+5. Runtime sweep gate: `window.__overlaysTest` (`ids/open/close/isOpen`) exists in dev or a build made with `NEXT_PUBLIC_OVERLAYS_SWEEP=1`; `pnpm check:overlays-sweep --url <origin> [--min n] [--only id1,id2] [--data scripts/overlays/sweep-data.json]` opens every registered overlay and counts it rendered only with a visible box on screen (features/overlays/FEATURE.md, Testing).
 
 ## Message actions (chat)
 
@@ -127,4 +127,4 @@ features/overlays/
 └── components/         shared overlay bodies
 ```
 
-Related: `lib/redux/rootReducer.ts`, `lib/redux/store.ts`, `features/admin/utils/lookupOverlay.ts`, `scripts/overlays-convert/`.
+Related: `lib/redux/rootReducer.ts`, `lib/redux/store.ts`, `features/admin/utils/lookupOverlay.ts`, `scripts/overlays/sweep.ts`.
