@@ -50,6 +50,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_identity import record_run_identity  # noqa: E402
+from scope_probe import with_scope  # noqa: E402
 from fixture_check import add_accept_drift_arg, require_fixtures  # noqa: E402
 
 SERVER = "https://server.app.matrxserver.com"
@@ -75,6 +76,11 @@ VARIABLE_DEFINITIONS = [{
     "name": "canary_code", "label": "Canary code", "helpText": "The canary variable marker.", "required": False,
     "defaultValue": "PB7-VAR-7Q2K", "customComponent": {"type": "textarea"},
 }]
+
+# The door each dry run previews (`preview_door`, aidream api/utils/preview_doors.py): its surface and its turn-assembly
+# family. The dry run's platform_parts[] and tools[] are then what THAT door's real run is graded against.
+PREVIEW_DOOR = {"chat": "chat", "agent-run": "agent_run", "agent-api": "api", "builder-run": "builder",
+                "mandate-client": "api", "together": "chat"}
 
 DOORS = ["chat", "agent-run", "agent-api", "builder-run", "mandate-client", "mandate-try", "workflow", "agent-call", "together"]
 HAS_DRY = {"chat", "agent-run", "agent-api", "builder-run", "mandate-client", "together"}
@@ -171,8 +177,9 @@ def build(door: str) -> tuple[str, dict, str, str | None]:
 
 def record(out: Path, manifest: dict, door: str, kind: str, token: str) -> None:
     path, body, agent, cid = build(door)
+    body = with_scope(SERVER, "POST", path, body, SCOPE, door) or body
     if kind == "dry":
-        body = {**body, "dry_run": True}
+        body = {**body, "dry_run": True, "preview_door": PREVIEW_DOOR[door]}
     sent_at = datetime.now(timezone.utc).isoformat()
     status, headers, raw = send(token, path, body)
     lower = {k.lower(): v for k, v in headers.items()}

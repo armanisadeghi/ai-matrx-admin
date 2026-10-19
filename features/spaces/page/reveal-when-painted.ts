@@ -22,9 +22,19 @@ export const REVEAL_HARD_CAP_MS = 12_000;
 export const STILL_PAINTING = [
   ".react-renderer:empty",
   ".spaces-db-loading",
-  ".spaces-db-host:not(:has(.spaces-db-frame))",
+  ".spaces-db-host:not(:has(.spaces-db-frame, [data-block-error]))",
   '.bn-block-outer[data-id="initialBlockId"]',
 ].join(", ");
+
+/** A browser without `:has()` throws on the selector: it then looks for the signs that need no `:has()`. */
+const PLAIN_SIGNS = STILL_PAINTING.split(", ").filter((sel) => !sel.includes(":has(")).join(", ");
+function stillPainting(layer: Element): boolean {
+  try {
+    return layer.querySelector(STILL_PAINTING) !== null;
+  } catch {
+    return layer.querySelector(PLAIN_SIGNS) !== null;
+  }
+}
 
 export interface RevealState {
   /** Consecutive frames at the static body's height with nothing painting. */
@@ -50,7 +60,7 @@ export function revealStep(stack: HTMLElement | null, state: RevealState, now: n
   const behind = stack?.querySelector<HTMLElement>(":scope > .spaces-editor-behind");
   if (!stack || !shown || !behind) return { reveal: true, state };
   if (now - state.started > REVEAL_HARD_CAP_MS) return { reveal: true, state };
-  if (behind.querySelector(STILL_PAINTING)) return { reveal: false, state: { ...state, same: 0, settledAt: null } };
+  if (stillPainting(behind)) return { reveal: false, state: { ...state, same: 0, settledAt: null } };
   const settledAt = state.settledAt ?? now;
   const staticPx = heightOf(shown);
   const editorPx = heightOf(behind);

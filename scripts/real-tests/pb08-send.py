@@ -83,7 +83,7 @@ TURNS = [
     "Start Brennagh History Desk in the background on a 3,000-word history of the printing press, stop it "
     "at once, then list your agents and tell me what the list says.",
     "Start a fork of yourself in the foreground and have it summarize this conversation in exactly three "
-    "bullets. Show me its bullets.",
+    "bullets, and ask it to name the sector I picked for the ideas agent as one of them. Show me its bullets.",
     "Schedule a wake-up 2 minutes from now with the note: check cold-room log K-208 and tell me its reading "
     "is due. Then end your turn.",
 ]

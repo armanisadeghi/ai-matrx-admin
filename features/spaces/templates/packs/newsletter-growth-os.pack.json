@@ -429,6 +429,14 @@
             "format": "date"
           },
           {
+            "key": "sent_on",
+            "label": "Sent on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_to_send",
             "label": "Days to send",
             "parityType": "formula",
@@ -560,7 +568,8 @@
                 "Data point",
                 "Links",
                 "Sponsor"
-              ]
+              ],
+              "sent_on": "@today-27d"
             }
           },
           {
@@ -579,7 +588,8 @@
                 "Data point",
                 "Links",
                 "Sponsor"
-              ]
+              ],
+              "sent_on": "@today-20d"
             }
           },
           {
@@ -596,7 +606,8 @@
                 "Lead story",
                 "Data point",
                 "Links"
-              ]
+              ],
+              "sent_on": "@today-13d"
             }
           },
           {
@@ -615,7 +626,8 @@
                 "Data point",
                 "Links",
                 "Sponsor"
-              ]
+              ],
+              "sent_on": "@today-6d"
             }
           },
           {
@@ -702,7 +714,7 @@
             ],
             "filled": [
               "open_rate",
-              "send_on"
+              "sent_on"
             ]
           }
         ],
@@ -822,7 +834,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "idea",
@@ -1384,7 +1397,7 @@
             "value": "Sent"
           },
           {
-            "field": "send_on",
+            "field": "sent_on",
             "set": "value",
             "value": "@today"
           }

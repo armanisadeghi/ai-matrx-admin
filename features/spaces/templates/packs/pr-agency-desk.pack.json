@@ -1227,7 +1227,15 @@
               "Declined"
             ],
             "filled": [
-              "sent_on",
+              "sent_on"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Covered"
+            ],
+            "filled": [
               "covered_on"
             ]
           }

@@ -28,6 +28,12 @@ import {
 } from "@/features/marketing/data/personas";
 import { brandKindCopy, type BrandKindCopy } from "@/features/marketing/lib/brand-kind";
 import {
+  BrandAudienceSurface,
+  parsePersonaDraft,
+  personaForScope,
+  type PersonaDraftSeed,
+} from "@/features/marketing/components/brand/BrandAudienceSurface";
+import {
   personaFieldsFor,
   personaDemographics,
   type BrandPersona,
@@ -61,7 +67,47 @@ export function BrandAudiencePage({
   const update = useUpdateBrandPersona(brandId);
   const remove = useDeleteBrandPersona(brandId);
   const [editing, setEditing] = useState<BrandPersona | "new" | null>(null);
+  // An agent's staged draft: the editor opens pre-filled with it; the owner still presses Save.
+  const [seed, setSeed] = useState<{ key: number; values: PersonaDraftSeed } | null>(null);
   const rows = personas.data ?? [];
+  const demographicFields = personaFieldsFor(brandKind);
+
+  const stageDraft = (value: unknown) => {
+    if (personas.isPending || personas.isError) {
+      throw new Error("The persona list has not loaded, so a draft cannot be staged yet.");
+    }
+    const { persona, seed: values } = parsePersonaDraft(
+      value,
+      rows,
+      demographicFields.map((f) => f.key),
+    );
+    setSeed((prev) => ({ key: (prev?.key ?? 0) + 1, values }));
+    setEditing(persona ?? "new");
+  };
+
+  const getOwn = () => {
+    const loaded = !personas.isPending && !personas.isError;
+    const primary = rows.find((p) => p.is_primary);
+    return {
+      audience_noun: audience.noun,
+      audience_demographic_fields: demographicFields.map((f) => ({ key: f.key, label: f.label })),
+      ...(loaded
+        ? {
+            audience_personas: rows.map(personaForScope),
+            audience_persona_count: rows.length,
+            ...(primary ? { audience_primary_persona: personaForScope(primary) } : {}),
+          }
+        : {}),
+      ...(editing
+        ? {
+            audience_editor: {
+              mode: editing === "new" ? "new" : "edit",
+              persona_id: editing === "new" ? null : editing.id,
+            },
+          }
+        : {}),
+    };
+  };
 
   const onSave = async (values: BrandPersonaValues) => {
     try {
@@ -77,6 +123,7 @@ export function BrandAudiencePage({
       }
       toast.success(`${Noun} saved`);
       setEditing(null);
+      setSeed(null);
     } catch (error) {
       toast.error(`Could not save ${audience.noun}`, { description: extractErrorMessage(error) });
     }
@@ -99,6 +146,7 @@ export function BrandAudiencePage({
   };
 
   return (
+    <BrandAudienceSurface getOwn={getOwn} onPersonaDraft={stageDraft}>
     <div className="h-full overflow-y-auto bg-textured">
       <div className="mx-auto w-full max-w-6xl px-3 pb-10 pt-[calc(var(--shell-header-h)+1rem)] sm:px-4">
         <header className="mb-3 flex items-center justify-between gap-3">
@@ -142,15 +190,21 @@ export function BrandAudiencePage({
 
       {editing ? (
         <PersonaDialog
+          key={`${editing === "new" ? "new" : editing.id}:${seed?.key ?? 0}`}
+          seed={seed?.values ?? null}
           audience={audience}
           kind={brandKind}
           persona={editing === "new" ? null : editing}
           busy={create.isPending || update.isPending}
-          onCancel={() => setEditing(null)}
+          onCancel={() => {
+            setEditing(null);
+            setSeed(null);
+          }}
           onSave={(values) => void onSave(values)}
         />
       ) : null}
     </div>
+    </BrandAudienceSurface>
   );
 }
 
@@ -197,6 +251,7 @@ function PersonaCard({
 }
 
 function PersonaDialog({
+  seed,
   audience,
   kind,
   persona,
@@ -204,6 +259,7 @@ function PersonaDialog({
   onCancel,
   onSave,
 }: {
+  seed: PersonaDraftSeed | null;
   audience: BrandKindCopy["audience"];
   kind?: string | null;
   persona: BrandPersona | null;
@@ -211,14 +267,17 @@ function PersonaDialog({
   onCancel: () => void;
   onSave: (values: BrandPersonaValues) => void;
 }) {
-  const [name, setName] = useState(persona?.name ?? "");
-  const [summary, setSummary] = useState(persona?.summary ?? "");
-  const [demographics, setDemographics] = useState<PersonaDemographics>(persona ? personaDemographics(persona) : {});
-  const [goals, setGoals] = useState((persona?.goals ?? []).join("\n"));
-  const [pains, setPains] = useState((persona?.pain_points ?? []).join("\n"));
-  const [objections, setObjections] = useState((persona?.objections ?? []).join("\n"));
-  const [channels, setChannels] = useState((persona?.channels ?? []).join("\n"));
-  const [primary, setPrimary] = useState(persona?.is_primary ?? false);
+  const [name, setName] = useState(seed?.name ?? persona?.name ?? "");
+  const [summary, setSummary] = useState(seed?.summary ?? persona?.summary ?? "");
+  const [demographics, setDemographics] = useState<PersonaDemographics>({
+    ...(persona ? personaDemographics(persona) : {}),
+    ...(seed?.demographics ?? {}),
+  });
+  const [goals, setGoals] = useState((seed?.goals ?? persona?.goals ?? []).join("\n"));
+  const [pains, setPains] = useState((seed?.pain_points ?? persona?.pain_points ?? []).join("\n"));
+  const [objections, setObjections] = useState((seed?.objections ?? persona?.objections ?? []).join("\n"));
+  const [channels, setChannels] = useState((seed?.channels ?? persona?.channels ?? []).join("\n"));
+  const [primary, setPrimary] = useState(seed?.is_primary ?? persona?.is_primary ?? false);
 
   return (
     <Dialog open onOpenChange={(open) => (!open ? onCancel() : undefined)}>

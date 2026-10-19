@@ -74,7 +74,7 @@ import { OutboundLink } from "@ai-matrx/kit/outbound-react";
  * behind five analyses it does not consume would have locked the door on
  * exactly the sites it exists for — the ones that have done nothing yet.
  */
-const STEP_META: Record<
+export const STEP_META: Record<
   DiscoveryStepKey,
   {
     title: string;

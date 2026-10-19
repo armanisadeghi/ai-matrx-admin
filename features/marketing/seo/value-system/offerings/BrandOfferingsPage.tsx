@@ -9,6 +9,7 @@ import {
 } from "@/features/marketing/components/shared/MarketingUi";
 import { useBrandSites } from "@/features/marketing/data/hooks";
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
+import { BrandOfferingsSurface } from "./BrandOfferingsSurface";
 import { BrandOfferingsEditor } from "./BrandOfferingsEditor";
 import { OfferingsWorkbench } from "./OfferingsWorkbench";
 
@@ -19,10 +20,16 @@ export function BrandOfferingsPage() {
   if (sites.isError) {
     return <QueryError error={sites.error} onRetry={() => void sites.refetch()} />;
   }
-  if ((sites.data ?? []).length === 0) return <BrandOfferingsEditor />;
+  if ((sites.data ?? []).length === 0) return (
+      <BrandOfferingsSurface>
+        <BrandOfferingsEditor />
+      </BrandOfferingsSurface>
+    );
   return (
     <BrandIdentitySiteSurface>
-      <OfferingsWorkbench />
+      <BrandOfferingsSurface>
+        <OfferingsWorkbench />
+      </BrandOfferingsSurface>
     </BrandIdentitySiteSurface>
   );
 }

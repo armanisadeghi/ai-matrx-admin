@@ -232,6 +232,16 @@ export function useYouTubeVideoIdentityIndex(videoIds: string[]) {
   return { identityForId, identities: data, isLoading, error, refresh };
 }
 
+/** Channel details we already hold for channel URLs (no YouTube call). */
+export function useYouTubeChannelIdentityIndex(urls: string[]) {
+  const unique = [...new Set(urls.filter(Boolean))].sort();
+  const key = unique.join(",");
+  const { data, isLoading, error, refresh } = useLocalServiceQuery<
+    Map<string, service.YouTubeChannelIdentity>
+  >(() => service.getYouTubeChannelIdentities(unique), [key], unique.length > 0);
+  return { identityForUrl: (url: string) => data?.get(url), isLoading, error, refresh };
+}
+
 // ============================================================================
 // Content hooks
 // ============================================================================

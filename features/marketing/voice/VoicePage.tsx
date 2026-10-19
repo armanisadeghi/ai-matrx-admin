@@ -14,7 +14,7 @@
  */
 
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Check, Loader2, Search, ShieldAlert, Wand2 } from "lucide-react";
 
@@ -54,6 +54,7 @@ import {
   type VoiceTextOutcome,
 } from "./service";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
+import { BrandVoiceSurface } from "./BrandVoiceSurface";
 import { SpokespeoplePanel } from "./SpokespeoplePanel";
 import { PersonVoiceBar } from "./PersonVoiceBar";
 import { brandKindCopy, isPersonBrand } from "@/features/marketing/lib/brand-kind";
@@ -85,6 +86,18 @@ export interface VoicePageProps {
   brandKind?: string | null;
   /** Person brands: the user who is that person, when they said "this is me". */
   personUserId?: string | null;
+  /**
+   * The Identity voice route only: mount the room's agent surface
+   * (`matrx-user/marketing-brand-voice`) over the brand scope. Needs the
+   * Identity layout above it, so the settings tab and tests leave it off.
+   */
+  brandSurface?: boolean;
+}
+
+/** What the open confirmation card exposes to the agent surface. */
+interface ConfirmBridge {
+  snapshot: Record<string, unknown>;
+  apply: (value: unknown) => void;
 }
 
 type Picked = { source: SourceOption; kind: VoiceSampleKind; social?: SocialSampleOption };
@@ -120,6 +133,7 @@ export function VoicePage({
   embedded = false,
   brandKind = null,
   personUserId = null,
+  brandSurface = false,
 }: VoicePageProps) {
   const [rows, setRows] = useState<FingerprintRow[] | null>(null);
   const [listError, setListError] = useState<string | null>(null);
@@ -259,6 +273,12 @@ export function VoicePage({
   const [saved, setSaved] = useState<ConfirmedVoice | null>(null);
   const spokeToConfirm = spokes.find((r) => r.status === "draft") ?? null;
 
+  // The fix-a-draft box lives here so the agent surface can read and stage it.
+  const [fixDraftText, setFixDraftText] = useState("");
+  const [fixSurface, setFixSurface] = useState<VoiceSurface>("pitch");
+  const [fixOutcome, setFixOutcome] = useState<VoiceTextOutcome | null>(null);
+  const confirmBridge = useRef<ConfirmBridge | null>(null);
+
   const measure = async () => {
     setMeasuring(true);
     setMeasureError(null);
@@ -302,9 +322,154 @@ export function VoicePage({
     setPicked([]);
     document.getElementById("voice-samples")?.scrollIntoView({ block: "start" });
   };
+
+  const getOwnSurfaceValues = () => {
+    const pickedRows = picked.map((p) => ({
+      source_id: p.source.id,
+      name: p.source.name,
+      kind: p.kind,
+      from: p.social ? "social" : "source",
+    }));
+    const triage = measured?.triage;
+    return {
+      voice_whose: target,
+      voice_search_query: query,
+      voice_samples_picked: pickedRows,
+      ...(current
+        ? {
+            voice_current: {
+              status: current.status,
+              confidence: current.confidence,
+              register_label: current.register_label,
+              sample_count: current.sample_count,
+              sample_word_count: current.sample_word_count,
+              last_extracted_at: current.last_extracted_at,
+              refresh_due_at: current.refresh_due_at,
+              confirmed_at: current.confirmed_at,
+            },
+            voice_fingerprint: current.fingerprint,
+          }
+        : {}),
+      ...(saved ? { voice_saved_summary_line: saved.summary_line } : {}),
+      ...(sources
+        ? {
+            voice_sample_candidates: sources.map((s) => ({
+              source_id: s.id,
+              name: s.name,
+              created_at: s.created_at,
+            })),
+          }
+        : {}),
+      ...(socialPosts && scope === "brand" && target === "brand"
+        ? {
+            voice_social_candidates: socialPosts.map((post) => ({
+              post_id: post.postId,
+              platform: post.platform,
+              handle: post.handle,
+              text_kind: post.textKind,
+              preview: post.preview,
+            })),
+          }
+        : {}),
+      voice_spokespeople: spokes.map((r) => ({
+        id: r.id,
+        status: r.status,
+        confidence: r.confidence,
+        sample_count: r.sample_count,
+        last_extracted_at: r.last_extracted_at,
+      })),
+      ...(triage
+        ? {
+            voice_measure_triage: {
+              sample_count: triage.sample_count,
+              total_words: triage.total_words,
+              ai_tell_share: triage.ai_tell_share,
+              register_split: Boolean(triage.register_split),
+              confidence: triage.confidence,
+              warnings: triage.warnings ?? [],
+              saved: Boolean(measured?.fingerprint_id),
+            },
+          }
+        : {}),
+      ...(confirmBridge.current ? { voice_confirm_choices: confirmBridge.current.snapshot } : {}),
+      ...(current?.status === "confirmed"
+        ? {
+            voice_fix_draft: fixDraftText,
+            voice_fix_surface: fixSurface,
+            ...(fixOutcome
+              ? {
+                  voice_fix_outcome: {
+                    status: fixOutcome.status,
+                    retries: fixOutcome.retries,
+                    initial_tells: fixOutcome.initial_tells ?? [],
+                    text: fixOutcome.text,
+                  },
+                }
+              : {}),
+          }
+        : {}),
+    };
+  };
+
+  const writeHandlers = {
+    samplesPicked: (value: unknown) => {
+      if (!Array.isArray(value)) {
+        throw new Error("voice_samples_picked takes an array of { source_id, kind? }.");
+      }
+      if (value.length > MAX_SAMPLES) {
+        throw new Error(`A measurement uses at most ${MAX_SAMPLES} samples.`);
+      }
+      const next: Picked[] = [];
+      const seen = new Set<string>();
+      for (const entry of value as unknown[]) {
+        if (!entry || typeof entry !== "object") throw new Error("Each sample must be { source_id, kind? }.");
+        const { source_id: id, kind } = entry as { source_id?: unknown; kind?: unknown };
+        if (typeof id !== "string") throw new Error("Each sample needs a source_id string.");
+        if (seen.has(id)) throw new Error(`source_id ${id} is listed twice.`);
+        seen.add(id);
+        if (kind !== undefined && !SAMPLE_KINDS.includes(kind as VoiceSampleKind)) {
+          throw new Error(`kind must be one of ${SAMPLE_KINDS.join(", ")}.`);
+        }
+        const asKind = (kind as VoiceSampleKind | undefined) ?? "other";
+        if (id.startsWith("social:")) {
+          const post = socialPosts?.find((p) => `social:${p.postId}` === id);
+          if (!post) throw new Error(`${id} is not a social post offered on this page (see voice_social_candidates).`);
+          next.push({
+            source: { id, name: `${post.handle ? `@${post.handle}` : post.platform} · ${post.preview}`, created_at: post.postedAt ?? "" },
+            kind: kind === undefined ? sampleKindForPlatform(post.platform) : asKind,
+            social: post,
+          });
+        } else {
+          const option =
+            sources?.find((s) => s.id === id) ?? picked.find((p) => p.source.id === id)?.source;
+          if (!option) throw new Error(`${id} is not a Source offered on this page (see voice_sample_candidates).`);
+          next.push({ source: option, kind: asKind });
+        }
+      }
+      setPicked(next);
+    },
+    confirmChoices: (value: unknown) => {
+      const bridge = confirmBridge.current;
+      if (!bridge) throw new Error("No measured voice is waiting for confirmation on this page.");
+      bridge.apply(value);
+    },
+    fixDraft: (value: unknown) => {
+      if (current?.status !== "confirmed") throw new Error("The draft box appears once a voice is confirmed.");
+      if (typeof value !== "string") throw new Error("voice_fix_draft takes the full draft text as a string.");
+      setFixDraftText(value);
+    },
+    fixSurface: (value: unknown) => {
+      if (current?.status !== "confirmed") throw new Error("The channel choice appears once a voice is confirmed.");
+      if (typeof value !== "string" || !SURFACES.includes(value as VoiceSurface)) {
+        throw new Error(`voice_fix_surface must be one of ${SURFACES.join(", ")}.`);
+      }
+      setFixSurface(value as VoiceSurface);
+    },
+  };
+
   const whoWrote = scope !== "brand" ? "you wrote" : personBrand ? "they wrote" : "the brand published";
 
-  return (
+  const page = (
     <div className={embedded ? undefined : "h-full overflow-y-auto bg-textured"}>
       <div
         className={
@@ -534,6 +699,13 @@ export function VoicePage({
             key={toConfirm.id}
             row={toConfirm}
             org={org}
+            bridge={
+              brandSurface
+                ? (next) => {
+                    confirmBridge.current = next;
+                  }
+                : undefined
+            }
             onSaved={(result) => {
               setSaved(result);
               setNonce((n) => n + 1);
@@ -553,9 +725,28 @@ export function VoicePage({
           />
         ) : null}
 
-        {current?.status === "confirmed" ? <TryDraft fingerprintId={current.id} org={org} /> : null}
+        {current?.status === "confirmed" ? (
+          <TryDraft
+            fingerprintId={current.id}
+            org={org}
+            draft={fixDraftText}
+            setDraft={setFixDraftText}
+            surface={fixSurface}
+            setSurface={setFixSurface}
+            outcome={fixOutcome}
+            setOutcome={setFixOutcome}
+          />
+        ) : null}
       </div>
     </div>
+  );
+
+  return brandSurface ? (
+    <BrandVoiceSurface getOwn={getOwnSurfaceValues} handlers={writeHandlers}>
+      {page}
+    </BrandVoiceSurface>
+  ) : (
+    page
   );
 }
 
@@ -623,10 +814,13 @@ function CheckList({
 function ConfirmCard({
   row,
   org,
+  bridge,
   onSaved,
 }: {
   row: FingerprintRow;
   org: () => Promise<string>;
+  /** Hands the agent surface this card's live choices and a way to set them; null on unmount. */
+  bridge?: (next: ConfirmBridge | null) => void;
   onSaved: (result: ConfirmedVoice) => void;
 }) {
   const fp = row.fingerprint as Fp;
@@ -643,6 +837,57 @@ function ConfirmCard({
   const [register, setRegister] = useState<(typeof REGISTERS)[number]>(fp.register_label ?? "professional");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!bridge) return;
+    bridge({
+      snapshot: {
+        em_dash_usage: emDash,
+        measured_em_dash_usage: fp.mechanics?.em_dash_usage ?? null,
+        register_label: register,
+        openers: { offered: openers, kept: keptOpeners },
+        closers: { offered: closers, kept: keptClosers },
+        signature_phrases: { offered: signature, kept: keptSignature },
+        banned_words_allowed: { offered: globals, kept: allowed },
+      },
+      apply: (value) => {
+        if (!value || typeof value !== "object" || Array.isArray(value)) {
+          throw new Error("voice_confirm_choices takes an object of the fields to set.");
+        }
+        const input = value as Record<string, unknown>;
+        const known = ["em_dash_usage", "register_label", "openers_kept", "closers_kept", "signature_phrases_kept", "banned_words_allowed"];
+        const stray = Object.keys(input).filter((k) => !known.includes(k));
+        if (stray.length) throw new Error(`voice_confirm_choices has unknown field(s): ${stray.join(", ")}.`);
+        const list = (field: string, offered: string[]): string[] | undefined => {
+          const raw = input[field];
+          if (raw === undefined) return undefined;
+          if (!Array.isArray(raw) || raw.some((x) => typeof x !== "string")) {
+            throw new Error(`${field} must be an array of strings.`);
+          }
+          const bad = (raw as string[]).filter((x) => !offered.includes(x));
+          if (bad.length) throw new Error(`${field} can only use offered items; not offered: ${bad.join(", ")}.`);
+          return raw as string[];
+        };
+        if (input.em_dash_usage !== undefined && !EM_DASH.includes(input.em_dash_usage as (typeof EM_DASH)[number])) {
+          throw new Error(`em_dash_usage must be one of ${EM_DASH.join(", ")}.`);
+        }
+        if (input.register_label !== undefined && !REGISTERS.includes(input.register_label as (typeof REGISTERS)[number])) {
+          throw new Error(`register_label must be one of ${REGISTERS.join(", ")}.`);
+        }
+        const nextOpeners = list("openers_kept", openers);
+        const nextClosers = list("closers_kept", closers);
+        const nextSignature = list("signature_phrases_kept", signature);
+        const nextAllowed = list("banned_words_allowed", globals);
+        if (input.em_dash_usage !== undefined) setEmDash(input.em_dash_usage as (typeof EM_DASH)[number]);
+        if (input.register_label !== undefined) setRegister(input.register_label as (typeof REGISTERS)[number]);
+        if (nextOpeners) setKeptOpeners(nextOpeners);
+        if (nextClosers) setKeptClosers(nextClosers);
+        if (nextSignature) setKeptSignature(nextSignature);
+        if (nextAllowed) setAllowed(nextAllowed);
+      },
+    });
+    return () => bridge(null);
+  });
 
   const save = async () => {
     setSaving(true);
@@ -737,11 +982,26 @@ function ConfirmCard({
   );
 }
 
-function TryDraft({ fingerprintId, org }: { fingerprintId: string; org: () => Promise<string> }) {
-  const [draft, setDraft] = useState("");
-  const [surface, setSurface] = useState<VoiceSurface>("pitch");
+function TryDraft({
+  fingerprintId,
+  org,
+  draft,
+  setDraft,
+  surface,
+  setSurface,
+  outcome,
+  setOutcome,
+}: {
+  fingerprintId: string;
+  org: () => Promise<string>;
+  draft: string;
+  setDraft: (next: string) => void;
+  surface: VoiceSurface;
+  setSurface: (next: VoiceSurface) => void;
+  outcome: VoiceTextOutcome | null;
+  setOutcome: (next: VoiceTextOutcome | null) => void;
+}) {
   const [running, setRunning] = useState(false);
-  const [outcome, setOutcome] = useState<VoiceTextOutcome | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const run = async () => {

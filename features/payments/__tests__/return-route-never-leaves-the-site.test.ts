@@ -16,7 +16,7 @@ async function locationFor(back: string): Promise<URL> {
 }
 
 describe("payments return route stays on this site", () => {
-  it.each(["/%5Cevil.com", "/%5C%5Cevil.com", "/%09/evil.com", "%2F%2Fevil.com", "https://evil.com", "/%0A/evil.com", "/%5C/evil.com"])(
+  it.each(["/%5Cevil.com", "/%5C%5Cevil.com", "/%09/evil.com", "%2F%2Fevil.com", "https://evil.com", "/%0A/evil.com", "/%5C/evil.com", "/.//evil.com", "/..//evil.com", "/%2e%2e//evil.com", "/a/..//evil.com", "/%2E//evil.com"])(
     "back=%s lands on this origin",
     async (back) => {
       const loc = await locationFor(back);
@@ -37,5 +37,9 @@ describe("payments return route stays on this site", () => {
     expect(safeReturnPath("/\t/evil.com", ORIGIN)).toBe("/");
     expect(safeReturnPath("//evil.com", ORIGIN)).toBe("/");
     expect(safeReturnPath("/b/abc", ORIGIN)).toBe("/b/abc");
+    // N1: dot-segments must not collapse into a protocol-relative path
+    expect(safeReturnPath("/.//evil.com", ORIGIN)).toBe("/");
+    expect(safeReturnPath("/..//evil.com", ORIGIN)).toBe("/");
+    expect(safeReturnPath("/%2e%2e//evil.com", ORIGIN)).toBe("/");
   });
 });

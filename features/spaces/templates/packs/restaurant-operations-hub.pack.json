@@ -1267,7 +1267,15 @@
               "Received"
             ],
             "filled": [
-              "ordered_on",
+              "ordered_on"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Received"
+            ],
+            "filled": [
               "received_on"
             ]
           }

@@ -738,8 +738,7 @@
             ],
             "filled": [
               "ordered_on",
-              "expected_on",
-              "received_on"
+              "expected_on"
             ]
           },
           {

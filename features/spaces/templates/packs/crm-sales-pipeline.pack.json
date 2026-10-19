@@ -754,6 +754,14 @@
             "format": "date"
           },
           {
+            "key": "decided_on",
+            "label": "Decided on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_to_close",
             "label": "Days to expected close",
             "parityType": "formula",
@@ -932,7 +940,8 @@
               "value": 8200,
               "probability": 100,
               "close_on": "@today-12d",
-              "owner": "tm-ruben"
+              "owner": "tm-ruben",
+              "decided_on": "@today-12d"
             }
           },
           {
@@ -945,7 +954,8 @@
               "value": 11400,
               "probability": 100,
               "close_on": "@today-33d",
-              "owner": "tm-ingrid"
+              "owner": "tm-ingrid",
+              "decided_on": "@today-33d"
             }
           },
           {
@@ -958,7 +968,8 @@
               "value": 9800,
               "probability": 0,
               "close_on": "@today-20d",
-              "owner": "tm-ingrid"
+              "owner": "tm-ingrid",
+              "decided_on": "@today-20d"
             }
           },
           {
@@ -983,19 +994,11 @@
           {
             "field": "stage",
             "when": [
-              "Won"
-            ],
-            "filled": [
-              "close_on"
-            ]
-          },
-          {
-            "field": "stage",
-            "when": [
+              "Won",
               "Lost"
             ],
             "filled": [
-              "close_on"
+              "decided_on"
             ]
           }
         ],
@@ -1130,7 +1133,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "activity",
@@ -1591,7 +1595,7 @@
             "value": "Won"
           },
           {
-            "field": "close_on",
+            "field": "decided_on",
             "set": "value",
             "value": "@today"
           }
@@ -1610,7 +1614,7 @@
             "value": "Lost"
           },
           {
-            "field": "close_on",
+            "field": "decided_on",
             "set": "value",
             "value": "@today"
           }

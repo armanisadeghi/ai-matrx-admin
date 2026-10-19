@@ -34,6 +34,7 @@ import {
   type CatalogOffering,
 } from "./data";
 import { buildCatalogTree, forbiddenParents } from "./catalog-tree";
+import { usePublishOfferingsFeed } from "./BrandOfferingsSurface";
 import { OfferingEditDialog, type OfferingEditDraft } from "./OfferingEditDialog";
 import { OfferingCatalogTable, type CatalogRowActions } from "./OfferingCatalogTable";
 
@@ -127,6 +128,16 @@ export function BrandOfferingsEditor() {
       toast.success("Offering removed");
     },
     onError: failed("remove that offering"),
+  });
+
+  usePublishOfferingsFeed({
+    catalog: catalog.data ?? null,
+    prices: prices.data ?? {},
+    site: null,
+    stats: null,
+    placement: null,
+    draft,
+    openDraft: setDraft,
   });
 
   if (catalog.isPending) return <LoadingSurface label="Loading offerings…" />;

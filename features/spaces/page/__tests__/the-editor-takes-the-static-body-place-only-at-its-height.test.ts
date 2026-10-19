@@ -74,6 +74,9 @@ describe("the editor is swapped in for the static body only when it paints the s
     expect(run(stack(1200, 1200, db), 60)).toBeNull();
     const drawn = '<div class="bn-block-outer"><div class="react-renderer node-database"><div class="bn-block-content"><div class="spaces-db-host"><div class="spaces-db-frame"></div></div></div></div></div>';
     expect(run(stack(1200, 1200, drawn), 60)).toBe(16);
+    // A block that could not be drawn (BlockBoundary) is an end state too.
+    const failed = '<div class="bn-block-outer"><div class="react-renderer node-database"><div class="bn-block-content"><div class="spaces-db-host"><div data-block-error=""></div></div></div></div></div>';
+    expect(run(stack(1200, 1200, failed), 60)).toBe(16);
   });
 
   it("the room's placeholder line (before the body syncs in) is still painting", () => {

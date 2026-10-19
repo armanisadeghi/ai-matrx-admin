@@ -128,6 +128,12 @@ export function projectMediaOrderDraft(
 }
 
 export interface BrandAssetsScopeInput {
+  /**
+   * The inherited brand scope (`useBrandIdentityBaseScope()`), spread first so
+   * the room never rebuilds `brand_context`. When given, `brandName` and
+   * `brandContext` are ignored.
+   */
+  base?: SurfaceScopePayload;
   brandId: string;
   brandName: string;
   /** Brand context XML, when the brand's inputs have loaded. */
@@ -147,6 +153,7 @@ export interface BrandAssetsScopeInput {
 }
 
 export function buildBrandAssetsScope({
+  base,
   brandId,
   brandName,
   brandContext,
@@ -157,10 +164,16 @@ export function buildBrandAssetsScope({
   researchImages,
   siteRootUrls,
 }: BrandAssetsScopeInput): SurfaceScopePayload {
+  const inherited = base
+    ? (base as unknown as { brand_id: string } & Record<string, unknown>)
+    : {
+        brand_id: brandId,
+        brand_name: brandName,
+        ...(brandContext ? { brand_context: brandContext } : {}),
+      };
   return createMarketingBrandAssetsScope({
+    ...inherited,
     brand_id: brandId,
-    brand_name: brandName,
-    ...(brandContext ? { brand_context: brandContext } : {}),
     assets_view: view,
     brand_media_standards: {
       slots: standards.slots,

@@ -1637,7 +1637,16 @@
               "Lost"
             ],
             "filled": [
-              "sent_on",
+              "sent_on"
+            ]
+          },
+          {
+            "field": "stage",
+            "when": [
+              "Won",
+              "Lost"
+            ],
+            "filled": [
               "decided_on"
             ]
           }

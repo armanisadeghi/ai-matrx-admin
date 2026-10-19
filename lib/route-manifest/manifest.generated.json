@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1556,
+  "routeCount": 1557,
   "routes": [
     {
       "pattern": "/",
@@ -4308,6 +4308,11 @@
       "pattern": "/knowledge/transcripts/[id]",
       "status": "live",
       "source": "app/(core)/knowledge/transcripts/[id]/page.tsx"
+    },
+    {
+      "pattern": "/knowledge/trash",
+      "status": "live",
+      "source": "app/(core)/knowledge/trash/page.tsx"
     },
     {
       "pattern": "/knowledge/viewer/[id]",

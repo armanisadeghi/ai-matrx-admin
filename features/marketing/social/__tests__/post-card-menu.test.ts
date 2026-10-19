@@ -4,7 +4,6 @@
  * record is not named "Post", or when a row stops running the card's own handler.
  */
 jest.mock("@/lib/toast", () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
-jest.mock("@/components/cost/pointsRate", () => ({ currentPointsRate: () => 20000 }));
 jest.mock("../components/usePostActions", () => ({
   postActionRunners: () => ({ transcript: jest.fn(async () => "ok"), breakdown: jest.fn(async () => "ok"), saveToSwipe: jest.fn(async () => "ok") }),
 }));
@@ -68,11 +67,11 @@ describe("a post card's rows in the page menu", () => {
     expect(onSave).toHaveBeenCalledWith(post);
   });
 
-  it("the transcript row names its points when the page holds the costs", () => {
+  it("no row names a price: a one-click action never shows points", () => {
     const client = new QueryClient();
     client.setQueryData(["marketing", "social", "costs", "org-1"], { call_usd: 0.001, operations: { transcript: 0.002 } });
     const { rows } = labels(true, { queryClient: client });
     const t = rows.extraSections[0]!.items.find((i) => "label" in i && i.label === "Get transcript");
-    expect(t && "hint" in t ? t.hint : undefined).toBe("≈ 40 points");
+    expect(t && "hint" in t ? t.hint : undefined).toBeUndefined();
   });
 });

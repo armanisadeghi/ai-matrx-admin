@@ -63,6 +63,7 @@ import { mayWrite, roomCanEdit, trashedByList } from "./trash-state";
 import { attemptSave, deviceStorage, forgetUnsaved, keepsChange, keepUnsaved, noteWritten } from "./unsaved";
 import { useRestoreKept } from "./useRestoreKept";
 import { SpaceSeedProvider, useSpaceSeedSettled, type SpaceBlockSeeds } from "./space-seed-context";
+import { firstRevealState, revealStep } from "./reveal-when-painted";
 import { SpaceLinksProvider, type SeededBacklink, type SpaceLinks } from "./space-links";
 import { StaticSpaceBody } from "../editor/static-body";
 import { sendOnLeave, trackAccessToken } from "./leave-save";
@@ -73,9 +74,6 @@ import { setSuggestAuthor, setSuggestName, setSuggestPage } from "../editor/sugg
 import { isContentEditOnly } from "./content-edit";
 import { StructureProvider } from "./structure";
 import { copyToClipboard } from "@/lib/clipboard/copy";
-
-/** The longest the static first paint stays once the editor is built behind it. */
-const REVEAL_CAP_MS = 2500;
 
 type Editable = Pick<SpaceDoc, "title" | "icon" | "cover" | "settings" | "blocks" | "properties">;
 
@@ -703,24 +701,18 @@ function SpacePageScreen({ spaceId, initialDoc }: { spaceId: string; initialDoc?
   }, [spaceId]);
 
   // Round 34 — the first paint is the page's static body (server HTML); the editor is built behind it
-  // once the room is joined and takes its place when it paints the same height (so nothing moves), or
-  // after REVEAL_CAP_MS whatever it draws.
+  // once the room is joined and takes its place when it paints the same height (so nothing moves): the
+  // rule, its still-painting signs and its caps are reveal-when-painted.ts (SPACES-SHIFT-3).
   // The editor's database blocks start from the server's answers: it is built once they have landed.
   const seedSettled = useSpaceSeedSettled();
   const stackRef = useRef<HTMLDivElement | null>(null);
   const [revealed, setRevealed] = useState(false);
   const revealWhenPainted = () => {
-    const started = performance.now();
-    let same = 0;
+    let state = firstRevealState(performance.now());
     const tick = () => {
-      const stack = stackRef.current;
-      const shown = stack?.querySelector<HTMLElement>(":scope > .spaces-static-body");
-      const behind = stack?.querySelector<HTMLElement>(":scope > .spaces-editor-behind");
-      if (!stack || !shown || !behind) return setRevealed(true);
-      // Every React block drawn (BlockNote paints them a frame after the text) and the heights agree.
-      const pending = behind.querySelector(".react-renderer:empty, .spaces-db-loading");
-      same = !pending && Math.abs(behind.scrollHeight - shown.getBoundingClientRect().height) <= 1 ? same + 1 : 0;
-      if (same >= 2 || performance.now() - started > REVEAL_CAP_MS) return setRevealed(true);
+      const step = revealStep(stackRef.current, state, performance.now());
+      if (step.reveal) return setRevealed(true);
+      state = step.state;
       requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);

@@ -848,15 +848,7 @@
           {
             "field": "stage",
             "when": [
-              "Closed won"
-            ],
-            "filled": [
-              "decided_on"
-            ]
-          },
-          {
-            "field": "stage",
-            "when": [
+              "Closed won",
               "Closed lost"
             ],
             "filled": [

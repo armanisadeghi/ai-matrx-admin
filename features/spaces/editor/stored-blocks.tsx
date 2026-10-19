@@ -470,7 +470,8 @@ class BlockBoundary extends Component<{ children: ReactNode }, { error: string |
     return { error: e instanceof Error ? e.message : "This block could not be drawn." };
   }
   override render() {
-    return this.state.error ? <ErrorNotice title="This block could not be drawn" message={this.state.error} size="compact" /> : this.props.children;
+    // `data-block-error`: drawn (an end state), so the page's reveal does not wait on it (reveal-when-painted.ts).
+    return this.state.error ? <div data-block-error=""><ErrorNotice title="This block could not be drawn" message={this.state.error} size="compact" /></div> : this.props.children;
   }
 }
 

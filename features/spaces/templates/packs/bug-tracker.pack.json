@@ -779,7 +779,15 @@
               "Fixed"
             ],
             "filled": [
-              "priority",
+              "priority"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Fixed"
+            ],
+            "filled": [
               "fixed_on"
             ]
           }

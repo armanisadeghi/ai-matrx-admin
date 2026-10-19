@@ -22,6 +22,7 @@ import {
   CheckCircle,
   XCircle,
   ShieldAlert,
+  Table2,
 } from "lucide-react";
 // THE package initials formatter (`@ai-matrx/kit/format`, census H1
 // 2026-09-07). Recorded display decision: a multi-part name takes FIRST +
@@ -34,6 +35,7 @@ import { getMyOrganizationsByIds, getUserOrganizationsFirstPage } from "@/featur
 import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import { activeOrgCookie } from "@/lib/organizations/activeOrgCookie";
 import { setMcpConnectionOrganization } from "@/features/connectors/connectionOrganization";
+import { appScopeLines, getOAuthAppConsent } from "@/features/settings/oauthAppsService";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -79,7 +81,13 @@ type PageState =
       detail?: ErrorDetail;
     }
   | { kind: "redirecting"; message: string; redirectUrl: string }
-  | { kind: "consent"; details: OAuthAuthorizationDetails; user: ApiClaimsUser };
+  | {
+      kind: "consent";
+      details: OAuthAuthorizationDetails;
+      user: ApiClaimsUser;
+      /** A registered OAuth app's own name and data scopes (iam.oauth_app_consent); null for other clients. */
+      app: { name: string; scopes: string[] } | null;
+    };
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -323,12 +331,10 @@ export default function ConsentClient() {
         return;
       }
 
-      // Step 4: Show consent
-      setPageState({
-        kind: "consent",
-        details: authData as OAuthAuthorizationDetails,
-        user,
-      });
+      // Step 4: Show consent — a registered app also names the data it may reach
+      const details = authData as OAuthAuthorizationDetails;
+      const app = details.client?.id ? await getOAuthAppConsent(details.client.id) : null;
+      setPageState({ kind: "consent", details, user, app });
     }
 
     initialize();
@@ -492,6 +498,7 @@ export default function ConsentClient() {
             <ConsentForm
               details={pageState.details}
               user={pageState.user}
+              app={pageState.app}
               actionLoading={actionLoading}
               onApprove={handleApprove}
               onDeny={handleDeny}
@@ -624,6 +631,7 @@ function RedirectingState({
 function ConsentForm({
   details,
   user,
+  app,
   actionLoading,
   onApprove,
   onDeny,
@@ -635,6 +643,7 @@ function ConsentForm({
 }: {
   details: OAuthAuthorizationDetails;
   user: ApiClaimsUser;
+  app: { name: string; scopes: string[] } | null;
   actionLoading: "approve" | "deny" | null;
   onApprove: () => void;
   onDeny: () => void;
@@ -757,6 +766,21 @@ function ConsentForm({
               </li>
             );
           })}
+          {appScopeLines(app?.scopes).map((line) => (
+            <li
+              key={line.scope}
+              data-scope={line.scope}
+              className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-3 py-2.5"
+            >
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10">
+                <Table2 className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground leading-tight">{line.label}</p>
+                <p className="text-xs text-muted-foreground">{line.description}</p>
+              </div>
+            </li>
+          ))}
         </ul>
       </div>
 

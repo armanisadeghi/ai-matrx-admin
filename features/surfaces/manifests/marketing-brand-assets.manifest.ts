@@ -32,6 +32,7 @@ import type {
 } from "@ai-matrx/chat/surfaces/types";
 import { MEDIA_ORDER_PRESET_IDS } from "@/features/marketing/lib/media-order-presets";
 import { mergeBaselineValues, pickBaseline } from "@ai-matrx/chat/surfaces/manifests/_baseline.manifest";
+import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
 
 const groups: SurfaceValueGroup[] = [
@@ -181,7 +182,7 @@ export const marketingBrandAssetsManifest: SurfaceManifest = {
   inheritsFrom: "matrx-user/marketing-brand",
   readiness: "partial",
   readinessNote:
-    "Split out of matrx-user/marketing-site-media on 2026-08-15 when the Media section was divided by level. Manifest, emitter, registry, route mapping, and the media_order write target carry over from the verified site-media implementation; the DB sync and a live agent run against this surface name have not been re-verified.",
+    "Manifest, emitter, registry, route mapping and the media_order write target carry over from the verified site-media implementation. The two Generate-view mandates (marketing.image_prompt, marketing.page_image) are disclosed as roles (2026-10-18). The scope now spreads the inherited brand scope from the Identity layout. The DB sync and a live agent run against this surface name have not been re-verified; art_director and library_curator remain slots for user-chosen helper agents.",
   intro: `<surface_intro>
 Read brand_context first — it tells you whose brand this is and what it sells.
 You are on the asset desk for ONE BRAND: everything the brand OWNS or could own, four views on one route. assets_view tells you which one is open: library (the brand's owned assets — uploads, promoted crawl finds, generated images), research (images the research system captured, for reuse and creative reference), sources (free stock search and the brand's own stock-portal links), and generate (order AI images off preset types).
@@ -196,6 +197,28 @@ You can WRITE here, and the line is ORDER vs FIRE: media_order fills in the Gene
   ),
   writeTargets,
   agentRoles: [
+    {
+      name: "image_prompt_writer",
+      label: "Image prompt writer",
+      description:
+        "Step 1 of Order this image on the Generate view: turns the order (type, brief, style) and the brand's facts into the image prompt.",
+      kind: "single",
+      mandateKey: MANDATE_KEYS.marketing__image_prompt,
+      defaultAgentId: null,
+      autoRun: "never",
+      sortOrder: 80,
+    },
+    {
+      name: "image_renderer",
+      label: "Image renderer",
+      description:
+        "Step 2 of Order this image on the Generate view: renders the written image prompt into the picture that is saved to the brand's library.",
+      kind: "single",
+      mandateKey: MANDATE_KEYS.marketing__page_image,
+      defaultAgentId: null,
+      autoRun: "never",
+      sortOrder: 90,
+    },
     {
       name: "art_director",
       label: "Art director",

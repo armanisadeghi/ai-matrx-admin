@@ -85,6 +85,7 @@ import {
   OfferingCatalogTable,
   type CatalogRowActions,
 } from "./OfferingCatalogTable";
+import { usePublishOfferingsFeed } from "./BrandOfferingsSurface";
 import { AddOfferingDialog, type AddOfferingChoice } from "./AddOfferingDialog";
 import { OfferingEditDialog, type OfferingEditDraft } from "./OfferingEditDialog";
 import { OfferingWorthDialog, type OfferingWorthValues } from "./OfferingWorthDialog";
@@ -191,6 +192,15 @@ export function OfferingsWorkbench() {
   // ── Derived ───────────────────────────────────────────────────────────────
   const offerings = catalog.data ?? [];
   const tree = buildCatalogTree(offerings, tallyByOffering(stats.data ?? []));
+  usePublishOfferingsFeed({
+    catalog: catalog.data ?? null,
+    prices: prices.data ?? {},
+    site: { id: site.id, domain: site.domain, name: site.name ?? null },
+    stats: stats.data ?? null,
+    placement: placementStatus.data ?? null,
+    draft: editDraft,
+    openDraft: setEditDraft,
+  });
   const metas = buildBandMeta(vocab.data ?? []);
   const offeredCount = offerings.filter((offering) => offering.available).length;
   const valuedCount = offerings.filter((offering) => offering.worthPoints !== null).length;

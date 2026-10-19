@@ -28,7 +28,7 @@ do $t$
 declare
   c_admin constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';   -- admin@admin.com
   v_org uuid; v_home uuid; v_inv uuid; v_cli uuid; v_c uuid;
-  v_ids text[] := '{}'; v_i uuid; s text; amt numeric;
+  v_ids text[] := '{}'; v_i uuid; v_stf uuid; s text; amt numeric;
 begin
   insert into iam.organizations (name, slug, abbreviation, created_by)
   values ('Lakeside Plumbing Rollup Test', 'rf-test-' || substr(md5(random()::text),1,8), 'LPR', c_admin) returning id into v_org;
@@ -46,7 +46,7 @@ begin
     'row_order','sorted','default_sort','[]'::jsonb,'agent_writable',true,'retention_days',365,'on_delete','cascade',
     'fields', jsonb_build_array(jsonb_build_object('name','number')), 'parent_id', v_home::text));
   perform custom.field_declare(v_org, v_inv, jsonb_build_object('key','number','label','Number','type','text'));
-  perform custom.field_declare(v_org, v_inv, jsonb_build_object('key','status','label','Status','type','select',
+  v_stf := custom.field_declare(v_org, v_inv, jsonb_build_object('key','status','label','Status','type','select',
     'options', jsonb_build_array('Draft','Sent','Overdue','Paid','Cancelled')));
   perform custom.field_declare(v_org, v_inv, jsonb_build_object('key','amount','label','Amount','type','currency','unit','$'));
   v_cli := custom.table_declare(v_org, jsonb_build_object('name','Clients','slug','rf_cli_' || substr(md5(random()::text),1,8),'type','entity',
@@ -63,6 +63,11 @@ begin
     'filter', jsonb_build_object('status', jsonb_build_object('not', jsonb_build_array('draft','Cancelled')))));
   perform custom.field_declare(v_org, v_cli, jsonb_build_object('key','not_paid','label','Not paid','type','rollup','via','invoices','agg','sum','of','amount',
     'filter', jsonb_build_object('status', jsonb_build_object('not', 'Paid'))));
+  -- The Rule form (what the rollup editor writes), by the far column's id: has_any / has_none over key or label.
+  perform custom.field_declare(v_org, v_cli, jsonb_build_object('key','rule_any','label','Rule any','type','rollup','via','invoices','agg','sum','of','amount',
+    'filter', jsonb_build_object('op','has_any','args', jsonb_build_array(jsonb_build_object('field', v_stf::text), jsonb_build_object('const', jsonb_build_array('Sent','overdue'))))));
+  perform custom.field_declare(v_org, v_cli, jsonb_build_object('key','rule_none','label','Rule none','type','rollup','via','invoices','agg','sum','of','amount',
+    'filter', jsonb_build_object('op','has_none','args', jsonb_build_array(jsonb_build_object('field', v_stf::text), jsonb_build_object('const', jsonb_build_array('Draft','cancelled'))))));
   perform custom.field_declare(v_org, v_cli, jsonb_build_object('key','one_paid','label','One paid','type','rollup','via','invoices','agg','sum','of','amount',
     'filter', jsonb_build_object('status', 'paid')));
 
@@ -90,6 +95,8 @@ begin
     ('1b any-of by label (case-insensitive): 2 records', (v ->> 'awaiting_n') = '2', v ->> 'awaiting_n'),
     ('1c not-in a list: everything except Draft/Cancelled = 700', (v ->> 'billed') = '700', v ->> 'billed'),
     ('1d not-in one word: everything except Paid = 700', (v ->> 'not_paid') = '700', v ->> 'not_paid'),
+    ('1f Rule has_any [Sent, overdue] = 400', (v ->> 'rule_any') = '400', v ->> 'rule_any'),
+    ('1g Rule has_none [Draft, cancelled] = 700', (v ->> 'rule_none') = '700', v ->> 'rule_none'),
     ('1e single value unchanged: Paid = 300', (v ->> 'one_paid') = '300', v ->> 'one_paid');
 end;
 $t$;

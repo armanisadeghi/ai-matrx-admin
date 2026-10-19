@@ -2,6 +2,7 @@ import { Suspense } from "react";
 
 import { BrandIdentitySiteSurface } from "@/features/marketing/components/brand/BrandIdentitySiteSurface";
 import { LoadingSurface } from "@/features/marketing/components/shared/MarketingUi";
+import { KnowledgeRoomSurface } from "@/features/marketing/seo/value-system/discovery/KnowledgeRoomSurface";
 import { DiscoveryPage } from "@/features/marketing/seo/value-system/discovery/DiscoveryPage";
 
 /**
@@ -16,7 +17,9 @@ export default function BrandKnowledgePage() {
   return (
     <Suspense fallback={<LoadingSurface label="Loading business discovery…" />}>
       <BrandIdentitySiteSurface>
-        <DiscoveryPage />
+        <KnowledgeRoomSurface>
+          <DiscoveryPage />
+        </KnowledgeRoomSurface>
       </BrandIdentitySiteSurface>
     </Suspense>
   );

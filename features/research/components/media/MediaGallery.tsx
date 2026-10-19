@@ -4,8 +4,9 @@ import Link from "next/link";
 
 import { readOf } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
-import { SegmentedControl } from "@ai-matrx/design-system/controls";
-import { useCallback, useState, useMemo } from "react";
+import { Button as ControlButton, Chip, SearchField, SegmentedControl } from "@ai-matrx/design-system/controls";
+import { enumUrlCodec, stringUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import {
   ImageIcon,
   Play,
@@ -33,18 +34,14 @@ import {
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@ai-matrx/design-system";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useTopicContext } from "../../context/ResearchContext";
 import { useResearchMedia } from "../../hooks/useResearchState";
-import { useYouTubeVideoIdentityIndex } from "../../hooks/useResearchState";
-import type { YouTubeVideoIdentity } from "../../service";
+import { useYouTubeChannelIdentityIndex, useYouTubeVideoIdentityIndex } from "../../hooks/useResearchState";
+import type { YouTubeChannelIdentity, YouTubeVideoIdentity } from "../../service";
+import { saveChannelIdentity, savedChannelIdentity } from "../../service";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { resolveMediaInput } from "@/features/source-library/api";
 import { updateMedia } from "../../service";
 import type { ResearchMedia } from "../../types";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
@@ -64,8 +61,10 @@ import {
 import MediaDebugPanel from "./MediaDebugPanel";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { StaleDataNotice } from "@ai-matrx/design-system";
+import { openImageViewer } from "@/features/overlays/definitions/imageViewer.overlay";
 import {
   ResearchMediaImage,
+  researchMediaViewUrl,
   ResearchMediaOpen,
   isOwnedMedia,
   mediaMimeType,
@@ -95,14 +94,15 @@ const TYPE_ICONS = {
   audio: Music,
 };
 
-type GalleryView = "gallery" | "debug";
 
 export default function MediaGallery() {
   const { topicId } = useTopicContext();
-  const [view, setView] = useState<GalleryView>("gallery");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
-  const [relevanceFilter, setRelevanceFilter] = useState<string>("all");
-  const [search, setSearch] = useState("");
+  const [view, setView] = useUrlState("view", enumUrlCodec(["gallery", "debug"] as const, "gallery"));
+  const [relevanceFilter, setRelevanceFilter] = useUrlState(
+    "show",
+    enumUrlCodec(["all", "relevant", "excluded"] as const, "all"),
+  );
+  const [search, setSearch] = useUrlState("q", stringUrlCodec(""));
 
   const {
     data: media,
@@ -115,8 +115,6 @@ export default function MediaGallery() {
 
   const filtered = useMemo(() => {
     let items = mediaList;
-    if (typeFilter !== "all")
-      items = items.filter((m) => m.media_type === typeFilter);
     if (relevanceFilter === "relevant")
       items = items.filter((m) => m.is_relevant);
     else if (relevanceFilter === "excluded")
@@ -132,7 +130,7 @@ export default function MediaGallery() {
       );
     }
     return items;
-  }, [mediaList, typeFilter, relevanceFilter, search]);
+  }, [mediaList, relevanceFilter, search]);
 
   const buckets = useMemo(() => bucketMedia(filtered), [filtered]);
   const youtubeVideoIds = buckets.videos.flatMap((item) => {
@@ -158,81 +156,47 @@ export default function MediaGallery() {
     buckets.unknownAspect.length > 0;
 
   return (
-    <div className="p-3 sm:p-4 space-y-4">
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl sm:flex-nowrap sm:rounded-full matrx-glass-thin-border px-3 py-1.5">
-        <span className="type-secondary shrink-0 whitespace-nowrap font-medium text-foreground/80">
-          Media
-        </span>
-        <span className="type-meta shrink-0 whitespace-nowrap text-muted-foreground tabular-nums">
-          <UntrustedCount
-            read={readOf({ isLoading: mediaLoading, error: mediaError })}
-            value={`${filtered.length}/${mediaList.length}`}
-            label="Media"
-          />
-        </span>
-        <SegmentedControl
-          aria-label="Media view"
-          className="shrink-0"
-          value={view}
-          onValueChange={(next) => setView(next)}
-          data={[
-            { value: "gallery", label: <span className="inline-flex items-center gap-1"><LayoutGrid className="size-3" />Gallery</span> },
-            { value: "debug", label: <span className="inline-flex items-center gap-1"><Bug className="size-3" />Debug</span> },
-          ]}
-        />
-        <div className="relative order-last min-w-0 basis-full sm:order-none sm:basis-auto sm:flex-1">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-          <input
+    <div className="space-y-4 px-3 pb-4 sm:px-4">
+      <div className="sticky top-0 z-20 -mx-3 space-y-2 border-b border-border/60 bg-background/90 px-3 py-2 backdrop-blur-xl sm:-mx-4 sm:px-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="type-section shrink-0 whitespace-nowrap">
+            Media{" "}
+            <span className="type-meta tabular-nums text-muted-foreground">
+              <UntrustedCount
+                read={readOf({ isLoading: mediaLoading, error: mediaError })}
+                value={filtered.length === mediaList.length ? `${mediaList.length}` : `${filtered.length} of ${mediaList.length}`}
+                label="Media"
+              />
+            </span>
+          </h2>
+          <SearchField
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search alt text, caption, url..."
-            className="w-full h-6 pl-7 pr-2 text-[11px] max-md:text-base rounded-full matrx-glass-card border-0 bg-transparent outline-none text-foreground placeholder:text-muted-foreground shadow-none"
+            onChange={(event) => setSearch(event.target.value, { history: "replace" })}
+            placeholder="Search media"
+            aria-label="Search media"
+            className="order-last min-w-0 basis-full sm:order-none sm:basis-auto sm:min-w-48 sm:flex-1"
+          />
+          <SegmentedControl
+            aria-label="Show"
+            value={relevanceFilter}
+            onValueChange={(next) => setRelevanceFilter(next)}
+            data={[
+              { value: "all", label: "All" },
+              { value: "relevant", label: "Relevant" },
+              { value: "excluded", label: "Excluded" },
+            ]}
+          />
+          <SegmentedControl
+            aria-label="Media view"
+            value={view}
+            onValueChange={(next) => setView(next)}
+            data={[
+              { value: "gallery", label: <span className="inline-flex items-center gap-1"><LayoutGrid className="size-3" />Gallery</span> },
+              { value: "debug", label: <span className="inline-flex items-center gap-1"><Bug className="size-3" />Debug</span> },
+            ]}
           />
         </div>
-        <Select value={relevanceFilter} onValueChange={setRelevanceFilter}>
-          <SelectTrigger
-            variant="bare"
-            className="w-[4.75rem] matrx-glass-card shrink-0"
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="text-[11px]">
-            <SelectItem value="all" className="text-[11px]">
-              All
-            </SelectItem>
-            <SelectItem value="relevant" className="text-[11px]">
-              Relevant
-            </SelectItem>
-            <SelectItem value="excluded" className="text-[11px]">
-              Excluded
-            </SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger
-            variant="bare"
-            className="w-[6.25rem] matrx-glass-card shrink-0"
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="text-[11px]">
-            <SelectItem value="all" className="text-[11px]">
-              All Types
-            </SelectItem>
-            <SelectItem value="image" className="text-[11px]">
-              Images
-            </SelectItem>
-            <SelectItem value="video" className="text-[11px]">
-              Videos
-            </SelectItem>
-            <SelectItem value="document" className="text-[11px]">
-              Docs
-            </SelectItem>
-            <SelectItem value="audio" className="text-[11px]">
-              Audio
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        {view === "gallery" && <MediaSectionNav sections={mediaSections(buckets)} />}
       </div>
 
       {mediaError && mediaList.length > 0 && (
@@ -284,20 +248,25 @@ export default function MediaGallery() {
       ) : (
         <div className="space-y-5">
           {buckets.documents.length > 0 && (
+            <div id="media-documents" className="scroll-mt-28">
             <DocumentSection
               items={buckets.documents}
               onToggleRelevance={handleToggleRelevance}
             />
+            </div>
           )}
           {buckets.videos.length > 0 && (
+            <div id="media-videos" className="scroll-mt-28">
             <VideoSection
               items={buckets.videos}
               onToggleRelevance={handleToggleRelevance}
               identityForId={youtubeIdentityForId}
               videosHref={`/research/topics/${topicId}/youtube`}
             />
+            </div>
           )}
           {buckets.audio.length > 0 && (
+            <div id="media-audio" className="scroll-mt-28">
             <ResourceSection
               icon={Music}
               title="Audio"
@@ -305,7 +274,9 @@ export default function MediaGallery() {
               items={buckets.audio}
               onToggleRelevance={handleToggleRelevance}
             />
+            </div>
           )}
+          <div id="media-images" className="scroll-mt-28 space-y-5">
           {buckets.landscape.length > 0 && (
             <PhotoAspectSection
               icon={RectangleHorizontal}
@@ -354,6 +325,7 @@ export default function MediaGallery() {
               onToggleRelevance={handleToggleRelevance}
             />
           )}
+          </div>
           {!hasPhotoSections &&
             buckets.graphics.length === 0 &&
             buckets.icons.length === 0 &&
@@ -366,26 +338,104 @@ export default function MediaGallery() {
               </div>
             )}
           {buckets.graphics.length > 0 && (
+            <div id="media-graphics" className="scroll-mt-28">
             <GraphicsSection
               items={buckets.graphics}
               onToggleRelevance={handleToggleRelevance}
             />
+            </div>
           )}
           {buckets.icons.length > 0 && (
+            <div id="media-icons" className="scroll-mt-28">
             <IconsSection
               items={buckets.icons}
               onToggleRelevance={handleToggleRelevance}
             />
+            </div>
           )}
           {buckets.youtubeChannels.length > 0 && (
+            <div id="media-channels" className="scroll-mt-28">
             <YouTubeChannelsSection
               items={buckets.youtubeChannels}
               onToggleRelevance={handleToggleRelevance}
+              onEnriched={refresh}
             />
+            </div>
           )}
         </div>
       )}
     </div>
+  );
+}
+
+interface MediaSectionLink {
+  key: string;
+  label: string;
+  count: number;
+  icon: React.ReactNode;
+}
+
+function mediaSections(buckets: ReturnType<typeof bucketMedia>): MediaSectionLink[] {
+  const images =
+    buckets.landscape.length + buckets.square.length + buckets.portrait.length + buckets.unknownAspect.length;
+  return [
+    { key: "documents", label: "Documents", count: buckets.documents.length, icon: <FileText /> },
+    { key: "videos", label: "Videos", count: buckets.videos.length, icon: <Video /> },
+    { key: "audio", label: "Audio", count: buckets.audio.length, icon: <Music /> },
+    { key: "images", label: "Images", count: images, icon: <ImageIcon /> },
+    { key: "graphics", label: "Graphics", count: buckets.graphics.length, icon: <Shapes /> },
+    { key: "icons", label: "Icons", count: buckets.icons.length, icon: <Zap /> },
+    { key: "channels", label: "Channels", count: buckets.youtubeChannels.length, icon: <Users /> },
+  ].filter((section) => section.count > 0);
+}
+
+/** Every kind on the page, always in view: shows where you are, jumps on click. */
+function MediaSectionNav({ sections }: { sections: MediaSectionLink[] }) {
+  const [current, setCurrent] = useState<string | null>(null);
+  const keys = sections.map((section) => section.key).join(",");
+
+  useEffect(() => {
+    const elements = keys
+      .split(",")
+      .map((key) => document.getElementById(`media-${key}`))
+      .filter((element): element is HTMLElement => !!element);
+    if (elements.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (visible) setCurrent(visible.target.id.replace("media-", ""));
+      },
+      { rootMargin: "-120px 0px -60% 0px" },
+    );
+    for (const element of elements) observer.observe(element);
+    return () => observer.disconnect();
+  }, [keys]);
+
+  if (sections.length < 2) return null;
+  return (
+    <nav aria-label="Media sections" className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-0.5">
+      {sections.map((section) => (
+        <Chip
+          key={section.key}
+          asChild
+          label={`${section.label} ${section.count}`}
+          icon={section.icon}
+          pressed={(current ?? sections[0]?.key) === section.key}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setCurrent(section.key);
+              document
+                .getElementById(`media-${section.key}`)
+                ?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+          />
+        </Chip>
+      ))}
+    </nav>
   );
 }
 
@@ -451,6 +501,15 @@ function PhotoAspectSection({
   // display size — big, high-quality images read large; modest ones stay small.
   const featured = items.filter(isFeaturedPhoto);
   const standard = items.filter((i) => !isFeaturedPhoto(i));
+  const dispatch = useAppDispatch();
+  const ordered = [...featured, ...standard];
+  const openAt = (item: ResearchMedia) =>
+    openImageViewer(dispatch, {
+      images: ordered.map(researchMediaViewUrl),
+      alts: ordered.map((entry) => entry.alt_text || entry.caption || ""),
+      initialIndex: Math.max(0, ordered.indexOf(item)),
+      title,
+    });
 
   return (
     <section className="space-y-2">
@@ -468,6 +527,7 @@ function PhotoAspectSection({
               item={item}
               aspectClass={aspectClass}
               onToggleRelevance={onToggleRelevance}
+              onOpen={() => openAt(item)}
             />
           ))}
         </div>
@@ -480,6 +540,7 @@ function PhotoAspectSection({
               item={item}
               aspectClass={aspectClass}
               onToggleRelevance={onToggleRelevance}
+              onOpen={() => openAt(item)}
             />
           ))}
         </div>
@@ -536,10 +597,12 @@ function PhotoCard({
   item,
   aspectClass,
   onToggleRelevance,
+  onOpen,
 }: {
   item: ResearchMedia;
   aspectClass: string;
   onToggleRelevance: (item: ResearchMedia) => void;
+  onOpen?: () => void;
 }) {
   const Icon = TYPE_ICONS[item.media_type as keyof typeof TYPE_ICONS] ?? File;
   const dims = formatResolvedSizeLabel(item);
@@ -558,7 +621,11 @@ function PhotoCard({
         )}
       >
         {item.media_type === "image" && item.url ? (
-          <ResearchMediaImage item={item} className="w-full h-full" />
+          <ResearchMediaImage
+            item={item}
+            onClick={onOpen}
+            className={cn("w-full h-full", onOpen && "cursor-zoom-in")}
+          />
         ) : (
           <Icon className="h-6 w-6 text-muted-foreground/30" />
         )}
@@ -913,57 +980,80 @@ function YouTubeVideoCard({
   );
 }
 
-/** YouTube channel/profile — tile card, opens on YouTube (not embeddable). */
+/** YouTube channel/profile — avatar, name, subscribers; opens on YouTube (not
+ * embeddable). Details come from what we already hold, else one lookup on click. */
 function YouTubeChannelCard({
   item,
+  known,
   onToggleRelevance,
+  onEnriched,
 }: {
   item: ResearchMedia;
+  known?: YouTubeChannelIdentity;
   onToggleRelevance: (item: ResearchMedia) => void;
+  onEnriched: () => void;
 }) {
+  const dispatch = useAppDispatch();
+  const [looking, setLooking] = useState(false);
+  const identity = savedChannelIdentity(item) ?? known ?? null;
   const handle = youTubeChannelLabel(item.url);
-  const title = (item.alt_text || item.caption || "").trim() || handle;
-  const pathLabel = (() => {
+  const title = identity?.title ?? ((item.alt_text || item.caption || "").trim() || handle);
+  const facts = [
+    identity?.handle ?? handle,
+    identity?.subscribers != null ? `${formatYouTubeCount(identity.subscribers)} subscribers` : null,
+    identity?.videos != null ? `${formatYouTubeCount(identity.videos)} videos` : null,
+  ].filter(Boolean);
+
+  const lookUp = async () => {
+    setLooking(true);
     try {
-      return decodeURIComponent(new URL(item.url).pathname.replace(/^\//, ""));
-    } catch {
-      return handle;
+      const resolved = await resolveMediaInput(dispatch, item.url, "youtube");
+      await saveChannelIdentity(item.id, item.metadata as Record<string, unknown> | null, {
+        title: resolved.title,
+        handle: resolved.handle,
+        avatar: resolved.thumbnail_url,
+        subscribers: resolved.subscriber_count,
+        videos: resolved.item_count,
+        description: resolved.description,
+      });
+      onEnriched();
+    } catch (caught) {
+      toast.error(`Could not get channel details: ${extractErrorMessage(caught)}`);
+    } finally {
+      setLooking(false);
     }
-  })();
+  };
 
   return (
     <div
       className={cn(
-        "group relative flex flex-col rounded-xl border bg-card/60 backdrop-blur-sm overflow-hidden transition-all",
+        "group relative flex flex-col rounded-xl border bg-card/60 overflow-hidden transition-all",
         item.is_relevant ? "border-primary/20" : "border-border/50 opacity-60",
       )}
     >
-      <OutboundLink
-        href={item.url}
-        className="flex flex-1 flex-col"
-        title={title}
-      >
-        <div className="flex items-center justify-center bg-muted/40 px-3 py-4">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-red-600/10 ring-1 ring-red-600/15">
-            <Users className="h-5 w-5 text-red-600/80 dark:text-red-400/90" />
+      <OutboundLink href={item.url} className="flex flex-1 gap-3 p-3 pr-10" title={title}>
+        {identity?.avatar ? (
+          // ui-exception: a channel avatar renders raw, never tinted or wrapped.
+          <img
+            src={identity.avatar}
+            alt=""
+            referrerPolicy="no-referrer"
+            className="size-12 shrink-0 rounded-full object-cover"
+          />
+        ) : (
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-muted">
+            <Users className="size-5 text-muted-foreground" />
           </div>
-        </div>
-        <div className="flex flex-1 flex-col gap-0.5 p-2.5 pt-2">
-          <p
-            className="type-meta font-medium text-foreground/90 line-clamp-2 leading-snug"
-            title={title}
-          >
-            {title}
-          </p>
-          <p
-            className="text-[9px] text-muted-foreground/65 truncate"
-            title={pathLabel}
-          >
-            {pathLabel}
-          </p>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="type-secondary font-medium text-foreground line-clamp-1">{title}</p>
+          <p className="type-meta text-muted-foreground line-clamp-1">{facts.join(" · ")}</p>
+          {identity?.description && (
+            <p className="type-meta mt-1 text-muted-foreground line-clamp-2">{identity.description}</p>
+          )}
         </div>
       </OutboundLink>
-      <div className="border-t border-border/40 px-2.5 py-1.5">
+      <div className="flex items-center justify-between gap-2 border-t border-border/40 px-3 py-1.5">
         <OutboundLink
           href={item.url}
           className="inline-flex items-center gap-1 type-meta text-muted-foreground hover:text-foreground transition-colors"
@@ -971,6 +1061,17 @@ function YouTubeChannelCard({
           <ExternalLink className="h-3 w-3" />
           Open on YouTube
         </OutboundLink>
+        {!identity && (
+          <ControlButton
+            variant="link"
+            type="button"
+            disabled={looking}
+            icon={looking ? <Loader2 className="animate-spin" /> : undefined}
+            onClick={() => void lookUp()}
+          >
+            Get details
+          </ControlButton>
+        )}
       </div>
       <Button
         variant={item.is_relevant ? "default" : "outline"}
@@ -988,7 +1089,12 @@ function YouTubeChannelCard({
   );
 }
 
-function YouTubeChannelsSection({ items, onToggleRelevance }: SectionProps) {
+function YouTubeChannelsSection({
+  items,
+  onToggleRelevance,
+  onEnriched,
+}: SectionProps & { onEnriched: () => void }) {
+  const { identityForUrl, refresh } = useYouTubeChannelIdentityIndex(items.map((item) => item.url));
   return (
     <section className="space-y-2">
       <SectionHeader
@@ -1002,7 +1108,12 @@ function YouTubeChannelsSection({ items, onToggleRelevance }: SectionProps) {
           <YouTubeChannelCard
             key={item.id}
             item={item}
+            known={identityForUrl(item.url)}
             onToggleRelevance={onToggleRelevance}
+            onEnriched={() => {
+              onEnriched();
+              refresh();
+            }}
           />
         ))}
       </div>

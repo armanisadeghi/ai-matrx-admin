@@ -520,6 +520,7 @@
     "check:control-rule-fields": "node scripts/control-rule-fields.mjs --check",
     "check:control-rule-fields:self-test": "node scripts/control-rule-fields.mjs --self-test",
     "check:release-gates": "bash scripts/run-release-gates.sh",
+    "check:store-guards": "rc=0; for f in scripts/store-guards/*.mjs; do echo \"== $f\"; node \"$f\" || rc=1; done; exit $rc",
     "check:release-gates:advisory": "bash scripts/run-release-gates.sh --advisory",
     "check:release-gates:strict": "bash scripts/run-release-gates.sh --strict",
     "check:archived-items-law": "tsx scripts/check-archived-items-law.ts",

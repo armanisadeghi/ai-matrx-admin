@@ -16,10 +16,9 @@ chat.request_snapshot.request_payload is the provider adapter's own copy, taken 
 (capture_request_payload), not an HTTP-level record. After each call this script reads that stored copy
 (as admin, through the database's own API), saves it to snapshot-<copy>.json and prints one line naming
 what it is, so nobody mistakes it for the wire:
-  Google     snapshot is not wire: stored as a Python repr string of the SDK config, not the JSON sent
-  Anthropic  snapshot is not wire: captured before a later step (the grammar-budget ladder) may change
-             the request
-  OpenAI     snapshot is the adapter's request dict, not the HTTP bytes; no wire capture is exposed
+  The stored shape (JSON object, or a text string) is read from the stored row at run time and printed;
+  nothing is assumed per provider. Anthropic's copy is also captured before a later step (the grammar-budget
+  ladder) may change the request; OpenAI's is the adapter's request dict. No provider has a wire capture.
 
 Usage:
   pb03-send.py                 send A, O, G in order
@@ -122,15 +121,38 @@ def send(token: str, path: str, body: dict) -> tuple[int, dict, str]:
         return e.code, dict(e.headers), e.read().decode("utf-8", "replace")
 
 
-# What the stored request is, per provider (the product exposes no wire capture; see the header).
-NOT_WIRE = {
-    "google": "snapshot is not wire for provider Google: request_payload is stored as a Python repr string of the "
-              "SDK config, not the JSON the SDK sent",
-    "anthropic": "snapshot is not wire for provider Anthropic: request_payload is captured before a later step (the "
-                 "grammar-budget ladder) may change what is sent",
-    "openai": "snapshot is not wire for provider OpenAI: request_payload is the adapter's request dict, not the HTTP "
-              "bytes; the product exposes no wire capture",
+# What the stored request is. Only facts that hold for every build are static; the stored shape is read at run time.
+NOT_WIRE_COMMON = ("the product exposes no HTTP-level capture, so this is the adapter's own stored copy, not the bytes "
+                   "sent")
+PROVIDER_NOTE = {
+    "anthropic": "it is captured before a later step (the grammar-budget ladder) may change what is sent",
+    "openai": "it is the adapter's request dict",
+    "google": "",
 }
+
+
+def shape_of(payload) -> str:
+    """The stored shape, from the value itself: a JSON object, a JSON list, or a text string (a Python repr is a
+    string that does not parse as JSON)."""
+    if isinstance(payload, dict):
+        return "a JSON object"
+    if isinstance(payload, list):
+        return "a JSON list"
+    if isinstance(payload, str):
+        try:
+            json.loads(payload)
+            return "a JSON text string"
+        except ValueError:
+            return "a text string that is not JSON (for example a Python repr)"
+    return f"a {type(payload).__name__}"
+
+
+def not_wire_line(provider: str, payload=None, have_payload: bool = False) -> str:
+    shape = f"request_payload is stored as {shape_of(payload)}; " if have_payload else ""
+    extra = PROVIDER_NOTE.get(provider, "")
+    return f"snapshot for provider {provider}: {shape}{NOT_WIRE_COMMON}" + (f"; {extra}" if extra else "")
+
+
 COPY_PROVIDER = {"A": "anthropic", "O": "openai", "G": "google"}
 
 
@@ -163,7 +185,7 @@ def describe_snapshot(copy: str, status: int, rows: list) -> list:
         return [f"copy {copy}: stored request copy unreadable (HTTP {status}) {rows[0] if rows else ''}"]
     if not rows:
         return [f"copy {copy}: no stored request copy found for this conversation",
-                f"copy {copy}: {NOT_WIRE[COPY_PROVIDER[copy]]}"]
+                f"copy {copy}: " + not_wire_line(COPY_PROVIDER[copy])]
     lines = []
     for r in rows:
         payload = r.get("request_payload")
@@ -171,8 +193,7 @@ def describe_snapshot(copy: str, status: int, rows: list) -> list:
         provider = (r.get("provider") or COPY_PROVIDER[copy]).lower()
         lines.append(f"copy {copy}: stored request copy iteration {r.get('iteration')} provider {provider}, "
                      f"request_payload stored as {form}")
-        lines.append(f"copy {copy}: " + NOT_WIRE.get(provider, f"snapshot is not wire for provider {provider}: the "
-                                                               "product exposes no wire capture"))
+        lines.append(f"copy {copy}: " + not_wire_line(provider, payload, True))
     return lines
 
 
@@ -220,7 +241,9 @@ def main() -> None:
         snap_status, snaps = stored_snapshots(token, record["conversation_id"])
         snap_out = out / f"snapshot-{copy}.json"
         snap_out.write_text(json.dumps({"copy": copy, "conversation_id": record["conversation_id"], "read_status": snap_status,
-                                        "not_wire": NOT_WIRE[COPY_PROVIDER[copy]], "rows": snaps},
+                                        "not_wire": [not_wire_line((r.get("provider") or COPY_PROVIDER[copy]).lower(), r.get("request_payload"), True)
+                                                     for r in snaps if isinstance(r, dict) and "request_payload" in r] or not_wire_line(COPY_PROVIDER[copy]),
+                                        "rows": snaps},
                                        indent=1, ensure_ascii=False, default=str))
         for line in describe_snapshot(copy, snap_status, snaps):
             print(line)

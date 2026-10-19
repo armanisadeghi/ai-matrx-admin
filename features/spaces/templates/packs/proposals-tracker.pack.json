@@ -73,7 +73,16 @@
             ],
             "filled": [
               "sent_on",
-              "valid_until",
+              "valid_until"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Accepted",
+              "Declined"
+            ],
+            "filled": [
               "decided_on"
             ]
           }

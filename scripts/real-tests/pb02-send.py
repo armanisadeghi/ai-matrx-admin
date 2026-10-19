@@ -51,6 +51,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_identity import record_run_identity  # noqa: E402
 from fixture_check import add_accept_drift_arg, require_fixtures  # noqa: E402
+from scope_probe import with_scope  # noqa: E402
 
 SERVER = "https://server.app.matrxserver.com"
 KEY = "realtests.routing_line"  # was compass.routing_line in Compass; mandate keys are global
@@ -58,6 +59,7 @@ ORG_KEY = "realtests.routing_line_org"  # organization binding only
 PLATFORM_DESK = "641d9cd8-5d62-4a71-a782-288a93efb331"  # agent "Platform Routing Desk"
 LAST_LINE, LAST_LINE_EDITED = "Held by platform desk", "Held by platform desk r2"
 ORG = "226be635-194d-42dd-87c8-7a9562f70939"  # Safety Net Real Tests (the real tests' own organization)
+PORT_OF_OAKLAND_LANE = "9a4e5ff6-833a-4b6d-986b-26eaf3893e28"  # scope (type Lanes), sent on every door that accepts scope_ids
 WORKSPACE = "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f"  # admin's Workspace
 WORKFLOW = "1fef39d6-bd61-4d74-8ad9-3930b9ce3859"  # "Compass routing via mandate"
 DISPATCHER = "53661c82-052e-4569-b151-49a016a7dba9"  # agent "Compass Dispatcher"
@@ -162,6 +164,8 @@ def build(n: int, token: str) -> tuple[str, str, dict | None, str, str | None]:
 def record_call(out: Path, label: str, token: str, method: str, path: str, body: dict | None, org: str,
                 chosen_cid: str | None, dry: bool) -> dict:
     """Send one call, write call-<label>.json, print one line. Nothing is judged."""
+    if method == "POST" and "/placement" not in path:
+        body = with_scope(SERVER, method, path, body, PORT_OF_OAKLAND_LANE, f"call {label}")
     if dry and body is not None and method == "POST":
         body = {**body, "dry_run": True}
     sent_at = datetime.now(timezone.utc).isoformat()
@@ -255,7 +259,7 @@ def main() -> None:
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb02-"))
     out.mkdir(parents=True, exist_ok=True)
     record_run_identity("pb02-send --dry-run" if args.dry_run else "pb02-send", SERVER,
-                        {"mandate": KEY, "org_mandate": ORG_KEY, "organization": ORG, "second_organization": WORKSPACE,
+                        {"mandate": KEY, "org_mandate": ORG_KEY, "organization": ORG, "second_organization": WORKSPACE, "scope": PORT_OF_OAKLAND_LANE,
                          "workflow": WORKFLOW, "dispatcher_agent": DISPATCHER, "platform_desk_agent": PLATFORM_DESK}, out,
                         fixture_check=fx)
     token = admin_token()

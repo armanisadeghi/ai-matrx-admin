@@ -260,19 +260,19 @@ it("finds the business from a stored search first, and buys one only on a click"
     },
   ]);
   expect(text()).toContain("No stored search to reuse");
-  expect(text()).toContain("400 points per search, then free for 7 days.");
+  expect(text()).toContain("A search is saved and reused for 7 days.");
 
-  await click("Search · 400 points");
+  await click("Search");
   expect(calls()[1].arguments).toEqual({
     action: "find_business",
     name: "Bayside Orthodontics",
     near: { latitude: 33.6189, longitude: -117.9298 },
   });
-  expect(text()).toContain("Bought Oct 6, 2026 · 400 points");
+  expect(text()).toContain("Bought Oct 6, 2026");
 
   await click("Use this");
   expect(text()).toContain("cid 111");
-  expect(button("Preview · free")).toBeDefined();
+  expect(button("Preview")).toBeDefined();
 });
 
 it("previews free, runs only on a click with the confirmed center, then shows the grid", async () => {
@@ -377,7 +377,7 @@ it("draws a compacted grid (point table, no coordinates) and compares from the l
   await click("Use this");
   await type("Keyword", "orthodontist");
   await submit("Keyword");
-  await click("Open stored grid · free");
+  await click("Open stored grid");
 
   expect(markers()).toHaveLength(25);
   expect(markers().map((m) => m.dataset.bubble).filter((b) => b === "20+")).toHaveLength(22);

@@ -83,6 +83,30 @@ const SCENARIOS: Scenario[] = [
     expect: "Refunded",
   },
   {
+    name: "M1c a full refund that arrives BEFORE the paid settle still ends Refunded",
+    run: async (db, pay) => {
+      await db.query("update billing.payment set deleted_at = now() where record_id = $1", [RECORD]);
+      await pay("cs_rule_early", "pending", 1);
+      await db.query("update billing.payment set stripe_payment_intent_id = 'pi_rule_early' where stripe_checkout_session_id = 'cs_rule_early'");
+      await db.query("select billing.payment_refund('pi_rule_early', 4000)");
+      await db.query("select billing.payment_settle('cs_rule_early', 'paid', 'pi_rule_early')");
+      const { rows } = await db.query("select status from billing.payment where stripe_checkout_session_id = 'cs_rule_early'");
+      return `${(rows[0] as { status: string }).status}`;
+    },
+    expect: "refunded",
+  },
+  {
+    name: "M1d a partial refund that arrives BEFORE the paid settle shows on the record",
+    run: async (db, pay) => {
+      await db.query("update billing.payment set deleted_at = now() where record_id = $1", [RECORD]);
+      await pay("cs_rule_early", "pending", 1);
+      await db.query("update billing.payment set stripe_payment_intent_id = 'pi_rule_early' where stripe_checkout_session_id = 'cs_rule_early'");
+      await db.query("select billing.payment_refund('pi_rule_early', 1000)");
+      await db.query("select billing.payment_settle('cs_rule_early', 'paid', 'pi_rule_early')");
+    },
+    expect: "Partially refunded 10.00 USD",
+  },
+  {
     name: "I2  a second pending payment for one record is refused",
     run: async (db, pay) => {
       await pay("cs_rule_a", "pending", 2);

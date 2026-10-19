@@ -47,8 +47,10 @@ import {
   MatrxDataTable,
   type MatrxColumnDef,
 } from "@ai-matrx/design-system/data-table";
+import type { MatrxDataTableMobileCardControls } from "@ai-matrx/design-system/data-table/types";
+import { Checkbox } from "@/components/ui/checkbox";
 import AppLink from "@/components/navigation/AppLink";
-import { formatCount } from "@ai-matrx/kit/format";
+import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
 import { Badge as KindBadge, PropertyRow } from "@ai-matrx/design-system/controls";
 import { commitUrlParams } from "@ai-matrx/kit/url-state";
 import { Badge } from "@/components/ui/badge";
@@ -388,7 +390,15 @@ function ApprovalTable({
       id: "headline",
       header: "What",
       accessorKey: "headline",
-      width: 330,
+      // What takes most of the row (the table fits its width; widths are shares).
+      width: 600,
+      // A row in any state but waiting says so on its title (Status is a hidden column).
+      tone: (item) =>
+        item.lastAttempt?.state === "failed"
+          ? "danger"
+          : statusLabel(item) === "Waiting"
+            ? undefined
+            : "warning",
       cell: (item) => (
         <span className="block min-w-0 truncate text-foreground" title={item.headline}>
           {item.headline}
@@ -420,6 +430,8 @@ function ApprovalTable({
       accessorFn: statusLabel,
       format: { id: "choice" },
       width: 100,
+      // Hidden by default: on most rows it only says "Waiting"; Columns brings it back.
+      hidden: true,
       tone: (item) =>
         item.lastAttempt?.state === "failed"
           ? "danger"
@@ -439,7 +451,9 @@ function ApprovalTable({
       id: "proposedBy",
       header: "Proposed by",
       accessorFn: (item) => item.proposedBy ?? null,
-      width: 120,
+      width: 140,
+      // Shown when any row in view names who proposed it.
+      hidden: !rows.some((item) => item.proposedBy),
     },
     {
       id: "proposedAt",
@@ -590,9 +604,77 @@ function ApprovalTable({
         width: 560,
         height: 560,
       }}
+      fitToWidth
+      mobileCards={(item, _index, controls) => {
+        const section = sectionByKind.get(item.kindId);
+        return (
+          <ApprovalCard
+            item={item}
+            controls={controls}
+            decide={
+              section ? (
+                <DecisionButtons item={item} kind={section.kind} busy={busy} onDecide={onDecide} />
+              ) : null
+            }
+          />
+        );
+      }}
+      mobileCardsBreakpoint="sm"
+      cardsLayout="list"
       pageSize={50}
       emptyState={{ title: "No proposals match" }}
     />
+  );
+}
+
+/**
+ * A proposal on a phone: one card, no sideways scroll — the title, where it
+ * points, when, and the kind's own decision words. A tap opens the window.
+ */
+function ApprovalCard({
+  item,
+  controls,
+  decide,
+}: {
+  item: ApprovalItem;
+  controls: MatrxDataTableMobileCardControls;
+  decide: ReactNode;
+}) {
+  const flagged = statusLabel(item) !== "Waiting";
+  return (
+    <div className="flex min-w-0 items-start gap-2 px-3 py-2">
+      {controls.selectable ? (
+        <label
+          className="matrx-tap-area mt-0.5 flex shrink-0 items-center"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <Checkbox
+            checked={controls.selected}
+            aria-label={`Select ${item.headline}`}
+            onCheckedChange={(next) => controls.onSelectedChange(next === true)}
+          />
+        </label>
+      ) : null}
+      <div className="min-w-0 flex-1 space-y-1">
+        <button
+          type="button"
+          className="block w-full min-w-0 text-left type-title leading-snug text-foreground line-clamp-2"
+          onClick={() => controls.open?.()}
+        >
+          {item.headline}
+        </button>
+        <div className="flex min-w-0 items-center gap-2 type-meta text-muted-foreground">
+          {item.doors ? (
+            <span className="min-w-0 overflow-hidden whitespace-nowrap">{item.doors}</span>
+          ) : null}
+          {item.proposedAt ? (
+            <span className="shrink-0">{formatRelativeTime(new Date(item.proposedAt))}</span>
+          ) : null}
+          {flagged ? <span className="shrink-0 text-warning">{statusLabel(item)}</span> : null}
+        </div>
+        {decide ? <div className="-ml-2 flex">{decide}</div> : null}
+      </div>
+    </div>
   );
 }
 

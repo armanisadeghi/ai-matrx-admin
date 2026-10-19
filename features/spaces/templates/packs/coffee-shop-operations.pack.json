@@ -1363,6 +1363,14 @@
             "format": "date"
           },
           {
+            "key": "arrived_on",
+            "label": "Arrived on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "total",
             "label": "Order total (USD)",
             "parityType": "currency",
@@ -1427,8 +1435,16 @@
               "Arrived"
             ],
             "filled": [
-              "placed_on",
-              "arrives_on"
+              "placed_on"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Arrived"
+            ],
+            "filled": [
+              "arrived_on"
             ]
           }
         ],
@@ -1528,7 +1544,8 @@
               "arrives_on": "@today-5d",
               "total": 74,
               "vendor": "Tidy Supply Co.",
-              "by": "tm-2"
+              "by": "tm-2",
+              "arrived_on": "@today-5d"
             }
           },
           {
@@ -1540,7 +1557,8 @@
               "arrives_on": "@today-6d",
               "total": 301,
               "vendor": "Cascadia Dairy",
-              "by": "tm-4"
+              "by": "tm-4",
+              "arrived_on": "@today-6d"
             }
           }
         ]
@@ -1709,7 +1727,7 @@
             "value": "Arrived"
           },
           {
-            "field": "arrives_on",
+            "field": "arrived_on",
             "set": "value",
             "value": "@today"
           }

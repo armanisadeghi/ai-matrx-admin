@@ -61,6 +61,11 @@ import { selectAssistsForSurface } from "@/features/assists/redux/assistsSlice";
 import { ApprovalQueue } from "@/features/approvals/ApprovalQueue";
 import { KEYWORD_MEANING_SURFACE } from "@/features/approvals/kinds/seo/keyword-meaning";
 import { GuidelinesDraftButton } from "./GuidelinesDraft";
+import {
+  useGuidelinesRoomPublish,
+  useGuidelinesRoomScope,
+  MARKETING_BRAND_GUIDELINES_SURFACE_NAME,
+} from "./GuidelinesRoomSurface";
 import { GUIDELINES_STALE_AFTER_DAYS } from "./GuidelinesGapPrompt";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ReadFailure } from "@ai-matrx/design-system";
@@ -201,6 +206,30 @@ export function KwGuidelinesPanel({
     }`;
   }, [stored.data, age]);
 
+  // Identity room only: publish the live editor state to the room surface
+  // (a no-op anywhere else), so agents read what is on screen and can stage text.
+  const pendingDraftCount = pendingGuidelineIds ? pendingGuidelineIds.split(",").length : 0;
+  const roomScope = useGuidelinesRoomScope();
+  useGuidelinesRoomPublish({
+    own: stored.data
+      ? {
+          guidelines_text: savedText,
+          guidelines_draft_text: value,
+          guidelines_has_unsaved_changes: dirty,
+          guidelines_version: stored.data.guidelines_version,
+          guidelines_last_edit: stored.data.updated_at
+            ? {
+                updated_at: stored.data.updated_at,
+                updated_by: stored.data.updated_by_name ?? undefined,
+                age_days: age ?? undefined,
+              }
+            : undefined,
+          guidelines_pending_draft_count: pendingDraftCount,
+        }
+      : {},
+    setDraft: setDraft,
+  });
+
   const submit = async () => {
     const next = value.trim();
     if (!next && savedText) {
@@ -278,6 +307,12 @@ export function KwGuidelinesPanel({
             value={value}
             onChange={(event) => setDraft(event.target.value)}
             disabled={stored.isLoading || save.isPending}
+            {...(roomScope
+              ? {
+                  surfaceName: MARKETING_BRAND_GUIDELINES_SURFACE_NAME,
+                  getApplicationScope: roomScope,
+                }
+              : {})}
             spellCheck
             placeholder={PLACEHOLDER}
             className="min-h-[20rem] resize-y font-mono text-xs leading-relaxed"

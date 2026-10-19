@@ -64,7 +64,7 @@ import {
   useBrandSites,
   useResearchImages,
 } from "@/features/marketing/data/hooks";
-import { buildBrandContextXml } from "@/features/marketing/lib/surface-context";
+import { useBrandIdentityBaseScope } from "@/features/marketing/components/brand/BrandIdentitySurface";
 import {
   EMPTY_BRAND_MEDIA_STANDARDS,
   mergeBrandMediaStandards,
@@ -187,10 +187,13 @@ export function BrandAssetsWorkspace({
   // access-errors: ok — optional research-image inspiration strip; its absence only trims the Generate view's references
   const research = useResearchImages(organizationId);
 
+  const getBase = useBrandIdentityBaseScope();
   const getScope = () => {
     const current = brand.data;
+    const base = getBase();
     if (!current) {
       return buildBrandAssetsScope({
+        base,
         brandId,
         brandName: "",
         view,
@@ -200,13 +203,9 @@ export function BrandAssetsWorkspace({
       });
     }
     return buildBrandAssetsScope({
+      base,
       brandId,
       brandName: current.name,
-      brandContext: buildBrandContextXml({
-        brand: current,
-        assets: assets.data ?? [],
-        sites: siteRows,
-      }),
       view,
       standards,
       order,

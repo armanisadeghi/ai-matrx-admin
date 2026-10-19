@@ -147,15 +147,15 @@ it("prices every engine for free, then asks only the selected unstored ones in o
       max_cost_usd: 0.0001,
     });
   }
-  expect(row("chat_gpt")).toContain("843 points");
-  expect(row("claude")).toContain("500 points");
-  expect(row("perplexity")).toContain("Stored · free");
+  expect(row("chat_gpt")).toContain("Ready to ask");
+  expect(row("claude")).toContain("Ready to ask");
+  expect(row("perplexity")).toContain("Stored answer");
   expect(row("perplexity")).toContain("Doesn't name you");
 
   // Deselect Gemini: the button names exactly what it will spend.
   await act(async () => { button("Gemini", host.querySelector('[data-engine="gemini"]')!)!.click(); });
   const ask = button("Ask 2 engines");
-  expect(ask?.textContent).toContain("1,343 points");
+  expect(ask?.textContent).not.toMatch(/points|\$/);
 
   await act(async () => { ask!.click(); });
   await settle();
@@ -165,7 +165,7 @@ it("prices every engine for free, then asks only the selected unstored ones in o
   ]);
   expect(row("chat_gpt")).toContain("Names you");
   expect(row("chat_gpt")).toContain("2 cited");
-  expect(row("gemini")).toContain("400 points"); // never asked
+  expect(row("gemini")).toContain("Ready to ask"); // never asked
   expect(text()).toContain("Nothing to ask");
 });
 

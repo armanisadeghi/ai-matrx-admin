@@ -855,15 +855,7 @@
           {
             "field": "stage",
             "when": [
-              "Won"
-            ],
-            "filled": [
-              "decided_on"
-            ]
-          },
-          {
-            "field": "stage",
-            "when": [
+              "Won",
               "Lost"
             ],
             "filled": [

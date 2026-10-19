@@ -1145,8 +1145,7 @@
               "Approved"
             ],
             "filled": [
-              "amount",
-              "decided_on"
+              "amount"
             ]
           },
           {
@@ -1155,7 +1154,16 @@
               "Rejected"
             ],
             "filled": [
-              "amount",
+              "amount"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Approved",
+              "Rejected"
+            ],
+            "filled": [
               "decided_on"
             ]
           }
