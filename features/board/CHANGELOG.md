@@ -1,5 +1,9 @@
 # CHANGELOG — Board (`features/board`)
 
+## 2026-10-19 — Workbook, Presentation, Transcript, Person or company, Agent as items
+
+- Five platform features became board items (`office-items.tsx`, `crm-items.tsx`, `transcript-items.tsx`, `agent-items.tsx`): the page's own component, its agent surface, Start new (not Agent), Bring in over every organization, Open, the record's own comment thread, the agent doors (`board_add_items` / `board_find_records`) and remount-ledger rows. New surfaces `matrx-user/presentation` and `matrx-user/agent-record` were authored and synced.
+
 ## 2026-10-19 — Zoom levels of detail: structure, card, label (Arman's ruling)
 
 - **Four levels by on-screen size** (`engine/lod.ts` `detailLevelFor`, `DetailLevel`; camera store `getLevel`/`subscribeLevel`, `useDetailLevel`): full → structure (180×120 screen px) → card (104×64) → label. The old single cliff from the real body to a title card is gone.
