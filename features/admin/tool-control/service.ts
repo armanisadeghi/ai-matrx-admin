@@ -1,5 +1,5 @@
 import { readAllRows } from "@ai-matrx/data/db";
-import { postJson } from "@/lib/python-client";
+import { getJson, postJson } from "@/lib/python-client";
 import { runWithSessionRetry } from "@/lib/supabase/authRetry";
 import { createClient } from "@/utils/supabase/client";
 import type { EndpointRow, EntryRow, ProviderRow, ScorecardRow, StripRow } from "./types";
@@ -43,8 +43,8 @@ function readTable<T>(table: string, columns: string, order: string, narrow?: (q
 }
 
 const ENTRY_COLUMNS = "tool_id, job_key, job_family, display_name, state, metadata";
-const ENDPOINT_COLUMNS = "id, tool_id, provider_slug, via, vendor_op, state, verified_at, last_probe, metadata";
-const PROVIDER_COLUMNS = "slug, admin_name, state, direct_account, metadata";
+const ENDPOINT_COLUMNS = "id, tool_id, provider_slug, via, vendor_op, priority, state, verified_at, last_probe, metadata";
+const PROVIDER_COLUMNS = "slug, admin_name, display, state, direct_account, metadata";
 
 export interface ControlOverview {
   entries: EntryRow[];
@@ -116,8 +116,8 @@ export async function verifyEndpoint(endpointId: string): Promise<VerifyResult> 
 export async function turnOnEndpoint(endpointId: string): Promise<StateChangeResult> {
   return (await postJson<StateChangeResult>(`${BASE}/endpoints/${endpointId}/turn-on`, {})).data;
 }
-export async function turnOffEndpoint(endpointId: string, to: "paused" | "retired" = "paused"): Promise<StateChangeResult> {
-  return (await postJson<StateChangeResult>(`${BASE}/endpoints/${endpointId}/turn-off`, { to })).data;
+export async function turnOffEndpoint(endpointId: string, to: "paused" | "retired" = "paused", note?: string): Promise<StateChangeResult> {
+  return (await postJson<StateChangeResult>(`${BASE}/endpoints/${endpointId}/turn-off`, { to, note: note || null })).data;
 }
 export async function cancelVerification(endpointId: string): Promise<StateChangeResult> {
   return (await postJson<StateChangeResult>(`${BASE}/endpoints/${endpointId}/cancel-verification`, {})).data;
@@ -127,4 +127,32 @@ export async function setToolPaused(toolId: string, paused: boolean): Promise<St
 }
 export async function setAccountState(slug: string, to: "live" | "paused"): Promise<StateChangeResult> {
   return (await postJson<StateChangeResult>(`${BASE}/providers/${slug}/state`, { to })).data;
+}
+
+// ── the admin layer: priced view + default order (`/admin/tool-layer`) ───────────────────────────────
+
+export interface EndpointPrice {
+  endpoint_id: string;
+  free: boolean;
+  price_ref: string | null;
+  unit_usd: string | null;
+  unit: string | null;
+  basis: string | null;
+  review_due: string | null;
+  reserve_usd: string | null;
+  points: number | null;
+}
+export interface ToolPricing {
+  tool_id: string;
+  job_key: string;
+  display_name: string;
+  points_per_usd: string;
+  margin_pct: string;
+  endpoints: EndpointPrice[];
+}
+export async function loadToolPricing(toolId: string): Promise<ToolPricing> {
+  return (await getJson<ToolPricing>(`/admin/tool-layer/tools/${toolId}/pricing`)).data;
+}
+export async function saveToolOrder(toolId: string, endpointIds: string[], note?: string): Promise<{ changed: boolean; message: string }> {
+  return (await postJson<{ changed: boolean; message: string }>(`/admin/tool-layer/tools/${toolId}/order`, { endpoint_ids: endpointIds, note: note || null })).data;
 }

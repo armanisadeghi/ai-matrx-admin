@@ -9,6 +9,8 @@ export interface ControlLogEntry {
   at: string;
   from: string | null;
   to: string;
+  /** "order" for a default-order change; absent for a state change. */
+  kind?: "order" | string;
   actor?: "system" | "admin" | "verification" | "upkeep" | string;
   by?: string | null;
   reason?: string | null;
@@ -35,6 +37,7 @@ export interface EndpointRow extends WithLog {
   provider_slug: string;
   via: "direct" | "treg";
   vendor_op: string;
+  priority?: number | null;
   state: SourceState;
   verified_at: string | null;
   last_probe: { call_id?: string | null; outcome?: string; error_class?: string | null; latency_ms?: number | null; at?: string } | null;
@@ -45,6 +48,7 @@ export interface ProviderRow extends WithLog {
   admin_name: string;
   state: AccountState;
   direct_account: boolean;
+  display?: "leader" | "matrx";
 }
 
 export interface ScorecardRow {
