@@ -139,40 +139,29 @@ describe("the table's own rule for its own columns stands", () => {
 });
 
 describe("a person the ladder does not let edit is read-only, with the reason", () => {
-  it("is refused in words, is told may_edit = false, and nothing is written (a workflow run she is only a member for)", async () => {
+  it("is refused in words, is told may_edit = false, and nothing is written", async () => {
     await client.query("begin");
     try {
+      const row = await aRow("platform", "categories", true);
+      // inside this rolled-back transaction she is a plain member of that organization, and did not create the row
+      await client.query("update iam.memberships set role = 'member' where user_id = $1 and container_type = 'organization' and container_id = $2", [
+        ADMIN_ID,
+        row.organization_id,
+      ]);
       await asAdmin();
-      // one run per organization she is in; the first she may open but not edit (member, not its creator, no editor share)
-      const cands = await client.query(
-        `select distinct on (organization_id) id, organization_id from workflow.run
-          where organization_id in (select organization_id from iam.organization_member where user_id = $1)`,
-        [ADMIN_ID],
-      );
-      let found: { id: string; organization_id: string } | null = null;
-      for (const cand of cands.rows) {
-        await client.query("savepoint r");
-        try {
-          const read = await client.query("select custom.entity_record_read($1, 'workflow_run', $2) as r", [cand.organization_id, cand.id]);
-          if (read.rows[0].r.may_edit === false) {
-            found = cand;
-            break;
-          }
-        } catch {
-          await client.query("rollback to savepoint r");
-        }
-      }
-      if (!found) throw new Error("admin@admin.com has no workflow run she may open but not edit; the proof needs one");
+      const read = await client.query("select custom.entity_record_read($1, 'category', $2) as r", [row.organization_id, row.id]);
+      expect(read.rows[0].r.may_edit).toBe(false);
+      await client.query("savepoint w");
       await expect(
-        client.query("select custom.entity_row_write($1, 'workflow_run', $2, '{}'::jsonb, $3::jsonb)", [
-          found.organization_id,
-          found.id,
+        client.query("select custom.entity_row_write($1, 'category', $2, '{}'::jsonb, $3::jsonb)", [
+          row.organization_id,
+          row.id,
           JSON.stringify({ zz_cfwrite2_probe: "nope" }),
         ]),
       ).rejects.toThrow(/edit access/);
-      await client.query("rollback");
-      await client.query("begin");
-      const back = await client.query("select custom_fields ->> 'zz_cfwrite2_probe' as v from workflow.run where id = $1", [found.id]);
+      await client.query("rollback to savepoint w");
+      await client.query("reset role");
+      const back = await client.query("select custom_fields ->> 'zz_cfwrite2_probe' as v from platform.categories where id = $1", [row.id]);
       expect(back.rows[0].v).toBeNull();
     } finally {
       await client.query("rollback");

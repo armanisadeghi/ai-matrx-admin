@@ -31,6 +31,7 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
+- _conflicts/2026-10-19-143802/features/unified-data/__tests__/a-custom-value-never-needs-the-tables-update-grant.live.test.ts.held — LOCAL latest 2026-10-19 14:34; GITHUB latest 2026-10-19 14:34; LOCAL lacks 10 of GITHUB's 114 new lines; GITHUB lacks 16 of LOCAL's 119 new lines; recover: git show 393c4b390d:'features/unified-data/__tests__/a-custom-value-never-needs-the-tables-update-grant.live.test.ts' / 95961a6800:'features/unified-data/__tests__/a-custom-value-never-needs-the-tables-update-grant.live.test.ts'
 
 ## Resolution log
 
