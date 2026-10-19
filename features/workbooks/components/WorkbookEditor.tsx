@@ -198,6 +198,9 @@ export default function WorkbookEditor({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const apiRef = useRef<FUniver | null>(null);
   const univerRef = useRef<Univer | null>(null);
+  // Render-safe copies of the boot-assigned instances (refs can't be read in render).
+  const [univerInstance, setUniverInstance] = useState<Univer | null>(null);
+  const [univerApiInstance, setUniverApiInstance] = useState<FUniver | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveBurstStartRef = useRef<number | null>(null);
   const lastSaveByUserRef = useRef<string | null>(null);
@@ -393,6 +396,8 @@ export default function WorkbookEditor({
         installSheetCommentAnchors(univer);
         univerRef.current = univer;
         apiRef.current = univerAPI;
+        setUniverInstance(univer);
+        setUniverApiInstance(univerAPI);
         // ONE toaster per page: Univer's notices ride the app's toast path, and
         // Univer never mounts its own sonner Toaster (every toast showed twice).
         const routed = routeUniverNotificationsToApp(
@@ -1098,8 +1103,8 @@ export default function WorkbookEditor({
   const [detailsOpen, setDetailsOpen] = useState(false);
   const canvasWrapperRef = useRef<HTMLDivElement | null>(null);
   const sheetComments = useSheetComments({
-    univer: univerRef.current,
-    api: apiRef.current,
+    univer: univerInstance,
+    api: univerApiInstance,
     workbookId,
     ready: bootState === "ready",
     editable,
@@ -1320,9 +1325,9 @@ export default function WorkbookEditor({
   // ─── Google Sheets chrome: menus, toolbar, bound shortcuts ───
   const openFeedback = useOpenFeedbackWindow();
   const chromeHost: SheetChromeHost | null =
-    bootState === "ready" && apiRef.current
+    bootState === "ready" && univerApiInstance
       ? {
-          api: apiRef.current as unknown as SheetsApiLike,
+          api: univerApiInstance as unknown as SheetsApiLike,
           editable,
           print: handlePrint,
           formulaBarVisible: () => !formulaBarHidden,
@@ -1468,7 +1473,7 @@ export default function WorkbookEditor({
       />
       <SheetToolPanels
         {...sheetExtras.panelProps}
-        api={apiRef.current as unknown as PanelApi | null}
+        api={univerApiInstance as unknown as PanelApi | null}
         linkedTableId={tableLink.linkedTableId}
         makeTable={tableLink.makeTable}
       />
@@ -1482,7 +1487,7 @@ export default function WorkbookEditor({
           ["Created", formatDetailDate(record?.created_at)],
           ["Last edited", formatDetailDate(record?.updated_at)],
           ["Source", record ? workbookSourceLabel(record.source) : null],
-          ["Sheets", ready ? String(apiRef.current?.getActiveWorkbook()?.getSheets().length ?? "") : null],
+          ["Sheets", ready ? String(univerApiInstance?.getActiveWorkbook()?.getSheets().length ?? "") : null],
         ]}
       />
       <div
@@ -1504,7 +1509,8 @@ export default function WorkbookEditor({
           {bootState === "load_error" || firstPaint ? null : <EditorBootCover label="Loading workbook" />}
           {collab && bootState === "ready" && (
             <WorkbookCursorOverlay
-              univerAPI={apiRef.current}
+              univerAPI={univerApiInstance}
+              univer={univerInstance}
               containerRef={containerRef}
               states={remoteAwareness}
               selfUid={collabSelfUid}
