@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0462",
-  "version": 4,
+  "version": 5,
   "title": "Event Planning Company Desk",
-  "description": "Clients, events, vendors, bookings and planning tasks for an event planning company.",
+  "description": "For event planners: clients, events, vendor contracts, deposits, budgets and timelines.",
   "forWho": "Event planners and event production companies",
   "icon": {
     "emoji": "🎉"
@@ -14,10 +14,12 @@
   },
   "category": "services",
   "tags": [
-    "events",
+    "event planner",
+    "wedding planner",
     "vendors",
-    "budget",
-    "planning"
+    "event budget",
+    "run of show",
+    "corporate events"
   ],
   "spec": {
     "specVersion": 1,
@@ -431,6 +433,13 @@
             "format": "date"
           },
           {
+            "key": "venue",
+            "label": "Venue",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "closed_on",
             "label": "Closed on",
             "parityType": "datetime",
@@ -456,6 +465,31 @@
             ]
           },
           {
+            "key": "rsvp_yes",
+            "label": "RSVPs yes",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "final_count_on",
+            "label": "Final count due",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "budget",
             "label": "Client budget (USD)",
             "parityType": "currency",
@@ -475,22 +509,70 @@
             ]
           },
           {
+            "key": "planning_fee",
+            "label": "Planning fee (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "agreement_signed",
+            "label": "Planning agreement signed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "vendor_cost",
-            "label": "Vendor costs (USD)",
+            "label": "Committed vendor costs (USD)",
             "parityType": "rollup",
             "sensitivity": "confidential",
             "contextPolicy": "include",
             "via": "bookings",
             "pick": "cost",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Confirmed",
+                "Settled"
+              ]
+            }
+          },
+          {
+            "key": "pending_cost",
+            "label": "Quotes pending (USD)",
+            "parityType": "rollup",
+            "via": "bookings",
+            "pick": "cost",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Requested",
+                "Contract sent"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "budget_left",
-            "label": "Budget left (USD)",
+            "label": "Budget left after quotes (USD)",
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Client budget (USD)} - {Vendor costs (USD)}"
+            "formula": "{Client budget (USD)} - {Committed vendor costs (USD)} - {Quotes pending (USD)}"
           },
           {
             "key": "vendors_total",
@@ -517,6 +599,28 @@
                 "Settled"
               ]
             }
+          },
+          {
+            "key": "deposits_open",
+            "label": "Vendor deposits unpaid",
+            "parityType": "rollup",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count",
+            "filter": {
+              "deposit_paid": {
+                "not": [
+                  true
+                ]
+              },
+              "status": {
+                "not": [
+                  "Settled"
+                ]
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "tasks_left",
@@ -715,7 +819,12 @@
               "budget": 62000,
               "client": "client-1",
               "planner": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "venue": "Magnolia Hall",
+              "agreement_signed": true,
+              "rsvp_yes": 96,
+              "final_count_on": "@today+5d",
+              "planning_fee": 7500
             }
           },
           {
@@ -724,11 +833,16 @@
               "event_name": "Coastal Pines client dinner",
               "status": "Event week",
               "kind": "Corporate dinner",
-              "event_on": "@today+5d",
+              "event_on": "@mon+5d",
               "guests": 60,
               "budget": 18500,
               "client": "client-2",
-              "planner": "tm-2"
+              "planner": "tm-2",
+              "venue": "Harborside Club, private dining",
+              "agreement_signed": true,
+              "rsvp_yes": 58,
+              "final_count_on": "@today-3d",
+              "planning_fee": 3200
             }
           },
           {
@@ -742,7 +856,12 @@
               "budget": 85000,
               "client": "client-3",
               "planner": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "venue": "Magnolia Hall",
+              "agreement_signed": true,
+              "rsvp_yes": 131,
+              "final_count_on": "@today+16d",
+              "planning_fee": 9800
             }
           },
           {
@@ -755,7 +874,10 @@
               "guests": 55,
               "budget": 12000,
               "client": "client-4",
-              "planner": "tm-2"
+              "planner": "tm-2",
+              "venue": "Brennan-Osei family home, tented lawn",
+              "agreement_signed": true,
+              "planning_fee": 2400
             }
           },
           {
@@ -770,7 +892,11 @@
               "client": "client-5",
               "planner": "tm-2",
               "owner_me": "@installer",
-              "closed_on": "@today-45d"
+              "closed_on": "@today-45d",
+              "venue": "Pelham Tech campus atrium",
+              "agreement_signed": true,
+              "rsvp_yes": 176,
+              "planning_fee": 6500
             }
           },
           {
@@ -783,7 +909,9 @@
               "guests": 90,
               "budget": 40000,
               "client": "client-6",
-              "planner": "tm-1"
+              "planner": "tm-1",
+              "venue": "Undecided",
+              "agreement_signed": false
             }
           },
           {
@@ -797,7 +925,43 @@
               "budget": 32000,
               "client": "client-2",
               "planner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "venue": "Harborside Club ballroom",
+              "agreement_signed": true,
+              "planning_fee": 4200
+            }
+          },
+          {
+            "key": "event-8",
+            "values": {
+              "event_name": "Coastal Pines agents lunch",
+              "status": "Booked",
+              "kind": "Corporate dinner",
+              "event_on": "@today+3d",
+              "guests": 24,
+              "budget": 4200,
+              "venue": "Harborside Club, garden room",
+              "planning_fee": 900,
+              "agreement_signed": true,
+              "client": "client-2",
+              "planner": "tm-2"
+            }
+          },
+          {
+            "key": "event-9",
+            "values": {
+              "event_name": "Harbor Arts donor brunch",
+              "status": "Event week",
+              "kind": "Fundraiser",
+              "event_on": "@today-2d",
+              "guests": 40,
+              "rsvp_yes": 37,
+              "budget": 6800,
+              "venue": "Savannah Harbor Arts Fund gallery",
+              "planning_fee": 1200,
+              "agreement_signed": true,
+              "client": "client-3",
+              "planner": "tm-1"
             }
           }
         ],
@@ -880,6 +1044,13 @@
               "Good": "blue",
               "Mixed": "amber"
             }
+          },
+          {
+            "key": "deposit_terms",
+            "label": "Usual deposit and terms",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "notes",
@@ -968,7 +1139,8 @@
               "email": "events@magnoliahall.net",
               "phone": "(912) 555-0161",
               "rating": "Excellent",
-              "notes": "Staff set up from noon; loading dock on the east side"
+              "notes": "Staff set up from noon; loading dock on the east side",
+              "deposit_terms": "30% to hold the date, balance 14 days before"
             }
           },
           {
@@ -979,7 +1151,8 @@
               "email": "book@saltwatertable.net",
               "phone": "(912) 555-0162",
               "rating": "Excellent",
-              "notes": "Needs final counts ten days out"
+              "notes": "Needs final counts ten days out",
+              "deposit_terms": "30% at signing, final count and balance 10 days before"
             }
           },
           {
@@ -990,7 +1163,8 @@
               "email": "studio@wildfernflorals.net",
               "phone": "(912) 555-0163",
               "rating": "Good",
-              "notes": "Delivers the morning of; tell them the load-in door"
+              "notes": "Delivers the morning of; tell them the load-in door",
+              "deposit_terms": "30% at signing, balance 5 days before"
             }
           },
           {
@@ -1001,7 +1175,8 @@
               "email": "booking@lowcountrystrings.net",
               "phone": "(912) 555-0164",
               "rating": "Excellent",
-              "notes": "Quartet or trio, sound check thirty minutes"
+              "notes": "Quartet or trio, sound check thirty minutes",
+              "deposit_terms": "30% at signing, balance 10 days before"
             }
           },
           {
@@ -1012,7 +1187,8 @@
               "email": "hello@lanternframe.net",
               "phone": "(912) 555-0165",
               "rating": "Good",
-              "notes": "Second shooter costs extra"
+              "notes": "Second shooter costs extra",
+              "deposit_terms": "30% at signing, balance 7 days before"
             }
           },
           {
@@ -1023,7 +1199,8 @@
               "email": "orders@tidewaterrentals.net",
               "phone": "(912) 555-0166",
               "rating": "Mixed",
-              "notes": "Check linen counts on arrival"
+              "notes": "Check linen counts on arrival",
+              "deposit_terms": "30% at order, balance 10 days before; damage waiver extra"
             }
           },
           {
@@ -1034,7 +1211,8 @@
               "email": "crew@glowworks.net",
               "phone": "(912) 555-0167",
               "rating": "Good",
-              "notes": "Needs power plan in advance"
+              "notes": "Needs power plan in advance",
+              "deposit_terms": "30% at signing, power plan 21 days before"
             }
           }
         ]
@@ -1108,12 +1286,60 @@
             ]
           },
           {
+            "key": "deposit",
+            "label": "Deposit (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
             "key": "deposit_due",
             "label": "Deposit due",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "deposit_paid",
+            "label": "Deposit paid",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "balance_due",
+            "label": "Balance due",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "coi",
+            "label": "Insurance certificate received",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "arrival",
+            "label": "Arrival and load-in",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "event",
@@ -1219,7 +1445,12 @@
               "cost": 9500,
               "deposit_due": "@today-20d",
               "event": "event-1",
-              "vendor": "vendor-1"
+              "vendor": "vendor-1",
+              "deposit": 2850,
+              "deposit_paid": true,
+              "balance_due": "@today+61d",
+              "coi": true,
+              "arrival": "Venue open from noon"
             }
           },
           {
@@ -1230,7 +1461,11 @@
               "cost": 21000,
               "deposit_due": "@today+6d",
               "event": "event-1",
-              "vendor": "vendor-2"
+              "vendor": "vendor-2",
+              "deposit": 6300,
+              "deposit_paid": false,
+              "balance_due": "@today+65d",
+              "coi": false
             }
           },
           {
@@ -1241,7 +1476,11 @@
               "cost": 6200,
               "deposit_due": "@today+14d",
               "event": "event-1",
-              "vendor": "vendor-3"
+              "vendor": "vendor-3",
+              "deposit": 1860,
+              "deposit_paid": false,
+              "balance_due": "@today+70d",
+              "coi": false
             }
           },
           {
@@ -1252,7 +1491,12 @@
               "cost": 2800,
               "deposit_due": "@today-10d",
               "event": "event-1",
-              "vendor": "vendor-4"
+              "vendor": "vendor-4",
+              "deposit": 840,
+              "deposit_paid": true,
+              "balance_due": "@today+65d",
+              "coi": true,
+              "arrival": "Sound check 4:30 pm"
             }
           },
           {
@@ -1263,7 +1507,12 @@
               "cost": 9800,
               "deposit_due": "@today-30d",
               "event": "event-2",
-              "vendor": "vendor-2"
+              "vendor": "vendor-2",
+              "deposit": 2940,
+              "deposit_paid": true,
+              "balance_due": "@today-2d",
+              "coi": true,
+              "arrival": "Kitchen in at 2 pm"
             }
           },
           {
@@ -1274,7 +1523,12 @@
               "cost": 1400,
               "deposit_due": "@today-25d",
               "event": "event-2",
-              "vendor": "vendor-3"
+              "vendor": "vendor-3",
+              "deposit": 420,
+              "deposit_paid": true,
+              "balance_due": "@today+2d",
+              "coi": true,
+              "arrival": "Florals delivered 3 pm"
             }
           },
           {
@@ -1285,7 +1539,12 @@
               "cost": 16000,
               "deposit_due": "@today-60d",
               "event": "event-3",
-              "vendor": "vendor-1"
+              "vendor": "vendor-1",
+              "deposit": 4800,
+              "deposit_paid": true,
+              "balance_due": "@today+20d",
+              "coi": true,
+              "arrival": "Load-in from 9 am, east dock"
             }
           },
           {
@@ -1296,7 +1555,11 @@
               "cost": 7200,
               "deposit_due": "@mon+3d",
               "event": "event-3",
-              "vendor": "vendor-7"
+              "vendor": "vendor-7",
+              "deposit": 2160,
+              "deposit_paid": false,
+              "balance_due": "@today+30d",
+              "coi": false
             }
           },
           {
@@ -1305,9 +1568,13 @@
               "booking_name": "Tidewater Rentals for the gala",
               "status": "Requested",
               "cost": 5400,
-              "deposit_due": "@today+9d",
+              "deposit_due": "@today-2d",
               "event": "event-3",
-              "vendor": "vendor-6"
+              "vendor": "vendor-6",
+              "deposit": 1620,
+              "deposit_paid": false,
+              "balance_due": "@today+30d",
+              "coi": false
             }
           },
           {
@@ -1318,7 +1585,12 @@
               "cost": 3600,
               "deposit_due": "@today-40d",
               "event": "event-3",
-              "vendor": "vendor-5"
+              "vendor": "vendor-5",
+              "deposit": 1080,
+              "deposit_paid": true,
+              "balance_due": "@today+33d",
+              "coi": true,
+              "arrival": "Arrive 5 pm for portraits"
             }
           },
           {
@@ -1329,9 +1601,20 @@
               "cost": 17200,
               "deposit_due": "@today-80d",
               "event": "event-5",
-              "vendor": "vendor-2"
+              "vendor": "vendor-2",
+              "deposit": 5160,
+              "deposit_paid": true,
+              "balance_due": "@today-55d",
+              "coi": true,
+              "arrival": "Kitchen in at 6 am"
             }
           }
+        ],
+        "before": [
+          [
+            "deposit_due",
+            "balance_due"
+          ]
         ]
       },
       {
@@ -2259,7 +2542,7 @@
         "Harbor Lantern Road"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2281,7 +2564,14 @@
           "type": "callout",
           "text": [
             {
-              "text": "Plan every event from one page: clients, events with budget left and days to go, the vendor directory, each vendor booking and the task list. Start on the Dashboard, then work Mine and the vendor bookings still waiting on contracts. Check Budget left before agreeing any extra."
+              "text": "The studio of an event planning company: clients, every event with its budget, committed vendor costs and RSVPs, the vendors you trust, each vendor booking with its deposit and balance dates, and the planning tasks that get an event to the day. Open "
+            },
+            {
+              "text": "Start here",
+              "bold": true
+            },
+            {
+              "text": " first."
             }
           ],
           "background": "blue",
@@ -2302,6 +2592,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
                   }
                 }
               ]
@@ -3246,6 +3542,50 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Vendor deposits not yet paid"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Vendor deposits not yet paid",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "vdp",
+                "name": "Deposits not yet paid",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "deposit_paid": false
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Contract sent",
+                    "Confirmed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vdp"
+          }
         }
       ]
     },
@@ -3261,12 +3601,298 @@
           "type": "callout",
           "text": [
             {
-              "text": "Work backwards from the event date. Most stress comes from decisions made too late."
+              "text": "Most events follow the same rhythm. Load these tasks when an event is booked and adjust the dates to its size."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Twelve to six months out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Planning agreement signed and retainer paid"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Budget agreed with the client, split by category"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Venue booked; date held in writing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Caterer, photographer and music booked for large events"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Save-the-dates for weddings and big galas"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Six to three months out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Design direction: colors, florals, lighting"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rentals quoted: tables, chairs, linens, tent"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Invitations ordered and sent (eight weeks for weddings)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Guest travel and room blocks set up if needed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Six to two weeks out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "RSVPs chased; "
+            },
+            {
+              "text": "RSVPs yes",
+              "bold": true
+            },
+            {
+              "text": " updated weekly"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Menu tasting and final menu"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Floor plan and seating chart"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Run of show drafted and shared with vendors"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Insurance certificates collected from every vendor working at the venue"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The final ten days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Final count to the caterer and venue by the "
+            },
+            {
+              "text": "Final count due",
+              "bold": true
+            },
+            {
+              "text": " date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Balances paid on their dates"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Vendor arrival times confirmed in writing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Emergency kit packed: tape, scissors, pins, stain remover, phone chargers, first aid"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Adjusting for size"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A corporate lunch for 24 needs a quarter of these steps over three weeks; a gala for 220 needs all of them over nine months. Delete the tasks that do not apply rather than leaving them open, so the overdue list stays honest. When a client books late, compress the timeline and tell them which choices will be limited."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Budget split, as a starting point"
+            }
+          ],
+          "props": {
+            "level": 2
           }
         },
         {
@@ -3279,17 +3905,12 @@
                 "cells": [
                   [
                     {
-                      "text": "When"
+                      "text": "Category"
                     }
                   ],
                   [
                     {
-                      "text": "Focus"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Examples"
+                      "text": "Share"
                     }
                   ]
                 ]
@@ -3298,17 +3919,12 @@
                 "cells": [
                   [
                     {
-                      "text": "9 to 12 months"
+                      "text": "Venue and catering"
                     }
                   ],
                   [
                     {
-                      "text": "Big decisions"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Venue, date, budget, guest list outline"
+                      "text": "45 to 50 percent"
                     }
                   ]
                 ]
@@ -3317,17 +3933,12 @@
                 "cells": [
                   [
                     {
-                      "text": "6 to 9 months"
+                      "text": "Photography and video"
                     }
                   ],
                   [
                     {
-                      "text": "Core vendors"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Caterer, photographer, music, rentals"
+                      "text": "10 to 12 percent"
                     }
                   ]
                 ]
@@ -3336,17 +3947,12 @@
                 "cells": [
                   [
                     {
-                      "text": "3 to 6 months"
+                      "text": "Florals and decor"
                     }
                   ],
                   [
                     {
-                      "text": "Details"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Invitations, florals, lighting, transport"
+                      "text": "8 to 10 percent"
                     }
                   ]
                 ]
@@ -3355,17 +3961,12 @@
                 "cells": [
                   [
                     {
-                      "text": "1 to 3 months"
+                      "text": "Music and entertainment"
                     }
                   ],
                   [
                     {
-                      "text": "Logistics"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Seating, run of show, final menus, rehearsal"
+                      "text": "7 to 10 percent"
                     }
                   ]
                 ]
@@ -3374,17 +3975,26 @@
                 "cells": [
                   [
                     {
-                      "text": "Final month"
+                      "text": "Rentals and lighting"
                     }
                   ],
                   [
                     {
-                      "text": "Confirm"
+                      "text": "8 to 10 percent"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Contingency"
                     }
                   ],
                   [
                     {
-                      "text": "Headcounts, load-in times, payments, contacts"
+                      "text": "5 percent"
                     }
                   ]
                 ]
@@ -3396,7 +4006,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "How to use it"
+              "text": "Example"
             }
           ],
           "props": {
@@ -3404,26 +4014,10 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "quote",
           "text": [
             {
-              "text": "When an event is booked, add tasks for each phase with due dates."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Review the list weekly with the client manager."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Move the event stage as phases finish."
+              "text": "The Marchetti-Takahashi wedding is 75 days away. Invitations are going out late, so the team pushed the RSVP deadline back a week and moved the seating chart task to match."
             }
           ]
         }
@@ -3434,14 +4028,26 @@
       "parent": "event-planning-company-desk",
       "title": "Booking a vendor",
       "icon": {
-        "emoji": "🤝"
+        "emoji": "✍️"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A vendor booking is a contract and a payment schedule. Most day-of problems trace back to something not written down at booking."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Before you ask"
+              "text": "Before you ask for a quote"
             }
           ],
           "props": {
@@ -3452,7 +4058,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Confirm date, guest count, budget and what the client cares about."
+              "text": "Event date, venue, times, guest count and style"
             }
           ]
         },
@@ -3460,7 +4066,15 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Check the vendor's rating and notes in the directory."
+              "text": "What you need exactly: number of pieces, staff, hours"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Budget range for that category"
             }
           ]
         },
@@ -3468,7 +4082,111 @@
           "type": "heading",
           "text": [
             {
-              "text": "Booking"
+              "text": "Comparing quotes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Check"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Why"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "What is included and not"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Service charge, delivery, overtime, staffing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Deposit and balance dates"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Must fit the client's payment schedule"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cancellation terms"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happens if the date moves"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Insurance"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The venue will ask for a certificate"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Our rating and notes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Past performance beats a low price"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Booking it"
             }
           ],
           "props": {
@@ -3479,7 +4197,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Request availability and a written quote for the exact scope."
+              "text": "Add the booking with status "
+            },
+            {
+              "text": "Requested",
+              "bold": true
+            },
+            {
+              "text": " and the quoted cost."
             }
           ]
         },
@@ -3487,7 +4212,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Compare at least two options for the large lines."
+              "text": "When the contract arrives, check names, date, times, inclusions and payments; set "
+            },
+            {
+              "text": "Contract sent",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3495,7 +4227,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send the contract for the client's approval; log it as Contract sent."
+              "text": "Client approves; contract signed; set "
+            },
+            {
+              "text": "Confirmed",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3503,7 +4242,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Record the deposit due date and the balance date."
+              "text": "Enter the deposit, its due date and the balance due date. Tick "
+            },
+            {
+              "text": "Deposit paid",
+              "bold": true
+            },
+            {
+              "text": " when the money goes."
             }
           ]
         },
@@ -3511,7 +4257,84 @@
           "type": "numbered",
           "text": [
             {
-              "text": "When signed, press Lock in and add the load-in time to the event page."
+              "text": "Ask for the insurance certificate naming the venue; tick it when received."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After the event and final payment, set "
+            },
+            {
+              "text": "Settled",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules we keep"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never sign on the client's behalf unless your agreement says you may."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every change after signing is confirmed in writing, with the new price."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Vendors get one contact person from our side."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Meals and breaks for vendor staff are agreed in advance."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a vendor misses a deposit date"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If we miss a deposit, the vendor may release the date. Pay or call that day. If a vendor misses their own promise, such as a late contract, write down what was agreed and when, and tell the client before it becomes a problem on the day."
             }
           ]
         },
@@ -3527,10 +4350,29 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Pay the balance on time, update the rating, and add notes for next time."
+              "text": "Rate the vendor and add a note. \"Arrived late, great work\" helps the next planner choose."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Saltwater Table's contract for the wedding has been sent, with a 6,300 dollar deposit due in six days. The client has the contract; the planner has a task to confirm signature before the deposit date."
             }
           ]
         }
@@ -3541,14 +4383,14 @@
       "parent": "event-planning-company-desk",
       "title": "Building the run of show",
       "icon": {
-        "emoji": "⏱️"
+        "emoji": "🎬"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "A run of show is a minute-by-minute promise. Everyone should be able to read their line and know what to do."
+              "text": "The run of show is the minute-by-minute plan everyone works from on the day. A clear one means you can step away and the event keeps running."
             }
           ],
           "background": "blue",
@@ -3560,7 +4402,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Contents"
+              "text": "What goes in"
             }
           ],
           "props": {
@@ -3571,7 +4413,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Time, what happens, who leads, and what is needed (audio, lighting, props)."
+              "text": "Times for every moment: vendor arrivals, doors, speeches, dinner service, first dance, last call, end, load-out"
             }
           ]
         },
@@ -3579,7 +4421,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Load-in and load-out times for every vendor."
+              "text": "Who does what at each moment, and who cues it"
             }
           ]
         },
@@ -3587,7 +4429,15 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Contacts for the venue, caterer and anyone with a key."
+              "text": "Locations inside the venue"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Contact numbers for every vendor lead"
             }
           ]
         },
@@ -3595,7 +4445,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Building it"
+              "text": "How to build it"
             }
           ],
           "props": {
@@ -3606,7 +4456,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Start from the client's must-have moments and place them first."
+              "text": "Start from the vendors' "
+            },
+            {
+              "text": "Arrival and load-in",
+              "bold": true
+            },
+            {
+              "text": " notes on their bookings."
             }
           ]
         },
@@ -3614,7 +4471,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Work out meal service and speeches around the venue's timing rules."
+              "text": "Work backwards from the guest arrival time."
             }
           ]
         },
@@ -3622,7 +4479,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Share a draft with vendors two weeks out and collect corrections."
+              "text": "Leave 15-minute buffers around speeches and dinner service."
             }
           ]
         },
@@ -3630,7 +4487,263 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Print copies for the planner, venue and each vendor lead."
+              "text": "Share a draft two weeks out; ask each vendor to confirm their lines."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Final version goes to everyone 48 hours before, with any changes highlighted."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A sample evening"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Time"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "12:00"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Venue open, rentals delivered"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Venue, rentals"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "14:00"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Kitchen in"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Caterer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "15:00"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Florals and lighting set"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Florist, lighting"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "16:30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sound check"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Band"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "17:30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Final walkthrough"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lead planner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "18:00"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Guests arrive, drinks"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Bar"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "19:00"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Welcome and dinner"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Host, caterer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "21:00"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Dancing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Band"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "23:00"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Last call; end at 23:30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Bar, venue"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "23:30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Load-out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "All vendors"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rain and other plan B moments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every outdoor moment needs a written backup: where the ceremony moves, who decides and by when, and how chairs and decor move. Put the decision time in the run of show, such as 2 pm for a 5 pm ceremony, so nobody argues at 4:45."
             }
           ]
         },
@@ -3646,10 +4759,45 @@
           }
         },
         {
-          "type": "text",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Walk the room one hour before doors with the venue manager, then do a final check on audio, lighting and the first moment of the program."
+              "text": "One planner holds the run of show and the timing; another handles guests and surprises."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Changes are told to every vendor lead, not just one."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep notes of what ran late and why for the wrap-up."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "For the Coastal Pines client dinner, the venue asks for load-out by 23:00, half an hour earlier than planned. The run of show moves dessert forward by 15 minutes and every vendor lead gets the new version."
             }
           ]
         }
@@ -3664,10 +4812,22 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The week after an event is when you protect your reputation and your margin. Close every money item, thank everyone, and write down what you learned."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Within three days"
+              "text": "Within two days"
             }
           ],
           "props": {
@@ -3678,7 +4838,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Thank-you notes sent to the client and key vendors"
+              "text": "Personal thank-you to the client"
             }
           ],
           "props": {
@@ -3689,7 +4849,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Final headcount and vendor invoices collected"
+              "text": "Lost and found items returned"
             }
           ],
           "props": {
@@ -3700,7 +4860,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Rented items counted and returned"
+              "text": "Rentals counted back; damage noted with photos"
             }
           ],
           "props": {
@@ -3711,7 +4871,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Photos and links saved on the event page"
+              "text": "Gifts, decor and leftover items delivered where the client wants them"
             }
           ],
           "props": {
@@ -3730,10 +4890,195 @@
           }
         },
         {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every vendor's final invoice checked against the contract; overtime or extras confirmed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Balances paid; each booking set to "
+            },
+            {
+              "text": "Settled",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Final budget report to the client: budget, committed costs, extras, and why."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Event set to "
+            },
+            {
+              "text": "Wrapped",
+              "bold": true
+            },
+            {
+              "text": " with the date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Learning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Ask"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Write down"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "What ran late?"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The cause and the fix next time"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Which vendor stood out?"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A rating and a note on their booking"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "What did guests talk about?"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "An idea to reuse"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "What cost more than planned?"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where the next budget should change"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing the money"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Compare the final budget with the first one. Extras the client approved belong in the report with the date they approved them. Our planning fee balance is invoiced the same week, while the client is still happy, with a short thank-you note on top."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Asking for a review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send a short note a week after with a link where they can leave a review, and ask whether you may use photos. Couples and companies often say yes when asked soon after."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keeping the client"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
           "type": "bulleted",
           "text": [
             {
-              "text": "Hold a short debrief with the team: what worked, what did not, what to change."
+              "text": "Corporate clients: book the next date while the event is fresh."
             }
           ]
         },
@@ -3741,7 +5086,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Update vendor ratings and notes."
+              "text": "Families and couples: note anniversaries and milestones for a friendly message next year."
             }
           ]
         },
@@ -3749,7 +5094,175 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Ask the client for a review."
+              "text": "Nonprofits: offer a debrief before they plan next year's gala."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Pelham product summit wrapped 45 days ago. The caterer's final invoice matched the contract, sponsors were thanked, and Pelham has asked for dates for next year's summit, so a new inquiry is on the board."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "event-planning-company-desk",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Planners juggle dozens of dates, contracts and people for each event. This workspace keeps one record per event, with every vendor booking and task linked to it, so nothing depends on memory."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it holds"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clients"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Couples, companies, nonprofits and families, with the events they have booked"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Events"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Date, venue, guests and RSVPs, final count date, client budget, planning fee, committed vendor costs, quotes pending, budget left, vendors confirmed, tasks left"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Vendors"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Category, contacts, your rating, usual deposit terms"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Vendor bookings"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cost, deposit and whether it is paid, deposit and balance dates, insurance certificate, arrival time"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Planning tasks"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Phase, due date and owner for every job before the day"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the budget numbers work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Committed vendor costs",
+              "bold": true
+            },
+            {
+              "text": " add up bookings that are Confirmed or Settled."
             }
           ]
         },
@@ -3757,7 +5270,144 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Press Wrap up on the event and move open tasks to Done or delete them."
+              "text": "Quotes pending",
+              "bold": true
+            },
+            {
+              "text": " add up bookings that are Requested or Contract sent, so you see what is coming before it is signed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Budget left after quotes",
+              "bold": true
+            },
+            {
+              "text": " is the client budget minus both. Below zero means a conversation with the client before signing anything else."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Vendor deposits unpaid",
+              "bold": true
+            },
+            {
+              "text": " counts bookings not settled whose deposit is not ticked."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add each client and event with date, venue, guest count and budget."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add your regular vendors with their usual deposit terms."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "For every event, add the vendor bookings already made, with cost, deposit and dates."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Load the planning timeline tasks for each event (see Planning timeline)."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The daily rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Morning:",
+              "bold": true
+            },
+            {
+              "text": " Planning tasks overdue and due this week; then Vendor bookings with a deposit due this week."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Afternoon:",
+              "bold": true
+            },
+            {
+              "text": " client and vendor calls; every decision becomes a task or a booking update."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Friday:",
+              "bold": true
+            },
+            {
+              "text": " dashboard check of budgets and unpaid deposits."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Coastal Pines client dinner is this Saturday. Both vendors are confirmed and paid, the final headcount is due to the caterer, and place cards are being printed. Nothing on the event is waiting on money, so the team's whole attention goes to the run of show."
             }
           ]
         }
