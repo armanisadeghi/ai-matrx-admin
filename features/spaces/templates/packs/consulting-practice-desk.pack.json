@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0458",
-  "version": 5,
+  "version": 6,
   "title": "Consulting Practice Desk",
-  "description": "Clients, proposals, engagements, deliverables and consultant days for a consulting firm.",
+  "description": "For consultants: proposals, engagements, days sold versus used, deliverables and readouts.",
   "forWho": "Management and operations consulting practices",
   "icon": {
     "emoji": "🧭"
@@ -14,10 +14,12 @@
   },
   "category": "services",
   "tags": [
-    "consulting",
-    "engagements",
+    "consultant",
+    "consulting firm",
+    "engagement manager",
     "proposals",
-    "utilization"
+    "utilization",
+    "deliverables"
   ],
   "spec": {
     "specVersion": 1,
@@ -170,6 +172,40 @@
             "filter": {
               "stage": "Won"
             }
+          },
+          {
+            "key": "open_props",
+            "label": "Proposals open",
+            "parityType": "rollup",
+            "via": "proposals",
+            "pick": "proposal_name",
+            "agg": "count",
+            "filter": {
+              "stage": [
+                "Sent",
+                "Negotiating"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pipeline",
+            "label": "Value in play",
+            "parityType": "rollup",
+            "via": "proposals",
+            "pick": "value",
+            "agg": "sum",
+            "filter": {
+              "stage": {
+                "not": [
+                  "Won",
+                  "Lost"
+                ]
+              }
+            },
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
           },
           {
             "key": "added_at",
@@ -441,6 +477,30 @@
             ]
           },
           {
+            "key": "pricing",
+            "label": "Pricing",
+            "parityType": "select",
+            "choices": [
+              "Fixed fee",
+              "Time and materials",
+              "Retainer"
+            ],
+            "choiceColors": {
+              "Fixed fee": "blue",
+              "Time and materials": "green",
+              "Retainer": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "problem",
+            "label": "Problem in the client words",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "chance",
             "label": "Chance (%)",
             "parityType": "number",
@@ -655,7 +715,9 @@
               "decide_by": "@today-40d",
               "client": "client-2",
               "lead": "tm-1",
-              "decided_on": "@today-40d"
+              "decided_on": "@today-40d",
+              "pricing": "Fixed fee",
+              "problem": "Line changeovers eat a day a week of capacity"
             }
           },
           {
@@ -669,7 +731,9 @@
               "decide_by": "@today-100d",
               "client": "client-1",
               "lead": "tm-2",
-              "decided_on": "@today-100d"
+              "decided_on": "@today-100d",
+              "pricing": "Fixed fee",
+              "problem": "Returns cost more than they recover"
             }
           },
           {
@@ -680,9 +744,11 @@
               "value": 128000,
               "chance": 60,
               "sent_on": "@today-18d",
-              "decide_by": "@today+9d",
+              "decide_by": "@today-3d",
               "client": "client-3",
-              "lead": "tm-1"
+              "lead": "tm-1",
+              "pricing": "Fixed fee",
+              "problem": "Too many depots for the freight we carry"
             }
           },
           {
@@ -693,9 +759,11 @@
               "value": 72000,
               "chance": 35,
               "sent_on": "@today-6d",
-              "decide_by": "@today+14d",
+              "decide_by": "@today+1d",
               "client": "client-6",
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "pricing": "Time and materials",
+              "problem": "Service desk tickets wait days for an owner"
             }
           },
           {
@@ -707,7 +775,9 @@
               "chance": 20,
               "decide_by": "@today+21d",
               "client": "client-5",
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "pricing": "Fixed fee",
+              "problem": "Store teams do the same tasks in different ways"
             }
           },
           {
@@ -721,7 +791,9 @@
               "decide_by": "@today-170d",
               "client": "client-4",
               "lead": "tm-1",
-              "decided_on": "@today-170d"
+              "decided_on": "@today-170d",
+              "pricing": "Fixed fee",
+              "problem": "Applicants drop out between offer and enrollment"
             }
           },
           {
@@ -734,7 +806,9 @@
               "sent_on": "@today-4d",
               "decide_by": "@mon+4d",
               "client": "client-1",
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "pricing": "Retainer",
+              "problem": "Leadership wants a steady quarterly view of the business"
             }
           },
           {
@@ -746,7 +820,9 @@
               "chance": 25,
               "decide_by": "@today+30d",
               "client": "client-2",
-              "lead": "tm-1"
+              "lead": "tm-1",
+              "pricing": "Fixed fee",
+              "problem": "Too many suppliers for the same parts"
             }
           }
         ]
@@ -801,6 +877,23 @@
             }
           },
           {
+            "key": "health",
+            "label": "Health",
+            "parityType": "select",
+            "choices": [
+              "On track",
+              "At risk",
+              "Off track"
+            ],
+            "choiceColors": {
+              "On track": "blue",
+              "At risk": "green",
+              "Off track": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "fee",
             "label": "Fee (USD)",
             "parityType": "currency",
@@ -818,6 +911,25 @@
                 "value": 2000000
               }
             ]
+          },
+          {
+            "key": "day_rate",
+            "label": "Day rate sold",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ],
+            "contextPolicy": "include"
           },
           {
             "key": "days_sold",
@@ -861,6 +973,14 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "IF({Days sold} > 0, ROUND({Days used} / {Days sold} * 100, 0), 0)"
+          },
+          {
+            "key": "fee_per_day",
+            "label": "Fee earned per day used",
+            "parityType": "formula",
+            "formula": "IF({Days used} > 0, ROUND({Fee (USD)} / {Days used}, 0), 0)",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
           },
           {
             "key": "starts_on",
@@ -908,6 +1028,23 @@
             "filter": {
               "status": "Delivered"
             }
+          },
+          {
+            "key": "deliv_open",
+            "label": "Deliverables not delivered",
+            "parityType": "rollup",
+            "via": "deliverables",
+            "pick": "deliverable_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Delivered"
+                ]
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "client",
@@ -1070,10 +1207,12 @@
               "fee": 96000,
               "days_sold": 48,
               "starts_on": "@today-35d",
-              "ends_on": "@today+55d",
+              "ends_on": "@today-3d",
               "client": "client-2",
               "lead": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "day_rate": 2400,
+              "health": "Off track"
             }
           },
           {
@@ -1084,9 +1223,11 @@
               "fee": 54000,
               "days_sold": 30,
               "starts_on": "@today-80d",
-              "ends_on": "@today+6d",
+              "ends_on": "@today",
               "client": "client-1",
-              "lead": "tm-3"
+              "lead": "tm-3",
+              "day_rate": 2250,
+              "health": "At risk"
             }
           },
           {
@@ -1100,7 +1241,9 @@
               "ends_on": "@today+40d",
               "client": "client-3",
               "lead": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "day_rate": 2400,
+              "health": "On track"
             }
           },
           {
@@ -1113,7 +1256,9 @@
               "starts_on": "@today+3d",
               "ends_on": "@today+20d",
               "client": "client-3",
-              "lead": "tm-1"
+              "lead": "tm-1",
+              "day_rate": 3000,
+              "health": "On track"
             }
           },
           {
@@ -1128,7 +1273,8 @@
               "client": "client-4",
               "lead": "tm-2",
               "owner_me": "@installer",
-              "closed_on": "@today-230d"
+              "closed_on": "@today-230d",
+              "day_rate": 2050
             }
           }
         ]
@@ -1181,6 +1327,13 @@
               "Partner review": "in_progress",
               "Delivered": "done"
             }
+          },
+          {
+            "key": "signed_off",
+            "label": "Sponsor signed off",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "due_on",
@@ -1350,7 +1503,8 @@
               "engagement": "engagement-1",
               "owner": "tm-3",
               "owner_me": "@installer",
-              "delivered_on": "@today-14d"
+              "delivered_on": "@today-14d",
+              "signed_off": true
             }
           },
           {
@@ -1360,7 +1514,8 @@
               "status": "Partner review",
               "due_on": "@today+2d",
               "engagement": "engagement-1",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "signed_off": false
             }
           },
           {
@@ -1371,7 +1526,8 @@
               "due_on": "@today+12d",
               "engagement": "engagement-1",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "signed_off": false
             }
           },
           {
@@ -1381,7 +1537,8 @@
               "status": "To do",
               "due_on": "@today+30d",
               "engagement": "engagement-1",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "signed_off": false
             }
           },
           {
@@ -1393,7 +1550,8 @@
               "engagement": "engagement-2",
               "owner": "tm-3",
               "owner_me": "@installer",
-              "delivered_on": "@today-20d"
+              "delivered_on": "@today-20d",
+              "signed_off": true
             }
           },
           {
@@ -1403,7 +1561,8 @@
               "status": "Drafting",
               "due_on": "@mon+2d",
               "engagement": "engagement-2",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "signed_off": false
             }
           },
           {
@@ -1414,7 +1573,8 @@
               "due_on": "@today+5d",
               "engagement": "engagement-3",
               "owner": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "signed_off": false
             }
           },
           {
@@ -1424,7 +1584,8 @@
               "status": "To do",
               "due_on": "@today+25d",
               "engagement": "engagement-3",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "signed_off": false
             }
           },
           {
@@ -1435,7 +1596,8 @@
               "due_on": "@today-1d",
               "engagement": "engagement-3",
               "owner": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "signed_off": false
             }
           },
           {
@@ -1445,7 +1607,8 @@
               "status": "To do",
               "due_on": "@today+10d",
               "engagement": "engagement-4",
-              "owner": "tm-1"
+              "owner": "tm-1",
+              "signed_off": false
             }
           }
         ],
@@ -1497,6 +1660,13 @@
                 "value": 1
               }
             ]
+          },
+          {
+            "key": "billable",
+            "label": "Billable",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "engagement",
@@ -1567,10 +1737,11 @@
             "key": "timesheet-1",
             "values": {
               "entry": "Plant interviews, line one",
-              "worked_on": "@today-2d",
+              "worked_on": "@today",
               "days": 1,
               "engagement": "engagement-1",
-              "person": "tm-2"
+              "person": "tm-2",
+              "billable": true
             }
           },
           {
@@ -1580,7 +1751,8 @@
               "worked_on": "@today-3d",
               "days": 1,
               "engagement": "engagement-1",
-              "person": "tm-3"
+              "person": "tm-3",
+              "billable": true
             }
           },
           {
@@ -1590,7 +1762,8 @@
               "worked_on": "@today-1d",
               "days": 0.5,
               "engagement": "engagement-1",
-              "person": "tm-4"
+              "person": "tm-4",
+              "billable": true
             }
           },
           {
@@ -1600,7 +1773,8 @@
               "worked_on": "@today-2d",
               "days": 1,
               "engagement": "engagement-2",
-              "person": "tm-2"
+              "person": "tm-2",
+              "billable": true
             }
           },
           {
@@ -1610,7 +1784,8 @@
               "worked_on": "@today-1d",
               "days": 0.5,
               "engagement": "engagement-2",
-              "person": "tm-1"
+              "person": "tm-1",
+              "billable": true
             }
           },
           {
@@ -1620,7 +1795,8 @@
               "worked_on": "@today-4d",
               "days": 1,
               "engagement": "engagement-3",
-              "person": "tm-4"
+              "person": "tm-4",
+              "billable": true
             }
           },
           {
@@ -1630,7 +1806,8 @@
               "worked_on": "@today-5d",
               "days": 1,
               "engagement": "engagement-3",
-              "person": "tm-3"
+              "person": "tm-3",
+              "billable": true
             }
           },
           {
@@ -1640,7 +1817,8 @@
               "worked_on": "@today-3d",
               "days": 0.25,
               "engagement": "engagement-3",
-              "person": "tm-1"
+              "person": "tm-1",
+              "billable": true
             }
           },
           {
@@ -1650,7 +1828,8 @@
               "worked_on": "@today-1d",
               "days": 1,
               "engagement": "engagement-1",
-              "person": "tm-2"
+              "person": "tm-2",
+              "billable": true
             }
           },
           {
@@ -1660,7 +1839,8 @@
               "worked_on": "@today-6d",
               "days": 0.75,
               "engagement": "engagement-1",
-              "person": "tm-1"
+              "person": "tm-1",
+              "billable": false
             }
           }
         ]
@@ -2327,7 +2507,7 @@
         "Halsey Avenue"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2366,6 +2546,12 @@
                 "width": 0.5
               },
               "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                },
                 {
                   "type": "page",
                   "props": {
@@ -2903,6 +3089,354 @@
       ]
     },
     {
+      "key": "start-here",
+      "parent": "consulting-practice-desk",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This workspace runs a consulting practice: the clients and sponsors you work with, every proposal and its chance of winning, each engagement with the days sold against the days used, the deliverables you promised, and the timesheets behind them. Decks and models stay in your document tools; this is where the practice sees pipeline, delivery and margin together."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One row is"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What you watch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clients"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "An organization you advise"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sponsor, engagements, won value, proposals open, value in play"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Proposals"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One offer to one client"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Stage, value, pricing, chance, weighted value, decide by, the problem in the client's words"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Engagements"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One signed piece of work"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Health, fee, day rate, days sold, days used, days left, burn, deliverables not delivered"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Deliverables"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One thing promised"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Due date, status, sponsor signed off"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Timesheets"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Days on one engagement"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Person, date, billable"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The numbers to watch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Burn (%)",
+              "bold": true
+            },
+            {
+              "text": " compares days used with days sold. Above the share of the timeline passed means the engagement will overrun."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Fee earned per day used",
+              "bold": true
+            },
+            {
+              "text": " falls as days pile up; compare it with the "
+            },
+            {
+              "text": "Day rate sold",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Weighted value",
+              "bold": true
+            },
+            {
+              "text": " on proposals is value times chance; it is the honest pipeline."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter current clients with the sponsor's name."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter open proposals with value, chance and decide-by date, and the problem in the client's own words."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter live engagements with fee, day rate and days sold; add every deliverable with its date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask every consultant to log days weekly, at least to the half day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happens"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Monday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Engagement health: each lead calls On track, At risk or Off track, with a reason"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wednesday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pipeline: proposals due a decision in 14 days"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Timesheets complete; burn checked against plan"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The plant scheduling redesign is past its end date with the pilot plan still to do and burn above plan. The lead marks it Off track and asks the sponsor for a short change order covering the pilot, rather than absorbing the days."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "key": "dashboard",
       "parent": "consulting-practice-desk",
       "title": "Dashboard",
@@ -3334,14 +3868,14 @@
       "parent": "consulting-practice-desk",
       "title": "Writing a proposal",
       "icon": {
-        "emoji": "✍️"
+        "emoji": "🖋️"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "A proposal is a short argument: here is your problem, here is how we will solve it, here is what it costs."
+              "text": "A good proposal is about the client's problem, not your methods. It should read as if you listened carefully, because you did."
             }
           ],
           "background": "blue",
@@ -3353,7 +3887,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Structure"
+              "text": "Before writing"
             }
           ],
           "props": {
@@ -3361,42 +3895,197 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "The problem in the sponsor's words, with the cost of leaving it."
+              "text": "A conversation with the sponsor and at least one person who lives with the problem"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "The approach in three to five phases, each with a deliverable."
+              "text": "The problem written in the client's words in "
+            },
+            {
+              "text": "Problem in the client words",
+              "bold": true
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Who will do the work, with days per person."
+              "text": "What success looks like, as a number or a decision"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Price, payment terms and what is not included."
+              "text": "Budget range and decision date known; "
+            },
+            {
+              "text": "Decide by",
+              "bold": true
+            },
+            {
+              "text": " set"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "heading",
           "text": [
             {
-              "text": "Next step and the date the proposal expires."
+              "text": "The shape"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Section"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it says"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "The situation"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Their problem, in their words, and why now"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "What we will do"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Phases, with what happens in each"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "What you will get"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Each deliverable, named"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Timeline"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Weeks, with key meetings"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Team"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who does the work, by name"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Investment"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Price, pricing basis, and what is not included"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Next step"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One clear action and date"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep it to a few pages. Detail goes in an appendix."
             }
           ]
         },
@@ -3404,7 +4093,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before it goes"
+              "text": "Pricing"
             }
           ],
           "props": {
@@ -3412,48 +4101,164 @@
           }
         },
         {
-          "type": "todo",
+          "type": "bulleted",
           "text": [
             {
-              "text": "A second partner has read it"
+              "text": "Fixed fee",
+              "bold": true
+            },
+            {
+              "text": " for a defined scope; price the days with a buffer for the unknown."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Time and materials",
+              "bold": true
+            },
+            {
+              "text": " when the scope is truly open; give an estimate and a cap."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Retainer",
+              "bold": true
+            },
+            {
+              "text": " for ongoing advice; define what a month includes."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Enter the value, pricing and your honest "
+            },
+            {
+              "text": "Chance",
+              "bold": true
+            },
+            {
+              "text": " of winning."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After sending"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "numbered",
           "text": [
             {
-              "text": "Days sold match the plan, with a buffer"
+              "text": "Set the stage to "
+            },
+            {
+              "text": "Sent",
+              "bold": true
+            },
+            {
+              "text": " with the date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Follow up within a week with a call, not an email."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move to "
+            },
+            {
+              "text": "Negotiating",
+              "bold": true
+            },
+            {
+              "text": " when scope or price is being discussed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark "
+            },
+            {
+              "text": "Won",
+              "bold": true
+            },
+            {
+              "text": " or "
+            },
+            {
+              "text": "Lost",
+              "bold": true
+            },
+            {
+              "text": " with the date, and note why when lost."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "quote",
           "text": [
             {
-              "text": "The sponsor has seen the outline before the full document"
+              "text": "The depot network study for Pellham is past its decide-by date. The partner calls the sponsor, learns the finance director wants a smaller first phase, and sends a revised two-phase proposal the same week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the pipeline"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Decision date and next step are in the proposal row"
+              "text": "Look at the weighted value against the days your team has free over the next quarter. A thin pipeline needs business development now; a crowded one needs a hiring or scheduling decision."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         }
       ]
     },
@@ -3466,10 +4271,22 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The first week of an engagement sets expectations for everything after it. A sharp kickoff saves weeks of misunderstanding."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "In the first week"
+              "text": "Before the kickoff"
             }
           ],
           "props": {
@@ -3480,7 +4297,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Engagement row created with fee, days sold, start and end dates"
+              "text": "Signed agreement with scope, deliverables, fee, day rate and days sold"
             }
           ],
           "props": {
@@ -3491,7 +4308,14 @@
           "type": "todo",
           "text": [
             {
-              "text": "Kickoff meeting held with sponsor, team and key stakeholders"
+              "text": "Engagement added with start and end dates and "
+            },
+            {
+              "text": "Health",
+              "bold": true
+            },
+            {
+              "text": " set to On track"
             }
           ],
           "props": {
@@ -3502,7 +4326,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Interview list agreed and scheduled"
+              "text": "Every deliverable added with a due date and an owner"
             }
           ],
           "props": {
@@ -3513,7 +4337,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Data request sent with a due date"
+              "text": "Data and interview requests sent in one list"
             }
           ],
           "props": {
@@ -3524,7 +4348,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Weekly check-in booked for the length of the work"
+              "text": "Sponsor's calendar holds for the weekly check-in and the final readout"
             }
           ],
           "props": {
@@ -3543,56 +4367,50 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Restate the objective and the three questions the work must answer."
+              "text": "Restate the problem and what success looks like, and ask the sponsor to confirm it."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Agree how decisions will be made and who can say no."
+              "text": "Walk through the plan, phase by phase, and the deliverables with dates."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Confirm how and when the final readout will happen."
+              "text": "Agree how decisions are made and who signs off each deliverable."
             }
           ]
         },
         {
-          "type": "callout",
+          "type": "numbered",
           "text": [
             {
-              "text": "Most engagements that go wrong lost their way in the first two weeks."
+              "text": "Agree the weekly check-in: day, time, length, who attends."
             }
-          ],
-          "background": "blue",
-          "props": {
-            "icon": "Lightbulb"
-          }
-        }
-      ]
-    },
-    {
-      "key": "days-and-margin",
-      "parent": "consulting-practice-desk",
-      "title": "Days sold, days used and margin",
-      "icon": {
-        "emoji": "⚖️"
-      },
-      "blocks": [
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Name the risks you already see, and what you need from the client to manage them."
+            }
+          ]
+        },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Logging"
+              "text": "Week one"
             }
           ],
           "props": {
@@ -3603,7 +4421,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Log days at the end of each day, in quarters of a day."
+              "text": "Interviews booked with the people closest to the work."
             }
           ]
         },
@@ -3611,7 +4429,15 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Use plain descriptions the partner can scan."
+              "text": "Data requests followed up within two days."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A one-page summary of the kickoff sent to everyone who attended."
             }
           ]
         },
@@ -3619,7 +4445,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Reading the engagement row"
+              "text": "Health"
             }
           ],
           "props": {
@@ -3636,17 +4462,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Days used (%)"
+                      "text": "Health"
                     }
                   ],
                   [
                     {
-                      "text": "Reading"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Action"
+                      "text": "Means"
                     }
                   ]
                 ]
@@ -3655,17 +4476,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Under 60"
+                      "text": "On track"
                     }
                   ],
                   [
                     {
-                      "text": "Ahead"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Check quality, not just speed"
+                      "text": "Days and deliverables on plan"
                     }
                   ]
                 ]
@@ -3674,17 +4490,12 @@
                 "cells": [
                   [
                     {
-                      "text": "60 to 85"
+                      "text": "At risk"
                     }
                   ],
                   [
                     {
-                      "text": "On pace"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Check deliverables sent against days used"
+                      "text": "One slipping; a plan exists to recover"
                     }
                   ]
                 ]
@@ -3693,17 +4504,228 @@
                 "cells": [
                   [
                     {
-                      "text": "Over 85"
+                      "text": "Off track"
                     }
                   ],
                   [
                     {
-                      "text": "Tight"
+                      "text": "Will miss dates or days without a change; the sponsor must decide"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Change the health on Monday with a one-line reason."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Scope"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write down anything asked for that is outside the agreement. Discuss it at the weekly check-in: include it in exchange for something else, or add it with a change order."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Pellham leadership offsite starts in three days. The agenda and pre-reads are due in ten, so the lead books interviews with four of the leaders this week to shape the agenda around what they actually disagree about."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly check-in"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Thirty minutes with the sponsor: progress, decisions needed, risks, and days used against plan. A short written summary follows the same day."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "days-and-margin",
+      "parent": "consulting-practice-desk",
+      "title": "Days sold, days used and margin",
+      "icon": {
+        "emoji": "📊"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Consulting margin is won or lost in days. Every engagement is sold as a number of days, and every extra day is paid for by the practice unless it is agreed."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Logging days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Consultants log days weekly, in half days at least, against the engagement."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tick "
+            },
+            {
+              "text": "Billable",
+              "bold": true
+            },
+            {
+              "text": " for work on the engagement; proposal writing and internal work are not billable."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Days used",
+              "bold": true
+            },
+            {
+              "text": " adds the timesheets; "
+            },
+            {
+              "text": "Days left",
+              "bold": true
+            },
+            {
+              "text": " is days sold minus days used."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
                     }
                   ],
                   [
                     {
-                      "text": "Hold a scope conversation with the sponsor"
+                      "text": "Healthy"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Burn (%) against the share of time passed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Burn no higher than time passed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fee earned per day used against day rate sold"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Close to the day rate"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Billable share of each consultant's days"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Most days billable"
                     }
                   ]
                 ]
@@ -3715,7 +4737,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "When days run over"
+              "text": "When burn runs ahead"
             }
           ],
           "props": {
@@ -3726,7 +4748,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Write down the cause: scope, data, rework or sponsor changes."
+              "text": "Find the cause: unclear scope, slow client data, rework, or a hard problem."
             }
           ]
         },
@@ -3734,7 +4756,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Offer the sponsor options: trim, extend, or swap."
+              "text": "Decide: recover inside the remaining days, or talk to the sponsor."
             }
           ]
         },
@@ -3742,7 +4764,98 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Record the decision in the engagement page before more work."
+              "text": "If the sponsor asked for more, agree a change order before doing the work."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Health",
+              "bold": true
+            },
+            {
+              "text": " to At risk or Off track with the reason."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Change orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write them short: what is added, how many days, the price, and the new end date. Signed before the work starts. A change order is a normal business conversation, not a failure."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Utilization"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Across the practice, look each month at billable days against available days for each consultant. Very high utilization for months burns people out; low utilization means the pipeline needs work."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The returns process review is in final readout with burn ahead of plan because the root-cause interviews took longer than planned. The deck is still drafting, so the lead limits the remaining work to the readout and logs the lesson for the next proposal."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pricing the next one"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "After each engagement closes, compare days sold with days used by phase. Use the real numbers to price the next similar proposal."
             }
           ]
         }
@@ -3757,10 +4870,22 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The final readout is where the client decides what the work was worth, and often whether there will be a next engagement. Prepare it like the most important meeting of the engagement, because it is."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Preparing"
+              "text": "Two weeks before"
             }
           ],
           "props": {
@@ -3768,18 +4893,158 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "Send a pre-read two days before; the meeting is for decisions, not for reading."
+              "text": "Readout date and attendees confirmed with the sponsor"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "Rehearse with the lead once, and walk through the hardest question."
+              "text": "Key findings tested one to one with the sponsor and two key stakeholders"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No surprises left: anything difficult has already been discussed in private"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Final recommendations deck drafted; partner review booked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The deck"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Part"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it says"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "The question"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What we were asked, in the client's words"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "The answer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The recommendation in one slide"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "The evidence"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Three to five findings with the data behind them"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "The plan"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do first, second and third, with owners and dates"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "The decision"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What we need the room to decide today"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep the main deck short; put detail in an appendix."
             }
           ]
         },
@@ -3798,7 +5063,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Start with the answer in one slide."
+              "text": "Start with the answer, not the method."
             }
           ]
         },
@@ -3806,7 +5071,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Show the three findings that matter, each with evidence."
+              "text": "Leave half the time for discussion."
             }
           ]
         },
@@ -3814,15 +5079,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Present options and your recommended path with costs and risks."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "End with the decisions you need today and who owns each."
+              "text": "Write down every decision and every open question."
             }
           ]
         },
@@ -3830,7 +5087,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Afterwards"
+              "text": "After the readout"
             }
           ],
           "props": {
@@ -3841,7 +5098,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Send the deck and a one-page summary within a day."
+              "text": "Send the deck, decisions and next steps within two days."
             }
           ]
         },
@@ -3849,7 +5106,21 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Move the engagement to Closed once the last deliverable is accepted."
+              "text": "Mark each deliverable "
+            },
+            {
+              "text": "Delivered",
+              "bold": true
+            },
+            {
+              "text": ", and tick "
+            },
+            {
+              "text": "Sponsor signed off",
+              "bold": true
+            },
+            {
+              "text": " when the sponsor confirms."
             }
           ]
         },
@@ -3857,7 +5128,78 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Ask for a short testimonial and a reference call."
+              "text": "Set the engagement to "
+            },
+            {
+              "text": "Final readout",
+              "bold": true
+            },
+            {
+              "text": ", then "
+            },
+            {
+              "text": "Closed",
+              "bold": true
+            },
+            {
+              "text": " with the date when the last invoice is sent."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Follow-on work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If the plan needs help to carry out, propose it within two weeks while the momentum is there. Add it as a proposal linked to the client."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Close-out review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Within a week of closing, the team spends thirty minutes on what went well, what to change, and how days used compared with days sold. Write the three main lessons on the engagement."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The returns review readout is this week. The lead has walked the sponsor through the root-cause summary in private, so the meeting can focus on approving the first two changes and naming owners."
             }
           ]
         }
