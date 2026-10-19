@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-19T18:07:55.592Z",
+  "generated_at": "2026-10-19T18:22:00.896Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -115,6 +115,18 @@
       "filename": "20261019212000_readspeed_c_a_back_link_reader_predicate_is_asked_once_per_statement.sql",
       "checksum": "14997ce7a25b2ebb18e37e1807fae37674e7261aeb0f54c9be5783c89f63dcf9",
       "applied_at": "2026-10-19 18:07:54.307446+00"
+    },
+    "migrations/campaign/20261019215000_readspeed_f_a_page_sorts_by_a_worked_out_column.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261019215000_readspeed_f_a_page_sorts_by_a_worked_out_column.sql",
+      "checksum": "964ed1b99bc961f4b195bd19bb95cb4ccc581770231ac17d68c1dbe11115d626",
+      "applied_at": "2026-10-19 18:20:41.970228+00"
+    },
+    "migrations/campaign/20261019215500_readspeed_g_the_worked_out_sort_ceiling_is_500.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261019215500_readspeed_g_the_worked_out_sort_ceiling_is_500.sql",
+      "checksum": "8552a265ff7163ce68e2c27b2ba3acb031a267ed816cfdd8ecc1dd891ecb4fca",
+      "applied_at": "2026-10-19 18:21:59.444488+00"
     },
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",

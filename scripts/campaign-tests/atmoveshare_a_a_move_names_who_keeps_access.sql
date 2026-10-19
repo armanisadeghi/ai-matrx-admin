@@ -64,7 +64,7 @@ begin
   select count(*) into v_n from iam.permissions p where p.resource_id = v_t1 and p.granted_to_user_id = c_test and coalesce(p.status,'') <> 'archived';
   if v_n <> 0 then raise exception 'RED: remove access left % live share(s)', v_n; end if;
   perform set_config('role','authenticated', true);
-  if jsonb_array_length(custom.base_move_access_kept(v_home, gen_random_uuid())) <> 0 then
+  if jsonb_array_length(custom.base_move_access_kept(v_home, v_b)) <> 0 then
     raise exception 'RED: after removal someone is still listed';
   end if;
 

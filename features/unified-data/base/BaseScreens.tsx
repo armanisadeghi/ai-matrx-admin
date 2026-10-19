@@ -14,7 +14,7 @@ import { Button, Field, Select } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
@@ -33,10 +33,11 @@ import { planBaseMove, readBaseMoveJob, startBaseMoveJob } from "./baseMoveJob";
 import { GithubImportDialog } from "./GithubImportDialog";
 import { SheetsImportDialog } from "./SheetsImportDialog";
 import {
-  listBases, listSnapshots, readBase, saveBase, saveSnapshot, setSnapshotSchedule, trashSnapshot,
-  type BaseIdentity, type BaseSnapshotRow, type HomeTable,
+  baseMoveAccessKept, baseMoveRemoveAccess, listBases, listSnapshots, readBase, saveBase, saveSnapshot, setSnapshotSchedule, trashSnapshot,
+  type BaseIdentity, type BaseSnapshotRow, type HomeTable, type KeptAccess,
 } from "./baseStore";
 import { useBasePort } from "./useBasePort";
+import { sayError } from "./sayError";
 
 type Client = ReturnType<typeof useRecordsClient>;
 
@@ -46,7 +47,7 @@ async function homeTables(client: Client, organizationId?: string, everyOrganiza
   const orgs = organizationId ? [organizationId] : everyOrganization?.length ? [...everyOrganization] : [undefined];
   const parts = await Promise.all(orgs.map((o) => client.tableList(o ? { organization_id: o } : undefined)));
   const failed = parts.find((r) => !r.ok);
-  if (failed && !failed.ok && parts.every((r) => !r.ok)) throw new Error(failed.error.message);
+  if (failed && !failed.ok && parts.every((r) => !r.ok)) throw Object.assign(new Error(failed.error.message), { code: (failed.error as { code?: string }).code });
   // A snapshot's tables are put away and a copy in progress is the app's: neither is ever part of a base.
   const rows = parts.flatMap((r) => (r.ok ? r.data : [])).filter((t) => t.kept_for !== "snapshot" && t.kept_for !== "copying" && !t.archived_at);
   return rows.map((t) => ({ id: t.id, name: t.name, organization_id: t.organization_id, home_id: t.home_id ?? null, icon: null, color: null }));
@@ -105,7 +106,7 @@ function BasesBody() {
       bases.sort((a, b) => Number(named.has(b.homeId)) - Number(named.has(a.homeId)) || a.name.localeCompare(b.name));
       return { bases };
     } catch (e) {
-      return { error: e instanceof Error ? e.message : "The bases could not be read." };
+      return { error: sayError(e, "The bases could not be read.") };
     }
   }, [client, orgKey]);
   useEffect(() => {
@@ -244,7 +245,7 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
       }
       apply.extras({ pages, automations });
     } catch (e) {
-      apply.error(e instanceof Error ? e.message : "The base could not be read.");
+      apply.error(sayError(e, "The base could not be read."));
     }
   }, [client, homeId, organizationId]);
   useEffect(() => {
@@ -377,7 +378,30 @@ export function MoveBaseDialog({ open, onClose, homeId, name, organizationId, ta
   const [phase, setPhase] = useState<
     { kind: "ask" } | { kind: "moving" } | { kind: "job"; jobId: string; rows: number | null; startedAt: number; seconds: number } | { kind: "refused"; text: string; error: unknown }
   >({ kind: "ask" });
-  const landed = () => {
+  // AT-REVIEWFIX I2: a share travels with the base, so people who are not members of the target keep access. Named before the
+  // person confirms; each can be ticked "Remove their access" (default: keep).
+  // Both are keyed by the chosen workspace, so choosing another one starts from nobody listed and nobody ticked.
+  const [keptFor, setKeptFor] = useState<{ to: string; list: KeptAccess[] }>({ to: "", list: [] });
+  const [removeFor, setRemoveFor] = useState<{ to: string; ids: ReadonlySet<string> }>({ to: "", ids: new Set() });
+  const kept = open && keptFor.to === to ? keptFor.list : [];
+  const remove = removeFor.to === to ? removeFor.ids : new Set<string>();
+  const setRemove = (next: (r: ReadonlySet<string>) => ReadonlySet<string>) => setRemoveFor({ to, ids: next(remove) });
+  useEffect(() => {
+    if (!open || !to) return;
+    let live = true;
+    // A person who may not move the base is told so by the move itself; the list then stays empty.
+    baseMoveAccessKept(homeId, to).then((k) => { if (live) setKeptFor({ to, list: k }); }, () => undefined);
+    return () => { live = false; };
+  }, [open, to, homeId]);
+  const removeTicked = async (): Promise<boolean> => {
+    if (remove.size === 0) return true;
+    try { await baseMoveRemoveAccess(homeId, [...remove]); return true; } catch (e) {
+      setPhase({ kind: "refused", text: `The base moved; access was not removed. ${sayError(e, "Something went wrong.")}`, error: e });
+      return false;
+    }
+  };
+  const landed = async () => {
+    if (!(await removeTicked())) return;
     // The base now answers in the other workspace: reload so its page resolves there.
     router.refresh();
     window.location.assign(`/data/bases/${homeId}`);
@@ -385,19 +409,21 @@ export function MoveBaseDialog({ open, onClose, homeId, name, organizationId, ta
   const go = async () => {
     setPhase({ kind: "moving" });
     let plan: { rows: number | null; job: boolean };
-    try { plan = await planBaseMove(client, tableIds); } catch (e) { setPhase({ kind: "refused", text: e instanceof Error ? e.message : String(e), error: e }); return; }
+    try { plan = await planBaseMove(client, tableIds); } catch (e) { setPhase({ kind: "refused", text: sayError(e, "Something went wrong."), error: e }); return; }
     if (plan.job) {
       // AT-MOVEJOB: above the direct budget the server moves it in one transaction; the dialog follows the job.
       try {
         const jobId = await startBaseMoveJob(organizationId, homeId, to);
         setPhase({ kind: "job", jobId, rows: plan.rows, startedAt: Date.now(), seconds: 0 });
-      } catch (e) { setPhase({ kind: "refused", text: e instanceof Error ? e.message : String(e), error: e }); }
+      } catch (e) { setPhase({ kind: "refused", text: sayError(e, "Something went wrong."), error: e }); }
       return;
     }
     const res = await client.baseMove({ home_id: homeId, to_organization_id: to });
     if (!res.ok) { setPhase({ kind: "refused", text: res.error.message, error: res.error }); return; }
-    landed();
+    await landed();
   };
+  const landedRef = useRef(landed);
+  useEffect(() => { landedRef.current = landed; });
   const jobId = phase.kind === "job" ? phase.jobId : null;
   useEffect(() => {
     if (!jobId) return;
@@ -409,18 +435,18 @@ export function MoveBaseDialog({ open, onClose, homeId, name, organizationId, ta
         const view = await readBaseMoveJob(organizationId, jobId);
         misses = 0;
         if (stop) return;
-        if (view.state === "moved") { stop = true; router.refresh(); window.location.assign(`/data/bases/${homeId}`); return; }
+        if (view.state === "moved") { stop = true; await landedRef.current(); return; }
         if (view.state === "refused") { stop = true; setPhase({ kind: "refused", text: view.message, error: view }); return; }
       } catch (e) {
         misses += 1;
-        if (misses >= 10) { stop = true; setPhase({ kind: "refused", text: e instanceof Error ? e.message : String(e), error: e }); return; }
+        if (misses >= 10) { stop = true; setPhase({ kind: "refused", text: sayError(e, "Something went wrong."), error: e }); return; }
       }
       setPhase((p) => (p.kind === "job" && p.jobId === jobId ? { ...p, seconds: Math.round((Date.now() - p.startedAt) / 1000) } : p));
       if (!stop) timer = setTimeout(() => void tick(), 1000);
     };
     let timer: ReturnType<typeof setTimeout> = setTimeout(() => void tick(), 1000);
     return () => { stop = true; clearTimeout(timer); };
-  }, [jobId, organizationId, router, homeId]);
+  }, [jobId, organizationId]);
   return (
     <Dialog open={open} onOpenChange={(o) => (!o && phase.kind !== "moving" && phase.kind !== "job" ? (setPhase({ kind: "ask" }), onClose()) : undefined)}>
       <DialogContent className="max-w-[min(520px,96vw)] gap-3 p-4" data-base-move-dialog="">
@@ -441,6 +467,28 @@ export function MoveBaseDialog({ open, onClose, homeId, name, organizationId, ta
               </span>
             </label>
             <Words>{`${tableCount} tables, with their records, pages and automations, move together.`}</Words>
+            {kept.length > 0 ? (
+              <div className="flex flex-col gap-1" data-base-move-kept="">
+                <span className="text-sm font-medium">Keeps access</span>
+                <Words>Shared with them, not members of that workspace.</Words>
+                <ul className="divide-y divide-border rounded-md border border-border">
+                  {kept.map((k) => (
+                    <li key={k.user_id} className="flex items-center gap-2 px-2 py-1.5 text-sm" data-base-move-kept-person={k.user_id}>
+                      <span className="min-w-0 flex-1 truncate">{k.name}{k.email ? <span className="text-muted-foreground"> · {k.email}</span> : null}</span>
+                      <label className="flex shrink-0 items-center gap-1 text-xs">
+                        <input
+                          type="checkbox"
+                          checked={remove.has(k.user_id)}
+                          onChange={(e) => setRemove((r) => { const n = new Set(r); if (e.target.checked) n.add(k.user_id); else n.delete(k.user_id); return n; })}
+                          data-base-move-remove={k.user_id}
+                        />
+                        Remove their access
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
             {phase.kind === "refused" ? <div data-base-move-refused=""><ErrorNotice message={phase.text} error={phase.error} size="inline" onRetry={() => void go()} /></div> : null}
             <div className="flex justify-end gap-2"><Button variant="quiet" onClick={onClose}>Cancel</Button><Button variant="primary" disabled={!to} onClick={() => void go()} data-base-move-go="">Move base</Button></div>
           </>
@@ -460,7 +508,7 @@ function DuplicateDialog({ open, onClose, name, tables, organizationId, identity
     const list: BaseTable[] = tables.map((t) => ({ id: t.id, name: t.name }));
     const copyName = `${name} (copy)`;
     const res = await duplicateBase(port, { organizationId, tables: list, withRecords, nameFor: (t) => `${t.name} (copy)`, homeName: copyName, onProgress: (p) => setPhase({ kind: "copying", p }) });
-    if (!res.ok) { setPhase({ kind: "refused", text: `Stopped at ${res.stoppedAt.name}. ${(res.error as { message?: string })?.message ?? ""} ${res.made.length} of ${list.length} tables were copied.` }); return; }
+    if (!res.ok) { setPhase({ kind: "refused", text: `Stopped at ${res.stoppedAt.name}. ${sayError(res.error, "")} ${res.made.length} of ${list.length} tables were copied.` }); return; }
     const first = res.data.tables[0]?.copy.id ?? null;
     // The copy is its own base: the new Home carries the name, icon, color and description of this one.
     const home = res.data.homeId;
@@ -480,7 +528,7 @@ function DuplicateDialog({ open, onClose, name, tables, organizationId, identity
           </>
         ) : null}
         {phase.kind === "copying" ? <Words>{phase.p ? `Copying ${phase.p.tableName} (${phase.p.at} of ${phase.p.of})…` : "Starting the copy…"}</Words> : null}
-        {phase.kind === "refused" ? <Words>{phase.text}</Words> : null}
+        {phase.kind === "refused" ? <div data-base-duplicate-refused=""><ErrorNotice message={phase.text} operation="Duplicate the base" size="inline" /></div> : null}
         {phase.kind === "done" ? (
           <>
             <p className="text-sm" data-base-duplicate-done="">{phase.text}</p>
@@ -535,7 +583,7 @@ function SnapshotsDialog({ open, onClose, homeId, organizationId, name, tables, 
       }
       await saveSnapshot(organizationId, b.id, res.snapshot);
       setLabel(""); await load(b);
-    } catch (e) { setNote(e instanceof Error ? e.message : "The snapshot failed."); } finally { setBusy(null); }
+    } catch (e) { setNote(sayError(e, "The snapshot failed.")); } finally { setBusy(null); }
   };
   const restore = async (s: BaseSnapshotRow) => {
     setBusy("Restoring as a new base…"); setNote(null);
@@ -576,7 +624,7 @@ function SnapshotsDialog({ open, onClose, homeId, organizationId, name, tables, 
             onChange={async (e) => {
               const on = e.target.checked;
               try { const b = base ?? (await onNeedIdentity()); const state = await setSnapshotSchedule(organizationId, b.id, on); setBase({ ...b, snapshot_schedule: state }); setNote(null); }
-              catch (err) { setNote(err instanceof Error ? err.message : "The schedule could not be changed."); }
+              catch (err) { setNote(sayError(err, "The schedule could not be changed.")); }
             }} />
         </label>
         <Words>{`${scheduleOn ? "A snapshot is taken every week." : "Off until you turn it on."} Snapshots you remove stay recoverable for 90 days.`}</Words>

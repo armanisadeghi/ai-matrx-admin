@@ -10,6 +10,8 @@ import { useState } from "react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { postJson } from "@/lib/python-client";
+import { ErrorNotice } from "@ai-matrx/design-system";
+import { sayError } from "./sayError";
 
 export function SheetsImportDialog({ open, onClose, organizationId }: { open: boolean; onClose: () => void; organizationId: string }) {
   const [mode, setMode] = useState<"link" | "account">("link");
@@ -32,7 +34,7 @@ export function SheetsImportDialog({ open, onClose, organizationId }: { open: bo
         if (!data.table_id) throw new Error("The sheet was read but no table was made.");
         setMade({ tableId: data.table_id, rows: data.row_count });
       }
-    } catch (e) { setProblem(e instanceof Error ? e.message : "The sheet could not be brought in."); } finally { setBusy(false); }
+    } catch (e) { setProblem(sayError(e, "The sheet could not be brought in.")); } finally { setBusy(false); }
   };
 
   return (
@@ -59,7 +61,7 @@ export function SheetsImportDialog({ open, onClose, organizationId }: { open: bo
                 <p className="text-xs text-muted-foreground">Pick the sheet in Settings → Connections → Google; its file id lands here.</p>
               </>
             )}
-            {problem ? <p className="text-xs text-destructive" role="alert">{problem}</p> : null}
+            {problem ? <ErrorNotice message={problem} size="inline" /> : null}
             <div className="flex justify-end gap-2">
               <Button variant="quiet" onClick={onClose} disabled={busy}>Cancel</Button>
               <Button variant="primary" disabled={busy || !(mode === "link" ? url.trim() : fileId.trim())} onClick={() => void go()} data-sheets-go="">{busy ? "Bringing it in…" : "Bring it in"}</Button>

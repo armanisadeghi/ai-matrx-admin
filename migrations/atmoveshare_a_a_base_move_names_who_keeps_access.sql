@@ -151,7 +151,7 @@ $function$;
 CREATE OR REPLACE FUNCTION custom._base_share_rows(p_home_id uuid)
  RETURNS TABLE(permission_id uuid, user_id uuid, level public.permission_level, subject_id uuid)
  LANGUAGE sql
- STABLE SECURITY DEFINER
+ STABLE
  SET search_path TO 'pg_catalog'
 AS $function$
   with home as (
@@ -199,6 +199,9 @@ begin
     end if;
     raise;
   end;
+  if not iam.is_org_member(v_me, p_to_organization_id) then
+    raise exception 'You are not a member of that workspace, so the base cannot go there.' using errcode = '42501';
+  end if;
   -- One entry per person who holds a share here and is not a member of the target workspace.
   return coalesce((
     select jsonb_agg(jsonb_build_object(
@@ -216,7 +219,26 @@ begin
       left join auth.users u on u.id = x.user_id), '[]'::jsonb);
 end;
 $function$;
-GRANT EXECUTE ON FUNCTION custom.base_move_access_kept(uuid, uuid) TO authenticated;
+insert into platform.client_callable_door
+  (schema_name, function_name, identity_args, identity_argtypes, reason, declared_by,
+   non_client_lane, signed_in_callers, anonymous_callers, anonymous_purpose, argument_rules)
+values
+  ('custom', 'base_move_access_kept', 'p_home_id uuid, p_to_organization_id uuid', array['uuid'::regtype, 'uuid'::regtype]::oid[],
+   'Lists, for the Move base dialog, the people who keep access to the base through a share and are not members of the target workspace.',
+   'atmoveshare_a_a_base_move_names_who_keeps_access.sql', null, true, false, null,
+   jsonb_build_object('version', 1, 'declared_by', 'atmoveshare_a_a_base_move_names_who_keeps_access.sql',
+     'declared_at', '2026-10-19 lane AT-REVIEWFIX, read from the body and exercised in scripts/campaign-tests/atmoveshare_a_a_move_names_who_keeps_access.sql',
+     'arguments', jsonb_build_object(
+       'p_home_id', jsonb_build_object('type', 'uuid', 'position', 1, 'optional', false, 'entity', 'custom_record',
+         'check', 'the Home must be a live record (42501 otherwise), then custom.assert_client_may_change(the Home) at admin.',
+         'foreign', jsonb_build_object('sqlstate', '42501', 'same_as_invented', true),
+         'verified', 'exercised in scripts/campaign-tests/atmoveshare_a_a_move_names_who_keeps_access.sql, rolled back'),
+       'p_to_organization_id', jsonb_build_object('type', 'uuid', 'position', 2, 'optional', false, 'entity', 'organization',
+         'check', 'the caller must be a member of it (42501 otherwise); it only filters the list.',
+         'foreign', jsonb_build_object('sqlstate', '42501', 'same_as_invented', true),
+         'verified', 'exercised in scripts/campaign-tests/atmoveshare_a_a_move_names_who_keeps_access.sql, rolled back'))))
+on conflict do nothing;
+GRANT EXECUTE ON FUNCTION custom.base_move_access_kept(uuid, uuid) TO authenticated, service_role;
 
 CREATE OR REPLACE FUNCTION custom.base_move_remove_access(p_home_id uuid, p_user_ids uuid[])
  RETURNS jsonb
@@ -258,4 +280,23 @@ begin
                            else format('Removed %s shares.', v_gone) end);
 end;
 $function$;
-GRANT EXECUTE ON FUNCTION custom.base_move_remove_access(uuid, uuid[]) TO authenticated;
+insert into platform.client_callable_door
+  (schema_name, function_name, identity_args, identity_argtypes, reason, declared_by,
+   non_client_lane, signed_in_callers, anonymous_callers, anonymous_purpose, argument_rules)
+values
+  ('custom', 'base_move_remove_access', 'p_home_id uuid, p_user_ids uuid[]', array['uuid'::regtype, 'uuid[]'::regtype]::oid[],
+   'Takes back, after a base move, the shares of the people the person ticked in the Move base dialog (only people who are not members of the workspace the base is in).',
+   'atmoveshare_a_a_base_move_names_who_keeps_access.sql', null, true, false, null,
+   jsonb_build_object('version', 1, 'declared_by', 'atmoveshare_a_a_base_move_names_who_keeps_access.sql',
+     'declared_at', '2026-10-19 lane AT-REVIEWFIX, read from the body and exercised in scripts/campaign-tests/atmoveshare_a_a_move_names_who_keeps_access.sql',
+     'arguments', jsonb_build_object(
+       'p_home_id', jsonb_build_object('type', 'uuid', 'position', 1, 'optional', false, 'entity', 'custom_record',
+         'check', 'the Home must be a live record (42501 otherwise), then custom.assert_client_may_change(the Home) at admin.',
+         'foreign', jsonb_build_object('sqlstate', '42501', 'same_as_invented', true),
+         'verified', 'exercised in scripts/campaign-tests/atmoveshare_a_a_move_names_who_keeps_access.sql, rolled back'),
+       'p_user_ids', jsonb_build_object('type', 'uuid[]', 'position', 2, 'optional', false, 'entity', 'user',
+         'check', 'only shares on this base held by these people AND who are not members of its workspace are removed; an id with no such share removes nothing.',
+         'foreign', jsonb_build_object('sqlstate', '42501', 'same_as_invented', true),
+         'verified', 'exercised in scripts/campaign-tests/atmoveshare_a_a_move_names_who_keeps_access.sql, rolled back'))))
+on conflict do nothing;
+GRANT EXECUTE ON FUNCTION custom.base_move_remove_access(uuid, uuid[]) TO authenticated, service_role;

@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { postJson } from "@/lib/python-client";
+import { sayError } from "./sayError";
 
 interface Repo { full_name: string; visibility: string | null }
 interface RepoList { connected: boolean; remedy: string | null; repositories: Repo[] }
@@ -33,13 +34,13 @@ function GithubImportBody({ open, onClose, organizationId }: { open: boolean; on
     try {
       const { data } = await postJson<RepoList>("/github-sync/repositories", { query: q || null }, { organizationId });
       setList(data); setProblem(null);
-    } catch (e) { setProblem(e instanceof Error ? e.message : "GitHub did not answer."); }
+    } catch (e) { setProblem(sayError(e, "GitHub did not answer.")); }
   }, [organizationId]);
   useEffect(() => {
     let live = true;
     postJson<RepoList>("/github-sync/repositories", { query: null }, { organizationId })
       .then(({ data }) => { if (live) setList(data); })
-      .catch((e: unknown) => { if (live) setProblem(e instanceof Error ? e.message : "GitHub did not answer."); });
+      .catch((e: unknown) => { if (live) setProblem(sayError(e, "GitHub did not answer.")); });
     return () => { live = false; };
   }, [organizationId]);
 
@@ -48,7 +49,7 @@ function GithubImportBody({ open, onClose, organizationId }: { open: boolean; on
     try {
       const { data } = await postJson<Imported>("/github-sync/import", { repository: repo }, { organizationId });
       setDone(data);
-    } catch (e) { setProblem(e instanceof Error ? e.message : "The issues could not be brought in."); } finally { setBusy(null); }
+    } catch (e) { setProblem(sayError(e, "The issues could not be brought in.")); } finally { setBusy(null); }
   };
 
   return (

@@ -14,6 +14,8 @@ import { Progress } from "@/components/ui/progress";
 import { createVaultItem } from "@/features/secrets/vault-service";
 import { postJson, postNdjson } from "@/lib/python-client";
 import { createClient } from "@/utils/supabase/client";
+import { ErrorNotice } from "@ai-matrx/design-system";
+import { sayError } from "./sayError";
 
 interface Token { id: string; name: string }
 interface AirtableBase { id: string; name: string; permission: string }
@@ -46,7 +48,7 @@ export function AirtableImportDialog({ open, onClose, organizationId }: { open: 
     try {
       const { data } = await postJson<{ bases: AirtableBase[] }>("/airtable-import/bases", { credential_item_id: id }, { organizationId });
       setBases(data.bases); setPicked(new Set(data.bases.map((b) => b.id)));
-    } catch (e) { setProblem(e instanceof Error ? e.message : "Airtable did not answer."); } finally { setStep(null); }
+    } catch (e) { setProblem(sayError(e, "Airtable did not answer.")); } finally { setStep(null); }
   };
   const look = async (baseId: string) => {
     if (!item) return;
@@ -56,7 +58,7 @@ export function AirtableImportDialog({ open, onClose, organizationId }: { open: 
       setPreview((p) => ({ ...p, [baseId]: data.tables }));
     } catch (e) {
       setPreview((p) => { const n = { ...p }; delete n[baseId]; return n; });
-      setProblem(e instanceof Error ? e.message : "Airtable did not answer.");
+      setProblem(sayError(e, "Airtable did not answer."));
     }
   };
   const saveToken = async () => {
@@ -64,7 +66,7 @@ export function AirtableImportDialog({ open, onClose, organizationId }: { open: 
       const made = await createVaultItem({ principal: { type: "user" }, display_name: "Airtable token", definition_key: "airtable_pat",
         fields: [{ field_key: "api_key", value: typed.trim(), handling: "revealable", editable: true, inject_into_sandbox: false }] } as Parameters<typeof createVaultItem>[0]);
       setTyped(""); await reload(); await listFor(made.id);
-    } catch (e) { setProblem(e instanceof Error ? e.message : "The token could not be saved."); }
+    } catch (e) { setProblem(sayError(e, "The token could not be saved.")); }
   };
   const run = async () => {
     if (!item) return;
@@ -77,10 +79,10 @@ export function AirtableImportDialog({ open, onClose, organizationId }: { open: 
           setStep(`${String(d.step)} · ${String(d.detail ?? "")}`);
           if (typeof d.done === "number" && typeof d.total === "number" && d.total > 0) setProgress({ done: d.done, total: d.total });
         }
-        else if (d.type === "notion_import.failed") { setProblem(String(d.message)); setStep(null); return; }
+        else if (d.type === "notion_import.failed") { setProblem(sayError(d.message, "The import stopped.")); setStep(null); return; }
         else if (d.type === "notion_import.finished") setReport(d as unknown as Report);
       }
-    } catch (e) { setProblem(e instanceof Error ? e.message : "The import stopped."); } finally { setStep(null); setProgress(null); }
+    } catch (e) { setProblem(sayError(e, "The import stopped.")); } finally { setStep(null); setProgress(null); }
   };
 
   return (
@@ -130,7 +132,7 @@ export function AirtableImportDialog({ open, onClose, organizationId }: { open: 
         )}
         {progress ? <Progress value={Math.min(100, Math.round((progress.done / progress.total) * 100))} data-airtable-progress="" /> : null}
         {step ? <p className="text-xs text-muted-foreground">{step}</p> : null}
-        {problem ? <p className="text-xs text-destructive" role="alert">{problem}</p> : null}
+        {problem ? <ErrorNotice message={problem} size="inline" /> : null}
       </DialogContent>
     </Dialog>
   );

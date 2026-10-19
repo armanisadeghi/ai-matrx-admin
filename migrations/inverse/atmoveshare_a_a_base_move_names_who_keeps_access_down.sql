@@ -1,10 +1,11 @@
 -- INVERSE of atmoveshare_a_a_base_move_names_who_keeps_access.sql: custom.base_move back to its body before (the ladder's refusal), and the two access doors dropped.
 -- chair-step: restores one function body, drops three functions.
--- based-on: custom.base_move(uuid, uuid) PENDING
+-- based-on: custom.base_move(uuid, uuid) 83adee8d116adbe04bd035396d4dca3c2774c8596b9a1ac0c9723aaadbcdbb15
 
 DROP FUNCTION IF EXISTS custom.base_move_remove_access(uuid, uuid[]);
 DROP FUNCTION IF EXISTS custom.base_move_access_kept(uuid, uuid);
 DROP FUNCTION IF EXISTS custom._base_share_rows(uuid);
+delete from platform.client_callable_door where schema_name = 'custom' and function_name in ('base_move_access_kept', 'base_move_remove_access');
 
 CREATE OR REPLACE FUNCTION custom.base_move(p_home_id uuid, p_to_organization_id uuid)
  RETURNS jsonb
