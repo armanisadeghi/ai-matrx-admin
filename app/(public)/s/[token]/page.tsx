@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import { createClient } from "@/utils/supabase/server";
 import { resolveShareToken } from "@/utils/permissions/shareLinks";
+import { withLiveShareContent } from "@/lib/collab/share-live";
 import { resolveShareLensMeta } from "@/features/sharing/lenses/metadata";
 import { GoogleOneTapMount } from "@/features/auth/one-tap/GoogleOneTapMount";
 import { SharedResourceView } from "./SharedResourceView";
@@ -24,6 +25,10 @@ const resolve = cache(async (token: string) => {
   const supabase = await createClient();
   return resolveShareToken(token, supabase as never);
 });
+
+// The page body shows the CURRENT content of a co-edited document or workbook (the room folded to head), not only
+// its last save; link previews and unfurls (generateMetadata, the OG image) keep the last save.
+const resolveLive = cache(async (token: string) => withLiveShareContent(token, await resolve(token)));
 
 export async function generateMetadata({
   params,
@@ -54,7 +59,7 @@ export async function generateMetadata({
 
 export default async function SharedTokenPage({ params }: PageProps) {
   const { token } = await params;
-  const result = await resolve(token);
+  const result = await resolveLive(token);
 
   // A shared SAVED VIEW has its own page; this generic viewer would only show its name.
   if (result.error === "opens_elsewhere" && result.resourceType === "platform_saved_view") {

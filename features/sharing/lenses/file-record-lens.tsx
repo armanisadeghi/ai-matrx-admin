@@ -38,8 +38,8 @@ function Notice({ children }: { children: string }) {
   );
 }
 
-function childrenOf(result: ResolvedShareToken, kind: string): { snapshot?: unknown; too_large?: boolean } | null {
-  const c = result.children as { kind?: string; snapshot?: unknown; too_large?: boolean } | null;
+function childrenOf(result: ResolvedShareToken, kind: string): { snapshot?: unknown; too_large?: boolean; notice?: string } | null {
+  const c = result.children as { kind?: string; snapshot?: unknown; too_large?: boolean; notice?: string } | null;
   return c && c.kind === kind ? c : null;
 }
 
@@ -51,6 +51,7 @@ export function WorkbookShareLens({ result }: ShareLensProps) {
   return (
     <article className="mx-auto w-full max-w-5xl">
       <Heading title={title} description={description} />
+      {content?.notice ? <Notice>{content.notice}</Notice> : null}
       {content?.too_large ? (
         <Notice>This workbook is too large to show here. Open it in AI Matrx.</Notice>
       ) : sheets.length === 0 ? (
@@ -89,6 +90,7 @@ export function DocumentShareLens({ result, token }: ShareLensProps) {
   return (
     <article className="mx-auto w-full max-w-3xl">
       <Heading title={title} description={description} />
+      {content?.notice ? <Notice>{content.notice}</Notice> : null}
       {content?.too_large ? (
         <Notice>This document is too large to show here. Open it in AI Matrx.</Notice>
       ) : markdown ? (

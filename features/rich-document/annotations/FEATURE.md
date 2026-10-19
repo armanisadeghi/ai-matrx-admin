@@ -38,6 +38,7 @@ Adopters: `/markdown-studio` → Annotate (`components/markdown-studio/AnnotateV
 | `suggestion.ts` | accept = splice through the source's save adapter (`review/proposedEdit.ts` → `spliceSave`) |
 | `mentions.ts` | `@[Name](user:<uuid>)`, `@[label](date:YYYY-MM-DD)`, records as RC-B8 wikilinks `[[token:id\|Title]]` |
 | `AnnotationSidecar.tsx`, `AnnotationPanel.tsx`, `MentionComposer.tsx`, `LinkRecordSheet.tsx` | UI |
+| `anchored-comments.ts`, `useAnchoredComments.ts`, `AnchoredCommentRail.tsx` | Docs and Sheets comments (C9): threads on `platform.comments` with `part_anchor` `anchor:<id>`, where the anchor lives IN the content (`@ai-matrx/office` comment-anchors: a Docs custom range, a Sheets anchor resource) and moves with co-edits; the Google-style rail (threads float beside their anchor, stack without overlap; removed anchors listed as "Text removed" / "Cell removed"; Open / Resolved); realtime via `postgres_changes` on `platform.comments`; mentions notify with `?comment=<thread>`. Hosts: `features/documents/components/useDocComments.tsx`, `features/workbooks/components/useSheetComments.tsx` |
 | `documentSource.ts` | an `AnnotationSource` over `content.document` (load, version bodies, splice save with `guardedUpdate`) |
 
 ## Gates and dependencies (read before changing behavior)
@@ -53,6 +54,8 @@ Adopters: `/markdown-studio` → Annotate (`components/markdown-studio/AnnotateV
 `npx jest features/rich-document/annotations` (46 tests incl. `honest-failures`, `cas-base-frozen`; earlier: 35 tests incl. `sidecar-verify-findings.test.tsx`, 7/12 red on the verified code; mutations proven red: first-match resolver, UTF-16 offsets, projection skip/window, gate on, never-orphan). DB forcing suite: aidream `uv run pytest db/tests/test_rcb11_comment_collaboration.py` (clone, rolled back; `RCB11_BEFORE=1` = 9/9 red).
 
 ## Changelog
+
+- 2026-10-19: **Docs and Sheets comments (C9).** Anchors live in the content and follow co-edits; threads in this store; the rail, highlights and cell marks replace Univer's thread-comment presets in both editors (no live snapshot held any).
 
 - 2026-10-11: `reader/AnnotatedReader` + `outline/DocumentOutline` + `agent-snapshot.ts` extracted from the study guide; research adopts them. Highlight/link pairs `document|fc_card|note → research_synthesis|research_analysis|research_document` added to `platform.association_types` (live).
 

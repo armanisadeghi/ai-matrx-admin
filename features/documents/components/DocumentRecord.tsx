@@ -466,7 +466,7 @@ export function DocumentRecord({
         <Search className="mr-2 size-4" />
         Find and replace
       </DropdownMenuItem>
-      <DropdownMenuItem onSelect={() => runEditorCommand("docs.operation.toggle-comment-panel")}>
+      <DropdownMenuItem onSelect={() => runEditorCommand("matrx.operation.toggle-comments")}>
         <MessageSquare className="mr-2 size-4" />
         Comments
       </DropdownMenuItem>

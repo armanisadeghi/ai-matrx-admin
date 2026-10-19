@@ -7,7 +7,7 @@
 import { ICommandService, IResourceLoaderService, IUndoRedoService, IUniverInstanceService, type Univer } from "@univerjs/core";
 import { IDefinedNamesService } from "@univerjs/engine-formula";
 import { SelectionMoveType, SheetsSelectionsService } from "@univerjs/preset-sheets-core";
-import type { AwarenessState, OpSessionIncident } from "@ai-matrx/data/realtime/collab";
+import type { AwarenessState, OpOfflineState, OpSessionIncident } from "@ai-matrx/data/realtime/collab";
 import {
   startWorkbookOtRoom,
   univerSheetsOtPort,
@@ -19,9 +19,11 @@ import {
 } from "@ai-matrx/office/univer/collab";
 
 import { toast } from "@/components/ui/use-toast";
+import { showOfflineNotice } from "@/lib/collab/offlineNotice";
 
 /** What a co-editing notice says, in plain words (our toast). */
 export function showWorkbookCollabNotice(n: SheetsOtNotice): void {
+  if (showOfflineNotice(n, "workbook")) return;
   switch (n.kind) {
     case "rolled_back":
       toast({
@@ -63,6 +65,8 @@ export interface WorkbookOrderedRoomArgs {
   markDirty: () => void;
   readAntiEntropyIntervalMs?: () => Promise<number>;
   onAwareness: (states: Map<number, AwarenessState>) => void;
+  /** C10: the chrome's offline state. */
+  onOffline?: (state: OpOfflineState) => void;
 }
 
 export async function startWorkbookOrderedRoom(a: WorkbookOrderedRoomArgs): Promise<WorkbookOtRoomHandle> {
@@ -112,6 +116,7 @@ export async function startWorkbookOrderedRoom(a: WorkbookOrderedRoomArgs): Prom
     ...(a.readAntiEntropyIntervalMs ? { readAntiEntropyIntervalMs: a.readAntiEntropyIntervalMs } : {}),
     onAwareness: a.onAwareness,
     onNotice: showWorkbookCollabNotice,
+    ...(a.onOffline ? { onOffline: a.onOffline } : {}),
     onIncident: (i: OpSessionIncident) => console.warn(`[workbook] co-editing incident ${i.kind} at rev ${i.rev}`, i.detail ?? ""),
   });
 }

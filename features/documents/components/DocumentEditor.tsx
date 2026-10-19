@@ -81,11 +81,8 @@ import "@univerjs/preset-docs-hyper-link/lib/index.css";
 import { UniverDocsDrawingPreset } from "@univerjs/preset-docs-drawing";
 import docsDrawingEnUS from "@univerjs/preset-docs-drawing/locales/en-US";
 import "@univerjs/preset-docs-drawing/lib/index.css";
-// Free Apache-2.0 docs add-ons: comments (thread state lives in the snapshot's
-// resources) and find & replace. The File menu opens both.
-import { UniverDocsThreadCommentPreset } from "@univerjs/preset-docs-thread-comment";
-import docsCommentEnUS from "@univerjs/preset-docs-thread-comment/locales/en-US";
-import "@univerjs/preset-docs-thread-comment/lib/index.css";
+// Free Apache-2.0 docs add-ons: find & replace. Comments are ours (useDocComments: the anchor is a custom
+// range in the body, the thread lives in platform.comments), never Univer's thread-comment decorations.
 import { UniverDocsTocPlugin } from "@univerjs/docs-toc";
 import { UniverDocsTocUIPlugin } from "@univerjs/docs-toc-ui";
 import docsTocEnUS from "@univerjs/docs-toc-ui/locale/en-US";
@@ -106,6 +103,7 @@ import { useThemeMode } from "@/styles/themes/useThemeMode";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectDisplayName } from "@/lib/redux/selectors/userSelectors";
 import { RemoteDocCarets } from "@/features/documents/components/RemoteDocCarets";
+import { useDocComments } from "@/features/documents/components/useDocComments";
 import { Button } from "@ai-matrx/design-system";
 import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
@@ -138,6 +136,7 @@ import { disposeUniverInstance } from "@ai-matrx/office/univer";
 import { registerUniverFacadeDependencies } from "@ai-matrx/office/univer";
 import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
 import { readCollabOtRooms } from "@/lib/knobs/collabOtRooms";
+import { showOfflineNotice } from "@/lib/collab/offlineNotice";
 import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/data/realtime/collab/react";
 import { documentHistoryToggleInput } from "@ai-matrx/office/univer/history";
 import { DocumentPageReferenceCopyButton } from "@/features/documents/components/DocumentPageReferenceCopyButton";
@@ -161,7 +160,7 @@ import type {
 import type { CommandServiceLike, DocsOtNotice } from "@ai-matrx/office/univer/collab";
 import { getLatestDocumentSnapshot } from "@ai-matrx/office/docs";
 import { DocSelectionManagerService } from "@univerjs/docs";
-import type { AwarenessState } from "@ai-matrx/data/realtime/collab";
+import type { AwarenessState, OpOfflineState } from "@ai-matrx/data/realtime/collab";
 
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -242,6 +241,8 @@ export default function DocumentEditor({
     realtimeManagerRef.current = realtimeManager;
   }, [realtimeManager]);
   const [awareness, setAwareness] = useState<DocumentAwareness | null>(null);
+  /** C10: the ordered room's offline state (unsent edits kept on this device, syncing); null on the relay. */
+  const [collabOffline, setCollabOffline] = useState<OpOfflineState | null>(null);
 
   const [bootState, setBootState] = useState<
     "booting" | "ready" | "load_error"
@@ -286,6 +287,15 @@ export default function DocumentEditor({
   // The body port — published while a document is mounted, withdrawn on
   // teardown. Resolved per call so it never holds a disposed instance.
   const bodyReady = bootState === "ready" && unitId !== null;
+  const canvasWrapperRef = useRef<HTMLDivElement | null>(null);
+  const docComments = useDocComments({
+    univer: univerRef.current,
+    unitId,
+    documentId,
+    ready: bodyReady,
+    editable,
+    wrapperRef: canvasWrapperRef,
+  });
   useEffect(() => {
     if (!onBodyPort || !bodyReady) return undefined;
     const liveDocument = () => {
@@ -435,7 +445,7 @@ export default function DocumentEditor({
         booted = kept;
         setUnitId(kept.unitId);
         setBootState("ready");
-        if (collabRef.current) void startDocumentRoom(model, documentId, selectDisplayName(store.getState()));
+        if (collabRef.current) void startDocumentRoom(model, documentId, selectDisplayName(store.getState()), setCollabOffline);
       } catch (err) {
         kept.host.remove();
         disposeUniverInstance(kept.univer);
@@ -453,7 +463,7 @@ export default function DocumentEditor({
         container.appendChild(host);
         const { univer, univerAPI } = createUniver({
           locale: LocaleType.EN_US,
-          locales: { [LocaleType.EN_US]: merge({}, docsCoreEnUS, docsLinkEnUS, docsDrawingEnUS, docsCommentEnUS, findReplaceEnUS, docsTocEnUS) },
+          locales: { [LocaleType.EN_US]: merge({}, docsCoreEnUS, docsLinkEnUS, docsDrawingEnUS, findReplaceEnUS, docsTocEnUS) },
           theme: defaultTheme,
           darkMode: darkModeRef.current,
           presets: [
@@ -465,7 +475,6 @@ export default function DocumentEditor({
             }),
             UniverDocsHyperLinkPreset(),
             UniverDocsDrawingPreset(),
-            UniverDocsThreadCommentPreset(),
           ],
           plugins: [UniverFindReplacePlugin, UniverDocsFindReplacePlugin, UniverDocsTocPlugin, UniverDocsTocUIPlugin],
         });
@@ -546,7 +555,7 @@ export default function DocumentEditor({
         booted = kept;
         setBootState("ready");
 
-        if (collabRef.current) void startDocumentRoom(model, documentId, selectDisplayName(store.getState()));
+        if (collabRef.current) void startDocumentRoom(model, documentId, selectDisplayName(store.getState()), setCollabOffline);
       } catch (err) {
         if (cancelled) return;
         setLoadError(err instanceof Error ? err.message : String(err));
@@ -838,6 +847,7 @@ export default function DocumentEditor({
             {bootState === "ready" ? (
               <EditorSaveStatus
                 state={saveStatus === "idle" ? "saved" : saveStatus}
+                offline={collabOffline}
                 {...(editable ? { onSaveNow: handleSaveNow } : {})}
               />
             ) : (
@@ -867,8 +877,8 @@ export default function DocumentEditor({
               icon={<History />}
               aria-label="Version history"
               title="Version history"
-              aria-pressed={snapshotHistory.isVisible}
-              className="hidden aria-pressed:bg-accent sm:inline-flex"
+              pressed={snapshotHistory.isVisible}
+              className="hidden sm:inline-flex"
               onClick={snapshotHistory.toggle}
             />
             <ControlButton
@@ -878,7 +888,8 @@ export default function DocumentEditor({
               title="Comments"
               className="hidden sm:inline-flex"
               disabled={bootState !== "ready"}
-              onClick={() => void apiRef.current?.executeCommand("docs.operation.toggle-comment-panel")}
+              pressed={docComments.open}
+              onClick={docComments.toggle}
             />
             {chrome.actions}
           </>
@@ -931,11 +942,13 @@ export default function DocumentEditor({
                   readStyle={() => (apiRef.current as unknown as PageSetupApiLike | null)?.getActiveDocument?.()?.getDocumentDataModel?.()?.getSnapshot().documentStyle as never}
                 />
               ) : null}
-              <div className="relative min-h-0 min-w-0 flex-1">
+              <div ref={canvasWrapperRef} className="relative min-h-0 min-w-0 flex-1">
                 <div ref={containerRef} className="absolute inset-0" />
                 <RemoteDocCarets univer={univerRef.current} unitId={unitId} carets={awareness?.carets ?? NO_CARETS} />
+                {docComments.layer}
               </div>
             </div>
+            {docComments.rail}
           </div>
         </div>
       </EditorDocumentHeader>
@@ -1093,6 +1106,7 @@ function docSelectionPort(univer: Univer) {
 
 /** What a co-editing notice says, in plain words (our toast). */
 function showCollabNotice(n: DocsOtNotice): void {
+  if (showOfflineNotice(n, "document")) return;
   switch (n.kind) {
     case "rolled_back":
       toast({
@@ -1124,7 +1138,12 @@ function showCollabNotice(n: DocsOtNotice): void {
  * `collab.ot_rooms` opens one, otherwise the 0.6 relay. A document already on the ordered log never falls back
  * to the relay (a relay seat's saves would never reach the room); a failed start says so.
  */
-async function startDocumentRoom(model: DocumentModel, documentId: string, displayName: string | null): Promise<void> {
+async function startDocumentRoom(
+  model: DocumentModel,
+  documentId: string,
+  displayName: string | null,
+  onOffline: (state: OpOfflineState) => void,
+): Promise<void> {
   let ordered = false;
   try {
     const { documentUsesOrderedRoom, documentOtFactory } = await import("@ai-matrx/office/univer/collab");
@@ -1150,6 +1169,7 @@ async function startDocumentRoom(model: DocumentModel, documentId: string, displ
         ...(displayName ? { displayName } : {}),
         readAntiEntropyIntervalMs: readCollabAntiEntropyMs,
         onNotice: showCollabNotice,
+        onOffline,
         onIncident: (i) => console.warn(`[document] co-editing incident ${i.kind} at rev ${i.rev}`, i.detail ?? ""),
       }),
     );

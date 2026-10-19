@@ -108,7 +108,8 @@ function CoverBody({ tileId, source, onSource, title, interacting, tier }: ItemB
   const prose = drawn.markdown.trim() ? (
     // The board's one prose renderer (the write-up's), at its content's height, in the BOARD's own colors and
     // body font (TokenScope reads the board's token tables), like the hero above it.
-    <TokenScope>
+    // The board's own ground behind its prose (TokenScope paints it), inset so text never touches its edge.
+    <TokenScope className="rounded-lg px-4 py-3">
       <MarkdownTileBody id={`${tileId}-prose`} text={drawn.markdown} tier={tier} fit />
     </TokenScope>
   ) : null;

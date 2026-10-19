@@ -31,7 +31,8 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
-- _conflicts/2026-10-19-052753/pnpm-lock.yaml.held — LOCAL latest 2026-10-19 05:21; GITHUB latest 2026-10-19 05:06; LOCAL lacks 10 of GITHUB's 71 new lines; GITHUB lacks 10 of LOCAL's 71 new lines; recover: git show bfcb73f210:'pnpm-lock.yaml' / bb72649d47:'pnpm-lock.yaml'
+- _conflicts/2026-10-19-061336/features/documents/components/useDocComments.tsx.held — LOCAL latest 2026-10-19 06:08; GITHUB latest 2026-10-19 06:05; LOCAL lacks 1 of GITHUB's 219 new lines; GITHUB lacks 1 of LOCAL's 219 new lines; recover: git show 6477f7e160:'features/documents/components/useDocComments.tsx' / 3c3c2f5e93:'features/documents/components/useDocComments.tsx' — owner: 9bebd132-b256-460e-938e-501370a8709a, notified 2026-10-19 06:27
+- _conflicts/2026-10-19-061336/features/workbooks/components/useSheetComments.tsx.held — LOCAL latest 2026-10-19 06:08; GITHUB latest 2026-10-19 06:05; LOCAL lacks 1 of GITHUB's 221 new lines; GITHUB lacks 1 of LOCAL's 221 new lines; recover: git show 6477f7e160:'features/workbooks/components/useSheetComments.tsx' / 3c3c2f5e93:'features/workbooks/components/useSheetComments.tsx' — owner: 9bebd132-b256-460e-938e-501370a8709a, notified 2026-10-19 06:27
 
 ## Resolution log
 
@@ -62,3 +63,4 @@ Its files stay as they are.
 - 2026-10-18 15:5x PDT — Claude ship-all (b65610dc) resolved `_conflicts/2026-10-18-151633/pnpm-lock.yaml.held` by keeping the live lockfile: LOCAL had chat 0.8.200 / coding-sessions 0.3.309, GITHUB chat 0.8.199 / coding-sessions 0.3.308; live carries chat 0.8.200 / coding-sessions 0.3.310. Verified `check-matrx-packages.mjs` (33 at npm latest, once each), `check-lockfile-keys.py` exit 0; owner: none needed (lockfile).
 - 2026-10-18 23:5x PDT — Claude ship-all (13304b4d) resolved the 11 `_conflicts/2026-10-18-231917/` spaces template pack holds by keeping live: the REWORK lane (db806665) committed its LOCAL industry rework in cdfcd250dbc (23:26) and 4ddbb70a6a7 (23:43); each live file is byte-identical to the held LOCAL side, which already carried GITHUB's only change (the batch 3/7 date-stamp `version` bumps). Owner: db806665, no action needed.
 - 2026-10-19 00:3x PDT — Claude ship-all (657db786) resolved `_conflicts/2026-10-19-002058/features/spaces/templates/packs/general-contractor-projects.pack.json.held` by keeping live: GITHUB (e36e3390221, REWORK lane db806665, 00:08) is newer and lacks 0 of LOCAL's 521 new lines, so LOCAL (00:06) adds nothing. Owner: db806665, no action needed.
+- 2026-10-19 PDT — Claude ship-all lane resolved `_conflicts/2026-10-19-052753/pnpm-lock.yaml.held` by keeping the live lockfile: every difference is an @ai-matrx version where live is newer (chat 0.8.221, coding-sessions 0.3.337, data 0.29.73, office 0.8.21); no non-Matrx differences. Verified `check-matrx-packages.mjs --duplicates` (33 at npm latest, once each), `pnpm install --frozen-lockfile --lockfile-only` exit 0.

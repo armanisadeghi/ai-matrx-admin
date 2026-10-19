@@ -16,4 +16,9 @@ configureSheetsHost({
     const uploaded = await fileHandler.upload({ kind: "file", file }, { folderPath });
     return { fileId: uploaded.fileId };
   },
+  // "Make a copy" copies what people are typing right now, not only the last save.
+  async readCurrentSnapshot(workbookId) {
+    const { readCurrentWorkbook } = await import("@/lib/collab/current-record");
+    return { snapshot: (await readCurrentWorkbook(workbookId)).snapshot };
+  },
 });

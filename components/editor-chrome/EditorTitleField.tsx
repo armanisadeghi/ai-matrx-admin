@@ -127,12 +127,22 @@ function useOnline(): boolean {
 export function EditorSaveStatus({
   state,
   onSaveNow,
+  offline,
 }: {
   state: EditorSaveState;
   onSaveNow?: () => void;
+  /** The co-editing room's offline state (C10). Null or "online": the ordinary state below. */
+  offline?: "online" | "offline_saved" | "offline_unsaved" | "syncing" | null;
 }) {
   const online = useOnline();
-  const view = !online
+  const collab = offline && offline !== "online" ? offline : null;
+  const view = collab === "offline_saved"
+    ? { Icon: CloudOff, label: "Offline — changes saved on this device", tone: "text-amber-600 dark:text-amber-500" }
+    : collab === "offline_unsaved"
+      ? { Icon: CloudOff, label: "Offline — changes are kept in this tab only", tone: "text-destructive" }
+      : collab === "syncing"
+        ? { Icon: Loader2, label: "Syncing…", tone: "text-muted-foreground animate-spin" }
+        : !online
     ? { Icon: CloudOff, label: "Offline — changes save when you reconnect", tone: "text-amber-600 dark:text-amber-500" }
     : state === "saving"
       ? { Icon: Loader2, label: "Saving…", tone: "text-muted-foreground animate-spin" }
@@ -150,12 +160,14 @@ export function EditorSaveStatus({
       type="button"
       aria-label={view.label}
       title={view.label}
-      data-editor-save-status={online ? state : "offline"}
+      data-editor-save-status={collab ?? (online ? state : "offline")}
       onClick={onSaveNow}
       disabled={!onSaveNow}
       className="flex size-7 shrink-0 items-center justify-center rounded-full hover:bg-accent disabled:hover:bg-transparent"
     >
       <Icon className={cn("size-[18px]", view.tone)} />
+      {/* the status in words, for screen readers: the 28px mark never changes size */}
+      <span role="status" className="sr-only">{collab ? view.label : ""}</span>
     </button>
   );
 }
