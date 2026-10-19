@@ -815,7 +815,7 @@ export function SourcesPage() {
       accessorFn: (r) => captureWords(r),
       filterValue: (r) => captureClientLabel(r),
       filter: "select",
-      width: 170,
+      width: 200,
     },
     {
       id: "created_at",

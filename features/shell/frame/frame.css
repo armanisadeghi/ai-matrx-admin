@@ -131,6 +131,16 @@
   transition-delay: 0s;
 }
 
+/* Drawer menu rows on touch: 44px. A dense Tile locks its min-height to the control-size token
+   (!important in the package's tap-lock layer), so the touch floor of `.matrx-touch-targets`
+   cannot reach it; the frame raises the TOKEN for the drawer's menu list instead (the same
+   mechanism the package's hero button uses). Package gap reported: Tile dense has no touch floor. */
+@media (pointer: coarse), (max-width: 1023px) {
+  [data-matrx-frame] .mf-drawer-layer nav ul {
+    --matrx-control-size: 2.75rem;
+  }
+}
+
 /* App-grid tile glyph: tinted square in the product's hue. */
 [data-matrx-frame] .mf-glyph {
   background: hsl(var(--mf-hue) / 0.14);

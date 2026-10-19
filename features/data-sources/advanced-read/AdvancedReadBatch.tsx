@@ -3,12 +3,11 @@
 import { useState } from "react";
 import { Telescope } from "lucide-react";
 import { Button, Switch } from "@ai-matrx/design-system/controls";
-import { formatPoints } from "@ai-matrx/kit/format";
 
 import { useLibraryOrganizationId } from "../library/hooks";
 import { aboutTime, slowCoverage, type AdvancedAllow, type AdvancedItem } from "./contract";
 import { readEntry, startAdvancedRead, useReadVersion } from "./store";
-import { costText, useAdvancedQuote } from "./useAdvanced";
+import { useAdvancedQuote } from "./useAdvanced";
 
 export interface AdvancedReadBatchProps {
   /** The pages that really failed (e.g. 50 of 300). */
@@ -19,7 +18,7 @@ export interface AdvancedReadBatchProps {
 
 /**
  * "Try all N" — one quote for the whole batch (free, shown before the click), one stream, every page's
- * answer lands on that page. The tally below is the batch's own: read, not read, points spent.
+ * answer lands on that page. The tally below is the batch's own: read, not read.
  */
 export function AdvancedReadBatch({ urls, onItem, className }: AdvancedReadBatchProps) {
   const organizationId = useLibraryOrganizationId();
@@ -39,13 +38,12 @@ export function AdvancedReadBatch({ urls, onItem, className }: AdvancedReadBatch
       const e = readEntry(u);
       if (e?.status === "running") t.running += 1;
       else if (e?.status === "done") {
-        t.points += e.item.points;
         if (e.item.ok) t.read += 1;
         else t.missed += 1;
       } else if (e?.status === "failed") t.missed += 1;
       return t;
     },
-    { read: 0, missed: 0, running: 0, points: 0 },
+    { read: 0, missed: 0, running: 0 },
   );
   const started = tally.read + tally.missed + tally.running > 0;
   if (unique.length === 0) return null;
@@ -61,7 +59,6 @@ export function AdvancedReadBatch({ urls, onItem, className }: AdvancedReadBatch
           icon={<Telescope className="h-3.5 w-3.5" />}
           onClick={go}
           disabled={!organizationId || !quote || tally.running > 0}
-          meta={costText(quote?.pointsUpToTotal) ?? (quote ? "Price unknown" : undefined)}
           data-action="advanced-read-all"
         >
           {tally.running > 0 ? "Reading" : `Try all ${n}`}
@@ -76,7 +73,7 @@ export function AdvancedReadBatch({ urls, onItem, className }: AdvancedReadBatch
       {quote?.limitApplied ? <span className="text-xs text-muted-foreground">First {quote.limitApplied.value} of {quote.limitApplied.requested}</span> : null}
       {started ? (
         <span className="text-xs text-muted-foreground" data-advanced-read-tally="">
-          {tally.read} read · {tally.missed} not read · {formatPoints(tally.points)}
+          {tally.read} read · {tally.missed} not read
           {tally.running > 0 ? ` · ${tally.running} reading` : ""}
         </span>
       ) : null}

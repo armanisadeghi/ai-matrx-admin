@@ -3,7 +3,7 @@
 /**
  * /data/library/unlock — the page unlocker, shown. Recent real blocked addresses (the Block Ledger,
  * read client-direct under RLS; one row per host) and a box for any address. "Try both" runs OUR
- * scraper first (free) and, when it did not read the page, the unlocker (metered), then lays them
+ * scraper first and, when it did not read the page, the unlocker (metered), then lays them
  * side by side with a verdict. A running tally sits on top. Costs are points (dollars only for a seat
  * that sees dollars) through the library's `usePriceText`.
  */
@@ -70,7 +70,7 @@ export function UnlockPage() {
   const [pasted, setPasted] = useState("");
   const price = usePriceText();
   const [unit, setUnit] = useState<{ points: number; usd: number } | null>(null);
-  // The advanced reader's price is quoted before a try once one try has shown it (free when ours reads the page).
+  // The advanced reader's price is quoted before a try once one try has shown it.
   const unitCost = unit ? `Up to ${price({ pointsPerRecord: unit.points, usd_per_record: unit.usd }, 1)}` : null;
 
   const run = useCallback(
@@ -127,7 +127,7 @@ export function UnlockPage() {
                   data-field="unlock-url"
                 />
               </div>
-              <Button type="submit" disabled={!pastedUrl || !organizationId} meta={unitCost ?? "Free if ours works"} data-action="unlock-try-pasted">
+              <Button type="submit" disabled={!pastedUrl || !organizationId} meta={unitCost ?? undefined} data-action="unlock-try-pasted">
                 Try both
               </Button>
             </form>
@@ -165,7 +165,7 @@ function TryRow({ url, reason, attempt, onTry, cost }: { url: string; reason: st
         <span className="min-w-0 flex-1 truncate text-sm" title={url}>
           {url}
         </span>
-        <Button type="button" onClick={() => onTry(url)} disabled={running} meta={attempt ? undefined : (cost ?? "Free if ours works")} data-action="unlock-try">
+        <Button type="button" onClick={() => onTry(url)} disabled={running} meta={attempt ? undefined : (cost ?? undefined)} data-action="unlock-try">
           {running ? "Trying" : attempt ? "Try again" : "Try both"}
         </Button>
       </div>

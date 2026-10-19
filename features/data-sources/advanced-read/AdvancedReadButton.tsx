@@ -9,7 +9,7 @@ import { useLibraryOrganizationId } from "../library/hooks";
 import { aboutTime, parseCoverageList, slowCoverage, type AdvancedAllow, type AdvancedItem } from "./contract";
 import { AdvancedReadResult } from "./AdvancedReadResult";
 import { startAdvancedRead, useReadEntry } from "./store";
-import { costText, useAdvancedQuote } from "./useAdvanced";
+import { useAdvancedQuote } from "./useAdvanced";
 
 export interface AdvancedReadButtonProps {
   /** The page our scraper could not read. */
@@ -69,7 +69,6 @@ export function AdvancedReadButton({ url, coverage, onItem, className }: Advance
           icon={<Telescope className="h-3.5 w-3.5" />}
           onClick={go}
           disabled={!organizationId || !quote}
-          meta={costText(item?.pointsUpTo) ?? (quote ? "Price unknown" : undefined)}
           data-action="advanced-read"
         >
           {entry?.status === "failed" ? "Try again" : "Try advanced reader"}

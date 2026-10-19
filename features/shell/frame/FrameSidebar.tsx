@@ -77,8 +77,6 @@ export function FrameSidebar({
                       title={item.label}
                       selected={active || undefined}
                       selectedStyle="fill"
-                      // A link names the current page; `aria-pressed` is for toggles.
-                      aria-pressed={undefined}
                       aria-current={active ? "page" : undefined}
                       end={
                         item.external ? (
@@ -94,6 +92,8 @@ export function FrameSidebar({
                       }
                     >
                       <a
+                        // Opts the row into the 44px touch floor inside a matrx-touch-targets subtree (the drawer).
+                        data-tap-target=""
                         href={href}
                         target={item.external ? "_blank" : undefined}
                         rel={item.external ? "noopener noreferrer" : undefined}

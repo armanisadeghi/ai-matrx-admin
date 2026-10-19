@@ -67,7 +67,23 @@ the app's own tokens are re-pointed, so controls follow without classes of their
 the `@ai-matrx/shell` package, and the frame-only overrides are deleted. They never get a third
 copy.
 
+## Tests
+
+`features/shell/frame/__tests__/app-frame.test.tsx` (`pnpm test features/shell/frame`) covers:
+the one 44px header in every variant, the star only with `favorite`, "…" always, tabs only with
+tabs, no footer on a phone, the drawer focus contract, the grid's single Tab stop and arrows, and
+medium never showing properties and the companion together.
+
 ## Change log
+
+- 2026-10-18 (round 3):
+  - Header tools are data (`headerTools`, `placeholderHeaderTools`). On a phone, `phone: "show"`
+    tools stay in the header and the rest move into "…".
+  - Drawer rows are 44px on touch, and the drawer is inside `matrx-touch-targets`.
+  - The phone companion is a dialog: the body behind it is inert, and `useModalPanel` gives it
+    the drawer's focus contract.
+  - Medium form adds a footer "Properties" toggle, so the panel is never removed silently.
+  - Tests added.
 
 - 2026-10-18: Medium form (the drawer sidebar; the companion and properties take turns; body min width). Rows and
   crumbs are real links. Phone header controls get the 44px touch ring. The drawer is inert

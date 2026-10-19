@@ -19,7 +19,7 @@ it("a cleaned doc asks with the consequence, and yes proceeds", async () => {
   expect(confirmMock).toHaveBeenCalledWith(
     expect.objectContaining({
       title: "Re-clean this document?",
-      description: "Uses AI credits.",
+      description: "This replaces the current clean text.",
       confirmLabel: "Re-clean",
       cancelLabel: "Cancel",
     }),

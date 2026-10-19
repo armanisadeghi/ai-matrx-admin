@@ -150,7 +150,7 @@ export function ContactCandidatesCard({
     // title names what happens — there is no free-only choice on this button.
     const ok = await confirm({
       title: "Find contact info?",
-      description: `We check free sources first, then paid contact providers. Each paid lookup uses up to ${formatCost(PAID_LOOKUP_MAX_USD, { rate: currentPointsRate(), unit: currentCostUnit() })} from this organization's monthly contact-finding budget. Results are reused for two weeks, so searching again soon is free.`,
+      description: `We check our own sources first, then paid contact providers. Each paid lookup uses up to ${formatCost(PAID_LOOKUP_MAX_USD, { rate: currentPointsRate(), unit: currentCostUnit() })} from this organization's monthly contact-finding budget. Results are reused for two weeks, so searching again soon reuses them.`,
       confirmLabel: "Find contact info",
     });
     if (!ok) return;

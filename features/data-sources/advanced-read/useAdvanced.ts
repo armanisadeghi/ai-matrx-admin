@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { formatPoints } from "@ai-matrx/kit/format";
 
 import { useLibraryOrganizationId } from "../library/hooks";
 import type { AdvancedAllow, Quote } from "./contract";
@@ -21,10 +20,4 @@ export function useAdvancedQuote(urls: readonly string[], allow: AdvancedAllow, 
     retry: false,
     queryFn: () => batchedQuote({ organizationId: organizationId ?? "", urls: key, allow }),
   });
-}
-
-/** "Up to 14 points" — or null when the server named no price. */
-export function costText(pointsUpTo: number | null | undefined): string | null {
-  if (pointsUpTo == null) return null;
-  return pointsUpTo <= 0 ? "Free" : `Up to ${formatPoints(pointsUpTo)}`;
 }

@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "0c07d17678cc";
+export const KIND_REGISTRY_FINGERPRINT = "cfdfd94762df";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -17226,7 +17226,7 @@ export interface BrandIntakeEarlyFactsOffer {
 }
 
 /**
- * Kind `brand_intake.identity_match.offer` (registry v20).
+ * Kind `brand_intake.identity_match.offer` (registry v21).
  */
 export interface BrandIntakeIdentityMatchOffer {
   /**
@@ -17449,6 +17449,10 @@ export interface BrandIntakeIdentityMatchOffer {
   site_key_pages?: {
     items?: WebPageRow[];
     /**
+     * How many pages of this set exist when ``items`` holds only the first few; absent when ``items`` is the whole set.
+     */
+    total?: number | null;
+    /**
      * The registered kind this payload is an instance of.
      */
     __kind?: "web_page_list";
@@ -17523,6 +17527,10 @@ export interface BrandIntakeIdentityMatchOffer {
   site_gate_pages?: {
     items?: WebPageRow[];
     /**
+     * How many pages of this set exist when ``items`` holds only the first few; absent when ``items`` is the whole set.
+     */
+    total?: number | null;
+    /**
      * The registered kind this payload is an instance of.
      */
     __kind?: "web_page_list";
@@ -17532,6 +17540,10 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   site_team_pages?: {
     items?: WebPageRow[];
+    /**
+     * How many pages of this set exist when ``items`` holds only the first few; absent when ``items`` is the whole set.
+     */
+    total?: number | null;
     /**
      * The registered kind this payload is an instance of.
      */
@@ -17691,6 +17703,10 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   site_about_pages?: {
     items?: WebPageRow[];
+    /**
+     * How many pages of this set exist when ``items`` holds only the first few; absent when ``items`` is the whole set.
+     */
+    total?: number | null;
     /**
      * The registered kind this payload is an instance of.
      */
@@ -17902,6 +17918,10 @@ export interface BrandIntakeIdentityMatchOffer {
   site_pricing_pages?: {
     items?: WebPageRow[];
     /**
+     * How many pages of this set exist when ``items`` holds only the first few; absent when ``items`` is the whole set.
+     */
+    total?: number | null;
+    /**
      * The registered kind this payload is an instance of.
      */
     __kind?: "web_page_list";
@@ -17958,6 +17978,10 @@ export interface BrandIntakeIdentityMatchOffer {
   site_gate_offerings?: {
     items?: WebPageRow[];
     /**
+     * How many pages of this set exist when ``items`` holds only the first few; absent when ``items`` is the whole set.
+     */
+    total?: number | null;
+    /**
      * The registered kind this payload is an instance of.
      */
     __kind?: "web_page_list";
@@ -17968,6 +17992,10 @@ export interface BrandIntakeIdentityMatchOffer {
   site_products_pages?: {
     items?: WebPageRow[];
     /**
+     * How many pages of this set exist when ``items`` holds only the first few; absent when ``items`` is the whole set.
+     */
+    total?: number | null;
+    /**
      * The registered kind this payload is an instance of.
      */
     __kind?: "web_page_list";
@@ -17977,6 +18005,10 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   site_services_pages?: {
     items?: WebPageRow[];
+    /**
+     * How many pages of this set exist when ``items`` holds only the first few; absent when ``items`` is the whole set.
+     */
+    total?: number | null;
     /**
      * The registered kind this payload is an instance of.
      */
@@ -18145,6 +18177,10 @@ export interface BrandIntakeIdentityMatchOffer {
    */
   site_locations_pages?: {
     items?: WebPageRow[];
+    /**
+     * How many pages of this set exist when ``items`` holds only the first few; absent when ``items`` is the whole set.
+     */
+    total?: number | null;
     /**
      * The registered kind this payload is an instance of.
      */
@@ -28160,7 +28196,7 @@ export interface FaqItem {
 }
 
 /**
- * Kind `feedback.item_triage.offer` (registry v23).
+ * Kind `feedback.item_triage.offer` (registry v24).
  */
 export interface FeedbackItemTriageOffer {
   /**
@@ -28217,7 +28253,7 @@ export interface FeedbackItemTriageOffer {
    */
   filed_priority: string;
   /**
-   * A few other open feedback items reported from the same page, with a short excerpt and status of each, so a duplicate can be recognised.
+   * A few other open feedback items reported from the same page, with a short excerpt and status of each, so a duplicate can be recognized.
    */
   similar_open_items?: unknown;
   /**
@@ -46520,7 +46556,7 @@ export interface ResearchScrapeCondensationOffer {
 }
 
 /**
- * Kind `research.source_read_candidate.offer` (registry v8).
+ * Kind `research.source_read_candidate.offer` (registry v9).
  */
 export interface ResearchSourceReadCandidateOffer {
   /**
@@ -46528,7 +46564,7 @@ export interface ResearchSourceReadCandidateOffer {
    */
   url: string;
   /**
-   * The search position this source was returned at. Deliberately withheld from the authority judgement itself, because a judge shown the rank launders the search engine's ordering back in as an independent opinion.
+   * The search position this source was returned at. Deliberately withheld from the authority judgment itself, because a judge shown the rank launders the search engine's ordering back in as an independent opinion.
    */
   rank?: number;
   /**
@@ -46540,7 +46576,7 @@ export interface ResearchSourceReadCandidateOffer {
    */
   __kind?: "research.source_read_candidate.offer";
   /**
-   * The registrable host (e.g. nih.gov), for domain-led judgement.
+   * The registrable host (e.g. nih.gov), for domain-led judgment.
    */
   hostname: string;
   /**
@@ -46668,7 +46704,7 @@ export interface ResearchSourceReadCandidateOffer {
    */
   video_engagement_rate?: number;
   /**
-   * How recent this topic needs its evidence to be. When the topic never declared a need, this falls back to the platform's default and is not a real statement of need — a currency judgement made against an undeclared need must answer unknown.
+   * How recent this topic needs its evidence to be. When the topic never declared a need, this falls back to the platform's default and is not a real statement of need — a currency judgment made against an undeclared need must answer unknown.
    */
   topic_freshness_weight?: string;
   /**
@@ -48450,11 +48486,11 @@ export interface ScraperPageAnalysisOffer {
 }
 
 /**
- * Kind `scraper.page_capture.offer` (registry v5).
+ * Kind `scraper.page_capture.offer` (registry v6).
  */
 export interface ScraperPageCaptureOffer {
   /**
-   * rs_source.hostname — the domain, for hosts with known behaviour.
+   * rs_source.hostname — the domain, for hosts with known behavior.
    */
   host: string;
   /**
@@ -48474,7 +48510,7 @@ export interface ScraperPageCaptureOffer {
    */
   source_id: string;
   /**
-   * The first 6,000 characters of the extracted text. Every wall, block, consent overlay and 404 announces itself inside this window; a long article does not need more of itself to be recognised as one.
+   * The first 6,000 characters of the extracted text. Every wall, block, consent overlay and 404 announces itself inside this window; a long article does not need more of itself to be recognized as one.
    */
   text_head?: string;
   /**
@@ -50146,7 +50182,7 @@ export interface SeoPageAnalysisOffer {
 }
 
 /**
- * Kind `seo.page_intent_proposer.offer` (registry v12).
+ * Kind `seo.page_intent_proposer.offer` (registry v13).
  */
 export interface SeoPageIntentProposerOffer {
   /**
@@ -50154,6 +50190,10 @@ export interface SeoPageIntentProposerOffer {
    */
   pages: {
     items?: WebPageRow[];
+    /**
+     * How many pages of this set exist when ``items`` holds only the first few; absent when ``items`` is the whole set.
+     */
+    total?: number | null;
     /**
      * The registered kind this payload is an instance of.
      */
@@ -50170,6 +50210,10 @@ export interface SeoPageIntentProposerOffer {
   roster?: {
     items?: WebPageRow[];
     /**
+     * How many pages of this set exist when ``items`` holds only the first few; absent when ``items`` is the whole set.
+     */
+    total?: number | null;
+    /**
      * The registered kind this payload is an instance of.
      */
     __kind?: "web_page_list";
@@ -50179,6 +50223,10 @@ export interface SeoPageIntentProposerOffer {
    */
   planned?: {
     items?: WebPageRow[];
+    /**
+     * How many pages of this set exist when ``items`` holds only the first few; absent when ``items`` is the whole set.
+     */
+    total?: number | null;
     /**
      * The registered kind this payload is an instance of.
      */
@@ -50283,7 +50331,7 @@ export interface SeoPageKeywordMappingOffer {
 }
 
 /**
- * Kind `seo.page_mapper.offer` (registry v12).
+ * Kind `seo.page_mapper.offer` (registry v13).
  */
 export interface SeoPageMapperOffer {
   /**
@@ -50291,6 +50339,10 @@ export interface SeoPageMapperOffer {
    */
   pages: {
     items?: WebPageRow[];
+    /**
+     * How many pages of this set exist when ``items`` holds only the first few; absent when ``items`` is the whole set.
+     */
+    total?: number | null;
     /**
      * The registered kind this payload is an instance of.
      */
