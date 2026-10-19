@@ -2,8 +2,8 @@
 
 // features/make/gallery/TemplateLivePreview.tsx — lanes CHAIR-GALLERY-2 / -3 (Unified Data System v7), 2026-10-05.
 //
-// THE TEMPLATE, ON THE REAL SCREENS. Arman: people must SEE exactly what they will get. Once the page is
-// in the browser this mounts @ai-matrx/records-ui's TemplatePreview over the template installed into
+// THE TEMPLATE, ON THE REAL SCREENS. Arman: people must SEE exactly what they will get. When the visitor
+// reaches the preview this mounts @ai-matrx/records-ui's TemplatePreview over the template installed into
 // memory (@ai-matrx/records/memory): the canonical table page (grid, board, calendar, timeline, gallery,
 // list; a click opens the record page), the forms on the real FormRunner, the booking pages on this
 // app's own booking page (BookingPicker, the page a stranger's link opens) and the dashboards on the
