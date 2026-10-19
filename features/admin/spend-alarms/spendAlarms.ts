@@ -73,6 +73,12 @@ export type AlarmRefs = Partial<
     | "knob"
     | "conversation_id"
     | "request_id"
+    // A grouped approvals alarm (spend_approvals_expiring / spend_approvals_expired): aidream REF_KEYS.
+    | "approval_ids"
+    | "approval_count"
+    | "expires_on"
+    | "extend_to"
+    | "approvals_list"
     | "scope"
     | "window"
     | "subject_kind"

@@ -315,7 +315,14 @@ export async function fetchSpendApprovals(orgId: string | null): Promise<SpendAp
 export async function decideSpendApproval(
   id: string,
   decision: ApprovalDecision,
-  fields: { note?: string; expectedResult?: string; expectedRunsPerMonth?: number | null; expiresAt?: string | null } = {},
+  fields: {
+    note?: string;
+    expectedResult?: string;
+    expectedRunsPerMonth?: number | null;
+    expiresAt?: string | null;
+    /** Refuse (nothing changes) unless the approval is still in this status: a card acts on what it SHOWED. */
+    expectedStatus?: string;
+  } = {},
 ): Promise<void> {
   const { error } = await supabase.schema("billing").rpc("run_approval_decide", {
     p_id: id,
@@ -324,6 +331,7 @@ export async function decideSpendApproval(
     p_expected_result: fields.expectedResult || undefined,
     p_expected_runs_per_month: fields.expectedRunsPerMonth ?? undefined,
     p_expires_at: fields.expiresAt ?? undefined,
+    p_expected_status: fields.expectedStatus ?? undefined,
   });
   if (error) throw pgErrorToError(error);
   invalidateApprovalStatus();

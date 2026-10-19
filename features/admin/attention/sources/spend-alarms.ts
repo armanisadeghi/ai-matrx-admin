@@ -66,7 +66,10 @@ export interface SpendAlarmDeps {
   ) => Promise<void>;
   decideApproval: (approvalId: string, decision: "approve" | "reject") => Promise<void>;
   /** Moves the expiring temporary approvals out to `expiresAt` (one decision, made by the person who presses it). */
+  /** Extends only approvals still `temporary`; any decided since are left as they are and reported. */
   extendApprovals?: (approvalIds: string[], expiresAt: string) => Promise<void>;
+  /** Approves again (temporarily, until `expiresAt`) only approvals still `rejected` after lapsing. */
+  reapproveApprovals?: (approvalIds: string[], expiresAt: string) => Promise<void>;
   /** Puts back the owner's own approval the volume rule paused (status and expiry as he left them). */
   restoreApproval?: (approvalId: string) => Promise<void>;
   setTaskEnabled: (taskId: string, enabled: boolean) => Promise<void>;
@@ -213,6 +216,24 @@ function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): Attention
         confirmLabel: "Extend",
       },
       run: () => extendApprovals(approvalIds, extendTo),
+    });
+  }
+  if (row.kind === "spend_approvals_expired" && refs.approval_ids && refs.extend_to && deps.reapproveApprovals) {
+    const approvalIds = refs.approval_ids.split(",").filter(Boolean);
+    const extendTo = refs.extend_to;
+    const reapproveApprovals = deps.reapproveApprovals;
+    const count = approvalIds.length;
+    const until = new Date(extendTo).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    out.push({
+      id: "reapprove_approvals",
+      label: "Approve again",
+      variant: "default",
+      confirm: {
+        title: `Approve ${count} approval${count === 1 ? "" : "s"} again until ${until}?`,
+        description: `Approves ${count === 1 ? "it" : `these ${count}`} again until ${until}. Their automated runs resume at their current cost.`,
+        confirmLabel: "Approve again",
+      },
+      run: () => reapproveApprovals(approvalIds, extendTo),
     });
   }
   for (const id of ids) {
