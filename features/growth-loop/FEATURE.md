@@ -1,6 +1,6 @@
 # Growth Loop — the map of the pipeline, and the run object that drives it
 
-**Status:** active · **Tier:** 2 · **Routes:** `/administration/knowledge/growth-loop` (admin
+**Tier:** 2 · **Routes:** `/administration/knowledge/growth-loop` (admin
 map) · `/how-it-works` (public, the long read) · `/loop` (public, above the fold) ·
 `/marketing/brands/[brandId]/sites/[siteId]/growth-loop` (a site's live loop) ·
 `/marketing/growth-loop/[loopRunId]` (canonical deep link, resolves to the site)
@@ -10,19 +10,10 @@ broken. `public/` is the **customer-facing face of that same map**. `run/` is th
 object** — one durable loop for one site, moving through the same twelve stages. They share
 ONE stage vocabulary (`map/loop-map.ts`); no other half ever names a stage of its own.
 
-## What this is
 
-The twelve-stage loop the platform runs on — **research → plan → brief → realize → fill →
-publish → serve → crawl → measure → analyze → suggest → write-back** — rendered as an
-interactive map, with every connection scored on **THE THREE PIPES** (code / human / AI) and
-every open gap registered.
+Cross-repo system-of-record: /Users/armanisadeghi/code/common-docs/systems/marketing/growth-loop/FEATURE.md — read it before touching this feature in ANY repo.
 
-It exists because the pipeline spans three repos and two Supabase projects, so no single
-`FEATURE.md` could show whether it actually connects end to end.
-
-- **Vision (Arman's words, 2026-08-09):** `common-docs/systems/marketing/growth-loop/VISION.md`
-- **System of record:** `common-docs/systems/marketing/growth-loop/FEATURE.md`
-- **Gap campaign + lanes:** `common-docs/projects/growth-loop-gaps/PLAN.md`
+The loop's meaning (the twelve stages, THE THREE PIPES, open gaps, autonomy, settled defaults) lives in that node and its `VISION.md`; gap campaign: `common-docs/projects/growth-loop-gaps/PLAN.md`. This file holds only the code-path rules below.
 
 ## 🚨 `map/loop-map.ts` is the single source of truth
 
@@ -110,6 +101,8 @@ Neither ever restates a stage.
 - **The chips say CAN, never DOES.** The code pipe means "runnable unattended", not "fires by
   itself" — writing it as "it happens automatically" contradicted Publish, whose selling point
   is that nothing goes live unapproved.
+- **Ring geometry is rounded at the source.** Every coordinate in `GrowthLoopRing` goes through its `percent()` helper (3 decimals); raw trigonometry serializes differently on the server and the client and logs a hydration mismatch.
+- **Public header sizing lives in ONE place:** `components/matrx/publicHeaderChrome.ts` (44px touch targets on a phone, the shell's height on a pointer).
 - **What never crosses over:** file paths, `ref`s, gap ids, lanes, repo names, maturity, and the
   words "partial" / "missing".
 - **No React Flow.** A fixed twelve-node ring needs no graph engine, and a pan/zoom canvas is the
@@ -133,105 +126,3 @@ Neither ever restates a stage.
   path builder; adding an unconfigured edge fails loudly instead of falling back to overlapping
   automatic geometry. Clicking a stage traces its immediate incoming and outgoing connections,
   emphasizes the connected stages, and suppresses unrelated paths.
-
-## Change log
-
-- 2026-08-15 — Codex: **`G-MEASURE-SCHEDULE` CLOSED and the Measure code pipe is live.**
-  Live scheduler evidence confirms PageSpeed runs every ten minutes and GA4 runs daily. The
-  Growth Loop no longer rewinds when scheduled PageSpeed pages finish, terminal PSI failures
-  reuse the canonical quarantine classifier, and GA4's remaining Google API-disabled error is
-  reported as provider configuration rather than mislabeled as missing scheduling. Loop history
-  now links the affected page and exposes the existing release RPC as its one-click recovery.
-
-- 2026-08-14 — claude: **second public face at `/loop`** — the above-the-fold version, at
-  Arman's request, beside (not instead of) `/how-it-works`. The ring gained a `glance`
-  variant rather than being forked. Also fixed the **site-wide public header**, which stood
-  at 51px with 44px controls while the app's own shell header is 40px: sizing now lives in
-  ONE place (`components/matrx/publicHeaderChrome.ts`) and is responsive — full 44px touch
-  targets on a phone, the shell's own height on a pointer. Header is 51px -> 43px on every
-  public page. Note for the record: the oversized-looking control at the far right is
-  admin-only and invisible to a signed-out prospect.
-
-- 2026-08-14 — claude: **the public view completed.** The loop is now drawn as a ring
-  (`public/GrowthLoopRing.tsx`) instead of only listed as twelve cards — a prospect sees that it
-  is a cycle, not a checklist. The ring and the cards now share ONE resolved model
-  (`public/stage-cards.ts`). Two honesty defects fixed in `loop-map.ts`: the code-pipe chip said
-  "It happens automatically", which flatly contradicted Publish's own sentence ("nothing becomes
-  public on its own") — the chip now says "It can run on its own" and Publish's copy names both
-  routes. The standing figure's label was narrowed from "already run on their own, with nobody
-  watching" to what the code pipe actually records. This section and the Structure table were
-  added; the public half had shipped on 2026-08-11 undocumented here.
-
-- 2026-08-13 — Codex: completed-stage quality judgments are visible in the loop history.
-  The direct Supabase read folds current `loop_stage_run.outcome.quality` into its matching
-  completion event, merges by event id as the asynchronous score arrives, explains why the
-  output earned its score, and opens the output or its canonical stage surface.
-
-- 2026-08-13 — Codex: **post-brief server recording wired.** Realize, fill,
-  publish, crawl, measure, and analyze now record themselves against their own
-  durable pointers. `cms_page` and `seo_collection_run` are compile-time door
-  obligations. Serve has no aidream event; suggest and actual write-back remain
-  direct client-side producers and are named as such rather than recorded early.
-- 2026-08-13 — Codex: **`G-ORCHESTRATOR-READ` CLOSED.** Canonical RLS now gives stage/event
-  components their parent loop's access, `v_loop_state` is `security_invoker`, anonymous
-  schema access is revoked, and `growth` is safely exposed to PostgREST. Real-user proof: the
-  creator sees 1 run / 3 stages / 7 events; an unrelated non-admin with no target-org
-  membership sees 0 / 0 / 0. Loop state and history now read direct from Supabase; actions
-  remain on aidream.
-- 2026-08-13 — claude: **`G-FINDING-FIX` CLOSED — the write-back half of the loop connects on
-  all three pipes.** AI: `scripts/seed_finding_fixer.py` (aidream) creates the purpose-built
-  system agent `seo_finding_fixer_v1`, seeds + activates its two Content-IR kinds, and pins the
-  slot `seo.finding_fixer`, which is now reachable at `POST /seo/findings/draft-fix`. CODE:
-  `planDeterministicFix` drafts the derivable class with zero model calls and the findings assist
-  producer upgrades those chips to the new `apply_page_meta` action. HUMAN: `FindingFixCard`
-  shows before/after plus risks behind one Apply-as-a-draft button. All three land through the
-  seams that already existed (`updatePageIntent` + `executeCmsPush`), writing draft twins only —
-  nothing publishes and no route moves.
-- 2026-08-13 — claude: **the HUMAN pipe of the run object shipped** (`run/`). A site owner can
-  start their site's loop, see which of the twelve stages it is on, see the blocker in plain
-  English, and continue / skip / pause / re-check it. `G-ORCHESTRATOR` narrowed from
-  `["code","human","ai"]` to `["code","ai"]` — what remains is that no stage service advances
-  the loop on its own and no agent runs a stage. New gap `G-ORCHESTRATOR-READ` records why
-  reads are not direct-to-Supabase and the two security defects that must be fixed before
-  `growth` is exposed to PostgREST.
-- 2026-08-12 — Codex: replaced implicit smooth-step routing with per-connection handles and
-  dedicated rounded outer lanes for both cross-loop feedback paths. Stage selection now traces
-  every direct incoming/outgoing connection and dims unrelated stages and arrows; arrow selection
-  highlights both endpoints. Canvas clicks clear the trace.
-
-- 2026-09-14 — claude: fixed a React hydration-mismatch error that logged on every load of the
-  public `/how-it-works` page. `GrowthLoopRing`'s node and arrow geometry is trigonometric
-  (`50 + 40 * Math.cos(...)`), which lands on values like `29.999999999999982`; the SSR HTML and
-  the hydrated client did not serialise that identically (`left: 30%` vs
-  `left: 29.999999999999982%`). Every coordinate now goes through a `percent()` helper that rounds
-  to 3 decimals at the source, so both halves emit the same string — three decimals of a percentage
-  is far below one device pixel, so nothing moved. Verified: headless Chromium at 1440x1000 and
-  390x844, console clean on `/how-it-works` where it previously errored. Found while adding the
-  differentiator cross-link band to that route (`/why-ai-matrx`, `/how-we-prove-it`,
-  `/the-landscape`), which lives in the route file, not in `GrowthLoopStory` — that component stays
-  generated from the loop map and about the loop.
-- 2026-08-13 — claude: re-audit after an agent proposed dropping `growth.*` as unused. **Root
-  cause found and fixed:** `growth_loop` was the only one of aidream `app.py`'s 138 routers never
-  mounted, so 3,209 rescued lines were unreachable — mounted now (13 routes, `/api/growth-loop/*`).
-  Four gaps closed against live scheduler evidence (`G-PUBLISH-CRAWL` 198 runs/0 failed,
-  `G-RESEARCH-TRIGGER` 394/2, `G-TEMPLATE`, `G-PLAN-STATUS`); the "`pipes.py` is a competing fork"
-  claim retracted as **false** — it is a pure resolver that refuses to execute by design. Doc set
-  collapsed five → four: `HANDOFF.md` deleted (its narrative status is what fed the drop
-  proposal), its durable content folded into the campaign PLAN. Settled decisions (pipe default,
-  1h escalation, explicit loop start) recorded in the system doc so no agent re-asks them.
-- 2026-08-12 — claude: full verification audit (five parallel auditors + live DB + deployment
-  checks) after the first chip wave. Corrected all 20 gap entries against SHIPPED code rather than
-  docs or commit messages, and added **rule 1b** to `loop-map.ts`: _"live" means SHIPPED_ — code in
-  a working tree is `in-progress`, never `live`. That rule exists because its absence let ~10 gaps
-  sit fully built on one laptop (several with their migrations already applied to the live
-  database) while the map showed no movement. Closed and evidenced: sitemap/robots (live-verified
-  200), server-rendered collections, the findings→assists ledger producer. Still true at audit
-  time: the growth-loop router is unmounted, the pipe primitive's AI leg is unwired and forked, the
-  human-escalation sweeper has no caller, and aidream's deployed server is 13 commits behind so
-  publish→crawl, templates, research triggers and GA4 are committed but not running.
-
-- 2026-08-11 — Codex: corrected the Measure pipe and `G-MEASURE-SCHEDULE` after PageSpeed gained a live resumable ten-minute coverage scheduler; the remaining scheduling gap is GA4 only.
-- 2026-08-09 — claude: feature created. Loop mapped from live code by six parallel explorers
-  (research, content-plan, CMS, crawler/SEO, suggestions/write-back, workflow substrate);
-  `loop-map.ts` seeded with 12 stages, 14 connections, 20 gaps, 6 lanes; React Flow map shipped
-  and browser-verified at `/administration/knowledge/growth-loop`.
