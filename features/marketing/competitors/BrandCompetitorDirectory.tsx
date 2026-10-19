@@ -114,7 +114,7 @@ function RowSocialActions({ row, brand }: { row: BrandCompetitor; brand: { id: s
         <Button
           variant="outline"
           disabled={busy}
-          title="Free: reads their website"
+          title="Reads their website"
           icon={found?.status === "finding" ? <Loader2 className="animate-spin" /> : <Search />}
           onClick={async () => {
             // A failure is told in a toast and in the competitor's detail panel, never inside this cell (it would push the row).
@@ -766,7 +766,7 @@ function AddCompetitorDialog({
                 disabled={!cleanDomain || finding}
                 onClick={() => void findSocials()}
               >
-                Find their socials · Free
+                Find their socials
               </Button>
             </div>
             {!firstSiteId && cleanDomain ? (

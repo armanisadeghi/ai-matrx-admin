@@ -81,7 +81,7 @@ export function AgentViewDialog({
                 {maxBytes !== null ? ` of ${formatCount(maxBytes)}` : ""} bytes
               </Badge>
             ) : null}
-            {envelope ? <Badge>{envelope.cost?.class === "free" ? "Free" : "Paid"}</Badge> : null}
+            {envelope && envelope.cost?.class !== "free" ? <Badge>Paid</Badge> : null}
             <span className="flex-1" />
             <Tabs<View>
               variant="capsule"
