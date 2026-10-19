@@ -28,6 +28,7 @@ import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReconnectAction } from "./reconnect-action";
+import { NEEDS_EDIT_ACCESS } from "@/features/unified-data/needsEditAccess";
 /** How many runs the history shows: the `spaces.automation_runs_shown` knob (admin → org → person). */
 const RUNS_KNOB = { feature: "spaces", key: "automation_runs_shown" } as const;
 
@@ -541,7 +542,7 @@ export function AutomationsPanel({ words = "spaces", ...rest }: { tableId: strin
 export function automationSwitchReason(rights: { known: boolean; level: unknown; organise: boolean }): string | null {
   if (!rights.known) return "Checking your access…";
   if (rights.organise) return null;
-  return rights.level === null ? "You don't have access" : "Needs Edit access";
+  return rights.level === null ? "You don't have access" : NEEDS_EDIT_ACCESS;
 }
 
 function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: string; organizationId: string | null; fields: Field[] }) {
