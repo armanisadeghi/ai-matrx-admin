@@ -43,14 +43,14 @@ function EditRow({ edit, result, index }: { edit: MemoryEdit; result: MemoryEdit
           </Button>
         ) : null}
       </div>
-      {edit.why ? <span className="type-caption text-muted-foreground">{edit.why}</span> : null}
+      {edit.why ? <span className="type-secondary text-muted-foreground">{edit.why}</span> : null}
       {result && !result.ok && result.error ? (
-        <span className="type-caption text-destructive">{result.error}</span>
+        <span className="type-secondary text-destructive">{result.error}</span>
       ) : null}
       {edit.evidence.length > 0 ? (
         <ul className="flex flex-col gap-0.5">
           {edit.evidence.map((e, i) => (
-            <li key={`${index}-${i}`} className="type-caption text-muted-foreground">
+            <li key={`${index}-${i}`} className="type-secondary text-muted-foreground">
               {e.position !== null ? `#${e.position} ` : ""}“{e.quote}”
             </li>
           ))}
@@ -90,7 +90,7 @@ export function StepCard({
           {step.seq}. {ROLE_LABEL[step.role]}
         </span>
         <Badge tone={STATUS_TONE[step.status]}>{STATUS_LABEL[step.status]}</Badge>
-        <span className="type-caption text-muted-foreground">{new Date(step.createdAt).toLocaleString()}</span>
+        <span className="type-secondary text-muted-foreground">{new Date(step.createdAt).toLocaleString()}</span>
         <span className="flex-1" />
         {step.provisionSnapshotIds.map((id, i) => (
           <Button
@@ -135,7 +135,7 @@ export function StepCard({
         ) : null}
       </div>
       {step.requestText ? <PropertyRow label="Asked" value={step.requestText} /> : null}
-      {step.error ? <span className="type-caption text-destructive">{step.error}</span> : null}
+      {step.error ? <span className="type-secondary text-destructive">{step.error}</span> : null}
       {step.nothingBecause ? (
         <PropertyRow label="Nothing to remember because" value={step.nothingBecause} />
       ) : null}
@@ -152,7 +152,7 @@ export function StepCard({
           {step.questions.map((q, i) => (
             <span key={i} className="type-body text-foreground">
               {q.question}
-              {q.path ? <span className="type-caption text-muted-foreground"> · {q.path}</span> : null}
+              {q.path ? <span className="type-secondary text-muted-foreground"> · {q.path}</span> : null}
             </span>
           ))}
         </div>

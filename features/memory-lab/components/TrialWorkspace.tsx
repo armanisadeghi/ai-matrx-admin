@@ -211,7 +211,7 @@ export function TrialWorkspace({ trialId }: { trialId: string }) {
               {phase ? (
                 <div className="flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2" aria-live="polite">
                   <span className="type-label text-foreground">{ROLE_LABEL[phase.role]}</span>
-                  <span className="type-caption text-muted-foreground">
+                  <span className="type-secondary text-muted-foreground">
                     {STAGE_LABEL[phase.stage]}
                     {phase.batch ? ` · ${phase.batch.at} of ${phase.batch.of}` : ""}
                   </span>

@@ -13,6 +13,8 @@
  *                            shadow, type, border, color). Placement classes (margin, flex/grid
  *                            placement, position, width-full, truncate…) are allowed.
  *   arbitrary-text-size      `text-[11px]` / `text-[0.8rem]` — an off-scale type size.
+ *   unknown-type-style       `type-caption` — a type-* class no stylesheet defines, so the text silently
+ *                            renders at the inherited size (the six styles plus the marketing ones are real).
  *   faded-text-colour        `text-muted-foreground/60`, `text-foreground/[0.6]`, `text-card-foreground/70` — an
  *                            opacity-mixed text gray (STYLE-GUIDE: three text states only). bg-/border- opacity is out of scope.
  *   faded-opacity            `opacity-50`, `disabled:opacity-50`, `opacity-[0.6]` — a fractional opacity class
@@ -108,6 +110,10 @@ export const RULES = {
   "arbitrary-text-size": {
     title: "off-scale arbitrary text size",
     fix: "Use a type-* style (type-title 13/500, type-body 13, type-secondary 12, type-meta 11, type-label 11 gray over type-value 14 black for read-only data), never text-[Npx]. The style guide: common-docs/systems/platform/ui-shell/STYLE-GUIDE.md.",
+  },
+  "unknown-type-style": {
+    title: "type-* style that does not exist",
+    fix: "Only these text styles exist: type-title, type-body, type-secondary, type-meta, type-label, type-value (plus type-display, type-heading, type-lead on marketing pages). Any other type-* name renders at the inherited size. STYLE-GUIDE \"Type\".",
   },
   "faded-text-colour": {
     title: "opacity-mixed text gray",
@@ -244,6 +250,9 @@ const PALETTE = "slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|gree
 const RAW_COLOR = new RegExp(`^(bg|text|border(-[trblxyse])?|ring|ring-offset|fill|stroke|from|to|via|outline|divide|decoration|placeholder|caret|accent|shadow)-((${PALETTE})-\\d{2,3}|black|white)(\\/\\[?[\\d.]+\\]?)?$`);
 const HEX_CLASS = /\[#[0-9a-fA-F]{3,8}\]/;
 const ARBITRARY_TEXT = /^text-\[\d+(\.\d+)?(px|rem|em)\]$/;
+/** Every type-* style a stylesheet defines (app/globals.css + @ai-matrx/design-system); any other name is unstyled. */
+const KNOWN_TYPE_STYLES = new Set(["title", "body", "secondary", "meta", "label", "value", "display", "heading", "lead"]);
+const UNKNOWN_TYPE_STYLE = (base) => /^type-[a-z][a-z-]*$/.test(base) && !KNOWN_TYPE_STYLES.has(base.slice(5));
 const FADED_TEXT = /^text-(muted-foreground|foreground|card-foreground|popover-foreground|accent-foreground|secondary-foreground|disabled-foreground)\/(\d+(\.\d+)?|\[[^\]]+\])$/;
 const FADED_OPACITY = /^opacity-(?!0$|100$)(\d{1,2}|\[[^\]]+\])$/;
 const SECONDARY_ACCENT = /^(from|via|to|border(-[trblxyse])?|ring|text)-secondary(\/(\d+(\.\d+)?|\[[^\]]+\]))?$/;
@@ -398,6 +407,8 @@ export function scanSource(file, text) {
     if (raw.length) add("raw-color", node, `${label} ${[...new Set(raw)].sort().join(" ")}`);
     const text = toks.filter((t) => ARBITRARY_TEXT.test(stripVariants(t).base));
     if (text.length) add("arbitrary-text-size", node, `${label} ${[...new Set(text)].sort().join(" ")}`);
+    const unknownType = toks.filter((t) => UNKNOWN_TYPE_STYLE(stripVariants(t).base));
+    if (unknownType.length) add("unknown-type-style", node, `${label} ${[...new Set(unknownType)].sort().join(" ")}`);
     const faded = toks.filter((t) => FADED_TEXT.test(stripVariants(t).base));
     if (faded.length) add("faded-text-colour", node, `${label} ${[...new Set(faded)].sort().join(" ")}`);
     const fadedBox = toks.filter((t) => FADED_OPACITY.test(stripVariants(t).base));
@@ -722,6 +733,7 @@ export function Bad() {
     <Card>
       <Button className="h-7 text-xs">Save</Button>
       <span className="text-[11px]">meta</span>
+      <small className="type-caption text-muted-foreground">caption</small>
       <span className="bg-blue-500 text-white">tag</span>
       <i className="animate-spin" />
       <button className="rounded-md px-2">raw</button>
@@ -784,6 +796,7 @@ export function Good() {
 const PLANTED_SITES = [
   "primitive-visual-class :: <Button> h-7 text-xs",
   "arbitrary-text-size :: <span> text-[11px]",
+  "unknown-type-style :: <small> type-caption",
   "raw-color :: <span> bg-blue-500 text-white",
   "spinner-outside-spinner :: <i>",
   "styled-raw-button :: <button> px-2 rounded-md",
@@ -878,7 +891,7 @@ export function selfTest() {
   const same = judge(groupSites(scanSource("a.tsx", PLANTED)), { counts }, () => before);
   if (same.some((j) => j.status !== "known")) problems.push("an unchanged file read as new against its own counts");
   const grown = judge(groupSites(after), { counts }, () => before).filter((j) => j.status === "new");
-  if (grown.length !== 1 || grown[0].key !== "arbitrary-text-size|a.tsx" || grown[0].fresh.length !== 1 || grown[0].fresh[0].line !== 15) {
+  if (grown.length !== 1 || grown[0].key !== "arbitrary-text-size|a.tsx" || grown[0].fresh.length !== 1 || grown[0].fresh[0].line !== 16) {
     problems.push(`a grown count did not name exactly its one new site: ${JSON.stringify(grown.map((g) => [g.key, g.fresh.map((f) => f.line)]))}`);
   }
   const shrunk = judge(groupSites(after.filter((x) => x.rule !== "raw-color")), { counts }, () => before);

@@ -308,7 +308,6 @@ type ConversationRow = {
   id: string;
   title: string | null;
   created_at: string;
-  message_count: number;
   initial_agent_id: string | null;
 };
 
@@ -318,7 +317,7 @@ export async function listPersonConversations(personId: string): Promise<Candida
     ({ from, to }) =>
       chat()
         .from("conversation")
-        .select("id, title, created_at, message_count, initial_agent_id", { count: "exact" })
+        .select("id, title, created_at, initial_agent_id", { count: "exact" })
         .eq("created_by", personId)
         .eq("conversation_type", "standard")
         .is("deleted_at", null)
@@ -334,7 +333,6 @@ export async function listPersonConversations(personId: string): Promise<Candida
       id: r.id,
       title: r.title,
       createdAt: r.created_at,
-      messageCount: r.message_count,
       agentId: r.initial_agent_id,
       agentName: agent?.name ?? null,
       agentType: agent?.agentType ?? null,

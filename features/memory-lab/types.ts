@@ -150,7 +150,6 @@ export interface CandidateConversation {
   id: string;
   title: string | null;
   createdAt: string;
-  messageCount: number;
   agentId: string | null;
   agentName: string | null;
   agentType: string | null;

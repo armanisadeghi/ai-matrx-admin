@@ -14,8 +14,13 @@ import { createClient } from "@/utils/supabase/server";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { launchpadTable, visibleLaunchpadRows } from "../launchpad.typed-table";
 
-/** How long the server waits for the launchpads before letting the browser read them. */
-const SERVER_READ_DEADLINE_MS = 2500;
+/**
+ * How long the server waits for the launchpads before letting the browser read them. loading.tsx has already
+ * streamed the skeleton, so the wait is invisible; the browser's own read lands ~12 s into a cold load. A cold
+ * function instance spends ~1.5–2 s on its first sign-in check alone, so 2.5 s missed on every cold start live
+ * (2026-10-19: "passed 2500 ms" on the first request of each new instance).
+ */
+const SERVER_READ_DEADLINE_MS = 6000;
 
 /** One of the person's own launchpads, as the server read it (`doc` is the stored JSON text). */
 export interface ServerLaunchpad {

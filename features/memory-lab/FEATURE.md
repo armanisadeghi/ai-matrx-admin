@@ -38,5 +38,6 @@ A **trial** (`chat.memory_trial`) replays one person's historic chat conversatio
 
 ## Change Log
 
+- 2026-10-19 — Live walk fixes: the conversation list draws 100 rows at a time (a person can hold thousands); no message count (the stored counter is stale on some chats); text styles fixed (type-caption never existed).
 - 2026-10-19 — subject_label / pending_runs moved off metadata onto columns; binding options before capture; archived trials read-only; runner compiles under the React Compiler (no try…finally).
 - 2026-10-19 — Created (memory v1 §4): trial list, workspace, runner, step timeline, store view.

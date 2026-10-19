@@ -60,7 +60,7 @@ export function MemoryFilesPanel({
           </ul>
           {shownPath ? (
             <div className="flex min-h-0 flex-1 flex-col rounded-md border border-border bg-card">
-              <div className="border-b border-border px-2 py-1 type-caption font-mono text-muted-foreground">
+              <div className="border-b border-border px-2 py-1 type-secondary font-mono text-muted-foreground">
                 {shownPath}
               </div>
               <pre className="min-h-0 flex-1 overflow-auto whitespace-pre-wrap p-2 font-mono type-body text-foreground">
