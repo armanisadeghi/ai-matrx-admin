@@ -346,7 +346,8 @@ export function BrandAssetGallery({
     <div
       className={cn(
         "flex items-center justify-center overflow-hidden",
-        (p.item.preview && tones.get(p.item.preview) && TONE_BACKDROP[tones.get(p.item.preview) as Tone]) || "bg-card",
+        // A solid dark image (a black-square logo) skips the tone check and would melt into the dark card: a muted backdrop keeps its edge.
+        (p.item.preview && tones.get(p.item.preview) && TONE_BACKDROP[tones.get(p.item.preview) as Tone]) || "bg-card dark:bg-muted",
         p.item.asset.source_url && "cursor-pointer",
         className,
       )}
