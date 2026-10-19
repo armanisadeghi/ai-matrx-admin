@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1564,
+  "routeCount": 1565,
   "routes": [
     {
       "pattern": "/",
@@ -342,6 +342,11 @@
       "pattern": "/administration/agents/tool-control/alerts/[id]",
       "status": "live",
       "source": "app/(admin)/administration/agents/tool-control/alerts/[id]/page.tsx"
+    },
+    {
+      "pattern": "/administration/agents/watchtower",
+      "status": "live",
+      "source": "app/(admin)/administration/agents/watchtower/page.tsx"
     },
     {
       "pattern": "/administration/ai",
