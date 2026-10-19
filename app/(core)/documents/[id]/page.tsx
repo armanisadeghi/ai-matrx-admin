@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport document editor; the editor fills the screen
 "use client";
 
 import { use } from "react";

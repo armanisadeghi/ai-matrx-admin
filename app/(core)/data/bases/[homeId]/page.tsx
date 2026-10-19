@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport workspace that owns the whole screen; there is no page body to extend
 // app/(core)/data/bases/[homeId]/page.tsx — one Base.
 import { BasePage } from "@/features/unified-data/base/BaseScreens";
 

@@ -10,6 +10,7 @@
 //
 // React Compiler is on: no manual useMemo / useCallback / React.memo.
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -512,6 +513,10 @@ export function AssessmentDetail({
               </div>
             )
           )}
+        </div>
+
+        <div className="mx-auto max-w-2xl px-4 pb-6 sm:px-6">
+          <EntityCustomFields entityToken="assessment" recordId={assessmentId} organizationId={assessment.organization_id} />
         </div>
 
         <ConfirmDialog

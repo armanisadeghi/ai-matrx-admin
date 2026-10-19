@@ -1,3 +1,4 @@
+// record-view: none — its record type is not registered for custom fields
 // Route 16 — `/hr/people/relations/[caseId]` (SPEC-EMPLOYEES §2.2).
 //
 // `?kind=` tells the surface which of the two audited doors to open. Without

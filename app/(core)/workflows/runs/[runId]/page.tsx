@@ -1,3 +1,4 @@
+// record-view: workflow_run
 // /workflows/runs/[runId] — the permalink for one workflow run.
 //
 // A run is a thing with an identity, so it gets a door (THE DOOR LAW): a link

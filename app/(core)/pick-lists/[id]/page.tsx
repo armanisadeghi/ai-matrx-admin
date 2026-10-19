@@ -1,3 +1,4 @@
+// record-view: none — a list page whose table fills the screen; its fields are the list's own columns
 import { cache } from "react";
 import type { Metadata } from "next";
 import { ListChecks } from "lucide-react";

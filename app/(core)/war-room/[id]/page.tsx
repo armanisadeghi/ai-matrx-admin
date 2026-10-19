@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport workspace that owns the whole screen; there is no page body to extend
 "use client";
 
 // app/(core)/war-room/[id]/page.tsx

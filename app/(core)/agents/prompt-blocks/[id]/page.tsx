@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport editor for a record, not the record view
 "use client";
 
 import { Suspense, use } from "react";

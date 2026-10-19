@@ -1,3 +1,4 @@
+// record-view: none — a public chat opener that redirects into the conversation
 import type { Metadata } from "next";
 
 import { PublicChatOpener } from "@/features/social-cards/PublicChatOpener";

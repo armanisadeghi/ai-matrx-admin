@@ -1,3 +1,4 @@
+// record-view: sch_task
 // app/(authenticated)/schedules/[id]/page.tsx
 
 import { ScheduleDetail } from "@/features/scheduling/components/detail/ScheduleDetail";

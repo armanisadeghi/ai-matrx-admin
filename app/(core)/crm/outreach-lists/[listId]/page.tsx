@@ -1,3 +1,4 @@
+// record-view: none — a viewport-fit list workspace whose members table fills the screen; there is no page body to extend
 import { Megaphone } from "lucide-react";
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
 import { ModuleSignInGate } from "@/features/auth/components/module-landing/ModuleSignInGate";

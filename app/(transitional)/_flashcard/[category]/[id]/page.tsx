@@ -1,3 +1,4 @@
+// record-view: none — a transitional flashcard viewer addressed by a category key, not a record page
 // app/(authenticated)/tests/ssr-test/[category]/[id]/page.tsx
 
 import React from 'react';

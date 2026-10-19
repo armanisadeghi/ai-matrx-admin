@@ -1,3 +1,4 @@
+// record-view: none — its record type is not registered for custom fields
 // `/hr/performance/respond/[trackId]` — a respondent's own half of a 360 review, in the review editor.
 
 import { hrHref } from "@/features/hr/routes";

@@ -1,3 +1,4 @@
+// record-view: none — its record type is not registered for custom fields
 // `/hr/performance/reviews/[reviewId]` — one standard performance review, role-aware: the employee's
 // self form, the manager's form, the comparison, share, acknowledge and reopen.
 

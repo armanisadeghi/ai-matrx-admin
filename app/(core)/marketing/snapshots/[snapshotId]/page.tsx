@@ -1,3 +1,4 @@
+// record-view: none — an immutable web snapshot (a ledger record) that takes no custom fields
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";

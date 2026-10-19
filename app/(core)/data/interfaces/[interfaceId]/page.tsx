@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport editor for a record, not the record view
 "use client";
 
 // app/(core)/data/interfaces/[interfaceId]/page.tsx — THE MOUNT, AND NOTHING MORE. One Interface (lane

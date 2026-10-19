@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport editor for a record, not the record view
 // app/(core)/maps/[id]/page.tsx
 //
 // One map, open for editing. The map itself loads client-side (it is a

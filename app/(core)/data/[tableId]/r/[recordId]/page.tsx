@@ -1,3 +1,4 @@
+// record-view: none — a custom-table record; the record panel's form is the table's own columns, not a second custom-fields layer
 // app/(core)/data/[tableId]/r/[recordId]/page.tsx — THE MOUNT, AND NOTHING MORE. The screen is
 // `UnifiedRecordPage` (features/unified-data/table-page): the record panel, full page.
 //

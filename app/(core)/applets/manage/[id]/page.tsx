@@ -1,3 +1,4 @@
+// record-view: none — its record type is not registered for custom fields
 import { getApplet } from "@/lib/applets/data";
 import { AppletOverviewContent } from "@/features/applets/route/AppletOverviewContent";
 import { AppletHeader } from "@/features/applets/components/route-header/AppletHeader";

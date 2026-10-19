@@ -1,5 +1,6 @@
 "use client";
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
@@ -608,7 +609,7 @@ export default function SandboxDetailPage() {
       />
 
       <div className="h-full flex flex-col overflow-hidden bg-textured">
-        <div className="flex-1 overflow-y-auto px-4 pt-[calc(var(--shell-header-h)+1rem)] pb-8">
+        <div className="flex-1 overflow-y-auto px-4 pt-[calc(var(--shell-header-h)+1rem)] pb-[var(--matrx-page-runway)]" data-matrx-page-runway="">
         <div className="max-w-6xl mx-auto space-y-4">
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
@@ -1067,6 +1068,7 @@ export default function SandboxDetailPage() {
               )}
             </Card>
           )}
+          <EntityCustomFields entityToken="sandbox_instance" recordId={instance.id} />
         </div>
       </div>
 

@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport workspace that owns the whole screen; there is no page body to extend
 // The Content Plan workspace for one site — the TREE view (the index).
 // A view is a ROUTE now (agency restructure, 2026-08-29); the body is the ONE
 // canonical workspace and `usePlanWorkspaceParams` reads the active view from

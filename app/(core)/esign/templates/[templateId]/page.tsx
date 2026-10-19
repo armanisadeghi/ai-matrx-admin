@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport editor for a record, not the record view
 // app/(core)/esign/templates/[templateId]/page.tsx — the template editor (`new` = a blank one).
 
 import type { Metadata } from "next";

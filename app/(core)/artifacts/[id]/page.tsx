@@ -1,3 +1,4 @@
+// record-view: artifact
 import { CmsArtifactDetail } from "@/features/artifacts/components/CmsArtifactDetail";
 
 interface ArtifactDetailPageProps {

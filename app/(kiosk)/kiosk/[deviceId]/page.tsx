@@ -1,3 +1,4 @@
+// record-view: none — a device punch kiosk, not a record page
 // Route 36 — `/kiosk/[deviceId]`. The kiosk punch surface (SPEC-UI-IA §3.4 row 36, SPEC-TIME §3.3).
 //
 // 🚨 The `deviceId` in this URL is an ADDRESS, never a credential. It is checked against the

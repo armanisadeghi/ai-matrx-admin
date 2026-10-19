@@ -1,3 +1,4 @@
+// record-view: none — a context-item editor inside a scope type; the scope's own page carries the section
 "use client";
 
 import React from "react";

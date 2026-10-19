@@ -1,3 +1,4 @@
+// record-view: none — a progress view of a person, not a record page
 // /education/family/[studentId] — a linked student's read-only progress.
 //
 // SERVER-GATED: this Server Component resolves the caller's guardian links via

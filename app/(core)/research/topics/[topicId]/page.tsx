@@ -1,3 +1,4 @@
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import ResearchOverview from '@/features/research/components/overview/ResearchOverview';
 import { getTopicServer } from '@/features/research/service/server';
 
@@ -33,6 +34,9 @@ export default async function TopicOverviewPage({
         <>
             <TopicJsonLd topicId={topicId} />
             <ResearchOverview />
+            <div className="mx-auto w-full max-w-5xl px-3 sm:px-4">
+                <EntityCustomFields entityToken="research_topic" recordId={topicId} />
+            </div>
         </>
     );
 }

@@ -1,3 +1,4 @@
+// record-view: none — a public free-tool page addressed by link, not a record page
 'use client';
 
 import { useEffect, useState } from 'react';

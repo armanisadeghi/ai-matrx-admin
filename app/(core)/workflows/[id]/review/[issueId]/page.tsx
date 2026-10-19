@@ -1,3 +1,4 @@
+// record-view: none — a review flow inside a workflow, not the record page
 // /workflows/[id]/review/[issueId] — ONE review issue and its occurrences.
 // Review-issue notifications link here.
 

@@ -23,6 +23,7 @@
 // `[kind]` segment by App Router precedence, so `/shapes/instances/...`
 // never resolves as a kind named "instances".
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -111,6 +112,9 @@ export default async function ShapeInstancePermalinkPage({
             </>
           }
         />
+        <div className="mx-auto mt-4 w-full max-w-5xl">
+          <EntityCustomFields entityToken="content_ir_kind_instance" recordId={record.id} />
+        </div>
       </main>
     );
   }

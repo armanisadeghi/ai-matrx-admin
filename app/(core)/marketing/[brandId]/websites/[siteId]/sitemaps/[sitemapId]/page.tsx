@@ -1,3 +1,4 @@
+// record-view: none — a viewport-fit sitemap table; there is no page body to extend
 import { Suspense } from "react";
 import { SitemapDetail } from "@/features/marketing/components/sitemaps/SitemapDetail";
 import { LoadingSurface } from "@/features/marketing/components/shared/MarketingUi";

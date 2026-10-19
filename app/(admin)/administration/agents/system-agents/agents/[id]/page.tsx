@@ -49,7 +49,7 @@ export default async function AdminSystemAgentViewPage({
         surface, which owns these same four target names as draft targets.
       */}
       <SystemAgentWriteTargets agentId={id} />
-      <div className="h-full overflow-y-auto">
+      <div className="h-full overflow-y-auto" data-matrx-page-runway="">
         <AgentViewContent
           agentId={id}
           recordSections={<EntityCustomFields entityToken="agent" recordId={id} organizationId={agent.organizationId} />}

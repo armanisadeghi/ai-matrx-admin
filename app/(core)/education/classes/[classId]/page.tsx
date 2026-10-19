@@ -1,3 +1,4 @@
+// record-view: none — its record type is not registered for custom fields
 import type { Metadata } from "next";
 import { toolMetadata } from "@/features/education/route-helpers";
 import { ClassHubView } from "@/features/education/classes/components/ClassHubView";

@@ -1,3 +1,4 @@
+// record-view: none — one location inside the brand's local-listings workspace, a selection rather than a record page
 import { MarketingAddressUnavailable } from "@/features/marketing/components/shared/MarketingAddressUnavailable";
 import { Suspense } from "react";
 

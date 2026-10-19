@@ -1,3 +1,4 @@
+// record-view: none — a field editor inside a scope; the scope's own page carries the section
 "use client";
 
 import React from "react";

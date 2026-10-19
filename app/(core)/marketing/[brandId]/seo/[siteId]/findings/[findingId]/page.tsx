@@ -1,3 +1,4 @@
+// record-view: web_finding
 import { Suspense } from "react";
 
 import { FindingDetail } from "@/features/marketing/components/analysis/FindingDetail";

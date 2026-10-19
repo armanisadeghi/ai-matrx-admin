@@ -1,3 +1,4 @@
+// record-view: none — a CMS collection editor; CMS tables are not registered for custom fields
 "use client";
 
 /**

@@ -1,3 +1,4 @@
+// record-view: research_keyword
 import { KeywordDetailView } from "@/features/research/components/keywords/KeywordDetailView";
 
 export default async function KeywordDetailPage({

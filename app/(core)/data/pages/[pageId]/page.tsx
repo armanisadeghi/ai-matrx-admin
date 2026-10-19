@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport editor for a record, not the record view
 "use client";
 
 // app/(core)/data/pages/[pageId]/page.tsx — THE MOUNT, AND NOTHING MORE. One page built from

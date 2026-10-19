@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport spreadsheet editor; the editor fills the screen
 "use client";
 
 import { useEffect, useState, use } from "react";

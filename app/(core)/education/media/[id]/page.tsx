@@ -1,3 +1,4 @@
+// record-view: study_media
 import type { Metadata } from "next";
 import { MediaRouter } from "@/features/education/media/components/MediaRouter";
 

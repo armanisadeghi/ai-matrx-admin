@@ -1,3 +1,4 @@
+// record-view: none — a tracker's inputs setup view, not the record page
 // app/(core)/marketing/monitoring/[trackerId]/page.tsx — one news monitor's inputs.
 
 

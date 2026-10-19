@@ -6,6 +6,7 @@
 // sources + edit controls for authorized collaborators, and owner-only
 // regenerate / delete / share controls. Mirrors MindMapDetail.
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Ellipsis, Pencil, RefreshCw, Trash2 } from "lucide-react";
@@ -388,6 +389,7 @@ export function MemoryDetail({ mediaId, edit = false }: { mediaId: string; edit?
 
       {/* Where this came from + the rest of the kit made from the same upload. */}
       <MadeFromSource entityType="study_media" entityId={media.id} />
+      <EntityCustomFields entityToken="study_media" recordId={media.id} organizationId={media.organization_id} />
 
       {trust && (
         <div

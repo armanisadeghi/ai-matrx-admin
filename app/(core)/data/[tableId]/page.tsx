@@ -1,3 +1,4 @@
+// record-view: none — a table page; its fields are the table's own columns
 // app/(core)/data/[tableId]/page.tsx — THE MOUNT, AND NOTHING MORE. The screen itself is
 // `UnifiedDataTablePage` (features/unified-data/table-page), which every other mount imports.
 //

@@ -1,3 +1,4 @@
+// record-view: fc_set
 // /education/flashcards/[setId] — set detail (header + card grid + Study).
 // Server shell: resolves async params, then renders the client detail island.
 // SetDetailView is a "use client" leaf — importing it here forms the client

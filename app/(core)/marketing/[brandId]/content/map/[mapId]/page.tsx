@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport workspace that owns the whole screen; there is no page body to extend
 // One map's workspace — the OUTLINE view, which is the index.
 //
 // A view is a ROUTE, not a tab — the same shape the content plan uses. Every

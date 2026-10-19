@@ -6,6 +6,7 @@
 // controls (regenerate / delete / share). Read-only for non-owners (the shared
 // viewer). React Compiler is on: no manual memo.
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Pencil, RefreshCw, Trash2 } from "lucide-react";
@@ -354,7 +355,10 @@ export function MindMapDetail({ mediaId, edit = false }: { mediaId: string; edit
 
         {/* Where this came from + the rest of the kit made from the same upload. */}
         {media && (
-          <MadeFromSource entityType="study_media" entityId={media.id} />
+          <>
+            <MadeFromSource entityType="study_media" entityId={media.id} />
+            <EntityCustomFields entityToken="study_media" recordId={media.id} organizationId={media.organization_id} />
+          </>
         )}
 
         {trust && sourcesOpen && (

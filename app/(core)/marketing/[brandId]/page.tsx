@@ -1,3 +1,4 @@
+// record-view: web_brand
 import { MarketingAddressUnavailable } from "@/features/marketing/components/shared/MarketingAddressUnavailable";
 import { Suspense } from "react";
 

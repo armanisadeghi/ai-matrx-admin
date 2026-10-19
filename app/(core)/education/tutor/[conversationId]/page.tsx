@@ -1,3 +1,4 @@
+// record-view: none — a chat surface; the message list owns the whole screen and there is no page body below it
 // /education/tutor/[conversationId] — a single AI Tutor conversation. Server
 // shell: resolves async params, then renders the client conversation island
 // (code-split) which loads the existing transcript. View-gated (the shareable
