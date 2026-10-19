@@ -119,6 +119,7 @@ import { disposeUniverInstance } from "@ai-matrx/office/univer";
 import { isWorkbookSnapshotMutation } from "@ai-matrx/office/univer";
 import { mayAutosave, remoteOriginOf } from "@ai-matrx/data/realtime/collab";
 import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
+import { readCollabOtRooms } from "@/lib/knobs/collabOtRooms";
 import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/data/realtime/collab/react";
 import { WorkbookCursorOverlay } from "@/features/workbooks/components/WorkbookCursorOverlay";
 import { getLatestSnapshot, saveSnapshot } from "@ai-matrx/office/sheets";
@@ -210,6 +211,9 @@ export default function WorkbookEditor({
   >(null);
   // Univer selection-listener disposer, kept ref-side so the unmount path can
   // reach it regardless of which render registered it.
+  // The ordered-log room (COLLAB-DESIGN §6, C6) — set instead of the relay session when this workbook's room
+  // exists or `collab.ot_rooms` opens one. Exactly one of the two is ever live.
+  const otRoomRef = useRef<import("@ai-matrx/office/univer/collab").WorkbookOtRoomHandle | null>(null);
   const collabSelectionDisposerRef = useRef<{ dispose: () => void } | null>(
     null,
   );
@@ -427,6 +431,7 @@ export default function WorkbookEditor({
             // One edit is written ONCE: by the tab that made it (or, for another person's edit, the
             // elected host) — never by every tab that merely applied it (mayAutosave).
             if (
+              otRoomRef.current ||
               mayAutosave({
                 collab: collabRef.current,
                 isHost: collabIsHostRef.current,
@@ -456,7 +461,7 @@ export default function WorkbookEditor({
         // working solo workbook; collab silently degrades with a console
         // warning that surfaces in error tracking.
         if (collabRef.current) {
-          void startCollabSession().catch((err) => {
+          void startWorkbookRoom().catch((err) => {
             console.warn(
               "[workbook] collab boot failed — falling back to solo mode",
               err,
@@ -477,6 +482,8 @@ export default function WorkbookEditor({
       collabSelectionDisposerRef.current = null;
       collabSessionRef.current?.stop();
       collabSessionRef.current = null;
+      otRoomRef.current?.stop();
+      otRoomRef.current = null;
       const univer = univerRef.current;
       univerRef.current = null;
       apiRef.current = null;
@@ -487,6 +494,98 @@ export default function WorkbookEditor({
     // per workbook (route nav remounts via the workbookId change).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workbookId]);
+
+  /**
+   * Join the workbook's co-editing room: the ordered log (C6) when the workbook's room exists or
+   * `collab.ot_rooms` opens one, otherwise the 0.6 relay. A workbook already on the ordered log never falls
+   * back to the relay (a relay seat's saves would never reach the room); a failed start says so.
+   */
+  const startWorkbookRoom = async () => {
+    let ordered = false;
+    try {
+      const { workbookUsesOrderedRoom } = await import("@ai-matrx/office/univer/collab");
+      const knob = await readCollabOtRooms();
+      ordered = await workbookUsesOrderedRoom(workbookId, knob, async () => {
+        const res = await getLatestSnapshot(workbookId);
+        return !isServiceFailure(res) && res.data === null;
+      });
+    } catch (err) {
+      console.warn("[workbook] could not choose the co-editing room; joining the relay room", err);
+    }
+    if (!ordered) return startCollabSession();
+    try {
+      await startOrderedRoom();
+    } catch (err) {
+      console.warn("[workbook] co-editing room did not start", err);
+      toast({ title: "Live editing is not connected", description: "Reload the page before editing this workbook.", variant: "destructive" });
+    }
+  };
+
+  /** Show `snapshot` in place of what is open, keeping the unit id (the ordered room's load and restore). */
+  const swapInPlace = (snapshot: unknown) => {
+    const api = apiRef.current;
+    if (!api) throw new Error("The workbook editor is not ready yet. Try again in a moment.");
+    collabSelectionDisposerRef.current?.dispose();
+    collabSelectionDisposerRef.current = null;
+    replacingRef.current = true;
+    try {
+      const current = api.getActiveWorkbook();
+      const next = { ...(snapshot as Partial<IWorkbookData>) };
+      if (current) {
+        next.id = current.getId();
+        api.disposeUnit(current.getId());
+      }
+      api.createWorkbook(next);
+    } finally {
+      replacingRef.current = false;
+    }
+    wireCollabSelection();
+  };
+
+  /** The ordered room asks for the record's coalesced save; the room decides whether this seat writes. */
+  const scheduleSave = () => {
+    if (!editableRef.current) return;
+    saveAllowedRef.current = true;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      if (!saveAllowedRef.current) return;
+      saveAllowedRef.current = false;
+      void performSave();
+    }, 2500);
+  };
+
+  const startOrderedRoom = async () => {
+    const univer = univerRef.current;
+    if (!univer) return;
+    const { data: userData } = await getClaimsUser(supabase);
+    const uid = userData?.user?.id;
+    if (!uid) return;
+    setCollabSelfUid(uid);
+    const { startWorkbookOrderedRoom } = await import("@/features/workbooks/collab/workbookOrderedRoom");
+    const clientId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `c-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const handle = await startWorkbookOrderedRoom({
+      univer,
+      workbookId,
+      uid,
+      clientId,
+      unitId: () => apiRef.current?.getActiveWorkbook()?.getId() ?? null,
+      load: swapInPlace,
+      markDirty: scheduleSave,
+      readAntiEntropyIntervalMs: readCollabAntiEntropyMs,
+      onAwareness: (states) => {
+        setRemoteAwareness(states);
+        setCollabIsHost(otRoomRef.current?.isSaver() ?? true);
+      },
+    });
+    if (univerRef.current !== univer) {
+      handle.stop(); // the editor unmounted while the room opened
+      return;
+    }
+    otRoomRef.current = handle;
+    setCollabIsHost(handle.isSaver());
+    wireCollabSelection();
+  };
 
   // Lazy-import the collab classes so the bundle for non-collab users stays
   // free of yjs / y-protocols. Resolved at session-start time only.
@@ -612,7 +711,7 @@ export default function WorkbookEditor({
   const wireCollabSelection = () => {
     collabSelectionDisposerRef.current?.dispose();
     collabSelectionDisposerRef.current = null;
-    if (!collabSessionRef.current) return;
+    if (!collabSessionRef.current && !otRoomRef.current) return;
     try {
       const fb = (
         apiRef.current as unknown as {
@@ -633,11 +732,12 @@ export default function WorkbookEditor({
       )?.getActiveWorkbook?.();
       if (fb?.onSelectionChange) {
         collabSelectionDisposerRef.current = fb.onSelectionChange((selections) => {
-          if (!collabSessionRef.current) return;
+          const target = collabSessionRef.current ?? otRoomRef.current;
+          if (!target) return;
           const first = selections?.[0];
           if (!first) return;
           const sheetId = fb.getActiveSheet?.()?.getSheetId() ?? null;
-          collabSessionRef.current.setCursor({
+          target.setCursor({
             sheetId,
             row: first.startRow,
             col: first.startColumn,
@@ -659,7 +759,16 @@ export default function WorkbookEditor({
   const replaceWorkbookContent = (
     row: SavedEditorSnapshot,
     { announce }: { announce: boolean },
-  ) => {
+  ): void | Promise<void> => {
+    // An ordered-log room restores through collab_replace: one atomic replace every seat applies.
+    const room = otRoomRef.current;
+    if (room) {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = null;
+      }
+      return room.replace(takeCovered(row.snapshot).snapshot).then(() => setSaveStatus("idle"));
+    }
     const api = apiRef.current;
     if (!api) throw new Error("The workbook editor is not ready yet. Try again in a moment.");
     if (saveTimerRef.current) {
@@ -735,6 +844,25 @@ export default function WorkbookEditor({
       if (!apiRef.current) return;
       const workbook = apiRef.current.getActiveWorkbook();
       if (!workbook) return;
+      // The ordered-log room saves a checkpoint only at a quiet point with a matching hash, from its saver.
+      const room = otRoomRef.current;
+      if (room) {
+        setSaveStatus("saving");
+        let wrote = false;
+        try {
+          wrote = await room.write(origin === "manual" ? "manual" : "autosave");
+        } catch (err) {
+          setSaveStatus("error");
+          toast({ title: "Could not save workbook", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+          return;
+        }
+        setSaveStatus(wrote ? "saved" : "idle");
+        if (origin === "manual") {
+          toast(wrote ? { title: "Snapshot saved", variant: "success" } : { title: "Not saved yet", description: "Edits are still reaching the other editors. Try again in a moment." });
+        }
+        if (wrote) setTimeout(() => setSaveStatus((st) => (st === "saved" ? "idle" : st)), 1500);
+        return;
+      }
       // The room entries this workbook holds, read WITH the snapshot: the saved row names them, so a
       // seat that reloads from it never replays them on top of it.
       const session = collabSessionRef.current;
