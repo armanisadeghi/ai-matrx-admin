@@ -27,6 +27,7 @@ import { FlowStepEditor, stepCount, type Step } from "./AutomationSteps";
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { ReconnectAction } from "./reconnect-action";
 /** How many runs the history shows: the `spaces.automation_runs_shown` knob (admin → org → person). */
 const RUNS_KNOB = { feature: "spaces", key: "automation_runs_shown" } as const;
 
@@ -361,6 +362,7 @@ function TestRun({ automation, tableId, fields, onRan }: { automation: Automatio
           {result.steps.map((s) => (
             <span key={s.n} className="type-secondary text-muted-foreground" data-step-status={s.status}>
               {s.n}. {s.do} — {s.status}: {s.says}
+              <ReconnectAction says={s.says} />
             </span>
           ))}
         </div>
@@ -400,6 +402,7 @@ function RunHistory({ automationId, limit }: { automationId: string; limit: numb
           {r.steps.map((s) => (
             <span key={s.n} className="type-secondary text-muted-foreground" data-step-status={s.status}>
               {s.n}. {s.do} — {s.status}: {s.says}
+              <ReconnectAction says={s.says} />
             </span>
           ))}
         </li>
@@ -999,6 +1002,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
                     <div className="type-secondary truncate text-destructive" data-testid="spaces-automation-problem">
                       {a.disabled_reason ?? a.last_run?.says}
                       <ErrorAlchemyMenu error={a.disabled_reason ?? a.last_run?.says ?? ""} />
+                      <ReconnectAction says={a.disabled_reason ?? a.last_run?.says} />
                     </div>
                   ) : null}
                 </button>
