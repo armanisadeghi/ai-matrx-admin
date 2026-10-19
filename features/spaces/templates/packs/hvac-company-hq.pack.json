@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0500",
-  "version": 2,
+  "version": 3,
   "title": "HVAC Company HQ",
   "description": "Dispatch service calls, price jobs, track parts and invoices, and keep plans on schedule.",
   "forWho": "HVAC companies and heating and cooling contractors",
@@ -2250,7 +2250,7 @@
         "Tanner Row"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

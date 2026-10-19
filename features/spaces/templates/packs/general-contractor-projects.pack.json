@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0416",
-  "version": 2,
+  "version": 3,
   "title": "General Contractor Projects",
   "description": "Jobs, subcontractors, phases, change orders and punch lists for a builder.",
   "forWho": "General contractors and remodelers",
@@ -2601,7 +2601,7 @@
         "Quarry Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
