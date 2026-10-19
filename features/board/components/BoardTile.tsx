@@ -7,9 +7,11 @@
  *   1. Registration: its rect goes into the store for culling, fit and minimap.
  *   2. Culling: off-screen it keeps its React state (a stream keeps its
  *      place) but skips layout and paint via `content-visibility: hidden`.
- *   3. Semantic zoom: at overview tier the body is replaced by a title card
- *      whose type is COUNTER-SCALED (`--board-z`), so a 300-tile board is
- *      still a readable map instead of gray confetti.
+ *   3. Semantic zoom: four levels by on-screen size (`engine/lod.ts`
+ *      `DetailLevel`): the real body (L0), its skeleton (L1, `structure`),
+ *      a designed card (L2) and a label (L3), cross-faded. Below L0 the body
+ *      is hidden; a tile first seen below L0 never mounts its body at all
+ *      until it is needed (`useBodyWanted`).
   4. Gestures: header drag moves it; a flick THROWS it (engine/throw.ts),
  *      with the action named before release.
  *   5. Focus: when focused its live card portals into the focus layer, full
@@ -49,6 +51,8 @@ import {
   useIsFocused,
   useIsSelected,
   useIsSoleSelected,
+  useBodyWanted,
+  useDetailLevel,
   usePaceTier,
   useBoardCameraStore,
   useTileLife,
@@ -70,6 +74,8 @@ import { type StatusFrom, type TileStatus, useTileStatus } from "../streams/useS
 import type { BoardAccent } from "../items/types";
 import { ConnectHandles, type ConnectPoint } from "./ConnectHandles";
 import { OverviewCard, StatusChip } from "./TileFace";
+import { LabelFace, LevelLayers, StructureFace } from "./lod/TileLevels";
+import type { CardLine } from "../items/card-lines";
 import { TileMenu, type TileMenuProps } from "./TileMenu";
 import { tileContentReady } from "../engine/content-ready";
 import { FIT_MIN_SCROLLER_H, FULL_CHROME, type ScrollerBox, type TileChrome, autoHeightChange, growStep, innerSlack } from "../engine/tile-chrome";
@@ -122,6 +128,10 @@ export interface BoardTileProps {
   onConnect?: (id: string, from: ConnectPoint, to: ConnectPoint) => void;
   /** The item's picture for the far-zoom card (`BoardItemType.Face`). */
   faceSlot?: ReactNode;
+  /** The item's L1 skeleton (`BoardItemType.structure`); the generic one when omitted. */
+  structure?: ReactNode;
+  /** 1–3 facts for the far-zoom card, from the tile's saved basics (`items/card-lines.ts`). */
+  cardLines?: readonly CardLine[];
   /** The item's own status chip (`BoardItemType.status`), drawn by the host in
    * the header (`header`) and on the far-zoom card (`face`). A leaf: its reads
    * never re-render the body. */
@@ -207,6 +217,8 @@ export function BoardTile({
   typeLabel,
   onConnect,
   faceSlot,
+  structure,
+  cardLines,
   renderStatus,
   statusFrom = IDLE_STATUS,
   titleSlot,
@@ -242,6 +254,12 @@ export function BoardTile({
 
   // A focused tile is read at full size whatever the board's zoom.
   const tier: PaceTier = focused ? "read" : paceTier;
+  // Level of detail by on-screen size; a focused tile is always the real thing.
+  const detail = useDetailLevel(id);
+  const level = focused ? "full" : detail;
+  // The body mounts the first time it is needed (seen at full detail, selected, worked in, held by an
+  // agent) and then stays: a board opened far out mounts no feature body until you get close.
+  const bodyWanted = useBodyWanted(id);
   const headerRef = useRef<HTMLDivElement>(null);
   const tileRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -523,7 +541,8 @@ export function BoardTile({
   }, [focused]);
 
   const culled = tier === "offscreen";
-  const overview = tier === "overview";
+  const overview = level !== "full";
+  const mountBody = bodyWanted || focused || interacting || chrome.autoHeight || chrome.growToFit;
 
   // Auto height: the card lays out at its content's height and the tile follows it. Only a real
   // change of a READY measurement is written (`tileContentReady`: never a skeleton, a loading table, an
@@ -722,7 +741,7 @@ export function BoardTile({
           // finger on a tile body scrolls the content natively instead.
           style={{ contentVisibility: overview ? "hidden" : "visible", touchAction: "pan-x pan-y" }}
         >
-          {life === "discarded" && discardable && !focused ? null : (
+          {!mountBody || (life === "discarded" && discardable && !focused) ? null : (
             // A frozen tile keeps its state and DOM but runs nothing: effects,
             // store subscriptions, channels and timers are torn down until it
             // is needed again (React's Activity, Chrome's tab freezing).
@@ -764,18 +783,30 @@ export function BoardTile({
           )}
         </div>
       </div>
-      {overview && (
-        <OverviewCard
-          title={title}
-          typeLabel={typeLabel}
-          media={faceSlot}
-          icon={Icon}
-          accent={accent}
-          selected={selected}
-          from={statusFrom}
-          status={<TileStatus id={id} variant="face" animate={false} renderStatus={renderStatus} />}
-        />
-      )}
+      <LevelLayers
+        level={level}
+        render={(face) =>
+          face === "structure" ? (
+            <StructureFace title={title} icon={Icon} accent={accent} selected={selected}>
+              {structure}
+            </StructureFace>
+          ) : face === "card" ? (
+            <OverviewCard
+              title={title}
+              typeLabel={typeLabel}
+              media={faceSlot}
+              lines={cardLines}
+              icon={Icon}
+              accent={accent}
+              selected={selected}
+              from={statusFrom}
+              status={<TileStatus id={id} variant="face" animate={false} renderStatus={renderStatus} />}
+            />
+          ) : (
+            <LabelFace title={title} icon={Icon} accent={accent} selected={selected} />
+          )
+        }
+      />
     </div>
   );
 

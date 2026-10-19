@@ -41,12 +41,13 @@ function shortDate(iso: string): string | null {
   return d.toLocaleDateString(undefined, sameYear ? { month: "short", day: "numeric" } : { month: "short", day: "numeric", year: "numeric" });
 }
 
-/** The first readable line of prose: markdown marks and blank lines dropped. */
+/** The first readable line of prose: headings, markdown marks and blank lines dropped (a heading usually repeats the title). */
 function excerpt(text: string): string {
   const line =
     text
       .split(/\n+/)
-      .map((l) => l.replace(/^[#>*\-\s\d.]+/, "").replace(/[*_`~]+/g, "").trim())
+      .filter((l) => !/^\s*#/.test(l))
+      .map((l) => l.replace(/^[>*\-\s\d.]+/, "").replace(/[*_`~]+/g, "").trim())
       .find((l) => l.length > 0) ?? "";
   return line.length > LINE_CHARS ? `${line.slice(0, LINE_CHARS - 1)}…` : line;
 }

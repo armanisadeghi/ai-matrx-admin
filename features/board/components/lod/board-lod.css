@@ -1,0 +1,120 @@
+/*
+ * Board — levels of detail below the real component (`TileLevels.tsx`, `engine/lod.ts`).
+ *
+ * `--lod-u` is the skeleton's unit: one world px while a tile is at its legible zoom (so L1 is the
+ * component's exact layout at the L0→L1 threshold), then a fixed SCREEN size (0.679 px = OVERVIEW_ZOOM)
+ * as you zoom out further, so bars never shrink to specks.
+ */
+
+.board-lod-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+/* Cross-fade on the motion standard's tokens: a third of the panel pace (0 under reduced motion). */
+.board-lod-in {
+  animation: board-lod-in calc(var(--matrx-motion-duration-panel) / 3) var(--matrx-motion-ease-panel) both;
+}
+
+.board-lod-out {
+  animation: board-lod-out calc(var(--matrx-motion-duration-panel) / 3) var(--matrx-motion-ease-panel) both;
+  pointer-events: none;
+}
+
+@keyframes board-lod-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes board-lod-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* L1 — structure. */
+.board-structure {
+  --lod-u: max(1px, calc(0.679px / var(--board-z, 1)));
+  contain: strict;
+}
+
+.board-structure[data-selected] {
+  box-shadow: inset 0 0 0 max(2px, calc(2.5px / var(--board-z, 1))) hsl(var(--primary));
+}
+
+/* L3 — label: icon + title at a fixed screen size while it fits, shrinking with the tile once not. */
+.board-label {
+  container-type: size;
+  contain: strict;
+  --label-size: min(calc(13px / var(--board-z, 1)), 46cqh);
+  gap: calc(var(--label-size) * 0.5);
+  padding-inline: min(calc(10px / var(--board-z, 1)), 12cqw);
+  font-size: var(--label-size);
+  line-height: 1.2;
+  background: hsl(var(--card));
+  box-shadow:
+    inset max(3px, calc(3px / var(--board-z, 1))) 0 0 0 hsl(var(--tile-accent)),
+    inset 0 0 0 max(1px, calc(1px / var(--board-z, 1))) hsl(var(--tile-accent) / 0.3);
+}
+
+.board-label[data-selected] {
+  box-shadow:
+    inset max(3px, calc(3px / var(--board-z, 1))) 0 0 0 hsl(var(--tile-accent)),
+    inset 0 0 0 max(2px, calc(2.5px / var(--board-z, 1))) hsl(var(--primary));
+}
+
+.board-label-icon {
+  width: 1.15em;
+  height: 1.15em;
+  color: hsl(var(--tile-accent));
+}
+
+/* Taller than a line: two lines of title. */
+@container (min-height: 3.2em) {
+  .board-label-text {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+}
+
+/* Too narrow for any word: the icon alone, centered. */
+@container (max-width: 3.4em) {
+  .board-label {
+    justify-content: center;
+    padding-inline: 0;
+  }
+  .board-label-text {
+    display: none;
+  }
+}
+
+/*
+ * Words on the canvas (stickies, text, shape labels): below `INK_LEGIBLE_PX` on screen they become
+ * bars along their own wrapped lines — the same "placeholder for text" as a tile skeleton — instead of
+ * illegible specks. Pure CSS on `--board-z`: zooming re-renders nothing. The element sets `--ink`
+ * (its color) and `--ink-px` (its font size, world px).
+ */
+.board-ink {
+  --ink-on: clamp(0, calc((var(--ink-px, 16) * var(--board-z, 1) - 9.5) * 1000), 1);
+  color: color-mix(in srgb, var(--ink) calc(var(--ink-on) * 100%), transparent);
+  background-image: linear-gradient(
+    transparent 26%,
+    color-mix(in srgb, var(--ink) calc((1 - var(--ink-on)) * 24%), transparent) 26%,
+    color-mix(in srgb, var(--ink) calc((1 - var(--ink-on)) * 24%), transparent) 74%,
+    transparent 74%
+  );
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}

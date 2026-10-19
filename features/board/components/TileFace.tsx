@@ -18,6 +18,7 @@ import type { CSSProperties } from "react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { BoardAccent, ItemStatus, ItemStatusTone } from "../items/types";
+import type { CardLine } from "../items/card-lines";
 import { useBoardCameraStore } from "../engine/react";
 import { type StatusFrom, type TileStatus, useTileStatus } from "../streams/useSourceStatus";
 
@@ -98,7 +99,10 @@ export function OverviewCard({
   from,
   status,
   media,
+  lines,
 }: {
+  /** 1–3 facts from the tile's saved basics (`items/card-lines.ts`); lines that do not fit are left out whole. */
+  lines?: readonly CardLine[];
   /** A picture for the card (`BoardItemType.Face`), drawn in the space between the title and the status. */
   media?: React.ReactNode;
   title: string;
@@ -117,17 +121,30 @@ export function OverviewCard({
       className="board-face absolute inset-0 z-[1] flex flex-col overflow-hidden"
       style={accentStyle(accent)}
     >
-      <div className="board-face-band shrink-0" />
       <div className="board-face-body flex min-h-0 flex-1 flex-col">
         {(Icon || typeLabel) && (
-          <div className="board-face-kind flex min-w-0 items-center font-semibold uppercase tracking-[0.06em]">
-            {Icon && <Icon aria-hidden />}
+          <div className="board-face-kind flex min-w-0 items-center font-semibold">
+            {Icon && (
+              <span className="board-face-icon flex shrink-0 items-center justify-center">
+                <Icon aria-hidden />
+              </span>
+            )}
             {typeLabel && <span className="truncate">{typeLabel}</span>}
           </div>
         )}
         <p className="board-face-title line-clamp-2 break-words font-semibold leading-[1.18] tracking-[-0.01em] text-foreground">
           {title}
         </p>
+        {lines && lines.length > 0 && !media ? (
+          <div data-board-face-lines className="board-face-lines min-h-0 flex-1">
+            {lines.map((line, i) => (
+              <p key={i} className="board-face-line truncate">
+                {line.label && <span className="text-muted-foreground">{line.label} </span>}
+                <span className={line.label ? "text-foreground" : "text-muted-foreground"}>{line.value}</span>
+              </p>
+            ))}
+          </div>
+        ) : null}
         {media ? <div className="board-face-media relative min-h-0 flex-1 overflow-hidden">{media}</div> : null}
         <div className="board-face-foot mt-auto flex min-w-0 items-center">
           {from.kind === "static" ? status : <StreamFoot from={from} />}

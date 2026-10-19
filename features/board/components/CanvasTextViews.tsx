@@ -18,6 +18,7 @@ import type { Rect } from "../engine/camera";
 import { useBoardCameraStore } from "../engine/react";
 import { type BoardShape, type ShapeStyle, type StickyColor, TEXT_SIZES, boundsOfPoints, shapeColorCss, styleOf } from "../engine/shapes";
 import { nextStickyBeside } from "../engine/canvas-text";
+import "./lod/board-lod.css";
 
 type AnyBoard = BoardStore<BoardTileBase>;
 
@@ -52,6 +53,11 @@ function fitFont(el: HTMLElement, limit: number, max: number, min: number): numb
   return lo;
 }
 
+/** Fit, then tell the ink rule (`.board-ink`) the size it was fitted to, so it knows when the words stop being legible. */
+function fitInk(el: HTMLElement, limit: number, max: number, min: number): void {
+  el.style.setProperty("--ink-px", String(fitFont(el, limit, max, min)));
+}
+
 // ── sticky ───────────────────────────────────────────────────────────────────
 
 export function StickyCard({ shape, box, editing }: { shape: BoardShape; box: Rect; editing: boolean }) {
@@ -61,7 +67,7 @@ export function StickyCard({ shape, box, editing }: { shape: BoardShape; box: Re
   const text = shape.text ?? "";
   useLayoutEffect(() => {
     const el = textRef.current;
-    if (el) fitFont(el, box.h - pad * 2, stickyMaxFont(box), STICKY_MIN_FONT);
+    if (el) fitInk(el, box.h - pad * 2, stickyMaxFont(box), STICKY_MIN_FONT);
   }, [text, box.w, box.h, pad, box]);
   return (
     <div
@@ -76,6 +82,7 @@ export function StickyCard({ shape, box, editing }: { shape: BoardShape; box: Re
         padding: pad,
         background: stickyColorCss(st.sticky),
         color: STICKY_INK,
+        ["--ink" as string]: STICKY_INK,
         opacity: st.opacity,
         boxShadow: "0 1px 2px hsl(0 0% 0% / 0.10), 0 6px 16px -4px hsl(0 0% 0% / 0.18)",
       }}
@@ -86,7 +93,8 @@ export function StickyCard({ shape, box, editing }: { shape: BoardShape; box: Re
           className="w-full whitespace-pre-wrap break-words font-medium leading-snug [overflow-wrap:anywhere]"
           style={{ textAlign: alignOf(st.textAlign) }}
         >
-          {text}
+          {/* Below legibility the words become bars along their own lines (`.board-ink`). */}
+          <span className="board-ink">{text}</span>
         </div>
       )}
     </div>
@@ -210,9 +218,11 @@ export function PlainText({ shape, box, board, editing }: { shape: BoardShape; b
         overflowWrap: shape.wrap ? "anywhere" : undefined,
         opacity: editing ? 0 : st.opacity,
         ...textStyle(st),
+        ["--ink" as string]: shapeColorCss(st.stroke),
+        ["--ink-px" as string]: TEXT_SIZES[st.textSize],
       }}
     >
-      {text || <span className="text-muted-foreground/60">Text</span>}
+      {text ? <span className="board-ink">{text}</span> : <span className="text-muted-foreground/60">Text</span>}
     </div>
   );
 }

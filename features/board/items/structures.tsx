@@ -325,6 +325,41 @@ export const TableStructure: S = () => (
   </Pad>
 );
 
+/** A workbook: the formula bar, column letters, row numbers and the cell grid, with the sheet tabs below. */
+export const WorkbookStructure: S = () => {
+  const cols = 6;
+  const rows = 14;
+  const cell = { height: u(24), borderRightWidth: u(1), borderBottomWidth: u(1) } as const;
+  return (
+    <div className="flex h-full flex-col">
+      <Row gap={8} style={{ paddingInline: u(10), height: u(32) }}>
+        <Bar w={30} h={7} strong />
+        <Rule vertical />
+        <Bar w="40%" h={7} />
+      </Row>
+      <div className="grid min-h-0 flex-1 overflow-hidden border-t border-border" style={{ gridTemplateColumns: `${u(34)} repeat(${cols}, 1fr)`, alignContent: "start", borderTopWidth: u(1) }}>
+        {Array.from({ length: (rows + 1) * (cols + 1) }, (_, i) => {
+          const r = Math.floor(i / (cols + 1));
+          const c = i % (cols + 1);
+          const head = r === 0 || c === 0;
+          return (
+            <div key={i} className={head ? "flex items-center justify-center border-border bg-muted" : "flex items-center border-border"} style={{ ...cell, borderStyle: "solid", borderTopWidth: 0, borderLeftWidth: 0, paddingInline: u(6) }}>
+              {head ? (r === 0 && c === 0 ? null : <Bar w={c === 0 ? 10 : 12} h={6} strong />) : (r + c) % 3 === 0 ? <Bar w={(r * c) % 2 ? "70%" : "45%"} h={6} /> : null}
+            </div>
+          );
+        })}
+      </div>
+      <Row gap={6} style={{ paddingInline: u(10), height: u(28) }} className="border-t border-border">
+        <div className="rounded-md bg-card" style={{ boxShadow: `inset 0 0 0 ${u(1)} hsl(var(--border))`, padding: `${u(4)} ${u(10)}` }}>
+          <Bar w={36} h={6} accent />
+        </div>
+        <Bar w={36} h={6} />
+        <Glyph icon={Plus} size={12} />
+      </Row>
+    </div>
+  );
+};
+
 /** One record: label over value, down the page. */
 export const RecordStructure: S = () => (
   <Pad>

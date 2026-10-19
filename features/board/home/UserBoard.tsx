@@ -19,6 +19,7 @@
  * reported through `onChange` as a `BoardDocument` (the saved form).
  */
 
+import { cardLinesFromBasics } from "../items/card-lines";
 import { type ComponentType, type DragEvent, createContext, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ListTree, PanelRight, Plus } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -1272,6 +1273,8 @@ function BoardItemTile({
         accent={type?.accent}
         typeLabel={type?.label ?? "Unavailable"}
         faceSlot={type?.Face ? <type.Face source={source} title={title} /> : undefined}
+        structure={type?.structure ? <type.structure source={source} title={title} /> : undefined}
+        cardLines={cardLinesFromBasics(tile.basics?.values, { title })}
         renderStatus={type ? statusRenderer(type.key, type.status, source, tile.basics?.values) : undefined}
         onMove={board.moveTile}
         onResize={board.resizeTile}

@@ -216,9 +216,14 @@ function ShapeText({ box, shape, fit, children }: { box: Rect; shape: BoardShape
         justifyContent: st.textAlign === "start" ? "flex-start" : st.textAlign === "end" ? "flex-end" : "center",
         color: shapeColorCss(st.stroke),
         opacity: st.opacity,
+        ["--ink" as string]: shapeColorCss(st.stroke),
+        ["--ink-px" as string]: size,
       }}
     >
-      <span className="block w-full">{children}</span>
+      {/* Below legibility the words become bars along their own lines (`board-lod.css` `.board-ink`). */}
+      <span className="block w-full">
+        <span className="board-ink">{children}</span>
+      </span>
     </div>
   );
 }

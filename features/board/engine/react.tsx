@@ -7,7 +7,7 @@
 
 import { createContext, useContext, useSyncExternalStore } from "react";
 import type { BoardCameraStore, TileLife } from "./camera-store";
-import type { DetailTier, PaceTier } from "./lod";
+import type { DetailLevel, DetailTier, PaceTier } from "./lod";
 import type { SnapSettings } from "./snap-preference";
 import type { SnapOverlay } from "./snapping";
 
@@ -45,6 +45,20 @@ export function usePaceTier(id: string): PaceTier {
   const tier = useDetailTier();
   const visible = useTileVisible(id);
   return visible ? tier : "offscreen";
+}
+
+/** The tile's level of detail (`engine/lod.ts` `detailLevelFor`): changes only when it crosses a threshold. */
+export function useDetailLevel(id: string): DetailLevel {
+  const store = useBoardCameraStore();
+  const get = () => store.getLevel(id);
+  return useSyncExternalStore((l) => store.subscribeLevel(id, l), get, get);
+}
+
+/** The tile's feature body has been needed at least once (monotonic): until then the tile mounts none. */
+export function useBodyWanted(id: string): boolean {
+  const store = useBoardCameraStore();
+  const get = () => store.isBodyWanted(id);
+  return useSyncExternalStore((l) => store.subscribeBodyWanted(id, l), get, () => true);
 }
 
 export function useSelectedTile(): string | null {

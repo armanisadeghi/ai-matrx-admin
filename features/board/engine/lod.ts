@@ -97,3 +97,40 @@ export const TIER_LABEL: Record<DetailTier, string> = {
   glance: "Glance — batched with soft reveal",
   overview: "Overview — title cards and progress",
 };
+
+// ── Level of detail per TILE (Arman, 2026-10-19) ─────────────────────────────
+//
+// "We are not going straight from beautiful components to just ugly, thick, dark labels."
+// Four levels, chosen by the tile's ON-SCREEN size (world size × zoom), so a huge tile at a low
+// zoom still shows more than a small one beside it:
+//
+//   full      — L0: the real component, interactive. Only while its text is legible.
+//   structure — L1: the same layout with text as calm placeholder bars (chrome, inputs, avatars,
+//               grid lines kept). Not interactive; mounts no feature body, reads nothing.
+//   card      — L2: a designed card — type color, icon, title, 1–3 saved basics, status.
+//   label     — L3: only when a couple of words is all that fits — type icon + title, crisp.
+
+export type DetailLevel = "full" | "structure" | "card" | "label";
+
+/** L1 needs this much screen room for its skeleton to read as the component it stands for. */
+export const STRUCTURE_MIN_SCREEN_W = 180;
+export const STRUCTURE_MIN_SCREEN_H = 120;
+/** L2: room for a type line, a two-line title and a fact or status. */
+export const CARD_MIN_SCREEN_W = 104;
+export const CARD_MIN_SCREEN_H = 64;
+
+/**
+ * The level a tile of `size` (world px) shows at zoom `z`. L0 is decided by legibility (body text is a
+ * world size, so it is the zoom); L1–L3 by how much screen the tile covers.
+ */
+export function detailLevelFor(size: { w: number; h: number }, z: number): DetailLevel {
+  if (BODY_FONT_PX * z >= READABLE_PX) return "full";
+  const w = size.w * z;
+  const h = size.h * z;
+  if (w >= STRUCTURE_MIN_SCREEN_W && h >= STRUCTURE_MIN_SCREEN_H) return "structure";
+  if (w >= CARD_MIN_SCREEN_W && h >= CARD_MIN_SCREEN_H) return "card";
+  return "label";
+}
+
+/** Canvas words (stickies, text, shape labels) turn into bars below this on-screen font size. */
+export const INK_LEGIBLE_PX = READABLE_PX;

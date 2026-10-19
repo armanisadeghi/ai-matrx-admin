@@ -25,7 +25,7 @@ import {
   unionRects,
   visibleWorldRect,
 } from "./camera";
-import { type DetailTier, detailTierForZoom } from "./lod";
+import { type DetailLevel, type DetailTier, OVERVIEW_ZOOM, detailLevelFor, detailTierForZoom } from "./lod";
 import { type WheelMode, WheelInterpreter } from "./wheel-input";
 import type { BoardTool } from "./tools";
 import { DEFAULT_SNAP_SETTINGS, type SnapSettings } from "./snap-preference";
@@ -150,6 +150,12 @@ export class BoardCameraStore {
 
   private tier: DetailTier;
   private visible = new Set<string>();
+  /** Each tile's level of detail (`detailLevelFor`: its on-screen size), recomputed with the coarse channels. */
+  private levels = new Map<string, DetailLevel>();
+  private levelListeners = new Map<string, Set<Listener>>();
+  /** Tiles whose feature body has been NEEDED at least once (monotonic): a tile first seen far away mounts no body. */
+  private bodyWanted = new Set<string>();
+  private bodyListeners = new Map<string, Set<Listener>>();
   /** Everything selected, in the order it was added (tiles and frames, by id). */
   private selection: readonly string[] = [];
   private selectionSet = new Set<string>();
@@ -402,9 +408,14 @@ export class BoardCameraStore {
   registerItem(id: string, rect: Rect, opts: { mark?: boolean } = {}): () => void {
     this.items.set(id, rect);
     if (opts.mark) this.marks.add(id);
-    else if (!this.life.has(id)) {
-      this.life.set(id, "live");
-      this.lastNeededAt.set(id, performance.now());
+    else {
+      if (!this.life.has(id)) {
+        this.life.set(id, "live");
+        this.lastNeededAt.set(id, performance.now());
+      }
+      this.levels.set(id, detailLevelFor(rect, this.camera.z));
+      // Opened at a readable zoom: every body mounts, as it always has. Far away: none until needed.
+      if (this.camera.z >= OVERVIEW_ZOOM) this.markBodyWanted(id);
     }
     this.scheduleCoarse();
     for (const l of this.itemListeners) l();
@@ -413,6 +424,8 @@ export class BoardCameraStore {
       this.marks.delete(id);
       for (const l of this.itemListeners) l();
       this.visible.delete(id);
+      this.levels.delete(id);
+      this.bodyWanted.delete(id);
       this.life.delete(id);
       this.lastNeededAt.delete(id);
       this.wasNeeded.delete(id);
@@ -451,6 +464,27 @@ export class BoardCameraStore {
   };
 
   isVisible = (id: string): boolean => this.visible.has(id);
+
+  /** The tile's level of detail (L0 full … L3 label). Unregistered: decided by the zoom alone. */
+  getLevel = (id: string): DetailLevel => this.levels.get(id) ?? (this.camera.z >= OVERVIEW_ZOOM ? "full" : "card");
+
+  subscribeLevel(id: string, l: Listener): () => void {
+    return addKeyed(this.levelListeners, id, l);
+  }
+
+  /** Has this tile's feature body ever been needed? Until it has, the tile shows its level face only. */
+  isBodyWanted = (id: string): boolean => this.bodyWanted.has(id) || (!this.items.has(id) && this.camera.z >= OVERVIEW_ZOOM);
+
+  subscribeBodyWanted(id: string, l: Listener): () => void {
+    return addKeyed(this.bodyListeners, id, l);
+  }
+
+  private markBodyWanted(id: string): void {
+    if (this.bodyWanted.has(id)) return;
+    this.bodyWanted.add(id);
+    const ls = this.bodyListeners.get(id);
+    if (ls) for (const l of [...ls]) l();
+  }
 
   subscribeVisible(id: string, l: Listener): () => void {
     let set = this.visibleListeners.get(id);
@@ -629,6 +663,7 @@ export class BoardCameraStore {
     for (const id of this.items.keys()) {
       if (this.marks.has(id)) continue;
       if (this.needed(id)) {
+        this.markBodyWanted(id);
         this.lastNeededAt.set(id, now);
         this.wasNeeded.add(id);
         next.set(id, "live");
@@ -786,6 +821,14 @@ export class BoardCameraStore {
       CULL_MARGIN_SCREEN_PX / this.camera.z,
     );
     for (const [id, rect] of this.items) {
+      if (!this.marks.has(id)) {
+        const level = detailLevelFor(rect, this.camera.z);
+        if (this.levels.get(id) !== level) {
+          this.levels.set(id, level);
+          const ls = this.levelListeners.get(id);
+          if (ls) for (const l of [...ls]) l();
+        }
+      }
       const now = rectsIntersect(rect, view);
       const was = this.visible.has(id);
       if (now === was) continue;
@@ -796,4 +839,17 @@ export class BoardCameraStore {
     }
     this.recomputeLife();
   }
+}
+
+function addKeyed(map: Map<string, Set<Listener>>, id: string, l: Listener): () => void {
+  let set = map.get(id);
+  if (!set) {
+    set = new Set();
+    map.set(id, set);
+  }
+  set.add(l);
+  return () => {
+    set.delete(l);
+    if (set.size === 0 && map.get(id) === set) map.delete(id);
+  };
 }

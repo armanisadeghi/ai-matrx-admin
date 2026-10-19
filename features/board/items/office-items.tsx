@@ -24,6 +24,7 @@ import { WorkbookRecord } from "@/features/workbooks/components/WorkbookRecord";
 import { WorkbooksResourcePicker } from "@/features/resource-manager/resource-picker/WorkbooksResourcePicker";
 import { entityComments, type BoardItemType, type ItemBodyProps, type PickerProps } from "./types";
 import { RecordDraftBody, type CreateRecord } from "./RecordDraftBody";
+import { WorkbookStructure } from "./structures";
 import { titleToAdopt } from "./feature-items.logic";
 import {
   NEW_WORKBOOK_NAME,
@@ -92,6 +93,7 @@ export const OFFICE_ITEMS: readonly BoardItemType[] = [
     group: "work",
     section: "notes",
     accent: "emerald",
+    structure: WorkbookStructure,
     status: { none: "Its save status lives in the editor's own bar, not in a store the board can read." },
     // A sheet needs width for its columns and height for the ribbon, formula bar and rows.
     defaultSize: { w: 1100, h: 820 },
