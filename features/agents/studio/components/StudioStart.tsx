@@ -37,7 +37,7 @@ import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { STUDIO_MODES, STUDIO_STARTERS, type StudioMode } from "../modes";
 import { buildNameFrom, type StudioState } from "../studio-state";
 import { canEditAgent } from "../improve";
-import { editedLine, recentAgents } from "../recent-agents";
+import { recentAgents, recentLines } from "../recent-agents";
 import { ExamplesStart } from "./ExamplesStart";
 import { StudioStage } from "./StudioStage";
 
@@ -79,6 +79,7 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
 
   const { agents, isLoading } = useAgentListCore({ consumerId: "agent-studio-start", visibleTabs: ["mine", "shared"] });
   const recent = recentAgents(agents);
+  const recentLine = recentLines(recent);
   const hasEditable = agents.some((a) => !a.isArchived && canEditAgent(a));
 
   const setDescription = (text: string) => {
@@ -308,7 +309,7 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
                 variant="quiet"
                 icon={<AGENT_ICON />}
                 title={a.name}
-                line={editedLine(a) ?? undefined}
+                line={recentLine.get(a.id)}
                 data-testid="studio-recent-agent"
                 onClick={() => go(`agent:${a.id}`, () => onStart({ mode: "improve", agentId: a.id }))}
               />

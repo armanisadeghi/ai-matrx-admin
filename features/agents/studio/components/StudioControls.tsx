@@ -39,7 +39,7 @@ import type { TestCaseRow } from "@/features/agent-tests/cases";
 import { CaseVersionGrid } from "@/features/agent-tests/components/CaseVersionGrid";
 import { StudioCases } from "./StudioCases";
 import { curatedDebriefModelIds, debriefModelIds } from "../debrief-models";
-import { describeVersionNote } from "../version-notes";
+import { describeVersionNote, studioChangeNote } from "../version-notes";
 import { StudioBattle } from "./StudioBattle";
 import { followServerWork } from "@/features/ai-watch/followed-work";
 import { candidateFromProposal, type StudioCandidate } from "../battle";
@@ -142,7 +142,7 @@ export function StudioControls({
   };
   const keep = async () => {
     if (!agentId) return;
-    await dispatch(saveAgent(agentId)).unwrap();
+    await saveWithNote(dispatch, agentId, candidate?.title);
     setKeptId(candidate?.proposalId ?? null);
     setCandidate(null);
     remember(null);
@@ -187,6 +187,22 @@ export function StudioControls({
   );
 }
 
+/** Saves the Builder's draft as a new version AND writes its change note (the save RPC path sets none). */
+async function saveWithNote(dispatch: ReturnType<typeof useAppDispatch>, agentId: string, proposalTitle?: string | null) {
+  const dirty = await dispatch((_d, getState) => {
+    const r = selectAgentById(getState(), agentId);
+    return Object.keys(r?._dirtyFields ?? {});
+  });
+  await dispatch(saveAgent(agentId)).unwrap();
+  const note = studioChangeNote(dirty, proposalTitle);
+  if (!note) return;
+  const version = await dispatch((_d, getState) => selectAgentById(getState(), agentId)?.version ?? null);
+  if (version == null) return;
+  const { error } = await createClient().schema("agent").from("definition_version")
+    .update({ change_note: note }).eq("agent_id", agentId).eq("version_number", version);
+  if (error) console.warn("[studio] the version note was not written", error.message);
+}
+
 function SettingsTab({ agentId, onFeedback, onSaved }: { agentId: string; onFeedback: (t: string) => Promise<boolean>; onSaved: () => void }) {
   const dispatch = useAppDispatch();
   const record = useAppSelector((s) => selectAgentById(s, agentId));
@@ -199,7 +215,7 @@ function SettingsTab({ agentId, onFeedback, onSaved }: { agentId: string; onFeed
   const save = async () => {
     setSaving(true);
     try {
-      await dispatch(saveAgent(agentId)).unwrap();
+      await saveWithNote(dispatch, agentId);
       toast.success("New version saved");
       onSaved();
     } catch (e) {
