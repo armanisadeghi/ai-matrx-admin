@@ -22,6 +22,8 @@
 
 import { BackendApiError } from "@ai-matrx/api";
 import { postJsonAsUser } from "@/lib/api/post-json-as-user";
+import { cellNeedsYou } from "./model";
+import type { TranslationCellRow } from "./types";
 
 /** THE query key for the grid bundle; cell details hang under it, so one invalidate refreshes all. */
 export const TRANSLATION_GRID_QUERY_KEY = [
@@ -365,4 +367,28 @@ async function postTestTranslationCell(
     path: `/admin/ai-catalog/translation-cells/${encodeURIComponent(cellId)}/test`,
     body: {},
   });
+}
+
+/**
+ * Did this cell just leave "Needs you" (and so its /approvals row)? The list's own
+ * rule (`cellNeedsYou`: proposed, a conflict or a rejection mark) before vs after —
+ * a promotion to agent and a cleared mark both count.
+ */
+export function leftNeedsYou(
+  before: TranslationCellRow,
+  after: {
+    state: unknown;
+    conflict: unknown;
+    rejection_fingerprint: string | null;
+  },
+): boolean {
+  return (
+    cellNeedsYou(before) &&
+    !cellNeedsYou({
+      ...before,
+      state: after.state as TranslationCellRow["state"],
+      conflict: after.conflict as TranslationCellRow["conflict"],
+      rejection_fingerprint: after.rejection_fingerprint,
+    })
+  );
 }
