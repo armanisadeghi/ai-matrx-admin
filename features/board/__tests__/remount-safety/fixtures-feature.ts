@@ -296,6 +296,7 @@ export const runRow = {
   agent_id: null,
   agent_version_id: null,
   completed_at: "2026-09-30T18:12:40.000Z",
+  chat_conversation_id: null,
   conversation_id: null,
   ...STAMP,
   created_by: PERSON.id,
