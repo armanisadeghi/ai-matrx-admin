@@ -43,6 +43,8 @@ import { readConfidenceThreshold, readTranslationCellDetail } from "../data";
 import {
   TRANSLATION_GRID_QUERY_KEY,
   evidenceProven,
+  jsonEqual,
+  leftNeedsYou,
   proofCurrent,
   isHttpUrl,
   normalizeEvidence,
@@ -60,7 +62,6 @@ import { summarizeRule } from "../model";
 import type { TranslationCellRow } from "../types";
 
 const GRID_HREF = "/administration/ai/ai-models/translations";
-const NEEDS_YOU_STATES = new Set(["proposed", "agent"]);
 
 function when(iso: string | null | undefined): string | null {
   if (!iso) return null;
@@ -120,13 +121,29 @@ const OUTCOME_TONE: Record<string, BadgeTone> = {
   skipped: "neutral",
 };
 
+const WRITER_LABEL: Record<string, string> = {
+  probe: "Server live test",
+  agent: "Drafting agent",
+  ingest: "Provider catalog",
+  migration: "Code change",
+};
+
 function EvidenceEntry({
   entry,
   index,
+  currentRule,
 }: {
   entry: EvidenceView;
   index: number;
+  currentRule: unknown;
 }) {
+  // the door's stamps: who wrote the entry, and the rule it was written about
+  const by = entry.extra.find(([k]) => k === "by")?.[1];
+  const forRule = entry.extra.find(([k]) => k === "for_rule");
+  const sameRule = forRule ? jsonEqual(forRule[1], currentRule) : null;
+  const rest = entry.extra.filter(
+    ([k]) => k !== "by" && !(k === "for_rule" && sameRule),
+  );
   return (
     <div
       className="space-y-0.5 border-l-2 border-border pl-3"
@@ -175,8 +192,34 @@ function EvidenceEntry({
           value={<ChatDoor conversationId={entry.conversationId} />}
         />
       ) : null}
-      {entry.extra.map(([k, v]) => (
-        <AnyRow key={k} label={k} value={v} />
+      {by !== undefined ? (
+        <PropertyRow
+          label="Written by"
+          value={
+            typeof by === "string"
+              ? (WRITER_LABEL[by] ?? by)
+              : JSON.stringify(by)
+          }
+        />
+      ) : null}
+      {sameRule !== null ? (
+        <PropertyRow
+          label="Tested rule"
+          value={
+            sameRule ? (
+              "This rule"
+            ) : (
+              <Badge tone="warning">An earlier rule (shown below)</Badge>
+            )
+          }
+        />
+      ) : null}
+      {rest.map(([k, v]) => (
+        <AnyRow
+          key={k}
+          label={k === "for_rule" ? "Earlier rule" : k}
+          value={v}
+        />
       ))}
     </div>
   );
@@ -300,11 +343,7 @@ function TestNow({ cell }: { cell: TranslationCellRow }) {
         queryKey: TRANSLATION_GRID_QUERY_KEY,
       });
       const fresh = await readTranslationCellDetail(cell.id).catch(() => null);
-      if (
-        fresh?.state &&
-        fresh.state !== cell.state &&
-        !NEEDS_YOU_STATES.has(fresh.state)
-      ) {
+      if (fresh && leftNeedsYou(cell, fresh)) {
         recordToast.info(
           { type: "translation_cell", id: cell.id, title: cell.setting_key },
           `${cell.setting_key} is now ${fresh.state}`,
@@ -419,7 +458,8 @@ export default function CellDetailPanel({
   const detail = detailQuery.data ?? null;
   const reading = !detail && !detailQuery.isError;
   const evidence = normalizeEvidence(detail?.evidence);
-  const proven = detail ? proofCurrent(detail.evidence, cell.rule) : null;
+  const currentRule = detail ? detail.rule : cell.rule;
+  const proven = detail ? proofCurrent(detail.evidence, currentRule) : null;
   // passing tests on record that the door no longer counts (an earlier rule, or not server-run)
   const staleProof = detail
     ? !proven && evidenceProven(detail.evidence)
@@ -543,7 +583,12 @@ export default function CellDetailPanel({
       {evidence.length > 0 ? (
         <div className="space-y-2">
           {evidence.map((e, i) => (
-            <EvidenceEntry key={i} entry={e} index={i} />
+            <EvidenceEntry
+              key={i}
+              entry={e}
+              index={i}
+              currentRule={currentRule}
+            />
           ))}
         </div>
       ) : null}

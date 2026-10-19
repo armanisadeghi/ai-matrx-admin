@@ -6,6 +6,7 @@
 import {
   evidenceProven,
   jsonEqual,
+  leftNeedsYou,
   proofCurrent,
   normalizeEvidence,
   normalizeTestResult,
@@ -274,5 +275,67 @@ describe("proofCurrent mirrors ai.translation_proof_current", () => {
     expect(jsonEqual({ a: [1, { b: 2 }] }, { a: [1, { b: 2 }] })).toBe(true);
     expect(jsonEqual([1, 2], [2, 1])).toBe(false);
     expect(jsonEqual({ a: 1 }, { a: 1, b: undefined })).toBe(false);
+  });
+});
+
+describe("leftNeedsYou — the 'where did it go' notice", () => {
+  const cell = {
+    id: "c",
+    layer: "offering",
+    layer_owner_id: "o",
+    setting_key: "k",
+    rule: {},
+    state: "proposed",
+    confidence: 0.9,
+    rationale: null,
+    evidence: [],
+    source: "agent",
+    conflict: null,
+    rejection_fingerprint: null,
+    approved_by: null,
+    approved_at: null,
+    version: 1,
+    updated_at: null,
+  } as unknown as Parameters<typeof leftNeedsYou>[0];
+  it("fires on a promotion to agent (the main Test now success)", () => {
+    expect(
+      leftNeedsYou(cell, {
+        state: "agent",
+        conflict: null,
+        rejection_fingerprint: null,
+      }),
+    ).toBe(true);
+  });
+  it("stays quiet while the cell is still proposed", () => {
+    expect(
+      leftNeedsYou(cell, {
+        state: "proposed",
+        conflict: null,
+        rejection_fingerprint: null,
+      }),
+    ).toBe(false);
+  });
+  it("fires when an agent cell's rejection mark clears", () => {
+    const marked = {
+      ...cell,
+      state: "agent",
+      rejection_fingerprint: "fp",
+    } as typeof cell;
+    expect(
+      leftNeedsYou(marked, {
+        state: "agent",
+        conflict: null,
+        rejection_fingerprint: null,
+      }),
+    ).toBe(true);
+  });
+  it("does not fire when the cell still needs you", () => {
+    expect(
+      leftNeedsYou(cell, {
+        state: "agent",
+        conflict: null,
+        rejection_fingerprint: "fp",
+      }),
+    ).toBe(false);
   });
 });

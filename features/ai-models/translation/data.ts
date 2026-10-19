@@ -445,6 +445,10 @@ export type TranslationCellDetailRow = {
   created_at: string | null;
   created_by: string | null;
   updated_by: string | null;
+  /** read with the evidence so the proof check compares the rule the evidence was read beside */
+  rule: unknown;
+  conflict: unknown;
+  rejection_fingerprint: string | null;
 };
 
 export async function readTranslationCellDetail(
@@ -454,7 +458,9 @@ export async function readTranslationCellDetail(
     "ai.translation-approvals",
     ai()
       .from("translation_cell")
-      .select("id, state, evidence, metadata, created_at, created_by, updated_by")
+      .select(
+        "id, state, rule, conflict, rejection_fingerprint, evidence, metadata, created_at, created_by, updated_by",
+      )
       .eq("id", cellId)
       .maybeSingle(),
   );
@@ -479,9 +485,16 @@ export async function readConfidenceThreshold(): Promise<number> {
     }),
   );
   if (error) throw error;
-  const n = typeof data === "number" ? data : typeof data === "string" ? Number(data) : NaN;
+  const n =
+    typeof data === "number"
+      ? data
+      : typeof data === "string"
+        ? Number(data)
+        : NaN;
   if (!Number.isFinite(n)) {
-    throw new Error(`The threshold knob answered ${JSON.stringify(data)}, not a number.`);
+    throw new Error(
+      `The threshold knob answered ${JSON.stringify(data)}, not a number.`,
+    );
   }
   return n;
 }
