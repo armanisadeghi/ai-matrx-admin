@@ -57,7 +57,8 @@ export const isSpaceCard = (card: Pick<GalleryCard, "space">): boolean => spaceT
 /** The first rows of a template's main table, as the public door hands them to a gallery card. */
 export interface GalleryThumb {
   table: string | null;
-  columns: Array<{ key: string; label: string; type: string; colors: Record<string, string> | null }>;
+  /** `look`: the column's look id (`color_pair` draws swatches), so a card draws the value as the table does. */
+  columns: Array<{ key: string; label: string; type: string; colors: Record<string, string> | null; look?: string | null }>;
   rows: Array<Record<string, unknown>>;
   /** The main table's first non-grid view (kanban, calendar, timeline, gallery), else null. */
   view: string | null;

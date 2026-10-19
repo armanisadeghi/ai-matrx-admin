@@ -579,7 +579,7 @@ export function TemplateThumb({ thumb }: { thumb: GalleryThumb | null | undefine
             <tr key={i}>
               {thumb.columns.map((c) => (
                 <td key={c.key}>
-                  <ThumbValue type={c.type} colors={c.colors} value={typeof r[c.key] === "string" && String(r[c.key]).startsWith("@") ? null : r[c.key]} />
+                  <ThumbValue type={c.type} colors={c.colors} look={c.look ?? null} value={typeof r[c.key] === "string" && String(r[c.key]).startsWith("@") ? null : r[c.key]} />
                 </td>
               ))}
             </tr>
@@ -596,8 +596,13 @@ const THUMB_FRAME =
   "[&_b]:inline-flex [&_b]:max-w-full [&_b]:truncate [&_b]:rounded [&_b]:px-1.5 [&_b]:py-0.5 [&_b]:font-medium";
 
 /** One thumbnail cell: a chip for a choice, else the value as text (the same words ValueText writes). */
-function ThumbValue({ type, colors, value }: { type: string; colors: Record<string, string> | null; value: unknown }): ReactNode {
+function ThumbValue({ type, colors, look, value }: { type: string; colors: Record<string, string> | null; look: string | null; value: unknown }): ReactNode {
   if (value === null || value === undefined || value === "") return "—";
+  // ADVERSARIAL-4 N8: a color column (look color_pair / color) draws its swatches, never the stored JSON or hex text.
+  if (look === "color_pair" || look === "color") {
+    const swatches = thumbSwatches(value);
+    if (swatches.length) return <ThumbSwatches colors={swatches} />;
+  }
   const first = Array.isArray(value) ? value[0] : value;
   if ((type === "select" || type === "multi_select") && (typeof first === "string" || typeof first === "number")) {
     return <b className={CHIP[colors?.[String(first)] ?? "gray"] ?? CHIP.gray}>{String(first)}</b>;
@@ -611,6 +616,36 @@ function ThumbValue({ type, colors, value }: { type: string; colors: Record<stri
   if (Array.isArray(value)) return value.map(String).join(", ");
   if (typeof value === "object") return "—";
   return String(value);
+}
+
+const HEX = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+
+/** The colors a color-look value holds: `{"light":"#fff","dark":"#000"}` (a color pair) or one hex. */
+export function thumbSwatches(value: unknown): string[] {
+  let v: unknown = value;
+  if (typeof v === "string" && v.trim().startsWith("{")) {
+    try {
+      v = JSON.parse(v);
+    } catch {
+      return [];
+    }
+  }
+  if (typeof v === "string") return HEX.test(v.trim()) ? [v.trim()] : [];
+  if (v && typeof v === "object") return ["light", "dark"].map((k) => (v as Record<string, unknown>)[k]).filter((c): c is string => typeof c === "string" && HEX.test(c));
+  return [];
+}
+
+/** A color value as swatches (light then dark), each with its hex. */
+function ThumbSwatches({ colors }: { colors: string[] }) {
+  return (
+    <span className="inline-flex items-center gap-1" data-template-thumb-swatches="">
+      {colors.map((c, i) => (
+        // The swatch IS the data's color (a template's own token value), so it is drawn from the value.
+        <span key={i} className="inline-block size-3 shrink-0 rounded-sm border border-border" style={{ backgroundColor: c }} title={c} />
+      ))}
+      <span className="truncate">{colors[0]}</span>
+    </span>
+  );
 }
 
 const VIEW_WORD: Record<string, string> = { kanban: "Board", calendar: "Calendar", timeline: "Timeline", gallery: "Gallery" };
