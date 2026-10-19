@@ -53,7 +53,6 @@ $function$;
 INSERT INTO platform.client_callable_door (schema_name, function_name, identity_args, identity_argtypes, declared_by, reason, signed_in_callers)
 VALUES ('custom', '_record_update_reroutes', 'p_old uuid, p_new uuid', array['uuid'::regtype::oid, 'uuid'::regtype::oid], 'atmovejob_a_move_validators_once.sql',
         'Evaluated in the WHEN clause of 21 BEFORE UPDATE row triggers on custom.record, as whichever role writes the row (a signed-in person through the store doors). Reads only its two arguments, one GUC and the partition catalog; returns a boolean, touches nothing.', true);
-REVOKE ALL ON FUNCTION custom._record_update_reroutes(uuid, uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION custom._record_update_reroutes(uuid, uuid) TO authenticated, service_role;
 
 CREATE OR REPLACE TRIGGER _value_envelope BEFORE UPDATE ON custom.record FOR EACH ROW WHEN ((((new.data_class IS DISTINCT FROM 'record'::text) OR (old.data_class IS DISTINCT FROM new.data_class) OR (old.data IS DISTINCT FROM new.data) OR (old.table_id IS DISTINCT FROM new.table_id) OR (old.organization_id IS DISTINCT FROM new.organization_id) OR (old.metadata IS DISTINCT FROM new.metadata) OR (old.custom_fields IS DISTINCT FROM new.custom_fields) OR (old.visibility IS DISTINCT FROM new.visibility))) AND ((old.organization_id IS NOT DISTINCT FROM new.organization_id) OR (NOT custom._record_update_reroutes(old.organization_id, new.organization_id)))) EXECUTE FUNCTION custom._value_envelope();
