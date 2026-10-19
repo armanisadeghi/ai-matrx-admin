@@ -35,6 +35,15 @@ export interface NotionSyncReport {
   archived?: number;
   conflicts?: NotionSyncConflict[];
   notices?: string[];
+  /** Rows Notion no longer lists that were NOT archived: the server's archive guard holds them for the person's yes. */
+  archive_held?: number;
+  /** With archive_held: the exact confirmation for those rows, sent back by Archive. */
+  archive_confirm?: string | null;
+}
+
+/** The held archive's own notice carries an agent call; the bar asks instead, so it is never shown raw. */
+export function shownNotices(report: NotionSyncReport): string[] {
+  return (report.notices ?? []).filter((n) => !(report.archive_held && n.startsWith("Nothing was archived")));
 }
 
 interface SyncState {
@@ -84,7 +93,7 @@ export function NotionSyncReportDialog({ report, open, onClose }: { report: Noti
                 ))}
               </ul>
             ) : null}
-            {report.notices?.length ? <p className="text-xs text-muted-foreground">{report.notices.join(" ")}</p> : null}
+            {shownNotices(report).length ? <p className="text-xs text-muted-foreground">{shownNotices(report).join(" ")}</p> : null}
           </>
         ) : null}
         <div className="flex justify-end">
@@ -110,6 +119,7 @@ export function NotionSyncBar({ tableId, organizationId }: { tableId: string; or
   const [state, setState] = useState<SyncState | null>(null);
   const [busy, setBusy] = useState(false);
   const [showing, setShowing] = useState(false);
+  const [kept, setKept] = useState<string | null>(null);
   const opts = organizationId ? { organizationId } : {};
   const table = useTable(tableId);
   const fileImported = carriesNotionKey((table.data as { fields?: Array<{ name?: string; label?: string }> } | null)?.fields);
@@ -124,13 +134,14 @@ export function NotionSyncBar({ tableId, organizationId }: { tableId: string; or
     };
   }, [tableId, organizationId]);
 
-  const syncNow = useCallback(async () => {
+  const syncNow = useCallback(async (confirmArchive?: string) => {
     setBusy(true);
     try {
-      const { data } = await postJson<NotionSyncReport, { table_id: string }>("/notion-import/sync", { table_id: tableId }, opts);
+      const body = confirmArchive ? { table_id: tableId, confirm_archive: confirmArchive } : { table_id: tableId };
+      const { data } = await postJson<NotionSyncReport, { table_id: string; confirm_archive?: string }>("/notion-import/sync", body, opts);
       setState({ connected: true, synced_at: data.finished_at, report: data });
       tableShapeChanged(tableId);
-      setShowing(true);
+      setShowing(!data.archive_held);
     } catch (err) {
       toast.error(extractErrorMessage(err));
     } finally {
@@ -152,12 +163,28 @@ export function NotionSyncBar({ tableId, organizationId }: { tableId: string; or
   }
   if (!state?.connected) return null;
   const report = state.report ?? null;
+  // A held archive (the server's guard) is one plain question with its way out, in place of the "synced" chip.
+  const held = report?.archive_held && report.archive_confirm && kept !== report.archive_confirm ? report : null;
   return (
     <div className="flex shrink-0 items-center gap-1" data-notion-sync-bar="">
-      <Button type="button" variant="quiet" className="hidden max-w-[16rem] truncate md:inline-flex" onClick={() => setShowing(true)} data-notion-sync-when="">
-        {busy ? "Syncing Notion" : `Notion synced ${ago(state.synced_at)}`}
-        {report?.conflicts?.length ? ` · ${report.conflicts.length} conflict${report.conflicts.length === 1 ? "" : "s"}` : ""}
-      </Button>
+      {held ? (
+        <div className="flex items-center gap-1" data-notion-sync-held="">
+          <span className="text-sm text-muted-foreground">
+            Notion no longer lists {held.archive_held} {held.archive_held === 1 ? "row" : "rows"}. Archive them?
+          </span>
+          <Button type="button" variant="outline" disabled={busy} onClick={() => void syncNow(String(held.archive_confirm))} data-notion-sync-archive="">
+            Archive
+          </Button>
+          <Button type="button" variant="quiet" disabled={busy} onClick={() => setKept(String(held.archive_confirm))} data-notion-sync-keep="">
+            Keep
+          </Button>
+        </div>
+      ) : (
+        <Button type="button" variant="quiet" className="hidden max-w-[16rem] truncate md:inline-flex" onClick={() => setShowing(true)} data-notion-sync-when="">
+          {busy ? "Syncing Notion" : `Notion synced ${ago(state.synced_at)}`}
+          {report?.conflicts?.length ? ` · ${report.conflicts.length} conflict${report.conflicts.length === 1 ? "" : "s"}` : ""}
+        </Button>
+      )}
       <Tooltip>
         <TooltipTrigger asChild>
           <Button icon={<RefreshCw className={busy ? "animate-spin" : undefined} />} variant="quiet" aria-label="Sync now with Notion" disabled={busy} onClick={() => void syncNow()} data-notion-sync-now="" />
