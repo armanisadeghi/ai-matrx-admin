@@ -1,10 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0151",
-  "formerSlugs": [
-    "spaces-sp0151"
-  ],
-  "version": 5,
+  "version": 6,
   "title": "Content Calendar",
   "description": "Content teams: plan blog posts, emails and videos across channels on one calendar.",
   "forWho": "Marketers, creators and small content teams",
@@ -1262,7 +1259,7 @@
         "Larkin Court"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1977,5 +1974,8 @@
       ]
     }
   ],
-  "waivers": []
+  "waivers": [],
+  "formerSlugs": [
+    "spaces-sp0151"
+  ]
 }
