@@ -48,6 +48,8 @@ export interface AnswerValueViewProps {
   density?: StructuredValueDensity;
   /** What an empty answer says. */
   emptyText?: string;
+  /** Offer "Show the raw data" under a fallback view. Default true; a member-facing surface passes false. */
+  offerRaw?: boolean;
 }
 
 export function AnswerValueView({
@@ -56,6 +58,7 @@ export function AnswerValueView({
   kind,
   density,
   emptyText = "The run finished with an empty answer.",
+  offerRaw = true,
 }: AnswerValueViewProps) {
   // The kind registry's database tiers are registered by the lazily loaded rich-content host. A kind answer drawn
   // before it lands would read the compiled floor only and settle on the "no custom view yet" view for good, so
@@ -83,12 +86,13 @@ export function AnswerValueView({
               value={value}
               kind={routeKind}
               density={density}
+              footer={offerRaw}
             />
           </div>
         }
       />
     ) : (
-      <StructuredValueView value={value} density={density} />
+      <StructuredValueView value={value} density={density} footer={offerRaw} />
     );
   }
   // Text, a scalar, a file URL, marked kind JSON (AnswerTextView).
