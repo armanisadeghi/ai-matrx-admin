@@ -12,7 +12,7 @@ every push. This fails when any workflow under .github/workflows/:
   (c) runs a macos-* runner on a `schedule` that fires more than once a day (7 a week), or a
       windows-* runner on one that fires more than once a week, counting every cron line of the
       workflow together (release cadence, Arman 2026-10-11: only aidream and ai-matrx ride the
-      30-minute train; Matrx 2's Mac at most daily, Windows/Linux weekly). A job that calls a
+      30-minute train; Matrx 2's Mac at most daily, Windows/Linux at most twice a week). A job that calls a
       reusable workflow counts the runners named in its `with:` block.
 
   (d) COST MANIFEST (.github/ci-cost.json, ci-spend law, Arman 2026-10-11): every workflow has an
