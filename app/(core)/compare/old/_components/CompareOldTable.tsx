@@ -67,7 +67,9 @@ export function CompareOldTable() {
       selection={false}
       detail={{ enabled: false }}
       window={{ enabled: false }}
-      toolbar={{ title: "Old pages", search: false }}
+      searchText={(p) => [p.name, p.oldAddress, p.note ?? "", p.newLabel, p.extra?.label ?? ""].join(" ")}
+      defaultSort={{ id: "page", direction: "asc" }}
+      toolbar={{ title: "Old pages" }}
     />
   );
 }
