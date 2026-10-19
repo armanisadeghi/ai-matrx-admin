@@ -11,6 +11,11 @@
 //     cards follow at once;
 //   · FEATURED: the hand-picked FEATURED_SPACE_TEMPLATES, never the first six alphabetically;
 //   · every card has a picture (TemplateCards), drawn on the server: no image loads, nothing moves.
+//
+// GALLERY-PERF (2026-10-19): every server-drawn element ships twice (HTML + the RSC payload), and /templates drew 143
+// pictured cards (1.58 MB). Now a list page draws PAGE_SIZE cards and links ?page=2… (server-rendered, crawlable,
+// self-canonical: galleryPageHref); the hub draws only the featured cards and, per category, a tile with its first
+// few template names as links. Guard: features/make/__tests__/gallery-pages-stay-light.test.tsx.
 
 import Link from "next/link";
 
@@ -33,10 +38,10 @@ import {
   workspacesHref,
 } from "./publicGallery";
 
-/** Cards per category on the hub; the category's own page lists them all. */
+/** Template names per category tile on the hub; the category's own page lists them all. */
 const PER_CATEGORY_ON_HUB = 3;
-/** Cards named in a page's ItemList (JSON-LD). */
-const LISTED = 30;
+/** Pictured cards per list page (a knob): the rest are on ?page=2… */
+export const PAGE_SIZE = 24;
 
 export function PublicGalleryPage({
   title,
@@ -44,6 +49,7 @@ export function PublicGalleryPage({
   all,
   path,
   query = "",
+  page = 1,
   hub = false,
   active,
   state,
@@ -57,7 +63,9 @@ export function PublicGalleryPage({
   path: string;
   /** The search (`?q=`); "" = none. */
   query?: string;
-  /** /templates: featured + every category, a few cards each. */
+  /** Which page of the list (`?page=`, 1-based; out of range shows the nearest). */
+  page?: number;
+  /** /templates: featured + every category as a tile. */
   hub?: boolean;
   /** The category this page is (or files under), lit in the rail. */
   active?: string | null;
@@ -65,22 +73,27 @@ export function PublicGalleryPage({
 }) {
   const q = query.trim();
   const found = q ? searchGallery(cards, q) : [...cards];
-  const spaces = found.filter(isSpaceCard);
-  const tables = found.filter((c) => !isSpaceCard(c));
+  // Workspaces first, then single tables: one ordered list, cut into pages.
+  const ordered = [...found.filter(isSpaceCard), ...found.filter((c) => !isSpaceCard(c))];
+  const pages = Math.max(1, Math.ceil(ordered.length / PAGE_SIZE));
+  const at = Math.min(Math.max(1, Math.floor(page) || 1), pages);
+  const shown = ordered.slice((at - 1) * PAGE_SIZE, at * PAGE_SIZE);
+  const spaces = shown.filter(isSpaceCard);
+  const tables = shown.filter((c) => !isSpaceCard(c));
   const categories = galleryCategories(all);
-  const listed = (q ? found : hub ? featuredCards(all) : found).slice(0, LISTED);
+  const listed = q || !hub ? shown : featuredCards(all);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     name: title,
-    url: `${siteConfig.url}${path}`,
+    url: `${siteConfig.url}${galleryPageHref(path, q, at)}`,
     isPartOf: { "@type": "WebSite", name: "AI Matrx", url: siteConfig.url },
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: found.length,
       itemListElement: listed.map((c, i) => ({
         "@type": "ListItem",
-        position: i + 1,
+        position: (q || !hub ? (at - 1) * PAGE_SIZE : 0) + i + 1,
         name: c.space?.title ?? c.name,
         url: `${siteConfig.url}${publicTemplateHref(c)}`,
       })),
@@ -135,15 +148,16 @@ export function PublicGalleryPage({
             ) : (
               <>
                 {spaces.length ? (
-                  <Section id="templates-workspaces" title="Workspaces" count={spaces.length}>
+                  <Section id="templates-workspaces" title="Workspaces" count={ordered.filter(isSpaceCard).length}>
                     <SpaceTemplateCardGrid cards={spaces} hrefFor={(c) => publicTemplateHref(c)} attr="data-public-templates-space-cards" />
                   </Section>
                 ) : null}
                 {tables.length ? (
-                  <Section id="templates-tables" title="Single tables" count={tables.length}>
+                  <Section id="templates-tables" title="Single tables" count={ordered.length - ordered.filter(isSpaceCard).length}>
                     <TemplateCardGrid cards={tables} hrefFor={(c) => publicTemplateHref(c)} attr="data-public-templates-cards" />
                   </Section>
                 ) : null}
+                <Pager path={path} query={q} page={at} pages={pages} />
               </>
             )}
           </div>
@@ -153,7 +167,53 @@ export function PublicGalleryPage({
   );
 }
 
-/** /templates with no search: the featured row, then every category with its first few workspaces, then single tables by industry. */
+/** A list page's address: `?q=` and `?page=` only when they say something (page 1 is the bare address). */
+export function galleryPageHref(path: string, query: string, page: number): string {
+  const params = new URLSearchParams();
+  if (query.trim()) params.set("q", query.trim());
+  if (page > 1) params.set("page", String(page));
+  const s = params.toString();
+  return s ? `${path}?${s}` : path;
+}
+
+/** `?page=` as a page number (1 when absent or unreadable). */
+export function pageParam(value: string | string[] | undefined): number {
+  const n = Number.parseInt(Array.isArray(value) ? (value[0] ?? "") : (value ?? ""), 10);
+  return Number.isFinite(n) && n > 1 ? n : 1;
+}
+
+/** Previous · page N of M · Next — plain links, so a crawler walks every page. */
+function Pager({ path, query, page, pages }: { path: string; query: string; page: number; pages: number }) {
+  if (pages <= 1) return null;
+  const linkClass = "inline-flex h-9 items-center rounded-md border border-border bg-card px-3 type-body text-foreground hover:bg-muted";
+  return (
+    <nav aria-label="Pages" className="flex items-center justify-between gap-3" data-public-templates-pager={`${page}/${pages}`}>
+      {page > 1 ? (
+        <Link href={galleryPageHref(path, query, page - 1)} rel="prev" className={linkClass}>
+          Previous
+        </Link>
+      ) : (
+        <span />
+      )}
+      <span className="type-body text-muted-foreground tabular-nums">
+        Page {page} of {pages}
+      </span>
+      {page < pages ? (
+        <Link href={galleryPageHref(path, query, page + 1)} rel="next" className={linkClass}>
+          Next
+        </Link>
+      ) : (
+        <span />
+      )}
+    </nav>
+  );
+}
+
+/**
+ * /templates with no search: the featured cards (pictured), then every category as a tile — its name, its count and
+ * its first few templates by name, all links — then the single tables by industry the same way. The pictures live on
+ * the category pages, a page at a time.
+ */
 function HubSections({ cards }: { cards: readonly GalleryCard[] }) {
   const featured = featuredCards(cards);
   const categories = galleryCategories(cards.filter(isSpaceCard));
@@ -168,37 +228,72 @@ function HubSections({ cards }: { cards: readonly GalleryCard[] }) {
           <SpaceTemplateCardGrid cards={featured} hrefFor={(c) => publicTemplateHref(c)} attr="data-public-templates-featured" />
         </Section>
       ) : null}
-      {categories.map(({ key, count }) => {
-        const inCategory = cards.filter((c) => isSpaceCard(c) && cardCategory(c) === key);
-        return (
-          <Section key={key} id={`templates-${key}`} title={spaceCategoryLabel(key)} count={count} more={{ href: workspacesHref(key), label: `All ${count}` }}>
-            <SpaceTemplateCardGrid cards={inCategory.slice(0, PER_CATEGORY_ON_HUB)} hrefFor={(c) => publicTemplateHref(c)} attr="data-public-templates-space-cards" />
-          </Section>
-        );
-      })}
+      {categories.length ? (
+        <Section id="templates-categories" title="Workspaces by category">
+          <TileGrid attr="data-public-templates-category-tiles">
+            {categories.map(({ key, count }) => (
+              <Tile
+                key={key}
+                href={workspacesHref(key)}
+                label={spaceCategoryLabel(key)}
+                count={count}
+                items={cards.filter((c) => isSpaceCard(c) && cardCategory(c) === key).slice(0, PER_CATEGORY_ON_HUB)}
+              />
+            ))}
+          </TileGrid>
+        </Section>
+      ) : null}
       {tables.length ? (
-        <section className="flex flex-col gap-6" aria-labelledby="templates-tables" data-public-templates-tables="">
+        <section className="flex flex-col gap-3" aria-labelledby="templates-tables" data-public-templates-tables="">
           <h2 id="templates-tables" className="text-xl font-semibold tracking-tight text-foreground">
             Single tables <span className="type-body font-normal text-muted-foreground tabular-nums">{tables.length}</span>
           </h2>
-          {industries.map((industry) => {
-            const inGroup = tables.filter((c) => c.industry === industry);
-            return (
-              <Section
-                key={industry}
-                id={`templates-industry-${industry}`}
-                title={wordFor("industry", industry)}
-                level={3}
-                count={inGroup.length}
-                more={{ href: industryHref(industry), label: `All ${inGroup.length}` }}
-              >
-                <TemplateCardGrid cards={inGroup.slice(0, PER_CATEGORY_ON_HUB)} hrefFor={(c) => publicTemplateHref(c)} attr="data-public-templates-cards" />
-              </Section>
-            );
-          })}
+          <TileGrid attr="data-public-templates-industry-tiles">
+            {industries.map((industry) => {
+              const inGroup = tables.filter((c) => c.industry === industry);
+              return (
+                <Tile
+                  key={industry}
+                  href={industryHref(industry)}
+                  label={wordFor("industry", industry)}
+                  count={inGroup.length}
+                  items={inGroup.slice(0, PER_CATEGORY_ON_HUB)}
+                />
+              );
+            })}
+          </TileGrid>
         </section>
       ) : null}
     </>
+  );
+}
+
+function TileGrid({ attr, children }: { attr: string; children: React.ReactNode }) {
+  return (
+    <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,15rem),1fr))] gap-3" {...{ [attr]: "" }}>
+      {children}
+    </ul>
+  );
+}
+
+/** One category on the hub: its name and count open the category; each named template opens itself. */
+function Tile({ href, label, count, items }: { href: string; label: string; count: number; items: readonly GalleryCard[] }) {
+  return (
+    <li className="flex min-w-0 flex-col gap-1.5 rounded-xl border border-border bg-card p-3">
+      <Link href={href} className="flex items-baseline justify-between gap-2 type-title text-foreground hover:text-primary">
+        <span className="truncate">{label}</span>
+        <span className="shrink-0 type-meta text-muted-foreground tabular-nums">{count}</span>
+      </Link>
+      <ul className="flex flex-col gap-0.5 type-body">
+        {items.map((c) => (
+          <li key={c.id} className="truncate">
+            <Link href={publicTemplateHref(c)} className="text-muted-foreground hover:text-foreground" data-public-templates-tile-item={c.catalogue_id}>
+              {c.space?.title ?? c.name}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </li>
   );
 }
 

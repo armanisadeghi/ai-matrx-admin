@@ -150,6 +150,37 @@ List the facts the question requires, trace what the call site actually sends, a
 coverage ratio on real data. If a required fact is missing you build the delivery, cut the
 question down, or refuse — you never let the agent fill the gap.
 
+### 0b. Evidence before instructions — read what real runs DID (Arman, 2026-10-19)
+
+The factory requires real calls before a custom agent for a reason: **the pattern of what
+the agent kept reaching for is the design.** Rebuilding or replacing an agent whose job
+already runs (a mandate's runs, or ANY agent people run on that surface — find them by
+surface / `source_feature` / route, never by agent id), tabulate from `chat.user_request`,
+`chat.tool_call` and the turn receipts (`chat.message.model_context.delivery.receipt`):
+
+1. **Tools** called, how often, by which agent.
+2. **Context fetched by tool** (`context` / `ctx_get` keys, record reads). A value the agent
+   fetches in most runs is promoted: it arrives with the request, whole, up to a measured
+   cap. The receipt says why it did not: `delivery: on_request` with
+   `max_inline_chars: 200, decided_by: default` means nobody declared a limit.
+3. **Tool errors** — each is a value the agent lacked or a target it guessed.
+4. **The costliest runs and why.** Expensive because there was a lot to do is fine;
+   expensive because it struggled (extra iterations to fetch what it should have been
+   given, searching for a format, retries) is the defect to fix.
+5. **What people actually ask** — the proof cases come from these, verbatim.
+
+**Promotion is plumbing, not prose.** Give the context policy a `max_inline_chars` picked
+from measured sizes (the Notes body: p95 35,847 chars → 50,000, the platform inline cap),
+prefer a server-resolved reference (a `resource_ref` with `representation`, read from the
+record id every turn) over the browser shipping the body, deliver each fact ONCE (a
+duplicate copy gets limit `0`), and never make per-turn content a cached variable.
+
+**Instructions teach only what is unique to this job** — the behaviour, the judgement,
+where this surface's facts arrive. Never re-teach a tool: its definition already reaches
+the agent. A `--brief` must carry this table in `evidence` (tools, context fetched, errors,
+costliest, asks) or the factory refuses it (`brief_evidence_gap`). Worked example:
+`systems/intelligence/mandates/projects/intelligence-from-data/notes-agent-from-evidence-2026-10-19.md`.
+
 ### 1. Source the intent, then nail the exact task and deliverable
 
 **Where the task comes from matters as much as what it is.** If the agent is part of a

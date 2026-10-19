@@ -326,7 +326,7 @@ export function CrawledMediaView({
                         {label}
                       </Badge>
                     ))}
-                    <span className="text-[9px] text-muted-foreground/70">
+                    <span className="text-[9px] text-muted-foreground">
                       {image.pages.length} page
                       {image.pages.length === 1 ? "" : "s"}
                     </span>
@@ -339,7 +339,7 @@ export function CrawledMediaView({
                     {image.url}
                   </OutboundLink>
                   <p
-                    className="truncate text-[9px] text-muted-foreground/70"
+                    className="truncate text-[9px] text-muted-foreground"
                     title={image.pages
                       .map((page) => page.path ?? page.url)
                       .join("\n")}

@@ -242,7 +242,7 @@ function AssetTile({
           />
           <VideoPublishDate
             publishedAt={publishedAt}
-            className="pointer-events-none absolute bottom-1.5 left-1.5 rounded bg-black/75 px-1 py-0.5 text-white shadow-sm"
+            className="pointer-events-none absolute bottom-1.5 left-1.5 rounded border border-border bg-card/90 px-1 py-0.5 text-foreground shadow-sm"
           />
         </div>
       ) : asset.kind === "video" ? (
@@ -257,7 +257,7 @@ function AssetTile({
             />
             <VideoPublishDate
               publishedAt={publishedAt}
-              className="pointer-events-none absolute bottom-1.5 left-1.5 rounded bg-black/75 px-1 py-0.5 text-white shadow-sm"
+              className="pointer-events-none absolute bottom-1.5 left-1.5 rounded border border-border bg-card/90 px-1 py-0.5 text-foreground shadow-sm"
             />
           </div>
         ) : (

@@ -64,9 +64,9 @@ jest.mock("../gallery/publicCatalogue.server", () => {
 jest.mock("next/navigation", () => ({ ...jest.requireActual("next/navigation"), useRouter: () => ({ replace: () => undefined }) }));
 // The Spaces fence's browser islands: the editor preview draws its pages here as their titles, the icon as nothing.
 jest.mock("@/features/spaces/public/TemplatePackPreview", () => ({
-  TemplatePackPreview: ({ template, outlines }: { template: { catalogue_id: string; pack: { pages: Array<{ key: string; title: string }> } }; outlines: Record<string, React.ReactNode> }) => (
-    <div data-space-template-preview={template.catalogue_id}>
-      {template.pack.pages.map((p) => (
+  TemplatePackPreview: ({ catalogueId, pages, outlines }: { catalogueId: string; pages: Array<{ key: string; title: string }>; outlines: Record<string, React.ReactNode> }) => (
+    <div data-space-template-preview={catalogueId}>
+      {pages.map((p) => (
         <section key={p.key}>
           <button>{p.title}</button>
           {outlines[p.key]}
@@ -77,7 +77,7 @@ jest.mock("@/features/spaces/public/TemplatePackPreview", () => ({
 }));
 // The table templates' live preview loads records-ui in the browser; its server HTML is its children.
 jest.mock("../gallery/TemplateLivePreview", () => ({ TemplateLivePreview: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
-jest.mock("@/features/spaces/public/SpaceTemplateIcon", () => ({ SpaceTemplateIcon: () => null }));
+jest.mock("@/features/spaces/public/SpaceTemplateIcon", () => ({ SpaceTemplateIcon: () => null, SpaceTemplateCover: () => null }));
 jest.mock("../gallery/TemplateUseAction", () => ({
   TemplateUseAction: ({ signUpHref }: { signUpHref: string }) => <a href={signUpHref}>Use this template</a>,
   SpaceTemplateUseAction: ({ signUpHref }: { signUpHref: string }) => <a href={signUpHref}>Use this template</a>,
@@ -99,7 +99,8 @@ const slugHref = `href="/templates/${PACK.spec.id}"`;
 describe("Space templates on the public gallery", () => {
   it("shows a Workspaces section on /templates beside the table templates", async () => {
     const page = await html(PublicTemplatesPage({ searchParams: Promise.resolve({}) }));
-    expect(page).toContain("data-public-templates-space-cards");
+    // The hub pictures the featured workspaces and names every category's first few (GALLERY-PERF).
+    expect(page).toContain("data-public-templates-featured");
     expect(page).toContain(slugHref);
     expect(page).toContain(PACK.description.replace(/&/g, "&amp;").replace(/'/g, "&#x27;"));
     expect(page).toContain('href="/templates/workspaces/projects"');

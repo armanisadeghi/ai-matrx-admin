@@ -686,7 +686,7 @@ export function VoicePage({
               <span className="type-secondary text-muted-foreground" data-testid="voice-picked">
                 {picked.length} of {MIN_SAMPLES}–{MAX_SAMPLES} picked
                 {picked.length < MIN_SAMPLES ? ` · ${MIN_SAMPLES - picked.length} more to measure` : ""}
-                {picked.length >= MAX_SAMPLES ? " · the most one voice uses" : ""}
+                {picked.length >= MAX_SAMPLES ? " · maximum reached" : ""}
               </span>
             </div>
             {measureError ? <p className="type-secondary text-destructive">{measureError}<ErrorAlchemyMenu error={measureError} /></p> : null}
@@ -935,11 +935,12 @@ function ConfirmCard({
             />
           </label>
           {emDash !== "never" && fp.mechanics?.em_dash_usage === "never" ? (
-            <span
-              className="type-secondary text-warning-ink"
-              title="Allowing em dashes the samples never use is the most common way a draft reads as AI."
-            >
+            <span className="inline-flex items-center gap-1 type-secondary text-warning-ink">
               Your samples never use an em dash
+              <AboutPeek
+                title="Em dash"
+                about="Allowing em dashes the samples never use is the most common way a draft reads as AI."
+              />
             </span>
           ) : null}
         </div>

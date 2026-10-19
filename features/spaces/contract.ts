@@ -81,7 +81,7 @@ export interface SpacesDataPort {
 /** One AI request from a Notion-AI surface (parity § M). */
 export interface SpacesAiRequest {
   surface: "empty-line" | "selection" | "block" | "ai-block" | "page-chat" | "database-autofill";
-  /** The action picked (e.g. "improve", "summarize") or null for a free prompt. */
+  /** The action picked (e.g. "improve_writing", "summarize") or null for a free prompt. */
   action: string | null;
   /** What the person typed — only that. Page content travels as named context, never inside it. */
   prompt: string;

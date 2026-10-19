@@ -9,27 +9,28 @@ import { notFound } from "next/navigation";
 
 import { SPACE_TEMPLATE_CATEGORIES } from "@/lib/spaces-blocks/template-pack";
 import { createRouteMetadata } from "@/utils/route-metadata";
-import { PublicGalleryPage } from "@/features/make/gallery/PublicGalleryPage";
+import { galleryPageHref, pageParam, PublicGalleryPage } from "@/features/make/gallery/PublicGalleryPage";
 import { cardCategory, spaceCategoryLabel, workspacesHref } from "@/features/make/gallery/publicGallery";
 import { readPublicCatalogue, readPublicCatalogueFresh } from "@/features/make/gallery/publicCatalogue.server";
 
 export const revalidate = 60;
 
-type Props = { params: Promise<{ category: string }>; searchParams: Promise<{ q?: string }> };
+type Props = { params: Promise<{ category: string }>; searchParams: Promise<{ q?: string; page?: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const category = decodeURIComponent((await params).category);
+  const page = pageParam((await searchParams).page);
   const word = spaceCategoryLabel(category);
   return createRouteMetadata(workspacesHref(category), {
-    title: `${word} templates`,
+    title: page > 1 ? `${word} templates, page ${page}` : `${word} templates`,
     description: `Ready-made ${word.toLowerCase()} workspaces and tables, filled with sample data. Preview every page, then make it yours.`,
-    canonicalPath: workspacesHref(category),
+    canonicalPath: galleryPageHref(workspacesHref(category), "", page),
   });
 }
 
 export default async function WorkspaceCategoryPage({ params, searchParams }: Props) {
   const category = decodeURIComponent((await params).category);
-  const { q } = await searchParams;
+  const { q, page } = await searchParams;
   const named = SPACE_TEMPLATE_CATEGORIES.some((c) => c.key === category);
   let read = await readPublicCatalogue();
   const inCategory = (r: typeof read) => (r.state === "open" ? r.cards.filter((c) => cardCategory(c) === category) : []);
@@ -45,6 +46,7 @@ export default async function WorkspaceCategoryPage({ params, searchParams }: Pr
       all={all}
       path={workspacesHref(category)}
       query={q ?? ""}
+      page={pageParam(page)}
       active={category}
       state={read.state}
     />

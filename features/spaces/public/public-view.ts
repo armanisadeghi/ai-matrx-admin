@@ -10,7 +10,7 @@ import {
   type PublishedDatabase,
   type PublishedEntity,
 } from "../data/published-databases";
-import { COVER_PHOTOS, GALLERY_PREFIX } from "../page/gallery";
+import { GALLERY_PREFIX, galleryImage } from "../page/gallery";
 
 export interface PublicPageRef {
   id: string;
@@ -139,7 +139,7 @@ export function publicDescription(view: PublicSpaceView): string {
 }
 
 /**
- * The cover as a share-card image: a linked picture or a bundled gallery photo (absolute). Colour and
+ * The cover as a share-card image: a linked picture, a bundled gallery photo or a cover-library photo (absolute). Colour and
  * gradient covers and uploaded files (private storage) have no public image, so the card has none.
  */
 export function publicCoverImage(
@@ -150,10 +150,8 @@ export function publicCoverImage(
   if (!cover || !("url" in cover) || typeof cover.url !== "string") return null;
   if (/^https?:\/\//i.test(cover.url)) return cover.url;
   if (cover.url.startsWith(GALLERY_PREFIX)) {
-    const photo = COVER_PHOTOS.find(
-      (p) => p.key === cover.url.slice(GALLERY_PREFIX.length),
-    );
-    return photo ? new URL(photo.src, origin).toString() : null;
+    const photo = galleryImage(cover.url);
+    return photo ? new URL(photo, origin).toString() : null;
   }
   return null;
 }

@@ -5,66 +5,116 @@
 //
 // The same pages the in-app gallery previews (sidebar/TemplateGallery.tsx PackPreview): the pack's page tree
 // resolved over its sample rows in memory (`previewPages`: registerSampleWorld → @ai-matrx/records/memory),
-// drawn read-only by the editor. Nothing is read from or written to any store; the data is the one catalogue
-// read the server page already made (public.template_public_page).
+// drawn read-only by the editor. Nothing is written to any store.
 //
-// FIRST PAINT: BlockNote reads `window` while it creates the editor (see PublicSpace), so the server draws each
-// page's frame (cover, icon, title) and the host's outline (text + real tables of the sample rows, SpacePageOutline)
-// — what a crawler reads — and the browser swaps the outline for the editor. The box has a fixed height and scrolls inside, so the swap moves nothing around it.
+// FIRST PAINT: the server draws the frame (the page rail, each page's cover, icon and title — `pages`, faces only)
+// and every page's outline (text + real tables of the sample rows, SpacePageOutline) — what a crawler reads.
+//
+// ON DEMAND (GALLERY-PERF, 2026-10-19): the page carried the whole spec and pack as client props (71 KB of RSC
+// payload, and the editor's code on first load). Now the island gets only the template's address and the page
+// faces; when the visitor reaches the preview (it scrolls into view, or a pointer or focus enters it) the browser
+// reads the template from the public door (loadPublicPackTemplate) and loads the editor, then swaps each outline for
+// the live page. The box has a fixed height and scrolls inside, so the swap moves nothing. A failed read keeps the
+// outline and says so in the console.
 
 import { FileText } from "lucide-react";
-import { useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
-import type { TemplateSpec } from "@ai-matrx/records/templates";
-import type { SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
+import { loadPublicPackTemplate } from "@/features/make/gallery/templatePage";
 
-import type { SpaceSummary } from "../contract";
-import { SpaceEditor } from "../editor/SpaceEditor";
+import type { SpaceBlock, SpaceDoc, SpaceMedia, SpaceSummary } from "../contract";
+import type { SpaceEditor as SpaceEditorType } from "../editor/SpaceEditor";
 import { Cover } from "../page/Cover";
 import { SpaceIcon, isImageMedia } from "../page/SpaceIcon";
 import { usePinnedTop } from "../page/usePinnedTop";
 import { readOnlySpacesValue } from "../state/read-only-value";
 import { StaticSpacesProvider } from "../state/SpacesProvider";
-import { previewPages, type SpaceTemplateFull } from "../templates/use-pack";
+import type { SpaceTemplateFull } from "../templates/use-pack";
 
-/** The template, as its public page read it: the spec's tables and sample rows, and its page pack. */
-export interface PublicPackTemplate {
-  id: string;
-  catalogue_id: string;
-  version: number;
-  spec: TemplateSpec;
-  pack: Omit<SpaceTemplatePack, "spec">;
+/** One page of the template as the server draws its frame: no blocks (those are the outline, then the live page). */
+export interface PreviewPageFace {
+  key: string;
+  title: string;
+  icon: SpaceMedia | null;
+  cover: SpaceDoc["cover"];
+  settings: SpaceDoc["settings"];
 }
 
-const NO_SUBSCRIBE = () => () => undefined;
+/** The live half, once loaded: each page's resolved blocks and the editor that draws them. */
+interface Live {
+  blocks: Map<string, SpaceBlock[]>;
+  Editor: typeof SpaceEditorType;
+}
+
 const READ_ONLY = () => {
   throw new Error("This is a preview.");
 };
 const idOf = (key: string) => `preview-${key}`;
 
 /**
- * `outlines`: each page's server-drawn first paint by page key (the host renders them on the server: real tables of the
- * sample rows, the text). Every page's outline is in the HTML (the current one shown) so a crawler reads them all.
+ * `templateKey`: the template's public address (the live read asks the door with it). `pages`: the frame of each page.
+ * `outlines`: each page's server-drawn first paint by page key (every page's outline is in the HTML, the current
+ * one shown, so a crawler reads them all).
  */
-export function TemplatePackPreview({ template, outlines }: { template: PublicPackTemplate; outlines: Record<string, ReactNode> }) {
-  const inBrowser = useSyncExternalStore(
-    NO_SUBSCRIBE,
-    () => true,
-    () => false,
-  );
-  const pages = previewPages(template as unknown as SpaceTemplateFull);
+export function TemplatePackPreview({
+  templateKey,
+  catalogueId,
+  pages,
+  outlines,
+}: {
+  templateKey: string;
+  catalogueId: string;
+  pages: PreviewPageFace[];
+  outlines: Record<string, ReactNode>;
+}) {
   const [pageKey, setPageKey] = useState<string | null>(null);
   const current = pages.find((p) => p.key === pageKey) ?? pages[0];
+  const [wanted, setWanted] = useState(false);
+  const [live, setLive] = useState<Live | null>(null);
+  const [failed, setFailed] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  // Reached = the preview scrolls into view (or a pointer or focus enters it, below).
+  useEffect(() => {
+    const box = boxRef.current;
+    if (wanted || !box || typeof IntersectionObserver === "undefined") return;
+    const seen = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) setWanted(true);
+    }, { rootMargin: "0px 0px -20% 0px" });
+    seen.observe(box);
+    return () => seen.disconnect();
+  }, [wanted]);
+
+  useEffect(() => {
+    if (!wanted) return;
+    let gone = false;
+    void Promise.all([loadPublicPackTemplate(templateKey), import("../editor/SpaceEditor"), import("../templates/use-pack")]).then(
+      ([template, editor, pack]) => {
+        if (gone) return;
+        const resolved = pack.previewPages(template as unknown as SpaceTemplateFull);
+        setLive({ blocks: new Map(resolved.map((p) => [p.key, p.doc.blocks])), Editor: editor.SpaceEditor });
+      },
+      (error: unknown) => {
+        if (gone) return;
+        console.warn(`[templates] the live preview of ${templateKey} did not load; the outline stays.`, error);
+        setFailed(true);
+      },
+    );
+    return () => {
+      gone = true;
+    };
+  }, [wanted, templateKey]);
+
   // Opens at the top with the title and cover in view, on load, when the editor replaces the outline and on every
   // page click — and the page around it stays put (ADVERSARIAL-2 #4: it opened 595px down).
   const scrollRef = useRef<HTMLDivElement>(null);
-  usePinnedTop(scrollRef, `${template.id}:${current?.key ?? ""}:${inBrowser ? "live" : "outline"}`, { pinWindow: true });
+  usePinnedTop(scrollRef, `${catalogueId}:${current?.key ?? ""}:${live ? "live" : "outline"}`, { pinWindow: true });
   const summaries: SpaceSummary[] = pages.map((p) => ({
     id: idOf(p.key),
     parentId: null,
     position: "0",
     title: p.title,
-    icon: p.doc.icon ?? null,
+    icon: p.icon ?? null,
     isArchived: false,
     updatedAt: "",
   }));
@@ -78,12 +128,17 @@ export function TemplatePackPreview({ template, outlines }: { template: PublicPa
     publicSite: true,
     linkTarget: (id) => byId.get(id) ?? null,
   });
+  const want = () => setWanted(true);
   if (!current) return null;
   return (
     <div
       className="spaces-root flex h-[40rem] min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card md:grid md:grid-cols-[13rem_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)]"
-      data-space-template-preview={template.catalogue_id}
-      data-live={inBrowser ? "on" : "off"}
+      ref={boxRef}
+      data-space-template-preview={catalogueId}
+      data-live={live ? "on" : failed ? "failed" : "off"}
+      onPointerEnter={want}
+      onFocusCapture={want}
+      onTouchStart={want}
     >
       <nav
         aria-label="Template pages"
@@ -98,7 +153,7 @@ export function TemplatePackPreview({ template, outlines }: { template: PublicPa
             aria-current={current.key === p.key ? "page" : undefined}
             onClick={() => setPageKey(p.key)}
           >
-            <span className="spaces-menu-row-icon">{p.doc.icon ? <SpaceIcon media={p.doc.icon} size={16} /> : <FileText size={16} />}</span>
+            <span className="spaces-menu-row-icon">{p.icon ? <SpaceIcon media={p.icon} size={16} /> : <FileText size={16} />}</span>
             <span className="min-w-0 max-w-[14rem] flex-1 truncate text-left">{p.title}</span>
           </button>
         ))}
@@ -107,24 +162,24 @@ export function TemplatePackPreview({ template, outlines }: { template: PublicPa
         <StaticSpacesProvider value={value}>
           <div
             className="spaces-page"
-            data-full-width={current.doc.settings.fullWidth ? "true" : undefined}
-            data-small-text={current.doc.settings.smallText ? "true" : undefined}
+            data-full-width={current.settings.fullWidth ? "true" : undefined}
+            data-small-text={current.settings.smallText ? "true" : undefined}
           >
-            {current.doc.cover ? <Cover cover={current.doc.cover} editable={false} onChange={() => {}} /> : null}
+            {current.cover ? <Cover cover={current.cover} editable={false} onChange={() => {}} /> : null}
             <div className="spaces-content">
-              <div className="spaces-header" data-has-cover={current.doc.cover ? "true" : undefined} data-has-icon={current.doc.icon ? "true" : undefined}>
-                {current.doc.icon ? (
-                  <span className="spaces-page-icon" data-image={isImageMedia(current.doc.icon) ? "true" : undefined}>
-                    <SpaceIcon media={current.doc.icon} size={isImageMedia(current.doc.icon) ? 136 : 78} />
+              <div className="spaces-header" data-has-cover={current.cover ? "true" : undefined} data-has-icon={current.icon ? "true" : undefined}>
+                {current.icon ? (
+                  <span className="spaces-page-icon" data-image={isImageMedia(current.icon) ? "true" : undefined}>
+                    <SpaceIcon media={current.icon} size={isImageMedia(current.icon) ? 136 : 78} />
                   </span>
                 ) : null}
                 <h2 className="spaces-title">{current.title}</h2>
               </div>
-              {inBrowser ? (
-                <SpaceEditor
-                  key={`${template.id}:${current.key}`}
+              {live ? (
+                <live.Editor
+                  key={`${catalogueId}:${current.key}`}
                   spaceId={idOf(current.key)}
-                  initialBlocks={current.doc.blocks}
+                  initialBlocks={live.blocks.get(current.key) ?? []}
                   editable={false}
                   onChange={() => {}}
                   slash={{ createSubpage: READ_ONLY, pickPage: async () => null, pickSource: async () => null, newDatabase: async () => null }}

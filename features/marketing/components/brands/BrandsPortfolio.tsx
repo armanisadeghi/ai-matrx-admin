@@ -93,7 +93,7 @@ function CountPill({
       title={`${count.toLocaleString()} ${label}`}
       className={cn(
         "inline-flex items-center gap-1 font-mono text-xs tabular-nums",
-        count ? "text-foreground" : "text-muted-foreground/50",
+        count ? "text-foreground" : "text-disabled-foreground",
       )}
     >
       <Icon className="h-3.5 w-3.5" />
@@ -360,7 +360,7 @@ export function BrandsPortfolio({
       cell: (row) => (
         <div className="flex flex-wrap items-center gap-1">
           {row.sites.length === 0 ? (
-            <span className="text-xs text-muted-foreground/60">No website</span>
+            <span className="text-xs text-disabled-foreground">No website</span>
           ) : (
             // Every site named here has an id AND a canonical route — the
             // chips were inert text listing records the user could not reach.
@@ -449,7 +449,7 @@ export function BrandsPortfolio({
             </Badge>
           </Link>
         ) : (
-          <span className="text-xs text-muted-foreground/50">—</span>
+          <span className="text-xs text-disabled-foreground">—</span>
         ),
     },
     {

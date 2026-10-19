@@ -35,9 +35,10 @@ import {
 } from "@/features/marketing/seo/run-console/collection-run-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@ai-matrx/design-system/controls";
+import { ProInput } from "@/components/official/ProInput";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -204,8 +205,8 @@ function artifactFromRun(run: CompetitorRunRow | undefined): Artifact | null {
 
 function scoreTone(score: number | null): string {
   if (score === null) return "text-muted-foreground";
-  if (score >= 80) return "text-emerald-600 dark:text-emerald-400";
-  if (score >= 55) return "text-amber-600 dark:text-amber-400";
+  if (score >= 80) return "text-success-ink";
+  if (score >= 55) return "text-warning-ink";
   return "text-muted-foreground";
 }
 
@@ -1070,11 +1071,10 @@ export default function CompetitorAutopsyWorkspace({
                     >
                       Local
                     </Button>
-                    <span className="text-xs text-muted-foreground">
-                      {autopsyScope === "local"
-                        ? "Google Maps results for a service and area."
-                        : "Nationwide keyword overlap."}
-                    </span>
+                    <AboutPeek
+                      title="Competitor market"
+                      about="Local uses Google Maps results for a service and area. National uses nationwide keyword overlap."
+                    />
                   </div>
 
                   {autopsyScope === "local" ? (
@@ -1083,7 +1083,7 @@ export default function CompetitorAutopsyWorkspace({
                         <Label htmlFor="autopsy-local-keyword">
                           {LOCAL_SEARCH_KEYWORD_LABEL}
                         </Label>
-                        <Input
+                        <ProInput
                           id="autopsy-local-keyword"
                           value={autopsyLocalKeyword}
                           placeholder={LOCAL_SEARCH_KEYWORD_PLACEHOLDER}
@@ -1096,7 +1096,7 @@ export default function CompetitorAutopsyWorkspace({
                         <Label htmlFor="autopsy-local-area">
                           {LOCAL_SEARCH_AREA_LABEL}
                         </Label>
-                        <Input
+                        <ProInput
                           id="autopsy-local-area"
                           value={autopsyLocalArea}
                           placeholder={LOCAL_SEARCH_AREA_PLACEHOLDER}
@@ -1247,50 +1247,38 @@ export default function CompetitorAutopsyWorkspace({
             tab is now where a proposal is ruled on, so a second list of the same
             rows is noise between the reader and the work. */}
         {activeView === "run" && proposed.length ? (
-          <Card className="border-amber-500/30 bg-amber-500/[0.04]">
-            <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
-              <div className="min-w-0">
-                <p className="text-sm font-medium">
-                  {/* read-gate-exempt: this card renders only when proposed.length > 0, so the number is always rows actually read, never a failed read's 0 */}
-                  {proposed.length} {proposed.length === 1 ? "call is" : "calls are"} waiting on you
-                </p>
-                {/* read-gate-exempt: explanatory copy under a non-empty proposal count ("nothing here drives spend"), not an empty view */}
-                <p className="text-xs text-muted-foreground">
-                  Nothing here drives spend until you say it is right.
-                </p>
-              </div>
-              <Button
-                variant="primary"
-                className="shrink-0"
-                onClick={() =>
-                  router.push(competitorViewHref("review", resolvedSiteId, basePath, routed))
-                }
-              >
-                Review them
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-warning/30 bg-warning/5 px-4 py-3">
+            <p className="min-w-0 text-sm font-medium">
+              {/* read-gate-exempt: renders only when proposed.length > 0, so the number is always rows actually read */}
+              {proposed.length} {proposed.length === 1 ? "call is" : "calls are"} waiting on you
+              <AboutPeek
+                title="Waiting calls"
+                about="Nothing here drives spend until you say it is right."
+              />
+            </p>
+            <Button
+              variant="primary"
+              className="shrink-0"
+              onClick={() =>
+                router.push(competitorViewHref("review", resolvedSiteId, basePath, routed))
+              }
+            >
+              Review them
+            </Button>
+          </div>
         ) : null}
 
         {activeView === "run" && latestArtifact?.executive_verdict ? (
-          <Card className="border-primary/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <CircleDot className="size-4 text-primary" />
-                Latest verdict
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-base font-medium leading-7">
-                {latestArtifact.executive_verdict}
+          <SectionCard title="Latest verdict">
+            <p className="text-base font-medium leading-7">
+              {latestArtifact.executive_verdict}
+            </p>
+            {latestArtifact.summary ? (
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                {latestArtifact.summary}
               </p>
-              {latestArtifact.summary ? (
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {latestArtifact.summary}
-                </p>
-              ) : null}
-            </CardContent>
-          </Card>
+            ) : null}
+          </SectionCard>
         ) : null}
 
         <Tabs value={activeView} className="min-w-0">
@@ -1313,11 +1301,14 @@ export default function CompetitorAutopsyWorkspace({
               >
                 Find my competitors
               </Button>
-              <span className="text-xs text-muted-foreground">
-                {discovering && localStage
-                  ? `${localStage}…`
-                  : "Finds rivals in your search results for you to review."}
-              </span>
+              {discovering && localStage ? (
+                <span className="text-xs text-muted-foreground">{localStage}…</span>
+              ) : (
+                <AboutPeek
+                  title="Find my competitors"
+                  about="Finds rivals in your search results for you to review."
+                />
+              )}
             </div>
             <div className="rounded-md border border-border bg-card p-3">
               <div className="flex flex-wrap items-end gap-2">
@@ -1325,7 +1316,7 @@ export default function CompetitorAutopsyWorkspace({
                   <Label htmlFor="local-search-keyword" className="text-xs">
                     {LOCAL_SEARCH_KEYWORD_LABEL}
                   </Label>
-                  <Input
+                  <ProInput
                     id="local-search-keyword"
                     value={localKeyword}
                     placeholder={LOCAL_SEARCH_KEYWORD_PLACEHOLDER}
@@ -1336,7 +1327,7 @@ export default function CompetitorAutopsyWorkspace({
                   <Label htmlFor="local-search-area" className="text-xs">
                     {LOCAL_SEARCH_AREA_LABEL}
                   </Label>
-                  <Input
+                  <ProInput
                     id="local-search-area"
                     value={localArea}
                     placeholder={LOCAL_SEARCH_AREA_PLACEHOLDER}
@@ -1369,9 +1360,6 @@ export default function CompetitorAutopsyWorkspace({
                   {localStage}…
                 </p>
               ) : null}
-              <p className="mt-1.5 text-xs text-muted-foreground">
-                Shows the businesses Google places on the map for this search.
-              </p>
               {localResult ? (
                 <div className="mt-3 space-y-1">
                   <p className="text-xs font-medium">
@@ -1379,12 +1367,7 @@ export default function CompetitorAutopsyWorkspace({
                   </p>
                   {localResult.businesses.length === 0 ? (
                     <p className="text-xs text-muted-foreground">
-                      Google Maps lists no businesses for this search. That is a
-                      real answer about the local index, not an error — the
-                      competitors below come from keyword overlap with your site
-                      instead. Try the words a customer would actually type (for
-                      example “electronics recycling” rather than an industry
-                      term), or add a competitor by name.
+                      No map results. Try a customer’s own words, or add one by name.
                     </p>
                   ) : (
                     <ul className="divide-y divide-border rounded-md border border-border">
@@ -1638,11 +1621,8 @@ export default function CompetitorAutopsyWorkspace({
 
           <TabsContent value="evidence" className="mt-0">
             <div className="grid gap-4 lg:grid-cols-3">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Coverage</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
+              <SectionCard title="Coverage" about="What the latest run measured before it ruled.">
+                <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
                       Competitors analyzed
@@ -1668,13 +1648,9 @@ export default function CompetitorAutopsyWorkspace({
                         0}
                     </strong>
                   </div>
-                </CardContent>
-              </Card>
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle className="text-sm">Known limitations</CardTitle>
-                </CardHeader>
-                <CardContent>
+                </div>
+              </SectionCard>
+              <SectionCard title="Known limitations" className="lg:col-span-2" about="Gaps in the evidence behind the latest run.">
                   {latestArtifact?.evidence_coverage?.limitations?.length ? (
                     <ul className="space-y-2 text-sm text-muted-foreground">
                       {latestArtifact.evidence_coverage.limitations.map(
@@ -1690,11 +1666,10 @@ export default function CompetitorAutopsyWorkspace({
                     </ul>
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      No limitations were recorded for the latest run.
+                      No limitations recorded.
                     </p>
                   )}
-                </CardContent>
-              </Card>
+                </SectionCard>
             </div>
           </TabsContent>
 

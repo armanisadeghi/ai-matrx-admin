@@ -1,10 +1,10 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0416",
-  "version": 3,
+  "version": 4,
   "title": "General Contractor Projects",
-  "description": "Jobs, subcontractors, phases, change orders and punch lists for a builder.",
-  "forWho": "General contractors and remodelers",
+  "description": "For builders and remodelers: jobs, subs, permits, change orders, punch lists and closeout.",
+  "forWho": "General contractors, remodelers and project managers",
   "icon": {
     "emoji": "🏗️"
   },
@@ -14,10 +14,12 @@
   },
   "category": "realestate",
   "tags": [
-    "construction",
-    "contractor",
+    "general contractor",
+    "remodeler",
+    "superintendent",
     "change orders",
-    "punch list"
+    "punch list",
+    "subcontractors"
   ],
   "spec": {
     "specVersion": 1,
@@ -85,6 +87,49 @@
             "contextPolicy": "include"
           },
           {
+            "key": "contract_type",
+            "label": "Contract type",
+            "parityType": "select",
+            "choices": [
+              "Fixed price",
+              "Cost plus",
+              "Time and materials"
+            ],
+            "choiceColors": {
+              "Fixed price": "blue",
+              "Cost plus": "green",
+              "Time and materials": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "permit_no",
+            "label": "Permit number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "permit_status",
+            "label": "Permit",
+            "parityType": "select",
+            "choices": [
+              "Not needed",
+              "Applied",
+              "Issued",
+              "Final inspection passed"
+            ],
+            "choiceColors": {
+              "Not needed": "blue",
+              "Applied": "green",
+              "Issued": "amber",
+              "Final inspection passed": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -137,6 +182,42 @@
             ]
           },
           {
+            "key": "deposit",
+            "label": "Deposit received",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "retainage",
+            "label": "Retainage held (%)",
+            "parityType": "percent",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "approved",
             "label": "Approved changes",
             "parityType": "rollup",
@@ -148,6 +229,19 @@
             "filter": {
               "status": "Approved"
             }
+          },
+          {
+            "key": "pending_co",
+            "label": "Changes waiting on the owner",
+            "parityType": "rollup",
+            "via": "changes",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Proposed"
+            },
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
           },
           {
             "key": "revised",
@@ -192,7 +286,7 @@
           },
           {
             "key": "open_punch",
-            "label": "Open punch items",
+            "label": "Punch items not verified",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -200,8 +294,29 @@
             "pick": "punch_title",
             "agg": "count",
             "filter": {
-              "status": "Open"
+              "status": {
+                "not": [
+                  "Verified"
+                ]
+              }
             }
+          },
+          {
+            "key": "open_phases",
+            "label": "Phases not finished",
+            "parityType": "rollup",
+            "via": "phases",
+            "pick": "phase_title",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Not started",
+                "In progress",
+                "Delayed"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "phase_btn",
@@ -293,7 +408,12 @@
               "contract": 186000,
               "start_on": "@today-45d",
               "finish_on": "@today+60d",
-              "super": "tm-adaora"
+              "super": "tm-adaora",
+              "contract_type": "Fixed price",
+              "permit_no": "BLD-24-03318",
+              "permit_status": "Issued",
+              "deposit": 18600,
+              "retainage": 10
             }
           },
           {
@@ -306,7 +426,12 @@
               "contract": 74000,
               "start_on": "@today-100d",
               "finish_on": "@mon+4d",
-              "super": "tm-adaora"
+              "super": "tm-adaora",
+              "contract_type": "Fixed price",
+              "permit_no": "BLD-24-02741",
+              "permit_status": "Issued",
+              "deposit": 7400,
+              "retainage": 5
             }
           },
           {
@@ -319,7 +444,12 @@
               "contract": 32000,
               "start_on": "@today+10d",
               "finish_on": "@today+24d",
-              "super": "tm-adaora"
+              "super": "tm-adaora",
+              "contract_type": "Fixed price",
+              "permit_no": "ROOF-24-0912",
+              "permit_status": "Applied",
+              "deposit": 6400,
+              "retainage": 0
             }
           },
           {
@@ -332,20 +462,27 @@
               "contract": 48500,
               "start_on": "@today-20d",
               "finish_on": "@today+22d",
-              "super": "tm-adaora"
+              "super": "tm-adaora",
+              "contract_type": "Cost plus",
+              "permit_no": "BLD-24-03460",
+              "permit_status": "Issued",
+              "deposit": 5000,
+              "retainage": 5
             }
           },
           {
             "key": "j05",
             "values": {
-              "job_title": "Ingram garage conversion",
+              "job_title": "Ingram garage to studio conversion",
               "client_name": "Barnaby Ingram",
               "site": "63 Millbrook Lane",
               "status": "Estimating",
               "contract": 91000,
               "start_on": "@today+45d",
               "finish_on": "@today+120d",
-              "super": "tm-gregor"
+              "super": "tm-gregor",
+              "contract_type": "Fixed price",
+              "permit_status": "Not needed"
             }
           },
           {
@@ -359,20 +496,29 @@
               "start_on": "@today-160d",
               "finish_on": "@today-100d",
               "super": "tm-adaora",
-              "completed_on": "@today-100d"
+              "completed_on": "@today-100d",
+              "contract_type": "Time and materials",
+              "permit_no": "BLD-23-11872",
+              "permit_status": "Final inspection passed",
+              "deposit": 4200,
+              "retainage": 0
             }
           },
           {
             "key": "j07",
             "values": {
-              "job_title": "Lindgren whole-home repaint",
+              "job_title": "Lindgren whole-home exterior repaint",
               "client_name": "Sigrid Lindgren",
               "site": "88 Cedar Hollow",
               "status": "On hold",
               "contract": 21000,
               "start_on": "@today-30d",
               "finish_on": "@today+40d",
-              "super": "tm-adaora"
+              "super": "tm-adaora",
+              "contract_type": "Time and materials",
+              "permit_status": "Not needed",
+              "deposit": 2500,
+              "retainage": 0
             }
           }
         ],
@@ -634,6 +780,27 @@
             "default": "Not started"
           },
           {
+            "key": "inspection",
+            "label": "Inspection",
+            "parityType": "select",
+            "choices": [
+              "Not needed",
+              "To schedule",
+              "Scheduled",
+              "Passed",
+              "Failed"
+            ],
+            "choiceColors": {
+              "Not needed": "blue",
+              "To schedule": "green",
+              "Scheduled": "amber",
+              "Passed": "violet",
+              "Failed": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "owner",
             "label": "Owner",
             "parityType": "member",
@@ -678,117 +845,127 @@
           {
             "key": "f01",
             "values": {
-              "phase_title": "Rough electrical - Dellacroix",
+              "phase_title": "Rough electrical, Dellacroix addition",
               "project": "j01",
               "sub": "s01",
               "start_on": "@today-2d",
               "end_on": "@today+4d",
               "status": "In progress",
-              "owner": "@installer"
+              "owner": "@installer",
+              "inspection": "Scheduled"
             }
           },
           {
             "key": "f02",
             "values": {
-              "phase_title": "Framing addition - Dellacroix",
+              "phase_title": "Framing the Dellacroix addition",
               "project": "j01",
               "sub": "s03",
               "start_on": "@today-30d",
               "end_on": "@today-3d",
               "status": "Done",
-              "completed_on": "@today-3d"
+              "completed_on": "@today-3d",
+              "inspection": "Passed"
             }
           },
           {
             "key": "f03",
             "values": {
-              "phase_title": "Plumbing rough-in - Dellacroix",
+              "phase_title": "Plumbing rough-in, Dellacroix kitchen",
               "project": "j01",
               "sub": "s02",
               "start_on": "@today",
               "end_on": "@mon+3d",
               "status": "Not started",
-              "owner": "@installer"
+              "owner": "@installer",
+              "inspection": "To schedule"
             }
           },
           {
             "key": "f04",
             "values": {
-              "phase_title": "Drywall - Dellacroix",
+              "phase_title": "Hang and finish drywall, Dellacroix",
               "project": "j01",
               "sub": "s05",
               "start_on": "@today+14d",
               "end_on": "@today+25d",
-              "status": "Not started"
+              "status": "Not started",
+              "inspection": "Not needed"
             }
           },
           {
             "key": "f05",
             "values": {
-              "phase_title": "Final paint - Ashgrove",
+              "phase_title": "Final paint, Ashgrove basement",
               "project": "j02",
               "sub": "s07",
               "start_on": "@today-5d",
               "end_on": "@today+3d",
-              "status": "In progress"
+              "status": "In progress",
+              "inspection": "Not needed"
             }
           },
           {
             "key": "f06",
             "values": {
-              "phase_title": "Tile - Mbeki",
+              "phase_title": "Shower and floor tile, Mbeki bath",
               "project": "j04",
               "sub": "s06",
               "start_on": "@mon+2d",
               "end_on": "@today+9d",
               "status": "Not started",
-              "owner": "@installer"
+              "owner": "@installer",
+              "inspection": "Not needed"
             }
           },
           {
             "key": "f07",
             "values": {
-              "phase_title": "Demolition - Mbeki",
+              "phase_title": "Demolition, Mbeki bath",
               "project": "j04",
               "sub": "s03",
               "start_on": "@today-18d",
               "end_on": "@today-12d",
               "status": "Done",
-              "completed_on": "@today-12d"
+              "completed_on": "@today-12d",
+              "inspection": "Not needed"
             }
           },
           {
             "key": "f08",
             "values": {
-              "phase_title": "Plumbing - Mbeki",
+              "phase_title": "Supply and drain lines, Mbeki bath",
               "project": "j04",
               "sub": "s02",
               "start_on": "@today-10d",
               "end_on": "@today-2d",
               "status": "Delayed",
-              "owner": "@installer"
+              "owner": "@installer",
+              "inspection": "Failed"
             }
           },
           {
             "key": "f09",
             "values": {
-              "phase_title": "Roof tear-off - Tanaka-Wells",
+              "phase_title": "Tear-off and dry-in, Tanaka-Wells roof",
               "project": "j03",
               "sub": "s04",
               "start_on": "@today+10d",
               "end_on": "@today+14d",
-              "status": "Not started"
+              "status": "Not started",
+              "inspection": "To schedule"
             }
           },
           {
             "key": "f10",
             "values": {
-              "phase_title": "Heating install - Dellacroix",
+              "phase_title": "Furnace and duct extension, Dellacroix",
               "project": "j01",
               "sub": "s08",
               "start_on": "@today+30d",
               "end_on": "@today+40d",
-              "status": "Not started"
+              "status": "Not started",
+              "inspection": "To schedule"
             }
           }
         ],
@@ -948,6 +1125,25 @@
             "relationMax": 1
           },
           {
+            "key": "reason",
+            "label": "Reason",
+            "parityType": "select",
+            "choices": [
+              "Owner request",
+              "Hidden condition",
+              "Design change",
+              "Code requirement"
+            ],
+            "choiceColors": {
+              "Owner request": "blue",
+              "Hidden condition": "green",
+              "Design change": "amber",
+              "Code requirement": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "amount",
             "label": "Amount",
             "parityType": "currency",
@@ -965,6 +1161,23 @@
                 "value": 200000
               }
             ]
+          },
+          {
+            "key": "days_added",
+            "label": "Days added to schedule",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 90
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "requested_on",
@@ -1015,6 +1228,13 @@
             "default": "Proposed"
           },
           {
+            "key": "signed",
+            "label": "Signed by owner",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "owner",
             "label": "Owner",
             "parityType": "member",
@@ -1048,84 +1268,101 @@
           {
             "key": "c01",
             "values": {
-              "co_title": "Upgrade to quartz countertops - Dellacroix",
+              "co_title": "CO 4: quartz countertops in place of laminate",
               "project": "j01",
               "amount": 4800,
               "requested_on": "@today-6d",
               "decide_by": "@today+1d",
               "status": "Proposed",
-              "owner": "@installer"
+              "owner": "@installer",
+              "reason": "Owner request",
+              "days_added": 3
             }
           },
           {
             "key": "c02",
             "values": {
-              "co_title": "Add recessed lighting - Dellacroix",
+              "co_title": "CO 3: six recessed lights in the family room",
               "project": "j01",
               "amount": 2300,
               "requested_on": "@today-25d",
               "decide_by": "@today-20d",
               "status": "Approved",
-              "decided_on": "@today-20d"
+              "decided_on": "@today-20d",
+              "reason": "Owner request",
+              "days_added": 1,
+              "signed": true
             }
           },
           {
             "key": "c03",
             "values": {
-              "co_title": "Extra egress window - Ashgrove",
+              "co_title": "CO 2: egress window in the basement bedroom",
               "project": "j02",
               "amount": 3100,
               "requested_on": "@today-40d",
               "decide_by": "@today-35d",
               "status": "Approved",
-              "decided_on": "@today-35d"
+              "decided_on": "@today-35d",
+              "reason": "Code requirement",
+              "days_added": 4,
+              "signed": true
             }
           },
           {
             "key": "c04",
             "values": {
-              "co_title": "Heated bathroom floor - Mbeki",
+              "co_title": "CO 2: heated floor under the bath tile",
               "project": "j04",
               "amount": 1650,
               "requested_on": "@today-8d",
               "decide_by": "@mon+3d",
               "status": "Proposed",
-              "owner": "@installer"
+              "owner": "@installer",
+              "reason": "Owner request",
+              "days_added": 2
             }
           },
           {
             "key": "c05",
             "values": {
-              "co_title": "Rework drainage - Mbeki",
+              "co_title": "CO 3: rework drain slope found behind the wall",
               "project": "j04",
               "amount": 1200,
               "requested_on": "@today-5d",
               "decide_by": "@today-2d",
-              "status": "Proposed"
+              "status": "Proposed",
+              "reason": "Hidden condition",
+              "days_added": 3
             }
           },
           {
             "key": "c06",
             "values": {
-              "co_title": "Custom pergola lighting - Petrov",
+              "co_title": "CO 1: low-voltage pergola lighting",
               "project": "j06",
               "amount": 900,
               "requested_on": "@today-130d",
               "decide_by": "@today-125d",
               "status": "Approved",
-              "decided_on": "@today-125d"
+              "decided_on": "@today-125d",
+              "reason": "Owner request",
+              "days_added": 1,
+              "signed": true
             }
           },
           {
             "key": "c07",
             "values": {
-              "co_title": "Skylight addition - Ashgrove",
+              "co_title": "CO 3: skylight over the basement stair",
               "project": "j02",
               "amount": 2750,
               "requested_on": "@today-60d",
               "decide_by": "@today-55d",
               "status": "Rejected",
-              "decided_on": "@today-55d"
+              "decided_on": "@today-55d",
+              "reason": "Design change",
+              "days_added": 6
             }
           }
         ],
@@ -1391,7 +1628,7 @@
           {
             "key": "u01",
             "values": {
-              "punch_title": "Touch up scuffed baseboard",
+              "punch_title": "Touch up scuffed baseboard by the bar",
               "project": "j02",
               "location": "Basement hallway",
               "sub": "s07",
@@ -1424,7 +1661,7 @@
           {
             "key": "u04",
             "values": {
-              "punch_title": "Replace cracked outlet cover",
+              "punch_title": "Replace cracked outlet cover in the hall",
               "project": "j02",
               "location": "Rec room",
               "sub": "s01",
@@ -1448,7 +1685,7 @@
           {
             "key": "u06",
             "values": {
-              "punch_title": "Seal deck boards",
+              "punch_title": "Seal the new deck boards",
               "project": "j06",
               "location": "Back deck",
               "sub": "s07",
@@ -1460,7 +1697,7 @@
           {
             "key": "u07",
             "values": {
-              "punch_title": "Level pergola post",
+              "punch_title": "Plumb and shim the corner pergola post",
               "project": "j06",
               "location": "Back deck",
               "sub": "s03",
@@ -1615,6 +1852,13 @@
             }
           },
           {
+            "key": "license_no",
+            "label": "License number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "contact",
             "label": "Contact",
             "parityType": "text",
@@ -1644,6 +1888,20 @@
             "format": "date"
           },
           {
+            "key": "w9",
+            "label": "W-9 on file",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lien_waiver",
+            "label": "Lien waivers current",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "standing",
             "label": "Standing",
             "parityType": "select",
@@ -1670,6 +1928,23 @@
             "via": "phases",
             "pick": "phase_title",
             "agg": "count"
+          },
+          {
+            "key": "active_phases",
+            "label": "Phases booked now",
+            "parityType": "rollup",
+            "via": "phases",
+            "pick": "phase_title",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Done"
+                ]
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -1682,7 +1957,10 @@
               "phone": "(406) 555-0131",
               "email": "office@kestrelelectric.net",
               "insurance_expires": "@today+140d",
-              "standing": "Preferred"
+              "standing": "Preferred",
+              "license_no": "EC-40217",
+              "w9": true,
+              "lien_waiver": true
             }
           },
           {
@@ -1694,7 +1972,10 @@
               "phone": "(406) 555-0132",
               "email": "dispatch@pellamplumbing.net",
               "insurance_expires": "@today+22d",
-              "standing": "Preferred"
+              "standing": "Preferred",
+              "license_no": "PL-11835",
+              "w9": true,
+              "lien_waiver": false
             }
           },
           {
@@ -1706,7 +1987,10 @@
               "phone": "(406) 555-0133",
               "email": "tobias@ridgelineframing.net",
               "insurance_expires": "@today+210d",
-              "standing": "Approved"
+              "standing": "Approved",
+              "license_no": "GC-77102",
+              "w9": true,
+              "lien_waiver": true
             }
           },
           {
@@ -1718,7 +2002,10 @@
               "phone": "(406) 555-0134",
               "email": "bids@highcrestroofing.net",
               "insurance_expires": "@today-8d",
-              "standing": "On hold"
+              "standing": "On hold",
+              "license_no": "RF-30954",
+              "w9": true,
+              "lien_waiver": false
             }
           },
           {
@@ -1730,7 +2017,10 @@
               "phone": "(406) 555-0135",
               "email": "crew@smoothlinedrywall.net",
               "insurance_expires": "@today+95d",
-              "standing": "Approved"
+              "standing": "Approved",
+              "license_no": "DW-58810",
+              "w9": false,
+              "lien_waiver": true
             }
           },
           {
@@ -1742,7 +2032,10 @@
               "phone": "(406) 555-0136",
               "email": "ingrid@mosaictileworks.net",
               "insurance_expires": "@mon+4d",
-              "standing": "Preferred"
+              "standing": "Preferred",
+              "license_no": "TL-26641",
+              "w9": true,
+              "lien_waiver": true
             }
           },
           {
@@ -1754,7 +2047,10 @@
               "phone": "(406) 555-0137",
               "email": "estimates@brightcoatpainting.net",
               "insurance_expires": "@today+300d",
-              "standing": "Approved"
+              "standing": "Approved",
+              "license_no": "PT-90413",
+              "w9": true,
+              "lien_waiver": true
             }
           },
           {
@@ -1766,7 +2062,10 @@
               "phone": "(406) 555-0138",
               "email": "service@alpineheatair.net",
               "insurance_expires": "@today+60d",
-              "standing": "Preferred"
+              "standing": "Preferred",
+              "license_no": "ME-62250",
+              "w9": true,
+              "lien_waiver": true
             }
           }
         ],
@@ -2601,7 +2900,7 @@
         "Quarry Road"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2623,7 +2922,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Your builds in one place. Follow each Project's status, schedule subcontractor Phases, get Change orders approved before work starts, and close jobs with a tight Punch list. Operational tracking only."
+              "text": "The job board for a residential builder or remodeler: every job with its contract, permit and schedule, the subcontractors booked on each phase, change orders signed before the work, and the punch list that gets you to final payment."
             }
           ],
           "background": "blue",
@@ -2640,6 +2939,12 @@
                 "width": 0.5
               },
               "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                },
                 {
                   "type": "page",
                   "props": {
@@ -3301,6 +3606,347 @@
       ]
     },
     {
+      "key": "start-here",
+      "parent": "general-contractor-projects",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This workspace runs the office side of a building company: what is sold, what is being built, who is on site this week, what the owner still has to sign, and what stands between you and the final payment. Your estimating and accounting software stay where they are; this is where the job lives day to day."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The five lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One row is"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What you watch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Projects"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A signed or estimated job"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Status, contract type, permit, revised contract, changes waiting on the owner, punch items not verified"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Phases"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One trade's block of work on one job"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Start and end, the sub, the inspection result"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Change orders"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A priced change to the contract"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reason, amount, days added, signed by owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Punch items"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One thing to fix before closeout"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Location, responsible sub, due date"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Subcontractors"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A trade company you hire"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "License, insurance date, W-9, lien waivers, phases booked now"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The money columns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Revised contract",
+              "bold": true
+            },
+            {
+              "text": " is the contract value plus approved change orders only."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Changes waiting on the owner",
+              "bold": true
+            },
+            {
+              "text": " adds up change orders still proposed. Nothing in that number should be built yet."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Retainage held",
+              "bold": true
+            },
+            {
+              "text": " is the percent the owner keeps until completion; write it in from the contract."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter every open job with contract value, contract type, deposit and permit number."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add each sub with license number and insurance expiry. Ask for anything missing before they set foot on site."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the phases for the next three weeks on every active job."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter any change order you have discussed but not had signed. Be honest; these are the dollars that go missing."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happens"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Monday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Superintendent reviews Phases this week and calls every sub to confirm"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Midweek"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Change orders waiting on the owner get a call"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Punch items due are walked; insurance expiring in 30 days gets a reminder"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Mbeki bath is cost plus. The plumber found a drain with the wrong slope behind the wall, so a change order for the rework went to the owner with three days added. The supply and drain phase failed inspection and shows Delayed until the change is signed and the fix is re-inspected."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "key": "dashboard",
       "parent": "general-contractor-projects",
       "title": "Dashboard",
@@ -3631,7 +4277,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A clear start prevents most disputes later."
+              "text": "The first two weeks of a job decide whether it finishes on time and on budget. Every start follows the same order so nothing depends on memory."
             }
           ],
           "background": "blue",
@@ -3643,7 +4289,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before day one"
+              "text": "Before you break ground"
             }
           ],
           "props": {
@@ -3654,7 +4300,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Confirm the signed contract and deposit."
+              "text": "Contract signed and the deposit received. Enter both on the project and set "
+            },
+            {
+              "text": "Contract type",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3662,7 +4315,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Apply for permits and note the numbers on the project."
+              "text": "Permit applied for. Put the number in "
+            },
+            {
+              "text": "Permit number",
+              "bold": true
+            },
+            {
+              "text": " and keep "
+            },
+            {
+              "text": "Permit",
+              "bold": true
+            },
+            {
+              "text": " at Applied until the card is in hand. No work that needs a permit starts before it is Issued."
             }
           ]
         },
@@ -3670,7 +4337,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Book subcontractors using Add phase."
+              "text": "Selections confirmed in writing: fixtures, finishes, windows, anything with a lead time. Order long-lead items now."
             }
           ]
         },
@@ -3678,7 +4345,15 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Order long-lead materials."
+              "text": "Phases added for the whole job with rough dates, and the first three weeks booked with real subs."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every sub on the job checked: insurance not expired, license number recorded, W-9 on file."
             }
           ]
         },
@@ -3686,7 +4361,81 @@
           "type": "heading",
           "text": [
             {
-              "text": "Day one"
+              "text": "The preconstruction meeting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Meet the owner on site with the superintendent. Cover:"
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Working hours, parking, the bathroom the crew may use, and where materials are stored"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Which rooms are off limits and how the house is protected (floor covering, dust walls)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Who the owner calls with questions; one name only"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "How change orders work: priced and signed before the work, no exceptions"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "The payment schedule from the contract"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Day one on site"
             }
           ],
           "props": {
@@ -3697,7 +4446,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Walk the site with the client and the superintendent."
+              "text": "Permit card posted where the inspector can see it."
             }
           ]
         },
@@ -3705,7 +4454,94 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Agree how change requests will be handled."
+              "text": "Photos of existing conditions in every room you will touch, especially floors, walls and anything already damaged."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Dust protection up before the first cut."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Start work",
+              "bold": true
+            },
+            {
+              "text": " on the project."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The schedule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Build the phases in the order the trades need each other: demolition, framing, rough plumbing, rough electrical and heating, rough inspection, insulation, drywall, finishes, final inspection. Each inspection is marked on the phase that needs it. A failed inspection sets the phase to "
+            },
+            {
+              "text": "Delayed",
+              "bold": true
+            },
+            {
+              "text": " until the fix is done and re-inspected."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Tanaka-Wells roof is signed with the deposit in. The roofing permit is applied for, so the tear-off phase stays Not started and the inspection is marked To schedule. Highcrest Roofing's insurance has lapsed; they cannot be booked until a new certificate arrives."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What goes wrong"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Most disputes on finished jobs come from the first week: an unclear selection, a verbal change, or a damaged floor nobody photographed. A complete start costs an hour and saves days at the end."
             }
           ]
         }
@@ -3723,7 +4559,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "No work on a change until the client has approved it in writing."
+              "text": "A change order is any change to the price, the scope or the schedule of a signed contract. Unsigned changes are the most common way a profitable job turns into a loss, and the most common reason owners stop trusting a builder."
             }
           ],
           "background": "blue",
@@ -3735,50 +4571,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Process"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Press Add change order on the project."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Get the cost from the subcontractor and add your markup."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Send for approval and set a decision date."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Mark Approved or Rejected; the Revised contract updates itself."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Weekly"
+              "text": "The rule"
             }
           ],
           "props": {
@@ -3789,7 +4582,289 @@
           "type": "text",
           "text": [
             {
-              "text": "Review Proposed change orders and chase signatures."
+              "text": "No changed work starts until the owner has signed the change order. Not a text, not a nod on site: a signed document with a price and the days it adds."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Writing a change order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add it with "
+            },
+            {
+              "text": "Add change order",
+              "bold": true
+            },
+            {
+              "text": " on the project. Title it with its number and a plain description, such as \"CO 4: quartz countertops in place of laminate\"."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick the "
+            },
+            {
+              "text": "Reason",
+              "bold": true
+            },
+            {
+              "text": ": owner request, hidden condition, design change or code requirement. Hidden conditions and code requirements are not the owner's choice, so explain them with photos."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Price it: materials, labor, the sub's price, and your markup from the contract."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Fill "
+            },
+            {
+              "text": "Days added to schedule",
+              "bold": true
+            },
+            {
+              "text": ", even if it is zero. Owners forget that changes move the finish date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Decision needed by",
+              "bold": true
+            },
+            {
+              "text": " to the last day the answer can come without stopping work."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Following up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Waiting"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Under 3 days"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Normal; remind at the site meeting"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Past the decision date"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call the owner; explain what is on hold"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "A week past"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Work on that area stops; the schedule moves"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When it is signed"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Signed copy attached and "
+            },
+            {
+              "text": "Signed by owner",
+              "bold": true
+            },
+            {
+              "text": " ticked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mark approved",
+              "bold": true
+            },
+            {
+              "text": "; it now counts in Revised contract"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Subs told about the change and their price confirmed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "The phase dates moved by the days added"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When it is rejected"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Mark it rejected and keep it. The record matters if the question comes up again at closeout."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Changes waiting on the owner",
+              "bold": true
+            },
+            {
+              "text": " on each project should be small and short-lived. A large number there means work is waiting or, worse, work is being done that may never be paid for."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "CO 4 on the Dellacroix kitchen swaps laminate for quartz at 4,800 dollars and three days. The owner has until the end of the week to decide before the fabricator's template date is lost."
             }
           ]
         }
@@ -3800,14 +4875,26 @@
       "parent": "general-contractor-projects",
       "title": "Subcontractor onboarding and insurance",
       "icon": {
-        "emoji": "🪪"
+        "emoji": "🦺"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every sub on your site carries risk for you. If their insurance has lapsed and someone is hurt, your policy may end up paying. Paperwork first, then the schedule."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "New subcontractor"
+              "text": "Before a sub's first job"
             }
           ],
           "props": {
@@ -3818,7 +4905,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Licence checked with the state"
+              "text": "Certificate of insurance with your company named as additional insured"
             }
           ],
           "props": {
@@ -3829,7 +4916,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Insurance certificate on file"
+              "text": "Workers' compensation certificate, or a signed exemption where your state allows it"
             }
           ],
           "props": {
@@ -3840,7 +4927,11 @@
           "type": "todo",
           "text": [
             {
-              "text": "Tax form received"
+              "text": "Trade license number checked with the state board and entered in "
+            },
+            {
+              "text": "License number",
+              "bold": true
             }
           ],
           "props": {
@@ -3851,18 +4942,48 @@
           "type": "todo",
           "text": [
             {
-              "text": "Rates agreed in writing"
+              "text": "W-9 received; tick "
+            },
+            {
+              "text": "W-9 on file",
+              "bold": true
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Signed subcontract agreement with scope, payment terms and cleanup duties"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Enter the date the insurance ends in "
+            },
+            {
+              "text": "Insurance expires",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Monthly"
+              "text": "Keeping it current"
             }
           ],
           "props": {
@@ -3870,26 +4991,195 @@
           }
         },
         {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Open Subcontractors, Next 30 days view, and request updated certificates"
-            }
-          ],
+          "type": "table",
           "props": {
-            "checked": false
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "30 days before expiry"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ask the sub's agent for the new certificate"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "7 days before"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call the sub; no new phases booked until it arrives"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Expired"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Mark the sub On hold; nobody from that company on site"
+                    }
+                  ]
+                ]
+              }
+            ]
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Put anyone with an expired certificate On hold"
+              "text": "The subcontractor views show insurance expiring this week, in the next 30 days, and already expired."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lien waivers"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every time you pay a sub, collect a lien waiver for that payment. Tick "
+            },
+            {
+              "text": "Lien waivers current",
+              "bold": true
+            },
+            {
+              "text": " only when you hold one for every payment so far. An unpaid supplier of a sub can put a lien on the owner's house; waivers protect the owner and your reputation."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Standing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Preferred",
+              "bold": true
+            },
+            {
+              "text": ": on time, clean, fair prices; offered work first."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Approved",
+              "bold": true
+            },
+            {
+              "text": ": fine to use."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "On hold",
+              "bold": true
+            },
+            {
+              "text": ": paperwork missing or a quality problem. Note the reason."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Scheduling a sub"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Book the phase with a start and end date, then call to confirm the Monday before. "
+            },
+            {
+              "text": "Phases booked now",
+              "bold": true
+            },
+            {
+              "text": " shows how much of your work a sub is carrying; a sub booked on four jobs at once is a delay waiting to happen."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Highcrest Roofing's insurance expired eight days ago. They are On hold, the Tanaka-Wells tear-off is not confirmed, and the office has asked their agent for the renewal."
+            }
+          ]
         }
       ]
     },
@@ -3902,10 +5192,22 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The punch list is the last few percent of the work and often the last few percent of your profit, because final payment and retainage wait on it. Finish it fast and finish it once."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Walk-through"
+              "text": "Building the list"
             }
           ],
           "props": {
@@ -3916,7 +5218,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Walk the job with the client and the superintendent."
+              "text": "When the work is substantially complete, press "
+            },
+            {
+              "text": "Move to punch list",
+              "bold": true
+            },
+            {
+              "text": " on the project."
             }
           ]
         },
@@ -3924,7 +5233,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Add every item with a location and a responsible subcontractor."
+              "text": "Walk the job with the owner, room by room, with the list open on a phone."
             }
           ]
         },
@@ -3932,7 +5241,36 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Give each item a due date."
+              "text": "Add each item with "
+            },
+            {
+              "text": "Add punch item",
+              "bold": true
+            },
+            {
+              "text": ": a clear title, the "
+            },
+            {
+              "text": "Location",
+              "bold": true
+            },
+            {
+              "text": ", the "
+            },
+            {
+              "text": "Responsible subcontractor",
+              "bold": true
+            },
+            {
+              "text": " and a due date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Agree in writing that this is the full list. New items after the walk are new requests, not punch."
             }
           ]
         },
@@ -3940,7 +5278,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Closing"
+              "text": "Working the list"
             }
           ],
           "props": {
@@ -3951,7 +5289,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Mark Fixed when the work is done and Verified when the client agrees."
+              "text": "Group items by sub so each trade comes back once, not three times."
             }
           ]
         },
@@ -3959,7 +5297,178 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Move the project to Complete once every item is verified and final payment is in."
+              "text": "When a sub finishes an item, they press "
+            },
+            {
+              "text": "Mark fixed",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The superintendent checks every fixed item and presses "
+            },
+            {
+              "text": "Mark verified",
+              "bold": true
+            },
+            {
+              "text": ". Only verified items are done."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Punch items not verified",
+              "bold": true
+            },
+            {
+              "text": " on the project counts everything still open or fixed but unchecked."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closeout checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "All punch items verified"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Final inspection passed; "
+            },
+            {
+              "text": "Permit",
+              "bold": true
+            },
+            {
+              "text": " set to Final inspection passed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Warranty letter, manuals and paint colors handed to the owner"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Final lien waivers from every sub and supplier"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Final invoice including retainage sent"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Photos of the finished work for your portfolio, with the owner's permission"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Then press "
+            },
+            {
+              "text": "Mark complete",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the job"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Book a check-in call at 30 days and at 11 months, before the one-year warranty ends. Small fixes done quickly turn owners into referrals."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Ashgrove basement has three open items: caulk in the shower, a scuffed baseboard by the bar and a cabinet door to align. The outlet cover is fixed but not yet checked. The final paint phase finishes this week, so the closeout walk is booked for Friday."
             }
           ]
         }

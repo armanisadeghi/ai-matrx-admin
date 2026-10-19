@@ -449,7 +449,7 @@
   ]
  },
  "education.flashcards_guidance": {
-  "provision": "ambient.page_guidance",
+  "provision": "education.flashcards_guidance",
   "mapped_only": [
    "resolved_mandate_tier",
    "source_feature",
@@ -555,7 +555,7 @@
   ]
  },
  "education.mind_maps_guidance": {
-  "provision": "ambient.page_guidance",
+  "provision": "education.mind_maps_guidance",
   "mapped_only": [
    "resolved_mandate_tier",
    "source_feature",
@@ -567,7 +567,7 @@
   ]
  },
  "education.notes_guidance": {
-  "provision": "ambient.page_guidance",
+  "provision": "education.notes_guidance",
   "mapped_only": [
    "resolved_mandate_tier",
    "source_feature",
@@ -697,7 +697,7 @@
   ]
  },
  "education.practice_tests_guidance": {
-  "provision": "ambient.page_guidance",
+  "provision": "education.practice_tests_guidance",
   "mapped_only": [
    "resolved_mandate_tier",
    "source_feature",
@@ -744,7 +744,7 @@
   ]
  },
  "education.quizzes_guidance": {
-  "provision": "ambient.page_guidance",
+  "provision": "education.quizzes_guidance",
   "mapped_only": [
    "resolved_mandate_tier",
    "source_feature",
@@ -792,7 +792,7 @@
   ]
  },
  "education.summaries_guidance": {
-  "provision": "ambient.page_guidance",
+  "provision": "education.summaries_guidance",
   "mapped_only": [
    "resolved_mandate_tier",
    "source_feature",
