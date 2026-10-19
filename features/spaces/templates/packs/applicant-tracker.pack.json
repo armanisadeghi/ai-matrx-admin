@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0252",
-  "version": 7,
+  "version": 8,
   "title": "Applicant Tracker",
   "description": "Recruiters and hiring managers: roles, candidates and interviews on a hiring board.",
   "forWho": "Recruiters and hiring managers",
@@ -1616,7 +1616,7 @@
         "Larkmoor Terrace"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1719,7 +1719,12 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "on"
+                "dateField": "on",
+                "hiddenFields": [
+                  "score",
+                  "feedback",
+                  "edited"
+                ]
               },
               {
                 "id": "v-il",
@@ -1775,7 +1780,19 @@
                 "name": "Pipeline",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "cand_no",
+                  "rating",
+                  "avg_score",
+                  "days_open",
+                  "reply_flag",
+                  "reject_reason",
+                  "created",
+                  "screen_btn",
+                  "reject_btn",
+                  "add_interview_btn"
+                ]
               },
               {
                 "id": "v-f",
@@ -1787,7 +1804,20 @@
                     "Interview",
                     "Offer"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "cand_no",
+                  "source",
+                  "rating",
+                  "avg_score",
+                  "days_open",
+                  "reply_flag",
+                  "reject_reason",
+                  "created",
+                  "screen_btn",
+                  "reject_btn",
+                  "add_interview_btn"
+                ]
               },
               {
                 "id": "v-a",
@@ -1806,7 +1836,20 @@
                 "name": "Applied",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "applied_on"
+                "dateField": "applied_on",
+                "hiddenFields": [
+                  "cand_no",
+                  "source",
+                  "rating",
+                  "avg_score",
+                  "days_open",
+                  "reply_flag",
+                  "reject_reason",
+                  "created",
+                  "screen_btn",
+                  "reject_btn",
+                  "add_interview_btn"
+                ]
               }
             ],
             "activeViewId": "v-p"
@@ -1957,7 +2000,11 @@
                 "name": "By round",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "round"
+                "groupField": "round",
+                "hiddenFields": [
+                  "score",
+                  "edited"
+                ]
               },
               {
                 "id": "view-u12",

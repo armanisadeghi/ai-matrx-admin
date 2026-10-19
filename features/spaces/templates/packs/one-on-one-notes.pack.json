@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0257",
-  "version": 7,
+  "version": 8,
   "title": "1:1 Meeting Notes",
   "description": "Managers: recurring one-to-ones with mood, agenda and action items per person.",
   "forWho": "Managers and their direct reports",
@@ -1166,7 +1166,7 @@
         "Marrowby Court"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1225,7 +1225,12 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "held_on"
+                "dateField": "held_on",
+                "hiddenFields": [
+                  "open_actions",
+                  "logged",
+                  "edited"
+                ]
               },
               {
                 "id": "v-l",
@@ -1416,7 +1421,11 @@
                 "name": "By mood",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "mood"
+                "groupField": "mood",
+                "hiddenFields": [
+                  "open_actions",
+                  "edited"
+                ]
               },
               {
                 "id": "view-u2",

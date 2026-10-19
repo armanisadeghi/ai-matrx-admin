@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0570",
-  "version": 4,
+  "version": 5,
   "title": "Warehouse Operations Desk",
   "description": "Warehouse: SKUs and locations, receiving, picks, cycle counts and the dock schedule.",
   "forWho": "Warehouses, 3PLs and distribution centers",
@@ -1241,7 +1241,7 @@
               "Picking": "blue",
               "Packed": "amber",
               "Shipped": "green",
-              "On hold": "teal"
+              "On hold": "orange"
             },
             "required": true,
             "default": "Pending",
@@ -3668,7 +3668,7 @@
         "Cargo Way"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -4058,14 +4058,37 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "units",
+                  "picks_short",
+                  "picker",
+                  "btn_pick",
+                  "btn_pack",
+                  "btn_ship",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "out-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "ship_by"
+                "dateField": "ship_by",
+                "hiddenFields": [
+                  "units",
+                  "tracking",
+                  "picks_short",
+                  "picker",
+                  "btn_pick",
+                  "btn_pack",
+                  "btn_ship",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "out-t",
@@ -4178,14 +4201,33 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "expected",
+                  "counted",
+                  "variance",
+                  "btn_counted",
+                  "btn_adjusted",
+                  "btn_claim",
+                  "added_at"
+                ]
               },
               {
                 "id": "cou-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "count_on"
+                "dateField": "count_on",
+                "hiddenFields": [
+                  "expected",
+                  "counted",
+                  "variance",
+                  "btn_counted",
+                  "btn_adjusted",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cou-t",
@@ -4394,14 +4436,33 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "wave"
+                "groupField": "wave",
+                "hiddenFields": [
+                  "qty",
+                  "picker",
+                  "btn_picked",
+                  "btn_short",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pk-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "pick_by"
+                "dateField": "pick_by",
+                "hiddenFields": [
+                  "qty",
+                  "status",
+                  "picker",
+                  "btn_picked",
+                  "btn_short",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pk-t",

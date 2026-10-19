@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0560",
-  "version": 4,
+  "version": 5,
   "title": "Driving School Desk",
   "description": "Driving school desk: learners' permits and hours, lessons, cars, classroom and road tests.",
   "forWho": "Driving schools and driver-education programs",
@@ -2907,7 +2907,7 @@
         "Mesquite Plaza"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -3046,14 +3046,57 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "age",
+                  "classroom",
+                  "wheel",
+                  "log",
+                  "attempts",
+                  "hours_needed",
+                  "instructor",
+                  "hours_done",
+                  "hours_left",
+                  "noshows",
+                  "btn_inlessons",
+                  "btn_testready",
+                  "btn_licensed",
+                  "btn_claim",
+                  "add_drive",
+                  "add_test",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "lea-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "next_step_on"
+                "dateField": "next_step_on",
+                "hiddenFields": [
+                  "age",
+                  "classroom",
+                  "wheel",
+                  "log",
+                  "attempts",
+                  "phone",
+                  "hours_needed",
+                  "instructor",
+                  "hours_done",
+                  "hours_left",
+                  "noshows",
+                  "btn_inlessons",
+                  "btn_testready",
+                  "btn_licensed",
+                  "btn_claim",
+                  "add_drive",
+                  "add_test",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "lea-t",
@@ -3288,14 +3331,28 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "miles",
+                  "drives_booked",
+                  "hours_driven",
+                  "btn_shop",
+                  "btn_back"
+                ]
               },
               {
                 "id": "veh-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "service_due"
+                "dateField": "service_due",
+                "hiddenFields": [
+                  "miles",
+                  "drives_booked",
+                  "hours_driven",
+                  "btn_shop",
+                  "btn_back"
+                ]
               },
               {
                 "id": "veh-t",
@@ -3396,14 +3453,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "errors",
+                  "btn_passed",
+                  "btn_failed",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "roa-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "test_on"
+                "dateField": "test_on",
+                "hiddenFields": [
+                  "errors",
+                  "site",
+                  "btn_passed",
+                  "btn_failed",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "roa-t",
@@ -3518,14 +3592,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "seats",
+                  "enrolled",
+                  "open_seats",
+                  "btn_claim"
+                ]
               },
               {
                 "id": "cl-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "class_at"
+                "dateField": "class_at",
+                "hiddenFields": [
+                  "seats",
+                  "enrolled",
+                  "open_seats",
+                  "btn_claim",
+                  "added_at"
+                ]
               },
               {
                 "id": "cl-t",

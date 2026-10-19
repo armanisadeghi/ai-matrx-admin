@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0466",
-  "version": 6,
+  "version": 7,
   "title": "Event Venue Desk",
   "description": "For venue managers: tours, date holds, contracts, deposits, floor plans and event days.",
   "forWho": "Event venues, halls and barn and loft rental spaces",
@@ -2587,7 +2587,7 @@
         "Weir Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2739,7 +2739,14 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "kind"
+                "groupField": "kind",
+                "hiddenFields": [
+                  "seated",
+                  "standing",
+                  "bookings_count",
+                  "nights_held",
+                  "upcoming"
+                ]
               },
               {
                 "id": "spa-t",
@@ -2788,14 +2795,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "guests",
+                  "owner",
+                  "owner_me",
+                  "added_at",
+                  "btn_mark_lost",
+                  "add_booking"
+                ]
               },
               {
                 "id": "inq-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "tour_on"
+                "dateField": "tour_on",
+                "hiddenFields": [
+                  "guests",
+                  "space",
+                  "owner",
+                  "owner_me",
+                  "added_at",
+                  "btn_mark_lost",
+                  "add_booking"
+                ]
               },
               {
                 "id": "inq-t",
@@ -2919,14 +2943,49 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "guests",
+                  "deposit",
+                  "damage_deposit",
+                  "balance",
+                  "days_to_go",
+                  "tasks_left",
+                  "space",
+                  "floor_plan",
+                  "inquiry",
+                  "manager",
+                  "owner_me",
+                  "added_at",
+                  "btn_record_deposit",
+                  "btn_close_out",
+                  "add_task"
+                ]
               },
               {
                 "id": "boo-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "event_on"
+                "dateField": "event_on",
+                "hiddenFields": [
+                  "guests",
+                  "fee",
+                  "deposit",
+                  "damage_deposit",
+                  "balance",
+                  "days_to_go",
+                  "tasks_left",
+                  "space",
+                  "floor_plan",
+                  "inquiry",
+                  "manager",
+                  "owner_me",
+                  "added_at",
+                  "btn_record_deposit",
+                  "btn_close_out",
+                  "add_task"
+                ]
               },
               {
                 "id": "boo-t",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0454",
-  "version": 7,
+  "version": 8,
   "title": "Video Production Studio",
   "description": "For video producers: productions, shot lists, crew and gear bookings, and edit rounds.",
   "forWho": "Video and film production companies",
@@ -2432,7 +2432,7 @@
         "Tannery Row"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2577,7 +2577,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "prod_count",
+                  "prod_live",
+                  "add_production",
+                  "btn_mail"
+                ]
               },
               {
                 "id": "cli-t",
@@ -2626,14 +2632,57 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "rounds_included",
+                  "budget",
+                  "crew_gear_cost",
+                  "unconfirmed",
+                  "budget_left",
+                  "shots_total",
+                  "shots_got",
+                  "capture_pct",
+                  "cuts_waiting",
+                  "cuts_sent",
+                  "days_to_delivery",
+                  "client",
+                  "producer",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_out",
+                  "add_shot",
+                  "add_booking",
+                  "add_cut"
+                ]
               },
               {
                 "id": "pro-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "shoot_on"
+                "dateField": "shoot_on",
+                "hiddenFields": [
+                  "rounds_included",
+                  "music",
+                  "budget",
+                  "crew_gear_cost",
+                  "unconfirmed",
+                  "budget_left",
+                  "shots_total",
+                  "shots_got",
+                  "capture_pct",
+                  "cuts_waiting",
+                  "cuts_sent",
+                  "days_to_delivery",
+                  "client",
+                  "producer",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_out",
+                  "add_shot",
+                  "add_booking",
+                  "add_cut"
+                ]
               },
               {
                 "id": "pro-t",
@@ -2816,14 +2865,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "days",
+                  "production",
+                  "added_at",
+                  "btn_lock_in"
+                ]
               },
               {
                 "id": "boo-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "on_date"
+                "dateField": "on_date",
+                "hiddenFields": [
+                  "days",
+                  "coi",
+                  "production",
+                  "added_at",
+                  "btn_lock_in"
+                ]
               },
               {
                 "id": "boo-t",
@@ -2883,14 +2945,22 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "version",
+                  "btn_approve_cut"
+                ]
               },
               {
                 "id": "cut-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "version",
+                  "btn_approve_cut"
+                ]
               },
               {
                 "id": "cut-t",

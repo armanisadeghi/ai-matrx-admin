@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0212",
-  "version": 6,
+  "version": 7,
   "title": "Job Application Tracker",
   "description": "Job seekers: track every application, contact and interview in one pipeline.",
   "forWho": "Job seekers",
@@ -1478,7 +1478,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1569,14 +1569,52 @@
                 "name": "Pipeline",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "ref",
+                  "salary_mid",
+                  "location",
+                  "remote",
+                  "priority",
+                  "next_step",
+                  "next_flag",
+                  "resume",
+                  "posting",
+                  "contact",
+                  "interview_count",
+                  "days_since",
+                  "follow_up",
+                  "added",
+                  "applied_btn",
+                  "add_interview_btn",
+                  "open_posting"
+                ]
               },
               {
                 "id": "view-2",
                 "name": "By priority",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "priority"
+                "groupField": "priority",
+                "hiddenFields": [
+                  "ref",
+                  "salary_max",
+                  "salary_mid",
+                  "location",
+                  "remote",
+                  "next_step",
+                  "next_flag",
+                  "resume",
+                  "posting",
+                  "contact",
+                  "interview_count",
+                  "days_since",
+                  "follow_up",
+                  "added",
+                  "applied_btn",
+                  "add_interview_btn",
+                  "open_posting"
+                ]
               },
               {
                 "id": "view-3",
@@ -1588,7 +1626,27 @@
                 "id": "view-4",
                 "name": "Gallery",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "ref",
+                  "salary_max",
+                  "salary_mid",
+                  "location",
+                  "remote",
+                  "priority",
+                  "next_step",
+                  "next_flag",
+                  "resume",
+                  "posting",
+                  "contact",
+                  "interview_count",
+                  "days_since",
+                  "follow_up",
+                  "added",
+                  "applied_btn",
+                  "add_interview_btn",
+                  "open_posting"
+                ]
               }
             ],
             "activeViewId": "view-1"
@@ -1644,7 +1702,27 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "next_step_on"
+                "dateField": "next_step_on",
+                "hiddenFields": [
+                  "ref",
+                  "salary_max",
+                  "salary_mid",
+                  "location",
+                  "remote",
+                  "priority",
+                  "next_step",
+                  "next_flag",
+                  "resume",
+                  "posting",
+                  "contact",
+                  "interview_count",
+                  "days_since",
+                  "follow_up",
+                  "added",
+                  "applied_btn",
+                  "add_interview_btn",
+                  "open_posting"
+                ]
               }
             ],
             "activeViewId": "view-5"

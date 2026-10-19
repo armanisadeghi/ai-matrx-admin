@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0416",
-  "version": 6,
+  "version": 7,
   "title": "General Contractor Projects",
   "description": "For builders and remodelers: jobs, subs, permits, change orders, punch lists and closeout.",
   "forWho": "General contractors, remodelers and project managers",
@@ -149,7 +149,7 @@
               "In progress": "violet",
               "Punch list": "teal",
               "Complete": "green",
-              "On hold": "slate"
+              "On hold": "orange"
             },
             "statusGroups": {
               "Estimating": "todo",
@@ -2900,7 +2900,7 @@
         "Quarry Road"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3383,14 +3383,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "days_added",
+                  "owner",
+                  "approved_btn",
+                  "rejected_btn"
+                ]
               },
               {
                 "id": "vcal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "decide_by"
+                "dateField": "decide_by",
+                "hiddenFields": [
+                  "days_added",
+                  "signed",
+                  "owner",
+                  "approved_btn",
+                  "rejected_btn"
+                ]
               },
               {
                 "id": "vall",

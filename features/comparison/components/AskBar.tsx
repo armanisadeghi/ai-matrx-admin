@@ -28,7 +28,7 @@ const PLACEHOLDER: Record<string, string> = {
 };
 
 export function AskBar({
-  kindKey, text, onText, near, mode, onMode, scope, onScope, finding, stage, organizationId, onFind, onFill,
+  kindKey, text, onText, near, mode, onMode, scope, onScope, finding, stage, organizationId, onFind, onFill, quiet = false,
 }: {
   kindKey: string;
   text: string;
@@ -43,6 +43,8 @@ export function AskBar({
   organizationId: string;
   onFind: () => void;
   onFill: () => void;
+  /** The found list below already says what was read: keep the line under the box empty. */
+  quiet?: boolean;
 }) {
   const find = mode === "find";
   const parsed = parseInput(text, kindKey as KindKey, near);
@@ -74,7 +76,7 @@ export function AskBar({
         </Button>
       </form>
       <div className="flex min-h-7 min-w-0 flex-wrap items-center gap-x-2 gap-y-1 pl-1">
-        {text.trim().length < 2 ? null : find ? (
+        {text.trim().length < 2 || (quiet && find && !finding) ? null : find ? (
           <>
             <Compass className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
             <span className="type-secondary min-w-0 truncate text-muted-foreground">

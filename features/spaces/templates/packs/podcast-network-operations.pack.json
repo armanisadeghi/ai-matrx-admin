@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0566",
-  "version": 4,
+  "version": 5,
   "title": "Podcast Network Operations Desk",
   "description": "Podcast network: shows, episodes, ad inventory, downloads and sponsor deals.",
   "forWho": "Podcast networks and multi-show audio studios",
@@ -3556,7 +3556,7 @@
         "Vinyl Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -3753,7 +3753,20 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "minutes",
+                  "downloads_7d",
+                  "downloads",
+                  "spots_sold",
+                  "spots_open",
+                  "btn_recorded",
+                  "btn_editing",
+                  "btn_scheduled",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "epi-c",
@@ -3996,7 +4009,21 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "reads_owed",
+                  "reads_done",
+                  "reads_left",
+                  "spots_aired",
+                  "makegoods",
+                  "guaranteed",
+                  "owner",
+                  "btn_booked",
+                  "btn_delivered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "dea-c",

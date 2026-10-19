@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0311",
-  "version": 8,
+  "version": 9,
   "title": "Newsletter Growth & Sponsors",
   "description": "Independent writers: write issues, sell sponsor slots and watch subscriber growth.",
   "forWho": "Independent newsletter writers",
@@ -1666,7 +1666,7 @@
         "Quillfeather Road"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1764,14 +1764,33 @@
                 "name": "Pipeline",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "number",
+                  "open_rate",
+                  "click_rate",
+                  "ctr_ratio",
+                  "sponsor_rate",
+                  "updated_at",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "view-cal",
                 "name": "Send calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "send_on"
+                "dateField": "send_on",
+                "hiddenFields": [
+                  "number",
+                  "open_rate",
+                  "click_rate",
+                  "ctr_ratio",
+                  "sponsor",
+                  "sponsor_rate",
+                  "updated_at",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "view-tbl",
@@ -1897,7 +1916,15 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "issue_count",
+                  "sent_count",
+                  "avg_open",
+                  "slot_value",
+                  "email_btn",
+                  "paid_btn"
+                ]
               },
               {
                 "id": "view-tbl",

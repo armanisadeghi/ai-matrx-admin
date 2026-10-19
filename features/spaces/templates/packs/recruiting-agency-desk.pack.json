@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0452",
-  "version": 7,
+  "version": 8,
   "title": "Recruiting Agency Desk",
   "description": "For recruiters: job orders, candidates by stage, placements, fees and guarantees.",
   "forWho": "Recruiting, staffing and executive search firms",
@@ -2385,7 +2385,7 @@
         "Morrow Street"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2530,7 +2530,18 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "fee_pct",
+                  "guarantee_days",
+                  "owner",
+                  "roles_open",
+                  "roles_filled",
+                  "owner_me",
+                  "added_at",
+                  "add_job_order",
+                  "btn_mail"
+                ]
               },
               {
                 "id": "cli-t",

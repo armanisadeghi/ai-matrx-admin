@@ -40,8 +40,9 @@ function mount(node: React.ReactNode) {
   act(() => root.render(node));
 }
 afterEach(() => {
-  act(() => root.unmount());
-  container.remove();
+  if (root) act(() => root.unmount());
+  container?.remove();
+  root = undefined as unknown as Root;
 });
 
 const item = (over: Partial<AdvancedItem> = {}): AdvancedItem => ({

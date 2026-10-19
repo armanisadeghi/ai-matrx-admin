@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0263",
-  "version": 7,
+  "version": 8,
   "title": "Team Offsite Planner",
   "description": "Team leads: plan a retreat with agenda, venues, attendees and budget.",
   "forWho": "People teams and team leads planning retreats",
@@ -1739,7 +1739,7 @@
         "Cormorant Steps"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2127,7 +2127,11 @@
                 "id": "v-v",
                 "name": "Venues",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "capacity",
+                  "open_link"
+                ]
               },
               {
                 "id": "v-vt",
@@ -2664,7 +2668,7 @@
               },
               {
                 "id": "n2",
-                "name": "Dietary needs",
+                "name": "Dietary needs chart",
                 "layout": "chart",
                 "icon": "ChartColumn",
                 "chart": {

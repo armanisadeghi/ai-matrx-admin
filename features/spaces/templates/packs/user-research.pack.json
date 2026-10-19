@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0352",
-  "version": 7,
+  "version": 8,
   "title": "User Research Repository",
   "description": "Researchers: studies, sessions, participants and insights linked to their evidence.",
   "forWho": "Product and research teams",
@@ -1666,7 +1666,7 @@
         "Wren Hollow Street"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1725,7 +1725,15 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "session_count",
+                  "sessions_done",
+                  "done_pct",
+                  "insight_count",
+                  "study_done",
+                  "add_session_btn"
+                ]
               },
               {
                 "id": "v-t",

@@ -12,6 +12,6 @@ const iface = ok(await client.dashboardDeclare({ table_id: table, name: `ATFG1 i
 const del = await client.dashboardDelete({ dashboard_id: iface });
 console.log("dashboardDelete:", JSON.stringify(del));
 const left = await client.dashboards({ table_id: table });
-console.log("still listed:", JSON.stringify((Array.isArray(left.data) ? left.data : left.data?.dashboards ?? []).map((d) => d.id === iface)));
+console.log("still listed:", JSON.stringify((Array.isArray(left.data) ? left.data : left.data?.dashboards ?? []).map((d) => d.dashboard_id === iface)));
 for (let i = 0; i < 20; i++) { const a = await client.tableArchive({ table_id: table, chunk: 2, includeTable: true }); if (a.ok && a.data.done) { console.log("table archived"); break; } }
 process.exit(del.ok ? 0 : 1);

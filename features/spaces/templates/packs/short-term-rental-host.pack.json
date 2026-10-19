@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0415",
-  "version": 6,
+  "version": 7,
   "title": "Short-Term Rental Host",
   "description": "For vacation rental hosts: bookings, cleanings, guest messages, repairs and payouts.",
   "forWho": "Vacation rental hosts and co-hosts with a few homes",
@@ -1455,7 +1455,7 @@
             ],
             "choiceColors": {
               "Live": "blue",
-              "Paused": "green",
+              "Paused": "orange",
               "Maintenance": "amber"
             },
             "statusGroups": {
@@ -2332,7 +2332,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2630,14 +2630,37 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "guests",
+                  "payout",
+                  "cleaning_fee",
+                  "tax",
+                  "host",
+                  "turn_btn",
+                  "confirm_btn",
+                  "checkin_btn",
+                  "out_btn"
+                ]
               },
               {
                 "id": "vcal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "check_in"
+                "dateField": "check_in",
+                "hiddenFields": [
+                  "guests",
+                  "status",
+                  "payout",
+                  "cleaning_fee",
+                  "tax",
+                  "host",
+                  "turn_btn",
+                  "confirm_btn",
+                  "checkin_btn",
+                  "out_btn"
+                ]
               },
               {
                 "id": "vall",

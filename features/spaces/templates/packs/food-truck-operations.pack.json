@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0468",
-  "version": 6,
+  "version": 7,
   "title": "Food Truck Operations",
   "description": "For food truck owners: stops, sales, menu food cost, permits, commissary prep, bookings.",
   "forWho": "Food trucks, mobile kitchens and pop-up vendors",
@@ -287,7 +287,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Sales (USD)} - {Spot fee (USD)}"
+            "formula": "IF({Sales (USD)} > 0, {Sales (USD)} - {Spot fee (USD)}, \"\")"
           },
           {
             "key": "hours",
@@ -2424,7 +2424,7 @@
         "Depot Street"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2814,14 +2814,22 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "portions",
+                  "btn_load_it"
+                ]
               },
               {
                 "id": "pre-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "prep_on"
+                "dateField": "prep_on",
+                "hiddenFields": [
+                  "portions",
+                  "btn_load_it"
+                ]
               },
               {
                 "id": "pre-t",
@@ -2922,14 +2930,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "guests",
+                  "email",
+                  "phone",
+                  "owner",
+                  "added_at",
+                  "btn_lock_it_in"
+                ]
               },
               {
                 "id": "boo-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "event_on"
+                "dateField": "event_on",
+                "hiddenFields": [
+                  "guests",
+                  "payment",
+                  "email",
+                  "phone",
+                  "owner",
+                  "added_at",
+                  "btn_lock_it_in"
+                ]
               },
               {
                 "id": "boo-t",
@@ -3030,7 +3055,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "food_pct",
+                  "per_stop"
+                ]
               },
               {
                 "id": "menu-t",

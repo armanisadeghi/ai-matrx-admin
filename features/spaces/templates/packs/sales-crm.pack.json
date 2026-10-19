@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0150",
-  "version": 10,
+  "version": 11,
   "title": "Sales CRM",
   "description": "Small sales teams: a deal pipeline board, a contact book and every call logged.",
   "forWho": "Small sales teams and solo sellers",
@@ -1882,7 +1882,7 @@
         "Thornapple Lane"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -1982,7 +1982,16 @@
                 "name": "Pipeline",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "weighted_value",
+                  "priority",
+                  "touches",
+                  "created",
+                  "edited",
+                  "won_btn",
+                  "lost_btn"
+                ]
               },
               {
                 "id": "view-all-deals",
@@ -2010,7 +2019,17 @@
                 "name": "Closing calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "expected_close"
+                "dateField": "expected_close",
+                "hiddenFields": [
+                  "weighted_value",
+                  "owner",
+                  "priority",
+                  "touches",
+                  "created",
+                  "edited",
+                  "won_btn",
+                  "lost_btn"
+                ]
               },
               {
                 "id": "view-deal-week",

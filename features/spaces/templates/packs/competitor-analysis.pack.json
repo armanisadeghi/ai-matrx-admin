@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0355",
-  "version": 5,
+  "version": 6,
   "title": "Competitor Analysis",
   "description": "Product and marketing teams: profile rivals, compare features and track pricing.",
   "forWho": "Product and marketing teams",
@@ -899,7 +899,7 @@
         "Tansy Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1052,7 +1052,10 @@
                 "name": "By category",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "coverage"
+                ]
               },
               {
                 "id": "v-gap",

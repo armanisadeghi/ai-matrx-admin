@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0314",
-  "version": 8,
+  "version": 9,
   "title": "Event Planner",
   "description": "Event organisers: guests and RSVPs, vendors, tasks, budget and run of show.",
   "forWho": "Small organisers and event planners",
@@ -2401,7 +2401,7 @@
         "Starling Passage"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2559,7 +2559,12 @@
                 "name": "By RSVP",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "rsvp"
+                "groupField": "rsvp",
+                "hiddenFields": [
+                  "party",
+                  "email_btn",
+                  "yes_btn"
+                ]
               },
               {
                 "id": "view-tbl",
@@ -2755,7 +2760,12 @@
                 "name": "By category",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "variance",
+                  "event",
+                  "logged_at"
+                ]
               },
               {
                 "id": "view-tbl",

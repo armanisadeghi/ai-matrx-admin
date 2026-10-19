@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0501",
-  "version": 6,
+  "version": 7,
   "title": "Plumbing Company HQ",
   "description": "For plumbing shops: dispatch calls, price jobs, stock vans and collect what is owed.",
   "forWho": "Plumbing companies and drain and pipe contractors",
@@ -828,7 +828,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)}"
+            "formula": "IF({Status} = \"Cancelled\", \"\", {Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)})"
           },
           {
             "key": "margin_pct",
@@ -836,7 +836,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0)"
+            "formula": "IF({Status} = \"Cancelled\", \"\", IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0))"
           },
           {
             "key": "margin_flag",
@@ -2528,7 +2528,7 @@
         "Kettle Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2839,7 +2839,14 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_at",
+                  "reorder_flag",
+                  "stock_value",
+                  "added_at"
+                ]
               },
               {
                 "id": "par-t",

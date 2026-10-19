@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0517",
-  "version": 6,
+  "version": 7,
   "title": "Boutique Clothing Store HQ",
   "description": "For clothing boutiques: sizes and stock, seasonal buys, markdowns, holds, consignment.",
   "forWho": "Independent clothing and accessory boutiques",
@@ -3346,7 +3346,7 @@
         "Willow Passage"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3659,7 +3659,13 @@
                 "name": "By where",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "location"
+                "groupField": "location",
+                "hiddenFields": [
+                  "received",
+                  "on_hand",
+                  "sold_n",
+                  "added_at"
+                ]
               },
               {
                 "id": "sz-l",
@@ -3703,7 +3709,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "po_status"
+                "groupField": "po_status",
+                "hiddenFields": [
+                  "units",
+                  "added_at"
+                ]
               },
               {
                 "id": "po-t",
@@ -3869,7 +3879,14 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "terms"
+                "groupField": "terms",
+                "hiddenFields": [
+                  "lead_days",
+                  "designer_share",
+                  "product_n",
+                  "on_order",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "sup-t"

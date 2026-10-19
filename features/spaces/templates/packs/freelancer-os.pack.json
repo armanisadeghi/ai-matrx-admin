@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0300",
-  "version": 8,
+  "version": 9,
   "title": "Freelancer OS",
   "description": "Solo freelancers: clients, projects, tasks, time and invoices from one home page.",
   "forWho": "Solo freelancers and independent consultants",
@@ -2945,7 +2945,7 @@
         "Alderwick Lane"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3062,14 +3062,22 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "estimate",
+                  "done_btn"
+                ]
               },
               {
                 "id": "view-board",
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "estimate",
+                  "done_btn"
+                ]
               },
               {
                 "id": "v-today",
@@ -3355,14 +3363,29 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "invoice_no",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "view-cal",
                 "name": "Due dates",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "invoice_no",
+                  "project",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "view-unpaid",

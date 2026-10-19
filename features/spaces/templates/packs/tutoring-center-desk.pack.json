@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0557",
-  "version": 4,
+  "version": 5,
   "title": "Tutoring Center Desk",
   "description": "Tutoring center desk: students, sessions, hour packages used, assessments and progress.",
   "forWho": "Tutoring centers and independent tutor groups",
@@ -2684,7 +2684,7 @@
         "Quarry Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -3065,14 +3065,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "hours",
+                  "used",
+                  "left",
+                  "btn_used",
+                  "btn_claim",
+                  "added_at"
+                ]
               },
               {
                 "id": "pac-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "expires_on"
+                "dateField": "expires_on",
+                "hiddenFields": [
+                  "hours",
+                  "used",
+                  "left",
+                  "btn_used",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pac-t",
@@ -3231,14 +3248,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "score",
+                  "goal_score",
+                  "to_goal",
+                  "btn_claim"
+                ]
               },
               {
                 "id": "as-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "taken_on"
+                "dateField": "taken_on",
+                "hiddenFields": [
+                  "score",
+                  "goal_score",
+                  "to_goal",
+                  "btn_claim",
+                  "added_at"
+                ]
               },
               {
                 "id": "as-t",

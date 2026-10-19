@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0512",
-  "version": 6,
+  "version": 7,
   "title": "Hair Salon HQ",
   "description": "For hair salons: appointments, stylist commission, color formulas, rebooking, retail.",
   "forWho": "Hair salons and stylist teams",
@@ -2552,7 +2552,7 @@
         "Ladybird Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2691,7 +2691,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "minutes",
+                  "times_done"
+                ]
               },
               {
                 "id": "pla-t",

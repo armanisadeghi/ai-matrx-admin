@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0413",
-  "version": 7,
+  "version": 8,
   "title": "Real Estate Brokerage",
   "description": "For realtors and brokers: leads, listings, contracts, contingency dates and commissions.",
   "forWho": "Real estate agents, brokers and transaction coordinators",
@@ -2395,7 +2395,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2757,7 +2757,15 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "reduced",
+                  "beds",
+                  "offers",
+                  "txn_btn",
+                  "active_btn",
+                  "sold_btn"
+                ]
               },
               {
                 "id": "vcal",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0259",
-  "version": 4,
+  "version": 5,
   "title": "Employee Handbook",
   "description": "HR and operations: a living handbook with policies, owners, review dates and sign-offs.",
   "forWho": "HR and operations teams",
@@ -1218,7 +1218,7 @@
         "Barleywick Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1338,14 +1338,31 @@
                 "icon": "LayoutGrid",
                 "filters": {
                   "pinned": true
-                }
+                },
+                "hiddenFields": [
+                  "policy_no",
+                  "review_flag",
+                  "applies",
+                  "pinned",
+                  "ack_count",
+                  "hr_notes",
+                  "edited"
+                ]
               },
               {
                 "id": "v-cat",
                 "name": "By category",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "policy_no",
+                  "applies",
+                  "pinned",
+                  "ack_count",
+                  "hr_notes",
+                  "edited"
+                ]
               },
               {
                 "id": "v-all",
@@ -1452,7 +1469,16 @@
                 "name": "Review dates",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "review_due"
+                "dateField": "review_due",
+                "hiddenFields": [
+                  "policy_no",
+                  "review_flag",
+                  "applies",
+                  "pinned",
+                  "ack_count",
+                  "hr_notes",
+                  "edited"
+                ]
               },
               {
                 "id": "view-u10",

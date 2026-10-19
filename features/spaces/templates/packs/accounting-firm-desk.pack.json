@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0457",
-  "version": 7,
+  "version": 8,
   "title": "Accounting Firm Desk",
   "description": "For accounting firms: clients, monthly close checklists, tax deadlines, document requests.",
   "forWho": "Bookkeeping, tax and accounting firms",
@@ -2125,7 +2125,7 @@
         "Linden Terrace"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2328,14 +2328,29 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "unreconciled",
+                  "questions",
+                  "owner_me",
+                  "added_at",
+                  "btn_deliver_package"
+                ]
               },
               {
                 "id": "clo-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "unreconciled",
+                  "questions",
+                  "preparer",
+                  "owner_me",
+                  "added_at",
+                  "btn_deliver_package"
+                ]
               },
               {
                 "id": "clo-t",
@@ -2556,14 +2571,22 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "reminders",
+                  "btn_log_arrival"
+                ]
               },
               {
                 "id": "req-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "reminders",
+                  "btn_log_arrival"
+                ]
               },
               {
                 "id": "req-t",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0214",
-  "version": 6,
+  "version": 7,
   "title": "Moving Checklist",
   "description": "Anyone moving house: a timeline checklist, box inventory and address-change tracker.",
   "forWho": "Anyone moving house",
@@ -1351,7 +1351,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1604,14 +1604,22 @@
                 "name": "By room",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "room"
+                "groupField": "room",
+                "hiddenFields": [
+                  "weight",
+                  "moved_btn"
+                ]
               },
               {
                 "id": "view-10",
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "weight",
+                  "moved_btn"
+                ]
               },
               {
                 "id": "view-11",

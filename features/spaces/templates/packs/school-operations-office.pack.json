@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0556",
-  "version": 4,
+  "version": 5,
   "title": "School Operations Office",
   "description": "School front office: enrollment, daily attendance, staff licenses, events, sub cover.",
   "forWho": "Principals and office managers at K-12 schools",
@@ -3439,7 +3439,7 @@
         "Sycamore Drive"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -3578,7 +3578,18 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "size",
+                  "cap",
+                  "seats",
+                  "absence_count",
+                  "unexcused_total",
+                  "joining",
+                  "btn_claim",
+                  "add_absence",
+                  "added_at"
+                ]
               },
               {
                 "id": "sec-t",
@@ -3636,14 +3647,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "expected",
+                  "btn_confirm",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "sch-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "starts_at"
+                "dateField": "starts_at",
+                "hiddenFields": [
+                  "expected",
+                  "notice_sent",
+                  "btn_confirm",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "sch-t",
@@ -4124,7 +4152,14 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "day_on"
+                "dateField": "day_on",
+                "hiddenFields": [
+                  "present",
+                  "excused",
+                  "unexcused",
+                  "tardy",
+                  "rate"
+                ]
               }
             ],
             "activeViewId": "at-t"

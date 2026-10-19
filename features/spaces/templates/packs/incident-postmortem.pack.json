@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0109",
-  "version": 10,
+  "version": 11,
   "title": "Incident Postmortems",
   "description": "Engineering and ops teams: log incidents, write blameless postmortems, track the fixes.",
   "forWho": "Engineering and operations teams",
@@ -1502,7 +1502,7 @@
         "Cobalt Ridge Drive"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -1614,14 +1614,35 @@
                 "name": "By status",
                 "icon": "SquareKanban",
                 "groupField": "status",
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "incident_no",
+                  "impact",
+                  "postmortem_owner",
+                  "action_count",
+                  "open_count",
+                  "closed_pct",
+                  "created",
+                  "add_action_item_btn"
+                ]
               },
               {
                 "layout": "timeline",
                 "name": "Timeline",
                 "icon": "ChartGantt",
                 "dateField": "started_at",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "incident_no",
+                  "services",
+                  "impact",
+                  "postmortem_owner",
+                  "action_count",
+                  "open_count",
+                  "closed_pct",
+                  "created",
+                  "add_action_item_btn"
+                ]
               },
               {
                 "layout": "grid",
@@ -1640,7 +1661,17 @@
                 "name": "By severity",
                 "icon": "SquareKanban",
                 "groupField": "severity",
-                "id": "view-3"
+                "id": "view-3",
+                "hiddenFields": [
+                  "incident_no",
+                  "impact",
+                  "postmortem_owner",
+                  "action_count",
+                  "open_count",
+                  "closed_pct",
+                  "created",
+                  "add_action_item_btn"
+                ]
               },
               {
                 "layout": "list",

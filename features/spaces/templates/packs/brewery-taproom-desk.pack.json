@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0469",
-  "version": 7,
+  "version": 8,
   "title": "Brewery Taproom Desk",
   "description": "For brewers and taproom managers: batches, tanks, kegs, tap list, distributor orders.",
   "forWho": "Craft breweries, cideries and taproom operators",
@@ -2617,7 +2617,7 @@
         "Foundry Row"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2769,14 +2769,43 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "barrels",
+                  "packaged_bbl",
+                  "loss_pct",
+                  "abv",
+                  "og",
+                  "fg",
+                  "ibu",
+                  "kegs_count",
+                  "kegs_on_tap",
+                  "added_at",
+                  "btn_package_it",
+                  "add_keg"
+                ]
               },
               {
                 "id": "bat-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "ready_on"
+                "dateField": "ready_on",
+                "hiddenFields": [
+                  "barrels",
+                  "packaged_bbl",
+                  "loss_pct",
+                  "abv",
+                  "og",
+                  "fg",
+                  "ibu",
+                  "kegs_count",
+                  "kegs_on_tap",
+                  "brewer",
+                  "added_at",
+                  "btn_package_it",
+                  "add_keg"
+                ]
               },
               {
                 "id": "bat-t",
@@ -3047,14 +3076,29 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "kegs_ordered",
+                  "empties_back",
+                  "rep",
+                  "added_at",
+                  "btn_log_delivery"
+                ]
               },
               {
                 "id": "who-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "delivery_on"
+                "dateField": "delivery_on",
+                "hiddenFields": [
+                  "kegs_ordered",
+                  "empties_back",
+                  "invoice",
+                  "rep",
+                  "added_at",
+                  "btn_log_delivery"
+                ]
               },
               {
                 "id": "who-t",
@@ -3155,14 +3199,24 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "expected",
+                  "actual",
+                  "btn_close_out"
+                ]
               },
               {
                 "id": "eve-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "event_on"
+                "dateField": "event_on",
+                "hiddenFields": [
+                  "expected",
+                  "actual",
+                  "btn_close_out"
+                ]
               },
               {
                 "id": "eve-t",
@@ -3263,7 +3317,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "size",
+                  "temp"
+                ]
               },
               {
                 "id": "tank-t",
@@ -3729,7 +3787,11 @@
                 "name": "Tank board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "size",
+                  "temp"
+                ]
               }
             ],
             "activeViewId": "vtk"

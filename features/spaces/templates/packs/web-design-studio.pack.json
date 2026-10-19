@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0451",
-  "version": 7,
+  "version": 8,
   "title": "Web Design Studio HQ",
   "description": "For web studios: site projects by phase, page content, change requests and invoices.",
   "forWho": "Web design and development studios",
@@ -2825,7 +2825,7 @@
         "Pemberly Row"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3274,14 +3274,23 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "hours",
+                  "btn_mark_done"
+                ]
               },
               {
                 "id": "rev-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "requested_on"
+                "dateField": "requested_on",
+                "hiddenFields": [
+                  "hours",
+                  "added_at",
+                  "btn_mark_done"
+                ]
               },
               {
                 "id": "rev-t",

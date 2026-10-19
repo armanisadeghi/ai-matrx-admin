@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0250",
-  "version": 7,
+  "version": 8,
   "title": "Student OS",
   "description": "Students: classes, tasks, notes and study time in one dashboard for the term.",
   "forWho": "Students in high school and college",
@@ -1621,7 +1621,7 @@
         "Alder Quill Court"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1767,7 +1767,19 @@
                 "name": "By term",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "term"
+                "groupField": "term",
+                "hiddenFields": [
+                  "credits",
+                  "room",
+                  "instructor_email",
+                  "weight_graded",
+                  "earned",
+                  "grade",
+                  "open_tasks",
+                  "archived",
+                  "add_task_btn",
+                  "add_note_btn"
+                ]
               },
               {
                 "id": "v-all",

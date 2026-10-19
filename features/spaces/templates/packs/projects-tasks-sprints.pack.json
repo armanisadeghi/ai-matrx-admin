@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0100",
-  "version": 7,
+  "version": 8,
   "title": "Projects, Tasks & Sprints",
   "description": "Product teams that plan by project: tasks, two-week sprints and a live sprint dashboard.",
   "forWho": "Software and product teams working in sprints",
@@ -1525,7 +1525,7 @@
         "Fennimore Court"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1635,7 +1635,22 @@
                 "name": "Board",
                 "icon": "SquareKanban",
                 "groupField": "status",
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "sub_total",
+                  "priority",
+                  "assignee",
+                  "points",
+                  "pull_request",
+                  "days_left",
+                  "created",
+                  "edited",
+                  "done_btn",
+                  "start_btn",
+                  "open_pull_request",
+                  "take_btn",
+                  "assigned_to"
+                ]
               },
               {
                 "layout": "list",
@@ -1722,7 +1737,12 @@
                 "name": "Timeline",
                 "icon": "ChartGantt",
                 "dateField": "starts_on",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "committed",
+                  "completed",
+                  "completion"
+                ]
               },
               {
                 "layout": "list",
@@ -1769,7 +1789,14 @@
                 "name": "By status",
                 "icon": "SquareKanban",
                 "groupField": "status",
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "task_count",
+                  "points_total",
+                  "points_done",
+                  "progress",
+                  "add_task_btn"
+                ]
               },
               {
                 "layout": "timeline",
@@ -2233,7 +2260,22 @@
                 "name": "By priority",
                 "icon": "SquareKanban",
                 "groupField": "priority",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "sub_total",
+                  "type",
+                  "assignee",
+                  "points",
+                  "pull_request",
+                  "days_left",
+                  "created",
+                  "edited",
+                  "done_btn",
+                  "start_btn",
+                  "open_pull_request",
+                  "take_btn",
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-0"
@@ -2433,7 +2475,22 @@
                 "name": "By priority",
                 "icon": "SquareKanban",
                 "groupField": "priority",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "sub_total",
+                  "type",
+                  "assignee",
+                  "points",
+                  "pull_request",
+                  "days_left",
+                  "created",
+                  "edited",
+                  "done_btn",
+                  "start_btn",
+                  "open_pull_request",
+                  "take_btn",
+                  "assigned_to"
+                ]
               },
               {
                 "layout": "list",

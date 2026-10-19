@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0163",
-  "version": 7,
+  "version": 8,
   "title": "Marketing OS",
   "description": "Marketing teams: one home for campaigns, content, SEO, assets and leads.",
   "forWho": "Marketing teams that want everything in one place",
@@ -1579,7 +1579,7 @@
         "Piñon Wash Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1795,7 +1795,14 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "piece_total",
+                  "remaining",
+                  "spend_month",
+                  "lead_count",
+                  "audience"
+                ]
               }
             ],
             "activeViewId": "view-board"
@@ -2216,7 +2223,12 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "volume",
+                  "difficulty",
+                  "rank"
+                ]
               }
             ],
             "activeViewId": "view-by-volume"

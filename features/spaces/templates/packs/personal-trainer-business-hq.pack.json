@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0511",
-  "version": 6,
+  "version": 7,
   "title": "Personal Trainer Business HQ",
   "description": "For personal trainers: client programs, sessions left, weekly check-ins, renewals.",
   "forWho": "Personal trainers and small coaching businesses",
@@ -3514,7 +3514,7 @@
         "Granary Row"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3832,7 +3832,12 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "prog_status"
+                "groupField": "prog_status",
+                "hiddenFields": [
+                  "days_per_week",
+                  "progress",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-t",
@@ -3890,7 +3895,15 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "reply"
+                "groupField": "reply",
+                "hiddenFields": [
+                  "done",
+                  "planned",
+                  "adherence",
+                  "weight",
+                  "energy",
+                  "added_at"
+                ]
               },
               {
                 "id": "chk-t",
@@ -3959,7 +3972,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "p_status"
+                "groupField": "p_status",
+                "hiddenFields": [
+                  "sessions_bought",
+                  "sessions_used",
+                  "sessions_left",
+                  "added_at"
+                ]
               },
               {
                 "id": "buy-t",
@@ -4093,7 +4112,14 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "sessions_incl",
+                  "minutes",
+                  "valid_days",
+                  "on_plan",
+                  "added_at"
+                ]
               },
               {
                 "id": "pla-t",

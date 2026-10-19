@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0211",
-  "version": 6,
+  "version": 7,
   "title": "Travel Planner",
   "description": "Travelers: plan each trip with an itinerary, bookings, a packing list and places.",
   "forWho": "Travelers planning trips",
@@ -1663,7 +1663,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1904,7 +1904,11 @@
                 "name": "By category",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "quantity",
+                  "packed_btn"
+                ]
               }
             ],
             "activeViewId": "view-11"
@@ -2259,7 +2263,11 @@
                 "groupField": "category",
                 "filters": {
                   "packed": false
-                }
+                },
+                "hiddenFields": [
+                  "quantity",
+                  "packed_btn"
+                ]
               }
             ],
             "activeViewId": "view-u2"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0568",
-  "version": 3,
+  "version": 4,
   "title": "Film Festival Programming Desk",
   "description": "Film festival: submissions, screener and jury scores, programming slots, venues, guests.",
   "forWho": "Film festival programmers and organizers",
@@ -3135,7 +3135,7 @@
         "Adobe Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -3274,7 +3274,30 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "minutes",
+                  "entry",
+                  "screener_link",
+                  "exhibition",
+                  "score",
+                  "prescreen_avg",
+                  "scores_owed",
+                  "program_votes",
+                  "email",
+                  "programmer",
+                  "screenings_count",
+                  "guests_count",
+                  "btn_review",
+                  "btn_select",
+                  "btn_decline",
+                  "btn_claim",
+                  "add_screening",
+                  "add_guest",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "fil-c",
@@ -3394,7 +3417,18 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "tickets_sold",
+                  "comps",
+                  "tech_check",
+                  "host",
+                  "btn_scheduled",
+                  "btn_held",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "scr-c",
@@ -3528,7 +3562,14 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "kind"
+                "groupField": "kind",
+                "hiddenFields": [
+                  "capacity",
+                  "screening_slots",
+                  "seats_sold",
+                  "comps_held",
+                  "added_at"
+                ]
               },
               {
                 "id": "ven-t",
@@ -3694,7 +3735,14 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "score",
+                  "btn_scored",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "rv-c",

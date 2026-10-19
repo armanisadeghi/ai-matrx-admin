@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0515",
-  "version": 6,
+  "version": 7,
   "title": "Massage Therapy Practice HQ",
   "description": "For massage therapists: intake, session notes, memberships, rooms and reminders.",
   "forWho": "Massage therapists and small bodywork practices",
@@ -2323,7 +2323,7 @@
         "Wicker Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2462,7 +2462,12 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "minutes",
+                  "times_done",
+                  "members_n"
+                ]
               },
               {
                 "id": "pla-t",

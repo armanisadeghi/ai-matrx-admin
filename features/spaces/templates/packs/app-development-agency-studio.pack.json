@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0563",
-  "version": 4,
+  "version": 5,
   "title": "App Development Agency Studio",
   "description": "App agency: projects, sprints, change requests, store releases, retainers and bugs.",
   "forWho": "App and software development agencies",
@@ -4064,7 +4064,7 @@
         "Cobbler Way"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -4683,14 +4683,27 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "points_planned",
+                  "points_done",
+                  "done_pct",
+                  "btn_close"
+                ]
               },
               {
                 "id": "sp-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "ends_on"
+                "dateField": "ends_on",
+                "hiddenFields": [
+                  "points_planned",
+                  "points_done",
+                  "done_pct",
+                  "btn_close",
+                  "added_at"
+                ]
               },
               {
                 "id": "sp-t",
@@ -4739,14 +4752,29 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "days",
+                  "btn_approve",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cr-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "decide_by"
+                "dateField": "decide_by",
+                "hiddenFields": [
+                  "days",
+                  "impact",
+                  "btn_approve",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cr-t",

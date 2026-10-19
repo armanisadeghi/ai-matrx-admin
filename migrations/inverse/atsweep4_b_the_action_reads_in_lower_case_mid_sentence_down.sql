@@ -1,5 +1,6 @@
 -- INVERSE of atsweep4_b_the_action_reads_in_lower_case_mid_sentence.sql: the two wall-refusal functions with the label as the map gives it.
 -- chair-step: restores function bodies.
+-- ground-standing-ok: b  Run this file BEFORE atsweep4_a_..._down.sql: this restores the a-form bodies (which call custom._door_action_words), and the a inverse then restores the older bodies that do not call it and drops the helper.
 -- based-on: custom._not_a_member_refusal(text) 98b006d329920d43505d1b544f7bb14ce5701e798794d908d9d18fe464f43104
 -- based-on: custom._not_a_member_refusal(text, uuid) 6c7c77f955b34ee4237a1b482939e2924930aea3238d5f214bb009c874bc1470
 CREATE OR REPLACE FUNCTION custom._not_a_member_refusal(p_door text)

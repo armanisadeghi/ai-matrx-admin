@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0309",
-  "version": 8,
+  "version": 9,
   "title": "Podcast Production Hub",
   "description": "Podcasters: plan episodes, book guests, manage sponsors and track production tasks.",
   "forWho": "Podcasters and small audio teams",
@@ -1819,7 +1819,7 @@
         "Dovecote Mews"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1917,21 +1917,59 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "number",
+                  "minutes",
+                  "tasks_total",
+                  "tasks_done",
+                  "open_tasks",
+                  "progress",
+                  "updated_at",
+                  "pub_btn",
+                  "add_task_btn",
+                  "open_audio_link"
+                ]
               },
               {
                 "id": "view-cal",
                 "name": "Release calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "release_on"
+                "dateField": "release_on",
+                "hiddenFields": [
+                  "number",
+                  "minutes",
+                  "tasks_total",
+                  "tasks_done",
+                  "open_tasks",
+                  "progress",
+                  "sponsor",
+                  "updated_at",
+                  "pub_btn",
+                  "add_task_btn",
+                  "open_audio_link"
+                ]
               },
               {
                 "id": "view-tl",
                 "name": "Timeline",
                 "layout": "timeline",
                 "icon": "ChartGantt",
-                "dateField": "record_on"
+                "dateField": "record_on",
+                "hiddenFields": [
+                  "number",
+                  "minutes",
+                  "tasks_total",
+                  "tasks_done",
+                  "open_tasks",
+                  "progress",
+                  "sponsor",
+                  "updated_at",
+                  "pub_btn",
+                  "add_task_btn",
+                  "open_audio_link"
+                ]
               },
               {
                 "id": "view-tbl",
@@ -2002,7 +2040,11 @@
                 "name": "Pipeline",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "ep_count",
+                  "email_btn"
+                ]
               },
               {
                 "id": "view-tbl",
@@ -2085,7 +2127,12 @@
                 "name": "By contract",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "contract"
+                "groupField": "contract",
+                "hiddenFields": [
+                  "episode_count",
+                  "released",
+                  "email_btn"
+                ]
               },
               {
                 "id": "view-tbl",

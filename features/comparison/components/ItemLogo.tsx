@@ -23,11 +23,25 @@ interface Props {
   className?: string;
 }
 
+/**
+ * Pictures a source serves when it has none of its own (the review site's grey default business image, page
+ * screenshots): treated as no picture, so the favicon (then the letter) shows. Same list as aidream
+ * `services/comparison/kinds.PLACEHOLDER_PICTURES`; here too so runs saved before the server fix render right.
+ */
+export const PLACEHOLDER_PICTURES = ["default-business-unit-image", "businessunitprofile-cdn.trustpilot.net/default", "/screenshots/"];
+
+export function realPicture(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const low = url.toLowerCase();
+  return PLACEHOLDER_PICTURES.some((p) => low.includes(p)) ? null : url;
+}
+
 function faviconFor(website: string, size: number): string {
   return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(website)}&sz=${Math.max(64, size * 2)}`;
 }
 
-export function ItemLogo({ name, logoUrl, website, size = 40, fill = false, className }: Props) {
+export function ItemLogo({ name, logoUrl: given, website, size = 40, fill = false, className }: Props) {
+  const logoUrl = realPicture(given);
   const sources = [logoUrl, website ? faviconFor(website, size) : null].filter((s): s is string => Boolean(s));
   const [failed, setFailed] = useState(0);
   const [loaded, setLoaded] = useState(false);

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0412",
-  "version": 6,
+  "version": 7,
   "title": "Law Firm Billing and Time",
   "description": "For law firm billing: time, invoices, trust payments, write-downs and collections.",
   "forWho": "Law firm billing staff, office managers and attorneys",
@@ -1894,7 +1894,7 @@
         "Wacker Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2171,14 +2171,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "hours",
+                  "value",
+                  "owner",
+                  "billed_btn"
+                ]
               },
               {
                 "id": "vcal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "worked_on"
+                "dateField": "worked_on",
+                "hiddenFields": [
+                  "hours",
+                  "value",
+                  "status",
+                  "owner",
+                  "billed_btn"
+                ]
               },
               {
                 "id": "vall",

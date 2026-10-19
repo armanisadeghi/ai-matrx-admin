@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0450",
-  "version": 7,
+  "version": 8,
   "title": "Digital Marketing Agency HQ",
   "description": "For marketing agencies: retainers, scope, hours, campaigns, approvals and monthly reports.",
   "forWho": "Digital marketing agencies and growth studios",
@@ -1403,7 +1403,7 @@
             ],
             "choiceColors": {
               "Not needed": "blue",
-              "Waiting on client": "green",
+              "Waiting on client": "amber",
               "Approved": "teal",
               "Changes requested": "violet"
             },
@@ -3168,7 +3168,7 @@
         "Alder Quay"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3532,14 +3532,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "rounds",
+                  "estimate",
+                  "owner_me",
+                  "added_at",
+                  "btn_mark_done",
+                  "take_btn"
+                ]
               },
               {
                 "id": "del-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "rounds",
+                  "estimate",
+                  "owner",
+                  "owner_me",
+                  "added_at",
+                  "btn_mark_done",
+                  "take_btn"
+                ]
               },
               {
                 "id": "del-t",
@@ -3652,7 +3669,11 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "worked_on"
+                "dateField": "worked_on",
+                "hiddenFields": [
+                  "hours",
+                  "added_at"
+                ]
               },
               {
                 "id": "tim-t",
