@@ -1,6 +1,6 @@
 # Settings primitives
 
-Verified against code 2026-09-12.
+Cross-repo system-of-record: /Users/armanisadeghi/code/common-docs/systems/account/settings/FEATURE.md — read it before touching this feature in ANY repo.
 
 These local primitives are the shared presentation contract for settings rows,
 sections, controls, and settings navigation. Import the source component you
@@ -62,22 +62,3 @@ need; do not add a barrel or a page-local substitute.
   its scrollable results. Do not subtract a guessed header allowance: the live
   bottom-positioned one-result menu clipped a 36px row into 20px. Check both
   natural placements, a single filtered result, and a short-window long list.
-
-## Change Log
-
-- 2026-09-12: Replaced the voice chooser's fixed header allowance with actual
-  flex sizing after a production bottom-placement check caught a clipped result.
-- 2026-09-12: Repaired clipped selected values and disjoint registry rows;
-  unified model/voice trigger styling and moved voice preview into its chooser.
-  Prior containment-only browser acceptance did not prove readable controls.
-- 2026-09-12: Made settings rows container-responsive, constrained typed
-  controls to their actual pane, and hardened navigation, grids and details
-  against long text in resizable windows.
-- 2026-09-12: Added flat navigation and shared search primitives for route and
-  overlay menus, including stable unheaded root groups, exact-control result adapters,
-  and work-on-import structural styling.
-- 2026-09-12: Added compact presentation context, page/group/navigation
-  compositions, responsive row behavior, stable ids, and accessibility rules.
-- 2026-09-12: Kept compact disclosure out of the row flow until requested.
-- 2026-09-12: Added generated static-control deep links and portal-backed
-  compact help; collapsible headers are keyboard buttons with separate actions.
