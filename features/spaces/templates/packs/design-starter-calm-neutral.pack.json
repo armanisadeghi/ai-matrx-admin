@@ -1,14 +1,17 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0491",
-  "version": 3,
+  "version": 4,
   "title": "Design system — Calm neutral",
   "description": "Cool grays, an indigo action and soft cards: the modern software look.",
   "forWho": "Software products and SaaS teams",
   "icon": {
     "icon": "Palette"
   },
-  "cover": null,
+  "cover": {
+    "url": "gallery:wellness-bamboo-zen",
+    "offsetY": 50
+  },
   "category": "docs",
   "tags": [
     "design system",
@@ -1275,7 +1278,7 @@
         "Brannock Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [],
   "board": {

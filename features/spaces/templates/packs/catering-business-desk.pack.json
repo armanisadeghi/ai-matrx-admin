@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0464",
-  "version": 5,
+  "version": 6,
   "title": "Catering Business Desk",
   "description": "For caterers: proposals, event orders, prep and pack lists, food and labor cost per event.",
   "forWho": "Caterers and event food companies",
@@ -9,7 +9,7 @@
     "emoji": "🥘"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:hospitality-catering-buffet-food",
     "offsetY": 50
   },
   "category": "hospitality",
@@ -2506,7 +2506,7 @@
         "Millrace Drive"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2517,7 +2517,7 @@
         "emoji": "🥘"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:hospitality-catering-buffet-food",
         "offsetY": 50
       },
       "settings": {

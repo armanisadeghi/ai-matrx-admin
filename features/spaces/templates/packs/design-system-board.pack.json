@@ -1,14 +1,17 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0363",
-  "version": 7,
+  "version": 8,
   "title": "Design system board",
   "description": "Product teams: colours, type, spacing, corners and shadows as one editable board.",
   "forWho": "Product teams keeping one design system",
   "icon": {
     "icon": "Palette"
   },
-  "cover": null,
+  "cover": {
+    "url": "gallery:agencies-design-studio-desk",
+    "offsetY": 50
+  },
   "category": "docs",
   "tags": [
     "design",
@@ -1265,7 +1268,7 @@
         "Quillan Row"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [],
   "board": {

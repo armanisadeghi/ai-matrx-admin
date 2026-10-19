@@ -25,7 +25,7 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { toast } from "@/lib/toast";
 import { START_LAUNCHPAD_KEY, useLaunchpadHistory, useLaunchpads, versionAuthor, versionNote } from "../useLaunchpads";
-import { addWidget, applyPlacements, configureWidget, readingOrder, removeWidget, resizeWidget, sameLaunchpadDoc, summarizeEdit } from "../doc";
+import { addWidget, applyPlacements, parseLaunchpadDoc, configureWidget, readingOrder, removeWidget, resizeWidget, sameLaunchpadDoc, summarizeEdit } from "../doc";
 import { keyFromTitle, personOwner } from "../launchpad.typed-table";
 import { describeLaunchpadWidget, getLaunchpadWidgetSpec } from "../widgets/catalog";
 import { sizeWord } from "../tools/agentEdits";
@@ -39,17 +39,41 @@ import { LaunchpadsMount } from "./LaunchpadsMount";
 /** The launchpad maintainer (declared in aidream services/start_page/mandates.py). */
 const MAINTAINER_KEY = MANDATE_KEYS.start_page__maintainer;
 
-export function LaunchpadPage({ launchpadKey }: { launchpadKey: string }) {
+/** What the server read for this key (the person's own launchpad): drawn until the browser's read answers. */
+export interface InitialLaunchpad {
+  title: string;
+  savedAt: string | null;
+  /** The stored JSON text, parsed here. */
+  doc: string;
+}
+
+export function LaunchpadPage({
+  launchpadKey,
+  initial = null,
+  initialSiblings = null,
+}: {
+  launchpadKey: string;
+  initial?: InitialLaunchpad | null;
+  initialSiblings?: { key: string; title: string }[] | null;
+}) {
   return (
-    <LaunchpadsMount fallback={<RecordPageHeader backHref="/launchpad" record={{ name: "Launchpad" }} />}>
-      <LaunchpadBody launchpadKey={launchpadKey} />
+    <LaunchpadsMount fallback={<RecordPageHeader backHref="/launchpad" record={{ name: initial?.title ?? "Launchpad" }} />}>
+      <LaunchpadBody launchpadKey={launchpadKey} initial={initial} initialSiblings={initialSiblings} />
     </LaunchpadsMount>
   );
 }
 
 type Panel = { kind: "add" } | { kind: "configure"; id: string } | { kind: "history" } | null;
 
-function LaunchpadBody({ launchpadKey }: { launchpadKey: string }) {
+function LaunchpadBody({
+  launchpadKey,
+  initial,
+  initialSiblings,
+}: {
+  launchpadKey: string;
+  initial: InitialLaunchpad | null;
+  initialSiblings: { key: string; title: string }[] | null;
+}) {
   const router = useRouter();
   const pads = useLaunchpads();
   const entry = pads.byKey(launchpadKey);
@@ -57,7 +81,11 @@ function LaunchpadBody({ launchpadKey }: { launchpadKey: string }) {
   // LOCAL FIRST: this device's last-drawn copy paints while the cloud read runs (read after hydration), and
   // the cloud's answer replaces it only when the saved version moved. No copy: a neutral skeleton, never the
   // template, so no widget ever jumps from a template box to its saved place.
+  // SERVER FIRST: the server's read of the person's own launchpad is in the first HTML (same on both sides, so
+  // hydration matches); this device's copy is the stand-in only when the server had none.
+  const fromServer = initialPaint(initial);
   const [painted, setPainted] = useState<PaintedLaunchpad | null>(null);
+  const early = fromServer ?? painted;
   const userId = pads.userId;
   useEffect(() => {
     if (userId) setPainted(readPaintedLaunchpad(userId, launchpadKey));
@@ -70,7 +98,8 @@ function LaunchpadBody({ launchpadKey }: { launchpadKey: string }) {
     if (saved && entryTitle !== null) keepPaintedLaunchpad(userId, launchpadKey, { title: entryTitle, savedAt, doc: saved });
     else if (gone) forgetPaintedLaunchpad(userId, launchpadKey);
   }, [userId, launchpadKey, saved, entryTitle, savedAt, gone]);
-  const title = entry?.title ?? painted?.title ?? (launchpadKey === START_LAUNCHPAD_KEY ? "Start" : launchpadKey);
+  // Never the raw key while loading: the saved title, else a neutral word.
+  const title = entry?.title ?? early?.title ?? (launchpadKey === START_LAUNCHPAD_KEY ? "Start" : "Launchpad");
   const [draft, setDraft] = useState<LaunchpadDoc | null>(null);
   const [panel, setPanel] = useState<Panel>(null);
   const [preview, setPreview] = useState<{ version: number; doc: LaunchpadDoc; seenVersion: number | null } | null>(null);
@@ -181,7 +210,8 @@ function LaunchpadBody({ launchpadKey }: { launchpadKey: string }) {
       ];
 
   const configuring = panel?.kind === "configure" && draft ? draft.widgets.find((w) => w.id === panel.id) : undefined;
-  const siblings = pads.entries.map((e) => ({ label: e.title, href: launchpadHref(e.key), active: e.key === launchpadKey }));
+  const siblingSource = pads.loading && initialSiblings ? initialSiblings : pads.entries;
+  const siblings = siblingSource.map((e) => ({ label: e.title, href: launchpadHref(e.key), active: e.key === launchpadKey }));
 
   return (
     <SurfaceRuntimeProvider
@@ -221,8 +251,8 @@ function LaunchpadBody({ launchpadKey }: { launchpadKey: string }) {
       />
       <div className="h-full overflow-y-auto px-3 pb-6 pt-[calc(var(--shell-header-h)+0.75rem)]" data-matrx-page-scroll>
         {pads.loading ? (
-          painted ? (
-            <LaunchpadGrid doc={painted.doc} />
+          early ? (
+            <LaunchpadGrid doc={early.doc} />
           ) : (
             <RegionSkeleton shape="cards" count={6} aria-label="Loading launchpad" />
           )
@@ -339,6 +369,12 @@ function LaunchpadBody({ launchpadKey }: { launchpadKey: string }) {
       />
     </SurfaceRuntimeProvider>
   );
+}
+
+function initialPaint(initial: InitialLaunchpad | null): PaintedLaunchpad | null {
+  if (!initial) return null;
+  const parsed = parseLaunchpadDoc(initial.doc);
+  return parsed.ok ? { title: initial.title, savedAt: initial.savedAt, doc: parsed.doc } : null;
 }
 
 /** Bring a just-added widget into view once the grid has drawn it (centred, so the Set up panel never covers it). */

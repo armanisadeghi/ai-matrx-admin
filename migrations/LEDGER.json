@@ -11533,6 +11533,24 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
+    },
+    "migrations/campaign/template_fresh3_a_installs_record_the_mandate_they_present.sql": {
+      "source": "matrx-frontend",
+      "filename": "template_fresh3_a_installs_record_the_mandate_they_present.sql",
+      "checksum": "23676c8d39d02459b7c538ce766ce546eefa8e960173818e0a616f1496d0855c",
+      "applied_at": "2026-10-19 16:44:33.40735+00"
+    },
+    "migrations/campaign/template_fresh3_b_each_copy_says_when_an_upgrade_is_waiting.sql": {
+      "source": "matrx-frontend",
+      "filename": "template_fresh3_b_each_copy_says_when_an_upgrade_is_waiting.sql",
+      "checksum": "ccd40d554a0e8d59539c90c33bf95a0e36126367268705f099b71a909194159c",
+      "applied_at": "2026-10-19 16:43:46.226644+00"
+    },
+    "migrations/campaign/template_fresh3_d_row_refresh_uses_the_rows_version_now.sql": {
+      "source": "matrx-frontend",
+      "filename": "template_fresh3_d_row_refresh_uses_the_rows_version_now.sql",
+      "checksum": "5a6bf21f25327994decf844c3c34198e898359f0a4f3d61a61c75e2e91dc9b7b",
+      "applied_at": "2026-10-19 16:43:56.786987+00"
     }
   }
 }

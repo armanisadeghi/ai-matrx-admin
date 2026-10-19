@@ -1,14 +1,17 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0492",
-  "version": 3,
+  "version": 4,
   "title": "Design system — Editorial",
   "description": "Warm paper, ink and an oxblood accent, with serif headings made for reading.",
   "forWho": "Publishers, writers, journals and cultural brands",
   "icon": {
     "icon": "Palette"
   },
-  "cover": null,
+  "cover": {
+    "url": "gallery:legal-old-library-wood",
+    "offsetY": 50
+  },
   "category": "docs",
   "tags": [
     "design system",
@@ -1286,7 +1289,7 @@
         "Ashby Mews"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [],
   "board": {

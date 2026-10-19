@@ -27,6 +27,9 @@ Two things live here, one feature:
 - `components/LaunchpadPanels.tsx` — Add (catalog by Board section), Set up (width, height, fields with
   pickers), History (preview in place, Set active).
 - `components/YourLaunchpads.tsx` — the strip and the New launchpad template picker.
+- `server/readLaunchpads.ts` — the person's own launchpads read on the server (same `listAppRows`, same
+  `visibleLaunchpadRows` pick, 2.5 s deadline, announced on failure) so `/launchpad/<key>` has its saved layout in
+  the first HTML and `/launchpad`'s strip streams in without waiting for the browser.
 - `useLaunchpads.ts` — list / byKey / save (versioned) / archive, history + restore, and the one-time Start move.
 - `doc.ts` — the pure verbs over `LaunchpadDoc` (parse, add, move, resize, configure, remove, apply grid
   placements, the version note, Start → launchpad conversion).
@@ -113,6 +116,16 @@ No existing primitive combined the user navigation hierarchy, start actions,
 and favorites into an always-open launcher.
 
 ## Change log
+
+- `2026-10-19` — Lane I (custom-experience, cold load): a cold `/launchpad/start` took ~11–13 s to draw its saved
+  layout live — ~4.6 MB / 230 chunks of shell JavaScript (the same set every `(core)` route loads; the launchpad
+  adds 10) had to arrive before the browser even asked for the doc, then find-or-make and the list ran in
+  sequence. Now: the route reads the person's own launchpad on the server (`server/readLaunchpads.ts`) and the
+  grid with every widget box and its loading rows is in the first HTML; widget bodies draw after hydration
+  (`LaunchpadGrid` `useHydrated`), so their reads start at hydration instead of after the list; `@ai-matrx/records`
+  `useTypedTable` runs ensure and the list at once. While loading the header shows the saved title (else
+  "Launchpad", never the raw key); the `/launchpad` strip shows the server's list, else design-system skeletons.
+  Order of drawing: server copy › this device's paint cache › skeleton.
 
 - `2026-10-19` — Lane H (custom-experience): the Agents widget reads which of its agents the person can open in ONE
   `agent.definition` select and asks the access gate (`access_denied_context`, one round trip per id) only about the

@@ -1,14 +1,17 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0494",
-  "version": 3,
+  "version": 4,
   "title": "Design system — Soft rounded",
   "description": "Plum, peach and sage pastels, round shapes and gentle, unhurried motion.",
   "forWho": "Lifestyle shops, beauty, gifting and friendly services",
   "icon": {
     "icon": "Palette"
   },
-  "cover": null,
+  "cover": {
+    "url": "gallery:hospitality-hotel-room-bed",
+    "offsetY": 50
+  },
   "category": "docs",
   "tags": [
     "design system",
@@ -1272,7 +1275,7 @@
         "Marigold Court"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [],
   "board": {

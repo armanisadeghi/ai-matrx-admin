@@ -1,14 +1,17 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0495",
-  "version": 3,
+  "version": 4,
   "title": "Design system — Dark-first developer tool",
   "description": "Dark by default: near-black panels, a mint action and mono details. Dense.",
   "forWho": "Developer tools, consoles, data and infrastructure products",
   "icon": {
     "icon": "Palette"
   },
-  "cover": null,
+  "cover": {
+    "url": "gallery:tech-code-monitor-night",
+    "offsetY": 50
+  },
   "category": "docs",
   "tags": [
     "design system",
@@ -1277,7 +1280,7 @@
         "Foundry Alley"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [],
   "board": {

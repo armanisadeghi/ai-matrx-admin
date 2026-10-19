@@ -55,3 +55,29 @@ export function keyFromTitle(title: string, taken: readonly string[]): string {
   for (let n = 2; taken.includes(key); n++) key = `${base}-${n}`;
   return key;
 }
+
+/**
+ * The launchpad rows a person sees, newest first, one per key and owner: their own (every organization;
+ * newest wins per key) plus the `org` launchpads of `activeOrg`. Pure — the browser read
+ * (`useLaunchpads`) and the server read (`server/readLaunchpads.ts`) pick with this one rule.
+ */
+export function visibleLaunchpadRows<R extends { key: string; owner?: string | null; saved_at?: string | null; _organizationId: string }>(
+  rows: readonly R[],
+  userId: string | null,
+  activeOrg: string | null,
+): R[] {
+  const mineOwner = userId ? personOwner(userId) : null;
+  const newestFirst = [...rows].sort((a, b) => (b.saved_at ?? "").localeCompare(a.saved_at ?? ""));
+  const seen = new Set<string>();
+  const picked: R[] = [];
+  for (const r of newestFirst) {
+    const isMine = mineOwner !== null && r.owner === mineOwner;
+    const isOrg = r.owner === "org" && activeOrg !== null && r._organizationId === activeOrg;
+    if (!isMine && !isOrg) continue;
+    const id = `${isMine ? "p" : "o"}:${r.key}`;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    picked.push(r);
+  }
+  return picked;
+}

@@ -1,14 +1,17 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0493",
-  "version": 3,
+  "version": 4,
   "title": "Design system — Bold high-contrast",
   "description": "Black, white and a hot orange; square corners and hard offset shadows.",
   "forWho": "Brands that want to be loud, direct and unmistakable",
   "icon": {
     "icon": "Palette"
   },
-  "cover": null,
+  "cover": {
+    "url": "gallery:marketing-megaphone-yellow-background",
+    "offsetY": 50
+  },
   "category": "docs",
   "tags": [
     "design system",
@@ -1268,7 +1271,7 @@
         "Gantry Way"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [],
   "board": {

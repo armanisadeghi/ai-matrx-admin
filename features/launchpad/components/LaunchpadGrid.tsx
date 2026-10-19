@@ -4,6 +4,7 @@
 // 12 columns on a desktop, 4 on a phone (reflowed when no phone placement was saved). Each widget sits in its
 // frame (../widgets/frame.tsx) and fills its grid box. An unknown widget type renders a named "unavailable"
 // box and is never dropped. In Edit mode the header is the drag handle, the corner resizes, arrows nudge.
+import { useSyncExternalStore } from "react";
 import { CircleSlash, Settings2, X } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { GridCanvas, type GridCanvasPlacements } from "@ai-matrx/design-system";
@@ -11,7 +12,12 @@ import { useIsMobile } from "@ai-matrx/kit/media-query";
 import type { LaunchpadDoc, LaunchpadWidget } from "@/features/shell/shell-layout/contract";
 import { getLaunchpadWidgetType } from "../widgets/registry";
 import { describeLaunchpadWidget } from "../widgets/catalog";
-import { WidgetFrame, WidgetNotice, widgetCapacity } from "../widgets/frame";
+import { WidgetFrame, WidgetList, WidgetNotice, widgetCapacity } from "../widgets/frame";
+
+const noSubscription = () => () => {};
+/** False in the server HTML and while hydrating, true after: widget bodies (their own reads, clocks and
+ *  screen-size checks) draw only in the browser; the server draws each box with its loading rows. */
+const useHydrated = () => useSyncExternalStore(noSubscription, () => true, () => false);
 
 export interface LaunchpadGridEditing {
   selectedId: string | null;
@@ -81,6 +87,7 @@ function LaunchpadSlot({
   previewing: boolean;
 }) {
   const type = getLaunchpadWidgetType(widget.type);
+  const hydrated = useHydrated();
   const controls = editing ? (
     <>
       <Button
@@ -111,7 +118,11 @@ function LaunchpadSlot({
       editing={Boolean(editing)}
       previewing={previewing}
     >
-      <Body config={widget.config} editing={Boolean(editing)} capacity={capacity} />
+      {hydrated ? (
+        <Body config={widget.config} editing={Boolean(editing)} capacity={capacity} />
+      ) : (
+        <WidgetList capacity={capacity} loading rows={[]} empty={null} />
+      )}
     </WidgetFrame>
   );
 }

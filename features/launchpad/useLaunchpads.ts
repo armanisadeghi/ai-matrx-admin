@@ -14,7 +14,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { toast } from "@/lib/toast";
 import type { LaunchpadDoc } from "@/features/shell/shell-layout/contract";
-import { launchpadSlot, launchpadTable, personOwner, type LaunchpadOwner } from "./launchpad.typed-table";
+import { launchpadSlot, launchpadTable, personOwner, visibleLaunchpadRows, type LaunchpadOwner } from "./launchpad.typed-table";
 import { parseLaunchpadDoc, sameLaunchpadDoc, serializeLaunchpadDoc, summarizeEdit, type LaunchpadDocParse } from "./doc";
 import { browserLock, seedOnce } from "./seedOnce";
 import { moveStartPageOnce } from "./startMigration";
@@ -45,28 +45,16 @@ export function useLaunchpads() {
 
   const activeOrg = client.config.organizationId ?? null;
   const mineOwner = userId ? personOwner(userId) : null;
-  const newestFirst = [...table.rows].sort((a, b) => (b.saved_at ?? "").localeCompare(a.saved_at ?? ""));
-  const entries: LaunchpadEntry[] = [];
-  const seen = new Set<string>();
-  for (const r of newestFirst) {
-    const owner = (r.owner ?? "") as LaunchpadOwner;
-    const isMine = mineOwner !== null && owner === mineOwner;
-    const isOrg = owner === "org" && r._organizationId === activeOrg;
-    if (!isMine && !isOrg) continue;
-    const id = `${isMine ? "p" : "o"}:${r.key}`;
-    if (seen.has(id)) continue; // newest wins per key
-    seen.add(id);
-    entries.push({
-      key: r.key,
-      title: r.title || r.key,
-      owner,
-      recordId: r._id,
-      organizationId: r._organizationId,
-      savedAt: r.saved_at ?? null,
-      note: r.note ?? null,
-      parsed: parseLaunchpadDoc(r.doc),
-    });
-  }
+  const entries: LaunchpadEntry[] = visibleLaunchpadRows(table.rows, userId, activeOrg).map((r) => ({
+    key: r.key,
+    title: r.title || r.key,
+    owner: (r.owner ?? "") as LaunchpadOwner,
+    recordId: r._id,
+    organizationId: r._organizationId,
+    savedAt: r.saved_at ?? null,
+    note: r.note ?? null,
+    parsed: parseLaunchpadDoc(r.doc),
+  }));
   // The person's own first, then the organization's; each by title.
   entries.sort((a, b) => Number(b.owner !== "org") - Number(a.owner !== "org") || a.title.localeCompare(b.title));
 

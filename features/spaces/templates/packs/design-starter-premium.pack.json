@@ -1,14 +1,17 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0499",
-  "version": 3,
+  "version": 4,
   "title": "Design system — Premium",
   "description": "Ivory, near-black and muted gold; fine serif type, sharp corners, slow motion.",
   "forWho": "Luxury, hospitality, jewellery, fashion and fine goods",
   "icon": {
     "icon": "Palette"
   },
-  "cover": null,
+  "cover": {
+    "url": "gallery:hospitality-wine-glasses-bar",
+    "offsetY": 50
+  },
   "category": "docs",
   "tags": [
     "design system",
@@ -1272,7 +1275,7 @@
         "Rue Orsanne"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [],
   "board": {
