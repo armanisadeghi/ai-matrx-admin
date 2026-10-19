@@ -7,14 +7,14 @@
 // drag the corner to resize, arrows to nudge, Add / Set up panels) and Done saves ONE version. History
 // previews any version in place and "Set active" restores it as a new version — nothing is ever lost. The
 // launchpad maintainer (mandate `start_page.maintainer`) edits through the same verbs from chat.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Archive, Check, Copy, History, MessageCircle, Pencil, Plus, Rocket, X } from "lucide-react";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { resolveMandate } from "@ai-matrx/chat/mandates/service";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { Button, EmptyState } from "@ai-matrx/design-system/controls";
+import { Button, EmptyState, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { TextInputDialog } from "@ai-matrx/design-system";
 import { RecordPageHeader, type RecordPageAction } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { launchpadHref } from "@/features/shell/shell-layout/resolve";
@@ -31,7 +31,7 @@ import { describeLaunchpadWidget, getLaunchpadWidgetSpec } from "../widgets/cata
 import { sizeWord } from "../tools/agentEdits";
 import { WidgetNotice } from "../widgets/frame";
 import { useLaunchpadAgentTools } from "../tools/useLaunchpadAgentTools";
-import { startLaunchpadDoc } from "../templates";
+import { forgetPaintedLaunchpad, keepPaintedLaunchpad, readPaintedLaunchpad, type PaintedLaunchpad } from "../paintCache";
 import { LaunchpadGrid } from "./LaunchpadGrid";
 import { AddWidgetPanel, ConfigureWidgetPanel, HistoryPanel } from "./LaunchpadPanels";
 import { LaunchpadsMount } from "./LaunchpadsMount";
@@ -54,12 +54,29 @@ function LaunchpadBody({ launchpadKey }: { launchpadKey: string }) {
   const pads = useLaunchpads();
   const entry = pads.byKey(launchpadKey);
   const saved = entry?.parsed.ok ? entry.parsed.doc : null;
-  const title = entry?.title ?? (launchpadKey === START_LAUNCHPAD_KEY ? "Start" : launchpadKey);
+  // LOCAL FIRST: this device's last-drawn copy paints while the cloud read runs (read after hydration), and
+  // the cloud's answer replaces it only when the saved version moved. No copy: a neutral skeleton, never the
+  // template, so no widget ever jumps from a template box to its saved place.
+  const [painted, setPainted] = useState<PaintedLaunchpad | null>(null);
+  const userId = pads.userId;
+  useEffect(() => {
+    if (userId) setPainted(readPaintedLaunchpad(userId, launchpadKey));
+  }, [userId, launchpadKey]);
+  const savedAt = entry?.savedAt ?? null;
+  const entryTitle = entry?.title ?? null;
+  const gone = !pads.loading && !pads.error && !entry;
+  useEffect(() => {
+    if (!userId) return;
+    if (saved && entryTitle !== null) keepPaintedLaunchpad(userId, launchpadKey, { title: entryTitle, savedAt, doc: saved });
+    else if (gone) forgetPaintedLaunchpad(userId, launchpadKey);
+  }, [userId, launchpadKey, saved, entryTitle, savedAt, gone]);
+  const title = entry?.title ?? painted?.title ?? (launchpadKey === START_LAUNCHPAD_KEY ? "Start" : launchpadKey);
   const [draft, setDraft] = useState<LaunchpadDoc | null>(null);
   const [panel, setPanel] = useState<Panel>(null);
   const [preview, setPreview] = useState<{ version: number; doc: LaunchpadDoc; seenVersion: number | null } | null>(null);
   const [busy, setBusy] = useState(false);
   const [renaming, setRenaming] = useState(false);
+  const [lastTouched, setLastTouched] = useState<string | null>(null);
   const save = (doc: LaunchpadDoc, note: string, opts: { byAgent?: boolean } = {}) =>
     pads.save({ key: launchpadKey, title, doc, ...(entry ? { owner: entry.owner } : {}) }, note, opts);
   const history = useLaunchpadHistory(entry?.recordId ?? null, panel?.kind === "history", (doc, note) => save(doc, note));
@@ -204,7 +221,11 @@ function LaunchpadBody({ launchpadKey }: { launchpadKey: string }) {
       />
       <div className="h-full overflow-y-auto px-3 pb-6 pt-[calc(var(--shell-header-h)+0.75rem)]" data-matrx-page-scroll>
         {pads.loading ? (
-          <LaunchpadGrid doc={startLaunchpadDoc()} skeleton />
+          painted ? (
+            <LaunchpadGrid doc={painted.doc} />
+          ) : (
+            <RegionSkeleton shape="cards" count={6} aria-label="Loading launchpad" />
+          )
         ) : !entry && pads.error ? (
           <WidgetNotice tone="error">
             {pads.error}
@@ -236,12 +257,22 @@ function LaunchpadBody({ launchpadKey }: { launchpadKey: string }) {
               draft
                 ? {
                     selectedId: panel?.kind === "configure" ? panel.id : null,
-                    onPlace: (placements) => setDraft(applyPlacements(draft, placements)),
+                    onPlace: (placements) => {
+                      setDraft(applyPlacements(draft, placements));
+                      const moved = placements.find((p) => {
+                        const before = draft.widgets.find((w) => w.id === p.id)?.layout.lg;
+                        return before && (before.x !== p.lg.x || before.y !== p.lg.y || before.w !== p.lg.w || before.h !== p.lg.h);
+                      });
+                      if (moved) setLastTouched(moved.id);
+                    },
                     onRemove: (id) => {
                       setDraft(removeWidget(draft, id));
                       if (panel?.kind === "configure" && panel.id === id) setPanel(null);
                     },
-                    onConfigure: (id) => setPanel({ kind: "configure", id }),
+                    onConfigure: (id) => {
+                      setLastTouched(id);
+                      setPanel({ kind: "configure", id });
+                    },
                   }
                 : null
             }
@@ -252,11 +283,17 @@ function LaunchpadBody({ launchpadKey }: { launchpadKey: string }) {
         <AddWidgetPanel
           onClose={() => setPanel(null)}
           onAdd={(spec) => {
-            const next = addWidget(draft, { type: spec.type, config: { ...spec.defaultConfig } });
+            // In view: the first free spot from the widget last touched (else the top), never the bottom.
+            const near = lastTouched ? draft.widgets.find((w) => w.id === lastTouched) : undefined;
+            const next = addWidget(draft, { type: spec.type, config: { ...spec.defaultConfig } }, undefined, near?.layout.lg.y ?? 0);
             setDraft(next);
             // One rule for every widget: the new widget opens in Set up (size, and its fields if any).
             const added = next.widgets.find((w) => !draft.widgets.some((d) => d.id === w.id));
-            if (added) setPanel({ kind: "configure", id: added.id });
+            if (added) {
+              setLastTouched(added.id);
+              setPanel({ kind: "configure", id: added.id });
+              revealWidget(added.id);
+            }
           }}
         />
       ) : null}
@@ -301,6 +338,15 @@ function LaunchpadBody({ launchpadKey }: { launchpadKey: string }) {
         }}
       />
     </SurfaceRuntimeProvider>
+  );
+}
+
+/** Bring a just-added widget into view once the grid has drawn it (centred, so the Set up panel never covers it). */
+function revealWidget(id: string) {
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
+      document.querySelector(`[data-grid-item="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" });
+    }),
   );
 }
 

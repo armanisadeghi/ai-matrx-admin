@@ -24,13 +24,10 @@ export function LaunchpadGrid({
   doc,
   editing,
   previewing,
-  skeleton,
 }: {
   doc: LaunchpadDoc;
   editing?: LaunchpadGridEditing | null;
   previewing?: boolean;
-  /** Draw every box with its frame and no body (first paint before the launchpad is read). */
-  skeleton?: boolean;
 }) {
   const touch = useIsMobile();
   const items = doc.widgets.map((w) => {
@@ -65,7 +62,6 @@ export function LaunchpadGrid({
             capacity={widgetCapacity(h, touch)}
             editing={editing ?? null}
             previewing={previewing ?? false}
-            skeleton={skeleton ?? false}
           />
         );
       }}
@@ -78,13 +74,11 @@ function LaunchpadSlot({
   capacity,
   editing,
   previewing,
-  skeleton,
 }: {
   widget: LaunchpadWidget;
   capacity: number;
   editing: LaunchpadGridEditing | null;
   previewing: boolean;
-  skeleton: boolean;
 }) {
   const type = getLaunchpadWidgetType(widget.type);
   const controls = editing ? (
@@ -117,7 +111,7 @@ function LaunchpadSlot({
       editing={Boolean(editing)}
       previewing={previewing}
     >
-      {skeleton ? null : <Body config={widget.config} editing={Boolean(editing)} capacity={capacity} />}
+      <Body config={widget.config} editing={Boolean(editing)} capacity={capacity} />
     </WidgetFrame>
   );
 }
