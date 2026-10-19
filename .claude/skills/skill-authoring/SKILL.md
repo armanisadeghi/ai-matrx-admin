@@ -83,6 +83,11 @@ Rules:
 - **Point at `--help` or a script** instead of restating flags or deterministic steps.
 - **Splitting relocates; every rule survives.** Canonical SKILL.md companion files ship with
   `sync_skills.py` automatically (in common-docs they carry OKF frontmatter).
+- **A skill names its home and never holds a rule by hand** (law 15). Frontmatter `subject: <node>`
+  points at the subject's one home doc; the home's rules are stamped in by `one_home.py --write`
+  ([docs §9](/skills/docs/SKILL.md)). The skill body keeps the how — steps, triggers, traps — and a
+  rule you want to add goes into the home. One skill per subject part (server, client), never two
+  skills for one part; before writing a new skill, `rg '^subject: <node>'` for the ones that exist.
 - **Every step ends on a checkable completion criterion** — "every touched table returns
   `canonical_certify_ok`", never "understanding reached".
 
@@ -135,6 +140,7 @@ description rewrite. Exempt: typo, path, and pointer fixes.
 
 ## Before you save — checklist
 
+- [ ] `subject:` names the home; no rule written here by hand; `one_home.py` exits 0.
 - [ ] Description follows §1: noun phrase + `Use when`, ≤300 chars (500 hard), no procedure, no dates;
   `skill_descriptions.py lint` passes.
 - [ ] Slash-only? `disable-model-invocation: true` after the cross-skill grep.

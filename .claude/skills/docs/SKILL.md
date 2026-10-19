@@ -25,7 +25,9 @@ The rules are [the rules of this bundle](/policies/document-types.md) and the
    `projects/` folder only while work is tangled across two or more homes.
 2. No node fits: add a feature where its domain clearly holds it (same commit, tell Arman), or
    propose the change in chat. Never invent a domain.
-3. Something already covers the subject? Edit that file. Never create a parallel doc.
+3. Something already covers the subject? Edit that file. Never create a parallel doc. The home of a
+   subject declares itself: `rg -l '^subject: <node>' /Users/armanisadeghi/code/{common-docs,aidream,matrx-frontend}`
+   (§9). No home yet: the node's main doc becomes it.
 4. A repo keeps only rules tied to a code path in that directory (a trap, an import ban, a file
    map). Everything with meaning (what, why, status, plans, contracts, vision) lives in the node.
 
@@ -48,7 +50,8 @@ Done when: the doc reads as one voice and every claim in it is currently true.
 
 1. **Census.** Grep the subject's terms across common-docs and every repo it touches; follow
    one ring of links. List every file that makes claims about it.
-2. **Elect the survivor**: the node's file from step 1.
+2. **Elect the survivor**: the node's file from step 1. It carries `subject: <node>` (§9); a
+   loser never keeps it.
 3. **Classify each disagreement:** fact vs fact → reality decides, fix the loser; doc vs
    Arman's words → his words win, and code that drifted from them is a finding, not a doc fix;
    his words vs his words, or a disagreement about meaning → step 6, never resolved by you.
@@ -82,6 +85,10 @@ closest node's `VISION.md` (create it with `type: Vision`, `authority: owner` if
 the source line is cut. An agent's paraphrase attributed to him is deleted. Never rewrite,
 trim or "fix" existing VISION content. You never set `authority: owner` on your own writing.
 
+**A ruling heard in chat** goes there the same turn, verbatim and dated, and the rule it sets goes
+into the home's rules block (§9) in the same commit. A Claude memory note may hold one line and the
+home's path, never the ruling itself: memory is one machine's, the repos are everyone's.
+
 ## 6. Conflicts
 
 A disagreement about intent or a ruling: one or two sentences in
@@ -105,15 +112,41 @@ package CLAUDE.md, PRINCIPLES.md, FOUND_DEFECTS.md, skills) and
 
 1. Frontmatter with a non-empty `type` on every new `.md`; bundle-relative links; the folder's
    `index.md` updated.
-2. `python3 meta/scripts/okf_lint.py` exits 0. Editing a SKILL.md → also the
-   [skill-authoring](/skills/skill-authoring/SKILL.md) rules and
+2. `python3 meta/scripts/okf_lint.py` and `python3 meta/scripts/one_home.py` exit 0. Editing a
+   SKILL.md → also the [skill-authoring](/skills/skill-authoring/SKILL.md) rules and
    `python3 meta/scripts/skill_descriptions.py lint`.
 3. **Fresh-reader review** for guidance you wrote (CLAUDE.md, SKILL.md, STATE, FEATURE, memory):
    dispatch one fresh `standard` agent with only the file paths and
    [reviewer-brief.md](/skills/docs/reviewer-brief.md) sent verbatim. Apply each `CUT`,
    `REWRITE`, `MOVE`; reject one only with a factual reason; answer each `ASK` from live
    evidence; turn a `GUARD` into code or a `feedback` item.
-4. Commit by pathspec, `git pull --rebase`, push. Unpushed docs do not exist.
+4. Commit by pathspec (`git commit -m … -- <paths>`), then push per
+   [shared-checkout](/policies/shared-checkout.md); never `pull --rebase` a dirty shared checkout.
+   Unpushed docs do not exist.
+
+## 9. Homes, rules blocks and stamps (law 15)
+
+Policy: [document-types rule 12](/policies/document-types.md). Mechanics:
+
+1. **Declare.** The home doc's frontmatter gets `subject: <node>` (the folder path under
+   `systems/`, e.g. `intelligence/mandates`), or `<repo>:<dir>` for a repo-only subject, homed in
+   that repo. Each skill teaching it gets the same line; `subject: [a, b]` for several.
+2. **Write rules once.** In the home, the rules sit between two lines that read exactly
+   `<!-- rules:start -->` and `<!-- rules:end -->` (a part name is allowed: `rules:start server`).
+   A skill that needs only some parts lists them: `rules: [server]`.
+3. **Stamp.** `python3 meta/scripts/one_home.py --write` copies the rules into each skill between
+   `rules:stamp` / `rules:stamp-end` lines (inserted under the H1 when missing). Never edit a
+   stamp; edit the home and re-run. The common-docs sync sweep also runs it.
+4. **Publish.** Commit the canonical in `skills/`, then `python3 meta/scripts/sync_skills.py`
+   (add `--from-head` when other lanes have uncommitted skill edits) and commit each repo's copy
+   paths. Every repo's sync sweep repairs its copies from common-docs HEAD, so a hand edit to a
+   copy is refused at commit and overwritten at release.
+5. **Review the partner.** Changing a home or a skill prints its partners: read them and fix
+   whatever no longer agrees, in the same commit.
+
+The pre-commit guard refuses: a new SKILL.md without `subject:`, a removed `subject:`, a second home
+for one subject, an unknown node, a stale stamp, a hand-edited copy. For a new doc it lists the
+closest existing ones; edit one of those if it covers your subject.
 
 ## Daily sweep (the docs-steward schedule)
 
@@ -129,7 +162,8 @@ the scorecard (no log file).
   ([how](/systems/files/file-service/STATE.md#platform-work-products)).
 - [ ] **Instructions that make agents write logs:** if a skill, brief or plan told an agent to
   keep a log, evidence dump or per-event record, fix the instruction to §4, not just the file.
-- [ ] `okf_lint.py` to zero; `sync_skills.py --check`.
+- [ ] `okf_lint.py` to zero; `one_home.py` to zero (the notes list skills with no home yet: give
+  each one); `sync_skills.py --check`.
 - [ ] **Inbox:** each new item is dispositioned per [/inbox/README.md](/inbox/README.md); nothing
   in `inbox/` is ever deleted.
 - [ ] **Conflicts:** settled entries in [/operations/conflicts.md](/operations/conflicts.md) are
