@@ -6,65 +6,15 @@
 // Writes are compare-and-swap (`expectedVersion`): a layout changed in another tab or device since it was
 // read is refused (`stale_write`), never silently overwritten.
 
-import { listAppRows, removeAppRow, upsertAppRow, type RecordHistoryEntry, type useRecordsClient } from "@ai-matrx/records/react";
+import { removeAppRow, upsertAppRow, type RecordHistoryEntry, type useRecordsClient } from "@ai-matrx/records/react";
 import { readVersionNow } from "@ai-matrx/records/versions";
-import {
-  orgLayoutSlot,
-  personLayoutSlot,
-  type ShellLayoutBody,
-  type StoredShellLayout,
-} from "./contract";
+import { orgLayoutSlot, personLayoutSlot, type ShellLayoutBody, type StoredShellLayout } from "./contract";
 import { shellLayoutTable } from "./shellLayout.typed-table";
 import { parseShellLayoutBody, serializeShellLayoutBody } from "./validate";
 import type { ShellLayoutTarget } from "./shellLayoutSlice";
 
 export type ShellRecordsClient = ReturnType<typeof useRecordsClient>;
 export type ShellLayoutResult<T> = { ok: true; data: T } | { ok: false; error: string; stale?: boolean };
-
-/** One stored layout row as the editors read it (the store's row + its note). */
-export interface ShellLayoutEntry extends StoredShellLayout {
-  note: string | null;
-}
-
-export interface ShellLayoutRows {
-  /** The person's own layout, newest across every organization she belongs to. */
-  person: ShellLayoutEntry | null;
-  /** The given organization's layout. */
-  organization: ShellLayoutEntry | null;
-}
-
-/** The person's layout (newest across her organizations) and `organizationId`'s layout. One read. */
-export async function readShellLayouts(
-  client: ShellRecordsClient,
-  input: { userId: string; organizationId: string | null },
-): Promise<ShellLayoutResult<ShellLayoutRows>> {
-  const listed = await listAppRows(client, shellLayoutTable);
-  if (!listed.ok) return { ok: false, error: listed.error.message };
-  const mine = personLayoutSlot(input.userId);
-  let person: { row: (typeof listed.data.rows)[number] } | null = null;
-  let organization: { row: (typeof listed.data.rows)[number] } | null = null;
-  for (const row of listed.data.rows) {
-    if (row.slot === mine) {
-      if (!person || (row.saved_at ?? "") > (person.row.saved_at ?? "")) person = { row };
-    } else if (row.slot === orgLayoutSlot() && row._organizationId === input.organizationId) {
-      organization = { row };
-    }
-  }
-  const entry = async (found: { row: (typeof listed.data.rows)[number] } | null): Promise<ShellLayoutEntry | null> => {
-    if (!found) return null;
-    const version = (await readVersionNow(client, found.row._id)) ?? 0;
-    return {
-      recordId: found.row._id,
-      organizationId: found.row._organizationId,
-      version,
-      updatedAt: found.row.saved_at ?? "",
-      body: found.row.body,
-      note: found.row.note ?? null,
-    };
-  };
-  const [p, o] = await Promise.all([entry(person), entry(organization)]);
-  return { ok: true, data: { person: p, organization: o } };
-}
 
 /**
  * Save a layout. `current` is the row the editor started from (its organization and version decide where
