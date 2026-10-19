@@ -12,6 +12,21 @@ import type { EnrichAsk, EnrichOutcome } from "@ai-matrx/records-ui";
 
 type Post = (endpoint: string, body: unknown) => Promise<Response>;
 
+/**
+ * WATCH AI FOLLOWS THE RUN (lane AI-COLUMN, Arman 2026-10-19: "if I click debug mode and I open the Builder/AI Watch,
+ * I need to be able to easily see the exact data being handed to the agent"). Given only to a debug-mode admin: the
+ * run carries a fresh `watch_id`, the server stamps it on every row's AI call, and the run is registered as followed
+ * work (`ai_column_run`) BEFORE the request goes, so Watch AI lists each row's exact request as it lands.
+ */
+export type WatchRun = (watchId: string, label: string) => void;
+
+function watchBody(watch: WatchRun | undefined, label: string): { watch_id?: string } {
+  if (!watch) return {};
+  const watchId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+  watch(watchId, label);
+  return { watch_id: watchId };
+}
+
 interface AiColumnRun {
   rows_seen?: number;
   rows_written?: number;
@@ -40,6 +55,7 @@ async function refusalSentence(response: Response): Promise<string> {
 export async function runAiColumn(
   post: Post,
   args: { tableId: string; fieldId: string; rows: number; preview: boolean; recordIds?: readonly string[] },
+  watch?: WatchRun,
 ): Promise<{ ok: true; run: unknown } | { ok: false; message: string }> {
   try {
     const response = await post(
@@ -48,6 +64,7 @@ export async function runAiColumn(
         rows: Math.max(1, Math.min(50, args.rows)),
         preview: args.preview,
         ...(args.recordIds && args.recordIds.length > 0 ? { record_ids: [...args.recordIds] } : {}),
+        ...watchBody(watch, args.preview ? "AI column preview" : "AI column fill"),
       },
     );
     if (!response.ok) return { ok: false, message: await refusalSentence(response) };
@@ -58,11 +75,15 @@ export async function runAiColumn(
 }
 
 /** Run the AI column once for `ask`, as the person. */
-export async function enrichByRunner(post: Post, ask: EnrichAsk): Promise<EnrichOutcome> {
+export async function enrichByRunner(post: Post, ask: EnrichAsk, watch?: WatchRun): Promise<EnrichOutcome> {
   try {
     const response = await post(
       `/v1/tables/${encodeURIComponent(ask.tableId)}/ai-columns/${encodeURIComponent(ask.fieldId)}/run`,
-      { rows: Math.max(1, Math.min(50, ask.rows)), preview: ask.previewOnly },
+      {
+        rows: Math.max(1, Math.min(50, ask.rows)),
+        preview: ask.previewOnly,
+        ...watchBody(watch, ask.previewOnly ? "AI column preview" : "AI column fill"),
+      },
     );
     if (!response.ok) return { ok: false, message: await refusalSentence(response) };
     const run = (await response.json()) as AiColumnRun;

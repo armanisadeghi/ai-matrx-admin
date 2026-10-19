@@ -15,7 +15,7 @@
 
 import { useSyncExternalStore } from "react";
 
-export type FollowedKind = "factory_build" | "test_run" | "user_request" | "conversation";
+export type FollowedKind = "factory_build" | "test_run" | "user_request" | "conversation" | "ai_column_run";
 
 export interface FollowedWork {
   /** `${kind}:${id}` */

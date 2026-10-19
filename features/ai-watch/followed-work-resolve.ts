@@ -175,6 +175,55 @@ export function resolveTestRun(
   };
 }
 
+/** One row call of a watched AI column run, as `chat.user_request` stores it. */
+export interface AiColumnCallRow {
+  id: string;
+  conversation_id: string | null;
+  status: string | null;
+  error: string | null;
+  total_cost: number | string | null;
+  created_at: string | null;
+  metadata: Record<string, unknown> | null;
+}
+
+/**
+ * An AI column run's row calls (server stamps `metadata.ai_column_run_id`, aidream records_enrichment). One step per
+ * row, newest last; the run is over once at least one call exists and every call is terminal. A run that never
+ * reached a model (refused, nothing due) stays not-done with no steps — the sync's own lifetime bounds it.
+ */
+export function resolveAiColumnRun(work: FollowedWork, rows: readonly AiColumnCallRow[]): Resolved {
+  const sorted = [...rows].sort((a, b) => String(a.created_at ?? "").localeCompare(String(b.created_at ?? "")));
+  const steps: FollowedStep[] = sorted.map((r) => {
+    const md = r.metadata ?? {};
+    const recordId = typeof md.record_id === "string" ? md.record_id : null;
+    return {
+      id: r.id,
+      label: `Row ${recordId ? recordId.slice(0, 8) : r.id.slice(0, 8)}`,
+      status: r.status,
+      mandateKey: typeof md.mandate_key === "string" ? md.mandate_key : null,
+      userRequestId: r.id,
+      conversationId: r.conversation_id,
+      record: r,
+    };
+  });
+  const done = sorted.length > 0 && sorted.every((r) => TERMINAL.has(String(r.status ?? "").toLowerCase()));
+  const first = sorted[0]?.metadata ?? null;
+  return {
+    key: work.key,
+    kind: work.kind,
+    id: work.id,
+    done,
+    status: done ? "completed" : sorted.length ? "running" : null,
+    error: sorted.find((r) => r.error)?.error ?? null,
+    inputs: first ? { table_id: first.table_id ?? null, field_key: first.field_key ?? null } : null,
+    state: { rows: sorted.length },
+    steps,
+    userRequestIds: uniq(sorted.map((r) => r.id)),
+    conversationIds: uniq(sorted.map((r) => r.conversation_id)),
+    readAt: Date.now(),
+  };
+}
+
 /** Read one followed item from the database. Kinds that carry their own ids need no read. */
 export async function readFollowed(work: FollowedWork): Promise<Resolved> {
   if (work.kind === "factory_build") {
@@ -195,6 +244,18 @@ export async function readFollowed(work: FollowedWork): Promise<Resolved> {
     if (run.error) throw new Error(run.error.message);
     if (results.error) throw new Error(results.error.message);
     return resolveTestRun(work, (run.data as Record<string, unknown> | null) ?? null, (results.data ?? []) as unknown as TestResultRow[]);
+  }
+  if (work.kind === "ai_column_run") {
+    const supabase = createClient();
+    const rows = await supabase
+      .schema("chat")
+      .from("user_request")
+      .select("id, conversation_id, status, error, total_cost, created_at, metadata")
+      .eq("metadata->>ai_column_run_id", work.id)
+      .order("created_at", { ascending: true })
+      .limit(100);
+    if (rows.error) throw new Error(rows.error.message);
+    return resolveAiColumnRun(work, (rows.data ?? []) as unknown as AiColumnCallRow[]);
   }
   return {
     key: work.key,

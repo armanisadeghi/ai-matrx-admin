@@ -19,6 +19,8 @@
 
 import { askTableByMandate } from "@/features/data-tables/records-ui-host/askTable";
 import { enrichByRunner } from "@/features/data-tables/records-ui-host/enrichPort";
+import { followServerWork } from "@/features/ai-watch/followed-work";
+import { selectCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
 import { useBackendApi } from "@/hooks/useBackendApi";
 import { RecordBodyEditor } from "@/features/data-tables/records-ui-host/RecordBodyEditor";
 import { RecordBodySpace } from "@/features/spaces/embed/RecordBodySpace";
@@ -334,8 +336,15 @@ export function useRecordsUiPorts({
   /** AN AI COLUMN'S PREVIEW AND FILL: the server's one runner, model `table.column_fill` (`enrichPort.ts`). */
   const enrich = useCallback(
     (ask: Parameters<NonNullable<RecordsUiHost["enrich"]>>[0]) =>
-      enrichByRunner((endpoint, body) => backend.post(endpoint, body), ask),
-    [backend],
+      enrichByRunner(
+        (endpoint, body) => backend.post(endpoint, body),
+        ask,
+        // Debug-mode admins only: Watch AI follows every row's call of this run (`enrichPort.ts` WatchRun).
+        selectCanWatchAi(store.getState())
+          ? (watchId, label) => followServerWork({ kind: "ai_column_run", id: watchId, label, source: "AI column" })
+          : undefined,
+      ),
+    [backend, store],
   );
   const openLinkRecordSheet = useOpenLinkRecordSheet();
   const linkRecord = useCallback(
