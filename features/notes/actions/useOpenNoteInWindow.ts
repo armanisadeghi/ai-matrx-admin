@@ -22,7 +22,7 @@ import {
   setInstanceActiveTab,
 } from "@/features/notes/redux/slice";
 import { fetchNoteContent } from "@/features/notes/redux/thunks";
-import { useOpenNotesWindow } from "@/features/overlays/definitions/notesWindow.overlay";
+import { useOpenNotesWindow } from "@ai-matrx/chat/host/window-openers";
 
 export interface OpenNoteInWindowOptions {
   noteId: string;

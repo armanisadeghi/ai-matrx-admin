@@ -12,8 +12,9 @@
  * cleanly — no callback registry needed.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEffect, useMemo } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 
@@ -43,35 +44,38 @@ export interface SourceInspectorWindowHandle {
   close: () => void;
 }
 
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createSourceInspectorWindowOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (opts: OpenSourceInspectorWindowOptions): SourceInspectorWindowHandle => {
+    dispatch(
+      openOverlay({
+        overlayId: OVERLAY_ID,
+        data: {
+          sourceKind: opts.sourceKind,
+          sourceId: opts.sourceId,
+          chunkId: opts.chunkId ?? null,
+          pageNumber: opts.pageNumber ?? null,
+          pageNumbers: opts.pageNumbers ?? null,
+          snippet: opts.snippet ?? null,
+          fileName: opts.fileName ?? null,
+          score: opts.score ?? null,
+          query: opts.query ?? null,
+          href: opts.href ?? null,
+          seekMs: opts.seekMs ?? null,
+          placeLabel: opts.placeLabel ?? null,
+        },
+      }),
+    );
+    return {
+      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+    };
+  };
+}
+
 export function useOpenSourceInspectorWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenSourceInspectorWindowOptions): SourceInspectorWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            sourceKind: opts.sourceKind,
-            sourceId: opts.sourceId,
-            chunkId: opts.chunkId ?? null,
-            pageNumber: opts.pageNumber ?? null,
-            pageNumbers: opts.pageNumbers ?? null,
-            snippet: opts.snippet ?? null,
-            fileName: opts.fileName ?? null,
-            score: opts.score ?? null,
-            query: opts.query ?? null,
-            href: opts.href ?? null,
-            seekMs: opts.seekMs ?? null,
-            placeLabel: opts.placeLabel ?? null,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
+  const store = useAppStore();
+  return useMemo(() => createSourceInspectorWindowOpener(store), [store]);
 }
 
 /**

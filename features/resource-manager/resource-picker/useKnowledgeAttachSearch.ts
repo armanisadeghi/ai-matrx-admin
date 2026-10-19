@@ -10,8 +10,6 @@
 
 import type { LucideIcon } from "lucide-react";
 import type { Resource } from "@ai-matrx/chat/agents/resources/types";
-import { useOpenKnowledgeCommandBar } from "@/features/overlays/definitions/knowledgeCommandBar.overlay";
-import { useOpenResourcePickerWindow } from "@/features/overlays/definitions/resourcePickerWindow.overlay";
 import { useKnowledgeAttachTarget } from "@/features/knowledge/command-bar/useKnowledgeAttachTarget";
 import type { KnowledgeCommand } from "@/features/knowledge/command-bar/commands";
 import {
@@ -20,6 +18,7 @@ import {
   type ResourcePickerAttachmentCapabilities,
   type ResourcePickerViewId,
 } from "./resource-picker-menu-items";
+import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 
 type ViewId = Exclude<ResourcePickerViewId, null>;
 
@@ -68,8 +67,12 @@ export function useKnowledgeAttachSearch({
   selectionMode = "multiple",
   onReopenAt,
 }: KnowledgeAttachSearchOptions) {
-  const openKnowledgeBar = useOpenKnowledgeCommandBar();
-  const openPickerWindow = useOpenResourcePickerWindow();
+  const openKnowledgeBar = useLazyAppOpener("knowledgeCommandBar", () =>
+    import("@/features/overlays/definitions/knowledgeCommandBar.overlay").then((m) => m.createKnowledgeCommandBarOpener),
+  );
+  const openPickerWindow = useLazyAppOpener("resourcePickerWindow", () =>
+    import("@/features/overlays/definitions/resourcePickerWindow.overlay").then((m) => m.createResourcePickerWindowOpener),
+  );
   const visibleViewIds = new Set(
     getVisibleResourcePickerCategories(attachmentCapabilities, {
       conversationId,

@@ -11,9 +11,10 @@
  * Hand-maintained opener — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 
@@ -81,25 +82,28 @@ export interface FeedbackWindowHandle {
   close: () => void;
 }
 
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createFeedbackWindowOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (opts: OpenFeedbackWindowOptions = {}): FeedbackWindowHandle => {
+    dispatch(
+      openOverlay({
+        overlayId: OVERLAY_ID,
+        data: {
+          title: opts.title,
+          subject: opts.subject,
+        },
+      }),
+    );
+    return {
+      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+    };
+  };
+}
+
 export function useOpenFeedbackWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenFeedbackWindowOptions = {}): FeedbackWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            title: opts.title,
-            subject: opts.subject,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
+  const store = useAppStore();
+  return useMemo(() => createFeedbackWindowOpener(store), [store]);
 }
 
 /**

@@ -141,6 +141,8 @@ jest.mock("@/features/marketing/google/service", () => ({
 const openGoogleConnect = jest.fn();
 jest.mock("@/features/overlays/definitions/googleConnectWindow.overlay", () => ({
   useOpenGoogleConnectWindow: () => openGoogleConnect,
+  // The panel loads the opener on the click (useLazyAppOpener), through its plain factory.
+  createGoogleConnectWindowOpener: () => openGoogleConnect,
 }));
 
 /** The ONE Google Picker (lib/googlePicker), opened in place. */
@@ -380,6 +382,11 @@ describe("N9 — the unavailable actions are callbacks, and they act in place", 
   it("opens the connector window in place, naming this record", async () => {
     const m = await mount();
     await click(m.container, "[data-google-document-reconnect]");
+    // The opener module loads on the click; let that import and its handoff settle.
+    await act(async () => {
+      await import("@/features/overlays/definitions/googleConnectWindow.overlay");
+      for (let i = 0; i < 10; i += 1) await Promise.resolve();
+    });
     expect(openGoogleConnect).toHaveBeenCalledTimes(1);
     const options = openGoogleConnect.mock.calls[0][0] as {
       reason?: string;

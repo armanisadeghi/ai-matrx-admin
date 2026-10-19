@@ -49,7 +49,6 @@ import { createMatrxTransport } from "@/lib/api/matrx-transport";
 import { supabase } from "@/utils/supabase/client";
 import { adoptForeignStream } from "@ai-matrx/chat/agents/redux/execution-system/thunks/adopt-foreign-stream";
 import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.action";
-import { useOpenHtmlPreviewBridge } from "@/features/overlays/definitions/htmlPreview.overlay";
 import { toast } from "@/lib/toast";
 import { createMatrxTransferActions } from "@ai-matrx/agents/content-transfer";
 import { createAlchemyDestinationPorts } from "./alchemy-destinations";
@@ -401,10 +400,17 @@ function AlchemyCapabilitiesGate({
   // The person's own settings: Choose what to copy keeps their choices per kind of data ("Save as my default").
   const hostPersistence = hostPorts?.persistence;
   // The menu's "HTML preview" action opens the app's one HTML preview overlay on the prepared text.
-  const openHtmlPreview = useOpenHtmlPreviewBridge();
+  // The opener module loads on the click, never with this provider (it sits in every route's boot).
+  const previewDispatch = useAppDispatch();
   const htmlPreview = useMemo(
-    () => ({ open: ({ content, title }: { content: string; title: string }) => { openHtmlPreview({ content, title, showSaveButton: false }); } }),
-    [openHtmlPreview],
+    () => ({
+      open: ({ content, title }: { content: string; title: string }) => {
+        void import("@/features/overlays/definitions/htmlPreview.overlay").then((m) =>
+          m.createHtmlPreviewBridgeOpener(previewDispatch)({ content, title, showSaveButton: false }),
+        );
+      },
+    }),
+    [previewDispatch],
   );
   const nonAiCapabilities = { ...inheritedRest, formats, htmlPreview, ...(hostWindow ? { window: hostWindow } : {}), ...(hostPersistence ? { persistence: hostPersistence } : {}) };
   return (

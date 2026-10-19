@@ -13,8 +13,9 @@
  * stays open.
  */
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useMemo } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import { createKnowledgeCommandBarCallbackGroup } from "./callbacks/knowledgeCommandBar";
 import type { KnowledgeAttachTarget } from "@/features/knowledge/command-bar/attachTarget";
@@ -44,30 +45,32 @@ export interface KnowledgeCommandBarHandle {
   close: () => void;
 }
 
-export function useOpenKnowledgeCommandBar() {
-  const dispatch = useAppDispatch();
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createKnowledgeCommandBarOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (opts: OpenKnowledgeCommandBarOptions = {}): KnowledgeCommandBarHandle => {
+    const needsGroup = Boolean(opts.attach || opts.commands?.length);
+    const callbackGroupId = needsGroup
+      ? createKnowledgeCommandBarCallbackGroup({
+          attach: opts.attach,
+          commands: opts.commands,
+        }).callbackGroupId
+      : null;
+    const data: KnowledgeCommandBarOverlayData = {
+      callbackGroupId,
+      initialText: opts.initialText ?? null,
+      primaryAction: opts.primaryAction ?? "open",
+    };
+    dispatch(openOverlay({ overlayId: OVERLAY_ID, data }));
+    return {
+      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+    };
+  };
+}
 
-  return useCallback(
-    (opts: OpenKnowledgeCommandBarOptions = {}): KnowledgeCommandBarHandle => {
-      const needsGroup = Boolean(opts.attach || opts.commands?.length);
-      const callbackGroupId = needsGroup
-        ? createKnowledgeCommandBarCallbackGroup({
-            attach: opts.attach,
-            commands: opts.commands,
-          }).callbackGroupId
-        : null;
-      const data: KnowledgeCommandBarOverlayData = {
-        callbackGroupId,
-        initialText: opts.initialText ?? null,
-        primaryAction: opts.primaryAction ?? "open",
-      };
-      dispatch(openOverlay({ overlayId: OVERLAY_ID, data }));
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
+export function useOpenKnowledgeCommandBar() {
+  const store = useAppStore();
+  return useMemo(() => createKnowledgeCommandBarOpener(store), [store]);
 }
 
 export type KnowledgeCommandBarDefinitionData = OpenKnowledgeCommandBarOptions;

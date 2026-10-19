@@ -31,12 +31,11 @@ import {
   useOpenPickListManagerWindow,
   useOpenTaskEditorWindow,
 } from "@ai-matrx/chat/host/window-openers";
-import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
-import { useOpenSiteQuickViewWindow } from "@/features/overlays/definitions/siteQuickViewWindow.overlay";
 import { useOpenDetail } from "@ai-matrx/detail/react";
 
 import { getItemConfig } from "./registry";
 import type { ItemType } from "./types";
+import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 
 /** Optional display seed so the opened window shows instantly (no fetch wait). */
 export interface ItemOpenSeed {
@@ -47,9 +46,13 @@ export interface ItemOpenSeed {
 export function useOpenItemPresentation() {
   const openAgent = useOpenAgentRunWindow();
   const openNote = useOpenNotesWindow();
-  const openFile = useOpenFilePreviewWindow();
+  const openFile = useLazyAppOpener("filePreviewWindow", () =>
+    import("@/features/overlays/definitions/filePreviewWindow.overlay").then((m) => m.createFilePreviewWindowOpener),
+  );
   const openPicklist = useOpenPickListManagerWindow();
-  const openSite = useOpenSiteQuickViewWindow();
+  const openSite = useLazyAppOpener("siteQuickViewWindow", () =>
+    import("@/features/overlays/definitions/siteQuickViewWindow.overlay").then((m) => m.createSiteQuickViewWindowOpener),
+  );
   const openTask = useOpenTaskEditorWindow();
   const openDetail = useOpenDetail();
 
