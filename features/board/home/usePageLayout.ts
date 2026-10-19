@@ -22,9 +22,11 @@ import {
   canvasSnapshot,
   chapterOrder,
   pageColumnWidth,
+  PAGE_COLUMN_W,
   pageLanding,
   type PagePlan,
   planPageLayout,
+  planPageProjection,
   restoreCanvas,
 } from "../engine/page-layout";
 import type { BoardStore } from "../board/useBoard";
@@ -74,6 +76,39 @@ export function pageScene<T extends BoardTileBase>(board: BoardStore<T>) {
   };
 }
 
+/**
+ * Lay the page out for this view, and keep the board's SAVED page canonical (the full column).
+ *  - A wide view (`columnW` undefined): the page is planned at the column and that is saved.
+ *  - A narrow view (a phone): the narrowed page is a view-local projection (`BoardStore.project`), never
+ *    saved; the saved page is re-planned at the full column from this view's filing and order, so only a
+ *    real change (a tile moved, added or refiled, a chapter reordered) changes what is saved, and a
+ *    height measured at the narrow width never does.
+ * Returns the plan this view shows (its `members` / `placed` are what the next plan is handed).
+ */
+export function relayPage<T extends BoardTileBase>(
+  board: BoardStore<T>,
+  frameOrder: readonly string[] | undefined,
+  opts: {
+    columnW?: number;
+    members?: ReadonlyMap<string, string>;
+    placed?: ReadonlyMap<string, { x: number; y: number }>;
+    byPlace?: boolean;
+  },
+): PagePlan {
+  const { columnW } = opts;
+  if (columnW !== undefined && columnW < PAGE_COLUMN_W) {
+    const { view, saved } = planPageProjection(pageScene(board), board.getSavedLayout(), frameOrder, { ...opts, columnW });
+    board.project(view.moves, saved);
+    keepFiling(board, view.members);
+    return view;
+  }
+  board.endProjection();
+  const plan = planPageLayout(pageScene(board), frameOrder, opts);
+  if (plan.moves.length) board.reflow(plan.moves);
+  keepFiling(board, plan.members);
+  return plan;
+}
+
 /** The page column for this view: the view's own width when it is narrower than the column (a phone), else the default. */
 function pageColumnFor(store: BoardCameraStore): number | undefined {
   // An unmeasured (0), hidden or squeezed view keeps the column: it is not a phone (`PAGE_MIN_VIEW_W`).
@@ -116,13 +151,19 @@ export function usePageLayout<T extends BoardTileBase>({
   const placedRef = useRef<ReadonlyMap<string, { x: number; y: number }> | undefined>(undefined);
   /** The next plan files every tile by where it sits (the switch in from the canvas the person arranged). */
   const byPlaceRef = useRef(false);
-  /** A plan landed: remember its filing and placement, and keep the filing on the tiles. */
-  const settle = (plan: PagePlan) => {
+  /** Lay the page out (`relayPage`) and remember the plan's filing and placement for the next one. */
+  const relay = (order: readonly string[] | undefined, opts: { columnW?: number; byPlace?: boolean }): PagePlan => {
+    const plan = relayPage(board, order, {
+      ...opts,
+      members: opts.byPlace ? undefined : membersRef.current,
+      placed: opts.byPlace ? undefined : placedRef.current,
+    });
     membersRef.current = plan.members;
     placedRef.current = plan.placed;
-    if (plan.moves.length) board.reflow(plan.moves);
-    keepFiling(board, plan.members);
+    return plan;
   };
+  /** Run a re-flow that is waiting now (set while page layout is on): a jump then reads settled places. */
+  const flushRef = useRef<(() => void) | null>(null);
   /** The chapter order the next page arrangement applies (set on the switch into page layout). */
   const entryOrder = useRef<readonly string[] | null>(null);
 
@@ -216,15 +257,17 @@ export function usePageLayout<T extends BoardTileBase>({
       column = pageColumnFor(store);
       const byPlace = byPlaceRef.current;
       byPlaceRef.current = false;
-      const plan = planPageLayout(pageScene(board), entryOrder.current ?? undefined, {
-        columnW: column,
-        members: byPlace ? undefined : membersRef.current,
-        placed: byPlace ? undefined : placedRef.current,
-        byPlace,
-      });
+      const plan = relay(entryOrder.current ?? undefined, { columnW: column, byPlace });
       entryOrder.current = null;
-      settle(plan);
       store.setPageLock({ column: plan.column });
+    };
+    flushRef.current = () => {
+      if (pressing) return;
+      // A re-flow is waiting (a change, or the view crossed the column's width): run it now.
+      if (timer || pageColumnFor(store) !== column) {
+        if (timer) clearTimeout(timer);
+        run();
+      }
     };
     const schedule = () => {
       if (timer) clearTimeout(timer);
@@ -279,7 +322,10 @@ export function usePageLayout<T extends BoardTileBase>({
       window.removeEventListener("pointerdown", down, true);
       window.removeEventListener("pointerup", up, true);
       window.removeEventListener("pointercancel", up, true);
+      flushRef.current = null;
       store.setPageLock(null);
+      // Leaving page layout (or the board): the board shows what it saves again.
+      board.endProjection();
     };
   }, [layout, store, board, restoredView]);
 
@@ -290,14 +336,18 @@ export function usePageLayout<T extends BoardTileBase>({
     const j = i + dir;
     if (i < 0 || j < 0 || j >= order.length) return;
     [order[i], order[j]] = [order[j], order[i]];
-    const plan = planPageLayout(pageScene(board), order, {
-      columnW: store ? pageColumnFor(store) : undefined,
-      members: membersRef.current,
-      placed: placedRef.current,
-    });
-    settle(plan);
+    relay(order, { columnW: store ? pageColumnFor(store) : undefined });
     const moved = board.read().frames.find((f) => f.id === id);
     if (moved && store) store.pageScrollTo(moved.rect.y - PAGE_LABEL_ROOM);
+  };
+
+  /**
+   * Where a chapter's top is on this view's page, once any waiting re-flow has run (the outline's jump:
+   * after a width change the page is still re-flowing, and the old place would land the jump wrong).
+   */
+  const chapterTop = (id: string): number | null => {
+    flushRef.current?.();
+    return board.read().frames.find((f) => f.id === id)?.rect.y ?? null;
   };
 
   /**
@@ -324,5 +374,5 @@ export function usePageLayout<T extends BoardTileBase>({
     board.reflow(moves);
   };
 
-  return { moveChapter, landNew, switchLayout };
+  return { moveChapter, landNew, switchLayout, chapterTop };
 }

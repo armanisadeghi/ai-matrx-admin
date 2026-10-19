@@ -82,6 +82,8 @@ export interface PagePlan {
   members: Map<string, string>;
   /** Where this plan put every tile (top-left): hand it back as `opts.placed` to tell a person's move. */
   placed: Map<string, { x: number; y: number }>;
+  /** Every placed thing's whole rect (tiles and frames), moved or not. */
+  rects: Map<string, Rect>;
 }
 
 /** One per row, top to bottom: the page is one column of cards. */
@@ -142,6 +144,22 @@ export function pageMembership(
   return { units: [...scene.frames, ...scene.tiles.filter((t) => !filed.has(t.id))], members };
 }
 
+/** Units and members from a filing taken as it is (`planPageLayout` `opts.filing`). */
+function exactMembership(
+  scene: { tiles: readonly PagePlaced[]; frames: readonly PagePlaced[] },
+  filing: ReadonlyMap<string, string>,
+): { units: Placed[]; members: Map<string, string[]> } {
+  const members = new Map<string, string[]>(scene.frames.map((f) => [f.id, []]));
+  const loose: Placed[] = [];
+  for (const t of scene.tiles) {
+    const f = filing.get(t.id);
+    const list = f ? members.get(f) : undefined;
+    if (list) list.push(t.id);
+    else loose.push(t);
+  }
+  return { units: [...scene.frames, ...loose], members };
+}
+
 /**
  * The page arrangement of a board: units (frames with their tiles, loose tiles) in reading order,
  * each frame a full-width section whose tiles stack one under another at the chapter's full inner
@@ -163,14 +181,18 @@ export function planPageLayout(
     placed?: ReadonlyMap<string, { x: number; y: number }>;
     /** File every tile by where it sits (the person arranged the canvas; switching into page layout). */
     byPlace?: boolean;
+    /** The widest tile as SAVED, when the scene shows another width (`planPageProjection`). */
+    widest?: number;
+    /** The filing, exactly (another plan's `members`): a tile not listed is loose; place decides nothing. */
+    filing?: ReadonlyMap<string, string>;
   } = {},
 ): PagePlan {
   const narrow = opts.columnW !== undefined && opts.columnW < PAGE_COLUMN_W ? Math.max(240, Math.floor(opts.columnW)) : null;
-  const widest = Math.max(0, ...scene.tiles.map((t) => t.rect.w));
+  const widest = opts.widest ?? Math.max(0, ...scene.tiles.map((t) => t.rect.w));
   const W = narrow ?? Math.max(PAGE_COLUMN_W, widest + PAGE_FRAME_PAD * 2);
   const x0 = 0;
   const innerW = W - PAGE_FRAME_PAD * 2;
-  const { units, members } = pageMembership(scene, opts);
+  const { units, members } = opts.filing ? exactMembership(scene, opts.filing) : pageMembership(scene, opts);
   const frameIds = new Set(scene.frames.map((f) => f.id));
   const tileById = new Map(scene.tiles.map((t) => [t.id, t]));
   const frameById = new Map(scene.frames.map((f) => [f.id, f]));
@@ -236,7 +258,45 @@ export function planPageLayout(
   }
   const memberOf = new Map<string, string>();
   for (const [f, ids] of members) for (const id of ids) memberOf.set(id, f);
-  return { moves, column: { x: x0, w: W }, chapters, members: memberOf, placed: placedAt };
+  return { moves, column: { x: x0, w: W }, chapters, members: memberOf, placed: placedAt, rects: out };
+}
+
+/**
+ * Page layout on a view narrower than the column (a phone). The narrowing belongs to THIS viewer only:
+ * `view` is the arrangement this view shows (a column the view's width), and `saved` is the page as it
+ * is saved for everyone — every tile, frame and drawn mark at the full column (`PAGE_COLUMN_W`).
+ *
+ * `scene` is what the view shows; `saved` is the last saved page (null = the scene is the saved page,
+ * the first narrow plan). Filing and order are read from the VIEW (a person moves a tile where they see
+ * it); sizes from the SAVED page, so a height measured at the narrow width (a section taller on a phone)
+ * never reaches the saved page. A real change made here — a tile moved, added or refiled, a chapter
+ * reordered — still changes `saved`.
+ */
+export function planPageProjection(
+  scene: { tiles: readonly PagePlaced[]; frames: readonly PagePlaced[] },
+  saved: ReadonlyMap<string, Rect> | null,
+  frameOrder: readonly string[] | undefined,
+  opts: {
+    columnW: number;
+    members?: ReadonlyMap<string, string>;
+    placed?: ReadonlyMap<string, { x: number; y: number }>;
+    byPlace?: boolean;
+  },
+): { view: PagePlan; saved: Map<string, Rect> } {
+  const view = planPageLayout(scene, frameOrder, opts);
+  // The saved page: the view's places (same filing, same order), the saved heights; the view's filing
+  // is handed over whole, so place decides nothing a second time.
+  const sizedAsSaved = scene.tiles.map((t) => {
+    const s = saved?.get(t.id);
+    return s && !t.fixedSize ? { ...t, rect: { ...t.rect, h: s.h } } : t;
+  });
+  const savedWidths = scene.tiles.filter((t) => !t.fixedSize).map((t) => saved?.get(t.id)?.w ?? t.rect.w);
+  const fixedWidths = scene.tiles.filter((t) => t.fixedSize).map((t) => t.rect.w);
+  const canonical = planPageLayout({ tiles: sizedAsSaved, frames: scene.frames }, frameOrder, {
+    filing: view.members,
+    widest: Math.max(0, ...savedWidths, ...fixedWidths),
+  });
+  return { view, saved: canonical.rects };
 }
 
 /** Frames in reading order — a board's chapters in either layout. */

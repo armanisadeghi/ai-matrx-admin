@@ -255,7 +255,8 @@ export function UserBoard({
 
   // ── the saved form ────────────────────────────────────────────────────────
   const toDoc = (camera: Camera): BoardDocument => {
-    const now = board.read();
+    // What is SAVED: a phone's narrowed page is its own view, never the shared board (`BoardStore.project`).
+    const now = board.readSaved();
     const parkedIds = new Set(now.parked.map((t) => t.id));
     return {
       camera,
@@ -270,7 +271,7 @@ export function UserBoard({
       })),
       groups: now.frames,
       edges: [],
-      shapes: board.shapes,
+      shapes: now.shapes,
     };
   };
   const onChangeRef = useRef(onChange);
@@ -919,6 +920,7 @@ export function UserBoard({
           layout={layoutMode}
           pages={outline.pages}
           onMoveChapter={layoutMode === "page" ? pageLayout.moveChapter : undefined}
+          chapterTop={layoutMode === "page" ? pageLayout.chapterTop : undefined}
           chapterIcons={chapterIcons}
           onClose={() => outline.onOpenChange(false)}
         />
