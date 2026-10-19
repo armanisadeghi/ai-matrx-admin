@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0417",
-  "version": 4,
+  "version": 5,
   "title": "Interior Design Studio",
   "description": "For interior designers: projects by phase, furnishings orders, client approvals and fees.",
   "forWho": "Interior designers and design studios",
@@ -9,7 +9,7 @@
     "emoji": "🛋️"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:realestate-interior-design-living-room",
     "offsetY": 50
   },
   "category": "realestate",
@@ -2995,7 +2995,7 @@
         "Wexcombe Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -3006,7 +3006,7 @@
         "emoji": "🛋️"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:realestate-interior-design-living-room",
         "offsetY": 50
       },
       "settings": {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0555",
-  "version": 1,
+  "version": 2,
   "title": "Animal Rescue Operations Desk",
   "description": "Animals, fosters, adoption applications and vet care from intake to home.",
   "forWho": "Animal rescues, humane societies and foster networks",
@@ -9,7 +9,7 @@
     "emoji": "🐾"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:nonprofit-puppy-shelter",
     "offsetY": 50
   },
   "category": "nonprofit",
@@ -2151,7 +2151,7 @@
         "Juniper Hollow"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2162,7 +2162,7 @@
         "emoji": "🐾"
       },
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:nonprofit-puppy-shelter",
         "offsetY": 50
       },
       "settings": {

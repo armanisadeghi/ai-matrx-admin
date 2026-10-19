@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0414",
-  "version": 5,
+  "version": 6,
   "title": "Property Management",
   "description": "For landlords and property managers: units, leases, rent roll, repairs and renewals.",
   "forWho": "Landlords, property managers and leasing staff",
@@ -9,7 +9,7 @@
     "emoji": "🏢"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:realestate-apartment-building-facade",
     "offsetY": 50
   },
   "category": "realestate",
@@ -2494,7 +2494,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2505,7 +2505,7 @@
         "emoji": "🏢"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:realestate-apartment-building-facade",
         "offsetY": 50
       },
       "settings": {

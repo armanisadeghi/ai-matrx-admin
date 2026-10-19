@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0554",
-  "version": 2,
+  "version": 3,
   "title": "Community Food Bank Desk",
   "description": "For food pantries and food banks: donations, stock, distribution days, partners.",
   "forWho": "Food banks and neighborhood food pantries",
@@ -9,7 +9,7 @@
     "emoji": "🥫"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:nonprofit-canned-food-shelves",
     "offsetY": 50
   },
   "category": "nonprofit",
@@ -2616,7 +2616,7 @@
         "Hawthorne Row"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -2627,7 +2627,7 @@
         "emoji": "🥫"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:nonprofit-canned-food-shelves",
         "offsetY": 50
       },
       "settings": {

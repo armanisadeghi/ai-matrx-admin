@@ -284,10 +284,11 @@ function Tile({ href, label, count, items }: { href: string; label: string; coun
         <span className="truncate">{label}</span>
         <span className="shrink-0 type-meta text-muted-foreground tabular-nums">{count}</span>
       </Link>
-      <ul className="flex flex-col gap-0.5 type-body">
+      {/* Styled once on the list (every element ships twice: HTML + RSC payload); no prefetch — 45 tiles of links. */}
+      <ul className="flex flex-col gap-0.5 type-body [&_li]:truncate [&_a]:text-muted-foreground [&_a:hover]:text-foreground" data-public-templates-tile-items="">
         {items.map((c) => (
-          <li key={c.id} className="truncate">
-            <Link href={publicTemplateHref(c)} className="text-muted-foreground hover:text-foreground" data-public-templates-tile-item={c.catalogue_id}>
+          <li key={c.id}>
+            <Link href={publicTemplateHref(c)} prefetch={false}>
               {c.space?.title ?? c.name}
             </Link>
           </li>

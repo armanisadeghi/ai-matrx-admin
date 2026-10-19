@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0562",
-  "version": 1,
+  "version": 2,
   "title": "SaaS Startup Operating System",
   "description": "Customers, roadmap, support tickets and monthly metrics for a software startup.",
   "forWho": "Founders running a small subscription software product",
@@ -9,7 +9,7 @@
     "emoji": "🧭"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:tech-empty-modern-office-desks",
     "offsetY": 50
   },
   "category": "tech",
@@ -2291,7 +2291,7 @@
         "Gantry Street"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2302,7 +2302,7 @@
         "emoji": "🧭"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:tech-empty-modern-office-desks",
         "offsetY": 50
       },
       "settings": {

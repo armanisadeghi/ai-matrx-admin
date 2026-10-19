@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0212",
-  "version": 4,
+  "version": 5,
   "title": "Job Application Tracker",
   "description": "Job seekers: track every application, contact and interview in one pipeline.",
   "forWho": "Job seekers",
@@ -9,7 +9,7 @@
     "emoji": "💼"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:personal-office-building-windows",
     "offsetY": 50
   },
   "category": "personal",
@@ -1478,7 +1478,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1489,7 +1489,7 @@
         "emoji": "💼"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:personal-office-building-windows",
         "offsetY": 50
       },
       "settings": {

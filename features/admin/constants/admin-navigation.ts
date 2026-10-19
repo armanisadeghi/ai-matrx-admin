@@ -280,6 +280,13 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
         ],
       },
       {
+        // Run Evidence (2026-10-19): every run started from a surface by any
+        // agent — tools, context fetched vs supplied, cost and why.
+        name: "Run Evidence",
+        iconName: "ScanSearch",
+        destinations: [destination("/administration/intelligence/run-evidence")],
+      },
+      {
         // Memory Lab (memory v1, 2026-10-19): replays one person's chats
         // through the memory agents into a sandbox store, never live memory.
         name: "Memory Lab",

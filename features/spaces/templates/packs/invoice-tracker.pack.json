@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0359",
-  "version": 5,
+  "version": 6,
   "title": "Invoice Tracker",
   "description": "Freelancers: track invoices from draft to paid, flag late ones, see what clients owe.",
   "forWho": "Freelancers and solo consultants",
@@ -9,7 +9,7 @@
     "emoji": "🧾"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:finance-invoice-paper-stack",
     "offsetY": 50
   },
   "category": "finance",
@@ -1177,7 +1177,7 @@
         "Juniper Grist Road"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1188,7 +1188,7 @@
         "emoji": "🧾"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:finance-invoice-paper-stack",
         "offsetY": 50
       },
       "settings": {

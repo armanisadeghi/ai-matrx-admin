@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0561",
-  "version": 1,
+  "version": 2,
   "title": "Online Academy Operations Desk",
   "description": "Courses, cohorts, enrollments and learner support for an online academy.",
   "forWho": "Online course academies and cohort-based programs",
@@ -9,7 +9,7 @@
     "emoji": "🎓"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:education-laptop-online-learning",
     "offsetY": 50
   },
   "category": "education",
@@ -2258,7 +2258,7 @@
         "Pembroke Row"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2269,7 +2269,7 @@
         "emoji": "🎓"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:education-laptop-online-learning",
         "offsetY": 50
       },
       "settings": {

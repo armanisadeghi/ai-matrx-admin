@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0456",
-  "version": 4,
+  "version": 5,
   "title": "Architecture Firm Studio",
   "description": "Clients, design phases, drawing sets, RFIs and submittals for an architecture firm.",
   "forWho": "Small and mid-sized architecture practices",
@@ -9,7 +9,7 @@
     "emoji": "📐"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:services-architecture-model-building",
     "offsetY": 50
   },
   "category": "services",
@@ -2657,7 +2657,7 @@
         "Quarry Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2668,7 +2668,7 @@
         "emoji": "📐"
       },
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:services-architecture-model-building",
         "offsetY": 50
       },
       "settings": {

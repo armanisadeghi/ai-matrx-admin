@@ -48,6 +48,12 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
 
 ## Change log
 
+- 2026-10-19 — DB-BLOCK-CHROME. **A loading database block is the live frame.** Every wait of a table block (the server's
+  Suspense fallback, the editor's late seed, the block's code chunk via `DatabaseLoadingSlot`, DataMount still resolving)
+  draws `data/database-frame-shape.tsx` `DatabaseFrameShape`: the frame, title row, the stored view tabs by name, the toolbar
+  and records-ui's embedded skeleton, with the controls of `frameControls(isChart, { shape, published })` — the one decision
+  `DatabaseFrame` also gates every control through. Page columns stack by a container query (`spaces-content`, 368px content
+  width = 560px less gutters), never a ResizeObserver after hydration. Guard: data/__tests__/a-loading-database-block-is-the-live-frame.
 - 2026-10-19 — COVER LIBRARY. **Platform cover photos live in `lib/spaces-blocks/cover-library.json`** (208 Pexels-License
   photos, one per template pack plus extras, every category): each is platform media in the file service (Matrx System org,
   `system-files/spaces-covers/`, published to the web; `fileId` is identity, `src`/`thumb` the durable CDN 2000px / 480px

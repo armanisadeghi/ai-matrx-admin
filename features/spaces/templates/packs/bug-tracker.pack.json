@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0104",
-  "version": 6,
+  "version": 7,
   "title": "Bug Tracker",
   "description": "Engineering and support teams: report, triage and fix bugs by severity on a board.",
   "forWho": "Engineering and support teams",
@@ -9,7 +9,7 @@
     "emoji": "🐞"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:projects-computer-code-screen",
     "offsetY": 50
   },
   "category": "projects",
@@ -1314,7 +1314,7 @@
         "Tamarack Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1325,7 +1325,7 @@
         "emoji": "🐞"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:projects-computer-code-screen",
         "offsetY": 50
       },
       "settings": {

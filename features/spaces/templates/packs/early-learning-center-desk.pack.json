@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0558",
-  "version": 1,
+  "version": 2,
   "title": "Early Learning Center Desk",
   "description": "Rooms, enrollment, the waitlist and the safety checks a daycare owes.",
   "forWho": "Daycares, preschools and early learning centers",
@@ -9,7 +9,7 @@
     "emoji": "🧸"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:education-colorful-toy-blocks",
     "offsetY": 50
   },
   "category": "education",
@@ -2040,7 +2040,7 @@
         "Meadowlark Court"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2051,7 +2051,7 @@
         "emoji": "🧸"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:education-colorful-toy-blocks",
         "offsetY": 50
       },
       "settings": {

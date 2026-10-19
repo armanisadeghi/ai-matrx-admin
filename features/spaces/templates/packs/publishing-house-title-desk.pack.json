@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0567",
-  "version": 1,
+  "version": 2,
   "title": "Publishing House Title Desk",
   "description": "Authors, titles in production, schedule steps and royalty statements for a publisher.",
   "forWho": "Independent book publishers and small presses",
@@ -9,7 +9,7 @@
     "emoji": "📖"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:media-old-books-printing",
     "offsetY": 50
   },
   "category": "media",
@@ -2438,7 +2438,7 @@
         "Bookbinder Alley"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2449,7 +2449,7 @@
         "emoji": "📖"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:media-old-books-printing",
         "offsetY": 50
       },
       "settings": {

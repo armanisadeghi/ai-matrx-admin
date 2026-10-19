@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0570",
-  "version": 1,
+  "version": 2,
   "title": "Warehouse Operations Desk",
   "description": "Stock locations, inbound dock schedule, outbound orders and cycle counts.",
   "forWho": "Warehouses, 3PLs and distribution centers",
@@ -9,7 +9,7 @@
     "emoji": "📦"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:manufacturing-warehouse-forklift",
     "offsetY": 50
   },
   "category": "manufacturing",
@@ -2478,7 +2478,7 @@
         "Cargo Way"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2489,7 +2489,7 @@
         "emoji": "📦"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:manufacturing-warehouse-forklift",
         "offsetY": 50
       },
       "settings": {

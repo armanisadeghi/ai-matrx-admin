@@ -4,7 +4,7 @@
   "formerSlugs": [
     "spaces-sp0159"
   ],
-  "version": 5,
+  "version": 6,
   "title": "Account Management",
   "description": "Customer success teams: keep health, renewals and contacts for existing customers.",
   "forWho": "Customer success and account managers",
@@ -12,7 +12,7 @@
     "emoji": "🏢"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:clients-handshake-coffee-cups-table",
     "offsetY": 50
   },
   "category": "clients",
@@ -1334,7 +1334,7 @@
         "Marlin Terrace"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1695,7 +1695,7 @@
         }
       ],
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:clients-handshake-coffee-cups-table",
         "offsetY": 50
       }
     },

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0563",
-  "version": 1,
+  "version": 2,
   "title": "App Development Agency Studio",
   "description": "Clients, app projects, milestones and the bug list for a mobile and web agency.",
   "forWho": "App and software development agencies",
@@ -9,7 +9,7 @@
     "emoji": "📱"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:tech-ui-sketch-notebook",
     "offsetY": 50
   },
   "category": "tech",
@@ -2461,7 +2461,7 @@
         "Cobbler Way"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2472,7 +2472,7 @@
         "emoji": "📱"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:tech-ui-sketch-notebook",
         "offsetY": 50
       },
       "settings": {

@@ -84,7 +84,7 @@ function toItem(bundle: TranslationBundle, cell: TranslationCellRow): Translatio
     proposedBy: sourceLabel(cell.source),
     proposedAt: cell.updated_at,
     // Everything the cell carries — confidence, evidence, the agent's chat, Test now.
-    body: <CellDetailPanel cell={cell} />,
+    body: <CellDetailPanel cell={cell} showSource={false} />,
     doors: (
       <AppLink
         href={`${GRID_HREF}?tab=needs`}

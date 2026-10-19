@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0211",
-  "version": 4,
+  "version": 5,
   "title": "Travel Planner",
   "description": "Travelers: plan each trip with an itinerary, bookings, a packing list and places.",
   "forWho": "Travelers planning trips",
@@ -9,7 +9,7 @@
     "emoji": "🧳"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:personal-airplane-window-clouds",
     "offsetY": 50
   },
   "category": "personal",
@@ -1663,7 +1663,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1674,7 +1674,7 @@
         "emoji": "🧳"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:personal-airplane-window-clouds",
         "offsetY": 50
       },
       "settings": {

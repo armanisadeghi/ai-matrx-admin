@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0518",
-  "version": 3,
+  "version": 4,
   "title": "Wholesale Distributor HQ",
   "description": "Run wholesale accounts, sales orders, stock and supplier purchasing in one workspace.",
   "forWho": "Small wholesale distributors and suppliers",
@@ -9,7 +9,7 @@
     "emoji": "📦"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:retail-pallets-warehouse",
     "offsetY": 50
   },
   "category": "retail",
@@ -1965,7 +1965,7 @@
         "Warehouse Road"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -1976,7 +1976,7 @@
         "emoji": "📦"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:retail-pallets-warehouse",
         "offsetY": 50
       },
       "settings": {

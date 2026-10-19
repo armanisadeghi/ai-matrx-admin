@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0413",
-  "version": 5,
+  "version": 6,
   "title": "Real Estate Brokerage",
   "description": "For realtors and brokers: leads, listings, contracts, contingency dates and commissions.",
   "forWho": "Real estate agents, brokers and transaction coordinators",
@@ -9,7 +9,7 @@
     "emoji": "🏠"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:realestate-modern-house-exterior",
     "offsetY": 50
   },
   "category": "realestate",
@@ -2395,7 +2395,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2406,7 +2406,7 @@
         "emoji": "🏠"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:realestate-modern-house-exterior",
         "offsetY": 50
       },
       "settings": {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0152",
-  "version": 5,
+  "version": 6,
   "title": "Marketing Campaign Hub",
   "description": "Campaign managers: track each campaign's content, budget and results in one place.",
   "forWho": "Marketing leads and campaign managers",
@@ -9,7 +9,7 @@
     "emoji": "📣"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:marketing-colorful-paper-confetti",
     "offsetY": 50
   },
   "category": "marketing",
@@ -1568,7 +1568,7 @@
         "Gullwing Quay"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2000,7 +2000,7 @@
         }
       ],
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:marketing-colorful-paper-confetti",
         "offsetY": 50
       }
     },

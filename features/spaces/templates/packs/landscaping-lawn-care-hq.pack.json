@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0502",
-  "version": 4,
+  "version": 5,
   "title": "Landscaping and Lawn Care HQ",
   "description": "For lawn care and landscaping companies: weekly routes, projects, crews and billing.",
   "forWho": "Landscaping and lawn care companies",
@@ -9,7 +9,7 @@
     "emoji": "🌿"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:trades-green-lawn-garden",
     "offsetY": 50
   },
   "category": "trades",
@@ -2758,7 +2758,7 @@
         "Orchard Gate"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2769,7 +2769,7 @@
         "emoji": "🌿"
       },
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:trades-green-lawn-garden",
         "offsetY": 50
       },
       "settings": {

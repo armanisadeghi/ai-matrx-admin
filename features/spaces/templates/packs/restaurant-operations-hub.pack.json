@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0463",
-  "version": 4,
+  "version": 5,
   "title": "Restaurant Operations Hub",
   "description": "Dishes with food cost, inventory with par levels, suppliers, orders and shifts.",
   "forWho": "Independent restaurants and small restaurant groups",
@@ -9,7 +9,7 @@
     "emoji": "🍽️"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:hospitality-restaurant-interior-dining",
     "offsetY": 50
   },
   "category": "hospitality",
@@ -2096,7 +2096,7 @@
         "Foundry Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2107,7 +2107,7 @@
         "emoji": "🍽️"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:hospitality-restaurant-interior-dining",
         "offsetY": 50
       },
       "settings": {

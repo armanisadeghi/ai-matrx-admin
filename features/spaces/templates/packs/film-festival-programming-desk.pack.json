@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0568",
-  "version": 1,
+  "version": 2,
   "title": "Film Festival Programming Desk",
   "description": "Submissions, screenings, venues, guests and volunteers for a film festival.",
   "forWho": "Film festival programmers and organizers",
@@ -9,7 +9,7 @@
     "emoji": "🎬"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:media-cinema-seats-theater",
     "offsetY": 50
   },
   "category": "media",
@@ -2280,7 +2280,7 @@
         "Adobe Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2291,7 +2291,7 @@
         "emoji": "🎬"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:media-cinema-seats-theater",
         "offsetY": 50
       },
       "settings": {

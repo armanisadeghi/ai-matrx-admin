@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0150",
-  "version": 8,
+  "version": 9,
   "title": "Sales CRM",
   "description": "Small sales teams: a deal pipeline board, a contact book and every call logged.",
   "forWho": "Small sales teams and solo sellers",
@@ -9,7 +9,7 @@
     "emoji": "🤝"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:sales-city-skyline-business-district",
     "offsetY": 50
   },
   "category": "sales",
@@ -1882,7 +1882,7 @@
         "Thornapple Lane"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2241,7 +2241,7 @@
         }
       ],
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:sales-city-skyline-business-district",
         "offsetY": 50
       }
     },

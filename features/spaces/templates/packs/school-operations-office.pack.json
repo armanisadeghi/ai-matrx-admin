@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0556",
-  "version": 1,
+  "version": 2,
   "title": "School Operations Office",
   "description": "Staff, class sections, school events, substitute cover and office requests.",
   "forWho": "Principals and office managers at K-12 schools",
@@ -9,7 +9,7 @@
     "emoji": "🏫"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:education-school-hallway-lockers",
     "offsetY": 50
   },
   "category": "education",
@@ -2076,7 +2076,7 @@
         "Sycamore Drive"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2087,7 +2087,7 @@
         "emoji": "🏫"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:education-school-hallway-lockers",
         "offsetY": 50
       },
       "settings": {

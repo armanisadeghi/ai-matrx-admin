@@ -7,44 +7,50 @@
  * those things … the actual chat should be one click away … a way to quickly do
  * a test").
  *
- * Shows: who proposed it, confidence against the auto-accept knob, whether a
- * passing live test proves it, the full rationale, the rule (summary + raw JSON),
- * every evidence entry in whatever shape it was stored, conflict, rejection
- * fingerprint, created/updated/approved stamps, the drafting run's chat (or one
- * line saying none was recorded), and Test now
- * (POST /admin/ai-catalog/translation-cells/{id}/test) with each outcome's wire,
- * provider message and stored conversation. Pure logic: ../cellDetail.ts.
+ * Nothing is collapsed: who proposed it, confidence against the auto-accept
+ * threshold (read at PLATFORM scope, as the database gate reads it), whether a
+ * passing live test proves it, the full rationale, the rule in words and as
+ * stored, every evidence entry in whatever shape it was stored, conflict,
+ * rejection fingerprint, created/updated/approved stamps with the people, every
+ * metadata key, the drafting run's chat (or one line saying none was recorded),
+ * and Test now (POST /admin/ai-catalog/translation-cells/{id}/test) with each
+ * outcome's wire, provider message and stored conversation. No money is shown
+ * here (law 14: runs and results never show points or dollars).
+ *
+ * The last test reply is kept in the query cache under the cell's id, outside the
+ * grid prefix, so it survives the refetch the test triggers; when the test moves
+ * the cell out of "Needs you" (the /approvals row unmounts) a toast says where it
+ * went, with a door to the grid. Pure logic: ../cellDetail.ts.
  */
 
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, FlaskConical } from "lucide-react";
+import { FlaskConical } from "lucide-react";
 import { RecordId } from "@ai-matrx/design-system";
 import { Badge, Button, PropertyRow } from "@ai-matrx/design-system/controls";
 import type { BadgeTone } from "@ai-matrx/design-system/controls";
 import { formatAbsoluteDate } from "@ai-matrx/kit/format";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAccessToken } from "@/lib/redux/slices/userSlice";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { useServerOrganizationId } from "@/lib/api/useServerOrganizationId";
-import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
-import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 import { adminTwinHref } from "@/features/scopes/registry/adminTwins";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 import { toast } from "@/lib/toast";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { readTranslationCellDetail } from "../data";
+import { readConfidenceThreshold, readTranslationCellDetail } from "../data";
 import {
   TRANSLATION_GRID_QUERY_KEY,
-  CONFIDENCE_THRESHOLD_DEFAULT,
-  CONFIDENCE_THRESHOLD_KNOB,
   evidenceProven,
   isHttpUrl,
   normalizeEvidence,
+  otherMetadata,
   readRun,
   sourceLabel,
   testErrorSentence,
   testTranslationCell,
+  translationTestResultKey,
   type CellTestOutcome,
   type CellTestResult,
   type EvidenceView,
@@ -52,6 +58,8 @@ import {
 import { summarizeRule } from "../model";
 import type { TranslationCellRow } from "../types";
 
+const GRID_HREF = "/administration/ai/ai-models/translations";
+const NEEDS_YOU_STATES = new Set(["proposed", "agent"]);
 
 function when(iso: string | null | undefined): string | null {
   if (!iso) return null;
@@ -59,57 +67,40 @@ function when(iso: string | null | undefined): string | null {
   return Number.isNaN(d.getTime()) ? iso : formatAbsoluteDate(d);
 }
 
-function json(v: unknown): string {
+/** Raw data as one wrapped mono line — fully visible, never behind a click. */
+function rawText(v: unknown): string {
   if (typeof v === "string") return v;
   try {
-    return JSON.stringify(v, null, 2);
+    return JSON.stringify(v) ?? String(v);
   } catch {
     return String(v);
   }
 }
 
-function Mono({ children }: { children: ReactNode }) {
-  return (
-    <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-md bg-muted px-2 py-1.5 font-mono text-xs text-foreground">
-      {children}
-    </pre>
-  );
+/** One key/value of any shape: text as text, everything else as raw data. */
+function AnyRow({ label, value }: { label: string; value: unknown }) {
+  if (value === null || value === undefined || value === "") {
+    return <PropertyRow label={label} missing="Empty" />;
+  }
+  if (typeof value === "string") return <PropertyRow label={label} value={value} />;
+  return <PropertyRow label={label} mono value={rawText(value)} />;
 }
 
-/** A stored conversation, opened in a new tab through the admin conversation door. */
-function ChatLink({ conversationId, label = "Open chat" }: { conversationId: string; label?: string }) {
+/** A stored conversation: ONE door (the admin conversation route), new tab, copyable id. */
+function ChatDoor({ conversationId }: { conversationId: string }) {
   const href = adminTwinHref("conversation", conversationId, true) ?? `/chat/${conversationId}`;
-  return (
-    <span className="inline-flex flex-wrap items-center gap-2">
-      <Button variant="link" iconEnd={<ExternalLink />} asChild>
-        <a href={href} target="_blank" rel="noopener noreferrer">
-          {label}
-        </a>
-      </Button>
-      <RecordId value={conversationId} label="Chat" href={href} />
-    </span>
-  );
+  return <RecordId value={conversationId} label="Chat" labelled href={href} />;
 }
 
 function RefValue({ value }: { value: unknown }) {
-  if (value === undefined || value === null || value === "") return null;
   if (isHttpUrl(value)) {
     return (
-      <a
-        href={value}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="break-all text-primary underline-offset-2 hover:underline"
-      >
+      <OutboundLink href={value} className="break-all text-primary underline-offset-2 hover:underline">
         {value}
-      </a>
+      </OutboundLink>
     );
   }
-  return typeof value === "string" ? (
-    <span className="break-all font-mono text-xs">{value}</span>
-  ) : (
-    <Mono>{json(value)}</Mono>
-  );
+  return <>{rawText(value)}</>;
 }
 
 const OUTCOME_TONE: Record<string, BadgeTone> = {
@@ -123,57 +114,48 @@ const OUTCOME_TONE: Record<string, BadgeTone> = {
 };
 
 function EvidenceEntry({ entry, index }: { entry: EvidenceView; index: number }) {
-  const resultIsText = typeof entry.result === "string";
   return (
-    <li className="space-y-1.5 border-b border-border py-2 last:border-b-0">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="space-y-0.5 border-l-2 border-border pl-3" data-testid="translation-evidence-entry">
+      <div className="flex flex-wrap items-center gap-2 pt-1">
         <span className="type-secondary text-muted-foreground tabular-nums">{index + 1}</span>
         {entry.kind ? <Badge tone="info">{entry.kind}</Badge> : <Badge tone="warning">No kind</Badge>}
-        {entry.outcome ? (
-          <Badge tone={OUTCOME_TONE[entry.outcome] ?? "neutral"}>{entry.outcome}</Badge>
-        ) : null}
+        {entry.outcome ? <Badge tone={OUTCOME_TONE[entry.outcome] ?? "neutral"}>{entry.outcome}</Badge> : null}
         {entry.at ? <span className="type-secondary text-muted-foreground">{when(entry.at)}</span> : null}
       </div>
       {entry.ref !== undefined ? (
-        <PropertyRow label="Ref" value={<RefValue value={entry.ref} />} />
-      ) : null}
-      {entry.result !== undefined ? (
         <PropertyRow
-          label="Result"
-          value={resultIsText ? (entry.result as string) : <Mono>{json(entry.result)}</Mono>}
+          label="Ref"
+          mono={!isHttpUrl(entry.ref)}
+          value={entry.ref === null || entry.ref === "" ? null : <RefValue value={entry.ref} />}
+          {...(entry.ref === null || entry.ref === "" ? { missing: "Empty" } : {})}
         />
       ) : null}
+      {entry.result !== undefined ? <AnyRow label="Result" value={entry.result} /> : null}
       {entry.conversationId ? (
-        <PropertyRow label="Test call" value={<ChatLink conversationId={entry.conversationId} />} />
+        <PropertyRow label="Test call" value={<ChatDoor conversationId={entry.conversationId} />} />
       ) : null}
       {entry.extra.map(([k, v]) => (
-        <PropertyRow
-          key={k}
-          label={k}
-          value={typeof v === "string" ? v : <Mono>{json(v)}</Mono>}
-          {...(v === null || v === "" ? { missing: "Empty" } : {})}
-        />
+        <AnyRow key={k} label={k} value={v} />
       ))}
-    </li>
+    </div>
   );
 }
 
-function OutcomeRow({ o }: { o: CellTestOutcome }) {
+function OutcomeEntry({ o }: { o: CellTestOutcome }) {
   return (
-    <li className="space-y-1.5 border-b border-border py-2 last:border-b-0">
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge tone={OUTCOME_TONE[o.outcome] ?? "neutral"}>{o.outcome}</Badge>
-        <span className="type-value font-medium">{o.label}</span>
+    <div className="space-y-0.5 border-l-2 border-border pl-3" data-testid="translation-test-outcome">
+      <div className="flex flex-wrap items-center gap-2 pt-1">
+        {o.outcome ? (
+          <Badge tone={OUTCOME_TONE[o.outcome] ?? "neutral"}>{o.outcome}</Badge>
+        ) : (
+          <Badge tone="warning">No outcome</Badge>
+        )}
+        <span className="type-value font-medium">{o.label ?? rawText(o.value)}</span>
         <span className="type-secondary text-muted-foreground">
-          {o.model_name} · {o.api}
+          {[o.model_name, o.api].filter(Boolean).join(" · ")}
         </span>
-        {o.cost_usd > 0 ? (
-          <span className="ml-auto type-secondary text-muted-foreground tabular-nums">
-            ${o.cost_usd.toFixed(4)}
-          </span>
-        ) : null}
       </div>
-      <PropertyRow label="Sent on the wire" value={<Mono>{json(o.wire)}</Mono>} />
+      <AnyRow label="Sent on the wire" value={o.wire} />
       <PropertyRow
         label="Provider said"
         value={o.provider_message}
@@ -183,35 +165,82 @@ function OutcomeRow({ o }: { o: CellTestOutcome }) {
       {o.detail ? <PropertyRow label="Detail" value={o.detail} /> : null}
       <PropertyRow
         label="Call"
-        value={o.conversation_id ? <ChatLink conversationId={o.conversation_id} /> : null}
+        value={o.conversation_id ? <ChatDoor conversationId={o.conversation_id} /> : null}
         {...(o.conversation_id ? {} : { missing: "Not stored" })}
       />
-    </li>
+    </div>
   );
 }
 
-function TestNow({ cellId }: { cellId: string }) {
+function TestResultView({ result }: { result: CellTestResult }) {
+  const b = result.budget;
+  return (
+    <div className="space-y-1" data-testid="translation-test-result">
+      <PropertyRow
+        label="Last test"
+        value={result.summary}
+        {...(result.summary ? {} : { missing: "No summary" })}
+        {...(b && b.used_last_24h != null && b.per_day != null
+          ? { meta: `${b.used_last_24h}/${b.per_day} tests today` }
+          : {})}
+      />
+      {result.stopped_by_budget ? (
+        <p className="type-secondary text-warning">Stopped early: the daily test budget ran out.</p>
+      ) : null}
+      {result.problems.length > 0 ? (
+        <>
+          <p className="break-words type-secondary font-medium text-warning">
+            {result.problems.join(" ")} <ErrorAlchemyMenu error={result.problems.join(" ")} />
+          </p>
+          <PropertyRow label="Reply as received" mono value={rawText(result.raw)} />
+        </>
+      ) : null}
+      {result.outcomes.map((o, i) => (
+        <OutcomeEntry key={`${o.offering_id ?? "?"}:${o.label ?? "?"}:${i}`} o={o} />
+      ))}
+      {result.outcomes.length === 0 && result.problems.length === 0 ? (
+        <p className="type-secondary text-muted-foreground">No calls were made.</p>
+      ) : null}
+    </div>
+  );
+}
+
+function TestNow({ cell }: { cell: TranslationCellRow }) {
   const queryClient = useQueryClient();
   const auth = {
     accessToken: useAppSelector(selectAccessToken) ?? null,
     baseUrl: useAppSelector(selectResolvedBaseUrl) ?? null,
     organizationId: useServerOrganizationId(),
   };
+  const kept = useQuery<CellTestResult | null>({
+    queryKey: translationTestResultKey(cell.id),
+    queryFn: () => null,
+    enabled: false,
+    staleTime: Infinity,
+    gcTime: 30 * 60_000,
+  });
+  const result = kept.data ?? null;
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<CellTestResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const run = async () => {
     setBusy(true);
     setError(null);
     try {
-      const reply = await testTranslationCell(auth, cellId);
-      setResult(reply);
-      toast.success("Test finished", { description: reply.summary });
-      // The server appends evidence and may promote the state.
-      void queryClient.invalidateQueries({ queryKey: TRANSLATION_GRID_QUERY_KEY });
+      const reply = await testTranslationCell(auth, cell.id);
+      queryClient.setQueryData(translationTestResultKey(cell.id), reply);
+      toast.success("Test finished", { description: reply.summary ?? "The reply had no summary." });
+      // The server appends evidence and may promote the state: refetch, then say
+      // where the cell went when it left "Needs you" (its /approvals row unmounts).
+      await queryClient.invalidateQueries({ queryKey: TRANSLATION_GRID_QUERY_KEY });
+      const fresh = await readTranslationCellDetail(cell.id).catch(() => null);
+      if (fresh?.state && fresh.state !== cell.state && !NEEDS_YOU_STATES.has(fresh.state)) {
+        toast.info(`${cell.setting_key} is now ${fresh.state}`, {
+          description: reply.summary ?? undefined,
+          action: { label: "Open grid", onClick: () => openFromNotice(`${GRID_HREF}?tab=all`) },
+        });
+      }
     } catch (err) {
-      setResult(null);
       setError(testErrorSentence(err));
     } finally {
       setBusy(false);
@@ -220,204 +249,208 @@ function TestNow({ cellId }: { cellId: string }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <Button icon={<FlaskConical />} variant="outline" disabled={busy} onClick={() => void run()}>
-          {busy ? "Testing…" : "Test now"}
-        </Button>
-        {result ? (
-          <span className="type-secondary text-muted-foreground">
-            {result.tested_offerings === 1 ? "1 model" : `${result.tested_offerings} models`} ·{" "}
-            {result.budget.used_last_24h}/{result.budget.per_day} tests today
-          </span>
-        ) : null}
-      </div>
+      <Button icon={<FlaskConical />} variant="outline" disabled={busy} onClick={() => void run()}>
+        {busy ? "Testing…" : "Test now"}
+      </Button>
       {error ? (
-        <p className="break-words type-secondary font-medium text-destructive">
+        <p className="break-words type-secondary font-medium text-destructive" data-testid="translation-test-error">
           {error} <ErrorAlchemyMenu error={error} />
         </p>
       ) : null}
-      {result ? (
-        <div className="space-y-1">
-          <p className="break-words type-value">{result.summary}</p>
-          {result.stopped_by_budget ? (
-            <p className="type-secondary text-warning">Stopped early: the daily test budget ran out.</p>
-          ) : null}
-          {result.outcomes.length > 0 ? (
-            <ul>
-              {result.outcomes.map((o, i) => (
-                <OutcomeRow key={`${o.offering_id}:${o.label}:${i}`} o={o} />
-              ))}
-            </ul>
-          ) : (
-            <p className="type-secondary text-muted-foreground">No calls were made.</p>
-          )}
-        </div>
-      ) : null}
+      {result ? <TestResultView result={result} /> : null}
     </div>
   );
 }
 
-export default function CellDetailPanel({ cell }: { cell: TranslationCellRow }) {
-  const userId = useAppSelector(selectUserId);
-  const orgId = useAppSelector(selectOrganizationId);
-  const knob = useEffectiveKnob(orgId, userId, CONFIDENCE_THRESHOLD_KNOB);
-  const threshold = typeof knob === "number" ? knob : Number(knob ?? NaN);
-  const thresholdKnown = Number.isFinite(threshold);
-  const shownThreshold = thresholdKnown ? threshold : CONFIDENCE_THRESHOLD_DEFAULT;
+function ConfidenceValue({ confidence }: { confidence: number }) {
+  const threshold = useQuery({
+    queryKey: ["ai-models", "translation-confidence-threshold"],
+    queryFn: readConfidenceThreshold,
+    staleTime: 60_000,
+    retry: false,
+  });
+  const pct = Math.round(confidence * 100);
+  return (
+    <span className="inline-flex flex-wrap items-center gap-2" data-testid="translation-confidence">
+      <span className="tabular-nums">{pct}%</span>
+      {threshold.isPending ? (
+        <span className="type-secondary text-muted-foreground">Reading the threshold…</span>
+      ) : threshold.isError ? (
+        <span className="type-secondary text-destructive">
+          Could not read the threshold <ErrorAlchemyMenu error={threshold.error} />
+        </span>
+      ) : (
+        <>
+          <span className="type-secondary text-muted-foreground tabular-nums">
+            threshold {Math.round(threshold.data * 100)}%
+          </span>
+          {confidence < threshold.data ? (
+            <Badge tone="warning">Below threshold</Badge>
+          ) : (
+            <Badge tone="success">Meets threshold</Badge>
+          )}
+        </>
+      )}
+    </span>
+  );
+}
 
+function PersonAt({ at, by, label }: { at: string | null | undefined; by: string | null | undefined; label: string }) {
+  return (
+    <span className="inline-flex flex-wrap items-center gap-2">
+      {when(at) ?? null}
+      {by ? <RecordId value={by} label={label} labelled token="user" /> : null}
+    </span>
+  );
+}
+
+export default function CellDetailPanel({
+  cell,
+  showSource = true,
+}: {
+  cell: TranslationCellRow;
+  /** False where the host already prints who proposed it (the /approvals row). */
+  showSource?: boolean;
+}) {
   const detailQuery = useQuery({
     queryKey: [...TRANSLATION_GRID_QUERY_KEY, "cell-detail", cell.id],
     queryFn: () => readTranslationCellDetail(cell.id),
     staleTime: 30_000,
   });
   const detail = detailQuery.data ?? null;
+  const reading = !detail && !detailQuery.isError;
   const evidence = normalizeEvidence(detail?.evidence);
   const proven = detail ? evidenceProven(detail.evidence) : null;
   const run = detail ? readRun(detail.metadata) : null;
-  const pct = cell.confidence != null ? Math.round(cell.confidence * 100) : null;
-  const below = cell.confidence != null && cell.confidence < shownThreshold;
+  const metadataRest = detail ? otherMetadata(detail.metadata) : [];
+  const detailError = detailQuery.isError ? (
+    <span className="text-destructive">
+      Could not read this cell <ErrorAlchemyMenu error={detailQuery.error} />
+    </span>
+  ) : null;
 
   return (
     <div className="min-w-0 space-y-3" data-testid="translation-cell-detail">
-      <PropertyRow
-        label="Proposed by"
-        value={sourceLabel(cell.source)}
-        {...(cell.source ? {} : { missing: "Unknown" })}
-      />
+      {showSource ? (
+        <PropertyRow
+          label="Proposed by"
+          value={sourceLabel(cell.source)}
+          {...(cell.source ? {} : { missing: "Unknown" })}
+        />
+      ) : null}
       <PropertyRow
         label="Confidence"
         help="Agent drafts at or above the threshold apply without review."
-        value={
-          pct != null ? (
-            <span className="inline-flex flex-wrap items-center gap-2">
-              <span className="tabular-nums">{pct}%</span>
-              <span className="type-secondary text-muted-foreground tabular-nums">
-                threshold {Math.round(shownThreshold * 100)}%{thresholdKnown ? "" : " (default)"}
-              </span>
-              {below ? <Badge tone="warning">Below threshold</Badge> : <Badge tone="success">Meets threshold</Badge>}
-            </span>
-          ) : null
-        }
-        {...(pct != null ? {} : { missing: "Not given" })}
+        value={cell.confidence != null ? <ConfidenceValue confidence={cell.confidence} /> : null}
+        {...(cell.confidence != null ? {} : { missing: "Not given" })}
       />
       <PropertyRow
         label="Live test"
         value={
-          proven === null ? (
-            detailQuery.isError ? (
-              <span className="text-destructive">
-                Could not read the evidence <ErrorAlchemyMenu error={detailQuery.error} />
-              </span>
-            ) : (
-              <span className="text-muted-foreground">Reading…</span>
-            )
+          detailError ??
+          (proven === null ? (
+            "Reading…"
           ) : proven ? (
             <Badge tone="success">Proven by a passing live test</Badge>
           ) : (
             <Badge tone="warning">Not proven by a live test</Badge>
-          )
+          ))
         }
       />
       <PropertyRow
         label="Agent run"
         value={
-          run?.conversation_id ? (
-            <ChatLink conversationId={run.conversation_id} />
-          ) : detail ? (
-            run ? (
-              "Run recorded without a chat id"
-            ) : (
-              "No agent run recorded for this draft"
-            )
-          ) : null
+          detailError ??
+          (reading
+            ? "Reading…"
+            : run?.conversation_id
+              ? <ChatDoor conversationId={run.conversation_id} />
+              : run
+                ? "Run recorded without a chat id"
+                : "No agent run recorded for this draft")
         }
-        {...(detail || detailQuery.isError ? {} : { missing: "Reading…" })}
-        {...(run
-          ? {
-              expanded: <Mono>{json(run)}</Mono>,
-            }
-          : {})}
       />
-      <TestNow cellId={cell.id} />
+      {run ? (
+        <div className="space-y-0.5 border-l-2 border-border pl-3">
+          {run.request_id ? <PropertyRow label="Request" mono value={run.request_id} /> : null}
+          {run.agent_id ? (
+            <PropertyRow label="Agent" value={<RecordId value={run.agent_id} label="Agent" token="agent" />} />
+          ) : null}
+          {run.model_id ? <PropertyRow label="Model" mono value={run.model_id} /> : null}
+          {run.mandate_key ? <PropertyRow label="Mandate" mono value={run.mandate_key} /> : null}
+          {run.at ? <PropertyRow label="Ran" value={when(run.at)} /> : null}
+          {run.extra.map(([k, v]) => (
+            <AnyRow key={k} label={k} value={v} />
+          ))}
+        </div>
+      ) : null}
+      <TestNow cell={cell} />
       <PropertyRow
         label="Rationale"
         value={cell.rationale ? <span className="whitespace-pre-wrap break-words">{cell.rationale}</span> : null}
         {...(cell.rationale ? {} : { missing: "None given" })}
       />
-      <PropertyRow
-        label="Rule"
-        value={summarizeRule(cell.rule)}
-        expanded={<Mono>{json(cell.rule)}</Mono>}
-      />
+      <PropertyRow label="Rule" value={summarizeRule(cell.rule)} />
+      <PropertyRow label="Rule as stored" mono value={rawText(cell.rule)} />
       <PropertyRow
         label="Evidence"
-        data={detail?.evidence ?? []}
         value={
-          detailQuery.isError
-            ? "Could not read the evidence"
-            : !detail
-              ? "Reading…"
-              : evidence.length === 0
-                ? null
-                : evidence.length === 1
-                  ? "1 entry"
-                  : `${evidence.length} entries`
+          detailError ??
+          (reading
+            ? "Reading…"
+            : evidence.length === 0
+              ? null
+              : evidence.length === 1
+                ? "1 entry"
+                : `${evidence.length} entries`)
         }
         {...(detail && evidence.length === 0 ? { missing: "None" } : {})}
-        {...(evidence.length > 0
-          ? {
-              expanded: (
-                <ul>
-                  {evidence.map((e, i) => (
-                    <EvidenceEntry key={i} entry={e} index={i} />
-                  ))}
-                </ul>
-              ),
-            }
-          : {})}
       />
+      {evidence.length > 0 ? (
+        <div className="space-y-2">
+          {evidence.map((e, i) => (
+            <EvidenceEntry key={i} entry={e} index={i} />
+          ))}
+        </div>
+      ) : null}
       {cell.conflict ? (
-        <PropertyRow
-          label="Conflict"
-          value={
-            cell.conflict.sources?.length ? (
-              <ul className="space-y-1">
-                {cell.conflict.sources.map((s, i) => (
-                  <li key={i} className="space-y-0.5">
-                    <span className="font-medium">{s.name ?? "Source"}</span>
-                    {s.confidence != null ? (
-                      <span className="type-secondary text-muted-foreground tabular-nums">
-                        {" "}
-                        {Math.round(s.confidence * 100)}%
-                      </span>
-                    ) : null}
-                    <Mono>{json(s.says)}</Mono>
-                    {s.rationale ? <p className="type-secondary">{s.rationale}</p> : null}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <Mono>{json(cell.conflict)}</Mono>
-            )
-          }
-          {...(cell.conflict.at ? { meta: when(cell.conflict.at) } : {})}
-        />
+        <>
+          <PropertyRow label="Conflict" value="Sources disagree" {...(cell.conflict.at ? { meta: when(cell.conflict.at) } : {})} />
+          <div className="space-y-2">
+            {(cell.conflict.sources ?? []).map((s, i) => (
+              <div key={i} className="space-y-0.5 border-l-2 border-border pl-3">
+                <PropertyRow
+                  label={s.name ?? `Source ${i + 1}`}
+                  mono
+                  value={rawText(s.says)}
+                  {...(s.confidence != null ? { meta: `${Math.round(s.confidence * 100)}%` } : {})}
+                />
+                {s.rationale ? <PropertyRow label="Why" value={s.rationale} /> : null}
+              </div>
+            ))}
+            {!cell.conflict.sources?.length ? <PropertyRow label="Conflict as stored" mono value={rawText(cell.conflict)} /> : null}
+          </div>
+        </>
       ) : null}
       {cell.rejection_fingerprint ? (
         <PropertyRow label="Provider rejection" mono value={cell.rejection_fingerprint} />
       ) : null}
-      <PropertyRow label="Created" value={when(detail?.created_at)} {...(detail?.created_at ? {} : { missing: detail ? "Unknown" : "Reading…" })} />
-      <PropertyRow label="Updated" value={when(cell.updated_at)} {...(cell.updated_at ? {} : { missing: "Unknown" })} />
+      {metadataRest.map(([k, v]) => (
+        <AnyRow key={k} label={`Metadata: ${k}`} value={v} />
+      ))}
+      <PropertyRow
+        label="Created"
+        value={detail?.created_at || detail?.created_by ? <PersonAt at={detail.created_at} by={detail.created_by} label="Creator" /> : null}
+        {...(detail?.created_at || detail?.created_by ? {} : { missing: detail ? "Unknown" : "Reading…" })}
+      />
+      <PropertyRow
+        label="Updated"
+        value={cell.updated_at || detail?.updated_by ? <PersonAt at={cell.updated_at} by={detail?.updated_by} label="Editor" /> : null}
+        {...(cell.updated_at || detail?.updated_by ? {} : { missing: "Unknown" })}
+      />
       <PropertyRow
         label="Approved"
-        value={
-          cell.approved_at || cell.approved_by ? (
-            <span className="inline-flex flex-wrap items-center gap-2">
-              {when(cell.approved_at)}
-              {cell.approved_by ? <RecordId value={cell.approved_by} label="Approver" token="user" /> : null}
-            </span>
-          ) : null
-        }
+        value={cell.approved_at || cell.approved_by ? <PersonAt at={cell.approved_at} by={cell.approved_by} label="Approver" /> : null}
         {...(cell.approved_at || cell.approved_by ? {} : { missing: "Not yet" })}
       />
       <PropertyRow label="Cell" value={<RecordId value={cell.id} label="Cell" />} />

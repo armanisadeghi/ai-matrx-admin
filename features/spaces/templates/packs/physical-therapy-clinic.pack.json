@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0401",
-  "version": 4,
+  "version": 5,
   "title": "Physical Therapy Clinic",
   "description": "For PT clinics: referrals, plans of care, authorized visits, notes and no-shows.",
   "forWho": "Physical therapists, rehab clinics and PT front desks",
@@ -9,7 +9,7 @@
     "emoji": "🦵"
   },
   "cover": {
-    "url": "gallery:gradient-meadow",
+    "url": "gallery:healthcare-physiotherapy-clinic-equipment",
     "offsetY": 50
   },
   "category": "healthcare",
@@ -2348,7 +2348,7 @@
         "Millbrook Court"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2359,7 +2359,7 @@
         "emoji": "🦵"
       },
       "cover": {
-        "url": "gallery:gradient-meadow",
+        "url": "gallery:healthcare-physiotherapy-clinic-equipment",
         "offsetY": 50
       },
       "settings": {

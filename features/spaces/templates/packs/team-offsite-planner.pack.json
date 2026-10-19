@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0263",
-  "version": 6,
+  "version": 7,
   "title": "Team Offsite Planner",
   "description": "Team leads: plan a retreat with agenda, venues, attendees and budget.",
   "forWho": "People teams and team leads planning retreats",
@@ -9,7 +9,7 @@
     "emoji": "🏕️"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:team-cabin-in-the-woods-lake",
     "offsetY": 50
   },
   "category": "team",
@@ -1739,7 +1739,7 @@
         "Cormorant Steps"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1750,7 +1750,7 @@
         "emoji": "🏕️"
       },
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:team-cabin-in-the-woods-lake",
         "offsetY": 50
       },
       "settings": {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0257",
-  "version": 6,
+  "version": 7,
   "title": "1:1 Meeting Notes",
   "description": "Managers: recurring one-to-ones with mood, agenda and action items per person.",
   "forWho": "Managers and their direct reports",
@@ -9,7 +9,7 @@
     "emoji": "🤝"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:meetings-two-coffee-cups-table",
     "offsetY": 50
   },
   "category": "meetings",
@@ -1166,7 +1166,7 @@
         "Marrowby Court"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1177,7 +1177,7 @@
         "emoji": "🤝"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:meetings-two-coffee-cups-table",
         "offsetY": 50
       },
       "settings": {

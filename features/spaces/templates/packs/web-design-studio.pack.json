@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0451",
-  "version": 4,
+  "version": 5,
   "title": "Web Design Studio HQ",
   "description": "Clients, site projects, page inventory, revision requests and invoices for a web studio.",
   "forWho": "Web design and development studios",
@@ -9,7 +9,7 @@
     "emoji": "🖥️"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:agencies-web-design-wireframe-sketch",
     "offsetY": 50
   },
   "category": "agencies",
@@ -2619,7 +2619,7 @@
         "Pemberly Row"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2630,7 +2630,7 @@
         "emoji": "🖥️"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:agencies-web-design-wireframe-sketch",
         "offsetY": 50
       },
       "settings": {

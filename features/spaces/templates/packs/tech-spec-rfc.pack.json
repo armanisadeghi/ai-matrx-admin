@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0108",
-  "version": 6,
+  "version": 7,
   "title": "Tech Spec & RFC Library",
   "description": "Engineering teams: write technical proposals, get them reviewed and log the decision.",
   "forWho": "Engineering teams that review designs before building",
@@ -9,7 +9,7 @@
     "emoji": "📐"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:docs-blueprint-technical-drawing",
     "offsetY": 50
   },
   "category": "docs",
@@ -1173,7 +1173,7 @@
         "Edgewater Quay"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1184,7 +1184,7 @@
         "emoji": "📐"
       },
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:docs-blueprint-technical-drawing",
         "offsetY": 50
       },
       "settings": {

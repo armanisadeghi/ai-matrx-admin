@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0520",
-  "version": 3,
+  "version": 4,
   "title": "Print on Demand Shop HQ",
   "description": "Track designs, print partners, orders, quality issues and returns.",
   "forWho": "Print-on-demand store owners and merch creators",
@@ -9,7 +9,7 @@
     "emoji": "👕"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:retail-t-shirts-folded-printing",
     "offsetY": 50
   },
   "category": "retail",
@@ -1931,7 +1931,7 @@
         "Inkwell Alley"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -1942,7 +1942,7 @@
         "emoji": "👕"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:retail-t-shirts-folded-printing",
         "offsetY": 50
       },
       "settings": {

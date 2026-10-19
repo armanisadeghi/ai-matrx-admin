@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0259",
-  "version": 3,
+  "version": 4,
   "title": "Employee Handbook",
   "description": "HR and operations: a living handbook with policies, owners, review dates and sign-offs.",
   "forWho": "HR and operations teams",
@@ -9,7 +9,7 @@
     "emoji": "📖"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:team-open-book-pages",
     "offsetY": 50
   },
   "category": "team",
@@ -1218,7 +1218,7 @@
         "Barleywick Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -1229,7 +1229,7 @@
         "emoji": "📖"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:team-open-book-pages",
         "offsetY": 50
       },
       "settings": {

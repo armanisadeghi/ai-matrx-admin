@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0207",
-  "version": 4,
+  "version": 5,
   "title": "PARA System",
   "description": "Second-brain builders: projects, areas, resources and archive, with an inbox.",
   "forWho": "People organising a second brain",
@@ -9,7 +9,7 @@
     "emoji": "🗂️"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:personal-wooden-drawers-organized",
     "offsetY": 50
   },
   "category": "personal",
@@ -1331,7 +1331,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1342,7 +1342,7 @@
         "emoji": "🗂️"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:personal-wooden-drawers-organized",
         "offsetY": 50
       },
       "settings": {

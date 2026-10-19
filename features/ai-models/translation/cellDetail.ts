@@ -22,12 +22,9 @@ import { postJsonAsUser } from "@/lib/api/post-json-as-user";
 /** THE query key for the grid bundle; cell details hang under it, so one invalidate refreshes all. */
 export const TRANSLATION_GRID_QUERY_KEY = ["ai-models", "translation-grid"] as const;
 
-/** Knob `ai.translation` / `agent_confidence_threshold` (platform default 0.9). */
-export const CONFIDENCE_THRESHOLD_KNOB = {
-  feature: "ai.translation",
-  key: "agent_confidence_threshold",
-} as const;
-export const CONFIDENCE_THRESHOLD_DEFAULT = 0.9;
+/** The last Test now reply per cell — outside the grid prefix, so it survives a refetch and an unmount. */
+export const translationTestResultKey = (cellId: string) =>
+  ["ai-models", "translation-test-result", cellId] as const;
 
 const SOURCE_LABEL: Record<string, string> = {
   agent: "Drafting agent",
@@ -92,8 +89,6 @@ export type EvidenceView = {
   raw: unknown;
 };
 
-const KNOWN = new Set(["kind", "at", "ref", "result"]);
-
 export function normalizeEvidence(evidence: unknown): EvidenceView[] {
   if (evidence == null) return [];
   const list = Array.isArray(evidence) ? evidence : [evidence];
@@ -110,19 +105,32 @@ export function normalizeEvidence(evidence: unknown): EvidenceView[] {
         raw: entry,
       };
     }
+    // A key leaves `extra` ONLY when it is drawn in its own slot: a non-string
+    // `kind` or `at` stays visible as key/value instead of vanishing.
+    const consumed = new Set<string>(["ref", "result"]);
+    const kind = typeof entry.kind === "string" ? entry.kind : null;
+    if (kind !== null) consumed.add("kind");
+    const at = typeof entry.at === "string" ? entry.at : null;
+    if (at !== null) consumed.add("at");
     const result = entry.result;
     const conv = isRecord(result) ? result.conversation_id : undefined;
     return {
-      kind: typeof entry.kind === "string" ? entry.kind : null,
-      at: typeof entry.at === "string" ? entry.at : null,
+      kind,
+      at,
       ref: entry.ref,
       result,
       outcome: outcomeOf(result),
       conversationId: typeof conv === "string" && conv ? conv : null,
-      extra: Object.entries(entry).filter(([k]) => !KNOWN.has(k)),
+      extra: Object.entries(entry).filter(([k]) => !consumed.has(k)),
       raw: entry,
     };
   });
+}
+
+/** Every `metadata` key other than `run` (which has its own slot), as stored. */
+export function otherMetadata(metadata: unknown): [string, unknown][] {
+  if (!isRecord(metadata)) return metadata == null ? [] : [["metadata", metadata]];
+  return Object.entries(metadata).filter(([k]) => k !== "run");
 }
 
 export type CellRun = {
@@ -132,7 +140,11 @@ export type CellRun = {
   model_id: string | null;
   mandate_key: string | null;
   at: string | null;
+  /** Any other key the run carries (or a known key in an unexpected shape). */
+  extra: [string, unknown][];
 };
+
+const RUN_KEYS = new Set(["conversation_id", "request_id", "agent_id", "model_id", "mandate_key", "at"]);
 
 /** `metadata.run` (the drafting agent's run), or null when none was recorded. */
 export function readRun(metadata: unknown): CellRun | null {
@@ -146,6 +158,7 @@ export function readRun(metadata: unknown): CellRun | null {
     model_id: s("model_id"),
     mandate_key: s("mandate_key"),
     at: s("at"),
+    extra: Object.entries(r).filter(([k]) => !RUN_KEYS.has(k) || typeof r[k] !== "string"),
   };
 }
 
@@ -156,30 +169,106 @@ export function isHttpUrl(v: unknown): v is string {
 // ─── Test now ────────────────────────────────────────────────────────────────
 
 export type CellTestOutcome = {
-  offering_id: string;
-  model_name: string;
-  api: string;
-  setting_key: string;
-  label: string;
+  offering_id: string | null;
+  model_name: string | null;
+  api: string | null;
+  setting_key: string | null;
+  label: string | null;
   value: unknown;
-  wire: Record<string, unknown>;
-  outcome: "accepted" | "rejected" | "error" | "skipped";
-  detail: string;
+  wire: unknown;
+  outcome: string | null;
+  detail: string | null;
   provider_message: string | null;
   provider_param: string | null;
   conversation_id: string | null;
-  cost_usd: number;
-  evidence: string;
+  evidence: string | null;
 };
 
+export type CellTestBudget = {
+  per_run: number | null;
+  per_day: number | null;
+  used_last_24h: number | null;
+  allowed_now: number | null;
+};
+
+/**
+ * The Test now reply as the screen draws it. Every field is read defensively:
+ * a missing or mis-typed part is named in `problems` and the reply as received
+ * stays in `raw`, so an unexpected shape renders honestly and never throws.
+ */
 export type CellTestResult = {
-  cell_id: string;
-  summary: string;
-  tested_offerings: number;
-  budget: { per_run: number; per_day: number; used_last_24h: number; allowed_now: number };
+  summary: string | null;
+  tested_offerings: number | null;
+  budget: CellTestBudget | null;
   stopped_by_budget: boolean;
   outcomes: CellTestOutcome[];
+  problems: string[];
+  raw: unknown;
 };
+
+const str = (v: unknown): string | null => (typeof v === "string" && v ? v : null);
+const num = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
+
+export function normalizeTestResult(raw: unknown): CellTestResult {
+  const problems: string[] = [];
+  if (!isRecord(raw)) {
+    return {
+      summary: null,
+      tested_offerings: null,
+      budget: null,
+      stopped_by_budget: false,
+      outcomes: [],
+      problems: ["The server's reply is not an object."],
+      raw,
+    };
+  }
+  const summary = str(raw.summary);
+  if (summary === null) problems.push("The reply has no summary.");
+  let budget: CellTestBudget | null = null;
+  if (isRecord(raw.budget)) {
+    budget = {
+      per_run: num(raw.budget.per_run),
+      per_day: num(raw.budget.per_day),
+      used_last_24h: num(raw.budget.used_last_24h),
+      allowed_now: num(raw.budget.allowed_now),
+    };
+  } else {
+    problems.push("The reply has no budget.");
+  }
+  let outcomes: CellTestOutcome[] = [];
+  if (Array.isArray(raw.outcomes)) {
+    outcomes = raw.outcomes.map((o) => {
+      const r = isRecord(o) ? o : {};
+      return {
+        offering_id: str(r.offering_id),
+        model_name: str(r.model_name),
+        api: str(r.api),
+        setting_key: str(r.setting_key),
+        label: str(r.label),
+        value: r.value,
+        wire: r.wire,
+        outcome: str(r.outcome),
+        detail: str(r.detail),
+        provider_message: str(r.provider_message),
+        provider_param: str(r.provider_param),
+        conversation_id: str(r.conversation_id),
+        evidence: str(r.evidence),
+      };
+    });
+    if (raw.outcomes.some((o) => !isRecord(o))) problems.push("Some outcome lines are not objects.");
+  } else {
+    problems.push("The reply has no outcome list.");
+  }
+  return {
+    summary,
+    tested_offerings: num(raw.tested_offerings),
+    budget,
+    stopped_by_budget: raw.stopped_by_budget === true,
+    outcomes,
+    problems,
+    raw,
+  };
+}
 
 export type CellTestAuth = {
   baseUrl: string | null;
@@ -200,9 +289,13 @@ export async function testTranslationCell(
   auth: CellTestAuth,
   cellId: string,
 ): Promise<CellTestResult> {
+  return normalizeTestResult(await postTestTranslationCell(auth, cellId));
+}
+
+async function postTestTranslationCell(auth: CellTestAuth, cellId: string): Promise<unknown> {
   if (!auth.baseUrl) throw new Error("No AI Matrx server address is configured.");
   if (!auth.accessToken) throw new Error("Sign in again; no session was found.");
-  return postJsonAsUser<CellTestResult>({
+  return postJsonAsUser<unknown>({
     baseUrl: auth.baseUrl,
     accessToken: auth.accessToken,
     organizationId: auth.organizationId,

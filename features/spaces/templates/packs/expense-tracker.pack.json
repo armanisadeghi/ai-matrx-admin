@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0350",
-  "version": 3,
+  "version": 4,
   "title": "Expense Tracker",
   "description": "Individuals and freelancers: log spending, set category budgets, see where it went.",
   "forWho": "Individuals and freelancers",
@@ -9,7 +9,7 @@
     "emoji": "💸"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:finance-wallet-receipts",
     "offsetY": 50
   },
   "category": "finance",
@@ -836,7 +836,7 @@
         "Fennel Court"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -847,7 +847,7 @@
         "emoji": "💸"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:finance-wallet-receipts",
         "offsetY": 50
       },
       "settings": {

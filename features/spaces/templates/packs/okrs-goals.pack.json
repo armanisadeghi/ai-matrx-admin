@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0103",
-  "version": 6,
+  "version": 7,
   "title": "OKRs & Goals",
   "description": "Leadership teams: set quarterly objectives and key results, then check in weekly.",
   "forWho": "Leadership teams setting quarterly goals",
@@ -9,7 +9,7 @@
     "emoji": "🎯"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:planning-mountain-summit-trail",
     "offsetY": 50
   },
   "category": "planning",
@@ -1115,7 +1115,7 @@
         "Wrenhall Avenue"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1126,7 +1126,7 @@
         "emoji": "🎯"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:planning-mountain-summit-trail",
         "offsetY": 50
       },
       "settings": {

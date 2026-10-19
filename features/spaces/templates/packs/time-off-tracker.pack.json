@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0253",
-  "version": 5,
+  "version": 6,
   "title": "Time-Off Tracker",
   "description": "Small teams and HR: request and approve leave, with a team calendar and balances.",
   "forWho": "Small teams and HR managers",
@@ -9,7 +9,7 @@
     "emoji": "🏖️"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:team-beach-hammock-vacation",
     "offsetY": 50
   },
   "category": "team",
@@ -1258,7 +1258,7 @@
         "Hollowmere Street"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1269,7 +1269,7 @@
         "emoji": "🏖️"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:team-beach-hammock-vacation",
         "offsetY": 50
       },
       "settings": {

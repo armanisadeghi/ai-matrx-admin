@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0412",
-  "version": 4,
+  "version": 5,
   "title": "Law Firm Billing and Time",
   "description": "For law firm billing: time, invoices, trust payments, write-downs and collections.",
   "forWho": "Law firm billing staff, office managers and attorneys",
@@ -9,7 +9,7 @@
     "emoji": "🧮"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:legal-gavel-desk",
     "offsetY": 50
   },
   "category": "legal",
@@ -1894,7 +1894,7 @@
         "Wacker Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1905,7 +1905,7 @@
         "emoji": "🧮"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:legal-gavel-desk",
         "offsetY": 50
       },
       "settings": {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0109",
-  "version": 8,
+  "version": 9,
   "title": "Incident Postmortems",
   "description": "Engineering and ops teams: log incidents, write blameless postmortems, track the fixes.",
   "forWho": "Engineering and operations teams",
@@ -9,7 +9,7 @@
     "emoji": "🚨"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:operations-server-room-lights",
     "offsetY": 50
   },
   "category": "operations",
@@ -1502,7 +1502,7 @@
         "Cobalt Ridge Drive"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1513,7 +1513,7 @@
         "emoji": "🚨"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:operations-server-room-lights",
         "offsetY": 50
       },
       "settings": {
