@@ -29,7 +29,8 @@ export function SerpSearchChrome({
 }: SerpSearchChromeProps) {
   return (
     <div className={cn("max-w-[640px] space-y-3", className)}>
-      <div className="flex items-center gap-3 rounded-full border border-border px-5 py-2.5 shadow-sm">
+      {/* A drawn search box (the results page's own chrome), not a pill: wide on purpose. */}
+      <div data-matrx-pill="off" className="flex items-center gap-3 rounded-full border border-border px-5 py-2.5 shadow-sm">
         <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
         <span className="flex-1 truncate text-sm text-foreground">
           {query?.trim() ? query : <span className="text-muted-foreground">{placeholder}</span>}

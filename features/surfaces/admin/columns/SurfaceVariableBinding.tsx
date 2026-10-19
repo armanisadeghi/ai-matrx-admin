@@ -239,11 +239,6 @@ export function SurfaceVariableBinding({
                   </FieldHelp>
                 ) : null}
               </h4>
-              {!structured ? (
-                <code className="mt-0.5 block font-mono text-[10px] text-muted-foreground">
-                  {target.name}
-                </code>
-              ) : null}
             </div>
             <div className="text-xs text-muted-foreground">
               Required:{" "}

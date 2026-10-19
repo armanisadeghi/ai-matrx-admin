@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0461",
-  "version": 3,
+  "version": 4,
   "title": "Translation Agency Desk",
   "description": "Clients, linguists, translation jobs, glossaries and quality checks for a language agency.",
   "forWho": "Translation and localization agencies",
@@ -2108,7 +2108,7 @@
         "Cormorant Way"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

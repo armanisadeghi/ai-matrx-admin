@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0253",
-  "version": 4,
+  "version": 5,
   "title": "Time-Off Tracker",
   "description": "Small teams and HR: request and approve leave, with a team calendar and balances.",
   "forWho": "Small teams and HR managers",
@@ -1258,7 +1258,7 @@
         "Hollowmere Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

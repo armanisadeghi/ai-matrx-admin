@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0503",
-  "version": 2,
+  "version": 3,
   "title": "Residential Cleaning Service HQ",
   "description": "Schedule recurring cleans, assign teams, track supplies and invoices.",
   "forWho": "Residential cleaning businesses",
@@ -2290,7 +2290,7 @@
         "Larkspur Avenue"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

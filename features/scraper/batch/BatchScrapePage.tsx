@@ -53,7 +53,6 @@
 // says why (the door's own sentence), never a silent gap.
 
 import { AdvancedReadBatch, AdvancedReadResults } from "@/features/data-sources/advanced-read";
-import { InfoHint } from "@/components/official/InfoHint";
 import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -498,15 +497,8 @@ export default function BatchScrapePage() {
     },
     {
       id: "estimated_words",
-      header: (
-        <span className="inline-flex items-center gap-1">
-          Estimated words
-          <InfoHint
-            text="Estimated from characters at roughly 5.5 characters per word; not an observed word count."
-            label="About estimated words"
-          />
-        </span>
-      ),
+      header: "Estimated words",
+      helpText: "Estimated from characters at roughly 5.5 characters per word; not an observed word count.",
       label: "Estimated words",
       accessorFn: (row) => estimatedWordCount(batchCharacterCount(row)),
       filter: "number",
