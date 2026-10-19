@@ -20,6 +20,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { PaymentRefusal, readAsk, startCheckout } from "@/features/payments/server";
+import { requestHostOrigin } from "@/utils/auth/request-origin";
 import { isHers } from "@/features/portals/shown";
 
 import {
@@ -150,7 +151,7 @@ export async function payPortalRecord(
     const ask = await readAsk("table", tableId);
     if (!ask || ask.organization_id !== membership.organization_id) return { error: "This record has nothing to pay." };
     const h = await headers();
-    const origin = h.get("origin") ?? `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`;
+    const origin = requestHostOrigin(h) ?? `https://${h.get("host")}`;
     const started = await startCheckout({
       ask,
       recordId,
