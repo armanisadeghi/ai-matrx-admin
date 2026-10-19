@@ -31,7 +31,6 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
-- _conflicts/2026-10-19-102255/migrations/LEDGER.json.held — LOCAL latest 2026-10-19 10:14; GITHUB latest 2026-10-19 10:15; LOCAL lacks 0 of GITHUB's 12 new lines; GITHUB lacks 1 of LOCAL's 13 new lines; recover: git show e737146160:'migrations/LEDGER.json' / 0b42d3adb0:'migrations/LEDGER.json'
 
 ## Resolution log
 
@@ -63,3 +62,4 @@ Its files stay as they are.
 - 2026-10-18 23:5x PDT — Claude ship-all (13304b4d) resolved the 11 `_conflicts/2026-10-18-231917/` spaces template pack holds by keeping live: the REWORK lane (db806665) committed its LOCAL industry rework in cdfcd250dbc (23:26) and 4ddbb70a6a7 (23:43); each live file is byte-identical to the held LOCAL side, which already carried GITHUB's only change (the batch 3/7 date-stamp `version` bumps). Owner: db806665, no action needed.
 - 2026-10-19 00:3x PDT — Claude ship-all (657db786) resolved `_conflicts/2026-10-19-002058/features/spaces/templates/packs/general-contractor-projects.pack.json.held` by keeping live: GITHUB (e36e3390221, REWORK lane db806665, 00:08) is newer and lacks 0 of LOCAL's 521 new lines, so LOCAL (00:06) adds nothing. Owner: db806665, no action needed.
 - 2026-10-19 PDT — Claude ship-all lane resolved `_conflicts/2026-10-19-052753/pnpm-lock.yaml.held` by keeping the live lockfile: every difference is an @ai-matrx version where live is newer (chat 0.8.221, coding-sessions 0.3.337, data 0.29.73, office 0.8.21); no non-Matrx differences. Verified `check-matrx-packages.mjs --duplicates` (33 at npm latest, once each), `pnpm install --frozen-lockfile --lockfile-only` exit 0.
+- 2026-10-19 10:3x PDT — Claude ship-all (c036beb6) resolved `_conflicts/2026-10-19-102255/migrations/LEDGER.json.held` by keeping live: all 1925 entries of both LOCAL (e737146160) and GITHUB (0b42d3adb0) are in live with identical checksums. Owner: none needed (generated ledger).
