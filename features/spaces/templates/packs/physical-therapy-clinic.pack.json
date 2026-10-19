@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0401",
-  "version": 3,
+  "version": 4,
   "title": "Physical Therapy Clinic",
-  "description": "Referrals, plans of care, visits and visit counts for a small therapy clinic.",
-  "forWho": "Physical therapy and rehab clinics",
+  "description": "For PT clinics: referrals, plans of care, authorized visits, notes and no-shows.",
+  "forWho": "Physical therapists, rehab clinics and PT front desks",
   "icon": {
-    "emoji": "🏃"
+    "emoji": "🦵"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:gradient-meadow",
     "offsetY": 50
   },
   "category": "healthcare",
   "tags": [
-    "therapy",
-    "referrals",
-    "visits",
-    "clinic"
+    "physical therapist",
+    "physical therapy",
+    "rehab",
+    "plan of care",
+    "authorizations",
+    "referrals"
   ],
   "spec": {
     "specVersion": 1,
@@ -72,7 +74,14 @@
           },
           {
             "key": "source",
-            "label": "Referring office",
+            "label": "Referring practice",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "referring_md",
+            "label": "Referring provider",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
@@ -101,6 +110,13 @@
               "Balance": "red",
               "Hand and wrist": "orange"
             }
+          },
+          {
+            "key": "auth_needed",
+            "label": "Prior auth needed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "received_on",
@@ -193,103 +209,121 @@
           {
             "key": "r01",
             "values": {
-              "ref_title": "Back referral - Whitlock",
+              "ref_title": "Desmond Whitlock",
               "source": "Ridgeway Orthopedic Group",
               "reason": "Back",
               "received_on": "@today-1d",
               "status": "New",
               "contact_by": "@today",
-              "owner": "@installer"
+              "owner": "@installer",
+              "referring_md": "Dr. Hollis Achterberg",
+              "auth_needed": true
             }
           },
           {
             "key": "r02",
             "values": {
-              "ref_title": "Knee referral - Adeyemi-Park",
+              "ref_title": "Folasade Adeyemi-Park",
               "source": "Lakeshore Family Medicine",
               "reason": "Knee",
               "received_on": "@today-1d",
               "status": "New",
               "contact_by": "@today",
-              "owner": "@installer"
+              "owner": "@installer",
+              "referring_md": "Dr. Wren Castellucci",
+              "auth_needed": false
             }
           },
           {
             "key": "r03",
             "values": {
-              "ref_title": "Shoulder referral - Brennan",
+              "ref_title": "Niall Brennan",
               "source": "Northgate Sports Medicine",
               "reason": "Shoulder",
               "received_on": "@today-4d",
               "status": "Contacted",
-              "contact_by": "@mon+2d"
+              "contact_by": "@mon+2d",
+              "referring_md": "Dr. Petra Sandoval",
+              "auth_needed": true
             }
           },
           {
             "key": "r04",
             "values": {
-              "ref_title": "Post-surgical referral - Oduya",
+              "ref_title": "Chidera Oduya",
               "source": "Ridgeway Orthopedic Group",
               "reason": "Post-surgical",
               "received_on": "@today-5d",
               "status": "Intake sent",
               "contact_by": "@today-2d",
-              "owner": "@installer"
+              "owner": "@installer",
+              "referring_md": "Dr. Hollis Achterberg",
+              "auth_needed": true
             }
           },
           {
             "key": "r05",
             "values": {
-              "ref_title": "Neck referral - Castellane",
+              "ref_title": "Mireille Castellane",
               "source": "Willowbrook Chiropractic",
               "reason": "Neck",
               "received_on": "@today-3d",
               "status": "Contacted",
-              "contact_by": "@today-1d"
+              "contact_by": "@today-1d",
+              "referring_md": "Dr. Wren Castellucci",
+              "auth_needed": false
             }
           },
           {
             "key": "r06",
             "values": {
-              "ref_title": "Balance referral - Hargrove",
+              "ref_title": "Augustin Hargrove",
               "source": "Lakeshore Family Medicine",
               "reason": "Balance",
               "received_on": "@today-9d",
               "status": "Scheduled",
-              "contact_by": "@today-6d"
+              "contact_by": "@today-6d",
+              "referring_md": "Dr. Lionel Mbatha",
+              "auth_needed": false
             }
           },
           {
             "key": "r07",
             "values": {
-              "ref_title": "Hand referral - Pemberton",
+              "ref_title": "Greer Pemberton",
               "source": "Northgate Sports Medicine",
               "reason": "Hand and wrist",
               "received_on": "@today-14d",
               "status": "Scheduled",
-              "contact_by": "@today-11d"
+              "contact_by": "@today-11d",
+              "referring_md": "Dr. Petra Sandoval",
+              "auth_needed": true
             }
           },
           {
             "key": "r08",
             "values": {
-              "ref_title": "Knee referral - Mwangi",
+              "ref_title": "Wanjiru Mwangi",
               "source": "Ridgeway Orthopedic Group",
               "reason": "Knee",
               "received_on": "@today-20d",
               "status": "Lost",
-              "contact_by": "@today-17d"
+              "contact_by": "@today-17d",
+              "referring_md": "Dr. Lionel Mbatha",
+              "auth_needed": false
             }
           },
           {
             "key": "r09",
             "values": {
-              "ref_title": "Back referral - Lindqvist",
+              "ref_title": "Elof Lindqvist",
               "source": "Lakeshore Family Medicine",
               "reason": "Back",
               "received_on": "@today-2d",
               "status": "New",
-              "contact_by": "@mon+3d"
+              "contact_by": "@mon+3d",
+              "referring_md": "Dr. Hollis Achterberg",
+              "auth_needed": true
             }
           }
         ],
@@ -451,6 +485,32 @@
             "relationMax": 1
           },
           {
+            "key": "dx_code",
+            "label": "Diagnosis code",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "frequency",
+            "label": "Frequency",
+            "parityType": "select",
+            "choices": [
+              "1x a week",
+              "2x a week",
+              "3x a week",
+              "Every other week"
+            ],
+            "choiceColors": {
+              "1x a week": "gray",
+              "2x a week": "blue",
+              "3x a week": "purple",
+              "Every other week": "brown"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -508,12 +568,36 @@
             }
           },
           {
+            "key": "booked",
+            "label": "Visits booked ahead",
+            "parityType": "rollup",
+            "via": "visits",
+            "pick": "visit_title",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Scheduled",
+                "Checked in"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "left",
-            "label": "Visits left",
+            "label": "Visits left to book",
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Visits authorized} - {Visits used}"
+            "formula": "{Visits authorized} - {Visits used} - {Visits booked ahead}"
+          },
+          {
+            "key": "auth_flag",
+            "label": "Authorization",
+            "parityType": "formula",
+            "formula": "IF({Visits authorized} - {Visits used} <= 3, \"Request more visits\", \"OK\")",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "start_on",
@@ -530,6 +614,14 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "auth_expires",
+            "label": "Authorization ends",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "discharged_on",
@@ -577,59 +669,71 @@
           {
             "key": "pl01",
             "values": {
-              "plan_title": "Low back pain - Voss",
+              "plan_title": "Lumbar strain, back to warehouse lifting",
               "patient": "p01",
               "therapist": "tm-hana",
               "status": "Active",
               "authorized": 18,
               "start_on": "@today-30d",
               "recert_on": "@today+14d",
-              "goal": "Sit through a workday without a break"
+              "goal": "Sit through a workday without a break",
+              "dx_code": "S39.012A",
+              "frequency": "2x a week",
+              "auth_expires": "@today+21d"
             }
           },
           {
             "key": "pl02",
             "values": {
-              "plan_title": "Knee replacement rehab - Castellanos",
+              "plan_title": "Total knee replacement, right",
               "patient": "p02",
               "therapist": "tm-dewitt",
               "status": "Active",
               "authorized": 24,
               "start_on": "@today-45d",
               "recert_on": "@today+40d",
-              "goal": "Climb a flight of stairs"
+              "goal": "Climb a flight of stairs",
+              "dx_code": "Z96.651",
+              "frequency": "3x a week",
+              "auth_expires": "@today+40d"
             }
           },
           {
             "key": "pl03",
             "values": {
-              "plan_title": "Shoulder impingement - Takahashi",
+              "plan_title": "Rotator cuff impingement, left",
               "patient": "p03",
               "therapist": "tm-hana",
               "status": "Recert due",
               "authorized": 12,
               "start_on": "@today-60d",
               "recert_on": "@today-2d",
-              "goal": "Lift overhead for painting"
+              "goal": "Lift overhead for painting",
+              "dx_code": "M75.42",
+              "frequency": "2x a week",
+              "auth_expires": "@today+3d"
             }
           },
           {
             "key": "pl04",
             "values": {
-              "plan_title": "Wrist and hand therapy - Oyelowo",
+              "plan_title": "Distal radius fracture after cast removal",
               "patient": "p04",
               "therapist": "tm-dewitt",
               "status": "Active",
               "authorized": 10,
               "start_on": "@today-21d",
               "recert_on": "@mon+5d",
-              "goal": "Return to full duty"
+              "goal": "Return to full duty",
+              "dx_code": "S52.501D",
+              "frequency": "2x a week",
+              "auth_expires": "@today+30d"
             }
           },
           {
             "key": "pl05",
             "values": {
-              "plan_title": "Hip strengthening - Rutherford",
+              "plan_title": "Hip weakness after fall",
               "patient": "p05",
               "therapist": "tm-hana",
               "status": "Discharged",
@@ -637,46 +741,58 @@
               "start_on": "@today-120d",
               "recert_on": "@today-30d",
               "goal": "Walk a mile without a cane",
-              "discharged_on": "@today-30d"
+              "discharged_on": "@today-30d",
+              "dx_code": "M62.81",
+              "frequency": "1x a week",
+              "auth_expires": "@today-30d"
             }
           },
           {
             "key": "pl06",
             "values": {
-              "plan_title": "Neck and posture - Lindgren",
+              "plan_title": "Cervical pain with desk posture",
               "patient": "p06",
               "therapist": "tm-dewitt",
               "status": "Active",
               "authorized": 8,
               "start_on": "@today-14d",
               "recert_on": "@today+30d",
-              "goal": "Drive for an hour comfortably"
+              "goal": "Drive for an hour comfortably",
+              "dx_code": "M54.2",
+              "frequency": "1x a week",
+              "auth_expires": "@today+45d"
             }
           },
           {
             "key": "pl07",
             "values": {
-              "plan_title": "Ankle sprain - Delgado",
+              "plan_title": "Lateral ankle sprain, grade II",
               "patient": "p08",
               "therapist": "tm-dewitt",
               "status": "Evaluation booked",
               "authorized": 6,
               "start_on": "@today+2d",
               "recert_on": "@today+60d",
-              "goal": "Run a 5k"
+              "goal": "Run a 5k",
+              "dx_code": "S93.401A",
+              "frequency": "2x a week",
+              "auth_expires": "@today+60d"
             }
           },
           {
             "key": "pl08",
             "values": {
-              "plan_title": "Balance program - Ashworth",
+              "plan_title": "Fall risk and balance",
               "patient": "p07",
               "therapist": "tm-hana",
               "status": "Active",
               "authorized": 12,
               "start_on": "@today-50d",
               "recert_on": "@today-5d",
-              "goal": "Walk the dog unassisted"
+              "goal": "Walk the dog unassisted",
+              "dx_code": "R26.81",
+              "frequency": "Every other week",
+              "auth_expires": "@today+10d"
             }
           }
         ],
@@ -884,6 +1000,49 @@
             }
           },
           {
+            "key": "units",
+            "label": "Units billed",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 8
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "note_signed",
+            "label": "Note signed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "copay",
+            "label": "Copay collected",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -947,165 +1106,193 @@
           {
             "key": "v01",
             "values": {
-              "visit_title": "Treatment - Voss",
+              "visit_title": "Hinge and lift progression, 25 lb",
               "plan": "pl01",
               "therapist": "tm-hana",
               "when_at": "@today 09:00",
               "kind": "Treatment",
               "status": "Checked in",
-              "front_desk": "@installer"
+              "front_desk": "@installer",
+              "units": 4
             }
           },
           {
             "key": "v02",
             "values": {
-              "visit_title": "Treatment - Castellanos",
+              "visit_title": "Knee flexion work and stairs",
               "plan": "pl02",
               "therapist": "tm-dewitt",
               "when_at": "@today 10:15",
               "kind": "Treatment",
               "status": "Scheduled",
-              "front_desk": "@installer"
+              "front_desk": "@installer",
+              "units": 4
             }
           },
           {
             "key": "v03",
             "values": {
-              "visit_title": "Re-evaluation - Takahashi",
+              "visit_title": "Re-evaluation, visit 10",
               "plan": "pl03",
               "therapist": "tm-hana",
               "when_at": "@today 15:30",
               "kind": "Re-evaluation",
               "status": "Scheduled",
-              "front_desk": "@installer"
+              "front_desk": "@installer",
+              "units": 3
             }
           },
           {
             "key": "v04",
             "values": {
-              "visit_title": "Treatment - Oyelowo",
+              "visit_title": "Grip strength and wrist mobility",
               "plan": "pl04",
               "therapist": "tm-dewitt",
               "when_at": "@mon+2d 08:00",
               "kind": "Treatment",
-              "status": "Scheduled"
+              "status": "Scheduled",
+              "units": 3
             }
           },
           {
             "key": "v05",
             "values": {
-              "visit_title": "Treatment - Lindgren",
+              "visit_title": "Thoracic mobility and chin tucks",
               "plan": "pl06",
               "therapist": "tm-dewitt",
               "when_at": "@mon+4d 13:00",
               "kind": "Treatment",
-              "status": "Scheduled"
+              "status": "Scheduled",
+              "units": 3
             }
           },
           {
             "key": "v06",
             "values": {
-              "visit_title": "Evaluation - Delgado",
+              "visit_title": "Initial evaluation, right ankle",
               "plan": "pl07",
               "therapist": "tm-dewitt",
               "when_at": "@today+2d 11:00",
               "kind": "Evaluation",
-              "status": "Scheduled"
+              "status": "Scheduled",
+              "units": 3
             }
           },
           {
             "key": "v07",
             "values": {
-              "visit_title": "Treatment - Voss (last)",
+              "visit_title": "Core endurance and deadlift pattern",
               "plan": "pl01",
               "therapist": "tm-hana",
               "when_at": "@today-4d 09:00",
               "kind": "Treatment",
               "status": "Completed",
-              "completed_on": "@today-4d"
+              "completed_on": "@today-4d",
+              "units": 4,
+              "note_signed": true,
+              "copay": 30
             }
           },
           {
             "key": "v08",
             "values": {
-              "visit_title": "Treatment - Castellanos (last)",
+              "visit_title": "Gait training off the cane",
               "plan": "pl02",
               "therapist": "tm-dewitt",
               "when_at": "@today-3d 10:15",
               "kind": "Treatment",
               "status": "Completed",
-              "completed_on": "@today-3d"
+              "completed_on": "@today-3d",
+              "units": 4,
+              "note_signed": true,
+              "copay": 25
             }
           },
           {
             "key": "v09",
             "values": {
-              "visit_title": "Treatment - Takahashi",
+              "visit_title": "Scapular control, band series",
               "plan": "pl03",
               "therapist": "tm-hana",
               "when_at": "@today-8d 14:00",
               "kind": "Treatment",
               "status": "Completed",
-              "completed_on": "@today-8d"
+              "completed_on": "@today-8d",
+              "units": 3,
+              "note_signed": false,
+              "copay": 40
             }
           },
           {
             "key": "v10",
             "values": {
-              "visit_title": "Treatment - Ashworth",
+              "visit_title": "Single-leg stance and reach",
               "plan": "pl08",
               "therapist": "tm-hana",
               "when_at": "@today-6d 16:00",
               "kind": "Treatment",
-              "status": "No-show"
+              "status": "No-show",
+              "units": 0
             }
           },
           {
             "key": "v11",
             "values": {
-              "visit_title": "Discharge visit - Rutherford",
+              "visit_title": "Discharge visit with home program",
               "plan": "pl05",
               "therapist": "tm-hana",
               "when_at": "@today-30d 09:30",
               "kind": "Discharge visit",
               "status": "Completed",
-              "completed_on": "@today-30d"
+              "completed_on": "@today-30d",
+              "units": 3,
+              "note_signed": true,
+              "copay": 20
             }
           },
           {
             "key": "v12",
             "values": {
-              "visit_title": "Treatment - Oyelowo (last)",
+              "visit_title": "Edema control and putty exercises",
               "plan": "pl04",
               "therapist": "tm-dewitt",
               "when_at": "@today-5d 08:00",
               "kind": "Treatment",
               "status": "Completed",
-              "completed_on": "@today-5d"
+              "completed_on": "@today-5d",
+              "units": 3,
+              "note_signed": true,
+              "copay": 30
             }
           },
           {
             "key": "v13",
             "values": {
-              "visit_title": "Treatment - Lindgren (last)",
+              "visit_title": "Desk set-up review and isometrics",
               "plan": "pl06",
               "therapist": "tm-dewitt",
               "when_at": "@today-7d 13:00",
               "kind": "Treatment",
               "status": "Completed",
-              "completed_on": "@today-7d"
+              "completed_on": "@today-7d",
+              "units": 3,
+              "note_signed": true,
+              "copay": 0
             }
           },
           {
             "key": "v14",
             "values": {
-              "visit_title": "Treatment - Ashworth (earlier)",
+              "visit_title": "Tandem walking and step-ups",
               "plan": "pl08",
               "therapist": "tm-hana",
               "when_at": "@today-20d 16:00",
               "kind": "Treatment",
               "status": "Completed",
-              "completed_on": "@today-20d"
+              "completed_on": "@today-20d",
+              "units": 3,
+              "note_signed": true,
+              "copay": 20
             }
           }
         ],
@@ -1312,6 +1499,32 @@
             }
           },
           {
+            "key": "member_id",
+            "label": "Member ID",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "copay_amt",
+            "label": "Copay per visit",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
             "key": "therapist",
             "label": "Primary therapist",
             "parityType": "relation",
@@ -1322,13 +1535,20 @@
           },
           {
             "key": "plans_count",
-            "label": "Plans of care",
+            "label": "Open plans of care",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "plans",
             "pick": "plan_title",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Discharged"
+                ]
+              }
+            }
           },
           {
             "key": "plan_btn",
@@ -1355,7 +1575,9 @@
               "phone": "(608) 555-0151",
               "email": "hendry.v@mailbox-demo.net",
               "payer": "Northgate Health Plan",
-              "therapist": "tm-hana"
+              "therapist": "tm-hana",
+              "member_id": "NGH-55102877",
+              "copay_amt": 30
             }
           },
           {
@@ -1366,7 +1588,9 @@
               "phone": "(608) 555-0152",
               "email": "imani.c@mailbox-demo.net",
               "payer": "Blue Heron Insurance",
-              "therapist": "tm-dewitt"
+              "therapist": "tm-dewitt",
+              "member_id": "BHI-3317042",
+              "copay_amt": 25
             }
           },
           {
@@ -1377,7 +1601,8 @@
               "phone": "(608) 555-0153",
               "email": "ruben.t@mailbox-demo.net",
               "payer": "Self-pay",
-              "therapist": "tm-hana"
+              "therapist": "tm-hana",
+              "copay_amt": 0
             }
           },
           {
@@ -1388,7 +1613,9 @@
               "phone": "(608) 555-0154",
               "email": "pippa.o@mailbox-demo.net",
               "payer": "Workers comp",
-              "therapist": "tm-dewitt"
+              "therapist": "tm-dewitt",
+              "member_id": "NGH-55109310",
+              "copay_amt": 30
             }
           },
           {
@@ -1399,7 +1626,9 @@
               "phone": "(608) 555-0155",
               "email": "anselm.r@mailbox-demo.net",
               "payer": "Medicare-style plan",
-              "therapist": "tm-hana"
+              "therapist": "tm-hana",
+              "member_id": "MCR-1EG4TE5MK72",
+              "copay_amt": 20
             }
           },
           {
@@ -1410,7 +1639,9 @@
               "phone": "(608) 555-0156",
               "email": "teo.l@mailbox-demo.net",
               "payer": "Northgate Health Plan",
-              "therapist": "tm-dewitt"
+              "therapist": "tm-dewitt",
+              "member_id": "BHI-3320918",
+              "copay_amt": 0
             }
           },
           {
@@ -1421,7 +1652,9 @@
               "phone": "(608) 555-0157",
               "email": "kwabena.a@mailbox-demo.net",
               "payer": "Blue Heron Insurance",
-              "therapist": "tm-hana"
+              "therapist": "tm-hana",
+              "member_id": "MCR-2HK7XY3PA19",
+              "copay_amt": 20
             }
           },
           {
@@ -1432,7 +1665,9 @@
               "phone": "(608) 555-0158",
               "email": "saoirse.d@mailbox-demo.net",
               "payer": "Northgate Health Plan",
-              "therapist": "tm-dewitt"
+              "therapist": "tm-dewitt",
+              "member_id": "WC-24-118306",
+              "copay_amt": 0
             }
           },
           {
@@ -1443,7 +1678,9 @@
               "phone": "(608) 555-0159",
               "email": "magnus.i@mailbox-demo.net",
               "payer": "Self-pay",
-              "therapist": "tm-hana"
+              "therapist": "tm-hana",
+              "member_id": "NGH-55120044",
+              "copay_amt": 30
             }
           }
         ],
@@ -2111,7 +2348,7 @@
         "Millbrook Court"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2119,10 +2356,10 @@
       "parent": null,
       "title": "Physical Therapy Clinic",
       "icon": {
-        "emoji": "🏃"
+        "emoji": "🦵"
       },
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:gradient-meadow",
         "offsetY": 50
       },
       "settings": {
@@ -2186,6 +2423,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:sop-noshow"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-use"
                   }
                 }
               ]
@@ -2966,14 +3209,14 @@
       "parent": "physical-therapy-clinic",
       "title": "Handling a referral",
       "icon": {
-        "emoji": "📨"
+        "emoji": "📥"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Fast, friendly follow-up is how referring offices decide to send more patients."
+              "text": "A referral that waits three days often books somewhere else. The goal is first contact the same business day and an evaluation within a week."
             }
           ],
           "background": "blue",
@@ -2985,7 +3228,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Same day"
+              "text": "When a referral arrives"
             }
           ],
           "props": {
@@ -2996,7 +3239,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Log the referral and set Contact by to the next business day."
+              "text": "Add it under "
+            },
+            {
+              "text": "Referrals",
+              "bold": true
+            },
+            {
+              "text": " with the patient's name, the referring practice and provider, the body region and the date received. Set "
+            },
+            {
+              "text": "Contact by",
+              "bold": true
+            },
+            {
+              "text": " to today."
             }
           ]
         },
@@ -3004,7 +3261,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Call the patient; offer two evaluation times."
+              "text": "Check the order: signed by the provider, diagnosis written, and frequency or \"evaluate and treat\". An unsigned order goes back to the physician's office the same day."
             }
           ]
         },
@@ -3012,9 +3269,135 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send the intake packet by email before the visit."
+              "text": "Tick "
+            },
+            {
+              "text": "Prior auth needed",
+              "bold": true
+            },
+            {
+              "text": " if the patient's plan requires authorization before the evaluation. Many commercial plans and most workers' compensation claims do."
             }
           ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The first call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Call within four business hours. Leave one voicemail, then text with your scheduling link or number."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Offer an evaluation slot within five business days with a therapist who sees that body region often."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Collect insurance details on the call: carrier, member ID, subscriber, and whether this is an auto or work injury (those bill differently)."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark contacted",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the evaluation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Benefits checked: visit limit per year, copay or coinsurance, deductible remaining"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Prior authorization requested if needed, with the evaluation date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Intake forms sent and returned"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Referral marked "
+            },
+            {
+              "text": "Intake sent",
+              "bold": true
+            },
+            {
+              "text": ", then "
+            },
+            {
+              "text": "Scheduled",
+              "bold": true
+            },
+            {
+              "text": " once booked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
           "type": "heading",
@@ -3028,18 +3411,114 @@
           }
         },
         {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Try again the next day, then once more by text."
-            }
-          ]
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Attempt"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Same day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call and voicemail"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "2"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Next day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Text and email"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "3"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Day 4"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call, then a note to the referring office"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Close"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Day 10"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Mark Lost and tell the referring office in one line"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "After three tries over five days, mark the referral Lost and tell the referring office."
+              "text": "Closing the loop with the referring office matters. Physicians keep sending patients to clinics that tell them what happened."
             }
           ]
         },
@@ -3047,7 +3526,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Close the loop"
+              "text": "Good referral sources"
             }
           ],
           "props": {
@@ -3058,7 +3537,42 @@
           "type": "text",
           "text": [
             {
-              "text": "When the evaluation is booked, mark the referral Scheduled and start a plan of care."
+              "text": "Once a month, look at referrals by referring practice. A practice that sends ten patients a quarter deserves a thank-you visit and a short update on the outcomes of the patients they sent."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Common misses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Insurance details collected after the evaluation, then the first visits are denied."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "No prior authorization for the evaluation itself."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Self-referred patients in a state that requires a physician's order after a set number of days; know your state's direct access rule and flag those patients."
             }
           ]
         }
@@ -3067,7 +3581,7 @@
     {
       "key": "sop-plan",
       "parent": "physical-therapy-clinic",
-      "title": "Plans of care and visit counts",
+      "title": "Plans of care, authorizations and recerts",
       "icon": {
         "emoji": "📋"
       },
@@ -3076,7 +3590,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Every plan has a number of authorized visits and a recertification date. Watch both."
+              "text": "The plan of care is what the payer approved and what the therapist is accountable for. Most claim denials in outpatient therapy trace back to an expired plan, an exceeded authorization or a missing progress note."
             }
           ],
           "background": "blue",
@@ -3088,7 +3602,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Starting a plan"
+              "text": "At the evaluation"
             }
           ],
           "props": {
@@ -3099,7 +3613,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Open the patient and press Start plan of care."
+              "text": "The therapist writes the plan: diagnosis, goals, frequency and duration."
             }
           ]
         },
@@ -3107,7 +3621,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Enter visits authorized from the payer's approval."
+              "text": "Add a row under "
+            },
+            {
+              "text": "Plans of care",
+              "bold": true
+            },
+            {
+              "text": ": diagnosis code, frequency, visits authorized, start date, recertify-by date and the main goal in the patient's own words (\"climb a flight of stairs\")."
             }
           ]
         },
@@ -3115,7 +3636,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Set Recertify by to the date the payer requires."
+              "text": "Send the plan to the referring physician for signature when the payer requires it, and keep a note of the date it was sent."
             }
           ]
         },
@@ -3123,7 +3644,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Weekly check"
+              "text": "Keep three dates in view"
             }
           ],
           "props": {
@@ -3134,7 +3655,11 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Open Plans of care and look at Visits left; reach out when two or fewer remain."
+              "text": "Recertify by",
+              "bold": true
+            },
+            {
+              "text": ": the end of the certified period. A recertification needs a re-evaluation and a new signature before this date."
             }
           ]
         },
@@ -3142,7 +3667,23 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Plans past their recertification date are listed under Overdue."
+              "text": "Authorization ends",
+              "bold": true
+            },
+            {
+              "text": ": the payer's end date. It can be earlier than the plan."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Progress note",
+              "bold": true
+            },
+            {
+              "text": ": many payers want one at least every ten visits. The re-evaluation visit type covers it."
             }
           ]
         },
@@ -3150,7 +3691,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Closing out"
+              "text": "When visits run low"
             }
           ],
           "props": {
@@ -3161,9 +3702,236 @@
           "type": "text",
           "text": [
             {
-              "text": "Press Discharge when the goal is met or the patient stops coming."
+              "text": "The "
+            },
+            {
+              "text": "Authorization",
+              "bold": true
+            },
+            {
+              "text": " column changes to Request more visits when three or fewer remain. Then:"
             }
           ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The therapist writes a progress note with measurable change (range of motion, strength, a functional score)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the request with the note. Ask the payer for the visit count and the new end date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Update "
+            },
+            {
+              "text": "Visits authorized",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Authorization ends",
+              "bold": true
+            },
+            {
+              "text": " when approved. Do not book past the approved count while waiting."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Discharge"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Goals reviewed with the patient and written in the discharge note"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Home exercise program printed or sent"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Discharge summary sent to the referring provider"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Plan marked with "
+            },
+            {
+              "text": "Discharge",
+              "bold": true
+            },
+            {
+              "text": " (status and date stamped)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Patient's next contact set: a check-in call at four weeks"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Ruben's shoulder plan was certified for 60 days. The recert date passed two days ago and his re-evaluation is booked this afternoon. The plan shows Recert due; after the visit the therapist updates the goals, the signed recert goes to the surgeon, and the dates move forward."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly review (Monday, 15 minutes)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Look at"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Plans with Recertify by in the next 14 days"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Book a re-evaluation"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Authorization showing Request more visits"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Progress note and request"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Plans with no visits booked ahead"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call the patient"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Plans on hold more than 30 days"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Discharge or re-engage"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         }
       ]
     },
@@ -3176,10 +3944,22 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The front desk keeps the schedule full, the copays collected and the notes moving. This routine fits a clinic of two to six therapists."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Morning"
+              "text": "Before the first patient"
             }
           ],
           "props": {
@@ -3190,7 +3970,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Review today's Visits and confirm arrivals"
+              "text": "Voicemails returned; new referrals entered with Contact by today"
             }
           ],
           "props": {
@@ -3201,7 +3981,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Check referrals marked New"
+              "text": "Today's visits reviewed: anyone near the end of their authorization or past a recert date is flagged to the therapist"
             }
           ],
           "props": {
@@ -3212,7 +3992,22 @@
           "type": "todo",
           "text": [
             {
-              "text": "Look at the Overdue list under Plans of care"
+              "text": "Copays due today noted from each patient's "
+            },
+            {
+              "text": "Copay per visit",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Treatment tables wiped, linens stocked, hot packs at temperature"
             }
           ],
           "props": {
@@ -3231,32 +4026,98 @@
           }
         },
         {
-          "type": "todo",
+          "type": "numbered",
           "text": [
             {
-              "text": "Check patients in as they arrive"
+              "text": "Press "
+            },
+            {
+              "text": "Check in",
+              "bold": true
+            },
+            {
+              "text": " when the patient arrives. Collect the copay before the session and record it in "
+            },
+            {
+              "text": "Copay collected",
+              "bold": true
+            },
+            {
+              "text": "."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         },
         {
-          "type": "todo",
+          "type": "numbered",
           "text": [
             {
-              "text": "Mark no-shows and call them the same day"
+              "text": "When a patient checks out, book the next visit before they leave, matching the plan's frequency. A twice-a-week plan should have the next two visits on the calendar."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark completed",
+              "bold": true
+            },
+            {
+              "text": " after the session. The therapist enters the billed units."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Patients who leave without booking go on the afternoon call list."
+            }
+          ]
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Close"
+              "text": "Filling gaps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep a short list of patients who want earlier times."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "When a cancellation comes in, call that list before the next patient arrives."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tuesday and Thursday mornings fill first; offer late afternoons to students and shift workers."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "End of day"
             }
           ],
           "props": {
@@ -3267,7 +4128,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Mark every visit completed or missed"
+              "text": "Every completed visit has units entered"
             }
           ],
           "props": {
@@ -3278,12 +4139,154 @@
           "type": "todo",
           "text": [
             {
-              "text": "Book the next visit before each patient leaves"
+              "text": "Unsigned notes listed and sent to each therapist (notes should be signed within 24 hours)"
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Copays reconciled against the visits marked completed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tomorrow's patients reminded by text"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Referrals contacted or carried over with a new Contact by date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Numbers to watch each week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Measure"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Target"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Arrival rate"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "90% or better"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Visits per new patient"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Matches the plan's frequency and duration"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Notes signed within 24 hours"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every one"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Referral to evaluation"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Five business days or less"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example of a good checkout"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "\"Same time Thursday, Teodora? Dr. Lindgren has 1 pm open. I'll text a reminder the day before. Your copay today was zero, so you're all set.\""
+            }
+          ]
         }
       ]
     },
@@ -3292,14 +4295,14 @@
       "parent": "physical-therapy-clinic",
       "title": "No-shows and cancellations",
       "icon": {
-        "emoji": "🔁"
+        "emoji": "🚫"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Missed visits cost the patient progress and the clinic revenue."
+              "text": "Every missed visit is a lost slot and slower progress for the patient. Most no-shows are preventable with reminders and a clear policy explained at the first visit."
             }
           ],
           "background": "blue",
@@ -3311,42 +4314,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "When someone does not arrive"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Mark the visit No-show."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Call within the hour and offer the next opening."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Note the reason on the plan."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Patterns"
+              "text": "Prevent them"
             }
           ],
           "props": {
@@ -3357,7 +4325,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Two missed visits in a row, tell the primary therapist."
+              "text": "Explain the attendance policy at the evaluation and have the patient sign it."
             }
           ]
         },
@@ -3365,7 +4333,23 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Three in a month, ask about a different time of day or a hold."
+              "text": "Send a text reminder two days before and the morning of each visit."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Book a standing time (same days, same hour) for the length of the plan. Patients keep routines."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask at checkout whether anything next week might get in the way."
             }
           ]
         },
@@ -3373,7 +4357,189 @@
           "type": "heading",
           "text": [
             {
-              "text": "Review"
+              "text": "When a patient does not arrive"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Wait ten minutes, then call. Many are running late and can still be seen for a shorter session."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If no answer, mark the visit "
+            },
+            {
+              "text": "No-show",
+              "bold": true
+            },
+            {
+              "text": " and leave a friendly voicemail with two new times."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Note it on the plan's page with the date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tell the treating therapist so they can adjust the plan."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Late cancellations (under 24 hours)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark the visit "
+            },
+            {
+              "text": "Cancelled",
+              "bold": true
+            },
+            {
+              "text": " and write the reason."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Offer the slot to the waiting list straight away."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Charge the late fee only if your policy says so and the patient signed it. Be consistent; exceptions for illness or emergencies are fine when written down."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Patterns that need a conversation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pattern"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Two no-shows in a plan"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Therapist calls the patient personally"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Three missed visits in 30 days"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Review whether the plan still fits; consider discharge with a home program"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Repeated Monday misses"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Move the standing time"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Transport trouble"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Offer telehealth visits where the payer covers them"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Workers' compensation and auto cases"
             }
           ],
           "props": {
@@ -3384,7 +4550,480 @@
           "type": "text",
           "text": [
             {
-              "text": "Each month, count no-shows from the Visits status chart and discuss at the team meeting."
+              "text": "Report attendance to the case manager or adjuster as their claim requires. Missed visits can affect the patient's claim, so tell the patient that plainly and kindly."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist for the therapist after a second no-show"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Call the patient within one business day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Ask what is getting in the way"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Agree a new schedule or a discharge with home exercises"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Update the plan's page with what was agreed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Kwabena missed two balance sessions. The therapist called; his ride had changed shifts. The clinic moved him to every other Friday afternoon and added a home program. His status went from On hold back to Active."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "how-to-use",
+      "parent": "physical-therapy-clinic",
+      "title": "Using this workspace",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The front office of an outpatient therapy clinic: referrals coming in, plans of care with their authorized visit counts, the day's schedule, and the notes that still need a signature. Your documentation system keeps the clinical record; this is where the clinic is run."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What each list holds"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Referrals",
+              "bold": true
+            },
+            {
+              "text": ": every incoming order from a physician, surgeon or self-referral, with the referring provider and whether the payer wants a prior authorization."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Patients",
+              "bold": true
+            },
+            {
+              "text": ": payer, member ID and copay. "
+            },
+            {
+              "text": "Open plans of care",
+              "bold": true
+            },
+            {
+              "text": " counts plans not yet discharged."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Plans of care",
+              "bold": true
+            },
+            {
+              "text": ": the episode of care. Diagnosis code, frequency, visits authorized, visits used, visits already booked, and the date the plan must be recertified."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Visits",
+              "bold": true
+            },
+            {
+              "text": ": each appointment with the billed units, copay collected and whether the note is signed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the visit counts work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Column"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Visits authorized"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What the payer approved, or what the plan allows"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Visits used"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Completed visits on this plan"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Visits booked ahead"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Scheduled or checked-in visits not yet done"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Visits left to book"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Authorized minus used minus booked"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Authorization"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Says Request more visits when three or fewer remain"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Getting started"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Replace the sample therapists with your team."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter every active patient's plan of care with authorized visits and the recertification date. Copy the dates from the signed plan, not from memory."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book the next two weeks of visits under Visits so the booked-ahead count is real."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add new referrals as they arrive. The "
+            },
+            {
+              "text": "Today",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Overdue",
+              "bold": true
+            },
+            {
+              "text": " views on Referrals become the front desk's call list."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monday",
+              "bold": true
+            },
+            {
+              "text": ": Plans of care with Recertify by in the next 14 days go to the treating therapist."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Wednesday",
+              "bold": true
+            },
+            {
+              "text": ": Plans flagged Request more visits go to whoever handles authorizations."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Friday",
+              "bold": true
+            },
+            {
+              "text": ": Visits with Note signed unchecked are cleared before the weekend. Unsigned notes hold up billing."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Referrals: "
+            },
+            {
+              "text": "Mark contacted",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark scheduled",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Plans: "
+            },
+            {
+              "text": "Add visit",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Discharge",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Visits: "
+            },
+            {
+              "text": "Check in",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Mark completed",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A worked example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Imani's knee plan allows 24 visits. She has completed 15 and has 6 booked. Visits left to book shows 3, and the Authorization column is still OK. When she completes 21, it changes to Request more visits, which is the moment to send a progress note and ask the payer for more."
             }
           ]
         }
