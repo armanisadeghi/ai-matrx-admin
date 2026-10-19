@@ -22,7 +22,7 @@ import {
 } from "./samples";
 
 type ProductId = "crm" | "docs" | "chat";
-type Width = "1440" | "1024" | "375";
+type Width = "1440" | "1280" | "1024" | "375";
 type Theme = "light" | "dark";
 
 const DEFAULT_VARIANT: Record<ProductId, FrameVariant> = { crm: "list", docs: "record", chat: "light" };
@@ -85,8 +85,8 @@ export function ShellPlayground() {
     const record = contact ?? CONTACTS[0];
     if (showRecord) {
       crumbs = [
-        { id: "crm", label: "CRM", onSelect: () => setContactId(null) },
-        { id: "people", label: "People & Companies", onSelect: () => { setContactId(null); setVariant("list"); } },
+        { id: "crm", label: "CRM", href: "/crm", onSelect: () => setContactId(null) },
+        { id: "people", label: "People & Companies", href: "/crm/people", onSelect: () => { setContactId(null); setVariant("list"); } },
         { id: record.id, label: record.name },
       ];
       body = <ContactRecord contact={record} />;
@@ -96,7 +96,7 @@ export function ShellPlayground() {
       statusText = "Saved";
     } else {
       crumbs = [
-        { id: "crm", label: "CRM" },
+        { id: "crm", label: "CRM", href: "/crm" },
         { id: "people", label: "People & Companies" },
       ];
       tabs = {
@@ -128,7 +128,7 @@ export function ShellPlayground() {
     activeMenuItemId = "documents";
     if (variant === "list") {
       crumbs = [
-        { id: "docs", label: "Docs" },
+        { id: "docs", label: "Docs", href: "/docs" },
         { id: "documents", label: "Documents" },
       ];
       tabs = {
@@ -145,8 +145,8 @@ export function ShellPlayground() {
       statusText = "4 documents";
     } else {
       crumbs = [
-        { id: "docs", label: "Docs", onSelect: () => setVariant("list") },
-        { id: "handbook", label: "Company handbook", onSelect: () => setVariant("list") },
+        { id: "docs", label: "Docs", href: "/docs", onSelect: () => setVariant("list") },
+        { id: "handbook", label: "Company handbook", href: "/docs/f-handbook", onSelect: () => setVariant("list") },
         { id: "doc", label: "Onboarding checklist for new clinics" },
       ];
       body = variant === "workspace" ? <WorkspaceSample label="Slides canvas" /> : <DocPage />;
@@ -157,7 +157,7 @@ export function ShellPlayground() {
   } else {
     activeMenuItemId = "c-1";
     crumbs = [
-      { id: "chat", label: "Chat" },
+      { id: "chat", label: "Chat", href: "/chat" },
       { id: "c-1", label: "Quarterly plan outline" },
     ];
     body = variant === "workspace" ? <WorkspaceSample label="Chat canvas" /> : <ChatThread />;
@@ -208,6 +208,7 @@ export function ShellPlayground() {
           onValueChange={setWidth}
           data={[
             { value: "1440", label: "1440" },
+            { value: "1280", label: "1280" },
             { value: "1024", label: "1024" },
             { value: "375", label: "375" },
           ]}
@@ -219,7 +220,7 @@ export function ShellPlayground() {
       <div className="min-h-0 flex-1 overflow-auto p-4">
         <div
           data-testid="frame-stage"
-          className="mx-auto overflow-hidden rounded-md border border-border"
+          className="mx-auto overflow-hidden rounded-md outline outline-1 outline-border"
           style={{ width: stageWidth, height: phone ? 760 : "100%", minHeight: 560 }}
         >
           <AppFrame

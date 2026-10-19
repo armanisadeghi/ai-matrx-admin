@@ -1,33 +1,32 @@
 /* THE NEW APP FRAME — tokens and the few structural rules Tailwind cannot say.
-   Every value is scoped to [data-matrx-frame] so the owner can approve the
-   look BEFORE any global token changes (owner, 2026-10-17). Inside the frame
-   the app's own text tokens are re-pointed, so `text-foreground` /
-   `text-muted-foreground` and every design-system control read the frame's
-   values with no class of their own. Popovers portal INTO the frame root, so
-   they inherit the same values.
-
-   Proposal for global tokens (HSL components, the format globals.css uses):
-     light  ink 240 6% 10%  · secondary 240 4% 40% (5.9:1 on white) · line 240 5% 90%
-     dark   ink 240 5% 94%  · secondary 240 4% 64% (6.4:1 on sheet) · line 240 4% 17% */
+   Every value is scoped to [data-matrx-frame]: they are the owner's colour
+   PROPOSAL (2026-10-17). On approval they move to the global tokens / the
+   @ai-matrx/shell package; until then nothing outside the frame changes.
+   Inside the frame the app's own tokens are re-pointed, so `text-foreground`,
+   `text-muted-foreground`, `text-sm` and every design-system control read the
+   frame's values with no class of their own. Popovers portal INTO the frame
+   root, so they inherit the same values. Values and rules:
+   features/shell/frame/FEATURE.md. */
 
 [data-matrx-frame] {
-  /* geometry — identical in every variant */
-  --frame-header-h: 44px;
-  --frame-tabs-h: 40px;
-  --frame-footer-h: 32px;
-  --frame-sidebar-w: 244px;
-  --frame-companion-w: 360px;
-  --frame-properties-w: 288px;
-  --frame-inset: 8px; /* the sheet's distance from the window edge */
-  --frame-radius: 10px;
-  --frame-gutter: 24px;
+  /* ── geometry — identical in every variant ── */
+  --matrx-frame-header-h: 44px;
+  --matrx-frame-tabs-h: 40px;
+  --matrx-frame-footer-h: 32px;
+  --matrx-frame-sidebar-w: 244px;
+  --matrx-frame-companion-w: 360px;
+  --matrx-frame-properties-w: 288px;
+  --matrx-frame-body-min-w: 360px;
+  --matrx-frame-inset: 8px; /* the sheet's distance from the window edge */
+  --matrx-frame-radius: 10px;
+  --matrx-frame-gutter: 24px;
 
-  /* surfaces */
-  --frame-bg: 240 5% 96.5%;
-  --frame-sheet: 0 0% 100%;
-  --frame-line: 240 5% 90%;
+  /* ── PROPOSED surfaces (frame-only until approved) ── */
+  --matrx-frame-canvas: 240 5% 96.5%; /* the app background the sidebar sits on */
+  --matrx-frame-sheet: 0 0% 100%; /* the content sheet */
+  --matrx-frame-hairline: 240 5% 90%; /* the sheet edge and every rule inside it */
 
-  /* the app's tokens, re-pointed inside the frame */
+  /* ── PROPOSED text + surface tokens, re-pointed inside the frame ── */
   --foreground: 240 6% 10%;
   --muted-foreground: 240 4% 40%;
   --border: 240 5% 90%;
@@ -36,18 +35,22 @@
   --card: 0 0% 100%;
   --popover: 0 0% 100%;
 
-  font-size: 13px;
+  /* 13px base: package menus set `text-sm` (14px); inside the frame it is the
+     control label size, so a menu matches the frame without a restyle. */
+  --text-sm: var(--matrx-control-label, 0.8125rem);
+
+  font-size: var(--matrx-control-label, 0.8125rem);
   line-height: 1.45;
   color: hsl(var(--foreground));
-  background: hsl(var(--frame-bg));
+  background: hsl(var(--matrx-frame-canvas));
   -webkit-font-smoothing: antialiased;
 }
 
 .dark [data-matrx-frame],
 [data-matrx-frame].dark {
-  --frame-bg: 240 5% 6.5%;
-  --frame-sheet: 240 5% 9%;
-  --frame-line: 240 4% 17%;
+  --matrx-frame-canvas: 240 5% 6.5%;
+  --matrx-frame-sheet: 240 5% 9%;
+  --matrx-frame-hairline: 240 4% 17%;
 
   --foreground: 240 5% 94%;
   --muted-foreground: 240 4% 64%;
@@ -59,35 +62,58 @@
 }
 
 [data-matrx-frame][data-form="phone"] {
-  --frame-gutter: 16px;
-  --frame-inset: 0px;
-  --frame-radius: 0px;
+  --matrx-frame-gutter: 16px;
+  --matrx-frame-inset: 0px;
+  --matrx-frame-radius: 0px;
 }
 
-/* The sheet: one rounded panel, one hairline, laid over the app background. */
-[data-matrx-frame] .mf-sheet {
-  background: hsl(var(--frame-sheet));
-  border: 1px solid hsl(var(--frame-line));
-  border-radius: var(--frame-radius);
+/* ── surfaces ── */
+[data-matrx-frame] .mf-surface-canvas {
+  background: hsl(var(--matrx-frame-canvas));
 }
-/* `light` (consumer products like Chat): quieter chrome — the sheet sinks into
-   the background. The header, tabs and footer rules are untouched. */
+[data-matrx-frame] .mf-surface-sheet {
+  background: hsl(var(--matrx-frame-sheet));
+}
+
+/* The sheet: one rounded panel, one hairline, laid over the canvas. */
+[data-matrx-frame] .mf-sheet {
+  background: hsl(var(--matrx-frame-sheet));
+  border: 1px solid hsl(var(--matrx-frame-hairline));
+  border-radius: var(--matrx-frame-radius);
+}
+/* `light` (consumer products like Chat): the same sheet, quieter — a softer
+   edge. The header, tabs and footer rules are untouched. */
 [data-matrx-frame][data-variant="light"] .mf-sheet {
-  background: hsl(var(--frame-bg));
-  border-color: transparent;
+  border-color: hsl(var(--matrx-frame-hairline) / 0.55);
 }
 [data-matrx-frame][data-form="phone"] .mf-sheet {
   border-width: 0;
 }
 
 [data-matrx-frame] .mf-rule-b {
-  border-bottom: 1px solid hsl(var(--frame-line));
+  border-bottom: 1px solid hsl(var(--matrx-frame-hairline));
 }
 [data-matrx-frame] .mf-rule-t {
-  border-top: 1px solid hsl(var(--frame-line));
+  border-top: 1px solid hsl(var(--matrx-frame-hairline));
 }
 [data-matrx-frame] .mf-rule-l {
-  border-left: 1px solid hsl(var(--frame-line));
+  border-left: 1px solid hsl(var(--matrx-frame-hairline));
+}
+
+/* The scrim behind the drawer: the design system's own dialog scrim. */
+[data-matrx-frame] .mf-scrim {
+  background: var(--matrx-overlay-scrim-soft);
+}
+
+/* ── layout helpers ── */
+[data-matrx-frame] .mf-drawer-w {
+  width: min(85%, var(--matrx-frame-sidebar-w));
+}
+[data-matrx-frame] .mf-tabs-row {
+  padding-inline: calc(var(--matrx-frame-gutter) - 8px);
+}
+[data-matrx-frame] .mf-grid-scroll {
+  max-height: min(70dvh, 35rem);
 }
 
 /* Panels slide on the platform motion pair (policies/motion-standard.md). */
@@ -97,13 +123,20 @@
   transition-timing-function: var(--matrx-motion-ease-panel, ease);
 }
 
+/* The drawer layer hides only after its slide-out finishes. */
+[data-matrx-frame] .mf-drawer-layer {
+  transition: visibility 0s linear var(--matrx-motion-duration-panel, 0ms);
+}
+[data-matrx-frame] .mf-drawer-layer[data-open] {
+  transition-delay: 0s;
+}
+
 /* App-grid tile glyph: tinted square in the product's hue. */
 [data-matrx-frame] .mf-glyph {
   background: hsl(var(--mf-hue) / 0.14);
   color: hsl(var(--mf-hue-ink));
 }
 
-/* Breadcrumb separators and scroll areas never produce a page scrollbar. */
 [data-matrx-frame] .mf-noscrollbar {
   scrollbar-width: none;
 }

@@ -1,9 +1,10 @@
 "use client";
 
 // The product's OWN sidebar (Linear / Docs style): the app grid and product
-// name on top, then only this product's menu. It sits on the app background
-// with no border. The top row is the header's height and offset, so the
-// product name lines up with the sheet's breadcrumbs.
+// name on top, then only this product's menu. It sits on the app canvas with
+// no border. The top row is the header's height and offset, so the product
+// name lines up with the sheet's breadcrumbs. Every row is a real link.
+import type { MouseEvent } from "react";
 import { ExternalLink, PanelLeftClose } from "lucide-react";
 import { Button, Tile } from "@ai-matrx/design-system/controls";
 import { AppGrid } from "./AppGrid";
@@ -15,9 +16,14 @@ export interface FrameSidebarProps {
   grid: AppGridProps;
   activeItemId?: string;
   onSelectItem?: (item: FrameMenuItem) => void;
-  /** Desktop: collapse the sidebar. Phone drawer: close it. */
+  /** Desktop: collapse the sidebar. Drawer: close it. */
   onHide: () => void;
   hideLabel: string;
+}
+
+/** A plain left click goes to the host's handler; modified clicks keep the browser's link behaviour. */
+export function isPlainClick(e: MouseEvent) {
+  return e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
 }
 
 export function FrameSidebar({
@@ -31,10 +37,10 @@ export function FrameSidebar({
   const ProductIcon = product.icon;
   return (
     <nav aria-label={`${product.name} menu`} className="flex h-full min-h-0 flex-col">
-      <div className="flex h-[calc(var(--frame-header-h)+var(--frame-inset))] shrink-0 items-center gap-1 px-2 pt-[var(--frame-inset)]">
+      <div className="flex h-[calc(var(--matrx-frame-header-h)+var(--matrx-frame-inset))] shrink-0 items-center gap-1 px-2 pt-[var(--matrx-frame-inset)]">
         <AppGrid {...grid} currentProductId={product.id} />
         <span
-          className="mf-glyph flex size-5 shrink-0 items-center justify-center rounded-[5px]"
+          className="mf-glyph flex size-5 shrink-0 items-center justify-center rounded-md"
           style={
             {
               "--mf-hue": `var(--matrx-chip-${product.color})`,
@@ -58,28 +64,46 @@ export function FrameSidebar({
             <ul className="flex flex-col gap-px">
               {section.items.map((item) => {
                 const Icon = item.icon;
+                const active = item.id === activeItemId;
+                const href = item.href ?? `${product.homeHref}/${item.id}`;
                 return (
                   <li key={item.id}>
                     <Tile
+                      asChild
                       dense
                       variant="quiet"
                       className="w-full"
                       icon={<Icon aria-hidden />}
                       title={item.label}
-                      selected={item.id === activeItemId}
+                      selected={active || undefined}
                       selectedStyle="fill"
-                      aria-current={item.id === activeItemId ? "page" : undefined}
+                      // A link names the current page; `aria-pressed` is for toggles.
+                      aria-pressed={undefined}
+                      aria-current={active ? "page" : undefined}
                       end={
                         item.external ? (
-                          <ExternalLink className="size-3.5 text-muted-foreground" aria-label="Opens in a new tab" />
+                          <>
+                            <ExternalLink className="size-3.5 text-muted-foreground" aria-hidden />
+                            <span className="sr-only">(opens in a new tab)</span>
+                          </>
                         ) : item.count != null ? (
                           <span className="type-meta text-muted-foreground">
                             {item.count.toLocaleString()}
                           </span>
                         ) : undefined
                       }
-                      onClick={() => onSelectItem?.(item)}
-                    />
+                    >
+                      <a
+                        href={href}
+                        target={item.external ? "_blank" : undefined}
+                        rel={item.external ? "noopener noreferrer" : undefined}
+                        onClick={(e) => {
+                          if (item.external || !onSelectItem || !isPlainClick(e)) return;
+                          e.preventDefault();
+                          onSelectItem(item);
+                        }}
+                      />
+                    </Tile>
                   </li>
                 );
               })}
