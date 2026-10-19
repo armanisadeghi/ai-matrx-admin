@@ -1,5 +1,6 @@
 ---
 name: skill-authoring
+subject: skills/skill-authoring
 type: Skill
 title: "skill-authoring — skills that fire, fit, and are proven"
 description: "Rules for SKILL.md files that trigger, fit, and are proven. Use when creating a SKILL.md, rewriting its description, splitting an oversized SKILL.md, or editing one because an agent ignored, misread, or never fired it."

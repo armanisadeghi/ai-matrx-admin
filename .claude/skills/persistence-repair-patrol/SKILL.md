@@ -1,5 +1,6 @@
 ---
 name: persistence-repair-patrol
+subject: skills/persistence-repair-patrol
 type: Skill
 title: Persistence Repair Patrol
 description: "Scheduled patrol that finds real persistence and error bugs and fixes them. Use when running the system-error repair patrol automation, or when stuck rows, SLA breaches, the system_errors queue, or app_log ERROR rows need a repair rather than a report."

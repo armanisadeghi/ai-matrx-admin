@@ -1,5 +1,6 @@
 ---
 name: grilling
+subject: skills/grilling
 type: Skill
 title: "grilling — interview by design tree, defaults ship"
 description: "The interview primitive for putting open decisions to an owner. Use on 'grill me', 'stress-test this', or 'what do you need from me before you build this', and whenever a plan, scope, spec, vision, or question ledger needs owner rulings. NOT for steps only a human can perform (use a guided session)."

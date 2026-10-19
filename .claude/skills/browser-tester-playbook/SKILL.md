@@ -1,5 +1,6 @@
 ---
 name: browser-tester-playbook
+subject: skills/browser-tester-playbook
 type: Skill
 title: "browser-tester-playbook — how the Sonnet browser tester works"
 description: "Working playbook preloaded into the browser-tester helper; the coach updates its Lessons after each round. Use only when acting as browser-tester or coaching it. NOT for general UI work (use matrx-frontend's browser-testing doc)."

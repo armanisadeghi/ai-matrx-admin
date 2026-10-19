@@ -1,5 +1,6 @@
 ---
 name: table-drill-down
+subject: data/drill-down
 type: Skill
 title: "Table drill-down — group, break out, and land on a page about the value"
 description: "Drill-down on the shared MatrxDataTable, local or server, with per-Dimension levels. Use when adding group-by, breakdown or 'by X' analytics to a table, replacing hand-built totals or rollup tables, or when people want counts or sums by status, owner, model or day."

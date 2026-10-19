@@ -1,5 +1,6 @@
 ---
 name: one-canonical
+subject: skills/one-canonical
 type: Skill
 title: "one-canonical — find every instance of a thing, build one, move them all, prove none are left"
 description: "Collapsing every copy of one kind of thing (tables, UIs, utilities, hooks, APIs, renderers) into a single canonical one. Use when asked to unify, merge, converge, or 'make one X used everywhere', or before migrating callers onto a new canonical piece. NOT for docs (use docs)."

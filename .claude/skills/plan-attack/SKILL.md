@@ -1,5 +1,6 @@
 ---
 name: plan-attack
+subject: skills/plan-attack
 type: Skill
 title: "plan-attack — a zero-authorship agent hole-pokes a plan before anyone commits to it"
 description: "Pre-commitment attack on a plan by an agent that did not write it. Use when presenting a feature-deep-dive plan, assigning vision-to-fleet briefs, moving a register to build mode, ratifying a scope list, or coding a new contract or table. NOT for built work or DONE reports (use subagent-dispatch)."

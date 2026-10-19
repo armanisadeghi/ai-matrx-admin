@@ -1,5 +1,6 @@
 ---
 name: vault-account-setup
+subject: account/vault-secrets
 type: Skill
 title: "Vault account setup"
 description: "Provider account and authenticator setup through Matrx Vault. Use when creating a service account, saving its login, enrolling 2FA, or verifying agent sign-in with Vault credentials."

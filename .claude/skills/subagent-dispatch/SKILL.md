@@ -1,5 +1,6 @@
 ---
 name: subagent-dispatch
+subject: skills/subagent-dispatch
 type: Skill
 title: "subagent-dispatch — delegate down, check hard, close the loop"
 description: "Delegating work down to subagents: briefs, report statuses, independent review. Use when writing an implementer or verifier brief, dispatching a subagent to build, fix, or verify work you own, or a subagent reports DONE, blocked, or concerns. NOT for campaign-scale doctrine (use campaign-pattern)."

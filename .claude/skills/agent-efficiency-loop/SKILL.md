@@ -1,5 +1,6 @@
 ---
 name: agent-efficiency-loop
+subject: skills/agent-efficiency-loop
 type: Skill
 title: "agent-efficiency-loop — take over a running agent and make it efficient, correct, self-improving"
 description: "The watch-fix-rerun method for making an existing platform agent or automated process efficient and correct: baseline its ledger, run one unit yourself, fix the class behind every wasted call, rerun, record. Use when asked to improve, optimize, watch, or 'make efficient' an agent, a sandbox session, a sync job, or any recurring automated process."

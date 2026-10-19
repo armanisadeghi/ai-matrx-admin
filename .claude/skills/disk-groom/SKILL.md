@@ -1,5 +1,6 @@
 ---
 name: disk-groom
+subject: operations/disk-grooming
 type: Skill
 title: "disk-groom — leftover Docker builds and agent worktrees"
 description: "Permanent-delete grooming for leftover Docker builds, agent worktrees, and .next caches. Use when creating or finishing a git worktree, after a local docker build, when the disk is full, or when /tmp or .wt trees were left behind."

@@ -1,5 +1,6 @@
 ---
 name: diagnose
+subject: skills/diagnose
 type: Skill
 title: "diagnose — no fix without a proven cause"
 description: "Diagnostic method for any bug, failure, regression, flake, or slowdown. Use before proposing a fix: something is broken, throwing, not saving, not showing, or 'worked yesterday'; on 'debug this' or 'find the root cause'; and immediately after a fix attempt did not work."

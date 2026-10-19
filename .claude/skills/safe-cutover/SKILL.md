@@ -1,5 +1,6 @@
 ---
 name: safe-cutover
+subject: skills/safe-cutover
 description: "Pre-ship safety proof for replacing a live implementation with a canonical one. Use when repointing nodes, tools, or services to a new contract, superseding a schema, retiring a legacy or parallel system, or any 'new way replaces the old way' change. NOT for greenfield or unconsumed additive work."
 ---
 

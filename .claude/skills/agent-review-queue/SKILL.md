@@ -1,5 +1,6 @@
 ---
 name: agent-review-queue
+subject: operations/review-queue-drain
 timestamp: 2026-09-10T00:00:00Z
 type: Skill
 title: agent-review-queue — get your work seen, get feedback back

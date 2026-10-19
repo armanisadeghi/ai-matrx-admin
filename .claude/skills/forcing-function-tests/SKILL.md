@@ -1,5 +1,6 @@
 ---
 name: forcing-function-tests
+subject: skills/forcing-function-tests
 type: Skill
 title: "forcing-function-tests — a test may pass only when the real system works"
 description: "The bar every automated test or guard must clear: green only when the real system works. Use when writing, fixing, or reviewing a test, mock, stub, fixture, snapshot, or self-test; adding a regression test for a bug; or about to call work done because tests pass."

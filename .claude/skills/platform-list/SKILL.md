@@ -1,5 +1,6 @@
 ---
 name: platform-list
+subject: operations/platform-list
 type: Skill
 title: "platform-list — Arman's list of large platform work not started yet"
 description: "The Platform List: Arman's own register of large platform-level work he chose not to start yet. Use when the reminder hook says a row is due, when Arman says to add, snooze, kill, or finish a row, when you own a row, or when you think something belongs there. NOT for ordinary tasks, defects, or handoffs."

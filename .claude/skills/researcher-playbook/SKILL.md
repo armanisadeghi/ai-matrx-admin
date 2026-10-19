@@ -1,5 +1,6 @@
 ---
 name: researcher-playbook
+subject: skills/researcher-playbook
 type: Skill
 title: "researcher-playbook — how the Sonnet researcher works"
 description: "Working playbook preloaded into the researcher helper; the coach updates its Lessons after each round. Use only when acting as researcher or coaching it. NOT for general research tasks."

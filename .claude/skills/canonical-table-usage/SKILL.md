@@ -1,5 +1,6 @@
 ---
 name: canonical-table-usage
+subject: skills/canonical-table-usage
 type: Skill
 title: Canonical table usage
 description: "Approved table usage rules. Use when configuring, migrating, or reviewing MatrxDataTable columns, toolbars, or pagination."

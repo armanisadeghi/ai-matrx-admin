@@ -1,5 +1,6 @@
 ---
 name: attention-triage
+subject: skills/attention-triage
 type: Skill
 title: "attention-triage — keep the owner's attention card short and worth reading"
 description: "The runbook a triage agent follows on each run over the super-admin attention dock, through the attention MCP tool. Use when a scheduled attention-triage routine wakes, when asked to triage, clean up or shrink the attention dock or admin alerts, or when the dock's card is over budget."

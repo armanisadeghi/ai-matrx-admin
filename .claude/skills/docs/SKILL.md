@@ -1,5 +1,6 @@
 ---
 name: docs
+subject: policies/document-types
 type: Skill
 title: "docs — place, edit, dedupe, verify and delete documentation"
 description: "The procedure for every doc change in common-docs or a repo's CLAUDE.md, FEATURE.md or SKILL.md. Use when creating, editing, moving or deleting a doc, finding duplicate or disagreeing docs, planting a repo pointer, consolidating a node, or on /docs and the daily docs-steward run."

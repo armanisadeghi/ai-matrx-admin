@@ -1,5 +1,6 @@
 ---
 name: new-package
+subject: policies/typescript-package-standard
 type: Skill
 title: "new-package — create or majorly grow an @ai-matrx package, the right way"
 description: "Runbook for creating or majorly growing an @ai-matrx TypeScript npm package. Use when invoked as /new-package <name or capability>, or for a new @ai-matrx/* package, extracting code into one, or a major growth wave. NOT for a routine fix inside an existing package (THE SAME-SESSION LAW)."

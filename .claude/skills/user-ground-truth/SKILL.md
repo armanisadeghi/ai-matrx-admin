@@ -1,5 +1,6 @@
 ---
 name: user-ground-truth
+subject: skills/user-ground-truth
 type: Skill
 title: "user-ground-truth — the person's own words, extracted by script, summarized by a fresh agent, judged against the work"
 description: "Extract exactly what the person typed in a Claude Code session (script, no agent context spent), have a fresh agent write a faithful structured summary under it, and optionally have an adversarial agent judge whether the working agent is still on track. Use at a checkpoint, before a handoff, after a compaction, when a long session may have drifted from what the owner asked, or when told to 'summarize what I said' or 'check we're on track'."
