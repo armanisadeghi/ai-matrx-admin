@@ -274,28 +274,53 @@ export function usePageLayout<T extends BoardTileBase>({
       timer = setTimeout(run, REFLOW_MS);
     };
     run();
-    // Open at the top of the page (a switch into page layout too), unless this is the board opening
-    // at the person's own last view. Again after the tiles have re-registered at their new places.
+    // Open at the top of the page — the first chapter's top, the cover's hero in view (a switch into page
+    // layout too), unless this is the board opening at the person's own last view. The page HOLDS its top
+    // until the person moves it (wheel, press, key): the view being measured, the column narrowing to a
+    // phone, a tile growing to its content and the viewport's opening check all move the camera after
+    // the first jump, and each kept the view's CENTER — which landed the page mid-Overview.
     let raf = 0;
-    if (opened.current || !restoredView) {
-      const toTop = () => {
-        const sc = pageScene(board);
-        const ys = [...sc.frames.map((f) => f.rect.y - PAGE_LABEL_ROOM), ...sc.tiles.map((t) => t.rect.y)];
-        store.pageScrollTo(ys.length ? Math.min(...ys) : 0, false);
-      };
-      toTop();
-      raf = requestAnimationFrame(() => (raf = requestAnimationFrame(toTop)));
-    }
+    let holding = opened.current || !restoredView;
+    let lastTop: unknown = null;
+    const toTop = () => {
+      const sc = pageScene(board);
+      const ys = [...sc.frames.map((f) => f.rect.y - PAGE_LABEL_ROOM), ...sc.tiles.map((t) => t.rect.y)];
+      store.pageScrollTo(ys.length ? Math.min(...ys) : 0, false);
+      lastTop = store.getCamera();
+    };
+    const keepTop = () => {
+      if (!holding || raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        if (holding && store.getCamera() !== lastTop) toTop();
+      });
+    };
+    const release = () => {
+      holding = false;
+    };
+    if (holding) toTop();
     opened.current = true;
-    const unsubscribe = board.subscribe(schedule);
-    // The view crossing the column's width (a phone turned, a window narrowed) re-flows the page to it.
+    window.addEventListener("wheel", release, { capture: true, passive: true });
+    window.addEventListener("keydown", release, true);
+    const unsubscribe = board.subscribe(() => {
+      schedule();
+      keepTop();
+    });
+    // The view crossing the column's width (a phone turned, a window narrowed, the view measured for the
+    // first time) re-flows the page to it AT ONCE, never after the board's changes quiet down: a phone's
+    // first paint otherwise showed the full 1100 column zoomed out until every tile had loaded.
     const unsubscribeSize = store.subscribeFrame(() => {
-      if (pageColumnFor(store) !== column) schedule();
+      if (pageColumnFor(store) !== column && !pressing) {
+        if (timer) clearTimeout(timer);
+        run();
+      }
+      keepTop();
     });
     // A press whose release never reaches the window (a drawer or menu that captured it) must not
     // stop the page from re-flowing for good: it counts as released after a few seconds.
     let pressTimer: ReturnType<typeof setTimeout> | null = null;
     const down = () => {
+      release();
       pressing = true;
       if (pressTimer) clearTimeout(pressTimer);
       pressTimer = setTimeout(() => {
@@ -322,6 +347,8 @@ export function usePageLayout<T extends BoardTileBase>({
       window.removeEventListener("pointerdown", down, true);
       window.removeEventListener("pointerup", up, true);
       window.removeEventListener("pointercancel", up, true);
+      window.removeEventListener("wheel", release, true);
+      window.removeEventListener("keydown", release, true);
       flushRef.current = null;
       store.setPageLock(null);
       // Leaving page layout (or the board): the board shows what it saves again.

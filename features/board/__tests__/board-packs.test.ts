@@ -8,8 +8,9 @@ import { join } from "node:path";
 
 const PACK = JSON.parse(readFileSync(join(__dirname, "../../spaces/templates/packs/design-system-board.pack.json"), "utf8"));
 const { spec, ...pack } = PACK;
-const TEMPLATE = { id: "t1", catalogue_id: "SP0363", version: 3, spec, pack };
-const TABLES = Object.fromEntries(["color", "type_style", "spacing", "radius", "shadow", "component"].map((t) => [t, { tableId: `tbl-${t}`, viewIds: {} }]));
+const TEMPLATE = { id: "t1", catalogue_id: "SP0363", version: PACK.version, spec, pack };
+// Every table the committed pack declares (its board's tiles name them), never a hand-kept list that goes stale.
+const TABLES = Object.fromEntries((spec.tables as { token: string }[]).map(({ token }) => [token, { tableId: `tbl-${token}`, viewIds: {} }]));
 
 const readSpaceTemplate = jest.fn();
 const listSpaceTemplates = jest.fn();

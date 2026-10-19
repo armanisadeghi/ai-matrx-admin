@@ -234,11 +234,11 @@ describe("a column of cards", () => {
 });
 
 describe("no tile scrolls inside itself in page layout", () => {
-  it("the write-up lays out at its content's height and the note grows until its editor stops scrolling", () => {
+  it("the write-up and the note lay out at their content's height (the note reads as a card in page layout)", () => {
     const writeUp = { kind: "text", markdown: "# Files" } as const;
     const note = { kind: "entity", entity: "note", id: null } as const;
     expect(itemTypeFor(writeUp)?.autoHeight?.(writeUp)).toBe(true);
-    expect(itemTypeFor(note)?.autoHeight?.(note)).toBe("fill");
+    expect(itemTypeFor(note)?.autoHeight?.(note)).toBe(true);
     expect(tileChrome("page", { autoHeight: "fill" })).toMatchObject({ autoHeight: false, growToFit: true });
     expect(tileChrome("canvas", { autoHeight: "fill" })).toMatchObject({ autoHeight: false, growToFit: false });
   });

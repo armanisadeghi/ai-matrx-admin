@@ -41,6 +41,8 @@ import { selectNoteById } from "@/features/notes/redux/selectors";
 import { NotesAPI } from "@/features/notes/service/notesApi";
 import type { ItemBodyProps, TitleFieldProps } from "./types";
 import { useBoardOrganizationId } from "./board-organization";
+import { useTileAutoHeight } from "../components/BoardTile";
+import { NotePageCard } from "./NotePageCard";
 import {
   isEntity,
   noteDraftSource,
@@ -55,8 +57,10 @@ const DEFAULT_TILE_TITLE = "Note";
 
 type Failure = { reason: string; cancelled: boolean };
 
-export function NoteItemBody({ tileId, source, title, onSource }: ItemBodyProps) {
+export function NoteItemBody({ tileId, source, title, onSource, interacting }: ItemBodyProps) {
   const dispatch = useAppDispatch();
+  // Page layout: the note reads as a card at its natural height, edited on a press (NotePageCard).
+  const asPageCard = useTileAutoHeight();
   const store = useAppStore();
   const boardOrganizationId = useBoardOrganizationId();
   const instanceId = `board-note:${tileId}`;
@@ -223,6 +227,7 @@ export function NoteItemBody({ tileId, source, title, onSource }: ItemBodyProps)
     );
   }
 
+  if (asPageCard) return <NotePageCard noteId={noteId} instanceId={instanceId} title={title} interacting={interacting} />;
   // The tile's header names the note (NoteTileTitle) — the note leaves its own title out.
   return <NoteWorkspace instanceId={instanceId} noteId={noteId} title="host" />;
 }

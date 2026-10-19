@@ -2,7 +2,7 @@
   "packVersion": 1,
   "catalogueId": "SP0363",
   "version": 6,
-  "title": "Design Tokens Board",
+  "title": "Design system board",
   "description": "Product teams: colours, type, spacing, corners and shadows as one editable board.",
   "forWho": "Product teams keeping one design system",
   "icon": {
@@ -1414,7 +1414,7 @@
           {
             "kind": "note",
             "title": "Assets",
-            "text": "Assets\n\nKeep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n",
+            "text": "Keep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n",
             "size": {
               "w": 1020,
               "h": 280
