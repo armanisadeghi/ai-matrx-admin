@@ -43,3 +43,17 @@ describe("Connect events apply only to their own ledger", () => {
     expect(rpc).toHaveBeenCalledWith("payment_refund", { p_payment_intent_id: "pi_1", p_amount_refunded_cents: 1000 });
   });
 });
+
+import { sessionIsGone } from "@/features/payments/server";
+
+describe("a pending session Stripe can no longer read stops blocking a new payment (REVIEW-PAYMENTS-2 I2)", () => {
+  it.each([
+    [{ statusCode: 404, code: "resource_missing" }, true],
+    [{ statusCode: 403, code: "account_invalid" }, true],
+    [{ type: "StripePermissionError" }, true],
+    [{ statusCode: 500, type: "StripeAPIError" }, false],
+    [{ statusCode: 429, code: "rate_limit" }, false],
+  ])("%j -> gone=%s", (err, gone) => {
+    expect(sessionIsGone(err)).toBe(gone);
+  });
+});

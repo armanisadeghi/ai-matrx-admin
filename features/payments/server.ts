@@ -223,7 +223,16 @@ async function reuseOrClearPending(ask: PaymentAsk, recordId: string, cents: num
 
   const sessionId = pending.stripe_checkout_session_id;
   const stripe = getStripe();
-  const session = await stripe.checkout.sessions.retrieve(sessionId, {}, { stripeAccount: pending.stripe_account_id });
+  let session: Stripe.Checkout.Session;
+  try {
+    session = await stripe.checkout.sessions.retrieve(sessionId, {}, { stripeAccount: pending.stripe_account_id });
+  } catch (thrown) {
+    // REVIEW-PAYMENTS-2 (I2 residual): the session or its connected account is gone on Stripe (deleted
+    // account, revoked access). Nobody can pay it, so it must not block a new payment forever.
+    if (!sessionIsGone(thrown)) throw thrown;
+    await settle(sessionId, "expired", null);
+    return null;
+  }
   const settled = settledStatusOf(session);
   if (settled) {
     await settle(sessionId, settled, intentOfSession(session));
@@ -250,8 +259,23 @@ async function reuseOrClearPending(ask: PaymentAsk, recordId: string, cents: num
   return null;
 }
 
+/** A Stripe error that means the session can never be paid: missing, or its account is unreachable. */
+export function sessionIsGone(thrown: unknown): boolean {
+  const e = thrown as { statusCode?: number; code?: string; type?: string };
+  return e?.statusCode === 404 || e?.code === "resource_missing" || e?.code === "account_invalid" || e?.type === "StripePermissionError";
+}
+
 function intentOfSession(session: Stripe.Checkout.Session): string | null {
   return typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id ?? null;
+}
+
+/** True when the public form asks this field as a question (payer-typed). */
+async function formAsks(formId: string, fieldKey: string): Promise<boolean> {
+  const { data, error } = await createAdminClient().schema("custom").from("anon_form")
+    .select("exposed_field_keys").eq("id", formId).maybeSingle();
+  if (error) throw new Error(`Reading the form failed: ${error.message}`);
+  const keys = (data as { exposed_field_keys: unknown } | null)?.exposed_field_keys;
+  return Array.isArray(keys) && keys.includes(fieldKey);
 }
 
 /** Every check before money is asked for; throws PaymentRefusal with the sentence the payer sees. */
@@ -263,6 +287,10 @@ async function readyToCharge(ask: PaymentAsk, recordId: string): Promise<{ accou
 
   const record = await recordValues(ask.organization_id, recordId);
   if (!record || record.table_id !== ask.table_id) throw new PaymentRefusal("That record is not one this payment is for.", 404);
+  if (ask.amount_mode === "field" && ask.subject_kind === "form" && ask.amount_field && (await formAsks(ask.subject_id, ask.amount_field))) {
+    // REVIEW-PAYMENTS-2 M3: the form now asks the amount question itself, so the payer would set the price.
+    throw new PaymentRefusal("This form lets the payer type the amount, so it cannot take payment.", 400);
+  }
   const amount = resolveAmountCents(ask, record.data);
   if (!amount.ok) throw new PaymentRefusal(amount.message, 400);
   const max = await maxChargeCents(ask.organization_id);
