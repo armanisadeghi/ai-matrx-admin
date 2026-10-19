@@ -68,11 +68,17 @@ export function ResearchMediaImage({
   className,
   fit = "cover",
   alt,
+  onClick,
+  onError,
 }: {
   item: ResearchMedia;
   className?: string;
   fit?: "cover" | "contain" | "fill";
   alt?: string;
+  /** Opens this one item; the image becomes a keyboard-reachable button. */
+  onClick?: () => void;
+  /** The image could not load even after the one retry. */
+  onError?: () => void;
 }) {
   return (
     <InlineMediaRef
@@ -84,8 +90,16 @@ export function ResearchMediaImage({
       fallback="icon"
       rounded="none"
       className={className}
+      onClick={onClick ? () => onClick() : undefined}
+      onError={onError ? () => onError() : undefined}
     />
   );
+}
+
+/** A URL the image viewer can show: the source for discovered media, the
+ * durable inline URL for an owned file. */
+export function researchMediaViewUrl(item: ResearchMedia): string {
+  return item.file_id ? pythonFileInlineUrl(item.file_id) : item.url;
 }
 
 /**

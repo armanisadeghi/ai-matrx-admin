@@ -807,6 +807,142 @@ export async function getYouTubeVideoIdentities(
   return map;
 }
 
+/** What a channel card shows. Saved enrichment on the media row wins; else the
+ * channel details already stored with any of its videos in our library. */
+export interface YouTubeChannelIdentity {
+  title: string;
+  handle: string | null;
+  avatar: string | null;
+  subscribers: number | null;
+  videos: number | null;
+  description: string | null;
+}
+
+/** `@handle` / `UC…` id out of a channel URL; null for anything else. */
+export function youTubeChannelKey(url: string): { handle?: string; channelId?: string } | null {
+  try {
+    const path = new URL(url).pathname;
+    const handle = /^\/(@[^/]+)/.exec(path)?.[1];
+    if (handle) return { handle: decodeURIComponent(handle).toLowerCase() };
+    const id = /^\/channel\/(UC[\w-]+)/.exec(path)?.[1];
+    if (id) return { channelId: id };
+    const legacy = /^\/(?:c|user)\/([^/]+)/.exec(path)?.[1];
+    if (legacy) return { handle: `@${decodeURIComponent(legacy).toLowerCase()}` };
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+type JsonObject = Record<string, unknown>;
+const jsonObject = (value: unknown): JsonObject =>
+  value && typeof value === "object" && !Array.isArray(value) ? (value as JsonObject) : {};
+const jsonText = (value: unknown): string | null => (typeof value === "string" && value ? value : null);
+const jsonCount = (value: unknown): number | null => {
+  const parsed = typeof value === "number" ? value : typeof value === "string" && value ? Number(value) : NaN;
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+function channelIdentityFrom(channel: unknown): YouTubeChannelIdentity | null {
+  const snippet = jsonObject(jsonObject(channel).snippet);
+  const stats = jsonObject(jsonObject(channel).statistics);
+  const thumbs = jsonObject(snippet.thumbnails);
+  const title = jsonText(snippet.title);
+  if (!title) return null;
+  return {
+    title,
+    handle: jsonText(snippet.customUrl),
+    avatar:
+      jsonText(jsonObject(thumbs.medium).url) ??
+      jsonText(jsonObject(thumbs.default).url) ??
+      jsonText(jsonObject(thumbs.high).url),
+    subscribers: stats.hiddenSubscriberCount === true ? null : jsonCount(stats.subscriberCount),
+    videos: jsonCount(stats.videoCount),
+    description: jsonText(snippet.description),
+  };
+}
+
+/** Saved enrichment (`metadata.youtube_channel`) on a channel media row. */
+export function savedChannelIdentity(item: ResearchMedia): YouTubeChannelIdentity | null {
+  const saved = jsonObject(jsonObject(item.metadata).youtube_channel);
+  const title = jsonText(saved.title);
+  if (!title) return null;
+  return {
+    title,
+    handle: jsonText(saved.handle),
+    avatar: jsonText(saved.avatar) ?? item.thumbnail_url ?? null,
+    subscribers: jsonCount(saved.subscribers),
+    videos: jsonCount(saved.videos),
+    description: jsonText(saved.description),
+  };
+}
+
+/** Channel details we already hold, keyed by channel URL. No YouTube call. */
+export async function getYouTubeChannelIdentities(
+  urls: string[],
+): Promise<Map<string, YouTubeChannelIdentity>> {
+  const keys = new Map<string, { handle?: string; channelId?: string }>();
+  for (const url of new Set(urls)) {
+    const key = youTubeChannelKey(url);
+    if (key) keys.set(url, key);
+  }
+  const handles = [...new Set([...keys.values()].flatMap((k) => (k.handle ? [k.handle] : [])))];
+  const ids = [...new Set([...keys.values()].flatMap((k) => (k.channelId ? [k.channelId] : [])))];
+  const found = new Map<string, YouTubeChannelIdentity>();
+  // A plain string keeps supabase-js from expanding the JSON path type (TS2589).
+  const columns: string = "channel:provider_data->channel";
+  const reads = [
+    handles.length
+      ? supabase.schema("research").from("youtube_video").select(columns)
+          .in("provider_data->channel->snippet->>customUrl", handles).is("deleted_at", null).limit(500)
+      : null,
+    ids.length
+      ? supabase.schema("research").from("youtube_video").select(columns)
+          .in("provider_data->channel->>id", ids).is("deleted_at", null).limit(500)
+      : null,
+  ];
+  for (const read of reads) {
+    if (!read) continue;
+    const { data, error } = await read;
+    if (error) throw error;
+    for (const row of (data ?? []) as unknown as Array<{ channel: unknown }>) {
+      const identity = channelIdentityFrom(row.channel);
+      if (!identity) continue;
+      const handle = identity.handle?.toLowerCase();
+      if (handle && !found.has(handle)) found.set(handle, identity);
+      const id = jsonObject(row.channel).id;
+      if (typeof id === "string" && !found.has(id)) found.set(id, identity);
+    }
+  }
+  const byUrl = new Map<string, YouTubeChannelIdentity>();
+  for (const [url, key] of keys) {
+    const identity = found.get(key.handle ?? "") ?? found.get(key.channelId ?? "");
+    if (identity) byUrl.set(url, identity);
+  }
+  return byUrl;
+}
+
+/** Saves a looked-up channel onto its media row so it never needs asking again. */
+export async function saveChannelIdentity(
+  mediaId: string,
+  metadata: Record<string, unknown> | null | undefined,
+  identity: YouTubeChannelIdentity,
+): Promise<void> {
+  await writeOneRow(
+    supabase
+      .schema("research")
+      .from("rs_media")
+      .update({
+        thumbnail_url: identity.avatar,
+        caption: identity.title,
+        metadata: { ...(metadata ?? {}), youtube_channel: identity },
+      })
+      .eq("id", mediaId)
+      .select("id"),
+    { action: "update", noun: "channel details" },
+  );
+}
+
 export async function getSources(
   topicId: string,
   filters?: Partial<SourceFilters>,
