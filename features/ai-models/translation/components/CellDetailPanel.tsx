@@ -43,6 +43,7 @@ import { readConfidenceThreshold, readTranslationCellDetail } from "../data";
 import {
   TRANSLATION_GRID_QUERY_KEY,
   evidenceProven,
+  proofCurrent,
   isHttpUrl,
   normalizeEvidence,
   otherMetadata,
@@ -82,20 +83,26 @@ function AnyRow({ label, value }: { label: string; value: unknown }) {
   if (value === null || value === undefined || value === "") {
     return <PropertyRow label={label} missing="Empty" />;
   }
-  if (typeof value === "string") return <PropertyRow label={label} value={value} />;
+  if (typeof value === "string")
+    return <PropertyRow label={label} value={value} />;
   return <PropertyRow label={label} mono value={rawText(value)} />;
 }
 
 /** A stored conversation: ONE door (the admin conversation route), new tab, copyable id. */
 function ChatDoor({ conversationId }: { conversationId: string }) {
-  const href = adminTwinHref("conversation", conversationId, true) ?? `/chat/${conversationId}`;
+  const href =
+    adminTwinHref("conversation", conversationId, true) ??
+    `/chat/${conversationId}`;
   return <RecordId value={conversationId} label="Chat" labelled href={href} />;
 }
 
 function RefValue({ value }: { value: unknown }) {
   if (isHttpUrl(value)) {
     return (
-      <OutboundLink href={value} className="break-all text-primary underline-offset-2 hover:underline">
+      <OutboundLink
+        href={value}
+        className="break-all text-primary underline-offset-2 hover:underline"
+      >
         {value}
       </OutboundLink>
     );
@@ -113,26 +120,60 @@ const OUTCOME_TONE: Record<string, BadgeTone> = {
   skipped: "neutral",
 };
 
-function EvidenceEntry({ entry, index }: { entry: EvidenceView; index: number }) {
+function EvidenceEntry({
+  entry,
+  index,
+}: {
+  entry: EvidenceView;
+  index: number;
+}) {
   return (
-    <div className="space-y-0.5 border-l-2 border-border pl-3" data-testid="translation-evidence-entry">
+    <div
+      className="space-y-0.5 border-l-2 border-border pl-3"
+      data-testid="translation-evidence-entry"
+    >
       <div className="flex flex-wrap items-center gap-2 pt-1">
-        <span className="type-secondary text-muted-foreground tabular-nums">{index + 1}</span>
-        {entry.kind ? <Badge tone="info">{entry.kind}</Badge> : <Badge tone="warning">No kind</Badge>}
-        {entry.outcome ? <Badge tone={OUTCOME_TONE[entry.outcome] ?? "neutral"}>{entry.outcome}</Badge> : null}
-        {entry.at ? <span className="type-secondary text-muted-foreground">{when(entry.at)}</span> : null}
+        <span className="type-secondary text-muted-foreground tabular-nums">
+          {index + 1}
+        </span>
+        {entry.kind ? (
+          <Badge tone="info">{entry.kind}</Badge>
+        ) : (
+          <Badge tone="warning">No kind</Badge>
+        )}
+        {entry.outcome ? (
+          <Badge tone={OUTCOME_TONE[entry.outcome] ?? "neutral"}>
+            {entry.outcome}
+          </Badge>
+        ) : null}
+        {entry.at ? (
+          <span className="type-secondary text-muted-foreground">
+            {when(entry.at)}
+          </span>
+        ) : null}
       </div>
       {entry.ref !== undefined ? (
         <PropertyRow
           label="Ref"
           mono={!isHttpUrl(entry.ref)}
-          value={entry.ref === null || entry.ref === "" ? null : <RefValue value={entry.ref} />}
-          {...(entry.ref === null || entry.ref === "" ? { missing: "Empty" } : {})}
+          value={
+            entry.ref === null || entry.ref === "" ? null : (
+              <RefValue value={entry.ref} />
+            )
+          }
+          {...(entry.ref === null || entry.ref === ""
+            ? { missing: "Empty" }
+            : {})}
         />
       ) : null}
-      {entry.result !== undefined ? <AnyRow label="Result" value={entry.result} /> : null}
+      {entry.result !== undefined ? (
+        <AnyRow label="Result" value={entry.result} />
+      ) : null}
       {entry.conversationId ? (
-        <PropertyRow label="Test call" value={<ChatDoor conversationId={entry.conversationId} />} />
+        <PropertyRow
+          label="Test call"
+          value={<ChatDoor conversationId={entry.conversationId} />}
+        />
       ) : null}
       {entry.extra.map(([k, v]) => (
         <AnyRow key={k} label={k} value={v} />
@@ -143,14 +184,19 @@ function EvidenceEntry({ entry, index }: { entry: EvidenceView; index: number })
 
 function OutcomeEntry({ o }: { o: CellTestOutcome }) {
   return (
-    <div className="space-y-0.5 border-l-2 border-border pl-3" data-testid="translation-test-outcome">
+    <div
+      className="space-y-0.5 border-l-2 border-border pl-3"
+      data-testid="translation-test-outcome"
+    >
       <div className="flex flex-wrap items-center gap-2 pt-1">
         {o.outcome ? (
           <Badge tone={OUTCOME_TONE[o.outcome] ?? "neutral"}>{o.outcome}</Badge>
         ) : (
           <Badge tone="warning">No outcome</Badge>
         )}
-        <span className="type-value font-medium">{o.label ?? rawText(o.value)}</span>
+        <span className="type-value font-medium">
+          {o.label ?? rawText(o.value)}
+        </span>
         <span className="type-secondary text-muted-foreground">
           {[o.model_name, o.api].filter(Boolean).join(" · ")}
         </span>
@@ -165,7 +211,11 @@ function OutcomeEntry({ o }: { o: CellTestOutcome }) {
       {o.detail ? <PropertyRow label="Detail" value={o.detail} /> : null}
       <PropertyRow
         label="Call"
-        value={o.conversation_id ? <ChatDoor conversationId={o.conversation_id} /> : null}
+        value={
+          o.conversation_id ? (
+            <ChatDoor conversationId={o.conversation_id} />
+          ) : null
+        }
         {...(o.conversation_id ? {} : { missing: "Not stored" })}
       />
     </div>
@@ -185,21 +235,33 @@ function TestResultView({ result }: { result: CellTestResult }) {
           : {})}
       />
       {result.stopped_by_budget ? (
-        <p className="type-secondary text-warning">Stopped early: the daily test budget ran out.</p>
+        <p className="type-secondary text-warning">
+          Stopped early: the daily test budget ran out.
+        </p>
       ) : null}
       {result.problems.length > 0 ? (
         <>
           <p className="break-words type-secondary font-medium text-warning">
-            {result.problems.join(" ")} <ErrorAlchemyMenu error={result.problems.join(" ")} />
+            {result.problems.join(" ")}{" "}
+            <ErrorAlchemyMenu error={result.problems.join(" ")} />
           </p>
-          <PropertyRow label="Reply as received" mono value={rawText(result.raw)} />
+          <PropertyRow
+            label="Reply as received"
+            mono
+            value={rawText(result.raw)}
+          />
         </>
       ) : null}
       {result.outcomes.map((o, i) => (
-        <OutcomeEntry key={`${o.offering_id ?? "?"}:${o.label ?? "?"}:${i}`} o={o} />
+        <OutcomeEntry
+          key={`${o.offering_id ?? "?"}:${o.label ?? "?"}:${i}`}
+          o={o}
+        />
       ))}
       {result.outcomes.length === 0 && result.problems.length === 0 ? (
-        <p className="type-secondary text-muted-foreground">No calls were made.</p>
+        <p className="type-secondary text-muted-foreground">
+          No calls were made.
+        </p>
       ) : null}
     </div>
   );
@@ -229,16 +291,31 @@ function TestNow({ cell }: { cell: TranslationCellRow }) {
     try {
       const reply = await testTranslationCell(auth, cell.id);
       queryClient.setQueryData(translationTestResultKey(cell.id), reply);
-      toast.success("Test finished", { description: reply.summary ?? "The reply had no summary." });
+      toast.success("Test finished", {
+        description: reply.summary ?? "The reply had no summary.",
+      });
       // The server appends evidence and may promote the state: refetch, then say
       // where the cell went when it left "Needs you" (its /approvals row unmounts).
-      await queryClient.invalidateQueries({ queryKey: TRANSLATION_GRID_QUERY_KEY });
+      await queryClient.invalidateQueries({
+        queryKey: TRANSLATION_GRID_QUERY_KEY,
+      });
       const fresh = await readTranslationCellDetail(cell.id).catch(() => null);
-      if (fresh?.state && fresh.state !== cell.state && !NEEDS_YOU_STATES.has(fresh.state)) {
-        recordToast.info({ type: "translation_cell", id: cell.id, title: cell.setting_key }, `${cell.setting_key} is now ${fresh.state}`, {
-          description: reply.summary ?? undefined,
-          action: { label: "Open grid", onClick: () => openFromNotice(`${GRID_HREF}?tab=all`) },
-        });
+      if (
+        fresh?.state &&
+        fresh.state !== cell.state &&
+        !NEEDS_YOU_STATES.has(fresh.state)
+      ) {
+        recordToast.info(
+          { type: "translation_cell", id: cell.id, title: cell.setting_key },
+          `${cell.setting_key} is now ${fresh.state}`,
+          {
+            description: reply.summary ?? undefined,
+            action: {
+              label: "Open grid",
+              onClick: () => openFromNotice(`${GRID_HREF}?tab=all`),
+            },
+          },
+        );
       }
     } catch (err) {
       setError(testErrorSentence(err));
@@ -249,11 +326,19 @@ function TestNow({ cell }: { cell: TranslationCellRow }) {
 
   return (
     <div className="space-y-2">
-      <Button icon={<FlaskConical />} variant="outline" disabled={busy} onClick={() => void run()}>
+      <Button
+        icon={<FlaskConical />}
+        variant="outline"
+        disabled={busy}
+        onClick={() => void run()}
+      >
         {busy ? "Testing…" : "Test now"}
       </Button>
       {error ? (
-        <p className="break-words type-secondary font-medium text-destructive" data-testid="translation-test-error">
+        <p
+          className="break-words type-secondary font-medium text-destructive"
+          data-testid="translation-test-error"
+        >
           {error} <ErrorAlchemyMenu error={error} />
         </p>
       ) : null}
@@ -271,13 +356,19 @@ function ConfidenceValue({ confidence }: { confidence: number }) {
   });
   const pct = Math.round(confidence * 100);
   return (
-    <span className="inline-flex flex-wrap items-center gap-2" data-testid="translation-confidence">
+    <span
+      className="inline-flex flex-wrap items-center gap-2"
+      data-testid="translation-confidence"
+    >
       <span className="tabular-nums">{pct}%</span>
       {threshold.isPending ? (
-        <span className="type-secondary text-muted-foreground">Reading the threshold…</span>
+        <span className="type-secondary text-muted-foreground">
+          Reading the threshold…
+        </span>
       ) : threshold.isError ? (
         <span className="type-secondary text-destructive">
-          Could not read the threshold <ErrorAlchemyMenu error={threshold.error} />
+          Could not read the threshold{" "}
+          <ErrorAlchemyMenu error={threshold.error} />
         </span>
       ) : (
         <>
@@ -295,7 +386,15 @@ function ConfidenceValue({ confidence }: { confidence: number }) {
   );
 }
 
-function PersonAt({ at, by, label }: { at: string | null | undefined; by: string | null | undefined; label: string }) {
+function PersonAt({
+  at,
+  by,
+  label,
+}: {
+  at: string | null | undefined;
+  by: string | null | undefined;
+  label: string;
+}) {
   return (
     <span className="inline-flex flex-wrap items-center gap-2">
       {when(at) ?? null}
@@ -320,7 +419,11 @@ export default function CellDetailPanel({
   const detail = detailQuery.data ?? null;
   const reading = !detail && !detailQuery.isError;
   const evidence = normalizeEvidence(detail?.evidence);
-  const proven = detail ? evidenceProven(detail.evidence) : null;
+  const proven = detail ? proofCurrent(detail.evidence, cell.rule) : null;
+  // passing tests on record that the door no longer counts (an earlier rule, or not server-run)
+  const staleProof = detail
+    ? !proven && evidenceProven(detail.evidence)
+    : false;
   const run = detail ? readRun(detail.metadata) : null;
   const metadataRest = detail ? otherMetadata(detail.metadata) : [];
   const detailError = detailQuery.isError ? (
@@ -341,7 +444,11 @@ export default function CellDetailPanel({
       <PropertyRow
         label="Confidence"
         help="Agent drafts at or above the threshold apply without review."
-        value={cell.confidence != null ? <ConfidenceValue confidence={cell.confidence} /> : null}
+        value={
+          cell.confidence != null ? (
+            <ConfidenceValue confidence={cell.confidence} />
+          ) : null
+        }
         {...(cell.confidence != null ? {} : { missing: "Not given" })}
       />
       <PropertyRow
@@ -351,9 +458,17 @@ export default function CellDetailPanel({
           (proven === null ? (
             "Reading…"
           ) : proven ? (
-            <Badge tone="success">Proven by a passing live test</Badge>
+            <Badge tone="success">Proven by a live test of this rule</Badge>
           ) : (
-            <Badge tone="warning">Not proven by a live test</Badge>
+            <span className="inline-flex flex-wrap items-center gap-2">
+              <Badge tone="warning">Not proven by a live test</Badge>
+              {staleProof ? (
+                <span className="text-muted-foreground">
+                  Passing tests on record are for an earlier rule or not
+                  server-run
+                </span>
+              ) : null}
+            </span>
           ))
         }
       />
@@ -361,23 +476,36 @@ export default function CellDetailPanel({
         label="Agent run"
         value={
           detailError ??
-          (reading
-            ? "Reading…"
-            : run?.conversation_id
-              ? <ChatDoor conversationId={run.conversation_id} />
-              : run
-                ? "Run recorded without a chat id"
-                : "No agent run recorded for this draft")
+          (reading ? (
+            "Reading…"
+          ) : run?.conversation_id ? (
+            <ChatDoor conversationId={run.conversation_id} />
+          ) : run ? (
+            "Run recorded without a chat id"
+          ) : (
+            "No agent run recorded for this draft"
+          ))
         }
       />
       {run ? (
         <div className="space-y-0.5 border-l-2 border-border pl-3">
-          {run.request_id ? <PropertyRow label="Request" mono value={run.request_id} /> : null}
-          {run.agent_id ? (
-            <PropertyRow label="Agent" value={<RecordId value={run.agent_id} label="Agent" token="agent" />} />
+          {run.request_id ? (
+            <PropertyRow label="Request" mono value={run.request_id} />
           ) : null}
-          {run.model_id ? <PropertyRow label="Model" mono value={run.model_id} /> : null}
-          {run.mandate_key ? <PropertyRow label="Mandate" mono value={run.mandate_key} /> : null}
+          {run.agent_id ? (
+            <PropertyRow
+              label="Agent"
+              value={
+                <RecordId value={run.agent_id} label="Agent" token="agent" />
+              }
+            />
+          ) : null}
+          {run.model_id ? (
+            <PropertyRow label="Model" mono value={run.model_id} />
+          ) : null}
+          {run.mandate_key ? (
+            <PropertyRow label="Mandate" mono value={run.mandate_key} />
+          ) : null}
           {run.at ? <PropertyRow label="Ran" value={when(run.at)} /> : null}
           {run.extra.map(([k, v]) => (
             <AnyRow key={k} label={k} value={v} />
@@ -387,7 +515,13 @@ export default function CellDetailPanel({
       <TestNow cell={cell} />
       <PropertyRow
         label="Rationale"
-        value={cell.rationale ? <span className="whitespace-pre-wrap break-words">{cell.rationale}</span> : null}
+        value={
+          cell.rationale ? (
+            <span className="whitespace-pre-wrap break-words">
+              {cell.rationale}
+            </span>
+          ) : null
+        }
         {...(cell.rationale ? {} : { missing: "None given" })}
       />
       <PropertyRow label="Rule" value={summarizeRule(cell.rule)} />
@@ -415,45 +549,99 @@ export default function CellDetailPanel({
       ) : null}
       {cell.conflict ? (
         <>
-          <PropertyRow label="Conflict" value="Sources disagree" {...(cell.conflict.at ? { meta: when(cell.conflict.at) } : {})} />
+          <PropertyRow
+            label="Conflict"
+            value="Sources disagree"
+            {...(cell.conflict.at ? { meta: when(cell.conflict.at) } : {})}
+          />
           <div className="space-y-2">
             {(cell.conflict.sources ?? []).map((s, i) => (
-              <div key={i} className="space-y-0.5 border-l-2 border-border pl-3">
+              <div
+                key={i}
+                className="space-y-0.5 border-l-2 border-border pl-3"
+              >
                 <PropertyRow
                   label={s.name ?? `Source ${i + 1}`}
                   mono
                   value={rawText(s.says)}
-                  {...(s.confidence != null ? { meta: `${Math.round(s.confidence * 100)}%` } : {})}
+                  {...(s.confidence != null
+                    ? { meta: `${Math.round(s.confidence * 100)}%` }
+                    : {})}
                 />
-                {s.rationale ? <PropertyRow label="Why" value={s.rationale} /> : null}
+                {s.rationale ? (
+                  <PropertyRow label="Why" value={s.rationale} />
+                ) : null}
               </div>
             ))}
-            {!cell.conflict.sources?.length ? <PropertyRow label="Conflict as stored" mono value={rawText(cell.conflict)} /> : null}
+            {!cell.conflict.sources?.length ? (
+              <PropertyRow
+                label="Conflict as stored"
+                mono
+                value={rawText(cell.conflict)}
+              />
+            ) : null}
           </div>
         </>
       ) : null}
       {cell.rejection_fingerprint ? (
-        <PropertyRow label="Provider rejection" mono value={cell.rejection_fingerprint} />
+        <PropertyRow
+          label="Provider rejection"
+          mono
+          value={cell.rejection_fingerprint}
+        />
       ) : null}
       {metadataRest.map(([k, v]) => (
         <AnyRow key={k} label={`Metadata: ${k}`} value={v} />
       ))}
       <PropertyRow
         label="Created"
-        value={detail?.created_at || detail?.created_by ? <PersonAt at={detail.created_at} by={detail.created_by} label="Creator" /> : null}
-        {...(detail?.created_at || detail?.created_by ? {} : { missing: detail ? "Unknown" : "Reading…" })}
+        value={
+          detail?.created_at || detail?.created_by ? (
+            <PersonAt
+              at={detail.created_at}
+              by={detail.created_by}
+              label="Creator"
+            />
+          ) : null
+        }
+        {...(detail?.created_at || detail?.created_by
+          ? {}
+          : { missing: detail ? "Unknown" : "Reading…" })}
       />
       <PropertyRow
         label="Updated"
-        value={cell.updated_at || detail?.updated_by ? <PersonAt at={cell.updated_at} by={detail?.updated_by} label="Editor" /> : null}
-        {...(cell.updated_at || detail?.updated_by ? {} : { missing: "Unknown" })}
+        value={
+          cell.updated_at || detail?.updated_by ? (
+            <PersonAt
+              at={cell.updated_at}
+              by={detail?.updated_by}
+              label="Editor"
+            />
+          ) : null
+        }
+        {...(cell.updated_at || detail?.updated_by
+          ? {}
+          : { missing: "Unknown" })}
       />
       <PropertyRow
         label="Approved"
-        value={cell.approved_at || cell.approved_by ? <PersonAt at={cell.approved_at} by={cell.approved_by} label="Approver" /> : null}
-        {...(cell.approved_at || cell.approved_by ? {} : { missing: "Not yet" })}
+        value={
+          cell.approved_at || cell.approved_by ? (
+            <PersonAt
+              at={cell.approved_at}
+              by={cell.approved_by}
+              label="Approver"
+            />
+          ) : null
+        }
+        {...(cell.approved_at || cell.approved_by
+          ? {}
+          : { missing: "Not yet" })}
       />
-      <PropertyRow label="Cell" value={<RecordId value={cell.id} label="Cell" />} />
+      <PropertyRow
+        label="Cell"
+        value={<RecordId value={cell.id} label="Cell" />}
+      />
     </div>
   );
 }

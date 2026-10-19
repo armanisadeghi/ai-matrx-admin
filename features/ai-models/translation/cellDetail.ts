@@ -8,6 +8,10 @@
  *   (live definition read 2026-10-18): proven when some `probe`/`replay` entry
  *   passed (`"pass"|"accepted"|"boundary"`, bare or as `result.outcome`) and
  *   none failed (`"fail"|"rejected"`).
+ * - `proofCurrent` — mirrors `ai.translation_proof_current(jsonb, jsonb)`, the
+ *   door's actual proof test since aidream migration 20261019110000: only entries
+ *   a server-run test wrote (`by: "probe"`) about exactly the current rule
+ *   (`for_rule` equal to the cell's rule, compared as JSON) count.
  * - `normalizeEvidence` — every entry, any shape (many live rows carry entries
  *   with no `kind`, e.g. `{date, probe}`); nothing is ever dropped.
  * - `readRun` — `metadata.run` written by the drafting agent.
@@ -20,7 +24,10 @@ import { BackendApiError } from "@ai-matrx/api";
 import { postJsonAsUser } from "@/lib/api/post-json-as-user";
 
 /** THE query key for the grid bundle; cell details hang under it, so one invalidate refreshes all. */
-export const TRANSLATION_GRID_QUERY_KEY = ["ai-models", "translation-grid"] as const;
+export const TRANSLATION_GRID_QUERY_KEY = [
+  "ai-models",
+  "translation-grid",
+] as const;
 
 /** The last Test now reply per cell — outside the grid prefix, so it survives a refetch and an unmount. */
 export const translationTestResultKey = (cellId: string) =>
@@ -72,6 +79,38 @@ export function evidenceProven(evidence: unknown): boolean {
     return o !== null && FAIL.has(o);
   });
   return passed && !failed;
+}
+
+/** Postgres `jsonb =`: objects equal regardless of key order, arrays in order. */
+export function jsonEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (Array.isArray(a) || Array.isArray(b)) {
+    return (
+      Array.isArray(a) &&
+      Array.isArray(b) &&
+      a.length === b.length &&
+      a.every((v, i) => jsonEqual(v, b[i]))
+    );
+  }
+  if (isRecord(a) && isRecord(b)) {
+    const ka = Object.keys(a);
+    const kb = Object.keys(b);
+    return (
+      ka.length === kb.length &&
+      ka.every((k) => k in b && jsonEqual(a[k], b[k]))
+    );
+  }
+  return false;
+}
+
+/** The door's proof test: server-run tests (`by: "probe"`) of exactly this rule. */
+export function proofCurrent(evidence: unknown, rule: unknown): boolean {
+  if (!Array.isArray(evidence)) return false;
+  return evidenceProven(
+    evidence.filter(
+      (e) => isRecord(e) && e.by === "probe" && jsonEqual(e.for_rule, rule),
+    ),
+  );
 }
 
 export type EvidenceView = {
@@ -129,7 +168,8 @@ export function normalizeEvidence(evidence: unknown): EvidenceView[] {
 
 /** Every `metadata` key other than `run` (which has its own slot), as stored. */
 export function otherMetadata(metadata: unknown): [string, unknown][] {
-  if (!isRecord(metadata)) return metadata == null ? [] : [["metadata", metadata]];
+  if (!isRecord(metadata))
+    return metadata == null ? [] : [["metadata", metadata]];
   return Object.entries(metadata).filter(([k]) => k !== "run");
 }
 
@@ -144,13 +184,21 @@ export type CellRun = {
   extra: [string, unknown][];
 };
 
-const RUN_KEYS = new Set(["conversation_id", "request_id", "agent_id", "model_id", "mandate_key", "at"]);
+const RUN_KEYS = new Set([
+  "conversation_id",
+  "request_id",
+  "agent_id",
+  "model_id",
+  "mandate_key",
+  "at",
+]);
 
 /** `metadata.run` (the drafting agent's run), or null when none was recorded. */
 export function readRun(metadata: unknown): CellRun | null {
   if (!isRecord(metadata) || !isRecord(metadata.run)) return null;
   const r = metadata.run;
-  const s = (k: string) => (typeof r[k] === "string" && r[k] ? (r[k] as string) : null);
+  const s = (k: string) =>
+    typeof r[k] === "string" && r[k] ? (r[k] as string) : null;
   return {
     conversation_id: s("conversation_id"),
     request_id: s("request_id"),
@@ -158,7 +206,9 @@ export function readRun(metadata: unknown): CellRun | null {
     model_id: s("model_id"),
     mandate_key: s("mandate_key"),
     at: s("at"),
-    extra: Object.entries(r).filter(([k]) => !RUN_KEYS.has(k) || typeof r[k] !== "string"),
+    extra: Object.entries(r).filter(
+      ([k]) => !RUN_KEYS.has(k) || typeof r[k] !== "string",
+    ),
   };
 }
 
@@ -206,8 +256,10 @@ export type CellTestResult = {
   raw: unknown;
 };
 
-const str = (v: unknown): string | null => (typeof v === "string" && v ? v : null);
-const num = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
+const str = (v: unknown): string | null =>
+  typeof v === "string" && v ? v : null;
+const num = (v: unknown): number | null =>
+  typeof v === "number" && Number.isFinite(v) ? v : null;
 
 export function normalizeTestResult(raw: unknown): CellTestResult {
   const problems: string[] = [];
@@ -255,7 +307,8 @@ export function normalizeTestResult(raw: unknown): CellTestResult {
         evidence: str(r.evidence),
       };
     });
-    if (raw.outcomes.some((o) => !isRecord(o))) problems.push("Some outcome lines are not objects.");
+    if (raw.outcomes.some((o) => !isRecord(o)))
+      problems.push("Some outcome lines are not objects.");
   } else {
     problems.push("The reply has no outcome list.");
   }
@@ -279,7 +332,12 @@ export type CellTestAuth = {
 /** The server's own sentence for a refused test (400/409 `detail`), with its status. */
 export function testErrorSentence(error: unknown): string {
   if (error instanceof BackendApiError) {
-    const words = (error.detail || error.userMessage || error.message || "").trim();
+    const words = (
+      error.detail ||
+      error.userMessage ||
+      error.message ||
+      ""
+    ).trim();
     return error.status ? `${error.status}: ${words}` : words;
   }
   return error instanceof Error ? error.message : String(error);
@@ -292,9 +350,14 @@ export async function testTranslationCell(
   return normalizeTestResult(await postTestTranslationCell(auth, cellId));
 }
 
-async function postTestTranslationCell(auth: CellTestAuth, cellId: string): Promise<unknown> {
-  if (!auth.baseUrl) throw new Error("No AI Matrx server address is configured.");
-  if (!auth.accessToken) throw new Error("Sign in again; no session was found.");
+async function postTestTranslationCell(
+  auth: CellTestAuth,
+  cellId: string,
+): Promise<unknown> {
+  if (!auth.baseUrl)
+    throw new Error("No AI Matrx server address is configured.");
+  if (!auth.accessToken)
+    throw new Error("Sign in again; no session was found.");
   return postJsonAsUser<unknown>({
     baseUrl: auth.baseUrl,
     accessToken: auth.accessToken,

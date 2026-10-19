@@ -12,7 +12,7 @@ import { BUNDLED_COVER_KEYS, COVER_LIBRARY } from "@/lib/spaces-blocks/cover-lib
 
 import type { SpaceDoc, SpacesStore } from "../../contract";
 import { COVER_GALLERY, COVER_PHOTOS, galleryImage } from "../../page/gallery";
-import { makeTemplatePages, type PackRunJournal, type SpaceTemplateFull } from "../use-pack";
+import { makeTemplatePages, type PackRun, type PackRunJournal, type SpaceTemplateFull } from "../use-pack";
 
 const photo = COVER_LIBRARY[0];
 const cover = { url: `gallery:${photo.key}`, offsetY: 50 };
@@ -44,8 +44,8 @@ function world() {
     },
     archive: async () => undefined,
   } as unknown as SpacesStore;
-  let saved: string | null = null;
-  const journal: PackRunJournal = { read: () => saved, write: (id) => void (saved = id) };
+  let saved: PackRun | null = null;
+  const journal: PackRunJournal = { read: () => saved, write: (run) => void (saved = run) };
   return { store, journal, createRoot: async (title: string) => make(title), docs };
 }
 

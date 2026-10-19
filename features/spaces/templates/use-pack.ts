@@ -5,14 +5,13 @@
 // spaces:templates:publish) whose card carries `space` and whose spec carries the page pack. The read is
 // `custom.space_templates` (signed-in; platform rows for everyone, an organization's to its members).
 //
-// USE TEMPLATE = (1) template_install of that row into the ACTIVE organization through the one install
-// door (a second press answers `already` with the same tables; an older install is upgraded first), then
-// the host steps (the template's assistant), exactly like the gallery's Install; (2) the page tree made
-// in the same organization with every token swapped for the made table, view and page ids; (3) the
-// root page opened. Pressing it again makes a NEW copy of the pages over the SAME tables — Notion's
-// "use again" gives another page set; the organization never gets a second set of tables.
+// USE TEMPLATE = (1) template_install_fresh of that row into the ACTIVE organization: every press makes its
+// OWN copy of the tables, named "<Table> · <page title>" (TEMPLATE-FRESH, Notion parity), then the host steps
+// (the template's assistant); (2) the page tree made in the same organization with every token swapped for
+// that copy's table, view and page ids; (3) the root page opened. A run that stops (refusal, failure, Cancel)
+// is resumed by Try again on the SAME copy and the SAME pages (PackRun journal), never a second set.
 
-import { allTables, runTemplateDoor, templateUpgradeHint, upgradeTemplateInstall, type TemplateDoorAnswer, type TemplateSpec } from "@ai-matrx/records/templates";
+import { allTables, listTemplateInstances, runTemplateDoor, templateUpgradeHint, upgradeTemplateInstall, type TemplateDoorAnswer, type TemplateSpec } from "@ai-matrx/records/templates";
 import { storeDoors, supabaseDataSource } from "@ai-matrx/records/core";
 
 import { packPageSettings, packPagesInOrder, resolvePackBlocks, type ResolvedTable, type SpaceTemplateCardFace, type SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
@@ -215,20 +214,116 @@ async function withInstalledKeys(tables: Record<string, ResolvedTable>, spec: Te
   return out;
 }
 
-/** Installs (or finds, or upgrades) the template's tables in `organizationId`, with its host steps. */
-export async function installTemplateTables(t: SpaceTemplateFull, organizationId: string, dispatch: AppDispatch, onStage?: (stage: string) => void): Promise<Record<string, ResolvedTable>> {
-  const client = createClient();
+/**
+ * USE-TEMPLATE-FAILURES (Accounting Firm Desk, 2026-10-19): the store REFUSED the install (step 13, lock timeout
+ * 55P03 after 148 s) and the screen spun on "Making tables… · Pages 5/11" for minutes. The door re-asks a refusal
+ * whose code is transient, up to `maxCalls` (400) times, and each call can wait out the lock again. Now every
+ * refusal ends the run at once with the store's sentence. "Try again" asks the same door again, and the store
+ * resumes from the refused step.
+ */
+export class TemplateInstallRefused extends Error {
+  constructor(readonly refusal: Record<string, unknown> | null | undefined) {
+    super(refusalSentence(refusal));
+    this.name = "TemplateInstallRefused";
+  }
+}
+
+/** The person stopped the run (Cancel): nothing more is asked of the store; what was made is kept for Try again. */
+export class TemplateUseStopped extends Error {
+  constructor() {
+    super("Stopped. The tables made so far are kept.");
+    this.name = "TemplateUseStopped";
+  }
+}
+
+/** Codes the database answers when it was busy, not when the template is wrong. */
+const BUSY_CODES = new Set(["57014", "55P03", "40P01", "40001"]);
+
+/** The store's refusal as one sentence: where it stopped, and the store's own words. */
+export function refusalSentence(refusal: Record<string, unknown> | null | undefined): string {
+  const said = typeof refusal?.["message"] === "string" && refusal["message"] ? String(refusal["message"]).replace(/[.\s]+$/, "") : "";
+  const step = typeof refusal?.["step"] === "number" ? ` at step ${refusal["step"]}` : "";
+  const label = typeof refusal?.["label"] === "string" && refusal["label"] ? ` (${refusal["label"]})` : "";
+  const busy = BUSY_CODES.has(String(refusal?.["code"] ?? "")) ? " The database was busy." : "";
+  return `The template's tables stopped${step}${label}: ${said || "the install stopped before it finished"}.${busy} Try again picks up from that step.`;
+}
+
+/** Waits for `work`, or rejects with the signal's reason the moment it is aborted. */
+export function untilStopped<T>(work: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) return work;
+  if (signal.aborted) return Promise.reject(signal.reason);
+  return new Promise<T>((resolve, reject) => {
+    const stop = () => reject(signal.reason);
+    signal.addEventListener("abort", stop, { once: true });
+    work.then(
+      (v) => (signal.removeEventListener("abort", stop), resolve(v)),
+      (e) => (signal.removeEventListener("abort", stop), reject(e)),
+    );
+  });
+}
+
+type Source = ReturnType<typeof supabaseDataSource>;
+/** The data source with every rpc cut off by `signal`: a stopped run asks the store nothing more. */
+function stoppable(source: Source, signal?: AbortSignal): Source {
+  if (!signal) return source;
+  const rpc = ((...args: Parameters<Source["rpc"]>) => {
+    if (signal.aborted) return Promise.reject(signal.reason);
+    return untilStopped(Promise.resolve(source.rpc(...args)), signal);
+  }) as Source["rpc"];
+  return { ...source, rpc };
+}
+
+/**
+ * TEMPLATE-FRESH (Notion parity): every "Use template" makes its OWN copy of the tables, named
+ * "<Table> · <title>" (the store numbers a repeated title: "Acme Projects 2"). `installId` continues one copy
+ * (Try again after a refusal or a stop); `onInstallId` hears the copy's id the moment the store names it.
+ */
+export interface FreshCopy {
+  title: string | null;
+  installId?: string | null;
+  onInstallId?: (installId: string) => void;
+}
+
+/**
+ * Installs (or finds, or upgrades) the template's tables in `organizationId`, with its host steps.
+ * With `fresh`, makes (or continues) one new copy instead of the organization's one default install.
+ * Each step the store takes streams into `onStage` ("Making tables 12/40…"). A refusal throws
+ * TemplateInstallRefused at once. `signal` stops the run (its reason is thrown); the install stays at its step.
+ */
+export async function installTemplateTables(
+  t: SpaceTemplateFull,
+  organizationId: string,
+  dispatch: AppDispatch,
+  onStage?: (stage: string) => void,
+  signal?: AbortSignal,
+  fresh?: FreshCopy,
+): Promise<Record<string, ResolvedTable>> {
+  const source = stoppable(supabaseDataSource(createClient()), signal);
   onStage?.("Making tables…");
-  const done = await timed("install-door", () => runTemplateDoor(supabaseDataSource(client), "template_install", organizationId, t.id, { maxCalls: 400 }));
+  const done = await timed("install-door", () =>
+    runTemplateDoor(source, fresh ? "template_install_fresh" : "template_install", organizationId, t.id, {
+      maxCalls: 400,
+      ...(fresh ? { title: fresh.title, installId: fresh.installId ?? null } : {}),
+      onCall: (answer) => {
+        // The copy's id first: a refused or stopped run is resumed on THIS copy, never a new one.
+        if (fresh && answer.install_id) fresh.onInstallId?.(answer.install_id);
+        // A refusal ends the run now, never re-asked in a loop the person cannot see (55P03 waited 148 s a call).
+        if (answer.state === "refused") throw new TemplateInstallRefused(answer.refusal);
+        if (typeof answer.next_step === "number" && typeof answer.steps === "number" && !answer.done) onStage?.(`Making tables ${answer.next_step}/${answer.steps}…`);
+      },
+    }),
+  );
   if (!done.ok || !done.answer?.done) {
-    const refusal = done.answer?.refusal as { message?: string } | null | undefined;
-    throw new Error(`The template's tables were not made: ${refusal?.message ?? done.error?.message ?? "the install stopped before it finished."}`);
+    if (done.answer?.refusal) throw new TemplateInstallRefused(done.answer.refusal);
+    throw new Error(`The template's tables were not made: ${done.error?.message ?? "the install stopped before it finished"}. Try again picks up from that step.`);
   }
   let answer: TemplateDoorAnswer = done.answer;
-  const hint = templateUpgradeHint(answer);
+  // A fresh copy is made at the newest version; only the default install is upgraded in place.
+  const hint = fresh ? null : templateUpgradeHint(answer);
   if (hint) {
     onStage?.(`Upgrading v${hint.from_version} → v${hint.to_version}…`);
-    const up = await upgradeTemplateInstall(supabaseDataSource(client), organizationId, hint.install_id, hint.template_id, { maxCalls: 6 });
+    const up = await upgradeTemplateInstall(source, organizationId, hint.install_id, hint.template_id, { maxCalls: 6 });
+    signal?.throwIfAborted();
     if (!up.ok || !up.answer) {
       const refusal = up.answer?.refusal as { message?: string } | null | undefined;
       throw new Error(`The template's tables were not upgraded to version ${hint.to_version}: ${refusal?.message ?? up.error?.message ?? "the upgrade stopped before it finished."}`);
@@ -236,21 +331,62 @@ export async function installTemplateTables(t: SpaceTemplateFull, organizationId
     if (up.answer.upgraded !== false) toast.success(`Tables upgraded to version ${up.answer.version ?? hint.to_version}: ${upgradeCountsText(up.answer.counts)}.`);
     answer = up.answer;
   }
-  const tables = await timed("field-keys", () => withInstalledKeys(tablesFrom(answer, t.spec), t.spec, organizationId));
+  onStage?.("Reading the tables' fields…");
+  const tables = await untilStopped(
+    timed("field-keys", () => withInstalledKeys(tablesFrom(answer, t.spec), t.spec, organizationId)),
+    signal,
+  );
   onStage?.("Adding the assistant…");
-  await timed("host-steps", () => runHostSteps(answer, organizationId, dispatch, "The template's assistant"));
+  await untilStopped(
+    timed("host-steps", () => runHostSteps(answer, organizationId, dispatch, "The template's assistant")),
+    signal,
+  );
   return tables;
 }
 
 /**
- * The page set of a "Use template" run that has not finished: its root page id, kept while the run works.
- * TEMPLATE-INSTALL-3: a run cut off after its first pages (Oak Street Studio, Fundraising CRM: three empty
- * pages, a second press made a full new set beside them) leaves its root here; the next run moves that
- * unfinished set to Trash before it starts, so a retry never leaves a duplicate.
+ * The organization's earlier copies of this template on an older version (TEMPLATE-FRESH: a new copy is made at
+ * the newest version; each earlier copy is upgraded only when the person says so). Answers how many there are and
+ * the step that upgrades them all, one copy at a time.
  */
+export async function olderTemplateCopies(t: Pick<SpaceTemplateCard, "catalogue_id">, organizationId: string): Promise<{ count: number; upgrade: () => Promise<{ upgraded: number; refused: string[] }> }> {
+  const source = supabaseDataSource(createClient());
+  const { instances } = await listTemplateInstances(source, organizationId, t.catalogue_id);
+  const older = instances.filter((i) => i.upgrade);
+  return {
+    count: older.length,
+    upgrade: async () => {
+      let upgraded = 0;
+      const refused: string[] = [];
+      for (const i of older) {
+        const hint = i.upgrade!;
+        const up = await upgradeTemplateInstall(source, organizationId, hint.install_id, hint.template_id, { maxCalls: 6 });
+        if (up.ok && up.answer) upgraded++;
+        else refused.push(`${i.title ?? "A copy"}: ${(up.answer?.refusal as { message?: string } | null)?.message ?? up.error?.message ?? "the upgrade stopped"}`);
+      }
+      return { upgraded, refused };
+    },
+  };
+}
+
+/**
+ * The page set of a "Use template" run that has not finished: its root, every page made so far by pack key,
+ * whether the failed run moved them to Trash, and the table copy they are made over. TEMPLATE-INSTALL-3 (a cut-off
+ * run left three empty pages, and a second press made a full new set beside them) and USE-TEMPLATE-FAILURES (Try
+ * again must resume): the next run REUSES this set. It is brought back from Trash, the missing pages are made,
+ * and every page is filled, so a retry never duplicates.
+ */
+export interface PackRun {
+  root: SpaceId;
+  ids: Record<string, SpaceId>;
+  trashed: boolean;
+  /** The table copy this page set is made over (TEMPLATE-FRESH): Try again continues it, never a new copy. */
+  installId?: string | null;
+}
+
 export interface PackRunJournal {
-  read(): SpaceId | null;
-  write(rootId: SpaceId | null): void;
+  read(): PackRun | null;
+  write(run: PackRun | null): void;
 }
 
 /** A browser-tab journal for one template in one organization (an in-flight run is specific to this client). */
@@ -258,18 +394,41 @@ export function packRunJournal(organizationId: string, templateId: string): Pack
   const key = `matrx:spaces:pack-run:${organizationId}:${templateId}`;
   const storage = () => (typeof window === "undefined" ? null : window.localStorage);
   return {
-    read: () => storage()?.getItem(key) ?? null,
-    write: (rootId) => (rootId ? storage()?.setItem(key, rootId) : storage()?.removeItem(key)),
+    read: () => {
+      const raw = storage()?.getItem(key);
+      if (!raw) return null;
+      try {
+        const run = JSON.parse(raw) as PackRun;
+        if (run && typeof run.root === "string") return { root: run.root, ids: run.ids ?? {}, trashed: !!run.trashed, installId: run.installId ?? null };
+      } catch {
+        // An older journal held the bare root id of a run that was cut off (never trashed).
+      }
+      return { root: raw, ids: {}, trashed: false };
+    },
+    write: (run) => (run ? storage()?.setItem(key, JSON.stringify(run)) : storage()?.removeItem(key)),
   };
 }
 
 const reasonOf = (err: unknown) => (err instanceof Error && err.message ? err.message : errorSentence(err));
 
-/** What makeTemplatePages can also do: hold preview sizes, and say the moment the root is ready to open. */
+/** What makeTemplatePages can also do: hold preview sizes, say the moment the root is ready, and be stopped. */
 export interface MakePagesOptions {
   sizes?: PreviewSizes | null;
   /** Called once the root page holds its finished content — before the sub-pages are written. */
   onRootReady?: (root: SpaceDoc) => void;
+  /** Stops the run (Cancel): the pages made so far go to Trash and are kept in the journal for Try again. */
+  signal?: AbortSignal;
+}
+
+/** The unfinished run's root, brought back (from Trash if the failed run put it there); null = start fresh. */
+async function resumeRun(store: SpacesStore, run: PackRun): Promise<SpaceDoc | null> {
+  try {
+    if (run.trashed) await store.restore(run.root);
+    return await store.get(run.root);
+  } catch (err) {
+    toast.warning(`An earlier unfinished copy of this template could not be brought back, so a new copy is made: ${reasonOf(err)}`);
+    return null;
+  }
 }
 
 /**
@@ -279,9 +438,9 @@ export interface MakePagesOptions {
  * FAST (ADVERSARIAL-1 #2): the page tree is made WHILE the tables install (`tables` may be a promise; only the
  * content needs them); sub-pages under different parents are made at once (siblings in order); the root's
  * content is written first and `onRootReady` opens it while the sub-pages are filled six at a time.
- * ALL OR NOTHING: a failure part-way (the tables' install included) moves the pages already made to Trash
- * (the root takes its sub-pages) and throws the reason; an earlier run that never finished (closed tab,
- * reload) is moved to Trash first.
+ * NEVER STUCK, NEVER DOUBLED (USE-TEMPLATE-FAILURES): the first failure on either side ends the run at once. A
+ * refused install stops the tree at its next page, and a failed page write never waits out the install. The
+ * pages made so far go to Trash and stay in the journal; the next run brings them back and finishes them.
  */
 export async function makeTemplatePages(
   store: SpacesStore,
@@ -292,20 +451,17 @@ export async function makeTemplatePages(
   journal?: PackRunJournal,
   options: MakePagesOptions = {},
 ): Promise<SpaceDoc> {
-  const unfinished = journal?.read();
-  if (unfinished) {
-    try {
-      await store.archive(unfinished);
-    } catch (err) {
-      toast.warning(`An earlier unfinished copy of this template could not be moved to Trash: ${reasonOf(err)}`);
-    }
-    journal?.write(null);
-  }
   const ordered = packPagesInOrder(t.pack.pages);
-  const root = await createRoot(ordered[0].title);
-  journal?.write(root.id);
+  const earlier = journal?.read() ?? null;
+  const resumed = earlier ? await resumeRun(store, earlier) : null;
+  options.signal?.throwIfAborted();
+  const root = resumed ?? (await createRoot(ordered[0].title));
+  const run: PackRun = { root: root.id, ids: resumed && earlier ? { ...earlier.ids } : {}, trashed: false, installId: earlier?.installId ?? null };
+  run.ids[ordered[0].key] = root.id;
+  const remember = () => journal?.write({ ...run, installId: journal.read()?.installId ?? run.installId ?? null });
+  remember();
   try {
-    const made = await fillTemplatePages(store, root, ordered, Promise.resolve(tables), onProgress, options);
+    const made = await fillTemplatePages(store, root, ordered, Promise.resolve(tables), onProgress, options, run, remember);
     journal?.write(null);
     return made;
   } catch (err) {
@@ -315,18 +471,22 @@ export async function makeTemplatePages(
     } catch {
       undone = false;
     }
-    if (undone) journal?.write(null);
+    run.trashed = undone;
+    remember();
     throw new Error(
-      `The template's pages were not finished (${reasonOf(err)}). ${
-        undone ? "The pages made so far were moved to Trash; use the template again." : "Use the template again; the unfinished pages will be moved to Trash first."
-      }`,
+      `${reasonOf(err)} ${undone ? "The pages made so far are in Trash; Try again brings them back and finishes them." : "Try again finishes the pages made so far."}`,
     );
   }
 }
 
-/** Makes every sub-page under its parent: parents in parallel, each parent's children in their order. */
-async function makePageTree(store: SpacesStore, root: SpaceDoc, ordered: ReturnType<typeof packPagesInOrder>, onMade: () => void): Promise<Record<string, SpaceId>> {
-  const ids: Record<string, SpaceId> = { [ordered[0].key]: root.id };
+/** Makes every sub-page not already in `ids` under its parent: parents in parallel, each parent's children in order. */
+async function makePageTree(
+  store: SpacesStore,
+  ordered: ReturnType<typeof packPagesInOrder>,
+  ids: Record<string, SpaceId>,
+  onMade: () => void,
+  signal: AbortSignal,
+): Promise<Record<string, SpaceId>> {
   const childrenOf = new Map<string, typeof ordered>();
   for (const p of ordered.slice(1)) {
     const parent = p.parent ?? ordered[0].key;
@@ -336,9 +496,13 @@ async function makePageTree(store: SpacesStore, root: SpaceDoc, ordered: ReturnT
     let after: SpaceId | undefined;
     const kids = childrenOf.get(parentKey) ?? [];
     for (const p of kids) {
-      const made = await store.create({ parentId: ids[parentKey], title: p.title, afterId: after });
-      ids[p.key] = made.id;
-      after = made.id;
+      signal.throwIfAborted();
+      // A page an earlier run made is reused, never made twice.
+      if (!ids[p.key]) {
+        const made = await store.create({ parentId: ids[parentKey], title: p.title, afterId: after });
+        ids[p.key] = made.id;
+      }
+      after = ids[p.key];
       onMade();
     }
     await Promise.all(kids.map((p) => under(p.key)));
@@ -354,42 +518,180 @@ async function fillTemplatePages(
   tablesReady: Promise<Record<string, ResolvedTable>>,
   onProgress: ((done: number, total: number) => void) | undefined,
   options: MakePagesOptions,
+  run: PackRun,
+  remember: () => void,
 ): Promise<SpaceDoc> {
   // Both the tree and the content count: 2 steps a sub-page, 1 for the root's content.
   const total = ordered.length * 2 - 1;
   let done = 0;
   const step = () => onProgress?.(++done, total);
-  // The tree is made while the tables install; a failed install still waits for the tree, so Trash takes it all.
-  const [treeResult, tablesResult] = await Promise.allSettled([timed("page-tree", () => makePageTree(store, root, ordered, step)), tablesReady]);
-  if (treeResult.status === "rejected") throw treeResult.reason;
-  if (tablesResult.status === "rejected") throw tablesResult.reason;
-  const ids = treeResult.value;
-  const tables = tablesResult.value;
-  const write = (p: (typeof ordered)[number]) => {
-    const fresh: string[] = [];
-    const newId = () => {
-      const id = crypto.randomUUID();
-      fresh.push(id);
-      return id;
+  // One stop for both sides: Cancel, or the tables' failure (the tree stops at its next page and is not waited for).
+  const stop = new AbortController();
+  const external = options.signal;
+  const onExternal = () => stop.abort(external?.reason);
+  if (external?.aborted) onExternal();
+  external?.addEventListener("abort", onExternal, { once: true });
+  try {
+    const tablesP = tablesReady.catch((err: unknown) => {
+      stop.abort(err);
+      throw err;
+    });
+    const tree = timed("page-tree", () => makePageTree(store, ordered, run.ids, () => (remember(), step()), stop.signal));
+    // Both are always settled by someone: a page failure never leaves the install's rejection unhandled.
+    tablesP.catch(() => undefined);
+    tree.catch(() => undefined);
+    const ids = await untilStopped(tree, stop.signal);
+    const tables = await untilStopped(tablesP, stop.signal);
+    const write = (p: (typeof ordered)[number]) => {
+      stop.signal.throwIfAborted();
+      const fresh: string[] = [];
+      const newId = () => {
+        const id = crypto.randomUUID();
+        fresh.push(id);
+        return id;
+      };
+      const resolved = resolvePackBlocks(p.blocks, { tables, pages: ids, newId });
+      const blocks = options.sizes?.page === p.key ? withPreviewSizes(resolved, fresh, options.sizes) : resolved;
+      return saveOnCurrent(store, ids[p.key], (cur) => ({
+        ...cur,
+        title: p.title,
+        icon: p.icon ?? null,
+        cover: p.cover ?? null,
+        settings: packPageSettings(p),
+        ...(p.properties ? { properties: p.properties } : {}),
+        blocks,
+      })).then((doc) => (step(), doc));
     };
-    const resolved = resolvePackBlocks(p.blocks, { tables, pages: ids, newId });
-    const blocks = options.sizes?.page === p.key ? withPreviewSizes(resolved, fresh, options.sizes) : resolved;
-    return saveOnCurrent(store, ids[p.key], (cur) => ({
-      ...cur,
-      title: p.title,
-      icon: p.icon ?? null,
-      cover: p.cover ?? null,
-      settings: packPageSettings(p),
-      ...(p.properties ? { properties: p.properties } : {}),
-      blocks,
-    })).then((doc) => (step(), doc));
+    return await timed("page-content", async () => {
+      // The root first: it opens finished while its sub-pages are written behind it.
+      const madeRoot = await untilStopped(write(ordered[0]), stop.signal);
+      options.onRootReady?.(madeRoot);
+      const kids = ordered.slice(1);
+      for (let i = 0; i < kids.length; i += 6) await untilStopped(Promise.all(kids.slice(i, i + 6).map(write)), stop.signal);
+      return madeRoot;
+    });
+  } finally {
+    external?.removeEventListener("abort", onExternal);
+  }
+}
+
+/**
+ * How long a "Use template" run may go without one step of progress before the person is told it is still
+ * working and offered Cancel. A knob: one constant, read by every run.
+ */
+export const USE_TEMPLATE_STALL_MS = 20_000;
+
+/** What one "Use template" run needs; every side effect is handed in, so the whole flow runs under test. */
+export interface UseTemplateRun {
+  template: SpaceTemplateFull;
+  store: SpacesStore;
+  createRoot: (title: string) => Promise<SpaceDoc>;
+  /** Installs the tables (installTemplateTables with the stage, the stop signal and the fresh copy). */
+  install: (onStage: (stage: string) => void, signal: AbortSignal, fresh: FreshCopy) => Promise<Record<string, ResolvedTable>>;
+  journal: PackRunJournal;
+  sizes?: PreviewSizes | null;
+  /** The stage text; null when the run has ended (it never outlives the run). */
+  onStage: (stage: string | null) => void;
+  onRootReady?: (root: SpaceDoc) => void;
+  /** Called with Cancel when nothing has moved for `stallMs`; with null when it moves again or the run ends. */
+  onStalled?: (cancel: (() => void) | null) => void;
+  stallMs?: number;
+}
+
+export type UseTemplateResult = { ok: true; root: SpaceDoc } | { ok: false; message: string; stopped: boolean };
+
+/**
+ * One "Use template" run, start to end: the tables (a fresh copy) install while the pages are made, every step
+ * streams into `onStage`, a stall offers Cancel, and EVERY way the run can end comes back as a result: the made
+ * root, or the one sentence to show with Try again (a refusal in the store's words, a failed write, a dropped
+ * connection, a stop). The run never hangs on a failure, and the stage text is cleared before it answers.
+ * Try again is the same call again: the journal carries the copy's install id and the pages, so it resumes.
+ */
+export async function runUseTemplate(r: UseTemplateRun): Promise<UseTemplateResult> {
+  const stop = new AbortController();
+  const stallMs = r.stallMs ?? USE_TEMPLATE_STALL_MS;
+  let ended = false;
+  let tableStage = "Making tables…";
+  let pageStage = "";
+  let last = Date.now();
+  let stalled = false;
+  const text = () => [tableStage, pageStage].filter(Boolean).join(" · ") || "Finishing…";
+  const moved = () => {
+    if (ended) return;
+    last = Date.now();
+    if (stalled) {
+      stalled = false;
+      r.onStalled?.(null);
+    }
+    r.onStage(text());
   };
-  return timed("page-content", async () => {
-    // The root first: it opens finished while its sub-pages are written behind it.
-    const madeRoot = await write(ordered[0]);
-    options.onRootReady?.(madeRoot);
-    const kids = ordered.slice(1);
-    for (let i = 0; i < kids.length; i += 6) await Promise.all(kids.slice(i, i + 6).map(write));
-    return madeRoot;
-  });
+  const cancel = () => stop.abort(new TemplateUseStopped());
+  const watch = setInterval(() => {
+    if (ended || stalled || Date.now() - last < stallMs) return;
+    stalled = true;
+    r.onStage(`Still working · ${text()}`);
+    r.onStalled?.(cancel);
+  }, Math.max(50, Math.min(1000, Math.floor(stallMs / 4))));
+
+  // The copy's install id lives with the pages in the journal: Try again continues the SAME copy.
+  let installId = r.journal.read()?.installId ?? null;
+  const journal: PackRunJournal = {
+    read: () => {
+      const run = r.journal.read();
+      return run ? { ...run, installId: installId ?? run.installId ?? null } : null;
+    },
+    write: (run) => r.journal.write(run ? { ...run, installId: installId ?? run.installId ?? null } : null),
+  };
+  const ordered = packPagesInOrder(r.template.pack.pages);
+  try {
+    moved();
+    const tables = r
+      .install(
+        (stage) => {
+          tableStage = stage;
+          moved();
+        },
+        stop.signal,
+        {
+          title: ordered[0]?.title ?? null,
+          installId,
+          onInstallId: (id) => {
+            if (installId === id) return;
+            installId = id;
+            const run = r.journal.read();
+            if (run) r.journal.write({ ...run, installId: id });
+          },
+        },
+      )
+      .then((made) => {
+        tableStage = "";
+        moved();
+        return made;
+      });
+    // Answered through makeTemplatePages; this keeps an early page failure from leaving it unhandled.
+    tables.catch(() => undefined);
+    const root = await makeTemplatePages(
+      r.store,
+      r.createRoot,
+      r.template,
+      tables,
+      (done, total) => {
+        pageStage = `Pages ${done}/${total}`;
+        moved();
+      },
+      journal,
+      { sizes: r.sizes, onRootReady: r.onRootReady, signal: stop.signal },
+    );
+    return { ok: true, root };
+  } catch (err) {
+    const stopped = stop.signal.aborted && stop.signal.reason instanceof TemplateUseStopped;
+    // Whatever failed, nothing more is asked of the store: an install still running is stopped (it resumes later).
+    if (!stop.signal.aborted) stop.abort(err);
+    return { ok: false, message: reasonOf(err), stopped };
+  } finally {
+    ended = true;
+    clearInterval(watch);
+    if (stalled) r.onStalled?.(null);
+    r.onStage(null);
+  }
 }

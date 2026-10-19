@@ -158,6 +158,7 @@ import type {
 } from "@ai-matrx/office/docs";
 import type { CommandServiceLike, DocsOtNotice } from "@ai-matrx/office/univer/collab";
 import { getLatestDocumentSnapshot } from "@ai-matrx/office/docs";
+import { DocSelectionManagerService } from "@univerjs/docs";
 import type { AwarenessState } from "@ai-matrx/data/realtime/collab";
 
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
@@ -419,6 +420,7 @@ export default function DocumentEditor({
         editable: () => editableRef.current,
         unitId: () => apiRef.current?.getActiveDocument()?.getId?.() ?? null,
         undoRedo: () => resolveUndoRedoService(kept.univer),
+        selection: docSelectionPort(kept.univer),
       });
     const parked = model.takeParkedEditor() as ParkedDocumentEditor<KeptUniver> | null;
     if (parked) {
@@ -1066,6 +1068,21 @@ function resolveUndoRedoService(univer: Univer): unknown {
   } catch {
     return null;
   }
+}
+
+/** This view's body selection, so a collaborator's edit moves the caret with the characters (§6.8). */
+function docSelectionPort(univer: Univer) {
+  const svc = () => {
+    const injector = (univer as unknown as { __getInjector?: () => { get: <T>(token: unknown) => T | undefined } }).__getInjector?.();
+    return injector?.get<{
+      getTextRanges: () => Array<{ startOffset: number; endOffset: number; segmentId?: string }> | null | undefined;
+      replaceDocRanges: (ranges: Array<{ startOffset: number; endOffset: number }>) => void;
+    }>(DocSelectionManagerService as unknown);
+  };
+  return {
+    get: () => svc()?.getTextRanges()?.map((r) => ({ startOffset: r.startOffset, endOffset: r.endOffset, segmentId: r.segmentId ?? "" })) ?? null,
+    set: (ranges: Array<{ startOffset: number; endOffset: number }>) => svc()?.replaceDocRanges(ranges),
+  };
 }
 
 /** What a co-editing notice says, in plain words (our toast). */
