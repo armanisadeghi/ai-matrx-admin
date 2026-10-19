@@ -1,0 +1,404 @@
+{
+  "_about": "PB-07 pinned baseline: per door, the platform parts (dry-run platform_parts id/label/source), staged per-turn items (turn_assembly.staged injector/label/slot), allow-list rows, exact normalized platform texts and tools with their source that are owner-approved today. pb07-provenance.py prints `platform part not in baseline` / `tool not in baseline` for anything platform-added on a door that is not listed here, even when that door's dry run lists it.",
+  "_change_rule": "This file is owner-approved state. Any change needs a row in common-docs operations/real-tests/core-chain/LEDGER.md (Runs) naming who approved it and the run it was taken from; propose a new version with `pb07-provenance.py --print-baseline <run dir>`, never by hand.",
+  "approved_by": "coordinator (owner session of the PB-07 safety-net campaign), brief of 2026-10-19 after the MISSED render-note fault proof",
+  "ledger_row": "core-chain/LEDGER.md Runs, 2026-10-19 PB-07 baseline adopted",
+  "source_run": "tmp.gUMSf0nDrn (PB-07 PASS 2026-10-19 07:27Z, graded post-pb07)",
+  "server_commit": "1046eaf6dbf1d59955eccee7edc031ad823b9668",
+  "doors": {
+    "chat": {
+      "platform_parts": [
+        [
+          "current_date",
+          "Today's date",
+          "matrx_ai/instructions/core.py render_date_block"
+        ],
+        [
+          "organization_catalog",
+          "Organizations",
+          "matrx_ai/instructions/core.py inject_context_block (host: context catalog)"
+        ],
+        [
+          "turn_context",
+          "Per-turn context",
+          "matrx_ai/config/message_config.py render_turn_context (slots staged by the host)"
+        ]
+      ],
+      "staged": [
+        [
+          "system_notes",
+          "Surface notes",
+          "system_notes"
+        ]
+      ],
+      "rows": [
+        "AL-01 date block",
+        "AL-02 organization catalog",
+        "AL-03 turn-context frame close",
+        "AL-03 turn-context frame note",
+        "AL-05 active context",
+        "AL-06 available-context frame",
+        "AL-07 ambient value client",
+        "AL-07 ambient value user",
+        "AL-09 surface intro",
+        "AL-09 surface situation",
+        "AL-09 surface write targets"
+      ],
+      "texts": [
+        "</inline> </available_context>",
+        "</turn_context>",
+        "<available_context> <inline note=\"Values are provided directly below. Do NOT call the context tool for these.\">",
+        "<decision> offers alternatives; the option the person picks replaces the block in place. Use it for versions of content (headlines, drafts, approaches), never to ask something you need answered. Each option's text is the content itself. <decision prompt=\"Which headline?\"> <option label=\"Direct\">Cut your hiring time in half.</option> <option label=\"Question\">What would you do with two extra weeks?</option> </decision>",
+        "<questionnaire> lets the person fill in a few optional facts. Types: Radio, Checkbox, Dropdown (options as \"- \" lines); Input, Text, Toggle, Slider (none). <questionnaire> ## Q1: Who is it for? Type: Radio - Existing customers - New buyers </questionnaire>",
+        "<situation> What the person is doing right now, in words (the values below carry the detail): The person is on the \"Chat\" screen. It shares no values right now. </situation>",
+        "<surface_intro> You are an OUTSIDE agent looking at someone else's live chat: a conversation between the person and another agent. You are not that agent and this is not your conversation. Everything is up front: `conversation` (id, title, agent, model, status, streaming, message count) and `transcript` (every loaded message with id, role, text and its tool calls). Do not look them up again. To fix or rewrite past messages use update_messages (prefer a patch); to remove them delete_messages. To help with the person's next message use input_draft (text, append, or patch) — it sends nothing. Actions: regenerate_last_answer and send_draft each spend a turn; stop_response stops a running answer; fork_conversation branches; conversation_title renames. Every write asks the person first. Do not use generic context or scope tools for this conversation's messages. For the full guide to this page, load skill `surface-guide-chat` (skill tool, action get) before writing. </surface_intro>",
+        "<surface_write_targets> DECLARED BUT NOT WRITABLE THIS TURN — this surface defines these targets, but the part of the page that applies them is not mounted right now, so they are NOT in your `apply_surface_write` tool and an attempt would fail. Do NOT try to write them. Use this only to tell the user what this page can do and what they would need to open for you to do it. - conversation_title (type=string, mode=entity, the user is asked first) — updates value `conversation_title` — Renames the open conversation — the label it carries in the chat history sidebar. Value: a plain non-empty string, trimmed, at most 200 characters; an empty or blank title is REFUSED, because clearing a conversation's name back to \"Untitled\" is a human decision. Saved IMMEDIATELY through the canonical rename path. Refused when the conversation has not been saved yet — a brand-new chat holds a client-minted id and has no row to rename until its first turn finishes (conversation.message_count 0). This changes the label only and never touches a message. - update_messages (type=array, mode=entity, the user is asked first) — updates value `transcript` — Changes the text of past messages in this conversation, user or assistant, SAVED IMMEDIATELY after the person approves. Value: a JSON ARRAY (1-25) of { \"message_id\": string, \"text\": string } (the whole new text) OR { \"message_id\": string, \"patch\": { \"old_str\": string, \"new_str\": string } } (replace exactly one occurrence of old_str in the message's current text; new_str \"\" deletes it). Ids and current text come from the `transcript` value. Prefer patch for any change smaller than the whole message. Refused before the card, with EVERY problem listed: an id not in the transcript, a message still streaming, a system/tool message, an old_str that is missing or matches more than once, an empty result, a repeated id. What it changes: the message's text for everyone who views this conversation (the previous text is kept in the message's edit history). A user-message edit is what the model sees from the next turn on; an assistant-message edit is too, unless the organization turned off \"The model sees edited answers\". Nothing is re-run and no turn is spent. Returns the edited ids. - delete_messages (type=array, mode=entity, the user is asked first) — updates value `transcript` — Deletes messages from this conversation, SAVED IMMEDIATELY after approval. Value: a JSON ARRAY (1-25) of message ids, or of { \"message_id\": string }, from the `transcript` value. What is lost: each message disappears from the conversation for everyone, together with the tool calls it made and what they produced, and the model no longer sees it on later turns; the page offers no undo. Later messages keep their places. Refused before the card: an unknown id, a message still streaming, a repeated id. Prefer update_messages when the text only needs fixing. - regenerate_last_answer (type=object, mode=entity, the user is asked first) — Asks this conversation's agent to answer its LAST question again. Value: { \"message_id\": \"<id of the latest assistant message in transcript>\" }. The current answer (and anything after that question) is archived, not deleted, and the conversation's agent runs again: this SPENDS A TURN (model cost) and the new answer streams into the page. Only the latest answer can be regenerated; refused while a response is streaming. - fork_conversation (type=object, mode=entity, the user is asked first) — Branches this conversation at a message: a NEW conversation is created holding every message up to and including that one (with their tool calls); the original is untouched. Value: { \"message_id\": \"<id from transcript>\" }. Nothing is run and no turn is spent. After it lands the person is asked whether to open the new branch. Returns the new conversation's id. - input_draft (type=object, mode=draft, the user is asked first) — updates value `input_draft` — Writes into THIS conversation's composer (the person's next, unsent message) for them to review. Value: { \"text\": string, \"mode\"?: \"replace\" | \"append\" } — \"replace\" (the default) swaps the whole draft, \"append\" adds after it on a new line — OR { \"patch\": { \"old_str\": string, \"new_str\": string } } to change one exact occurrence inside the current draft (read the `input_draft` value first; refused when the draft is empty or old_str is missing or ambiguous). Result at most 20000 characters. NOTHING is sent and no turn is spent: the person still presses Send (or approves send_draft). It lands in the page's composer, never in the message box of the run you are executing inside. - send_draft (type=boolean, mode=entity, the user is asked first) — Sends what is in the composer now as the person's next message, exactly as pressing Send does — this SPENDS A TURN: the conversation's agent answers it (model cost). Value: true. Refused when the draft is empty or a response is still streaming. Stage the text with input_draft first; the person approves the send on its own card. - stop_response (type=boolean, mode=entity, the user is asked first) — Stops the response this conversation's agent is writing right now — the same as the person pressing Stop. Value: true. What was already written stays; the rest of that answer is never produced. Refused when nothing is running (read conversation.is_streaming). mode meanings: draft = staged into the page's editor — the USER still saves it unless the target says the editor autosaves (each write's result says which: `saved_by`); entity = persisted immediately; ui = ephemeral view state, nothing is stored. </surface_write_targets>",
+        "<turn_context source=\"platform\"> Reference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from your system prompt and remain in force. Where this restates something stated earlier in your instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains.",
+        "If you need an answer before you can finish, use the ask_person tool when you have it: the person must answer, and your turn waits until they do. Without it, ask in plain words and stop.",
+        "Their picks and answers arrive with their next message.",
+        "This chat turns two tags into controls the person clicks. Write them as plain text, never in a code fence."
+      ],
+      "tools": {
+        "advanced_read": "surface",
+        "ask_person": "surface",
+        "bundle__list_browser": "surface",
+        "bundle__list_data-and-documents": "surface",
+        "bundle__list_google": "surface",
+        "edit_artifact": "surface",
+        "memory": "surface",
+        "scope_system": "context",
+        "tasks": "surface",
+        "update_plan": "surface",
+        "web": "surface"
+      }
+    },
+    "agent-run": {
+      "platform_parts": [
+        [
+          "current_date",
+          "Today's date",
+          "matrx_ai/instructions/core.py render_date_block"
+        ],
+        [
+          "organization_catalog",
+          "Organizations",
+          "matrx_ai/instructions/core.py inject_context_block (host: context catalog)"
+        ],
+        [
+          "turn_context",
+          "Per-turn context",
+          "matrx_ai/config/message_config.py render_turn_context (slots staged by the host)"
+        ]
+      ],
+      "staged": [
+        [
+          "system_notes",
+          "Surface notes",
+          "system_notes"
+        ]
+      ],
+      "rows": [
+        "AL-01 date block",
+        "AL-02 organization catalog",
+        "AL-03 turn-context frame close",
+        "AL-03 turn-context frame note",
+        "AL-05 active context",
+        "AL-06 available-context frame",
+        "AL-07 ambient value client",
+        "AL-07 ambient value user"
+      ],
+      "texts": [
+        "</inline> </available_context>",
+        "</turn_context>",
+        "<available_context> <inline note=\"Values are provided directly below. Do NOT call the context tool for these.\">",
+        "<decision> offers alternatives; the option the person picks replaces the block in place. Use it for versions of content (headlines, drafts, approaches), never to ask something you need answered. Each option's text is the content itself. <decision prompt=\"Which headline?\"> <option label=\"Direct\">Cut your hiring time in half.</option> <option label=\"Question\">What would you do with two extra weeks?</option> </decision>",
+        "<questionnaire> lets the person fill in a few optional facts. Types: Radio, Checkbox, Dropdown (options as \"- \" lines); Input, Text, Toggle, Slider (none). <questionnaire> ## Q1: Who is it for? Type: Radio - Existing customers - New buyers </questionnaire>",
+        "<turn_context source=\"platform\"> Reference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from your system prompt and remain in force. Where this restates something stated earlier in your instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains.",
+        "If you need an answer before you can finish, use the ask_person tool when you have it: the person must answer, and your turn waits until they do. Without it, ask in plain words and stop.",
+        "Their picks and answers arrive with their next message.",
+        "This chat turns two tags into controls the person clicks. Write them as plain text, never in a code fence."
+      ],
+      "tools": {
+        "ask_person": "surface",
+        "scope_system": "context"
+      }
+    },
+    "agent-api": {
+      "platform_parts": [
+        [
+          "current_date",
+          "Today's date",
+          "matrx_ai/instructions/core.py render_date_block"
+        ],
+        [
+          "organization_catalog",
+          "Organizations",
+          "matrx_ai/instructions/core.py inject_context_block (host: context catalog)"
+        ],
+        [
+          "turn_context",
+          "Per-turn context",
+          "matrx_ai/config/message_config.py render_turn_context (slots staged by the host)"
+        ]
+      ],
+      "staged": [],
+      "rows": [
+        "AL-01 date block",
+        "AL-02 organization catalog",
+        "AL-03 turn-context frame close",
+        "AL-03 turn-context frame note",
+        "AL-05 active context",
+        "AL-06 available-context frame",
+        "AL-07 ambient value client",
+        "AL-07 ambient value user"
+      ],
+      "texts": [
+        "</inline> </available_context>",
+        "</turn_context>",
+        "<available_context> <inline note=\"Values are provided directly below. Do NOT call the context tool for these.\">",
+        "<turn_context source=\"platform\"> Reference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from your system prompt and remain in force. Where this restates something stated earlier in your instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains."
+      ],
+      "tools": {
+        "scope_system": "context"
+      }
+    },
+    "builder-run": {
+      "platform_parts": [
+        [
+          "current_date",
+          "Today's date",
+          "matrx_ai/instructions/core.py render_date_block"
+        ],
+        [
+          "organization_catalog",
+          "Organizations",
+          "matrx_ai/instructions/core.py inject_context_block (host: context catalog)"
+        ],
+        [
+          "turn_context",
+          "Per-turn context",
+          "matrx_ai/config/message_config.py render_turn_context (slots staged by the host)"
+        ]
+      ],
+      "staged": [],
+      "rows": [
+        "AL-01 date block",
+        "AL-02 organization catalog",
+        "AL-03 turn-context frame close",
+        "AL-03 turn-context frame note",
+        "AL-05 active context",
+        "AL-06 available-context frame",
+        "AL-07 ambient value client",
+        "AL-07 ambient value user"
+      ],
+      "texts": [
+        "</inline> </available_context>",
+        "</turn_context>",
+        "<available_context> <inline note=\"Values are provided directly below. Do NOT call the context tool for these.\">",
+        "<turn_context source=\"platform\"> Reference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from your system prompt and remain in force. Where this restates something stated earlier in your instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains."
+      ],
+      "tools": {
+        "ask_person": "surface",
+        "scope_system": "context"
+      }
+    },
+    "mandate-client": {
+      "platform_parts": [
+        [
+          "current_date",
+          "Today's date",
+          "matrx_ai/instructions/core.py render_date_block"
+        ],
+        [
+          "organization_catalog",
+          "Organizations",
+          "matrx_ai/instructions/core.py inject_context_block (host: context catalog)"
+        ],
+        [
+          "turn_context",
+          "Per-turn context",
+          "matrx_ai/config/message_config.py render_turn_context (slots staged by the host)"
+        ]
+      ],
+      "staged": [],
+      "rows": [
+        "AL-01 date block",
+        "AL-02 organization catalog",
+        "AL-03 turn-context frame close",
+        "AL-03 turn-context frame note",
+        "AL-05 active context",
+        "AL-06 available-context frame",
+        "AL-07 ambient value client",
+        "AL-07 ambient value user"
+      ],
+      "texts": [
+        "</inline> </available_context>",
+        "</turn_context>",
+        "<available_context> <inline note=\"Values are provided directly below. Do NOT call the context tool for these.\">",
+        "<turn_context source=\"platform\"> Reference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from your system prompt and remain in force. Where this restates something stated earlier in your instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains."
+      ],
+      "tools": {
+        "scope_system": "context"
+      }
+    },
+    "mandate-try": {
+      "platform_parts": [
+        [
+          "current_date",
+          "Today's date",
+          "matrx_ai/instructions/core.py render_date_block"
+        ],
+        [
+          "turn_context",
+          "Per-turn context",
+          "matrx_ai/config/message_config.py render_turn_context (slots staged by the host)"
+        ]
+      ],
+      "staged": [],
+      "rows": [
+        "AL-01 date block",
+        "AL-03 turn-context frame close",
+        "AL-03 turn-context frame note",
+        "AL-06 available-context frame"
+      ],
+      "texts": [
+        "</inline> </available_context>",
+        "</turn_context>",
+        "<available_context> <inline note=\"Values are provided directly below. Do NOT call the context tool for these.\">",
+        "<turn_context source=\"platform\"> Reference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from your system prompt and remain in force. Where this restates something stated earlier in your instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains."
+      ],
+      "tools": {}
+    },
+    "workflow": {
+      "platform_parts": [
+        [
+          "current_date",
+          "Today's date",
+          "matrx_ai/instructions/core.py render_date_block"
+        ],
+        [
+          "organization_catalog",
+          "Organizations",
+          "matrx_ai/instructions/core.py inject_context_block (host: context catalog)"
+        ],
+        [
+          "turn_context",
+          "Per-turn context",
+          "matrx_ai/config/message_config.py render_turn_context (slots staged by the host)"
+        ]
+      ],
+      "staged": [],
+      "rows": [
+        "AL-01 date block",
+        "AL-02 organization catalog",
+        "AL-03 turn-context frame close",
+        "AL-03 turn-context frame note",
+        "AL-05 active context",
+        "AL-06 available-context frame"
+      ],
+      "texts": [
+        "</inline> </available_context>",
+        "</turn_context>",
+        "<available_context> <inline note=\"Values are provided directly below. Do NOT call the context tool for these.\">",
+        "<turn_context source=\"platform\"> Reference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from your system prompt and remain in force. Where this restates something stated earlier in your instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains."
+      ],
+      "tools": {
+        "scope_system": "context"
+      }
+    },
+    "agent-call": {
+      "platform_parts": [
+        [
+          "current_date",
+          "Today's date",
+          "matrx_ai/instructions/core.py render_date_block"
+        ],
+        [
+          "turn_context",
+          "Per-turn context",
+          "matrx_ai/config/message_config.py render_turn_context (slots staged by the host)"
+        ]
+      ],
+      "staged": [],
+      "rows": [
+        "AL-01 date block",
+        "AL-03 turn-context frame close",
+        "AL-03 turn-context frame note",
+        "AL-06 available-context frame"
+      ],
+      "texts": [
+        "</inline> </available_context>",
+        "</turn_context>",
+        "<available_context> <inline note=\"Values are provided directly below. Do NOT call the context tool for these.\">",
+        "<turn_context source=\"platform\"> Reference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from your system prompt and remain in force. Where this restates something stated earlier in your instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains."
+      ],
+      "tools": {}
+    },
+    "together": {
+      "platform_parts": [
+        [
+          "current_date",
+          "Today's date",
+          "matrx_ai/instructions/core.py render_date_block"
+        ],
+        [
+          "organization_catalog",
+          "Organizations",
+          "matrx_ai/instructions/core.py inject_context_block (host: context catalog)"
+        ],
+        [
+          "turn_context",
+          "Per-turn context",
+          "matrx_ai/config/message_config.py render_turn_context (slots staged by the host)"
+        ]
+      ],
+      "staged": [
+        [
+          "system_notes",
+          "Surface notes",
+          "system_notes"
+        ]
+      ],
+      "rows": [
+        "AL-01 date block",
+        "AL-02 organization catalog",
+        "AL-03 turn-context frame close",
+        "AL-03 turn-context frame note",
+        "AL-05 active context",
+        "AL-06 available-context frame",
+        "AL-07 ambient value client",
+        "AL-07 ambient value user",
+        "AL-09 surface intro",
+        "AL-09 surface situation",
+        "AL-09 surface write targets"
+      ],
+      "texts": [
+        "</inline> </available_context>",
+        "</turn_context>",
+        "<available_context> <inline note=\"Values are provided directly below. Do NOT call the context tool for these.\">",
+        "<decision> offers alternatives; the option the person picks replaces the block in place. Use it for versions of content (headlines, drafts, approaches), never to ask something you need answered. Each option's text is the content itself. <decision prompt=\"Which headline?\"> <option label=\"Direct\">Cut your hiring time in half.</option> <option label=\"Question\">What would you do with two extra weeks?</option> </decision>",
+        "<questionnaire> lets the person fill in a few optional facts. Types: Radio, Checkbox, Dropdown (options as \"- \" lines); Input, Text, Toggle, Slider (none). <questionnaire> ## Q1: Who is it for? Type: Radio - Existing customers - New buyers </questionnaire>",
+        "<situation> What the person is doing right now, in words (the values below carry the detail): The person is on the \"Chat\" screen. It shares no values right now. </situation>",
+        "<surface_intro> You are an OUTSIDE agent looking at someone else's live chat: a conversation between the person and another agent. You are not that agent and this is not your conversation. Everything is up front: `conversation` (id, title, agent, model, status, streaming, message count) and `transcript` (every loaded message with id, role, text and its tool calls). Do not look them up again. To fix or rewrite past messages use update_messages (prefer a patch); to remove them delete_messages. To help with the person's next message use input_draft (text, append, or patch) — it sends nothing. Actions: regenerate_last_answer and send_draft each spend a turn; stop_response stops a running answer; fork_conversation branches; conversation_title renames. Every write asks the person first. Do not use generic context or scope tools for this conversation's messages. For the full guide to this page, load skill `surface-guide-chat` (skill tool, action get) before writing. </surface_intro>",
+        "<surface_write_targets> DECLARED BUT NOT WRITABLE THIS TURN — this surface defines these targets, but the part of the page that applies them is not mounted right now, so they are NOT in your `apply_surface_write` tool and an attempt would fail. Do NOT try to write them. Use this only to tell the user what this page can do and what they would need to open for you to do it. - conversation_title (type=string, mode=entity, the user is asked first) — updates value `conversation_title` — Renames the open conversation — the label it carries in the chat history sidebar. Value: a plain non-empty string, trimmed, at most 200 characters; an empty or blank title is REFUSED, because clearing a conversation's name back to \"Untitled\" is a human decision. Saved IMMEDIATELY through the canonical rename path. Refused when the conversation has not been saved yet — a brand-new chat holds a client-minted id and has no row to rename until its first turn finishes (conversation.message_count 0). This changes the label only and never touches a message. - update_messages (type=array, mode=entity, the user is asked first) — updates value `transcript` — Changes the text of past messages in this conversation, user or assistant, SAVED IMMEDIATELY after the person approves. Value: a JSON ARRAY (1-25) of { \"message_id\": string, \"text\": string } (the whole new text) OR { \"message_id\": string, \"patch\": { \"old_str\": string, \"new_str\": string } } (replace exactly one occurrence of old_str in the message's current text; new_str \"\" deletes it). Ids and current text come from the `transcript` value. Prefer patch for any change smaller than the whole message. Refused before the card, with EVERY problem listed: an id not in the transcript, a message still streaming, a system/tool message, an old_str that is missing or matches more than once, an empty result, a repeated id. What it changes: the message's text for everyone who views this conversation (the previous text is kept in the message's edit history). A user-message edit is what the model sees from the next turn on; an assistant-message edit is too, unless the organization turned off \"The model sees edited answers\". Nothing is re-run and no turn is spent. Returns the edited ids. - delete_messages (type=array, mode=entity, the user is asked first) — updates value `transcript` — Deletes messages from this conversation, SAVED IMMEDIATELY after approval. Value: a JSON ARRAY (1-25) of message ids, or of { \"message_id\": string }, from the `transcript` value. What is lost: each message disappears from the conversation for everyone, together with the tool calls it made and what they produced, and the model no longer sees it on later turns; the page offers no undo. Later messages keep their places. Refused before the card: an unknown id, a message still streaming, a repeated id. Prefer update_messages when the text only needs fixing. - regenerate_last_answer (type=object, mode=entity, the user is asked first) — Asks this conversation's agent to answer its LAST question again. Value: { \"message_id\": \"<id of the latest assistant message in transcript>\" }. The current answer (and anything after that question) is archived, not deleted, and the conversation's agent runs again: this SPENDS A TURN (model cost) and the new answer streams into the page. Only the latest answer can be regenerated; refused while a response is streaming. - fork_conversation (type=object, mode=entity, the user is asked first) — Branches this conversation at a message: a NEW conversation is created holding every message up to and including that one (with their tool calls); the original is untouched. Value: { \"message_id\": \"<id from transcript>\" }. Nothing is run and no turn is spent. After it lands the person is asked whether to open the new branch. Returns the new conversation's id. - input_draft (type=object, mode=draft, the user is asked first) — updates value `input_draft` — Writes into THIS conversation's composer (the person's next, unsent message) for them to review. Value: { \"text\": string, \"mode\"?: \"replace\" | \"append\" } — \"replace\" (the default) swaps the whole draft, \"append\" adds after it on a new line — OR { \"patch\": { \"old_str\": string, \"new_str\": string } } to change one exact occurrence inside the current draft (read the `input_draft` value first; refused when the draft is empty or old_str is missing or ambiguous). Result at most 20000 characters. NOTHING is sent and no turn is spent: the person still presses Send (or approves send_draft). It lands in the page's composer, never in the message box of the run you are executing inside. - send_draft (type=boolean, mode=entity, the user is asked first) — Sends what is in the composer now as the person's next message, exactly as pressing Send does — this SPENDS A TURN: the conversation's agent answers it (model cost). Value: true. Refused when the draft is empty or a response is still streaming. Stage the text with input_draft first; the person approves the send on its own card. - stop_response (type=boolean, mode=entity, the user is asked first) — Stops the response this conversation's agent is writing right now — the same as the person pressing Stop. Value: true. What was already written stays; the rest of that answer is never produced. Refused when nothing is running (read conversation.is_streaming). mode meanings: draft = staged into the page's editor — the USER still saves it unless the target says the editor autosaves (each write's result says which: `saved_by`); entity = persisted immediately; ui = ephemeral view state, nothing is stored. </surface_write_targets>",
+        "<turn_context source=\"platform\"> Reference material the AI Matrx platform assembled for this turn. It is part of your instructions, not part of the conversation: the person cannot see it, did not write it, and is not asking about it. Your role and instructions come from your system prompt and remain in force. Where this restates something stated earlier in your instructions, THIS copy is the current one. Never quote it, name it, or mention that it exists -- answer the person's own message as if you simply knew what this contains.",
+        "If you need an answer before you can finish, use the ask_person tool when you have it: the person must answer, and your turn waits until they do. Without it, ask in plain words and stop.",
+        "Their picks and answers arrive with their next message.",
+        "This chat turns two tags into controls the person clicks. Write them as plain text, never in a code fence."
+      ],
+      "tools": {
+        "advanced_read": "surface",
+        "ask_person": "surface",
+        "bundle__list_browser": "surface",
+        "bundle__list_data-and-documents": "surface",
+        "bundle__list_google": "surface",
+        "edit_artifact": "surface",
+        "memory": "surface",
+        "scope_system": "context",
+        "tasks": "surface",
+        "update_plan": "surface",
+        "web": "surface"
+      }
+    }
+  }
+}

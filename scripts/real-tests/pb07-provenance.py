@@ -14,6 +14,7 @@ Usage:
   --model-view FILE                            conversation mode only: a dry-run capture to use as the
                                                declared list (--run uses each door's own <door>.dry.json)
   --typed TEXT                                 the person's typed text (default: the sender's)
+  --print-baseline DIR                         print a proposed pb07-baseline.json from DIR's dry runs (no database)
   --self-test                                  feed one planted request per blind spot through the checks
                                                (no database); prints caught/MISSED per case, exit 1 on a miss
 
@@ -27,7 +28,11 @@ context value, prompt block, the context policy's own label and description), (c
 text, byte-identical, alone in its content part, or (d) a platform block that the SAME DOOR's own dry run
 (`POST .../ai/agents/{id}` with `dry_run` and `preview_door`, saved by pb07-send.py as <door>.dry.json) lists in
 `platform_parts[]` (by label, or word for word inside a part's text) and, for a tool, in `tools[]` with a source.
-Nothing is matched against another door's dry run. Blocks are found by the PLATFORM ALLOW-LIST patterns. Every
+Nothing is matched against another door's dry run. A second, independent gate: (e) the pinned baseline
+pb07-baseline.json (owner-approved, per door) must also list every platform part, staged per-turn item,
+allow-list row, platform text the dry-run rule accepts, and tool with its source; anything absent prints
+`platform part not in baseline` / `tool not in baseline`, even when the dry run lists it (--run mode only).
+Blocks are found by the PLATFORM ALLOW-LIST patterns. Every
 allow-list block whose content varies (KIND rows) is opened and each value inside it is attributed: the
 date and live-time lines to their fixed sentence, catalog and active-context lines to the organization and
 scope records in the database, the ambient user object to the signed-in person, the client object to a
@@ -697,8 +702,13 @@ class Declared:
     dry-run response; ``None`` where a door has no dry run, and then every platform-added block and tool is
     unattributed (fail closed)."""
 
-    def __init__(self, parts: List[dict], tools: List[dict], wire_tools: List[dict], door: Optional[str] = None):
+    def __init__(self, parts: List[dict], tools: List[dict], wire_tools: List[dict], door: Optional[str] = None,
+                 staged: Optional[List[dict]] = None):
         self.door = door
+        # what the dry run names, for the pinned baseline: each part as (id, label, source) and each staged
+        # per-turn item as (injector, label, slot)
+        self.parts = [(p.get("id"), p.get("label"), p.get("source")) for p in parts if isinstance(p, dict)]
+        self.staged = [(s.get("injector"), s.get("label"), s.get("slot")) for s in (staged or []) if isinstance(s, dict)]
         self.labels = {p.get("label") for p in parts if isinstance(p, dict) and p.get("label")}
         self.texts = [norm(p["text"]) for p in parts if isinstance(p, dict) and isinstance(p.get("text"), str)]
         self.tool_sources = {t["name"]: t.get("source") for t in tools if isinstance(t, dict) and t.get("name")}
@@ -711,7 +721,7 @@ class Declared:
         body = ((resp.get("request") or {}).get("body")) or {}
         wire = units(body).tools
         return cls(resp.get("platform_parts") or [], resp.get("tools") or [], wire,
-                   ((resp.get("door") or {}).get("id")))
+                   ((resp.get("door") or {}).get("id")), ((resp.get("turn_assembly") or {}).get("staged")) or [])
 
     def lists_block(self, row: str, block: str) -> bool:
         """The block is declared when the dry run lists its label (KIND rows: the text varies per call by
@@ -743,7 +753,91 @@ def dry_declared(path: Optional[Path]) -> Optional[Declared]:
     return Declared.from_dry_response(rec["raw_response"])
 
 
-def consume(text: str, declared: Optional[Declared], report: List[str], where: str, door: str, typed: str = "") -> None:
+# ── the pinned baseline: owner-approved platform parts and tools per door ──────────────────────────────
+# The dry-run rule above accepts whatever the SAME door's preview shows, so a code change that adds platform
+# text to both the preview and the real request passes it (the 2026-10-19 render-note fault proof, MISSED).
+# The baseline is a second, independent gate: pb07-baseline.json beside this file lists, per door, what was
+# approved (taken from the dry runs of a clean PASS run). Anything platform-added on a door that its baseline
+# does not list prints `platform part not in baseline` / `tool not in baseline`, even when the dry run lists it.
+# Changing the file needs a ledger row naming who approved the change (the file's own `_change_rule`).
+BASELINE_FILE = Path(__file__).with_name("pb07-baseline.json")
+NOT_IN_BASELINE = "platform part not in baseline"
+TOOL_NOT_IN_BASELINE = "tool not in baseline"
+
+
+class Baseline:
+    """One door's approved state: dry-run parts (id, label, source), staged per-turn items (injector, label,
+    slot), allow-list rows seen on the wire, the exact normalized text of every EXACT-row block and of every
+    platform segment the dry-run rule accepts, and tools by name with their source. ``collect`` turns every
+    check into a recorder (used only to print a proposed baseline from a run's dry runs)."""
+
+    def __init__(self, door: str, entry: Optional[dict], collect: bool = False):
+        e = entry or {}
+        self.door, self.missing, self.collect = door, entry is None and not collect, collect
+        self.parts = {tuple(x) for x in e.get("platform_parts", [])}
+        self.staged = {tuple(x) for x in e.get("staged", [])}
+        self.rows = set(e.get("rows", []))
+        self.texts = set(e.get("texts", []))
+        self.tools: Dict[str, str] = dict(e.get("tools", {}))
+
+    @classmethod
+    def load(cls, door: str, path: Path = BASELINE_FILE) -> "Baseline":
+        doors = json.loads(path.read_text()).get("doors", {}) if path.exists() else {}
+        return cls(door, doors.get(door))
+
+    def has_part(self, part: tuple) -> bool:
+        if self.collect:
+            self.parts.add(part)
+        return part in self.parts
+
+    def has_staged(self, item: tuple) -> bool:
+        if self.collect:
+            self.staged.add(item)
+        return item in self.staged
+
+    def has_row(self, row: str) -> bool:
+        if self.collect:
+            self.rows.add(row)
+        return row in self.rows
+
+    def has_text(self, text: str) -> bool:
+        n = norm(text)
+        if self.collect:
+            self.texts.add(n)
+        return n in self.texts
+
+    def has_tool(self, name: str, source: Optional[str]) -> bool:
+        if self.collect and source:
+            self.tools[name] = source
+        return name in self.tools and (source is None or self.tools[name] == source)
+
+    def as_entry(self) -> dict:
+        return {"platform_parts": sorted(list(p) for p in self.parts), "staged": sorted(list(s) for s in self.staged),
+                "rows": sorted(self.rows), "texts": sorted(self.texts), "tools": dict(sorted(self.tools.items()))}
+
+
+def baseline_parts_check(door: str, declared: Optional[Declared], baseline: Optional[Baseline], report: List[str]) -> None:
+    """Every part and staged per-turn item this door's dry run names must be in the door's baseline, exactly
+    (id, label and source; a look-alike label is a different part)."""
+    if baseline is None:
+        return
+    if baseline.missing:
+        report.append(f"{door} | baseline | {NOT_IN_BASELINE} | no baseline entry for this door in {BASELINE_FILE.name}: "
+                      f"nothing platform-added here is approved")
+    if declared is None:
+        return
+    for part in declared.parts:
+        if not baseline.has_part(part):
+            report.append(f"{door} | dry run platform_parts | {NOT_IN_BASELINE} | label {part[1]!r} (id {part[0]!r}, "
+                          f"source {part[2]!r})")
+    for item in declared.staged:
+        if not baseline.has_staged(item):
+            report.append(f"{door} | dry run turn_assembly.staged | {NOT_IN_BASELINE} | label {item[1]!r} (injector "
+                          f"{item[0]!r}, slot {item[2]!r})")
+
+
+def consume(text: str, declared: Optional[Declared], report: List[str], where: str, door: str, typed: str = "",
+            baseline: Optional[Baseline] = None) -> None:
     """Remove every attributable span from ``text``; print what is left, and what is left inside blocks."""
     rest = text
     for label, pat in ALLOW:
@@ -755,6 +849,12 @@ def consume(text: str, declared: Optional[Declared], report: List[str], where: s
                 report.append(f"{door} | {where} | {UNVERIFIED_BLOCK} | {label}: {block.strip()}")
             elif not declared.lists_block(label, block):
                 report.append(f"{door} | {where} | {label} {NOT_LISTED} | {block.strip()}")
+            if baseline is not None:  # the second gate: the row, and an EXACT row's own text, must be approved
+                if not baseline.has_row(label):
+                    report.append(f"{door} | {where} | {NOT_IN_BASELINE} | {label}: {block.strip()}")
+                elif not label.startswith(KIND_ROWS) and not baseline.has_text(block):
+                    report.append(f"{door} | {where} | {NOT_IN_BASELINE} | {label} text differs from the baseline: "
+                                  f"{block.strip()}")
             if label.startswith(KIND_ROWS):
                 for piece in kind_inner(label, block, typed):
                     report.append(f"{door} | {where} | unattributed inside {label} | {piece}")
@@ -767,6 +867,8 @@ def consume(text: str, declared: Optional[Declared], report: List[str], where: s
         rest = rest.replace(frag, "\n")
     for seg in [s.strip() for s in re.split(r"\n\s*\n", rest) if s.strip()]:
         if declared is not None and declared.holds(seg):  # type: ignore[attr-defined]
+            if baseline is not None and not baseline.has_text(seg):  # listed by the dry run, never approved
+                report.append(f"{door} | {where} | {NOT_IN_BASELINE} | {seg}")
             continue
         report.append(f"{door} | {where} | unattributed | {seg}")
 
@@ -794,7 +896,8 @@ def count_check(door: str, texts: List[str], typed: str, report: List[str]) -> N
             report.append(f"{door} | request | duplicated platform block, {c} copies | {label}")
 
 
-def check_request(door: str, body: Any, typed: str, declared: Optional[Declared], report: List[str]) -> None:
+def check_request(door: str, body: Any, typed: str, declared: Optional[Declared], report: List[str],
+                  baseline: Optional[Baseline] = None) -> None:
     u = units(body)
     for kind, detail in u.problems:
         report.append(f"{door} | request | {kind} | {detail}")
@@ -803,7 +906,7 @@ def check_request(door: str, body: Any, typed: str, declared: Optional[Declared]
     if not u.system:
         report.append(f"{door} | system | no system prompt in the request | the authored system text was dropped")
     for where, text in u.system:
-        consume(text, declared, report, where, door, typed)
+        consume(text, declared, report, where, door, typed, baseline)
     found_typed = False
     for where, parts in u.users:
         for j, part in enumerate(parts):
@@ -817,7 +920,7 @@ def check_request(door: str, body: Any, typed: str, declared: Optional[Declared]
                 report.append(f"{door} | {loc} | appended to the person's turn | {extra}")
                 continue
             if part.lstrip().startswith('<turn_context source="platform">'):
-                consume(part, declared, report, loc, door, typed)
+                consume(part, declared, report, loc, door, typed, baseline)
             else:
                 report.append(f"{door} | {loc} | user-role text the person did not type | {part.strip()}")
     if typed and not found_typed:
@@ -838,6 +941,11 @@ def check_request(door: str, body: Any, typed: str, declared: Optional[Declared]
             report.append(f"{door} | tools | tool not declared and not in this door's dry run tools | {name}")
         elif name in declared.tool_text and tool_text(t) != declared.tool_text[name]:
             report.append(f"{door} | tools | tool definition differs from this door's dry run | {name}")
+        if baseline is not None:
+            source = declared.tool_sources.get(name) if declared is not None else None
+            if not baseline.has_tool(name, source):
+                report.append(f"{door} | tools | {TOOL_NOT_IN_BASELINE} | {name} (source {source!r}; baseline "
+                              f"{baseline.tools.get(name)!r})")
 
 
 def check_unified(door: str, unified: Any, typed: str, report: List[str]) -> None:
@@ -936,6 +1044,27 @@ def print_report(report: List[str]) -> None:
     sys.stdout.flush()
 
 
+def propose_baseline(run: Path) -> dict:
+    """The baseline a run's dry runs would approve, door by door (no database: each dry run's own request is
+    the wire text). Printed for an owner to approve; never adopted by this helper."""
+    manifest = json.loads((run / "manifest.json").read_text())
+    ident = json.loads((run / "run-identity.json").read_text()) if (run / "run-identity.json").exists() else {}
+    doors: Dict[str, dict] = {}
+    for e in manifest.values():
+        if e["kind"] != "dry":
+            continue
+        rec = json.loads((run / e["file"]).read_text())
+        if rec.get("status") != 200:
+            continue
+        declared = Declared.from_dry_response(rec["raw_response"])
+        collector = Baseline(e["door"], None, collect=True)
+        baseline_parts_check(e["door"], declared, collector, [])
+        check_request(e["door"], json.loads(rec["raw_response"])["request"]["body"], TYPED, declared, [], collector)
+        doors[e["door"]] = collector.as_entry()
+    return {"source_run": str(run), "server_commit": (ident.get("server_build") or {}).get("git_sha"),
+            "doors": doors}
+
+
 def main() -> None:
     global WORLD
     ap = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
@@ -946,15 +1075,23 @@ def main() -> None:
                                          "door's own <door>.dry.json)")
     ap.add_argument("--typed", default=TYPED)
     ap.add_argument("--self-test", action="store_true", help="planted payloads through the checks; no database")
+    ap.add_argument("--print-baseline", metavar="DIR", help="print a proposed pb07-baseline.json from the dry runs of "
+                                                            "run DIR (no database); adopting it needs a ledger row "
+                                                            "naming who approved it")
     args = ap.parse_args()
     if args.self_test:
         sys.exit(1 if self_test() else 0)
+    if args.print_baseline:
+        print(json.dumps(propose_baseline(Path(args.print_baseline)), indent=2))
+        return
     run = Path(args.run) if args.run else None
     report: List[str] = []
     given = dry_declared(Path(args.model_view)) if args.model_view else None
     if args.conversations and given is None:
         report.append("(no dry run given for the conversations: every platform block and tool is unattributed; "
                       "pass --model-view <door>.dry.json)")
+    if args.conversations:
+        report.append("(conversation mode: the pinned baseline gate is not applied; grade in --run mode)")
     conn = connect()
     world = World.load(conn)
     WORLD = world
@@ -965,6 +1102,7 @@ def main() -> None:
     side: List[Tuple[str, str, str]] = []  # (door, parent conversation, typed) whose titler runs are graded
     dries: Dict[str, Path] = {}
     declared_by_door: Dict[str, Optional[Declared]] = {}
+    baselines: Dict[str, Baseline] = {}
     if run:
         manifest = json.loads((run / "manifest.json").read_text())
         claimed = {e["conversation_id"] for e in manifest.values() if e.get("conversation_id")}
@@ -992,6 +1130,8 @@ def main() -> None:
                 continue
             claimed.add(cid)
             todo.append((e["door"], cid, e.get("typed") or args.typed))
+        for e in manifest.values():
+            baselines.setdefault(e["door"], Baseline.load(e["door"]))
 
     for door, cid, typed in todo:
         snaps = snapshots(conn, cid)
@@ -1013,7 +1153,8 @@ def main() -> None:
         side.append((door, cid, typed))
         for s in snaps:
             label = f"{door} [{cid[:8]} it{s['iteration']} {s['provider']}]"
-            check_request(label, s["request_payload"], typed, declared_by_door.get(door, given), report)
+            check_request(label, s["request_payload"], typed, declared_by_door.get(door, given), report,
+                          baselines.get(door))
             check_unified(label, s["unified_payload"], typed, report)
         if door in dries:
             dry_body = json.loads(json.loads(dries[door].read_text())["raw_response"])["request"]["body"]
@@ -1033,7 +1174,8 @@ def main() -> None:
             report.append(f"{door} (dry run) | - | HTTP {rec['status']} | {rec['raw_response'][:300]}")
             continue
         body = json.loads(rec["raw_response"])["request"]["body"]
-        check_request(f"{door} (dry run)", body, args.typed, declared_by_door.get(door), report)
+        baseline_parts_check(f"{door} (dry run)", declared_by_door.get(door), baselines.get(door), report)
+        check_request(f"{door} (dry run)", body, args.typed, declared_by_door.get(door), report, baselines.get(door))
 
     print_report(report)
     status = exit_status(report)
@@ -1294,7 +1436,67 @@ def _self_test_cases() -> list:
                  (lambda rep: side("door", _st_titler(_ST_TITLER_CLEAN + "\n\nCanary context marker PB7-CTX-8W5N."),
                                    TYPED, VARIABLE_VALUES, rep)) if side else None))
     rows.extend(_lookup_cases())
+    rows.extend(_baseline_cases())
     return rows
+
+
+# ── baseline cases: the pinned baseline is a second gate, independent of the door's own dry run ─────────
+def _bl_dry(note: str = "", skills: str = "", tools: tuple = (), relabel: Optional[str] = None) -> dict:
+    """A door's dry-run response for the clean canary request (+ a note in the per-turn context, a Skills part,
+    listed tools), with ids and sources as the product reports them; ``relabel`` renames the per-turn part."""
+    sys_text = _st_system(extra_block=("\n\n" + skills) if skills else "")
+    date_block = re.search(r"<!--matrx:current_date-->.*?<!--matrx:/current_date-->", sys_text, re.S)
+    catalog = re.search(r"<org_catalog\b.*?</org_catalog>", sys_text, re.S)
+    assert date_block and catalog
+    parts = [{"id": "current_date", "label": "Today's date", "source": "core.py render_date_block", "text": date_block.group(0)},
+             {"id": "organization_catalog", "label": "Organizations", "source": "core.py inject_context_block",
+              "text": catalog.group(0)},
+             {"id": "turn_context", "label": relabel or "Per-turn context", "source": "message_config.py render_turn_context",
+              "text": _st_turn_context(note=note)}]
+    if skills:
+        parts.append({"id": "skills", "label": "Skills", "source": "skills.py", "text": skills})
+    body = {**_st_body(system=sys_text, turn_context=_st_turn_context(note=note)), "tools": list(tools)}
+    return {"request": {"body": body}, "platform_parts": parts,
+            "tools": [{"name": t["name"], "source": "context"} for t in tools]}
+
+
+def _baseline_cases() -> list:
+    """Each case runs the door's request AND its dry-run parts through the baseline gate. A helper without the
+    gate (no ``Baseline``) runs the same request through its old checks only, so a missing gate shows as MISSED."""
+    bl_cls = globals().get("Baseline")
+
+    def gate(resp_real: dict, resp_baseline: dict, ran_marker: bool = False):
+        def run(rep):
+            dec = Declared.from_dry_response(resp_real)
+            body = resp_real["request"]["body"]
+            if bl_cls is None:  # the helper before the gate: its old checks only
+                check_request("door", body, TYPED, dec, rep)
+                return
+            approved = bl_cls("door", None, collect=True)  # what the baseline run approved
+            bdec = Declared.from_dry_response(resp_baseline)
+            globals()["baseline_parts_check"]("door", bdec, approved, [])
+            check_request("door", resp_baseline["request"]["body"], TYPED, bdec, [], approved)
+            pinned = bl_cls("door", approved.as_entry())
+            globals()["baseline_parts_check"]("door", dec, pinned, rep)
+            check_request("door", body, TYPED, dec, rep, pinned)
+            if ran_marker and not rep:
+                rep.append("baseline gate ran, 0 lines")
+        return run
+
+    kind = globals().get("NOT_IN_BASELINE", "platform part not in baseline")
+    tkind = globals().get("TOOL_NOT_IN_BASELINE", "tool not in baseline")
+    return [
+        ("baseline: a note in both the baseline and this door's dry run prints nothing (gate ran)",
+         "baseline gate ran, 0 lines", gate(_bl_dry(note=_ST_NOTE), _bl_dry(note=_ST_NOTE), ran_marker=True)),
+        ("baseline: a note this door's dry run lists but the baseline does not (the render-note fault)", kind,
+         gate(_bl_dry(note=_ST_NOTE), _bl_dry())),
+        ("baseline: a Skills part this door's dry run lists but the baseline does not", kind,
+         gate(_bl_dry(skills=_ST_SKILLS), _bl_dry())),
+        ("baseline: a tool this door's dry run lists with a source but the baseline does not", tkind,
+         gate(_bl_dry(tools=(_ST_TOOL,)), _bl_dry())),
+        ("baseline: a look-alike label ('Per-turn Context') for an approved part", kind,
+         gate(_bl_dry(relabel="Per-turn Context"), _bl_dry())),
+    ]
 
 
 # ── lookup cases: a fake chat.conversation table behind q() ─────────────────────────────────────────
