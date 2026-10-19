@@ -22,10 +22,10 @@ export interface AdvancedReadBatchProps {
  */
 export function AdvancedReadBatch({ urls, onItem, className }: AdvancedReadBatchProps) {
   const organizationId = useLibraryOrganizationId();
-  useReadVersion();
+  const version = useReadVersion();
   const [slow, setSlow] = useState(false);
   const unique = [...new Set(urls)];
-  const idle = unique.filter((u) => !readEntry(u) || readEntry(u)?.status === "failed");
+  const idle = unique.filter((u) => !readEntry(u, version) || readEntry(u, version)?.status === "failed");
   const fast = useAdvancedQuote(idle, "fast", idle.length > 0);
   const slowOption = slowCoverage(fast.data?.items ?? []);
   const allow: AdvancedAllow = slow && slowOption ? "all" : "fast";
@@ -35,7 +35,7 @@ export function AdvancedReadBatch({ urls, onItem, className }: AdvancedReadBatch
 
   const tally = unique.reduce(
     (t, u) => {
-      const e = readEntry(u);
+      const e = readEntry(u, version);
       if (e?.status === "running") t.running += 1;
       else if (e?.status === "done") {
         if (e.item.ok) t.read += 1;

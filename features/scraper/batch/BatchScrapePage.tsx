@@ -424,9 +424,9 @@ export default function BatchScrapePage() {
 
   // A page the advanced reader then read shows as read, with its characters: the table never keeps
   // saying "Failed" next to a result that is on screen.
-  useReadVersion();
+  const readVersion = useReadVersion();
   const displayRows = rows.map((row) => {
-    const entry = row.status === "failed" ? readEntry(row.url) : undefined;
+    const entry = row.status === "failed" ? readEntry(row.url, readVersion) : undefined;
     return entry?.status === "done" && entry.item.ok
       ? { ...row, status: "success" as const, advancedChars: (entry.item.markdown ?? entry.item.text).length }
       : row;
