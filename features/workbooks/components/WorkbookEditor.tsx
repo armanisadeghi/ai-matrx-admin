@@ -1422,8 +1422,8 @@ export default function WorkbookEditor({
             icon={<History />}
             aria-label="Version history"
             title="Version history"
-            aria-pressed={snapshotHistory.isVisible}
-            className="hidden aria-pressed:bg-accent sm:inline-flex"
+            pressed={snapshotHistory.isVisible}
+            className="hidden sm:inline-flex"
             onClick={snapshotHistory.toggle}
           />
           <Button
@@ -1431,9 +1431,9 @@ export default function WorkbookEditor({
             icon={<MessageSquare />}
             aria-label="Comments"
             title="Comments"
-            className="hidden aria-pressed:bg-accent sm:inline-flex"
+            className="hidden sm:inline-flex"
             disabled={bootState !== "ready"}
-            aria-pressed={sheetComments.open}
+            pressed={sheetComments.open}
             onClick={sheetComments.toggle}
           />
           {chrome.actions}
