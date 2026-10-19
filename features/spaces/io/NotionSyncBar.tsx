@@ -16,6 +16,8 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { postJson } from "@/lib/python-client";
 import { readNotionSyncState } from "./notionSyncState";
+import { HeldArchiveLine } from "@/features/unified-data/table-page/HeldArchiveLine";
+import { answerHold, openHold } from "@/features/unified-data/table-page/heldArchive";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 
@@ -39,6 +41,8 @@ export interface NotionSyncReport {
   archive_held?: number;
   /** With archive_held: the exact confirmation for those rows, sent back by Archive. */
   archive_confirm?: string | null;
+  /** The confirmation the person answered Keep to (remembered on the server). */
+  archive_kept?: string | null;
 }
 
 /** The held archive's own notice carries an agent call; the bar asks instead, so it is never shown raw. */
@@ -119,7 +123,7 @@ export function NotionSyncBar({ tableId, organizationId }: { tableId: string; or
   const [state, setState] = useState<SyncState | null>(null);
   const [busy, setBusy] = useState(false);
   const [showing, setShowing] = useState(false);
-  const [kept, setKept] = useState<string | null>(null);
+  const [was, setWas] = useState<number | null>(null);
   const opts = organizationId ? { organizationId } : {};
   const table = useTable(tableId);
   const fileImported = carriesNotionKey((table.data as { fields?: Array<{ name?: string; label?: string }> } | null)?.fields);
@@ -139,7 +143,9 @@ export function NotionSyncBar({ tableId, organizationId }: { tableId: string; or
     try {
       const body = confirmArchive ? { table_id: tableId, confirm_archive: confirmArchive } : { table_id: tableId };
       const { data } = await postJson<NotionSyncReport, { table_id: string; confirm_archive?: string }>("/notion-import/sync", body, opts);
-      setState({ connected: true, synced_at: data.finished_at, report: data });
+      // an Archive the server answered with a different hold: say the count changed, never re-ask as if nothing happened
+      setWas(confirmArchive && data.archive_held && data.archive_confirm !== confirmArchive ? Number(confirmArchive.split(":")[0]) : null);
+      setState((prev) => ({ connected: true, synced_at: data.finished_at, report: { ...data, archive_kept: prev?.report?.archive_kept ?? null } }));
       tableShapeChanged(tableId);
       setShowing(!data.archive_held);
     } catch (err) {
@@ -164,20 +170,22 @@ export function NotionSyncBar({ tableId, organizationId }: { tableId: string; or
   if (!state?.connected) return null;
   const report = state.report ?? null;
   // A held archive (the server's guard) is one plain question with its way out, in place of the "synced" chip.
-  const held = report?.archive_held && report.archive_confirm && kept !== report.archive_confirm ? report : null;
+  const held = openHold(report);
+  const keep = async (token: string) => {
+    if (!organizationId) return;
+    try {
+      await answerHold(organizationId, tableId, "keep", token);
+      setState((prev) => (prev ? { ...prev, report: { ...(prev.report ?? {}), archive_kept: token } } : prev));
+    } catch (err) {
+      toast.error(extractErrorMessage(err));
+    }
+  };
   return (
     <div className="flex shrink-0 items-center gap-1" data-notion-sync-bar="">
       {held ? (
-        <div className="flex items-center gap-1" data-notion-sync-held="">
-          <span className="text-sm text-muted-foreground">
-            Notion no longer lists {held.archive_held} {held.archive_held === 1 ? "row" : "rows"}. Archive them?
-          </span>
-          <Button type="button" variant="outline" disabled={busy} onClick={() => void syncNow(String(held.archive_confirm))} data-notion-sync-archive="">
-            Archive
-          </Button>
-          <Button type="button" variant="quiet" disabled={busy} onClick={() => setKept(String(held.archive_confirm))} data-notion-sync-keep="">
-            Keep
-          </Button>
+        <div data-notion-sync-held="">
+          <HeldArchiveLine source="Notion" held={held.held} was={was} busy={busy}
+            onArchive={() => void syncNow(held.confirm)} onKeep={() => void keep(held.confirm)} />
         </div>
       ) : (
         <Button type="button" variant="quiet" className="hidden max-w-[16rem] truncate md:inline-flex" onClick={() => setShowing(true)} data-notion-sync-when="">

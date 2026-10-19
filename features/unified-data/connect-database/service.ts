@@ -40,6 +40,9 @@ export interface SyncAnswer {
   /** What the sync could not reconcile, one sentence each. */
   warnings: string[];
   synced_at: string;
+  /** Rows the source no longer lists, held by the archive guard (nothing archived), and their exact confirmation. */
+  rows_held?: number;
+  archive_confirm?: string | null;
 }
 
 /** Test a connection string and list the tables it may read. The server stores nothing. */
