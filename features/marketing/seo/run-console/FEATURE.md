@@ -224,7 +224,7 @@ do".
 - 🚨 **A saved, enabled row SPENDS MONEY on its own cadence.** `DISPATCHER_NOTICE`
   in `ScheduleCascadePanel.tsx` says so on the panel and in the save toast; never
   soften it back toward "nothing runs". A row saved here IS the approval record
-  for that engine on that brand (Arman, 2026-08-25) — that is the whole authority
+  for that engine on that brand — that is the whole authority
   the dispatcher runs on.
 - 🚨 **THE CASCADE HAS ONE IMPLEMENTATION, AND IT IS IN THE DATABASE.**
   `seo.engine_schedule_resolve` — read by `resolveSchedulesForSites` here and by

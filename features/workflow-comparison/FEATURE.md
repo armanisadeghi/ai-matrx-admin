@@ -35,7 +35,7 @@ watch each arm's run live, judge blind, record the verdict. Server half:
   (`features/agent-comparison/shared/blind.ts`): shuffle the columns, hide
   labels/versions/costs, reveal on verdict. Verdict (`verdict_winner/
 notes/at/by`) writes directly to the row.
-- **The half-price-cake rule** (Arman, 2026-08-26): a shorter/smaller output
+- **The half-price-cake rule**: a shorter/smaller output
   is NOT savings. Per-arm cost is verified server-side; `metrics.
 normalization` on the row is reserved for per-unit normalization display.
 

@@ -11,7 +11,7 @@ the transport sends without an organization when none is selected; dated
 changes: super-admin read). None of them depends on the selected
 organization, so a super admin sees the platform's alerts with none picked.
 
-**Why it exists (Arman, 2026-09-14).** Two floating notices had grown side by
+**Why it exists.** Two floating notices had grown side by
 side — the schedule alarm (bottom-right) and the provider outage notice
 (top-centre) — each with its own snooze, mute store, layout marker and idea
 of a row. The schedule one had become furniture:
@@ -67,7 +67,7 @@ alarm.
 that refreshes the clock, the local store, and every source, so silence ends
 by itself in this tab without a reload.
 
-**It floats.** A notice never modifies the page under it (Arman, 2026-09-12).
+**It floats.** A notice never modifies the page under it.
 While visible it sets `data-admin-attention="compact|expanded"` on `<html>`;
 `styles/shell.css` reserves a responsive scroll runway on the shell scroll
 owner from that state alone (guards: `styles/__tests__/no-overlay-layout-reservation.test.ts`,

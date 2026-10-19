@@ -81,7 +81,7 @@ is limited to immediately usable providers.
 **Connect your AI** (`/bring-your-work` — path kept for now; `features/connectors/bring-your-work/BringYourWorkPage.tsx`;
 Integrations menu) — the other direction: a person's OWN AI (Claude, ChatGPT, Claude Code, Cursor)
 connecting TO the AI Matrx MCP (aidream `api/mcp/people/`, `https://server.app.matrxserver.com/api/matrx-mcp`).
-Four numbered steps (Arman, 2026-10-04 round 2): 1 pick your AI (Claude default) → 2 connect by
+Four numbered steps (round 2): 1 pick your AI (Claude default) → 2 connect by
 click + AI Matrx sign-in (OAuth) — Claude/ChatGPT open their connectors settings in a new tab with
 a Copy address; Cursor uses its `cursor://…/mcp/install` deep link (base64 config built at render);
 Claude Code gets a plain sentence to paste into Claude → 3 try it (a "Copy for <AI>" hello
@@ -176,8 +176,8 @@ YouTube connection and states that the older connection remains unchanged.
 
 ### (g) Bringing a Google contact or task IN
 
-Both panels are the WINDOW presentation (Arman, 2026-09-17: "The default is the
-window"), registered in `features/overlays/definitions/<id>.overlay.ts (window block)` with
+Both panels are the WINDOW presentation (the default is the
+window), registered in `features/overlays/definitions/<id>.overlay.ts (window block)` with
 `mobilePresentation: "drawer"` so a phone gets the bottom sheet, and opened in
 place from the People list and the Tasks header — never a route, which would
 lose the list behind it.
@@ -253,7 +253,7 @@ One entry in `registry.ts`: id (generic to the provider, permanent), name (today
 
 ## Invariants & gotchas
 
-- 🚨 **YOURS AND SHARED ARE TWO LISTS — an organization's account is never the viewer's own** (Arman, 2026-10-05). Row security lets a person read their own connections AND every organization connection of an organization they belong to (and a platform admin reads everyone's). Every connections surface judges each account with [`connection-ownership.ts`](connection-ownership.ts) (`connectionOwnership` / `splitConnectionsByOwnership`, viewer from `useConnectionViewer`): `mine` makes a provider saved/connected; `organization` is listed as **Shared with you** ("Shared by AI Matrx") and never counts as saved, so "Connect your own" stays offered; `someone_else` is never shown. The Google inventory read also asks only for `owner_user_id = me OR owner_type = organization`. In Settings → Connectors a shared account is a collapsed row; its health card — and, for that organization's owners/admins, Reconnect/Disconnect — opens only on a deliberate press, and the consent body never defaults to it. Guard: [`__tests__/an-organizations-account-is-never-yours.test.ts`](__tests__/an-organizations-account-is-never-yours.test.ts).
+- 🚨 **YOURS AND SHARED ARE TWO LISTS — an organization's account is never the viewer's own**. Row security lets a person read their own connections AND every organization connection of an organization they belong to (and a platform admin reads everyone's). Every connections surface judges each account with [`connection-ownership.ts`](connection-ownership.ts) (`connectionOwnership` / `splitConnectionsByOwnership`, viewer from `useConnectionViewer`): `mine` makes a provider saved/connected; `organization` is listed as **Shared with you** ("Shared by AI Matrx") and never counts as saved, so "Connect your own" stays offered; `someone_else` is never shown. The Google inventory read also asks only for `owner_user_id = me OR owner_type = organization`. In Settings → Connectors a shared account is a collapsed row; its health card — and, for that organization's owners/admins, Reconnect/Disconnect — opens only on a deliberate press, and the consent body never defaults to it. Guard: [`__tests__/an-organizations-account-is-never-yours.test.ts`](__tests__/an-organizations-account-is-never-yours.test.ts).
 
 - **THE READINESS WAIT IS BOUNDED, AND ITS END IS HONEST.** No wait on a third-party Google script is open-ended. The Identity Services wait (`providers/google-provider/GoogleApiProvider.tsx`), the `next/dynamic` chunk wait (`LazyGoogleAPIProvider.tsx`) and the Picker's `api.js` wait (`lib/googlePicker.ts`, via `loadGooglePickerScript`) all end at `GOOGLE_IDENTITY_READY_TIMEOUT_MS` (20 s, a CAPS constant in `providers/google-provider/googleIdentityReadiness.ts` — a technical readiness bound on a third-party script, never an organization knob). `script.onerror` and the timeout land in the SAME failed state, whose sentence lives ONCE (`GOOGLE_IDENTITY_UNAVAILABLE_MESSAGE`) and is rendered by the ONE component `GoogleIdentityUnavailableNotice` with Retry and "Open Google's status". Retry RE-INSERTS the script (a dead tag never fires `load` again) and restarts the bound; an arrival after the bound cannot resurrect the abandoned attempt. A FAILED attempt removes the dead tag it owns on the way out, and a new attempt replaces any leftover tag rather than waiting on one that will never fire again — a bound with a useless retry behind it is still a dead end. Concurrent callers share the ONE in-flight attempt. Never re-introduce a `setTimeout(check, …)` that re-schedules itself with no deadline.
 

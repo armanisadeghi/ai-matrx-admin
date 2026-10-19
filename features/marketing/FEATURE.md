@@ -226,7 +226,7 @@ declarations that must exist together:
 3. a builder in `lib/routes.ts` (`marketingRoutes`).
 
 Coming-soon sections stay **VISIBLE in the brand sidebar with a "Soon" tag** —
-the client workspace's promised shape is part of the map (Arman, 2026-08-28).
+the client workspace's promised shape is part of the map.
 **Shipping one:** build the real page at the SAME URL, delete its registry row,
 and drop `status`/`comingSoonId`. The href never changes — that permanence is
 the whole point of reserving it.

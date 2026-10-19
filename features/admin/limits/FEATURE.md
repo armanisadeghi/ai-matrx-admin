@@ -2,8 +2,7 @@
 
 > 🚨 **Cross-repo system-of-record: `/Users/armanisadeghi/code/common-docs/systems/platform/feature-knobs/FEATURE.md`.**
 > Read it before adding a limit anywhere, in any repo. The law behind it is
-> `common-docs/policies/limits-are-knobs-agents-set-them.md` (Arman,
-> 2026-08-20): *"Must be knobs not code and always per feature."* This file is
+> `common-docs/policies/limits-are-knobs-agents-set-them.md`: limits are knobs, not code, always per feature. This file is
 > the frontend contract only.
 
 **Route:** `/administration/users/limits` (Users & Access → Limits & Knobs).
@@ -43,7 +42,7 @@ as expired — it never vanishes. `org_plan_list` is super-admin only; when it
 refuses, the list still renders and the plan column says *unreadable* with the
 real error, never a blank.
 
-## Plans & pricing — the plan's own columns (Arman, 2026-10-04)
+## Plans & pricing — the plan's own columns
 
 - **Route:** `/administration/billing/plans` (Billing → Plans): `PlanDetailsPanel` above the
   allowances matrix. Every `billing.plan` field a customer sees is edited here — name, tagline,
@@ -60,7 +59,7 @@ real error, never a blank.
 - A limit cell accepts the word `unlimited` (stores NULL) — the way to create an unlimited window
   where no row exists yet.
 
-## Plan allowances is ONE matrix (Arman, 2026-10-03)
+## Plan allowances is ONE matrix
 
 - Every plan number is set here, never in code. Rows = plans grouped Guest, Free, Personal,
   Business (`audience = company`), Enterprise, ordered by `rank` (`groupPlansByAudience`).
@@ -75,7 +74,7 @@ real error, never a blank.
   super-admin, soft delete); it confirms first and names the consequence ("Pro then has no
   weekly cap."). `plan_limit_set` on the same window revives the row.
 
-## Enterprise is custom per organization (Arman, 2026-10-04)
+## Enterprise is custom per organization
 
 - 🚨 **Enterprise is NEVER unlimited and never one person's plan.** It has no `plan_limit` rows; the
   matrix's Enterprise row reads "Custom per organization" and links

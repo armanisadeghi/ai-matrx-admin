@@ -205,7 +205,7 @@ file (`features/code-editor/agent-code-editor/hooks/useIdeContextSync.ts`).
 - No `conversationId` (the standalone window opener has no chat) = nothing is published.
 - Guard: `hooks/useCloudBrowserProfileContextSync.test.tsx` (5 cases, real reducer).
 
-## Consent switches start ON (Arman, 2026-09-18)
+## Consent switches start ON
 
 Unattended login, session-health checks and code entry (`totpDelegation`) default to
 **true** in `service.ts`'s `DEFAULT_CONSENT`. The ruling: signed-in sites stay signed in,

@@ -64,9 +64,8 @@ Of ~16 sub-pickers:
   Documents and Workbooks (`listAccessibleDocuments` / `listAccessibleWorkbooks` — `select *`, unbounded),
   Tables (`custom.table_list_everywhere` — metadata only), Conversations (already bounded + server search).
 
-- 2026-09-29 — **The Files view lists the whole library, never a capped slice** (Arman, from the
-  Source input's "Your files": "it isn't showing all of my files, the search clearly fails to get
-  anything other than the ones in state"). `FilesResourcePicker` always read the person's WHOLE
+- 2026-09-29 — **The Files view lists the whole library, never a capped slice** (from the
+  Source input's "Your files": the search failed to find anything other than the files already in state). `FilesResourcePicker` always read the person's WHOLE
   library (the `cloudFiles` tree, the same `get_user_file_tree` pages the Files app reads — search
   moved off a server query onto that tree deliberately on 2026-07-19, `7269f63a3e`), but since
   `7f11ed83a1` (2026-07-16) it cut Recents to the newest 20 and a search to the 20 newest matches:

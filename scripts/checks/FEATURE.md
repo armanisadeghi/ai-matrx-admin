@@ -100,7 +100,7 @@ v0.4.2991 lost theirs. Output is appended to the same dated log; it holds its ow
   printing green over real findings). Each row's full output goes to
   `tmp/checks/<id>.log`. The runner's exit code is always 0; 2 means the
   runner itself crashed.
-- **No live database on the release path** (Arman, 2026-09-25: releases fire
+- **No live database on the release path** (releases fire
   50-90 times a day; nothing that reads the live database may add load there).
   Every row carries a DECLARED class in `scripts/checks/row-classes.json`:
   `live-db` (can open the live database — gate-db / `SUPABASE_MATRIX_*`, a

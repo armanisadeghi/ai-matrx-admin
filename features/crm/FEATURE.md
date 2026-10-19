@@ -1508,8 +1508,7 @@ Settings → Configuration, Marketing → Public Relations). 🚨 `service.ts` c
   - The grid gains a **Written by** column and filter: *Anyone* (the default, no
     predicate at all), *Added by an agent* (`created_by_tier = 'agent'`) and
     *Agent-written then edited* (that plus `updated_by_tier = 'user'`). The SAME
-    grid and the SAME row page — never a second list of agent-added contacts
-    (Arman, 2026-09-12). `written_by` is agent-writable through `column_filters`
+    grid and the SAME row page — never a second list of agent-added contacts. `written_by` is agent-writable through `column_filters`
     like every other facet.
   - The record page gains **Outputs about this customer**
     (`PartyOutputsSection`), which is `AnchorRecordsList` — the component the

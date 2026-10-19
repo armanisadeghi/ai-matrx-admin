@@ -6,7 +6,7 @@ Product truth: `../common-docs/systems/content/spaces/` — `VISION.md` (Arman's
 
 ## The rule of this build
 
-Copy Notion **exactly**; improve nothing until parity (Arman, 2026-10-05). Notion's layout, spacing,
+Copy Notion **exactly**; improve nothing until parity. Notion's layout, spacing,
 interactions, keyboard and menus; **our** brand: design tokens, Lucide icons, no emojis in UI, no
 Notion code, fonts or logos.
 
@@ -42,8 +42,7 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   editor canvas, blocks and sidebar are this feature's own layout.
 - Lucide icons only; no Sparkles for AI; `bg-textured`/semantic tokens; light and dark both correct.
 - Mobile per the `ios-mobile-first` skill. `pnpm type-check` clean before every commit.
-- Never use a single customer's or stranger's page as the spec, sample, test subject or acceptance target (Arman,
-  2026-10-18). Specs come from the template library (`../common-docs/projects/spaces-templates/`); test subjects are
+- Never use a single customer's or stranger's page as the spec, sample, test subject or acceptance target. Specs come from the template library (`../common-docs/projects/spaces-templates/`); test subjects are
   random public examples, a different one each round.
 
 ## Change log

@@ -22,7 +22,7 @@ durable business truth — never chat-only.
 
 ## Invariants
 
-- **UX doctrine (Arman, 2026-08-08):** no page title/intro prose (the tab
+- **UX doctrine:** no page title/intro prose (the tab
   says Intake — data starts at the top); the analysis AUTO-STARTS on load;
   every bundle slice streams onto the screen the moment the server has it
   (`seo.intake_bundle_period` events → `PeriodPreviewCard`); exactly ONE

@@ -79,9 +79,9 @@ links to — is already declared in the admin navigation registry.
   e.g. `healed:cookie-not-sent-by-browser`), the whole lane ladder in the
   payload. It is written `durable` from the client so no tier rule can quiet
   it: "errors that fix themselves" are counted and burned down, never the
-  norm (Arman, 2026-09-16). A dead ladder stays kind `media` with the
+  norm. A dead ladder stays kind `media` with the
   diagnosis as `error_type`.
-- **A notice never modifies the page underneath it** (Arman, 2026-09-12). The
+- **A notice never modifies the page underneath it**. The
   outage notice FLOATS: fixed, movable (`useDock`, `@ai-matrx/summon/dock`), mutable. It
   publishes no height, measures nothing, and reserves no layout — a full-width
   bar wedged into `AppShell` between the header and the page body is the exact

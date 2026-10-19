@@ -566,7 +566,7 @@ fixed` window titled "Marking chapters" — the page did not move — chapters
   pre-script transform). (3) `MAX_HOST_COUNT` 20 → 10: ElevenLabs
   `text_to_dialogue` hard-rejects >10 distinct voices (verified live —
   10-host e2e passed, 14/20 rejected at the provider); server fails fast too.
-  **10 is now FINAL** (Arman, 2026-08-09) — capping beat building
+  **10 is now FINAL** — capping beat building
   multi-request render + stitch; the server's `_MAX_SPEAKER_COUNT` matches and
   the interim voice-sharing workaround was deleted. (4) Server now
   persists only the canonical script (dialogue + speaker_settings; 36 rows

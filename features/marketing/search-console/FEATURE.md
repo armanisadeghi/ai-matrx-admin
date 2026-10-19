@@ -190,7 +190,7 @@ DigStampPanel.tsx` ("Saves matches as") attaches it via
   `../../../../common-docs/operations/scheduled-tasks.md`.
 - **Insights** (`components/insights/InsightsTab.tsx` + `ClassInsights.tsx`)
   — the ALGORITHM layer beyond threshold dig rules. **THE TRAFFIC-CLASS
-  DOCTRINE (Arman, 2026-08-07): not all traffic is created equal — raw
+  DOCTRINE: not all traffic is created equal — raw
   totals lie, and CTR is near-meaningless for SEO (good SEO often LOWERS
   it). Every serious read decomposes by class first.** The ONE class
   resolver is `seo.gsc_keyword_class_map`
@@ -334,8 +334,7 @@ on a pooled connection) and `work_mem=32MB` (the largest site spilled its group-
 [`migrations/seo_class_movers_one_facts_join.sql`](../../../migrations/seo_class_movers_one_facts_join.sql)
 has the plan. If you write a `gsc_perf_*` read that joins a map per keyword, join it ONCE.
 
-**The vocabularies are editable, and that is the point** (Arman, 2026-08-21: "the rules
-can't live in the agent's head"). Two planes, two paths:
+**The vocabularies are editable, and that is the point** (the rules cannot live in the agent's head). Two planes, two paths:
 
 - **THE SETTINGS LADDER (KI-046, 2026-08-25)** — the score baseline and the
   level thresholds cascade **platform → organization → brand → site**; the
@@ -850,9 +849,8 @@ its dismiss-layer race — the input "flashed and disappeared").
   Insights rail wrapping and compressing its controls. Traffic-quality tables
   keep their existing controlled horizontal scrollers on mobile.
 
-- 2026-08-25 — **MSR-06 (Arman, marketing-surface-repair register): the Offering
-  column on the Queries table.** "The other critical thing to put here would be
-  the one where you map it to an offering." A query row now shows WHICH of the
+- 2026-08-25 — **MSR-06 (marketing-surface-repair register): the Offering
+  column on the Queries table.** A query row now shows WHICH of the
   site's offerings it maps to, picks a new one in the cell, sorts by offering
   name and filters to a single offering — or, the workflow the column exists
   for, to **Not placed yet**.
@@ -883,7 +881,7 @@ its dismiss-layer race — the input "flashed and disappeared").
   `mismatch` class and needs the written reason a one-click door cannot
   collect — the same reason the Class cell omits it.
 
-- 2026-08-25 — **MSR-01/03/04/05/07/08 (Arman, marketing-surface-repair register):
+- 2026-08-25 — **MSR-01/03/04/05/07/08 (marketing-surface-repair register):
   the Queries table's sort/filter/layout/edit/context-menu repair.**
   `seo.gsc_perf_breakdown` (`migrations/seo_gsc_breakdown_value_sort_filter.sql`)
   gained server-side sort for `traffic_class`/`value_score`/`value_band` and

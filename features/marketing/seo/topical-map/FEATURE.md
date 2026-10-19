@@ -146,7 +146,7 @@ reader falls back to that row's own `default_value`.
   `marketingRoutes.topicalMapStart`; the graph's saved layout invalidates its reads and its rollup
   no longer replaces the pages listing; touch devices see the tree's row actions; the verifiers'
   tests and recorded All Green fixtures committed. The visual design of every screen is to be
-  redone (Arman, 2026-09-18) — this pass is functionality only.
+  redone — this pass is functionality only.
 - **2026-09-18** — Phase 1: all seven lanes landed (outline + text, table, graph, topic panel,
   home/start/link-ins/door, pages workspace + runs, proposals/history/kind/canvas/window); six
   zero-authorship verifiers reported PASS-WITH-FINDINGS; the coordinator-owned slice defect

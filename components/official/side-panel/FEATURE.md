@@ -48,7 +48,7 @@ ai-models Providers, Settings, Offerings, Endpoints and APIs screens, and the po
 - **The slide animates the panel's WIDTH while its content keeps its own width** — content slides out of view,
   never reflows mid-animation. Pace: `SIDE_PANEL_SLIDE_CLASS` = `transition-[width]` + `PANEL_MOTION_CLASS` — THE panel motion
   (`../common-docs/policies/motion-standard.md`; 600ms even ease-in-out)
-  (Arman, 2026-09-27: 200ms was "far too fast"). Off while dragging so the edge follows the pointer exactly.
+  (200ms was too fast). Off while dragging so the edge follows the pointer exactly.
 - **`onCollapse`: drag past the minimum and keep going (80px) and the panel closes** — it slides shut while the
   pointer is still down; dragging back out undoes it; the width it had is kept for reopening.
 - **A closed panel stays mounted and is `inert` + `aria-hidden`.** A host that must not keep something alive

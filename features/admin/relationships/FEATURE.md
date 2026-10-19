@@ -259,7 +259,7 @@ used by the per-row **Link policy** side panel).
   reads the last-RUN lookup, never the live form fields), the explorer
   `[token]` header (orbit graph), and the Access Planner. Builders live in
   `access-planner/copy.ts`; never hand-roll a clipboard handler or envelope.
-- **THE WHAT-I-SEE LAW (Arman, 2026-08-12, in anger): the PRIMARY Copy-for-AI
+- **THE WHAT-I-SEE LAW: the PRIMARY Copy-for-AI
   payload is the rendered surface converted to data — never a raw dump.** The
   planner's panel copy is built from LIVE component state inside the click
   handler (`buildPanelView` in the Impl → `plannerPanelHuman/AgentPayload`):

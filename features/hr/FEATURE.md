@@ -21,7 +21,7 @@
 
 The HR module: one employer's people, time, hiring, documents and settings, for an
 organization that has switched HR on. An `hr.employee` belongs to exactly one employer of
-record, so **lists span employers and aggregates do not** (Arman, 2026-09-30): a list a person
+record, so **lists span employers and aggregates do not**: a list a person
 browses opens on All organizations with the employer as a column and a visible filter
 (`?org_filter=`); totals, pay, periods, timesheet batches and an employer's settings need exactly
 one employer and ask which under All organizations. Never the active organization, never `?org=`.

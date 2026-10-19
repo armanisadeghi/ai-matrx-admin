@@ -98,9 +98,7 @@ contract via generated `@ai-matrx/api` operations (`serverApi`) so a backend ren
 ## The org-level bring-up checklists — SPLIT BY AUDIENCE (2026-08-17)
 
 The original single checklist put Pub/Sub topics, service accounts and server
-env-var names in front of a normal organization (Arman, first real bring-up,
-2026-08-16: "Why the fuck would you have server settings and who may publish
-service accounts?"). [bringUpChecklist.tsx](./bringUpChecklist.tsx) now
+env-var names in front of a normal organization (first real bring-up, 2026-08-16). [bringUpChecklist.tsx](./bringUpChecklist.tsx) now
 registers TWO checklists, both mounted by
 `features/crm/components/sending-identities/OutreachBringUpSection.tsx`:
 

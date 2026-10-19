@@ -8,7 +8,7 @@
 
 ## Purpose
 
-The host steps of the ONE template product, Template (Arman, 2026-10-04: "kit" is retired for this
+The host steps of the ONE template product, Template ("kit" is retired for this
 meaning). The catalog, install plan and doors live in the store (`custom.template*`) and in
 `@ai-matrx/records/templates`; the gallery and preview page are `features/make/gallery/**` (lane 8
 TEMPLATES). This folder holds what the host does that the store cannot: copy agents, create

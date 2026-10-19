@@ -43,7 +43,7 @@ Routes outside this directory: `app/(core)/data/`, `app/(core)/data/page.tsx` (r
   in `hub/doors.ts` only, and moves into the package at its next release.
 - **A table opens in its own organization.** The store's doors are keyed (organization, id); the organization comes
   from the object's id (`custom.where_id_opens`), never from the active organization or a caller.
-- **The record store is never off** (Arman, 2026-10-03: everything is on by default). There is no store switch,
+- **The record store is never off** (everything is on by default). There is no store switch,
   no gate hook, no switch notice and no nav gate; `custom.store_is_open` answers true for every organization and the
   knob `custom/system_enabled` is archived. Guards: `features/shell/__tests__/no-nav-row-is-gated.test.ts`,
   `pnpm check:the-store-is-never-off`.

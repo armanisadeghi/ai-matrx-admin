@@ -264,7 +264,7 @@ from a successful one. Now:
 
 **Every client names its FEATURE too, and no error row is app-only any more
 (applied live 2026-09-20).** `source_app` / `source_feature` are ONE two-level
-categorization: the app, then the feature inside it (Arman, 2026-09-18).
+categorization: the app, then the feature inside it.
 `ops.system_error` gained `source_feature` that morning and every Python writer
 started stamping both halves — but this RPC, the door EVERY client app writes
 through, could still only say the app, so a CMS failure and an education-tutor

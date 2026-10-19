@@ -140,9 +140,9 @@ canonical words (Rulebook · a Masterwork · Build · Audition · Scout · Appro
     remembered id (a re-attach check still in flight stands down against a start generation), and
     the box SAYS which run it is showing. Wall W15, 2026-09-10.
 19. **Every Rulebook door opens whatever organization is selected, and never moves the selection**
-    (Arman, 2026-09-23: "The permission is to the person, not the org"). `RulebookLaneRoute` and
+    (the permission is to the person, not the org). `RulebookLaneRoute` and
     `RulebookDetailPage` render the Rulebook as soon as it is read, and show NO organization
-    notice (Arman, 2026-09-26: the org notice belongs only where a person could file something in
+    notice (the org notice belongs only where a person could file something in
     the wrong org). Every child written under a Rulebook takes the RULEBOOK's organization —
     aidream's `record_organization_id` for runs, cases, sources and ledgers, and the capture-plan
     reminders send it via `scopeOverrides` (`capture-plan/service.ts`, when the person is a
@@ -259,7 +259,7 @@ canonical words (Rulebook · a Masterwork · Build · Audition · Scout · Appro
   `masterwork.review.agenda_panel` (boolean, default on) hides the panel only; the interviewer
   keeps receiving the agenda, because that is a provision and not a panel.
 - `review/signature.ts` + `review/ExpertSignOff.tsx` — THE EXPERT'S SIGNATURE ON A RESULT, the
-  single most important signal we have (Arman, 2026-09-15). One tap on a finished Masterwork run
+  single most important signal we have. One tap on a finished Masterwork run
   writes `verdict = positive` into `platform.output_feedback` through the existing
   `upsert_output_feedback` RPC, stamped `surface_name = masterwork.expert_signature` — **no new
   table, no new verdict word, no migration**, so the hindsight/replay loop reads a signed output

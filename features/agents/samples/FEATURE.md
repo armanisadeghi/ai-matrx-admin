@@ -56,12 +56,12 @@ same rule as `features/mandates/admin/FEATURE.md`).
 
 ## Surfaces
 
-🚨 **Samples never add page chrome (Arman, 2026-08-26).** The original
+🚨 **Samples never add page chrome.** The original
 full-width chip strip on top of the builder/runner was ripped out the day it
 shipped — the entry point is ONE floating icon, and it exists ONLY in the
 agent builder. Do not re-add chips, bars, or strips to any run surface.
 
-**Mandate Test exception (Arman, 2026-09-09):** its Run once form offers Agent samples through the same manager. Agent-native variables are translated through the saved Provision Mapping; same-mandate cases already contain provision inputs. Ambiguous maps, other-mandate inputs and unsupported attachments are refused before changing the form.
+**Mandate Test exception:** its Run once form offers Agent samples through the same manager. Agent-native variables are translated through the saved Provision Mapping; same-mandate cases already contain provision inputs. Ambiguous maps, other-mandate inputs and unsupported attachments are refused before changing the form.
 
 - **Builder launcher** — `components/samples/AgentSamplesLauncher.tsx`: a
   single floating FlaskConical icon directly above the Smart Agent input in

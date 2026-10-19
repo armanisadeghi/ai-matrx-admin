@@ -1,6 +1,6 @@
 # Selection toolbar — the ONE popup over selected text
 
-**Ruling (Arman, 2026-09-26):** one selection toolbar primitive, the Notion / Google Docs model — one look, one position rule, a mode-aware action set. Editing shows formatting + AI + comment; reading shows highlight, comment, suggest, AI, link and report. AI shows in both.
+**Ruling:** one selection toolbar primitive, the Notion / Google Docs model — one look, one position rule, a mode-aware action set. Editing shows formatting + AI + comment; reading shows highlight, comment, suggest, AI, link and report. AI shows in both.
 
 ## How it works
 
