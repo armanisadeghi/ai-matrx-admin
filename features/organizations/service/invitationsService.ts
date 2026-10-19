@@ -84,6 +84,8 @@ interface InvCreateRow extends InvListRow {
   updated_at: string;
   updated_by: string | null;
   version: number;
+  test_run_id: string | null;
+  test_expires_at: string | null;
 }
 type _InvCreateCheck =
   InvCreateRow extends DbRpcRow<"inv_create"> ? true : false;
