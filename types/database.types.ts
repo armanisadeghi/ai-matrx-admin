@@ -1039,6 +1039,7 @@ export type Database = {
       }
       definition: {
         Row: {
+          adds_to_memory: boolean
           agent_type: string
           auto_context_disabled: boolean
           card_visibility: Database["platform"]["Enums"]["visibility"]
@@ -1059,6 +1060,7 @@ export type Database = {
           input_kind: string | null
           is_active: boolean
           is_archived: boolean
+          is_chat_agent: boolean
           is_favorite: boolean
           matrx_actions: Json
           mcp_servers: string[]
@@ -1077,6 +1079,7 @@ export type Database = {
           rag_awareness_fragment: string | null
           rag_awareness_mode: string
           rag_awareness_refreshed_at: string | null
+          reads_memory: boolean
           search_engine_indexed: boolean | null
           settings: Json
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
@@ -1100,6 +1103,7 @@ export type Database = {
           visibility: Database["platform"]["Enums"]["visibility"]
         }
         Insert: {
+          adds_to_memory?: boolean
           agent_type?: string
           auto_context_disabled?: boolean
           card_visibility?: Database["platform"]["Enums"]["visibility"]
@@ -1120,6 +1124,7 @@ export type Database = {
           input_kind?: string | null
           is_active?: boolean
           is_archived?: boolean
+          is_chat_agent?: boolean
           is_favorite?: boolean
           matrx_actions?: Json
           mcp_servers?: string[]
@@ -1138,6 +1143,7 @@ export type Database = {
           rag_awareness_fragment?: string | null
           rag_awareness_mode?: string
           rag_awareness_refreshed_at?: string | null
+          reads_memory?: boolean
           search_engine_indexed?: boolean | null
           settings?: Json
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
@@ -1161,6 +1167,7 @@ export type Database = {
           visibility?: Database["platform"]["Enums"]["visibility"]
         }
         Update: {
+          adds_to_memory?: boolean
           agent_type?: string
           auto_context_disabled?: boolean
           card_visibility?: Database["platform"]["Enums"]["visibility"]
@@ -1181,6 +1188,7 @@ export type Database = {
           input_kind?: string | null
           is_active?: boolean
           is_archived?: boolean
+          is_chat_agent?: boolean
           is_favorite?: boolean
           matrx_actions?: Json
           mcp_servers?: string[]
@@ -1199,6 +1207,7 @@ export type Database = {
           rag_awareness_fragment?: string | null
           rag_awareness_mode?: string
           rag_awareness_refreshed_at?: string | null
+          reads_memory?: boolean
           search_engine_indexed?: boolean | null
           settings?: Json
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
@@ -16678,6 +16687,167 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversation_summary"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memory_trial: {
+        Row: {
+          bindings: Json
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          files: Json
+          id: string
+          metadata: Json
+          notes: string | null
+          organization_id: string
+          reflect_agent_id: string | null
+          reviewer_agent_id: string | null
+          status: string
+          steward_agent_id: string | null
+          subject_user_id: string
+          test_expires_at: string | null
+          test_run_id: string | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          bindings?: Json
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          files?: Json
+          id?: string
+          metadata?: Json
+          notes?: string | null
+          organization_id: string
+          reflect_agent_id?: string | null
+          reviewer_agent_id?: string | null
+          status?: string
+          steward_agent_id?: string | null
+          subject_user_id: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          bindings?: Json
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          files?: Json
+          id?: string
+          metadata?: Json
+          notes?: string | null
+          organization_id?: string
+          reflect_agent_id?: string | null
+          reviewer_agent_id?: string | null
+          status?: string
+          steward_agent_id?: string | null
+          subject_user_id?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
+      memory_trial_step: {
+        Row: {
+          agent_id: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          error: string | null
+          files_after: Json
+          files_before: Json
+          id: string
+          metadata: Json
+          organization_id: string
+          output: Json | null
+          provision_snapshot_ids: Json
+          request_text: string | null
+          results: Json
+          role: string
+          run_conversation_id: string | null
+          seq: number
+          status: string
+          subject_conversation_id: string | null
+          test_expires_at: string | null
+          test_run_id: string | null
+          trial_id: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          agent_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          error?: string | null
+          files_after?: Json
+          files_before?: Json
+          id?: string
+          metadata?: Json
+          organization_id: string
+          output?: Json | null
+          provision_snapshot_ids?: Json
+          request_text?: string | null
+          results?: Json
+          role: string
+          run_conversation_id?: string | null
+          seq: number
+          status: string
+          subject_conversation_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          trial_id: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          agent_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          error?: string | null
+          files_after?: Json
+          files_before?: Json
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          output?: Json | null
+          provision_snapshot_ids?: Json
+          request_text?: string | null
+          results?: Json
+          role?: string
+          run_conversation_id?: string | null
+          seq?: number
+          status?: string
+          subject_conversation_id?: string | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          trial_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memory_trial_step_trial_id_fkey"
+            columns: ["trial_id"]
+            isOneToOne: false
+            referencedRelation: "memory_trial"
             referencedColumns: ["id"]
           },
         ]
