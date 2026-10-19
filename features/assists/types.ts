@@ -144,7 +144,7 @@ export type AssistAction =
   | {
       /**
        * Run ONE brand assist (Smart Add VISION Part 24): a ~30-second
-       * pre-filled job that enriches one brand, priced up front. The server
+       * pre-filled job that enriches one brand. The server
        * door is fixed (`/brand-assists/{brandId}/run`), so the row carries
        * only which brand and which assist — never an address.
        */
@@ -153,10 +153,6 @@ export type AssistAction =
       assistId: string;
       /** Verb-labeled button text, e.g. "Look it up". */
       label: string;
-      /** Exact points charged at emit time; 0 = free; null = not priced. */
-      costPoints: number | null;
-      /** Exact USD at emit time (string, never a float). */
-      costUsd: string | null;
       /** Where the result lands, in the person's words. */
       lands: string;
     }
@@ -688,8 +684,6 @@ export function narrowAction(value: Json): AssistAction | null {
       brandId: obj.brandId,
       assistId: obj.assistId,
       label: typeof obj.label === "string" ? obj.label : "Run it",
-      costPoints: typeof obj.costPoints === "number" ? obj.costPoints : null,
-      costUsd: typeof obj.costUsd === "string" ? obj.costUsd : null,
       lands: typeof obj.lands === "string" ? obj.lands : "",
     };
   }

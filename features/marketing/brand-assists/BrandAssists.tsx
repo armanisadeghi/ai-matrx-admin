@@ -28,7 +28,6 @@ import {
   BRAND_ASSIST_SURFACE,
   brandAssistDedupeKey,
   brandAssistSourceKey,
-  costLine,
   offersToEmit,
   type BrandAssistOffers,
 } from "./select-offers";
@@ -82,21 +81,18 @@ export function BrandAssists({ brandId, organizationId }: { brandId: string; org
       if (offers.error || !offers.data) return;
       const data = offers.data as unknown as BrandAssistOffers;
       for (const offer of offersToEmit(data, mine)) {
-        const cost = costLine(offer);
         const id = await emitAssistTracked(
           userId,
           {
             sourceKey: brandAssistSourceKey(offer.assist_id),
             sourceKind: "deterministic",
             title: offer.title,
-            body: `${offer.body}\n\n**${cost}** · about 30 seconds`,
+            body: offer.body,
             action: {
               kind: "brand_assist",
               brandId,
               assistId: offer.assist_id,
               label: offer.verb,
-              costPoints: offer.cost_points,
-              costUsd: offer.cost_usd,
               lands: offer.lands,
             },
             surfaceName: BRAND_ASSIST_SURFACE,

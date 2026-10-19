@@ -88,12 +88,3 @@ export function offersToEmit(
 export function pendingBrandAssists(history: Assist[]): Assist[] {
   return history.filter((row) => row.status === "pending" && row.suppressedUntil === null);
 }
-
-/** Points line for a card: exact points, plus exact USD to the cent or below it. */
-export function costLine(offer: Pick<BrandAssistOffer, "cost_points" | "cost_usd">): string {
-  if (offer.cost_points === 0) return "Free";
-  if (offer.cost_points == null) return "Price not set";
-  const usd = Number(offer.cost_usd ?? "0");
-  const dollars = usd < 0.01 ? `$${usd.toFixed(4)}` : `$${usd.toFixed(2)}`;
-  return `${offer.cost_points.toLocaleString()} points (${dollars})`;
-}

@@ -33,7 +33,7 @@ export const brandAssistAction: AssistActionDefinition = {
   label: "Run brand assist",
   kind: "brand_assist",
   description:
-    "Run one priced, pre-filled job that enriches one brand and lands its result in the brand's normal home.",
+    "Run one pre-filled job that enriches one brand and lands its result in the brand's normal home.",
   handler: async (assist, ctx): Promise<AssistActionResult> => {
     const action = assist.action;
     if (action.kind !== "brand_assist") {

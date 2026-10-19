@@ -85,19 +85,14 @@ export function describeAssistAction(
         receipt: `Saved the new ${what} and drafted it on the linked website. Publish the draft when you are happy with it.`,
       };
     }
-    case "brand_assist": {
-      const cost =
-        action.costPoints === 0
-          ? "Free."
-          : action.costPoints == null
-            ? "Cost not priced yet."
-            : `Costs ${action.costPoints.toLocaleString()} points ($${action.costUsd ?? "?"}).`;
+    case "brand_assist":
+      // Never a price on an assist (Arman, 2026-10-18): points live on
+      // billing and where cost is the subject, never on an everyday card.
       return {
         verb: action.label,
-        explainer: `${cost} Runs now and lands in ${action.lands}.`,
+        explainer: `Runs now and lands in ${action.lands}.`,
         receipt: `Done — saved to ${action.lands}.`,
       };
-    }
     case "surface_write":
       return {
         verb: "Apply to page",
