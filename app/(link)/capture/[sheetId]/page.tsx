@@ -28,7 +28,7 @@
 // Table, and the door is handed that. Nobody standing at a bin is shown a picker, and nobody
 // is refused for having picked the wrong thing earlier.
 
-import { use, useMemo } from "react";
+import { use } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CaptureRun, RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
@@ -39,6 +39,7 @@ import { OrganizationContextNotice } from "@/features/organizations/components/O
 import type { OrganizationState } from "@/features/organizations/useOrganizationRequired";
 import { useObjectOrganization } from "@/features/unified-data/objectOrganization";
 import { uploadCaptureFile } from "@/features/capture/uploadCaptureFile";
+import { useWarmOfflineCode } from "@/features/capture/useWarmOfflineCode";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/recordsUiHost";
 import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
@@ -49,6 +50,8 @@ export default function CrewCaptureRoute({
   params: Promise<{ sheetId: string }>;
 }) {
   const { sheetId } = use(params);
+  // Everything the page may ask for later is fetched now, while there is a signal.
+  useWarmOfflineCode();
   const userId = useAppSelector(selectUserId);
   const dataSource = useRecordsDataSource();
   const sheet = useObjectOrganization(dataSource, sheetId);

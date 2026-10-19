@@ -76,6 +76,7 @@ import type { MeetDiagnostic, MeetHost as MeetHostValue } from "@ai-matrx/meet/r
 import { usePathname } from "next/navigation";
 import { useHasEngaged } from "@/lib/boot/firstEngagement";
 import { useMeetHostDemanded } from "./meetHostDemand";
+import { ChunkTolerant } from "@/components/errors/ChunkTolerant";
 import { supabase } from "@/utils/supabase/client";
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import {
@@ -159,7 +160,12 @@ export function MeetHost({ children }: MeetHostProps) {
   return (
     <MeetHostContext.Provider value={host}>
       {/* A signed-out visitor (no organization) never loads the engine. */}
-      {ready && organizationId ? <MeetHostCore identity={identity} organizationId={organizationId} onHost={setHost} /> : null}
+      {ready && organizationId ? (
+        // An extra: offline, its chunk may not arrive, and that must not take the page down.
+        <ChunkTolerant what="the Meet call engine">
+          <MeetHostCore identity={identity} organizationId={organizationId} onHost={setHost} />
+        </ChunkTolerant>
+      ) : null}
       {children}
     </MeetHostContext.Provider>
   );

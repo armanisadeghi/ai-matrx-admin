@@ -41,6 +41,7 @@ import "@/components/icons/tap-target-setup";
 import "@/components/diff/heavy-renderer-setup";
 
 import dynamic from "next/dynamic";
+import { ChunkTolerant } from "@/components/errors/ChunkTolerant";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { registerIdleTask, useIdleReady } from "@ai-matrx/kit/idle-scheduler";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -136,8 +137,18 @@ export default function DeferredSingletonWrapper() {
 
   return (
     <>
-      {ready ? <DeferredSingletonCore /> : null}
-      {overlayWorldWanted ? <DeferredOverlayWorld /> : null}
+      {/* Each lazy body is an extra: offline, its chunk may not arrive, and that must not take the page
+          down (a capture sheet on a phone loses signal mid-round). ChunkTolerant swallows only that. */}
+      {ready ? (
+        <ChunkTolerant what="the deferred shell singletons">
+          <DeferredSingletonCore />
+        </ChunkTolerant>
+      ) : null}
+      {overlayWorldWanted ? (
+        <ChunkTolerant what="the overlay world">
+          <DeferredOverlayWorld />
+        </ChunkTolerant>
+      ) : null}
     </>
   );
 }
