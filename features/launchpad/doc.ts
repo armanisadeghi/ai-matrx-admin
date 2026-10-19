@@ -6,7 +6,7 @@
 // returns the doc unchanged. Parse keeps widgets of unknown types (a type a later build removed or a newer
 // build added) so nothing is ever dropped on a round trip; every placement passes through the GridCanvas
 // engine, so a stored overlap draws clean.
-import { GRID_CANVAS_COLUMNS, boxesCollide, clampBox, gridRows, placeBox, placementOf, resolveGrid, type GridBox, type GridPlacement } from "@ai-matrx/design-system";
+import { GRID_CANVAS_COLUMNS, boxesCollide, clampBox, placeBox, placementOf, resolveGrid, type GridBox, type GridPlacement } from "@ai-matrx/design-system";
 import {
   LAUNCHPAD_DOC_SCHEMA_VERSION,
   type LaunchpadDoc,
@@ -148,8 +148,22 @@ export function addWidget(
     layout: { lg: { x: 0, y: 0, w: widget.w ?? size.w, h: widget.h ?? size.h } },
   };
   if (index === undefined || index >= doc.widgets.length) {
-    // At the end: below everything, at the left edge; nothing else moves.
-    next.layout.lg.y = gridRows(doc.widgets.map((w) => w.layout.lg));
+    // At the end: the first free spot at or after the last widget's row (two halves share a row, the way
+    // iOS packs widgets); nothing else moves.
+    const order = readingOrder(doc);
+    const cursorY = order.length ? order[order.length - 1]!.layout.lg.y : 0;
+    const box = clampBox({ ...boxOf(next) }, COLS);
+    const taken = doc.widgets.map(boxOf);
+    let spot: GridBox | null = null;
+    for (let y = cursorY; spot === null; y++) {
+      for (let x = 0; x + box.w <= COLS; x++) {
+        if (!taken.some((t) => boxesCollide(t, { ...box, x, y }))) {
+          spot = { ...box, x, y };
+          break;
+        }
+      }
+    }
+    next.layout.lg = placementOf(spot);
     return { ...doc, widgets: settle([...doc.widgets, next]) };
   }
   // At a place in reading order (the agent's position): the grid re-packs in the new order.

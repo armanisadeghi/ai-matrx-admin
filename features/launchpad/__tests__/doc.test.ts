@@ -34,7 +34,8 @@ describe("launchpad doc", () => {
     let doc = addWidget(EMPTY_LAUNCHPAD_DOC, { type: "kpis", id: "k" });
     doc = addWidget(doc, { type: "tasks", id: "t" });
     doc = addWidget(doc, { type: "agenda", id: "g" });
-    expect(doc.widgets.find((w) => w.id === "t")!.layout.lg.y).toBe(5);
+    expect(doc.widgets.find((w) => w.id === "t")!.layout.lg).toMatchObject({ x: 0, y: 5 });
+    expect(doc.widgets.find((w) => w.id === "g")!.layout.lg).toMatchObject({ x: 6, y: 5 }); // beside, not below
     noOverlap(doc);
     const placed = addWidget(doc, { type: "favorites", id: "f" }, 0);
     expect(readingOrder(placed)[0]!.id).toBe("f");
@@ -66,7 +67,7 @@ describe("launchpad doc", () => {
     ] }));
     expect(start).not.toBeNull();
     const doc = launchpadFromStartDoc(start!);
-    expect(readingOrder(doc).map((w) => [w.id, w.layout.lg.w])).toEqual([["w_kpis", 12], ["w_tasks", 6], ["w_fav", 3]]);
+    expect(readingOrder(doc).map((w) => [w.id, w.layout.lg.x, w.layout.lg.w])).toEqual([["w_kpis", 0, 12], ["w_tasks", 0, 6], ["w_fav", 6, 3]]);
     expect(doc.widgets[0]!.config).toEqual({ keys: "agents" });
     noOverlap(doc);
     expect(readStartDoc("nope")).toBeNull();

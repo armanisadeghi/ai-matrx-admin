@@ -205,6 +205,11 @@ function LaunchpadBody({ launchpadKey }: { launchpadKey: string }) {
       <div className="h-full overflow-y-auto px-3 pb-6 pt-[calc(var(--shell-header-h)+0.75rem)]" data-matrx-page-scroll>
         {pads.loading ? (
           <LaunchpadGrid doc={startLaunchpadDoc()} skeleton />
+        ) : !entry && pads.error ? (
+          <WidgetNotice tone="error">
+            {pads.error}
+            <ErrorAlchemyMenu error={pads.error} />
+          </WidgetNotice>
         ) : !entry ? (
           <MissingLaunchpad launchpadKey={launchpadKey} />
         ) : !shown ? (
