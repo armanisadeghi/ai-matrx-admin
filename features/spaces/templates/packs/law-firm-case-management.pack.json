@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0408",
-  "version": 3,
+  "version": 5,
   "title": "Law Firm Case Management",
-  "description": "Clients, matters, deadlines and time entries for a small law firm.",
-  "forWho": "Small law firms and solo attorneys",
+  "description": "For lawyers and paralegals: conflicts, matters, court deadlines, time and trust balances.",
+  "forWho": "Small law firms, solo attorneys and paralegals",
   "icon": {
     "emoji": "⚖️"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:solid-blue",
     "offsetY": 50
   },
   "category": "legal",
   "tags": [
-    "law firm",
+    "lawyer",
+    "attorney",
+    "paralegal",
     "matters",
-    "deadlines",
-    "time"
+    "court deadlines",
+    "conflicts check"
   ],
   "spec": {
     "specVersion": 1,
@@ -103,6 +105,51 @@
             }
           },
           {
+            "key": "opposing",
+            "label": "Opposing party",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "conflict",
+            "label": "Conflict check",
+            "parityType": "select",
+            "choices": [
+              "Not run",
+              "Clear",
+              "Waiver signed",
+              "Conflict, declined"
+            ],
+            "choiceColors": {
+              "Not run": "gray",
+              "Clear": "green",
+              "Waiver signed": "yellow",
+              "Conflict, declined": "red"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fee_type",
+            "label": "Fee arrangement",
+            "parityType": "select",
+            "choices": [
+              "Hourly",
+              "Flat fee",
+              "Contingency",
+              "Hybrid"
+            ],
+            "choiceColors": {
+              "Hourly": "blue",
+              "Flat fee": "green",
+              "Contingency": "purple",
+              "Hybrid": "orange"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -159,6 +206,29 @@
             "format": "date"
           },
           {
+            "key": "engaged_on",
+            "label": "Engagement letter signed",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "sol_on",
+            "label": "Limitations date",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "court",
+            "label": "Court / case number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "closed_on",
             "label": "Closed on",
             "parityType": "datetime",
@@ -186,6 +256,25 @@
             ]
           },
           {
+            "key": "trust",
+            "label": "Held in trust",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
             "key": "hours",
             "label": "Hours logged",
             "parityType": "rollup",
@@ -194,6 +283,19 @@
             "via": "time_entries",
             "pick": "hours",
             "agg": "sum"
+          },
+          {
+            "key": "unbilled",
+            "label": "Unbilled hours",
+            "parityType": "rollup",
+            "via": "time_entries",
+            "pick": "hours",
+            "agg": "sum",
+            "filter": {
+              "billed": false
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "open_deadlines",
@@ -265,27 +367,39 @@
           {
             "key": "m01",
             "values": {
-              "matter_title": "Rennick lease dispute",
+              "matter_title": "Rennick v. Halberd Property Group",
               "client": "c01",
               "area": "Real property",
               "status": "Open",
               "attorney": "tm-adaeze",
               "paralegal": "tm-pilar",
               "opened_on": "@today-70d",
-              "budget": 15000
+              "budget": 15000,
+              "opposing": "Halberd Property Group LLC",
+              "conflict": "Clear",
+              "fee_type": "Hourly",
+              "trust": 4500,
+              "engaged_on": "@today-68d",
+              "sol_on": "@today+300d",
+              "court": "County Superior Ct. 24-CV-03317"
             }
           },
           {
             "key": "m02",
             "values": {
-              "matter_title": "Larkspur supplier contract",
+              "matter_title": "Larkspur supplier agreement",
               "client": "c02",
               "area": "Contract",
               "status": "Open",
               "attorney": "tm-julian",
               "paralegal": "tm-pilar",
               "opened_on": "@today-35d",
-              "budget": 8000
+              "budget": 8000,
+              "opposing": "Corvane Mills Inc.",
+              "conflict": "Clear",
+              "fee_type": "Flat fee",
+              "trust": 0,
+              "engaged_on": "@today-34d"
             }
           },
           {
@@ -298,46 +412,68 @@
               "attorney": "tm-adaeze",
               "paralegal": "tm-pilar",
               "opened_on": "@today-120d",
-              "budget": 12000
+              "budget": 12000,
+              "opposing": "Rafael Voss",
+              "conflict": "Clear",
+              "fee_type": "Hourly",
+              "trust": 2200,
+              "engaged_on": "@today-118d",
+              "court": "Family Ct. FL-22-0918"
             }
           },
           {
             "key": "m04",
             "values": {
-              "matter_title": "Greenhollow land easement",
+              "matter_title": "Greenhollow access easement",
               "client": "c04",
               "area": "Real property",
               "status": "Open",
               "attorney": "tm-julian",
               "paralegal": "tm-pilar",
               "opened_on": "@today-50d",
-              "budget": 9000
+              "budget": 9000,
+              "opposing": "Pell Family Holdings",
+              "conflict": "Waiver signed",
+              "fee_type": "Hourly",
+              "trust": 1500,
+              "engaged_on": "@today-48d",
+              "sol_on": "@today+520d"
             }
           },
           {
             "key": "m05",
             "values": {
-              "matter_title": "Achebe employment agreement review",
+              "matter_title": "Achebe executive employment terms",
               "client": "c05",
               "area": "Employment",
               "status": "Intake",
               "attorney": "tm-julian",
               "paralegal": "tm-pilar",
               "opened_on": "@today-3d",
-              "budget": 2500
+              "budget": 2500,
+              "opposing": "Northline Analytics Corp.",
+              "conflict": "Not run",
+              "fee_type": "Flat fee",
+              "trust": 0
             }
           },
           {
             "key": "m06",
             "values": {
-              "matter_title": "Marlow vendor non-payment",
+              "matter_title": "Marlow Fabrication collection",
               "client": "c06",
               "area": "Contract",
               "status": "Open",
               "attorney": "tm-adaeze",
               "paralegal": "tm-pilar",
               "opened_on": "@today-20d",
-              "budget": 6000
+              "budget": 6000,
+              "opposing": "Ostrander Supply Co.",
+              "conflict": "Clear",
+              "fee_type": "Contingency",
+              "trust": 0,
+              "engaged_on": "@today-19d",
+              "sol_on": "@today+700d"
             }
           },
           {
@@ -351,20 +487,31 @@
               "paralegal": "tm-pilar",
               "opened_on": "@today-300d",
               "budget": 7000,
-              "closed_on": "@today-300d"
+              "closed_on": "@today-300d",
+              "opposing": "None (probate)",
+              "conflict": "Clear",
+              "fee_type": "Hourly",
+              "trust": 0,
+              "engaged_on": "@today-298d",
+              "court": "Probate Ct. PR-23-1150"
             }
           },
           {
             "key": "m08",
             "values": {
-              "matter_title": "Larkspur lease renewal",
+              "matter_title": "Larkspur storefront lease renewal",
               "client": "c02",
               "area": "Real property",
               "status": "On hold",
               "attorney": "tm-julian",
               "paralegal": "tm-pilar",
               "opened_on": "@today-90d",
-              "budget": 4000
+              "budget": 4000,
+              "opposing": "Maple Row Landlords LLC",
+              "conflict": "Clear",
+              "fee_type": "Flat fee",
+              "trust": 0,
+              "engaged_on": "@today-88d"
             }
           }
         ],
@@ -514,7 +661,13 @@
             }
           }
         ],
-        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them.",
+        "before": [
+          [
+            "opened_on",
+            "engaged_on"
+          ]
+        ]
       },
       {
         "token": "deadline",
@@ -567,6 +720,13 @@
               "Client deliverable": "violet",
               "Internal review": "teal"
             }
+          },
+          {
+            "key": "rule",
+            "label": "How it was counted",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "due_on",
@@ -636,7 +796,8 @@
               "kind": "Court filing",
               "due_on": "@today",
               "status": "Open",
-              "owner": "@installer"
+              "owner": "@installer",
+              "rule": "30 days after service of complaint"
             }
           },
           {
@@ -657,7 +818,8 @@
               "matter": "m03",
               "kind": "Hearing",
               "due_on": "@mon+4d",
-              "status": "Open"
+              "status": "Open",
+              "rule": "Set by court order"
             }
           },
           {
@@ -679,7 +841,8 @@
               "kind": "Discovery",
               "due_on": "@today-3d",
               "status": "Open",
-              "owner": "@installer"
+              "owner": "@installer",
+              "rule": "30 days after requests served"
             }
           },
           {
@@ -710,7 +873,8 @@
               "kind": "Court filing",
               "due_on": "@today-20d",
               "status": "Done",
-              "completed_on": "@today-20d"
+              "completed_on": "@today-20d",
+              "rule": "Mediator's instructions"
             }
           },
           {
@@ -742,7 +906,8 @@
               "kind": "Discovery",
               "due_on": "@today-30d",
               "status": "Done",
-              "completed_on": "@today-30d"
+              "completed_on": "@today-30d",
+              "rule": "Court rule, 14 days after conference"
             }
           },
           {
@@ -752,7 +917,8 @@
               "matter": "m06",
               "kind": "Internal review",
               "due_on": "@today+9d",
-              "status": "Open"
+              "status": "Open",
+              "rule": "Agreed with client"
             }
           }
         ],
@@ -904,6 +1070,29 @@
             "relationMax": 1
           },
           {
+            "key": "activity",
+            "label": "Activity",
+            "parityType": "select",
+            "choices": [
+              "Drafting",
+              "Research",
+              "Client call",
+              "Court",
+              "Review",
+              "Correspondence"
+            ],
+            "choiceColors": {
+              "Drafting": "blue",
+              "Research": "purple",
+              "Client call": "green",
+              "Court": "red",
+              "Review": "yellow",
+              "Correspondence": "gray"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "worked_on",
             "label": "Worked",
             "parityType": "datetime",
@@ -973,7 +1162,8 @@
               "worked_on": "@today",
               "hours": 2.5,
               "rate": 350,
-              "billed": false
+              "billed": false,
+              "activity": "Drafting"
             }
           },
           {
@@ -985,7 +1175,8 @@
               "worked_on": "@today-1d",
               "hours": 1.8,
               "rate": 260,
-              "billed": false
+              "billed": false,
+              "activity": "Review"
             }
           },
           {
@@ -997,7 +1188,8 @@
               "worked_on": "@mon+1d",
               "hours": 3.2,
               "rate": 120,
-              "billed": false
+              "billed": false,
+              "activity": "Drafting"
             }
           },
           {
@@ -1009,7 +1201,8 @@
               "worked_on": "@mon+2d",
               "hours": 0.7,
               "rate": 260,
-              "billed": false
+              "billed": false,
+              "activity": "Client call"
             }
           },
           {
@@ -1021,7 +1214,8 @@
               "worked_on": "@today-4d",
               "hours": 2.4,
               "rate": 260,
-              "billed": false
+              "billed": false,
+              "activity": "Research"
             }
           },
           {
@@ -1033,7 +1227,8 @@
               "worked_on": "@today-12d",
               "hours": 0.9,
               "rate": 350,
-              "billed": true
+              "billed": true,
+              "activity": "Correspondence"
             }
           },
           {
@@ -1045,7 +1240,8 @@
               "worked_on": "@today-22d",
               "hours": 4.0,
               "rate": 350,
-              "billed": true
+              "billed": true,
+              "activity": "Drafting"
             }
           },
           {
@@ -1057,7 +1253,8 @@
               "worked_on": "@today-285d",
               "hours": 5.5,
               "rate": 120,
-              "billed": true
+              "billed": true,
+              "activity": "Drafting"
             }
           },
           {
@@ -1069,7 +1266,8 @@
               "worked_on": "@today-3d",
               "hours": 1.0,
               "rate": 260,
-              "billed": false
+              "billed": false,
+              "activity": "Client call"
             }
           },
           {
@@ -1081,7 +1279,8 @@
               "worked_on": "@today-9d",
               "hours": 2.2,
               "rate": 120,
-              "billed": true
+              "billed": true,
+              "activity": "Review"
             }
           }
         ],
@@ -1215,13 +1414,20 @@
           },
           {
             "key": "matter_count",
-            "label": "Matters",
+            "label": "Open matters",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "matters",
             "pick": "matter_title",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Closed"
+                ]
+              }
+            }
           },
           {
             "key": "matter_btn",
@@ -1824,7 +2030,7 @@
         "Cannery Street"
       ]
     },
-    "version": 3
+    "version": 5
   },
   "pages": [
     {
@@ -1835,7 +2041,7 @@
         "emoji": "⚖️"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:solid-blue",
         "offsetY": 50
       },
       "settings": {
@@ -1899,6 +2105,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:sop-closing"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-use"
                   }
                 }
               ]
@@ -2578,16 +2790,16 @@
     {
       "key": "sop-intake",
       "parent": "law-firm-case-management",
-      "title": "New matter intake",
+      "title": "Conflicts and new matter intake",
       "icon": {
-        "emoji": "📂"
+        "emoji": "📥"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Same steps every time, so nothing is skipped."
+              "text": "No work starts until the conflict check is clear and the engagement letter is signed. Skipping either is the most common way a small firm ends up in front of a bar grievance committee."
             }
           ],
           "background": "blue",
@@ -2599,7 +2811,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before the engagement"
+              "text": "Step 1: conflict check (before any confidential conversation)"
             }
           ],
           "props": {
@@ -2610,7 +2822,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Add the person under Clients as a Prospect."
+              "text": "Collect the prospective client's name, every related party (spouse, business partners, parent company) and every opposing party and their lawyer."
             }
           ]
         },
@@ -2618,7 +2830,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Run the conflict check and note the result on the client."
+              "text": "Search "
+            },
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": " and every matter's "
+            },
+            {
+              "text": "Opposing party",
+              "bold": true
+            },
+            {
+              "text": " for each name, including former clients and closed matters."
             }
           ]
         },
@@ -2626,7 +2852,22 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send the engagement letter and wait for the signature."
+              "text": "Record the result in "
+            },
+            {
+              "text": "Conflict check",
+              "bold": true
+            },
+            {
+              "text": ": Clear, Waiver signed (with the written waiver on file), or Conflict, declined."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If you decline, send a short non-engagement letter that says you are not representing them and mentions any deadline they should know about, without advice."
             }
           ]
         },
@@ -2634,7 +2875,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Opening the matter"
+              "text": "Step 2: intake meeting"
             }
           ],
           "props": {
@@ -2642,26 +2883,197 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Press Open matter on the client and assign an attorney and paralegal."
+              "text": "Facts, goals, documents and dates. Ask early: \"When did this happen?\" so the "
+            },
+            {
+              "text": "Limitations date",
+              "bold": true
+            },
+            {
+              "text": " is known from day one."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Add every known deadline using Add deadline."
+              "text": "Explain fee options plainly: hourly, flat fee, contingency or a mix."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Set the matter to Open once the retainer is in."
+              "text": "Discuss a retainer. Retainers go into the trust account, not the operating account."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Step 3: engagement"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Engagement letter sent: scope, fee arrangement, retainer, who works on the matter, how the client will be updated"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Signed letter received; "
+            },
+            {
+              "text": "Engagement letter signed",
+              "bold": true
+            },
+            {
+              "text": " filled in"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Retainer received into trust; "
+            },
+            {
+              "text": "Held in trust",
+              "bold": true
+            },
+            {
+              "text": " updated"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Matter moved from Intake to "
+            },
+            {
+              "text": "Open",
+              "bold": true
+            },
+            {
+              "text": " with the "
+            },
+            {
+              "text": "Mark open",
+              "bold": true
+            },
+            {
+              "text": " button"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Step 4: first deadlines"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Limitations date entered on the matter and as a deadline 60 days earlier."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Court dates from any papers already served."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A client deliverable within two weeks so the client sees progress."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Bartholomew wants his executive employment terms reviewed. The conflict check against Northline Analytics found no prior matter, so it can be set to Clear once a second person confirms. The flat fee letter goes out today; work starts when it comes back signed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Never"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never take documents or confidential facts before the conflict check."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never let \"we'll do the letter later\" become the practice."
             }
           ]
         }
@@ -2679,7 +3091,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A missed deadline is the most expensive mistake in a law office. Record each in two places."
+              "text": "A missed deadline can end a client's case and is the most common source of malpractice claims. The answer is a system, not memory: two people, two calendars, and a written count for every date."
             }
           ],
           "background": "blue",
@@ -2691,7 +3103,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Every deadline"
+              "text": "When papers arrive"
             }
           ],
           "props": {
@@ -2699,26 +3111,48 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "State where it comes from, such as a rule, an order or a client promise."
+              "text": "The paralegal reads every document served or received the same day."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Enter it in this table and on the firm calendar."
+              "text": "For each date it triggers, add a row under "
+            },
+            {
+              "text": "Deadlines",
+              "bold": true
+            },
+            {
+              "text": " with the kind, due date, who is responsible and "
+            },
+            {
+              "text": "How it was counted",
+              "bold": true
+            },
+            {
+              "text": " (for example \"30 days after service of complaint\")."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Give it an owner."
+              "text": "A second person checks the count against the rule and the method of service. Mailing and weekends change counts."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a reminder deadline seven days earlier for any filing."
             }
           ]
         },
@@ -2726,7 +3160,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Weekly"
+              "text": "Limitations dates"
             }
           ],
           "props": {
@@ -2734,26 +3168,233 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Open Deadlines, Overdue view, every Monday."
+              "text": "Every matter that could become a lawsuit has its "
+            },
+            {
+              "text": "Limitations date",
+              "bold": true
+            },
+            {
+              "text": " set at intake and a reminder deadline 60 days before it. Review all limitations dates monthly."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "heading",
           "text": [
             {
-              "text": "Review This week with each attorney."
+              "text": "Daily check (10 minutes)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Deadlines due today and tomorrow: done, or a plan to finish"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Deadlines overdue: none, or an extension requested in writing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "New papers received today counted and entered"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly firm meeting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Look at"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ask"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Deadlines in the next 14 days"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who, what is left, any risk?"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Matters with no deadline in the next 30 days"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Is the matter stalled?"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Missed deadlines"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happened, what changes?"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Holidays and closures"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Court holidays and unexpected court closures move some deadlines and not others. When a closure is announced, re-check every deadline in the following two weeks against the court's order and note the result."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "heading",
           "text": [
             {
-              "text": "Mark Done only after the filing confirmation is saved."
+              "text": "If a deadline is missed"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tell the responsible attorney at once."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Look for a cure: a stipulation, a motion for relief, an extension."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tell the client promptly and honestly."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Notify your malpractice carrier when the policy requires it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark it "
+            },
+            {
+              "text": "Missed",
+              "bold": true
+            },
+            {
+              "text": " and write what happened; the pattern teaches the firm."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The vendor demand letter in the Marlow collection was due yesterday. It was not a court deadline, so the attorney sends it this morning, tells the client, and moves the payment history summary forward so the matter stays on track."
             }
           ]
         }
@@ -2768,10 +3409,22 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Time not recorded the same day is time lost. Rebuilding a week from memory on Friday always misses short calls, emails and the quick reviews that add up to hours of real work each week."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Daily"
+              "text": "The daily habit"
             }
           ],
           "props": {
@@ -2782,7 +3435,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Log time at the end of every task, not the end of the week."
+              "text": "Record time as you go, or at least before you leave each day."
             }
           ]
         },
@@ -2790,7 +3443,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Write a short description a client would understand."
+              "text": "Each entry: matter, timekeeper, "
+            },
+            {
+              "text": "Activity",
+              "bold": true
+            },
+            {
+              "text": ", date, hours to the tenth (6 minutes), and a description a client would understand."
             }
           ]
         },
@@ -2798,7 +3458,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Use tenths of an hour."
+              "text": "Flat-fee and contingency matters still get time entries. They tell you whether your flat fees are priced right."
             }
           ]
         },
@@ -2806,7 +3466,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Weekly"
+              "text": "Writing descriptions clients accept"
             }
           ],
           "props": {
@@ -2814,18 +3474,243 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Instead of"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Write"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Research"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Research on remedies for late vendor payment under the supply agreement"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Call"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call with client on easement boundaries and survey options"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Review docs"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Review of supplier agreement; marked six terms for negotiation"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
           "text": [
             {
-              "text": "Look at Time entries not billed and tell the office manager."
+              "text": "Clear descriptions are the best protection against fee disputes."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Check hours against each matter's budget."
+              "text": "Short tasks count. A six-minute call or a two-line email is recorded as 0.1 hours."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly (Friday)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Each timekeeper's week adds up to the hours they actually worked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Entries without a matter assigned fixed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Non-billable time (firm admin, marketing) recorded too, so you know where the week went"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Month end billing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Filter time entries with "
+            },
+            {
+              "text": "Billed",
+              "bold": true
+            },
+            {
+              "text": " unticked."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The responsible attorney reviews each matter's entries and writes down anything that should not be billed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Prepare invoices, tick "
+            },
+            {
+              "text": "Billed",
+              "bold": true
+            },
+            {
+              "text": ", and send."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "For matters with money "
+            },
+            {
+              "text": "Held in trust",
+              "bold": true
+            },
+            {
+              "text": ", transfer the earned amount to operating only after the invoice is sent, and update the trust balance."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Matter-level view"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each matter shows total "
+            },
+            {
+              "text": "Hours logged",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Unbilled hours",
+              "bold": true
+            },
+            {
+              "text": ". A matter with many unbilled hours and no invoice in 60 days needs a conversation with the client."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Pilar spent 2.4 hours on the custody hearing binder and recorded it before leaving: \"Prepared hearing binder with exhibits A to K and witness outline.\" The attorney approved it without edits at month end."
             }
           ]
         }
@@ -2840,10 +3725,22 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A matter is closed when the client knows it is closed, the money is settled and the file is stored. A clean close protects the firm years later."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Checklist"
+              "text": "Closing checklist"
             }
           ],
           "props": {
@@ -2854,7 +3751,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "All deadlines Done"
+              "text": "Final work product delivered to the client"
             }
           ],
           "props": {
@@ -2865,7 +3762,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Final time entries recorded and billed"
+              "text": "Every deadline marked done or no longer needed"
             }
           ],
           "props": {
@@ -2876,7 +3773,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Client notified in writing"
+              "text": "All time entered and a final invoice sent"
             }
           ],
           "props": {
@@ -2887,7 +3784,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "File archived and retention date noted"
+              "text": "Trust balance at zero: earned fees moved after the final invoice, any remainder refunded to the client"
             }
           ],
           "props": {
@@ -2898,12 +3795,496 @@
           "type": "todo",
           "text": [
             {
-              "text": "Matter status set to Closed"
+              "text": "Closing letter sent: the matter is concluded, what was done, any future dates the client should know (renewals, appeal windows, follow-up filings)"
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Original documents returned to the client"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "File stored and a destruction date set under your retention policy"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Close matter",
+              "bold": true
+            },
+            {
+              "text": " pressed; client status set to Former if no other matter is open"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The closing letter"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep it short and plain:"
+            }
+          ]
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "\"Your estate administration is complete. The final accounting was accepted by the court and distributions have been made. We are returning your original documents with this letter. Please keep it with your records. If anything changes, we would be glad to help.\""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Why the letter matters"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Without it, a former client may assume you are still watching a deadline for them. The closing letter ends that duty in writing."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Retention"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep closed files for the period your jurisdiction and malpractice carrier recommend (often six to seven years, longer for minors and estate plans). Note the destruction date on the matter page."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lessons learned"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "For any matter that went over budget or had a missed deadline, spend ten minutes at the weekly meeting on what to do differently. Write one line on the matter page."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Dalgaard estate closed after the final accounting. The trust balance was confirmed at zero, the closing letter went to the heirs with their original documents, and the file got a destruction date seven years out."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "how-to-use",
+      "parent": "law-firm-case-management",
+      "title": "Using this workspace",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The practice side of a small firm: who you represent, every matter with its conflict check and fee terms, deadlines with how each was counted, time recorded, and money held in trust. Pleadings and documents stay in your document system; this is where the firm keeps control."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": ": individuals and businesses, with their open matters."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Matters",
+              "bold": true
+            },
+            {
+              "text": ": practice area, opposing party, conflict check result, fee arrangement, engagement letter date, limitations date, court and case number, money held in trust, hours and unbilled hours."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Deadlines",
+              "bold": true
+            },
+            {
+              "text": ": court filings, hearings, discovery and client deliverables, with who is responsible and how the date was counted."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Time entries",
+              "bold": true
+            },
+            {
+              "text": ": who worked, on what, the activity, hours, rate and whether it has been billed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Two kinds of money"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Money"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it lives"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rule"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Held in trust"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The client's money in the trust account"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Never used for firm expenses; moved only when earned and billed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fees earned"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The operating account"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Only after an invoice is issued"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Record each matter's trust balance from the trust ledger at least monthly. The ledger, not this workspace, is the legal record."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add attorneys and paralegals to the team list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter every open matter with opposing party and conflict result, so future conflict checks search a complete list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter every deadline on the court calendar for the next 120 days. Two people check each one."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Start logging time daily."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Daily",
+              "bold": true
+            },
+            {
+              "text": ": Deadlines due in the next seven days; time entered before leaving."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monday",
+              "bold": true
+            },
+            {
+              "text": ": firm meeting from the Deadlines calendar and each matter's status."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Month end",
+              "bold": true
+            },
+            {
+              "text": ": unbilled hours billed; trust balances reconciled; closed matters closed properly."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Matters: "
+            },
+            {
+              "text": "Add deadline",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Add time entry",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark open",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Close matter",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Deadlines: "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": ". Clients: "
+            },
+            {
+              "text": "Open matter",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Rennick lease case has a response due today and document requests three days overdue. The paralegal raises both at the morning check; the attorney files the response and calls opposing counsel about an extension on the requests."
+            }
+          ]
         }
       ]
     }
