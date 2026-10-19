@@ -71,6 +71,15 @@ export interface ServedRunFormProps {
    * Omitted → this component fetches for itself, exactly as the bake-off does.
    */
   state?: ServedRunFormState;
+  /**
+   * THE LAYOUT IS THE HOST'S EXPLICIT CHOICE. Existing workflow run forms keep
+   * their stacked cards and verbatim values ("nothing should have ever changed
+   * for active things"); only a surface that opts in with `"simple"` gets the
+   * one-box arrangement. The served `hints.layout` is never read here: the
+   * server stamps "simple" on every response, so it cannot tell an author's
+   * declaration from a default.
+   */
+  layout?: "simple" | "form";
 }
 
 export function ServedRunForm({
@@ -79,6 +88,7 @@ export function ServedRunForm({
   heading = "What it needs from you",
   startLabel = "Start",
   state: hoistedState,
+  layout = "form",
 }: ServedRunFormProps) {
   // `null` when the host already holds the answer — the hook then makes no
   // request at all, so the endpoint is asked exactly once per paint either way.
@@ -140,10 +150,8 @@ export function ServedRunForm({
     );
   }
 
-  // THE ONE-BOX ARRANGEMENT is the default (common-docs
-  // projects/third-party-services/INPUT-HINTS.md); an author who wants the
-  // stacked cards declares `metadata.run_form.layout = "form"`.
-  const simple = state.form.hints.layout !== "form";
+  // The one-box arrangement is opt-in per surface (see `layout` above).
+  const simple = layout === "simple";
 
   const feedback = (
     <>
