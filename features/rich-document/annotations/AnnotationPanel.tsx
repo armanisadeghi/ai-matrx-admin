@@ -519,7 +519,7 @@ function ReplyRow({
           <CommentBody body={reply.body} />
           {reply.mine && (
             <div className="flex gap-2">
-              {reply.author.agent ? null : (
+              {reply.author.agent || reply.author.system ? null : (
                 <button type="button" className="text-[11px] text-muted-foreground hover:text-foreground" onClick={() => { setBase({ body: reply.body, version: reply.version }); setEditing(true); }}>
                   Edit
                 </button>
@@ -664,7 +664,7 @@ function ThreadActions({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" onCloseAutoFocus={(e) => e.preventDefault()}>
               {item.kind === "comment" ? <ContinueInNewChatItem item={item} source={source} /> : null}
-              {item.mine && !item.author.agent ? (
+              {item.mine && !item.author.agent && !item.author.system ? (
                 <DropdownMenuItem onSelect={() => { setBase({ body: item.body, version: item.version ?? null }); setEditing(true); }}>Edit</DropdownMenuItem>
               ) : null}
               {item.mine ? (

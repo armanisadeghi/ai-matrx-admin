@@ -49,6 +49,7 @@ import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-r
 import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { convertTroubleshootingToTasks } from "@/features/tasks/utils/importConverters";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { CopySourceButton } from "../common/CopySourceButton";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
 import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
@@ -367,11 +368,32 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
       )}
 
       <div
-        className={`w-full ${isFullScreen ? "fixed inset-0 z-50 flex items-center justify-center p-4" : "py-6"}`}
+        className={`w-full ${isFullScreen ? "fixed inset-0 z-50 flex items-center justify-center p-4" : "my-3"}`}
       >
         <div
-          className={`@container max-w-6xl mx-auto ${isFullScreen ? "bg-textured rounded-2xl shadow-2xl h-full max-h-[95dvh] w-full flex flex-col overflow-hidden" : ""}`}
+          data-block-frame="troubleshooting"
+          className={`@container max-w-6xl mx-auto ${isFullScreen ? "bg-textured rounded-2xl shadow-2xl h-full max-h-[95dvh] w-full flex flex-col overflow-hidden" : `overflow-hidden rounded-lg border bg-card transition-colors ${host.selected ? "border-primary" : "border-border"}`}`}
         >
+          {/* The block's one header: title left, actions right (Controls, "</>" and Copy come from the shared slot) */}
+          {!isFullScreen && (
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
+              <div className="flex min-w-[9rem] flex-1 items-center gap-2">
+                <HelpCircle className="h-3.5 w-3.5 shrink-0 text-primary" />
+                <InlineControlText controls={controls} fieldKey="title" value={troubleshooting.title} className="truncate text-sm font-medium text-foreground">
+                  {troubleshooting.title}
+                </InlineControlText>
+              </div>
+              <div className="flex shrink-0 items-center gap-0.5">
+                <Button variant="quiet" icon={<Upload />} aria-label="Import to Tasks" title="Import to Tasks" onClick={() => setIsImportModalOpen(true)} />
+                <Button variant="quiet" icon={<ArrowUpRight />} aria-label="Canvas" title="Canvas" onClick={handleOpenCanvas} />
+                <Button variant="quiet" icon={<Printer />} aria-label="Print" title="Print" onClick={handlePrint} />
+                <Button variant="quiet" icon={<Maximize2 />} aria-label="Debug mode" title="Debug mode" onClick={() => setIsFullScreen(true)} />
+                <CopySourceButton source={source} />
+                <BlockControlsButton controls={controls} title="Troubleshooting controls" />
+                {host.actions}
+              </div>
+            </div>
+          )}
           {/* Fullscreen Header */}
           {isFullScreen && (
             <div className="flex-shrink-0 px-6 py-4 border-b border-border flex items-center justify-between bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30">
@@ -391,18 +413,23 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
           <div className={isFullScreen ? "flex-1 overflow-y-auto" : ""}>
             <div className="p-4 sm:p-6 space-y-6">
               {/* Header Section */}
-              <div className="bg-gradient-to-br from-red-100 via-orange-50 to-yellow-100 dark:from-red-950/40 dark:via-orange-950/30 dark:to-yellow-950/40 rounded-2xl p-4 sm:p-6 shadow-lg border-2 border-red-200 dark:border-red-800/50">
+              <div className="bg-gradient-to-br from-red-100 via-orange-50 to-yellow-100 dark:from-red-950/40 dark:via-orange-950/30 dark:to-yellow-950/40 rounded-xl p-4 sm:p-6">
+                {(isFullScreen || troubleshooting.description) && (
                 <div className="flex flex-col gap-4 mb-6 @4xl:flex-row @4xl:items-start @4xl:justify-between">
                   <div className="flex items-start gap-4">
-                    <div className="p-3 bg-red-500 dark:bg-red-600 rounded-xl shadow-md">
-                      <HelpCircle className="h-8 w-8 text-white" />
-                    </div>
+                    {isFullScreen && (
+                      <div className="p-3 bg-red-500 dark:bg-red-600 rounded-xl shadow-md">
+                        <HelpCircle className="h-8 w-8 text-white" />
+                      </div>
+                    )}
                     <div className="flex-1">
-                      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                        <InlineControlText controls={controls} fieldKey="title" value={troubleshooting.title}>
-                          {troubleshooting.title}
-                        </InlineControlText>
-                      </h1>
+                      {isFullScreen && (
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                          <InlineControlText controls={controls} fieldKey="title" value={troubleshooting.title}>
+                            {troubleshooting.title}
+                          </InlineControlText>
+                        </h1>
+                      )}
                       {troubleshooting.description && (
                         <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                           {troubleshooting.description}
@@ -410,26 +437,8 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
                       )}
                     </div>
                   </div>
-
-                  {!isFullScreen && (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button variant="success" icon={<Upload />} onClick={() => setIsImportModalOpen(true)}>
-                        <span>Import to Tasks</span>
-                      </Button>
-                      <Button variant="quiet" icon={<ArrowUpRight />} onClick={handleOpenCanvas}>
-                        <span>Canvas</span>
-                      </Button>
-                      <Button variant="quiet" icon={<Printer />} onClick={handlePrint}>
-                        <span>Print</span>
-                      </Button>
-                      <Button variant="quiet" icon={<Maximize2 />} onClick={() => setIsFullScreen(true)}>
-                        <span>Debug Mode</span>
-                      </Button>
-                      <BlockControlsButton controls={controls} title="Troubleshooting controls" />
-                      {host.actions}
-                    </div>
-                  )}
                 </div>
+                )}
 
                 {/* Controls */}
                 <div className="flex flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-center">

@@ -1,0 +1,11 @@
+import { open, say, gotoTable } from "./at-walk-h-lib.mjs";
+const { browser, page, who, shot } = await open(false);
+await gotoTable(page, process.env.TABLE);
+await page.waitForTimeout(3000);
+await page.getByText("Everything together").first().click(); await page.waitForTimeout(600);
+say("opts", await page.$$eval("[role=option]", (els) => els.map((e) => e.innerText.trim())));
+await page.getByRole("option", { name: /^Tags/ }).first().click(); await page.waitForTimeout(9000);
+await shot("j3-chartview2");
+say("chart view svg text", await page.$$eval("svg text", (els) => els.map((e) => e.textContent)));
+say("page text", (await page.evaluate(() => document.body.innerText)).replace(/\s+/g, " ").slice(0, 400));
+await browser.close();

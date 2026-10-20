@@ -44,6 +44,7 @@ import { declareTable, personActor, recordsDataSource, resolveTableStyle, type N
 import { withheldCells, type WithheldCells } from "../withheld-cells";
 
 import { createClient } from "@/utils/supabase/client";
+import { postJson } from "@/lib/python-client";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { FieldChoice } from "@ai-matrx/design-system/field-formats";
 
@@ -220,6 +221,8 @@ const snapshots = new Map<string, Promise<ServiceResult<Snapshot>>>();
  */
 export function invalidateRecordStoreTable(tableId: string): void {
   snapshots.delete(tableId);
+  // READ-SPEED-6: a column create or edit leaves a mark on this Table; the next refresh call works the whole Table out again
+  shapeChanged.add(tableId);
 }
 
 function asDataset(
@@ -310,13 +313,31 @@ function gridRowsOf(rows: readonly ReadRow[], snap: Snapshot): GridRow[] {
 // asked, without waiting, to work out what is stale (`custom.computed_refresh`, which also keeps the
 // reader's judgement), so the next view is served the kept values. It answers how many are still
 // stale; one more call follows when some are. At most once per Table per REFRESH_EVERY_MS.
+// READ-SPEED-6: after a column create or edit (the Table's shape changed), or when more is stale than one call works out,
+// the whole Table is worked out by a server job instead (aidream `POST /records-computed/refresh-jobs`: the same door,
+// one short transaction per 500 rows, as this person). Reads stay correct meanwhile; the job is at most once a minute.
 const REFRESH_EVERY_MS = 10_000;
+const JOB_EVERY_MS = 60_000;
+const JOB_ABOVE_ROWS = 200;
 const refreshedAt = new Map<string, number>();
+const jobAt = new Map<string, number>();
+const shapeChanged = new Set<string>();
 
-function keepWorkedOutValuesFresh(tableId: string): void {
+function startWholeTableRefresh(tableId: string, organizationId: string | undefined): boolean {
+  const now = Date.now();
+  if (now - (jobAt.get(tableId) ?? 0) < JOB_EVERY_MS) return false;
+  jobAt.set(tableId, now);
+  void postJson<{ job_id: string }>("/records-computed/refresh-jobs", { table_id: tableId }, organizationId ? { organizationId } : {}).catch(
+    (e: unknown) => console.warn(`[record-store] the whole-table refresh of ${tableId} did not start: ${e instanceof Error ? e.message : String(e)}`),
+  );
+  return true;
+}
+
+function keepWorkedOutValuesFresh(tableId: string, organizationId?: string): void {
   const now = Date.now();
   if (now - (refreshedAt.get(tableId) ?? 0) < REFRESH_EVERY_MS) return;
   refreshedAt.set(tableId, now);
+  const reshaped = shapeChanged.delete(tableId);
   const custom = (createClient() as unknown as SupabaseClient).schema("custom");
   const once = async (): Promise<number> => {
     const { data, error } = await custom.rpc("computed_refresh", { p_table_id: tableId, p_max_rows: 200 });
@@ -326,7 +347,11 @@ function keepWorkedOutValuesFresh(tableId: string): void {
     }
     return typeof data === "number" ? data : 0;
   };
-  void once().then((left) => (left > 0 ? once() : 0));
+  void once().then((left) => {
+    if (left <= 0) return 0;
+    if ((reshaped || left > JOB_ABOVE_ROWS) && startWholeTableRefresh(tableId, organizationId)) return 0;
+    return once();
+  });
 }
 
 /** One page through the store's page door (`client.listPage` → `custom.read_records_page`). */
@@ -618,7 +643,7 @@ export async function getTablePage(
   }
   // THESE ROWS ARE DRAWN: their versions are read now, so an edit is sent against what was seen.
   void versions.drew(clientFor(home), rows.map((r) => r.id));
-  keepWorkedOutValuesFresh(args.tableId);
+  keepWorkedOutValuesFresh(args.tableId, home.organizationId);
   return {
     success: true,
     data: {

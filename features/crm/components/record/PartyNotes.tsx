@@ -11,6 +11,7 @@
 import { Button } from "@/components/ui/button";
 import { TrashTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { useEffect, useRef, useState } from "react";
+import { useCrmCardRead } from "../../hooks/useCrmCardRead";
 import { toast } from "@/lib/toast";
 import { AlertTriangle, NotebookText } from "lucide-react";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
@@ -63,45 +64,36 @@ export function PartyNotes({
   onNotesStateChange,
   copyParent,
 }: Props) {
-  const [comments, setComments] = useState<Comment[]>([]);
-  // A failed load is NOT an empty list. Rendering "No notes yet" over a failure
-  // tells the user this record has no notes when it may have many — and it hid
-  // a real `cmt_list` failure on this page (2026-08-14) behind a calm, wrong
-  // empty state. Track the failure and say so, with a way to retry.
-  const [loadError, setLoadError] = useState<string | null>(null);
+  // Kept once per record per tab (the Board's remount law): a wake or remount reads nothing and the
+  // note being typed stays put. A failed load is NOT an empty list — rendering "No notes yet" over a
+  // failure tells the user this record has no notes when it may have many (a real `cmt_list` failure
+  // hid behind that calm, wrong empty state 2026-08-14); it is said, with a way to retry, and is not kept.
+  const notesRead = useCrmCardRead<Comment[]>(`crm.notes:${entityType}:${partyId}`, async () => {
+    const result = await commentsService.listForEntity(entityType, partyId);
+    if (!result.ok) {
+      console.error("[crm] notes load failed:", result.error);
+      throw new Error(result.error.message);
+    }
+    return result.data.comments;
+  });
+  const comments: Comment[] = notesRead.data ?? [];
+  const loadError: string | null = notesRead.isError ? (notesRead.error ?? "The read failed") : null;
+  const reloadNotes = () => void notesRead.refresh();
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
-  const [reloadNonce, setReloadNonce] = useState(0);
   const [expandedComments, setExpandedComments] = useState<Set<string>>(
     new Set(),
   );
-  const generationRef = useRef(0);
   const onNotesStateChangeRef = useRef(onNotesStateChange);
   useEffect(() => {
     onNotesStateChangeRef.current = onNotesStateChange;
   });
 
+  // The page's agent scope hears the notes (or why there are none) whenever the answer changes.
   useEffect(() => {
-    // Timer = async boundary, so no setState runs synchronously in the effect.
-    const timer = setTimeout(() => {
-      const load = async () => {
-        const gen = ++generationRef.current;
-        const result = await commentsService.listForEntity(entityType, partyId);
-        if (generationRef.current !== gen) return;
-        if (result.ok) {
-          setComments(result.data.comments);
-          setLoadError(null);
-          onNotesStateChangeRef.current?.(result.data.comments, null);
-        } else {
-          console.error("[crm] notes load failed:", result.error);
-          setLoadError(result.error.message);
-          onNotesStateChangeRef.current?.(comments, result.error.message);
-        }
-      };
-      void load();
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [partyId, entityType, reloadNonce]);
+    if (notesRead.isError) onNotesStateChangeRef.current?.(notesRead.data ?? [], notesRead.error ?? "The read failed");
+    else if (notesRead.data) onNotesStateChangeRef.current?.(notesRead.data, null);
+  }, [notesRead.data, notesRead.isError, notesRead.error]);
 
   const allExpanded =
     comments.length > 0 &&
@@ -134,7 +126,7 @@ export function PartyNotes({
     setSaving(false);
     if (result.ok) {
       setDraft("");
-      setReloadNonce((current) => current + 1);
+      reloadNotes();
     } else {
       toast.error(result.error.message);
     }
@@ -155,7 +147,7 @@ export function PartyNotes({
         if (typeof raw !== "string") throw new Error("delete_note expects a note id.");
         const result = await commentsService.remove(raw);
         if (!result.ok) throw new Error(result.error.message);
-        setReloadNonce((current) => current + 1);
+        reloadNotes();
         return { summary: "Deleted the note." };
       },
     },
@@ -176,15 +168,12 @@ export function PartyNotes({
         partyId,
       );
       if (!refreshed.ok) {
-        setLoadError(refreshed.error.message);
         onNotesStateChangeRef.current?.(comments, refreshed.error.message);
         throw new Error(
           `The note was saved, but the updated note list could not be loaded: ${refreshed.error.message}`,
         );
       }
-      setComments(refreshed.data.comments);
-      setLoadError(null);
-      onNotesStateChangeRef.current?.(refreshed.data.comments, null);
+      notesRead.setData(refreshed.data.comments);
     },
   });
 
@@ -196,7 +185,7 @@ export function PartyNotes({
     });
     if (!ok) return;
     const result = await commentsService.remove(comment.id);
-    if (result.ok) setReloadNonce((current) => current + 1);
+    if (result.ok) reloadNotes();
     else toast.error(result.error.message);
   };
 
@@ -270,7 +259,7 @@ export function PartyNotes({
           <span>Couldn&apos;t load notes — {loadError} <ErrorAlchemyMenu error={loadError} /></span>
           <Button
             variant="outline"
-            onClick={() => setReloadNonce((current) => current + 1)}
+            onClick={() => reloadNotes()}
           >
             Retry
           </Button>

@@ -30,15 +30,20 @@ export interface SaveTemplateDialogProps {
   isOpen: boolean;
   onClose: () => void;
   initialAgentId?: string | null;
+  /** AT-FIX-H3: a base saved as a template starts from its tables, with no agent to pick. */
+  initialTableIds?: string[];
+  /** The template's starting name. */
+  initialName?: string;
 }
 
 
-export function SaveTemplateDialog({ isOpen, onClose, initialAgentId }: SaveTemplateDialogProps) {
+export function SaveTemplateDialog({ isOpen, onClose, initialAgentId, initialTableIds, initialName }: SaveTemplateDialogProps) {
+  const fromTables = (initialTableIds?.length ?? 0) > 0;
   const [agentId, setAgentId] = useState<string | null>(initialAgentId ?? null);
   const [found, setFound] = useState<{ agents: SetupAgent[]; tableIds: string[] } | { error: string } | null>(null);
   const [skipped, setSkipped] = useState<Set<string>>(new Set());
   const [includeRows, setIncludeRows] = useState(true);
-  const [name, setName] = useState("");
+  const [name, setName] = useState(initialName ?? "");
   const [describes, setDescribes] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -77,21 +82,22 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId }: SaveTemp
   }, [agentId]);
 
   const rowsOf = useMemo(() => new Map(tables.rows.map((r) => [r.table_id, r])), [tables.rows]);
-  const ok = found && "agents" in found ? found : null;
+  const ok = fromTables ? { agents: [] as SetupAgent[], tableIds: initialTableIds ?? [] } : found && "agents" in found ? found : null;
   const chosenAgents = ok ? ok.agents.filter((a) => !skipped.has(a.id)) : [];
-  const tableIds = ok ? tablesReadBy(chosenAgents) : [];
+  const tableIds = ok ? (fromTables ? ok.tableIds : tablesReadBy(chosenAgents)) : [];
   // The tables' organization: the draft door reads them there, and the template is saved there.
   const orgs = new Set(tableIds.map((t) => rowsOf.get(t)?.organization_id).filter(Boolean) as string[]);
   const organizationId = orgs.size === 1 ? [...orgs][0]! : null;
   const orgName = tableIds.map((t) => rowsOf.get(t)?.organization_name).find(Boolean) ?? null;
   const knobs = useScopedTemplateKnobs(organizationId);
 
+  // Save is off, with its reason beside it, until this workspace's row limit is read: never enabled and then refused.
+  const limitReason = !organizationId || knobs.seedRowCap !== null ? null : knobs.loading ? "Reading this workspace's limits" : "This workspace has no row limit set";
+
   const save = async () => {
     if (!organizationId || !ok) return;
-    if (knobs.seedRowCap === null) {
-      setError(`A limit is not set: ${knobs.missing.join(", ") || "templates.seed_row_cap"}`);
-      return;
-    }
+    // The button is off with its reason until the limit is read (limitReason), so a press never reaches a refusal.
+    if (knobs.seedRowCap === null) return;
     setSaving(true);
     setError(null);
     try {
@@ -118,7 +124,7 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId }: SaveTemp
       <DialogContent size="lg" data-save-template="">
         <DialogHeader>
           <DialogTitle>Save as template</DialogTitle>
-          <DialogDescription>An agent, the tables it reads and the agents that share them</DialogDescription>
+          <DialogDescription>{fromTables ? "The tables of this base, with their views" : "An agent, the tables it reads and the agents that share them"}</DialogDescription>
         </DialogHeader>
 
         {saved ? (
@@ -141,7 +147,7 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId }: SaveTemp
           </div>
         ) : (
           <div className="space-y-4">
-            <AgentListDropdown
+            {fromTables ? null : <AgentListDropdown
               activeAgentId={agentId ?? undefined}
               onSelect={(id: string) => {
                 setAgentId(id);
@@ -158,7 +164,7 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId }: SaveTemp
                   </span>
                 </Button>
               }
-            />
+            />}
             {found && "error" in found ? <p className="type-body text-destructive">{found.error}<ErrorAlchemyMenu error={found.error} /></p> : null}
             {agentId && !found ? (
               <p className="flex items-center gap-2 type-body text-muted-foreground">
@@ -167,7 +173,7 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId }: SaveTemp
             ) : null}
             {ok ? (
               <>
-                <div className="space-y-1.5">
+                {ok.agents.length > 0 ? <div className="space-y-1.5">
                   <p className="type-secondary font-medium text-muted-foreground">Agents</p>
                   {ok.agents.map((a, i) => (
                     <label key={a.id} className="flex items-center gap-2 text-sm">
@@ -186,7 +192,7 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId }: SaveTemp
                       <span className="truncate">{a.name}</span>
                     </label>
                   ))}
-                </div>
+                </div> : null}
                 <div className="space-y-1.5">
                   <p className="type-secondary font-medium text-muted-foreground">Tables</p>
                   {tableIds.map((t) => (
@@ -203,6 +209,7 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId }: SaveTemp
                 <ProTextarea value={describes} onChange={(e) => setDescribes(e.target.value)} placeholder="Who it is for" rows={2} />
                 {orgs.size > 1 ? <p className="type-body text-destructive">These tables live in different organizations — pick agents from one</p> : null}
                 {organizationId ? <p className="type-secondary text-muted-foreground">{`Saved in ${orgName ?? "its organization"}`}</p> : null}
+                {limitReason ? <p className="type-secondary text-muted-foreground" data-save-template-reason="">{limitReason}</p> : null}
               </>
             ) : null}
             {error ? <p className="type-body text-destructive" role="alert">{error}<ErrorAlchemyMenu error={error} /></p> : null}
@@ -215,7 +222,7 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId }: SaveTemp
               Close
             </Button>
           ) : (
-            <Button icon={saving ? <Spinner size="xs" className="text-current" /> : null} variant="primary" onClick={() => void save()} disabled={!ok || !organizationId || !name.trim() || saving} data-save-template-save="">
+            <Button icon={saving ? <Spinner size="xs" className="text-current" /> : null} variant="primary" onClick={() => void save()} disabled={!ok || !organizationId || !name.trim() || saving || limitReason !== null} data-save-template-save="">
               Save
             </Button>
           )}

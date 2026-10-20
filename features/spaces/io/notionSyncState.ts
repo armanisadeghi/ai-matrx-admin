@@ -4,7 +4,7 @@
  * `GET /notion-import/sync`, which only read this row. "Sync now" stays on the
  * server: it pulls from Notion.
  */
-import { supabase } from "@/utils/supabase/client";
+import { syncedSourcesOf } from "@/features/unified-data/table-page/syncedSourcesOf";
 
 export interface NotionSyncState {
   connected: boolean;
@@ -15,17 +15,7 @@ export interface NotionSyncState {
 }
 
 export async function readNotionSyncState(tableId: string): Promise<NotionSyncState> {
-  const { data, error } = await supabase
-    .schema("custom")
-    .from("synced_source")
-    .select("source_ref,synced_at,last_report,mapping")
-    .eq("source_kind", "notion_database")
-    .eq("target", tableId)
-    .is("deleted_at", null)
-    .order("updated_at", { ascending: false })
-    .limit(1);
-  if (error) throw new Error(error.message);
-  const row = data?.[0];
+  const row = (await syncedSourcesOf(tableId)).find((r) => r.source_kind === "notion_database");
   if (!row) return { connected: false };
   const last = row.last_report;
   const base = last && typeof last === "object" && !Array.isArray(last) ? (last as Record<string, unknown>) : null;

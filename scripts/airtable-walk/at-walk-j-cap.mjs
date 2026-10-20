@@ -1,0 +1,15 @@
+import { open, say, ORIGIN } from "./at-walk-h-lib.mjs";
+const WHO = process.env.WHO === "member" ? "member" : "admin";
+const { browser, page, who, shot } = await open(WHO === "member");
+say("who", who);
+await page.setViewportSize({ width: 375, height: 800 });
+await page.goto(`${ORIGIN}/capture/${process.env.SHEET}`, { waitUntil: "domcontentloaded", timeout: 240000 });
+await page.waitForFunction(() => !/Opening the capture sheet/.test(document.body.innerText), null, { timeout: 150000 }).catch(() => {}); await page.waitForTimeout(3000);
+say("capture text", (await page.evaluate(() => document.body.innerText)).replace(/\s+/g, " ").slice(0, 300));
+say("controls", await page.$$eval("input,textarea", (els) => els.map((e) => e.tagName + ":" + (e.type || "") + ":" + (e.getAttribute("aria-label") || e.placeholder || ""))));
+await shot("j2-cap-" + WHO);
+await page.locator("input:not([type=hidden]),textarea").first().fill("Capture Echo").catch(() => {});
+await page.getByRole("button", { name: /next/i }).first().click().catch(() => {}); await page.waitForTimeout(2500);
+say("second question", (await page.evaluate(() => document.body.innerText)).replace(/\s+/g, " ").slice(0, 200));
+say("controls2", await page.$$eval("input,textarea", (els) => els.map((e) => e.tagName + ":" + (e.type || ""))));
+await browser.close();

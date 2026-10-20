@@ -1,0 +1,41 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+OLD PATH REFUSED, written by scripts/sync-main.py
+File:        features/agents/utils/settings-changed-on-save.ts
+Belongs at:  ../aidream/apps/shared/chat/src/agents/utils/settings-changed-on-save.ts
+Why:         features/agents/utils/ was moved (entry 'features/agents/utils/' in .matrx/moved-paths.txt). A file saved at the old path would
+             recreate it, so the sweep moved it here instead of committing it there.
+Done with it: the work is in the new path, this .held file is deleted, and its line in
+_conflicts/README.md is deleted.
+---------------- THE REFUSED FILE BELOW ----------------
+/**
+ * The Builder writes agent.definition straight to Supabase, and the database converts legacy
+ * settings keys on the way in (trigger agent.normalize_definition_settings: the one home of the
+ * alias table). So there is no alias table here: after a save the Builder compares the row it got
+ * back with what it sent and, when keys were converted or dropped, says so in one terse line.
+ */
+import { toast } from "@ai-matrx/chat/host/notify";
+
+type Json = Record<string, unknown>;
+
+function isObject(v: unknown): v is Json {
+  return Boolean(v) && typeof v === "object" && !Array.isArray(v);
+}
+
+/** One sentence when the saved settings carry different keys than the ones sent, else null. */
+export function settingsChangedOnSave(sent: unknown, saved: unknown): string | null {
+  if (!isObject(sent) || !isObject(saved)) return null;
+  const removed = Object.keys(sent).filter((k) => !(k in saved));
+  const added = Object.keys(saved).filter((k) => !(k in sent));
+  if (removed.length === 0 && added.length === 0) return null;
+  const parts = [...removed.map((k) => `${k} removed`), ...added.map((k) => `${k} added`)];
+  return `Settings changed on save: ${parts.join(", ")}.`;
+}
+
+/** Compare and tell. Never blocks: the save already happened. Returns whether it spoke. */
+export function announceSettingsChangedOnSave(sent: unknown, saved: unknown): boolean {
+  const sentence = settingsChangedOnSave(sent, saved);
+  if (!sentence) return false;
+  toast.warning(sentence);
+  return true;
+}

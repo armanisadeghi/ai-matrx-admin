@@ -172,7 +172,8 @@ export const parseTimelineMarkdown = (content: string): TimelineData | null => {
           j++;
         }
         
-        eventDescription = descriptionLines.join(' ') || eventTitle;
+        // No description line = no description (review 2026-10-19 #14: the title used to repeat as one).
+        eventDescription = descriptionLines.join(' ');
         
         const eventId = `${currentPeriod.period}-${currentPeriod.events.length}`;
         

@@ -1,0 +1,290 @@
+{
+  "__kind": "structured_info",
+  "title": "Brand Foundation — Harborline Physical Therapy",
+  "sections": [
+    {
+      "__kind": "structured_info_section",
+      "body": "This section catalogs the documents and web resources consulted to compile the foundation.",
+      "items": [
+        {
+          "__kind": "structured_info_item",
+          "text": "Client Brief (provided text) | Client input detailing services, audience, and goals | read",
+          "label": "S-1"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Google Maps search (Run IDs: d7bc851d-2d2d-49fb-bc2c-cf4fceb5a7e7, b1ab0730-fd48-4ac1-8e76-b2884bf920f0) | Business profile and reviews | failed",
+          "label": "S-2"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Google Web Search | Public web presence | failed",
+          "label": "S-3"
+        }
+      ],
+      "heading": "Sources consulted"
+    },
+    {
+      "__kind": "structured_info_section",
+      "body": "This section records the services, products, and add-ons mentioned in the source material. We have identified three offerings.",
+      "items": [
+        {
+          "__kind": "structured_info_item",
+          "text": "Parent: Core Services | Business name: Sports Injury Rehab | Customer name: Gap | 8-week structured program for sports injuries | Status: verified | Sources: S-1 | Gap question: What exact terms do patients use when asking for this program (e.g., 'running rehab', 'sports therapy')?",
+          "label": "OFF-1"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Parent: Core Services | Business name: Post-Surgical Knee Rehab | Customer name: Gap | Rehabilitation program following knee surgery | Status: verified | Sources: S-1 | Gap question: What exact terms do patients use when asking for this program?",
+          "label": "OFF-2"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Parent: Add-on Services | Business name: Dry Needling | Customer name: Gap | $45 add-on treatment | Status: verified | Sources: S-1 | Gap question: Can this be booked standalone, or is it strictly an add-on to OFF-1 and OFF-2?",
+          "label": "OFF-3"
+        }
+      ],
+      "heading": "D1–D2 Offering inventory and line-up"
+    },
+    {
+      "__kind": "structured_info_section",
+      "body": "This section captures the business intent behind each offering (Lead, Door, Grow, Sustain, Accept, Sunset, or Refuse) and its primary role. Evidence is entirely missing, requiring direct clarification from the business.",
+      "items": [
+        {
+          "__kind": "structured_info_item",
+          "text": "Gap | Status: gap | Gap question: Which offering is your primary 'Lead' service that you want to be known for, and which acts as an entry 'Door' service?",
+          "label": "OFF-1 · Stance"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Gap | Status: gap | Gap question: What is the primary role and stance (Lead, Accept, Grow, etc.) of Post-Surgical Knee Rehab in your portfolio?",
+          "label": "OFF-2 · Stance"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Gap | Status: gap | Gap question: What is the primary role and stance of the Dry Needling add-on (e.g., Sustain, Grow)?",
+          "label": "OFF-3 · Stance"
+        }
+      ],
+      "heading": "A3 Offering stance and role"
+    },
+    {
+      "__kind": "structured_info_section",
+      "body": "This section outlines the target audiences based on observable traits, as well as explicitly disqualified clients.",
+      "items": [
+        {
+          "__kind": "structured_info_item",
+          "text": "Rank: 1 | Recreational runners aged 30-55 | Status: verified | Sources: S-1",
+          "label": "SEG-1"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Rank: 2 | Post-op patients referred by two specific orthopedic groups | Status: verified | Sources: S-1",
+          "label": "SEG-2"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Disqualified | Workers comp patients | Status: verified | Sources: S-1",
+          "label": "SEG-3 (Disqualified)"
+        }
+      ],
+      "heading": "C1–C2–F1 Audience segments and ideal client profiles"
+    },
+    {
+      "__kind": "structured_info_section",
+      "body": "This section maps which offerings are meant for which segments. Fit assumptions are inferred from the brief.",
+      "items": [
+        {
+          "__kind": "structured_info_item",
+          "text": "Fit: primary | Job: Recover from running-related injuries | Entry: OFF-1 | Objection: Gap | Status: inferred | Sources: S-1 | Gap question: What is the main objection recreational runners have before booking the 8-week program?",
+          "label": "SEG-1 × OFF-1"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Fit: none | Job: N/A | Entry: N/A | Objection: N/A | Status: inferred | Sources: S-1",
+          "label": "SEG-1 × OFF-2"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Fit: secondary | Job: Accelerate pain relief and muscle recovery | Entry: OFF-3 | Objection: Gap | Status: inferred | Sources: S-1 | Gap question: Are runners typically hesitant to try dry needling due to the $45 out-of-pocket cost or fear of needles?",
+          "label": "SEG-1 × OFF-3"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Fit: none | Job: N/A | Entry: N/A | Objection: N/A | Status: inferred | Sources: S-1",
+          "label": "SEG-2 × OFF-1"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Fit: primary | Job: Regain mobility post-surgery | Entry: OFF-2 | Objection: Gap | Status: inferred | Sources: S-1 | Gap question: What is the main objection or worry post-op patients have when scheduling their first session?",
+          "label": "SEG-2 × OFF-2"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Fit: secondary | Job: Supplemental pain management during rehab | Entry: OFF-3 | Objection: Gap | Status: inferred | Sources: S-1 | Gap question: Do post-op orthopedic patients typically elect for the dry needling add-on?",
+          "label": "SEG-2 × OFF-3"
+        }
+      ],
+      "heading": "C10 Audience-to-offering map"
+    },
+    {
+      "__kind": "structured_info_section",
+      "body": "This section lists real customer triggers and questions. Because no public web or review data was available, this entire section is a gap.",
+      "items": [
+        {
+          "__kind": "structured_info_item",
+          "text": "Gap | Status: gap | Gap question: What specific life events or symptoms trigger SEG-1 (runners) to finally seek out therapy instead of resting?",
+          "label": "SEG-1 · Triggers"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Gap | Status: gap | Gap question: What questions do SEG-2 (post-op patients) frequently ask the front desk before their first appointment?",
+          "label": "SEG-2 · Questions"
+        }
+      ],
+      "heading": "C4–C5–C6 Journey question and trigger bank"
+    },
+    {
+      "__kind": "structured_info_section",
+      "body": "This section contains the exact verbatim phrases customers use to describe their problems and the services. Due to lack of public data, this is currently empty.",
+      "items": [
+        {
+          "__kind": "structured_info_item",
+          "text": "Gap | Status: gap | Gap question: What exact phrases do your recreational runner patients use to describe their pain or injury?",
+          "label": "OFF-1 · Customer Language"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Gap | Status: gap | Gap question: Are there any specific words or phrases Harborline actively avoids using in marketing materials?",
+          "label": "Brand · Avoided Words"
+        }
+      ],
+      "heading": "C8–I3 Customer language bank"
+    },
+    {
+      "__kind": "structured_info_section",
+      "body": "This section documents the brand's subjects of expertise and points of view. No explicit POV statements were present in the brief.",
+      "items": [
+        {
+          "__kind": "structured_info_item",
+          "text": "Gap | Status: gap | Gap question: What is a strongly held belief or Point of View Harborline has about physical therapy that competitors like Bayside PT might disagree with?",
+          "label": "Brand · POV"
+        }
+      ],
+      "heading": "J1–J3 Authority territory and point of view"
+    },
+    {
+      "__kind": "structured_info_section",
+      "body": "Internal content boundaries, claims, and associations based on brand guidelines. We have no source documents for brand guidelines.",
+      "items": [
+        {
+          "__kind": "structured_info_item",
+          "text": "Gap | Status: gap | Gap question: Are there specific clinical claims, topics, or treatment styles that are strictly out-of-bounds for Harborline's content?",
+          "label": "Brand · Boundaries"
+        }
+      ],
+      "heading": "J4–F4–F5–F6 Content boundaries"
+    },
+    {
+      "__kind": "structured_info_section",
+      "body": "This section lists licenses, credentials, case studies, and awards that serve as proof of authority. No proof items were provided in the brief.",
+      "items": [
+        {
+          "__kind": "structured_info_item",
+          "text": "Gap | Status: gap | Gap question: What specific certifications, licenses, or signature statistics does Harborline hold that prove expertise to post-op patients and runners?",
+          "label": "PRF-1"
+        }
+      ],
+      "heading": "E1–E2 Proof library"
+    },
+    {
+      "__kind": "structured_info_section",
+      "body": "Direct, indirect, and aspirational competitors. The brief identifies one direct competitor.",
+      "items": [
+        {
+          "__kind": "structured_info_item",
+          "text": "Direct | Bayside PT | They are an insurance-heavy practice | Status: verified | Sources: S-1",
+          "label": "CMP-1"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Gap | Status: gap | Gap question: Unlike CMP-1 (Bayside PT), what does Harborline explicitly do differently regarding insurance, patient volume, or treatment style?",
+          "label": "CMP-1 · Differences"
+        }
+      ],
+      "heading": "B1–K1 Competitive set"
+    },
+    {
+      "__kind": "structured_info_section",
+      "body": "Geographic markets and service areas.",
+      "items": [
+        {
+          "__kind": "structured_info_item",
+          "text": "Portland, ME | Status: verified | Sources: S-1",
+          "label": "MKT-1"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Gap | Status: gap | Gap question: What is Harborline's stance on MKT-1 (e.g., Lead market), and are there neighboring towns you actively target?",
+          "label": "MKT-1 · Stance"
+        }
+      ],
+      "heading": "L1–L2 Geography"
+    },
+    {
+      "__kind": "structured_info_section",
+      "body": "Commercial goals and operational capacity limits.",
+      "items": [
+        {
+          "__kind": "structured_info_item",
+          "text": "Rank: 1 | Goal: Open a second location in 2027 | Status: verified | Sources: S-1",
+          "label": "Goal-1"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Gap | Status: gap | Gap question: What is the weekly patient capacity limit for OFF-1 (Sports Injury Rehab) and OFF-2 (Post-Surgical Knee Rehab)?",
+          "label": "Capacity"
+        }
+      ],
+      "heading": "A1–A2–A4 Goals, capacity and size"
+    },
+    {
+      "__kind": "structured_info_section",
+      "body": "Consolidated and ordered questions necessary to complete the Brand Foundation package.",
+      "items": [
+        {
+          "__kind": "structured_info_item",
+          "text": "Which offering is your primary 'Lead' service that you want to be known for, and which acts as an entry 'Door' service?",
+          "label": "Closes: OFF-1 · Stance, OFF-2 · Stance"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "What exact terms do patients use when asking for the sports injury rehab and post-surgical knee rehab programs?",
+          "label": "Closes: OFF-1, OFF-2, OFF-1 · Customer Language"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "What is the main objection or worry post-op patients and runners have before booking their first session?",
+          "label": "Closes: SEG-1 × OFF-1, SEG-2 × OFF-2, SEG-2 · Questions"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "Unlike Bayside PT, what does Harborline explicitly do differently regarding insurance, patient volume, or treatment style?",
+          "label": "Closes: CMP-1 · Differences, Brand · POV"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "What specific certifications, licenses, or signature statistics does Harborline hold that prove expertise to post-op patients and runners?",
+          "label": "Closes: PRF-1"
+        },
+        {
+          "__kind": "structured_info_item",
+          "text": "What is the weekly patient capacity limit for the Sports Injury Rehab and Post-Surgical Knee Rehab programs?",
+          "label": "Closes: Capacity"
+        }
+      ],
+      "heading": "Open questions for the business"
+    }
+  ],
+  "description": "Harborline Physical Therapy (Portland, ME). Generated: 2026-10-20. Offerings: 3. Segments: 2. Competitors: 1. Open gaps: 13."
+} 

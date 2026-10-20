@@ -328,10 +328,18 @@ export function ColumnAccessPanel({ subject }: { subject: ColumnAccessPanelSubje
               data={view.words.map((w) => ({
                 value: w.word,
                 label: WORD_LABEL[w.word] ?? w.word,
-                title: `Reads: ${w.readNeeds} · Edits: ${w.editNeeds}`,
+                title: `Seen by ${w.readNeeds} · Changed by ${w.editNeeds}`,
                 disabled: !view.mayChange,
               }))}
             />
+            {(() => {
+              const picked = view.words.find((w) => w.word === word);
+              return picked ? (
+                <p className="text-xs text-muted-foreground" data-column-access-seen-by="">
+                  Seen by {picked.readNeeds}
+                </p>
+              ) : null;
+            })()}
             <div className="max-h-72 overflow-y-auto rounded-md border border-border">
               {people.map((p) => {
                 const { note, tone } = personNote(p, Boolean(preview));

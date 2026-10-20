@@ -40,7 +40,8 @@ import type { StoredRunState } from "./useStoredRun";
 import { useStreamedRun } from "./useStreamedRun";
 
 function draftOf(run: StoredRun): HolderDraft {
-  const h = run.placement?.holder ?? run.holder;
+  // The run's holder is read from ONE key (the record's resolution, served as `holder`).
+  const h = run.holder;
   return h.type === "workflow"
     ? { kind: "workflow", agentId: null, agentVersionId: null, useLatest: true, workflowId: h.id, workflowVersionId: h.versionId }
     : { kind: "agent", agentId: h.id, agentVersionId: h.versionId, useLatest: !h.versionId, workflowId: null };

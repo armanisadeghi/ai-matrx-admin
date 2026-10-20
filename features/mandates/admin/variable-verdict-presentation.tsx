@@ -8,10 +8,9 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 type PresentedVerdict = RebindVariableImpact | MandateVariableVerdict;
 
-const VERDICT_COPY: Record<
-  RebindVariableImpact["verdict"] | MandateVariableVerdict["verdict"],
-  { label: string; tone: "bad" | "warn" | "ok" }
-> = {
+// Keyed by string: the server adds verdicts (e.g. `unfilled`, defect 74) before the
+// generated schema catches up; an unknown one still shows, as a warning, by its own name.
+const VERDICT_COPY: Record<string, { label: string; tone: "bad" | "warn" | "ok" }> = {
   lost: { label: "stops reaching the agent", tone: "bad" },
   unsupplied_required: { label: "required, nothing supplies it", tone: "bad" },
   rename_candidate: { label: "same value, different name", tone: "warn" },
@@ -20,6 +19,8 @@ const VERDICT_COPY: Record<
   renamed: { label: "mapped from code", tone: "ok" },
   default_used: { label: "agent default used", tone: "ok" },
   intentionally_blank: { label: "intentionally blank", tone: "ok" },
+  unfilled: { label: "nothing fills it", tone: "warn" },
+  spilled_to_context: { label: "passed as context", tone: "warn" },
   spilled_to_user_input: { label: "passed as user text", tone: "warn" },
   dropped: { label: "code value is dropped", tone: "warn" },
   missing_from_code: { label: "required value missing from code", tone: "bad" },
@@ -48,7 +49,7 @@ function presentation(item: PresentedVerdict) {
         : undefined,
     message: item.message,
     blocking: item.blocking ?? false,
-    copy: VERDICT_COPY[item.verdict],
+    copy: VERDICT_COPY[item.verdict] ?? { label: humanizeIdentifier(String(item.verdict)), tone: "warn" as const },
   };
 }
 

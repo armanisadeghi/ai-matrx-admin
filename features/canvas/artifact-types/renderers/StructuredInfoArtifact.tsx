@@ -5,7 +5,38 @@ import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import { isMaterializedArtifactId } from "../artifactId";
 import { useCanvasItem } from "@/features/canvas/hooks/useCanvasItem";
 import StructuredPlanBlock from "@/components/mardown-display/blocks/plan/StructuredPlanBlock";
+import { kindServerDataFromStoredValue } from "@ai-matrx/rich-content/kinds/react/kind-route";
+import { storedKindValue } from "../storedKindValue";
 import type { ArtifactRendererProps } from "../types";
+
+/**
+ * The text StructuredPlanBlock draws. A `structured_info` kind value arrives as
+ * JSON (`raw`, or an object/JSON-string `data` on a saved row); the kind's
+ * bridge projects it to the viewer's markdown in `serverData.content`. That
+ * projection wins — drawing `raw` put the JSON on screen as "0 sections"
+ * (Agent Studio, agent 996a6bfc, 2026-10-19). Plain fence markdown has no
+ * bridge output and draws as itself.
+ */
+export function structuredInfoText(
+  serverData: unknown,
+  data: unknown,
+  raw: string | undefined,
+): string | undefined {
+  const projected = projectedContent(serverData);
+  if (projected !== undefined) return projected;
+  const stored = data ?? raw;
+  const fromValue = projectedContent(
+    kindServerDataFromStoredValue(storedKindValue(stored)),
+  );
+  if (fromValue !== undefined) return fromValue;
+  return typeof data === "string" ? data : raw;
+}
+
+function projectedContent(serverData: unknown): string | undefined {
+  const content = (serverData as { content?: unknown } | null | undefined)
+    ?.content;
+  return typeof content === "string" && content !== "" ? content : undefined;
+}
 /**
  * Unified renderer for `structured_info` artifacts (transcription + tasks
  * combined). Durable structured content → materializes (persisted, versioned,
@@ -15,9 +46,10 @@ import type { ArtifactRendererProps } from "../types";
 export default function StructuredInfoArtifact({
   raw,
   data,
+  serverData,
   artifactId,
 }: ArtifactRendererProps) {
-  const content = typeof data === "string" ? data : raw;
+  const content = structuredInfoText(serverData, data, raw);
   const materialized = isMaterializedArtifactId(artifactId);
 
   // Only bail on empty content HERE — the materialized path below self-loads
@@ -61,15 +93,13 @@ function StructuredInfoArtifactMaterialized({
   const content = useMemo(() => {
     const stored = row?.content as
       { data?: unknown } | string | null | undefined;
-    if (
-      stored &&
-      typeof stored === "object" &&
-      "data" in stored &&
-      typeof stored.data === "string"
-    ) {
-      return stored.data;
+    if (stored && typeof stored === "object" && "data" in stored) {
+      // A structured row stores the `__kind` value object itself.
+      return structuredInfoText(undefined, stored.data, undefined) ?? fallbackContent;
     }
-    if (typeof stored === "string") return stored;
+    if (typeof stored === "string") {
+      return structuredInfoText(undefined, stored, undefined) ?? fallbackContent;
+    }
     return fallbackContent;
   }, [row, fallbackContent]);
 

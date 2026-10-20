@@ -37,6 +37,7 @@ import { FocusHostContext, BoardCameraStoreContext } from "../../engine/react";
 import { BoardCameraStore } from "../../engine/camera-store";
 import type { NodeSource } from "../../board/document";
 import type { BoardItemType } from "../../items/types";
+import type { PaceTier } from "../../engine/lod";
 import { ORGANIZATION, PERSON } from "./people";
 import { backendCalls, openChannelCount, resetBackend, rpcKind, type BackendCall } from "./fake-backend";
 import { navigations } from "./next-navigation";
@@ -109,11 +110,11 @@ function tileRecord(source: NodeSource, title: string) {
 
 type TileRecord = ReturnType<typeof tileRecord>;
 
-function TileContent({ type, tile, tileId }: { type: BoardItemType; tile: TileRecord; tileId: string }) {
+function TileContent({ type, tile, tileId, tier }: { type: BoardItemType; tile: TileRecord; tileId: string; tier: PaceTier }) {
   const { source, title } = useSyncExternalStore(tile.subscribe, tile.get, tile.get);
   const Host = "name" in type.surface ? type.surface.Host : undefined;
   const body = (
-    <type.Body tileId={tileId} source={source} title={title} tier="read" interacting onSource={(next, nextTitle) => tile.set(next, nextTitle)} />
+    <type.Body tileId={tileId} source={source} title={title} tier={tier} interacting onSource={(next, nextTitle) => tile.set(next, nextTitle)} />
   );
   return Host ? <Host source={source}>{body}</Host> : body;
 }
@@ -135,7 +136,7 @@ function openOverlayKeys(store: AppStore): Set<string> {
 export async function mountTile(
   type: BoardItemType,
   source: NodeSource,
-  options: { title?: string; prepareStore?: (store: AppStore) => void; loadMs?: number; wrap?: (children: ReactNode) => ReactNode } = {},
+  options: { title?: string; prepareStore?: (store: AppStore) => void; loadMs?: number; wrap?: (children: ReactNode) => ReactNode; tier?: PaceTier } = {},
 ): Promise<TileHandle> {
   resetBackendFor();
   // What the platform answers for any signed-in screen; the case adds its record.
@@ -181,7 +182,7 @@ export async function mountTile(
           {(options.wrap ?? ((c: ReactNode) => c))(present ? (
             <Activity mode={mode}>
               <SurfaceActivity active capture={capture}>
-                <TileContent type={type} tile={tile} tileId={tileId} />
+                <TileContent type={type} tile={tile} tileId={tileId} tier={options.tier ?? "read"} />
               </SurfaceActivity>
             </Activity>
           ) : null)}

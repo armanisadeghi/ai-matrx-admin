@@ -23,7 +23,6 @@ import {
 import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { convertTimelineToTasks } from "@/features/tasks/utils/importConverters";
 import BlockHeaderWrapper from "@ai-matrx/rich-content/display/blocks/common/BlockHeaderWrapper";
-import { IconButton } from "@ai-matrx/design-system";
 import type { MenuItem } from "@/components/official/AdvancedMenu";
 import { useCanvasPresentation } from "@ai-matrx/canvas/react";
 import { timelineAxis } from "@ai-matrx/rich-content/display/blocks/canvas-adaptive";
@@ -32,6 +31,7 @@ import { downloadFile } from "@ai-matrx/kit/download";
 import { toast } from "@/lib/toast";
 import { icsFileName } from "@/lib/calendar/eventLinks";
 import { timelineCalendarEvents, timelineIcs } from "./timeline-calendar";
+import { CopySourceButton } from "../common/CopySourceButton";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 import { BlockControlsButton, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 
@@ -280,7 +280,6 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
       </div>
 
       <div className="flex items-center gap-1.5 flex-shrink-0">
-        <BlockControlsButton controls={controls} title={timeline.title} />
         {categories.length > 1 && (
           <Select
             value={selectedCategory}
@@ -325,23 +324,13 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
           timeline.title.replace(/\s+/g, "-").toLowerCase() || "timeline"
         }
         onDataImport={handleDataImport}
+        // Print, Add to calendar and Import into Task Manager live in the block's "…" menu
+        // (extraMenuItems) — one place per action; the header carries only what is used most
+        // (review 2026-10-19 #12: seven header icons, three of them repeated in the menu).
         extraActions={
           <>
-            <IconButton
-              icon={Printer}
-              tooltip="Print / Save as PDF"
-              onClick={handlePrint}
-            />
-            <IconButton
-              icon={Calendar}
-              tooltip="Add to calendar"
-              onClick={handleAddToCalendar}
-            />
-            <IconButton glyphTone="primary"
-              icon={CheckSquare}
-              tooltip="Import into Task Manager"
-              onClick={() => setIsImportModalOpen(true)}
-            />
+            <CopySourceButton source={source} />
+            <BlockControlsButton controls={controls} title={timeline.title} />
           </>
         }
         extraMenuItems={[
@@ -450,6 +439,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
                             <span className="truncate">{event.date}</span>
                           </div>
 
+                          {event.description && (
                           <p
                             className={`text-xs text-muted-foreground leading-relaxed mt-1.5 ${
                               completedEvents.has(event.id)
@@ -459,6 +449,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
                           >
                             {event.description}
                           </p>
+                          )}
                         </div>
 
                         <ArrowRight className="hidden sm:block h-3 w-3 text-muted-foreground flex-shrink-0 mt-1" />

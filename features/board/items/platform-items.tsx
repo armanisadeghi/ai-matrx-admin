@@ -343,7 +343,7 @@ function SandboxPicker({ onPick, onCancel }: PickerProps) {
   );
 }
 
-function SandboxBody({ source, title, onSource }: ItemBodyProps) {
+function SandboxBody({ source, title, tier, onSource }: ItemBodyProps) {
   const id = platformIdOf(SANDBOX_ITEM_KEY, source);
   const follow = useCallback(
     (name: string) => {
@@ -355,7 +355,7 @@ function SandboxBody({ source, title, onSource }: ItemBodyProps) {
   if (!id) return null;
   return (
     <div className="h-full min-h-0 bg-card">
-      <SandboxRecord key={id} id={id} embedded onTitle={follow} />
+      <SandboxRecord key={id} id={id} embedded paused={tier === "offscreen"} onTitle={follow} />
     </div>
   );
 }

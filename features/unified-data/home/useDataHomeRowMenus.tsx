@@ -14,7 +14,7 @@
 // package's rename dialog), move (the one where-it-lives panel) and archive (the settings panel's one
 // archive path: at once with Undo under the organization's line, the counted confirm above it).
 //
-// Rights come from the store per table (`custom.my_levels`, one call per 200 tables in hand) and
+// Rights come from the store per table (`custom.my_levels_across`, one call for every row in hand) and
 // only ever set a disabled reason: a member meets the same list as the owner (G2).
 //
 // Rows that are not tables (forms, dashboards, digests…) keep their open entries; they get their
@@ -28,7 +28,7 @@ import { Archive, ArchiveRestore, ExternalLink, Link2, Star, StarOff } from "luc
 import type { PermissionLevel } from "@ai-matrx/records";
 import { RecordsProvider, useRecordsClient } from "@ai-matrx/records/react";
 import { createRecordsClient } from "@ai-matrx/records/core";
-import { restoreTableIn } from "@/features/unified-data/hub/doors";
+import { myLevelsAcross, restoreTableIn } from "@/features/unified-data/hub/doors";
 import { onReadTheHomeAgain } from "./readTheHomeAgain";
 import { ArchiveDeliberatelyDialog, TableDuplicateDialog, TableRenameDialog, TableSettings, WhereItLives, useScreenRecordsUiHost } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { codeDependsRefusal, whatYouMayDo } from "@ai-matrx/records-ui/helpers";
@@ -45,7 +45,7 @@ import { archiveTableFromHome } from "./archiveTableFromHome";
 import { archiveFormFromHome, restoreFormFromHome } from "./archiveFormFromHome";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
-/** How many table ids one `custom.my_levels` call asks about. */
+/** How many table ids one `custom.my_levels_across` call asks about (the door answers at most 500). */
 const LEVELS_PER_CALL = 200;
 
 /**
@@ -103,36 +103,39 @@ export function useTableLevels(
   }, []);
   useEffect(() => {
     if (key === "") return;
-    const byOrganization = new Map<string, string[]>();
-    for (const pair of key.split(",")) {
-      const [organizationId, tableId] = pair.split(":") as [string, string];
-      byOrganization.set(organizationId, [...(byOrganization.get(organizationId) ?? []), tableId]);
-    }
-    for (const [organizationId, ids] of byOrganization) {
-      const inOrganization = createRecordsClient({ ...client.config, organizationId });
-      for (let i = 0; i < ids.length; i += LEVELS_PER_CALL) {
-        const asked = ids.slice(i, i + LEVELS_PER_CALL);
-        for (const id of asked) LEVELS_OUT.add(id);
-        // A read that fails is asked again (three tries, a pause between): the menu says
-        // "Checking your access…" meanwhile, never a refusal it did not get.
-        const ask = async () => {
-          for (let attempt = 0; attempt < 3; attempt++) {
-            const answered = await inOrganization.myLevels({ ids: asked });
-            if (answered.ok) return answered;
-            await new Promise((r) => setTimeout(r, 3000));
-          }
-          return null;
-        };
-        LEVELS_QUEUE.push(async () => {
-          const answered = await ask();
-          for (const id of asked) LEVELS_OUT.delete(id);
-          if (!answered || !answered.ok) return;
-          // An id the store did not answer for is "you hold nothing on it" — an answer, not a wait.
-          for (const id of asked) LEVELS_ASKED.set(id, null);
-          for (const row of answered.data) LEVELS_ASKED.set(row.id, row.level);
-          for (const listener of LEVELS_LISTENERS) listener();
-        });
+    // ONE CALL FOR THE PAGE (lane TABLE-CREATE-SPEED): every row in hand, whatever organization it lives in,
+    // goes in one `custom.my_levels_across` call (it was one `custom.my_levels` call per organization on the
+    // page: 13-27 calls for a person in many organizations, each 1-3 s of ladder work, three at a time).
+    const pairs = key.split(",").map((pair) => pair.split(":") as [string, string]);
+    for (let i = 0; i < pairs.length; i += LEVELS_PER_CALL) {
+      const chunk = pairs.slice(i, i + LEVELS_PER_CALL);
+      const byOrganization = new Map<string, string[]>();
+      for (const [organizationId, tableId] of chunk) {
+        byOrganization.set(organizationId, [...(byOrganization.get(organizationId) ?? []), tableId]);
+        LEVELS_OUT.add(tableId);
       }
+      const asks = [...byOrganization].map(([organization_id, ids]) => ({ organization_id, ids }));
+      // A read that fails is asked again (three tries, a pause between): the menu says
+      // "Checking your access…" meanwhile, never a refusal it did not get.
+      const ask = async () => {
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const answered = await myLevelsAcross(client.config.dataSource, asks);
+          if (answered.ok) return answered;
+          await new Promise((r) => setTimeout(r, 3000));
+        }
+        return null;
+      };
+      LEVELS_QUEUE.push(async () => {
+        const answered = await ask();
+        for (const [, tableId] of chunk) LEVELS_OUT.delete(tableId);
+        if (!answered || !answered.ok) return;
+        // An id the store did not answer for is "you hold nothing on it" — an answer, not a wait. So is an id
+        // whose organization refused the ask (archived, or out of reach): the store's own refusal, given once,
+        // never asked again on every render.
+        for (const [, tableId] of chunk) LEVELS_ASKED.set(tableId, null);
+        for (const row of answered.data) LEVELS_ASKED.set(row.id, row.refused ? null : row.level);
+        for (const listener of LEVELS_LISTENERS) listener();
+      });
     }
     pumpLevels();
   }, [client, key]);

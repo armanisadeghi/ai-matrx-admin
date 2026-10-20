@@ -307,7 +307,7 @@ describe("timeline kind — legacy bridge (toLegacyServerData)", () => {
     });
   });
 
-  it("simple example → the parser's own defaults fill date/description/id", () => {
+  it("simple example → the parser's own defaults fill date/id, description stays empty", () => {
     const serverData = timelineServerDataFromEnvelope(
       envelopeFromCompleteValue(SIMPLE_EXAMPLE, "timeline"),
     );
@@ -318,8 +318,8 @@ describe("timeline kind — legacy bridge (toLegacyServerData)", () => {
     expect(periods[0].events[0].id).toBe("Phase 1: Discovery-0");
     expect(periods[0].events[1].id).toBe("Phase 1: Discovery-1");
     expect(periods[1].events[0].id).toBe("Phase 2: Build-0");
-    // Missing description defaults to the title (parser behavior).
-    expect(periods[0].events[0].description).toBe("Stakeholder interviews");
+    // A missing description stays empty (parser behavior; review 2026-10-19 #14 — never the title).
+    expect(periods[0].events[0].description).toBe("");
     // Authored dates carry through.
     expect(periods[0].events[0].date).toBe("Week 1");
   });

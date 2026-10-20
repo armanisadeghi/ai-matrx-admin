@@ -32,7 +32,7 @@ import { BOARD_ITEM_TYPES } from "../items/catalog";
 import { expectRemountSafe, runCycle } from "./remount-safety/harness";
 import { installBrowserGaps } from "./remount-safety/browser-gaps";
 import { ORGANIZATION, PERSON } from "./remount-safety/people";
-import { seed, seedRpc } from "./remount-safety/fake-backend";
+import { seed, seedFetch, seedRpc } from "./remount-safety/fake-backend";
 import { remountType } from "./remount-safety/cases";
 
 installBrowserGaps();
@@ -130,6 +130,16 @@ remountType(
       title: PARTY_NAME,
       prepare: () => {
         seed("crm.party", [partyRow]);
+        // What a healthy backend answers for the record's other cards: a read that FAILED is never kept
+        // (it must be asked again), so the quiet law is only meaningful against answered reads.
+        seedRpc("cat_list", []);
+        seedRpc("assoc_for_targets", []);
+        seedRpc("assoc_for_entity", []);
+        seedRpc("assoc_for_sources", []);
+        seedRpc("hr_employee_by_party", { granted: true, employee_id: null });
+        seedRpc("my_teammates", []);
+        seedFetch(/\/crm\/parties\/[^/]+\/contacts/, () => []);
+        seedFetch(/\/crm\/parties\/[^/]+\/journalist-beat$/, () => null);
       },
       loadMs: 1500,
       kept: (tile) => ({ record: shows(tile.container, PARTY_NAME), loading: tile.container.querySelector('[aria-busy="true"]') !== null }),
@@ -218,7 +228,11 @@ remountType(
         seed("agent.definition", [agentRow]);
         seedRpc("agx_get_version_history", []);
         seedRpc("agx_get_list_full", []);
+        // The agent is not in the (empty) list, so the catalog looks it up by search: a lookup that finds
+        // nothing is asked once per tab, not again on every wake.
         seedRpc("agx_search", []);
+        // The run settings the agent view holds: a read that FAILED is never kept (it must be asked again).
+        seedRpc("agx_get_run_tier", [{ id: AGENT_ID, run_tier: "standard" }]);
         seedRpc("entity_access_summary", accessSummaryOf("agent", AGENT_ID));
       },
       loadMs: 1500,

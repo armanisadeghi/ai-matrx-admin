@@ -940,7 +940,13 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
           )}
           <FolderIcon className={cn("opacity-70", iconColor)} />
           <span className="flex min-w-0 flex-1 items-center gap-1" title={label}>
-            <span className="min-w-[3.5rem] truncate normal-case tracking-normal">{label}</span>
+            {/* A home whose name has not arrived shows a shimmer, never a stand-in "Home" that every
+                folder shares and then relabels (review 2026-10-19 #23). */}
+            {isHomeMode(groupBy) && homes.labelOf(groupKey) === null && groupKey !== "__none__" && groupKey !== "Unassigned" ? (
+              <span className="h-3 w-24 animate-pulse rounded bg-muted" data-home-name-pending="" />
+            ) : (
+              <span className="min-w-[3.5rem] truncate normal-case tracking-normal">{label}</span>
+            )}
           </span>
           <span className="shrink-0 text-xs font-normal opacity-50 tabular-nums">
             {count}

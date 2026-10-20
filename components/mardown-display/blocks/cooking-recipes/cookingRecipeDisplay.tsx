@@ -33,6 +33,7 @@ import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { recipeShoppingList } from "./recipe-shopping-list";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
 import { Button } from "@ai-matrx/design-system/controls";
+import { CopySourceButton } from "../common/CopySourceButton";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
 import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
@@ -298,11 +299,50 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
       )}
 
       <div
-        className={`w-full border transition-colors ${host.selected ? "border-primary" : "border-border"} rounded-xl ${isFullScreen ? "fixed inset-0 z-50 flex items-center justify-center p-2" : "py-2"}`}
+        className={`w-full ${isFullScreen ? "fixed inset-0 z-50 flex items-center justify-center p-2" : `my-3 overflow-hidden rounded-lg border bg-card transition-colors ${host.selected ? "border-primary" : "border-border"}`}`}
       >
         <div
+          data-block-frame="cooking_recipe"
           className={`max-w-6xl mx-auto ${isFullScreen ? "bg-textured rounded-xl shadow-2xl h-full max-h-[98dvh] w-full flex flex-col overflow-hidden border border-border" : ""}`}
         >
+          {/* The block's one header: title left, actions right (Controls, "</>" and Copy come from the shared slot) */}
+          {!isFullScreen && (
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
+              <div className="flex min-w-[9rem] flex-1 items-center gap-2">
+                <ChefHat className="h-3.5 w-3.5 shrink-0 text-primary" />
+                <InlineControlText controls={controls} fieldKey="title" value={recipe.title} className="truncate text-sm font-medium text-foreground">
+                  {recipe.title}
+                </InlineControlText>
+              </div>
+              <div className="flex shrink-0 items-center gap-1">
+                <IconButton
+                  icon={Printer}
+                  tooltip={isPrinting ? "Saving…" : "Print / Save as PDF"}
+                  onClick={handlePrint}
+                  disabled={isPrinting}
+                />
+                <IconButton
+                  icon={ShoppingCart}
+                  tooltip="Shopping list to tasks"
+                  onClick={() => setShoppingOpen(true)}
+                />
+                <IconButton
+                  icon={ExternalLink}
+                  tooltip="Open Canvas"
+                  onClick={handleOpenCanvas}
+                />
+                <IconButton
+                  icon={Maximize2}
+                  tooltip="Cook mode (full screen)"
+                  onClick={() => setIsFullScreen(true)}
+                />
+                <CopySourceButton source={source} />
+                <BlockControlsButton controls={controls} title="Recipe controls" />
+                {host.actions}
+              </div>
+            </div>
+          )}
+
           {isFullScreen && (
             <div className="flex-shrink-0 px-3 py-2 border-b border-border flex items-center justify-between bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30">
               <div className="flex items-center gap-2 min-w-0">
@@ -343,51 +383,28 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
             />
             <div ref={blockContentRef} className="@container p-2 space-y-3">
               {/* Header Section */}
-              <div className="bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-100 dark:from-orange-950/40 dark:via-amber-950/30 dark:to-yellow-950/40 rounded-xl p-2 border border-orange-200 dark:border-orange-800/50">
+              <div className="bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-100 dark:from-orange-950/40 dark:via-amber-950/30 dark:to-yellow-950/40 rounded-xl p-2">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex items-start gap-2 flex-1 min-w-0">
-                    <div className="p-2 bg-orange-500 dark:bg-orange-600 rounded-lg flex-shrink-0">
-                      <ChefHat className="h-4 w-4 text-white" />
-                    </div>
+{isFullScreen && (
+                      <div className="p-2 bg-orange-500 dark:bg-orange-600 rounded-lg flex-shrink-0">
+                        <ChefHat className="h-4 w-4 text-white" />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
-                      <h1 className="text-sm font-bold text-foreground leading-tight line-clamp-2">
-                        <InlineControlText controls={controls} fieldKey="title" value={recipe.title}>
-                          {recipe.title}
-                        </InlineControlText>
-                      </h1>
+{isFullScreen && (
+                        <h1 className="text-sm font-bold text-foreground leading-tight line-clamp-2">
+                          <InlineControlText controls={controls} fieldKey="title" value={recipe.title}>
+                            {recipe.title}
+                          </InlineControlText>
+                        </h1>
+                      )}
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
                         {recipe.yields}
                       </p>
                     </div>
                   </div>
 
-                  {!isFullScreen && (
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <IconButton
-                        icon={Printer}
-                        tooltip={isPrinting ? "Saving…" : "Print / Save as PDF"}
-                        onClick={handlePrint}
-                        disabled={isPrinting}
-                      />
-                      <IconButton
-                        icon={ShoppingCart}
-                        tooltip="Shopping list to tasks"
-                        onClick={() => setShoppingOpen(true)}
-                      />
-                      <IconButton
-                        icon={ExternalLink}
-                        tooltip="Open Canvas"
-                        onClick={handleOpenCanvas}
-                      />
-                      <IconButton
-                        icon={Maximize2}
-                        tooltip="Cook mode (full screen)"
-                        onClick={() => setIsFullScreen(true)}
-                      />
-                      <BlockControlsButton controls={controls} title="Recipe controls" />
-                      {host.actions}
-                    </div>
-                  )}
                 </div>
 
                 {/* Quick Stats */}

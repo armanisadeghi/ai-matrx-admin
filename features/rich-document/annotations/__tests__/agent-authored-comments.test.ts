@@ -6,7 +6,7 @@
  * Use case: the intake agent answers a site lead's question about which scale
  * weighs inbound aluminum.
  */
-import { authorOf } from "../comment-author";
+import { SYSTEM_AUTHOR_NAME, authorOf } from "../comment-author";
 
 const PERSON = {
   created_by: "user-dana",
@@ -39,4 +39,12 @@ it("an agent row with no name or id yet still reads as an agent, never as the pe
 it("before the server returns the new columns, every row is a person (degrades cleanly)", () => {
   expect(authorOf({ ...PERSON, created_by_tier: "user" }).agent).toBeUndefined();
   expect(authorOf({ ...PERSON, created_by_tier: null, author_agent_id: null }).agent).toBeUndefined();
+});
+
+it("a system-written row (an edit remark's thread opener) is credited to the system, never the person", () => {
+  // Live 2026-10-19: the opener `abc317d4…` (created_by_tier=system) was drawn as "admin@admin.com".
+  const author = authorOf({ ...PERSON, created_by_tier: "system" });
+  expect(author).toEqual({ id: "user-dana", name: SYSTEM_AUTHOR_NAME, avatarUrl: null, system: true });
+  expect(author.name).not.toBe(PERSON.author_display_name);
+  expect(author.agent).toBeUndefined();
 });

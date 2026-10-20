@@ -25,7 +25,7 @@ async function readOnce(): Promise<PublicRead> {
 // (measured 2026-10-08). FRESHNESS (GALLERY-UX, ADVERSARIAL-2 #11): a published or changed template shows within
 // a minute — the shared read lives 30 s and the pages revalidate every 60 s (it was 5 min + hourly, and the
 // gallery and sitemap trailed the catalog; a category page 404'd while its templates were live).
-// A closed or failed read is never kept.
+// A closed, timed-out or failed read is never kept.
 const SHARED_READ_MS = 30 * 1000;
 let sharedRead: { at: number; read: Promise<PublicRead> } | null = null;
 
@@ -36,7 +36,7 @@ function readShared(fresh = false): Promise<PublicRead> {
   sharedRead = entry;
   read.then(
     (r) => {
-      if (r.state === "closed" && sharedRead === entry) sharedRead = null;
+      if (r.state !== "open" && sharedRead === entry) sharedRead = null;
     },
     () => {
       if (sharedRead === entry) sharedRead = null;

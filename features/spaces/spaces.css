@@ -1525,6 +1525,15 @@
 .spaces-db-new-more { display: inline-flex; align-items: center; padding: 0 6px; border-left: 1px solid var(--spaces-on-accent-rule); }
 .spaces-db-new-main:hover, .spaces-db-new-more:hover { background: var(--spaces-accent-hover); }
 .spaces-db-body { min-width: 0; overflow-x: auto; }
+/* DB-BLOCK-CHROME-4: the grid body holds the loaded height (data/database-body-reserve.tsx); the first paint's
+   shape is pinned to it (its skeleton is clipped, never taller), the live grid's loading states only grow. A phone's
+   grid draws a 32 px tools row above the table. */
+.spaces-db-body[data-reserve] { min-height: var(--spaces-db-body-min); }
+.spaces-db-frame[data-frame-shape] .spaces-db-body[data-reserve] { height: var(--spaces-db-body-min); overflow: hidden; }
+@media (max-width: 639px) {
+  .spaces-db-body[data-reserve] { min-height: calc(var(--spaces-db-body-min) + 32px); }
+  .spaces-db-frame[data-frame-shape] .spaces-db-body[data-reserve] { height: calc(var(--spaces-db-body-min) + 32px); }
+}
 /* The inline database sits inside the rich-text editor, whose stylesheet carries ProseMirror's own
    UNLAYERED table rules (`.ProseMirror table { width:100%; table-layout:fixed; overflow:hidden }`,
    `.ProseMirror td, th { position:relative }`). Unlayered beats every layered utility, so the data

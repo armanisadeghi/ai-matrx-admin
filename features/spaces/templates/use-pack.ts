@@ -496,6 +496,12 @@ export interface MakePagesOptions {
   onRootReady?: (root: SpaceDoc) => void;
   /** Stops the run (Cancel): the pages made so far go to Trash and are kept in the journal for Try again. */
   signal?: AbortSignal;
+  /**
+   * TEMPLATE-INSTALL-3: tells the template's install the root page it made, so Remove moves it (and its sub-pages) to Trash and Restore
+   * brings it back. Called once the tables are installed and every page is written; a failure is the run's failure (the pages go to Trash,
+   * Try again resumes the same copy, and recording the same page twice is one record).
+   */
+  notePage?: (installId: string, root: SpaceDoc) => Promise<void>;
 }
 
 /** The unfinished run's root, brought back (from Trash if the failed run put it there); null = start fresh. */
@@ -558,6 +564,11 @@ export async function makeTemplatePages(
   remember();
   try {
     const made = await fillTemplatePages(store, root, ordered, Promise.resolve(tables), onProgress, options, run, remember);
+    if (options.notePage) {
+      const installId = journal?.read()?.installId ?? run.installId;
+      if (!installId) throw new Error("The template's copy was made, but its id was not kept, so Remove would leave the pages behind.");
+      await options.notePage(installId, made);
+    }
     journal?.write(null);
     return made;
   } catch (err) {
@@ -720,6 +731,8 @@ export interface UseTemplateRun {
   /** Called with Cancel when nothing has moved for `stallMs`; with null when it moves again or the run ends. */
   onStalled?: (cancel: (() => void) | null) => void;
   stallMs?: number;
+  /** TEMPLATE-INSTALL-3: records the root page on the install (template_install_note, kind page), so Remove moves the pages to Trash. */
+  notePage?: (installId: string, root: SpaceDoc) => Promise<void>;
 }
 
 export type UseTemplateResult = { ok: true; root: SpaceDoc } | { ok: false; message: string; stopped: boolean };
@@ -805,7 +818,7 @@ export async function runUseTemplate(r: UseTemplateRun): Promise<UseTemplateResu
         moved();
       },
       journal,
-      { sizes: r.sizes, onRootReady: r.onRootReady, signal: stop.signal },
+      { sizes: r.sizes, onRootReady: r.onRootReady, signal: stop.signal, notePage: r.notePage },
     );
     return { ok: true, root };
   } catch (err) {

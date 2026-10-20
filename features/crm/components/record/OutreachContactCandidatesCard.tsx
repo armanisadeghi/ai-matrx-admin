@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useCrmCardRead } from "../../hooks/useCrmCardRead";
 import { ExternalLink, MailSearch, RefreshCw } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
@@ -51,44 +52,25 @@ function confidenceVariant(
 }
 
 export function OutreachContactCandidatesCard({ outletPartyId }: Props) {
-  const [data, setData] = useState<OutletContactExtraction | null>(null);
-  const [error, setError] = useState<unknown>(null);
-  const [loading, setLoading] = useState(true);
+  // Kept once per outlet per tab (the Board's remount law): a wake or remount reads nothing; a failed
+  // read is not kept. The checkbox selection is local work, reset only by a fresh answer.
+  const read = useCrmCardRead<OutletContactExtraction>(`crm.outlet-contacts:${outletPartyId}`, () =>
+    fetchOutletContactCandidates(outletPartyId),
+  );
+  const data: OutletContactExtraction | null = read.data ?? null;
+  const error = read.cause;
+  const loading = read.isLoading;
   const [savingKey, setSavingKey] = useState<string | null>(null);
-  const [selected, setSelected] = useState<SelectedByCandidate>({});
+  const [selected, setSelected] = useState<SelectedByCandidate>(() =>
+    initialSelection(read.data?.candidates ?? []),
+  );
+  const [seenData, setSeenData] = useState(read.data);
+  if (read.data !== seenData) {
+    setSeenData(read.data);
+    setSelected(initialSelection(read.data?.candidates ?? []));
+  }
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const next = await fetchOutletContactCandidates(outletPartyId);
-      setData(next);
-      setSelected(initialSelection(next.candidates ?? []));
-    } catch (cause) {
-      setError(cause);
-    } finally {
-      setLoading(false);
-    }
-  }, [outletPartyId]);
-
-  useEffect(() => {
-    let cancelled = false;
-    void fetchOutletContactCandidates(outletPartyId)
-      .then((next) => {
-        if (cancelled) return;
-        setData(next);
-        setSelected(initialSelection(next.candidates ?? []));
-      })
-      .catch((cause) => {
-        if (!cancelled) setError(cause);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [outletPartyId]);
+  const load = () => read.refresh();
 
   const candidates = useMemo(() => data?.candidates ?? [], [data]);
 

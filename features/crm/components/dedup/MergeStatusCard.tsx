@@ -14,7 +14,7 @@
 // THE DOOR LAW: every record named here opens.
 
 import { ReadFailure } from "@ai-matrx/design-system";
-import { useCallback, useEffect, useState } from "react";
+import { useCrmCardRead } from "../../hooks/useCrmCardRead";
 import Link from "next/link";
 import { AlertTriangle, GitMerge, Merge, Undo2 } from "lucide-react";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
@@ -39,31 +39,23 @@ export function MergeStatusCard({
   party: PartyRow;
   onChanged: () => void;
 }) {
-  const [candidates, setCandidates] = useState<MergeCandidateWithParties[]>([]);
-  const [merges, setMerges] = useState<PartyMergeWithParties[]>([]);
-  // A failed read is said, not rendered as "no duplicates, no merges"
-  // (RC-B12 r13) — the card used to vanish.
-  const [loadError, setLoadError] = useState<unknown>(null);
-
-  const reload = useCallback(async () => {
-    try {
-      const [cands, hist] = await Promise.all([
+  // Kept once per record per tab (the Board's remount law): a wake or remount reads nothing; a failed
+  // read is not kept and is said, never rendered as "no duplicates, no merges" (RC-B12 r13).
+  const read = useCrmCardRead<{ candidates: MergeCandidateWithParties[]; merges: PartyMergeWithParties[] }>(
+    `crm.merge-status:${party.id}`,
+    async () => {
+      const [candidates, merges] = await Promise.all([
         fetchCandidatesForParty(party.id),
         fetchMergesForParty(party.id),
       ]);
-      setCandidates(cands);
-      setMerges(hist);
-      setLoadError(null);
-    } catch (e) {
-      // Non-fatal on the record page — but said, never a missing card.
-      console.error("[crm] merge status load failed:", e);
-      setLoadError(e ?? new Error("The merge status read failed"));
-    }
-  }, [party.id]);
-
-  useEffect(() => {
-    void reload();
-  }, [reload]);
+      return { candidates, merges };
+    },
+  );
+  const candidates = read.data?.candidates ?? [];
+  const merges = read.data?.merges ?? [];
+  // Non-fatal on the record page — but said, never a missing card.
+  const loadError: unknown = read.cause;
+  const reload = () => read.refresh();
 
   const activeAsLoser = merges.find(
     (m) => m.loser_id === party.id && !m.unmerged_at,

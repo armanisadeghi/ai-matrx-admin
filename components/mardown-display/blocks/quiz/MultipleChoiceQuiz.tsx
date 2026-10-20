@@ -47,6 +47,7 @@ import type { OriginalQuestion, QuizState } from "./quiz-types";
 import {
   appendNewQuestions,
   initializeQuizState,
+  redealEditedQuiz,
   updateProgress,
   calculateResults,
   downloadQuizState,
@@ -309,7 +310,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
       // On a surface that can edit, a change that is not growth (an explanation, the right answer,
       // a removed or moved question) is the person editing the quiz itself: it starts a fresh session
       // on the edited quiz, since the old session answered different questions.
-      if (editable && quizWasEdited(prev.originalQuestions, parsedQuiz.questions)) return initializeQuizState(parsedQuiz.questions);
+      if (editable && quizWasEdited(prev.originalQuestions, parsedQuiz.questions)) return redealEditedQuiz(prev, parsedQuiz.questions);
       return appendNewQuestions(prev, parsedQuiz.questions);
     });
   }, [parsedQuiz, editable]);
@@ -775,6 +776,10 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
               isFullScreen={isFullScreen}
               onEdit={controls ? setQuestionEdit : undefined}
             />
+            {/* A question with no right answer says so (review 2026-10-19 #16) — never a silent quiz. */}
+            {currentQuestion.correctAnswerIndex < 0 && (
+              <p className="mt-1 text-xs text-muted-foreground" data-quiz-no-answer="">No right answer</p>
+            )}
             {controls && questionEdit && questionRowIndex >= 0 && (
               <InlineRowPopover
                 controls={controls}

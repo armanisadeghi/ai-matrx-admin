@@ -120,7 +120,17 @@ export function seedPlatform(): void {
   }));
   // @ai-matrx/chat's background dock (chat.conversation_background_facts: one row per conversation it is asked
   // about, none have background work) and its server look (`ues_touch`, a write the dock records once per point).
-  seedRpc("conversation_background_facts", []);
+  // An answered conversation is "readable"; an empty answer reads as a row the server does not have yet, which
+  // makes the dock probe again every few seconds (the wait it keeps for a brand-new chat).
+  seedRpc("conversation_background_facts", (args: unknown) =>
+    ((args as { p_conversation_ids?: string[] } | undefined)?.p_conversation_ids ?? []).map((id) => ({
+      conversation_id: id,
+      turn_status: null,
+      last_activity_at: "2026-09-30T19:00:00.000Z",
+      last_viewed_at: "2026-09-30T19:00:00.000Z",
+      runs: [],
+    })),
+  );
   seedRpc("ues_touch", null, "write");
   // platform.home_names — the names of the homes a note lives in (features/notes/homes/useNoteHomes.ts `HomeNameRow`).
   seedRpc("home_names", []);

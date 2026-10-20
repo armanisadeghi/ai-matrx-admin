@@ -25,6 +25,13 @@ export interface BaseSnapshotRow {
   origin: "manual" | "schedule";
   tables: BaseSnapshotRecord["tables"];
   created_at: string;
+  /** done | failed (FIX-SNAP3): a server job that stopped leaves a failed row with no tables and the sentence it stopped with. */
+  state?: "done" | "failed";
+  failure?: string | null;
+  /** The server job that made it (one snapshot per job; the job writes this row itself). */
+  job_id?: string | null;
+  /** The newest restore job of this snapshot (FIX-RESTORE): the job writes it; a failed one carries the sentence it stopped with. */
+  last_restore?: { job_id: string; state: "done" | "failed"; home_id?: string; base_id?: string; failure?: string; at?: string } | null;
 }
 
 export interface HomeTable {

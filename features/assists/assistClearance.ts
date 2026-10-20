@@ -201,8 +201,12 @@ export function applyAssistClearance(opts: { resting?: boolean } = {}): void {
 
 const INTERACTIVE =
   'button, a[href], input, select, textarea, label, summary, [role="switch"], [role="checkbox"], [role="radio"], [role="button"], [role="tab"], [role="menuitem"], [role="link"], [contenteditable="true"]';
-/** A list's row (table row, group header, card, list item carrying a row id): never a free spot. */
-const ROW = '[data-row-id], [data-matrx-table-group-row], tr, [role="row"]';
+/**
+ * A list's row (table row, group header, card, list item carrying a row id): never a free spot.
+ * A chat message (`data-message-id`) is a row of the transcript: the pill floated over the person's
+ * own message bubble, which is text, not a control (live 2026-10-19, "4 assists" on /chat).
+ */
+const ROW = '[data-row-id], [data-matrx-table-group-row], tr, [role="row"], [data-message-id]';
 const LIFT_VAR = "--assist-dock-lift";
 const YIELD_ATTR = "data-assist-dock-yield";
 /**

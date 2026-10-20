@@ -31,6 +31,8 @@ export interface ScopedTemplateKnobs {
   seedRowCap: number | null;
   previewRows: number | null;
   missing: string[];
+  /** True while the first read is in flight: a person is told it is being read, never that a limit is missing. */
+  loading: boolean;
 }
 
 function asInt(v: unknown): number | null {
@@ -54,5 +56,6 @@ export function useScopedTemplateKnobs(organizationId: string | null | undefined
     seedRowCap: seed && seed.origin !== "missing" ? asInt(seed.effective_value) : null,
     previewRows: preview && preview.origin !== "missing" ? asInt(preview.effective_value) : null,
     missing: Array.from(new Set(absent)),
+    loading: isLoading,
   };
 }

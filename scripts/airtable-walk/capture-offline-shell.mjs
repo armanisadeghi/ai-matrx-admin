@@ -11,7 +11,7 @@ const ctx = await browser.newContext({ viewport: { width: 375, height: 812 } });
 ctx.setDefaultNavigationTimeout(120000);
 const page = await ctx.newPage();
 const log = (...a) => console.log(...a);
-page.on("pageerror", (e) => log("  [pageerror]", String(e).slice(0, 300)));
+page.on("crash", () => log("  [CRASH]")); page.on("close", () => log("  [page closed]")); page.on("pageerror", (e) => log("  [pageerror]", String(e).slice(0, 300)));
 log("who", await walkSignIn(page, SIGN_IN_ORIGIN, { member: false }).catch((e) => "ERR " + e.message));
 await page.goto(`${ORIGIN}/capture/${SHEET}`, { waitUntil: "domcontentloaded" });
 await page.waitForSelector('[data-testid="capture-ask"]', { timeout: 120000 });

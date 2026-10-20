@@ -29,6 +29,9 @@ import { sessionStateNow } from "@/utils/supabase/sessionBarrier";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { withOrganizationRefusalShown } from "@ai-matrx/chat/host/org";
 import { associationsErrorSink } from "./errorSink";
+import { withRelationLabels } from "./relationLabelTitles";
+import { storeDoors } from "@ai-matrx/records/core";
+import { getActiveOrgId } from "@/lib/organizations/activeOrg";
 import { getAssociationsEntityOverlay } from "@/features/scopes/registry/entityRegistry";
 
 // D311 (2026-09-12): NOTHING here probes RPC existence, and nothing hides a
@@ -82,6 +85,10 @@ export function getAssociationsStore(): AssociationsStore {
       errorSink: associationsErrorSink,
       entityOverlay: getAssociationsEntityOverlay(),
     });
+    // ONE PATH THAT NAMES A LINKED THING: what the candidate search cannot title (a kind with no title column)
+    // is asked of platform.relation_label. Every consumer reads `store.titles`, so the wrap is made here, once.
+    const doors = storeDoors(supabase);
+    store.titles = withRelationLabels(store.titles, doors.entityReferenceWords, getActiveOrgId);
   }
   return store;
 }

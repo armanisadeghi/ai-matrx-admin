@@ -50,6 +50,7 @@ import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artif
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
 import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { convertProgressToTasks } from "@/features/tasks/utils/importConverters";
+import { CopySourceButton } from "../common/CopySourceButton";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
 import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
@@ -380,11 +381,32 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
       )}
 
       <div
-        className={`w-full ${isFullScreen ? "fixed inset-0 z-50 flex items-center justify-center p-4" : "py-6"}`}
+        className={`w-full ${isFullScreen ? "fixed inset-0 z-50 flex items-center justify-center p-4" : "my-3"}`}
       >
         <div
-          className={`@container max-w-6xl mx-auto ${isFullScreen ? "bg-textured rounded-2xl shadow-2xl h-full max-h-[95dvh] w-full flex flex-col overflow-hidden" : ""}`}
+          data-block-frame="progress_tracker"
+          className={`@container max-w-6xl mx-auto ${isFullScreen ? "bg-textured rounded-2xl shadow-2xl h-full max-h-[95dvh] w-full flex flex-col overflow-hidden" : `overflow-hidden rounded-lg border bg-card transition-colors ${host.selected ? "border-primary" : "border-border"}`}`}
         >
+          {/* The block's one header: title left, actions right (Controls, "</>" and Copy come from the shared slot) */}
+          {!isFullScreen && (
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
+              <div className="flex min-w-[9rem] flex-1 items-center gap-2">
+                <BarChart3 className="h-3.5 w-3.5 shrink-0 text-primary" />
+                <InlineControlText controls={controls} fieldKey="title" value={tracker.title} className="truncate text-sm font-medium text-foreground">
+                  {tracker.title}
+                </InlineControlText>
+              </div>
+              <div className="flex shrink-0 items-center gap-0.5">
+                <Button variant="quiet" icon={<Upload />} aria-label="Import to Tasks" title="Import to Tasks" onClick={() => setIsImportModalOpen(true)} />
+                <Button variant="quiet" icon={<ArrowUpRight />} aria-label="Canvas" title="Canvas" onClick={handleOpenCanvas} />
+                <Button variant="quiet" icon={<Printer />} aria-label="Print" title="Print" onClick={handlePrint} />
+                <Button variant="quiet" icon={<Maximize2 />} aria-label="Focus" title="Focus" onClick={() => setIsFullScreen(true)} />
+                <CopySourceButton source={source} />
+                <BlockControlsButton controls={controls} title="Progress controls" />
+                {host.actions}
+              </div>
+            </div>
+          )}
           {/* Fullscreen Header */}
           {isFullScreen && (
             <div className="flex-shrink-0 px-6 py-4 border-b border-border flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
@@ -404,18 +426,23 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
           <div className={isFullScreen ? "flex-1 overflow-y-auto" : ""}>
             <div className="p-4 sm:p-6 space-y-6">
               {/* Header Section */}
-              <div className="bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-purple-950/40 rounded-2xl p-4 sm:p-6 shadow-lg border-2 border-blue-200 dark:border-blue-800/50">
+              <div className="bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-purple-950/40 rounded-xl p-4 sm:p-6">
+                {(isFullScreen || tracker.description) && (
                 <div className="flex flex-col gap-4 mb-6 @4xl:flex-row @4xl:items-start @4xl:justify-between">
                   <div className="flex items-start gap-4">
-                    <div className="p-3 bg-blue-500 dark:bg-blue-600 rounded-xl shadow-md">
-                      <BarChart3 className="h-8 w-8 text-white" />
-                    </div>
+                    {isFullScreen && (
+                      <div className="p-3 bg-blue-500 dark:bg-blue-600 rounded-xl shadow-md">
+                        <BarChart3 className="h-8 w-8 text-white" />
+                      </div>
+                    )}
                     <div className="flex-1">
-                      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                        <InlineControlText controls={controls} fieldKey="title" value={tracker.title}>
-                          {tracker.title}
-                        </InlineControlText>
-                      </h1>
+                      {isFullScreen && (
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                          <InlineControlText controls={controls} fieldKey="title" value={tracker.title}>
+                            {tracker.title}
+                          </InlineControlText>
+                        </h1>
+                      )}
                       {tracker.description && (
                         <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                           {tracker.description}
@@ -423,26 +450,8 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
                       )}
                     </div>
                   </div>
-
-                  {!isFullScreen && (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button variant="success" icon={<Upload />} onClick={() => setIsImportModalOpen(true)}>
-                        <span>Import to Tasks</span>
-                      </Button>
-                      <Button variant="quiet" icon={<ArrowUpRight />} onClick={handleOpenCanvas}>
-                        <span>Canvas</span>
-                      </Button>
-                      <Button variant="quiet" icon={<Printer />} onClick={handlePrint}>
-                        <span>Print</span>
-                      </Button>
-                      <Button variant="quiet" icon={<Maximize2 />} onClick={() => setIsFullScreen(true)}>
-                        <span>Focus</span>
-                      </Button>
-                      <BlockControlsButton controls={controls} title="Progress controls" />
-                      {host.actions}
-                    </div>
-                  )}
                 </div>
+                )}
 
                 {/* Overall Progress */}
                 <div className="mb-6">

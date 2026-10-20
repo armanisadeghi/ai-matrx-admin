@@ -23,6 +23,7 @@ export function HeldArchiveLine({ source, held, was, busy, onArchive, onKeep }: 
     <div data-held-archive="">
       <PromoBanner
         tone="warning"
+        wrap
         icon={<Archive className="h-4 w-4" aria-hidden />}
         title={heldSentence(source, held, was)}
         aria-label="Rows no longer listed"

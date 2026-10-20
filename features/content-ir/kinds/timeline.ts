@@ -22,8 +22,8 @@
  * authority), never invented:
  * - set `title` falls back to "Timeline" (parser: `title || 'Timeline'`).
  * - event `date` falls back to "TBD" (parser: `eventDate || 'TBD'`).
- * - event `description` falls back to the event title (parser:
- *   `descriptionLines.join(' ') || eventTitle`).
+ * - event `description` is empty when none was written (parser: no
+ *   description lines → ""; review 2026-10-19 #14 — never the title again).
  * - event `id` is synthesized as `${period}-${index}` when absent (the
  *   parser's exact id scheme — the component keys progress tracking on it).
  * - `status` normalizes "in progress"/"in_progress" → "in-progress" (the
@@ -148,7 +148,7 @@ function mapEvent(
     id: nonEmptyString(event.id) ?? `${periodName}-${index}`,
     title,
     date: nonEmptyString(event.date) ?? "TBD",
-    description: nonEmptyString(event.description) ?? title,
+    description: nonEmptyString(event.description) ?? "",
   };
 
   const status = normalizeStatus(event.status);

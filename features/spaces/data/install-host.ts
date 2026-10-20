@@ -42,6 +42,15 @@ export async function runHostSteps(answer: TemplateDoorAnswer, orgId: string, di
   if (!result.ok) throw new Error(`${what} was not made: ${result.why}`);
 }
 
+/**
+ * TEMPLATE-INSTALL-3: tell the install the root page it made (`custom.template_install_note`, kind `page`), so Remove moves the page and its
+ * sub-pages to Trash and Restore brings them back. Noting the same page twice is one record.
+ */
+export async function noteTemplatePage(orgId: string, installId: string, root: { id: string; title?: string | null }): Promise<void> {
+  const { error } = await storeDoors(createClient()).templateInstallNote({ organizationId: orgId, installId, kind: "page", id: root.id, label: root.title || "Untitled" });
+  if (error) throw new Error(`We couldn't record the template's page: ${error.message}`);
+}
+
 /** What an upgrade did, in words: "1 table, 1 field converted, 1 field retired, 1 view, 4 rows, 4 links". */
 export function upgradeCountsText(counts: Record<string, number> | undefined): string {
   const words: Record<string, [string, string]> = {

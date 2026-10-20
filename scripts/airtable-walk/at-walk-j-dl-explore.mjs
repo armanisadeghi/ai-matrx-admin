@@ -1,0 +1,10 @@
+import { open, gotoTable, say } from "./at-walk-h-lib.mjs";
+const { browser, page, who, shot } = await open(false);
+await gotoTable(page, process.env.TABLE);
+await page.getByText(/^Qty$/i).first().click(); await page.waitForTimeout(5000);
+await page.getByRole("button", { name: "Table menu" }).first().click();
+await page.waitForTimeout(800); await shot("j1-tm");
+say("items", await page.$$eval("[role=menuitem]", (els) => els.map((e) => e.innerText.trim().slice(0, 30))));
+await page.getByText(/^Export/).first().click().catch((e) => say("noexp", e.message.slice(0,60)));
+await page.waitForTimeout(1500); await shot("j1-tm2");
+await browser.close();
