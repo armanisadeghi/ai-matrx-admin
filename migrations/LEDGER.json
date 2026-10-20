@@ -9662,6 +9662,12 @@
       "checksum": "e3d4e866a8f245d1b0ee23f0956d683a5476d41fc9fa04c7ddb6b515476dcefb",
       "applied_at": "2026-09-26 02:36:07.405543+00"
     },
+    "migrations/campaign/tablecreatespeed_b_the_outbox_insert_plans_one_partition.sql": {
+      "source": "matrx-frontend",
+      "filename": "tablecreatespeed_b_the_outbox_insert_plans_one_partition.sql",
+      "checksum": "ca60d51b8468cf409debfb0f20285dad95bf471dd4eef87722941fad407217df",
+      "applied_at": "2026-10-20 02:10:27.19771+00"
+    },
     "migrations/campaign/tabledelete_a_retirement_is_not_a_change_of_shape.sql": {
       "source": "matrx-frontend",
       "filename": "tabledelete_a_retirement_is_not_a_change_of_shape.sql",
