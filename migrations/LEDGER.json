@@ -11749,6 +11749,12 @@
       "filename": "20261020010000_atfixh3_b_a_restored_automations_schedule_waits_for_the_switch.sql",
       "checksum": "148341dd109509584098a13c28bf51be756d8d58cfbe2ae743dc5b4ecfea2aeb",
       "applied_at": "2026-10-20 01:23:51.192378+00"
+    },
+    "migrations/campaign/20261022240000_readspeed6_a_a_column_write_holds_only_the_tables_it_feeds.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261022240000_readspeed6_a_a_column_write_holds_only_the_tables_it_feeds.sql",
+      "checksum": "0f53280235f9071d301499fadac1fc00fd4e74286b765d0659d29a7357a70be2",
+      "applied_at": "2026-10-20 01:30:34.133705+00"
     }
   }
 }
