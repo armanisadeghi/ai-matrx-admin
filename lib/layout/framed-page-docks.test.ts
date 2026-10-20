@@ -35,6 +35,17 @@ describe("a framed page's docks", () => {
     expect(rule).toMatch(/inset:\s*auto\s*!important/);
   });
 
+  it("in a frame the dock is in flow, so it is solid: every glass token is re-declared opaque", () => {
+    const rule = /html\[data-board-embed\]\s+\.flex-col\s*>\s*\[data-matrx-page-dock\]\s*\{([^}]*)\}/.exec(SHELL_CSS)?.[1] ?? "";
+    // Every leaf glass token the app declares (app/globals.css) must be overridden, or some glass survives.
+    const declared = new Set(read("app/globals.css").match(/--matrx-glass-[a-z-]+(?=:)/g) ?? []);
+    expect(declared.size).toBeGreaterThan(5);
+    for (const token of declared) expect(rule).toMatch(new RegExp(`${token}:`));
+    expect(rule).toMatch(/--matrx-glass-bg:\s*hsl\(var\(--card\)\)/);
+    expect(rule).toMatch(/--matrx-glass-blur:\s*0px/);
+    expect(rule).not.toMatch(/--matrx-glass-bg:\s*rgba/);
+  });
+
   it("every phone dock declares itself a page dock (census over features/, components/, app/)", () => {
     const offenders: string[] = [];
     for (const top of ["features", "components", "app"]) {
