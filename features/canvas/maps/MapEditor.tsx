@@ -38,6 +38,9 @@ import { getMap, saveMap } from "./service";
 
 const AUTOSAVE_DELAY_MS = 1200;
 
+/** The maps this tab has opened, by id: the latest document, kept across wake and remount of whatever hosts the editor. */
+const keptMaps = new Map<string, DiagramData>();
+
 type SaveState = "idle" | "pending" | "saving" | "saved" | "error";
 
 export function MapEditor({
@@ -54,7 +57,7 @@ export function MapEditor({
   /** Embedded: the map's name as it loads and changes, so the tile can carry it. */
   onTitle?: (title: string) => void;
 }) {
-  const [diagram, setDiagram] = useState<DiagramData | null>(null);
+  const [diagram, setDiagram] = useState<DiagramData | null>(() => keptMaps.get(mapId) ?? null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [selection, setSelection] = useState<MapSurfaceSelection>({
@@ -75,6 +78,13 @@ export function MapEditor({
 
   useEffect(() => {
     let cancelled = false;
+    // A map this tab already opened is shown from the copy kept here: waking or remounting a board tile reads
+    // nothing, and the read that stamps `last_accessed_at` happens once per open of the map in this tab.
+    const kept = keptMaps.get(mapId);
+    if (kept) {
+      latest.current = kept;
+      return undefined;
+    }
     void (async () => {
       const { diagram: loaded, error } = await getMap(mapId);
       if (cancelled) return;
@@ -82,6 +92,7 @@ export function MapEditor({
         setLoadError(error ?? "That map could not be opened.");
         return;
       }
+      keptMaps.set(mapId, loaded);
       setDiagram(loaded);
       latest.current = loaded;
     })();
@@ -107,6 +118,7 @@ export function MapEditor({
   const handleChange = useCallback(
     (next: DiagramData) => {
       latest.current = next;
+      keptMaps.set(mapId, next);
       setDiagram(next);
       setSaveState("pending");
       if (timer.current) clearTimeout(timer.current);
@@ -114,7 +126,7 @@ export function MapEditor({
         void flush();
       }, AUTOSAVE_DELAY_MS);
     },
-    [flush],
+    [flush, mapId],
   );
 
   // Never let a pending edit die with the page.
