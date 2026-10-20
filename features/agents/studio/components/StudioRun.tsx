@@ -14,7 +14,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { CircleAlert } from "lucide-react";
+import { ErrorNotice } from "@ai-matrx/design-system";
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { AgentRunner } from "@ai-matrx/chat/agents/components/smart/AgentRunner";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
@@ -207,10 +207,13 @@ export function StudioRun({
 
   if (error) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
-        <CircleAlert className="h-5 w-5 text-destructive" aria-hidden />
-        <p className="text-sm text-foreground">This chat could not start.</p>
-        <p className="text-xs text-muted-foreground">{error}</p>
+      <div className="flex h-full flex-col items-center justify-center px-6">
+        <ErrorNotice
+          size="compact"
+          title="This chat could not start"
+          message={error}
+          operation="Start the Studio chat"
+        />
       </div>
     );
   }
