@@ -65,6 +65,7 @@ import {
   type ResultKindBlockProps,
 } from "./result-kind-shared";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import TreeBlock from "@ai-matrx/rich-content/display/blocks/tree/TreeBlock";
 
 /** Where the path lives, in the priority these kinds carry one. */
 const PATH_KEYS = [
@@ -259,9 +260,15 @@ const FileOperationResultBlock: React.FC<ResultKindBlockProps> = ({
         ) : null}
       </ChipRow>
 
-      {body !== null ? (
+      {/* A directory tree is drawn by the one tree renderer (rails, depth
+          colour, wrap that keeps the rails) — never as a raw <pre>. */}
+      {body !== null && bodyKey === "tree" ? (
+        <div className="max-h-96 min-w-0 overflow-auto">
+          <TreeBlock content={body} className="my-0" />
+        </div>
+      ) : body !== null ? (
         <Section
-          label={bodyKey === "tree" ? "Tree" : "Contents"}
+          label="Contents"
           trailing={<CopyValueButton text={body} what="contents" />}
         >
           <pre className="max-h-96 min-w-0 overflow-auto rounded-md border border-border bg-card p-3 font-mono text-xs leading-relaxed text-foreground">
