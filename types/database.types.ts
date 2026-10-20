@@ -36700,6 +36700,24 @@ export type Database = {
         }
         Relationships: []
       }
+      access_version_event: {
+        Row: {
+          at: string
+          organization_id: string
+          seq: number
+        }
+        Insert: {
+          at?: string
+          organization_id: string
+          seq?: never
+        }
+        Update: {
+          at?: string
+          organization_id?: string
+          seq?: never
+        }
+        Relationships: []
+      }
       agent_table_origin: {
         Row: {
           conversation_id: string | null
@@ -41157,6 +41175,7 @@ export type Database = {
     }
     Functions: {
       _access_version_bump: { Args: { p_org: string }; Returns: undefined }
+      _access_version_fold: { Args: { p_org: string }; Returns: undefined }
       _access_versions: { Args: { p_org: string }; Returns: number[] }
       _action_check: {
         Args: { p_actions: Json; p_organization_id: string; p_table_id: string }
@@ -41766,6 +41785,10 @@ export type Database = {
       _ctx_value_write_store: { Args: { p_payload: Json }; Returns: Json }
       _ctx_word: { Args: { p_map: string; p_word: string }; Returns: string }
       _ctx_words: { Args: { p_multi: boolean; p_v: Json }; Returns: Json }
+      _day_zone_uncached: {
+        Args: { p_me: string; p_organization_id: string }
+        Returns: string
+      }
       _decoration_field_ok: {
         Args: { p_field: string; p_organization_id: string; p_table_id: string }
         Returns: boolean
@@ -41845,6 +41868,19 @@ export type Database = {
         Returns: Json
       }
       _entity_decoded: { Args: { p_text: string }; Returns: string }
+      _entity_reference_allowed: {
+        Args: { p_ids: string[]; p_organization_id: string; p_token: string }
+        Returns: string[]
+      }
+      _entity_reference_allowed_for: {
+        Args: {
+          p_ids: string[]
+          p_organization_id: string
+          p_person: string
+          p_token: string
+        }
+        Returns: string[]
+      }
       _entity_reference_fallback_label: {
         Args: { p_created: string; p_id: string; p_kind_label: string }
         Returns: string
@@ -41863,6 +41899,20 @@ export type Database = {
         }
         Returns: {
           id: string
+          title: string
+        }[]
+      }
+      _entity_reference_pass: {
+        Args: {
+          p_ids: string[]
+          p_organization_id: string
+          p_titles: string[]
+          p_token: string
+          p_want: number
+        }
+        Returns: {
+          id: string
+          ord: number
           title: string
         }[]
       }
@@ -41900,6 +41950,13 @@ export type Database = {
       _field_document_for: {
         Args: { p_organization_id: string; p_spec: Json; p_table_id: string }
         Returns: Json
+      }
+      _field_inputs_step: {
+        Args: { p_field_data: Json; p_organization_id: string }
+        Returns: {
+          input_id: string
+          retired: boolean
+        }[]
       }
       _field_kind_shape_ok: {
         Args: { d: Json; p_label: string }
@@ -42203,6 +42260,19 @@ export type Database = {
       _may_know_table: {
         Args: { p_organization_id: string; p_table_id: string }
         Returns: boolean
+      }
+      _may_touch_fields: {
+        Args: {
+          p_action?: string
+          p_field_ids: string[]
+          p_level_on_record: Database["public"]["Enums"]["permission_level"]
+          p_organization_id: string
+          p_user_id: string
+        }
+        Returns: {
+          field_id: string
+          ok: boolean
+        }[]
       }
       _memo_put_bool: {
         Args: { p_key: string; p_value: boolean }
@@ -45373,6 +45443,15 @@ export type Database = {
           sensitivity: string
         }[]
       }
+      field_input_closure_many: {
+        Args: { p_ids: string[]; p_organization_id: string }
+        Returns: {
+          depth: number
+          input_id: string
+          retired: boolean
+          root_id: string
+        }[]
+      }
       field_inputs_of: {
         Args: { p_field_data: Json; p_organization_id: string }
         Returns: {
@@ -48357,6 +48436,15 @@ export type Database = {
         }
         Returns: string
       }
+      rule_filter_skip_withheld: {
+        Args: {
+          p_node: Json
+          p_organization_id: string
+          p_table_id: string
+          p_visible: string[]
+        }
+        Returns: Json
+      }
       rule_is_me:
         | { Args: { p_a: Json; p_op: string }; Returns: Json }
         | {
@@ -48972,6 +49060,10 @@ export type Database = {
         Args: { p_organization_id: string; p_spec: Json }
         Returns: Json
       }
+      table_create: {
+        Args: { p_fields: Json; p_organization_id: string; p_spec: Json }
+        Returns: Json
+      }
       table_declare: {
         Args: { p_organization_id: string; p_spec: Json }
         Returns: string
@@ -49471,6 +49563,10 @@ export type Database = {
           p_label?: string
           p_organization_id: string
         }
+        Returns: Json
+      }
+      template_instance_of_page: {
+        Args: { p_organization_id: string; p_page_id: string }
         Returns: Json
       }
       template_instances: {
@@ -88819,6 +88915,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: Database["public"]["Enums"]["permission_level"]
+      }
+      grant_in_force: {
+        Args: { p_expires_at: string; p_status: string }
+        Returns: boolean
       }
       grant_path_blanket_refusals: {
         Args: never
