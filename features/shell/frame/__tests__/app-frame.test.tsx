@@ -7,7 +7,12 @@
  *   4. no footer in the phone form;
  *   5. the drawer: focus moves in, Tab stays inside, Esc closes, focus returns to the opener;
  *   6. the app grid: one Tab stop for the whole grid (roving tabindex), arrows move inside;
- *   7. medium form: the properties panel and the companion are never shown together.
+ *   7. medium form: the properties panel and the side chat are never shown together;
+ *   8. the side chat and the canvas load only when first engaged (their loaders are never called
+ *      on render), the canvas stays mounted once loaded, and the ask bar hands its text over;
+ *   9. a page gets no say over the frame's look: no exported props type takes className or style;
+ *  10. the side chat is closed by default and remembered per page; a link wins until the person acts;
+ *  11. headers have no bottom rule; every menu or popover trigger carries the right chevron.
  *
  * PROVEN FAILING BEFORE PASSING (2026-10-18): removing the Tab wrap in useModalPanel's
  * onKeyDown turned case 5 RED; giving every tile tabIndex 0 in AppGrid turned case 6 RED.
@@ -17,7 +22,15 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createRoot, type Root } from "react-dom/client";
 import { Search } from "lucide-react";
-import { AppFrame, type AppFrameProps } from "../AppFrame";
+import { readdirSync } from "node:fs";
+import {
+  AppFrame,
+  canvasWidthFor,
+  companionOpenKey,
+  formFor,
+  type AppFrameProps,
+} from "../AppFrame";
+import type { CanvasProps, CompanionProps } from "../types";
 import { PRODUCTS, PRODUCT_FAMILIES } from "../products";
 import type { FrameVariant } from "../types";
 
@@ -132,7 +145,7 @@ describe("forms", () => {
     mount(base({ form: "medium", properties: <p>Props</p> }));
     const props = () => q('aside[aria-label="Properties"]');
     expect(props()).not.toBeNull();
-    const agent = [...frame().querySelectorAll("footer button")].find((b) => b.textContent?.includes("Agent"))!;
+    const agent = [...frame().querySelectorAll("footer button")].find((b) => b.textContent?.includes("Side chat"))!;
     act(() => (agent as HTMLButtonElement).click());
     expect(props()).toBeNull();
     // The person can switch back: the Properties toggle closes the companion.
@@ -205,3 +218,181 @@ describe("the app grid is one Tab stop", () => {
   });
 });
 
+
+// ── round 4 ──
+
+const flush = () => act(async () => {
+  await Promise.resolve();
+  await new Promise((r) => setTimeout(r, 0));
+});
+
+function footerButton(text: string) {
+  return [...frame().querySelectorAll<HTMLButtonElement>("footer button")].find((b) =>
+    b.textContent?.includes(text),
+  )!;
+}
+
+function TestCompanion({ companionSeed }: CompanionProps) {
+  return <div data-testid="loaded-companion">{companionSeed ? `seed:${companionSeed.text}` : "empty"}</div>;
+}
+function TestCanvas(_: CanvasProps) {
+  const [n, setN] = React.useState(0);
+  return (
+    <button type="button" data-testid="loaded-canvas" onClick={() => setN(n + 1)}>
+      count {n}
+    </button>
+  );
+}
+
+describe("the widths", () => {
+  it("forms by frame width: phone < 640 ≤ medium < 1280 ≤ desktop < 1600 ≤ wide", () => {
+    expect([375, 639, 640, 1279, 1280, 1599, 1600, 2560].map(formFor)).toEqual([
+      "phone",
+      "phone",
+      "medium",
+      "medium",
+      "desktop",
+      "desktop",
+      "wide",
+      "wide",
+    ]);
+  });
+  it("the inline canvas is 34% of the sheet, between 440 and 960", () => {
+    expect(canvasWidthFor(1000)).toBe(440);
+    expect(canvasWidthFor(1660)).toBe(564);
+    expect(canvasWidthFor(4000)).toBe(960);
+  });
+});
+
+describe("the side chat loads only when engaged", () => {
+  it("its loader is not called on render, is called once on the first open, never again", async () => {
+    localStorage.clear();
+    const loader = jest.fn(() => Promise.resolve({ default: TestCompanion }));
+    mount(base({ form: "desktop", loadCompanion: loader }));
+    await flush();
+    expect(loader).not.toHaveBeenCalled();
+    expect(q('[data-testid="loaded-companion"]')).toBeNull();
+    act(() => footerButton("Side chat").click());
+    await flush();
+    expect(loader).toHaveBeenCalledTimes(1);
+    expect(q('[data-testid="loaded-companion"]')).not.toBeNull();
+    act(() => footerButton("Side chat").click());
+    act(() => footerButton("Side chat").click());
+    await flush();
+    expect(loader).toHaveBeenCalledTimes(1);
+  });
+
+  it("the ask bar is a plain input: sending opens the side chat and delivers the text", async () => {
+    localStorage.clear();
+    const loader = jest.fn(() => Promise.resolve({ default: TestCompanion }));
+    mount(base({ form: "desktop", askBar: true, loadCompanion: loader }));
+    await flush();
+    expect(loader).not.toHaveBeenCalled();
+    const input = q<HTMLInputElement>('input[aria-label="Ask about this page"]')!;
+    expect(input).not.toBeNull();
+    act(() => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "What is due?");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    act(() => input.form!.requestSubmit());
+    await flush();
+    expect(loader).toHaveBeenCalledTimes(1);
+    expect(q('[data-testid="loaded-companion"]')!.textContent).toBe("seed:What is due?");
+    expect(footerButton("Side chat").getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("is closed by default, remembered per page, and a link wins until the person acts", async () => {
+    localStorage.clear();
+    mount(base({ form: "desktop", pageKey: "a" }));
+    await flush();
+    expect(footerButton("Side chat").getAttribute("aria-pressed")).toBe("false");
+    act(() => footerButton("Side chat").click());
+    expect(localStorage.getItem(companionOpenKey("a"))).toBe("open");
+    act(() => root.unmount());
+    mount(base({ form: "desktop", pageKey: "b" }));
+    await flush();
+    expect(footerButton("Side chat").getAttribute("aria-pressed")).toBe("false");
+    act(() => root.unmount());
+    mount(base({ form: "desktop", pageKey: "a" }));
+    await flush();
+    expect(footerButton("Side chat").getAttribute("aria-pressed")).toBe("true");
+    act(() => root.unmount());
+    mount(base({ form: "desktop", pageKey: "a", companionLink: false }));
+    await flush();
+    expect(footerButton("Side chat").getAttribute("aria-pressed")).toBe("false");
+  });
+});
+
+describe("the canvas loads only when engaged and then stays mounted", () => {
+  it("not called on render; called once on open; its state survives close and reopen", async () => {
+    const loader = jest.fn(() => Promise.resolve({ default: TestCanvas }));
+    mount(base({ form: "wide", loadCanvas: loader }));
+    await flush();
+    expect(loader).not.toHaveBeenCalled();
+    const toggle = q<HTMLButtonElement>('header [aria-label="Canvas"]')!;
+    act(() => toggle.click());
+    await flush();
+    expect(loader).toHaveBeenCalledTimes(1);
+    act(() => q<HTMLButtonElement>('[data-testid="loaded-canvas"]')!.click());
+    expect(q('[data-testid="loaded-canvas"]')!.textContent).toBe("count 1");
+    act(() => toggle.click());
+    expect(q('[data-mf-region="canvas"]')!.hasAttribute("inert")).toBe(true);
+    act(() => toggle.click());
+    await flush();
+    expect(q('[data-testid="loaded-canvas"]')!.textContent).toBe("count 1");
+    expect(loader).toHaveBeenCalledTimes(1);
+  });
+
+  it("below the wide form the canvas and the side chat take turns", async () => {
+    mount(base({ form: "desktop" }));
+    act(() => footerButton("Side chat").click());
+    act(() => q<HTMLButtonElement>('header [aria-label="Canvas"]')!.click());
+    expect(footerButton("Side chat").getAttribute("aria-pressed")).toBe("false");
+    act(() => footerButton("Side chat").click());
+    expect(q('header [aria-label="Canvas"]')!.getAttribute("aria-pressed")).toBe("false");
+  });
+});
+
+describe("ours vs the page's", () => {
+  it("no exported props type of the frame takes className or style", () => {
+    const dir = join(__dirname, "..");
+    const offenders: string[] = [];
+    let seen = 0;
+    for (const file of readdirSync(dir).filter((f) => /\.tsx?$/.test(f))) {
+      const src = readFileSync(join(dir, file), "utf8");
+      const re = /export\s+interface\s+(\w+(?:Props|Proposal)?)\b[^{]*\{/g;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(src))) {
+        if (!/Props$/.test(m[1])) continue;
+        seen += 1;
+        let depth = 1;
+        let i = re.lastIndex;
+        while (depth > 0 && i < src.length) {
+          if (src[i] === "{") depth += 1;
+          else if (src[i] === "}") depth -= 1;
+          i += 1;
+        }
+        const body = src.slice(re.lastIndex, i);
+        if (/^\s*(className|style)\??\s*:/m.test(body)) offenders.push(`${file}: ${m[1]}`);
+      }
+    }
+    expect(seen).toBeGreaterThanOrEqual(5);
+    expect(offenders).toEqual([]);
+  });
+
+  it("every region says whose it is", () => {
+    mount(base({ form: "desktop", askBar: true, properties: <p>Props</p> }));
+    const owner = (region: string) => q(`[data-mf-region="${region}"]`)?.getAttribute("data-mf-owner");
+    expect(["sidebar", "header", "side-chat", "canvas", "footer", "ask-bar"].map(owner)).toEqual(
+      Array(6).fill("frame"),
+    );
+    expect(["body", "status", "properties"].map(owner)).toEqual(["page", "page", "page"]);
+  });
+
+  it("headers have no bottom rule; menu and popover triggers carry the right chevron", () => {
+    mount(base({ form: "desktop", sidebarOpen: false }));
+    expect(q("header")!.className).not.toContain("mf-rule-b");
+    expect(q('header [aria-label="More actions"] svg.lucide-chevron-right')).not.toBeNull();
+    expect(q('header [aria-label="All products"] svg.lucide-chevron-right')).not.toBeNull();
+  });
+});

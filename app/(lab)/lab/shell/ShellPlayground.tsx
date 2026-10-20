@@ -1,11 +1,13 @@
 "use client";
 
 // THE NEW APP FRAME — playground. The toolbar sits OUTSIDE the frame and
-// switches product, variant, theme and width. Everything inside is static
-// sample content.
-import { useEffect, useState } from "react";
+// switches product, variant, theme and width, outlines what is the frame's and
+// what is the page's, and shows which heavy modules have loaded. Everything
+// inside is static sample content.
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Check } from "lucide-react";
-import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { Button, SegmentedControl } from "@ai-matrx/design-system/controls";
+import { readSideChatLink, sideChatAddress } from "@ai-matrx/chat/canvas/workspace/side-chat-address";
 import { AppFrame } from "@/features/shell/frame/AppFrame";
 import { PRODUCTS, PRODUCT_FAMILIES, productById } from "@/features/shell/frame/products";
 import { defaultPageActions, placeholderHeaderTools } from "@/features/shell/frame/SheetHeader";
@@ -22,12 +24,40 @@ import {
 } from "./samples";
 
 type SampleId = "crm" | "docs" | "chat";
-type Width = "1440" | "1280" | "1024" | "375";
+type Width = "fit" | "2560" | "1920" | "1440" | "1280" | "1024" | "375";
 type Theme = "light" | "dark";
 
 const SAMPLE_IDS: readonly SampleId[] = ["chat", "crm", "docs"];
 const DEFAULT_VARIANT: Record<SampleId, FrameVariant> = { crm: "list", docs: "record", chat: "light" };
 const DEFAULT_ITEM: Record<SampleId, string> = { crm: "people", docs: "documents", chat: "c-1" };
+
+// ── playground info: which frame modules have loaded (fed by the loaders themselves) ──
+let loadedModules: readonly string[] = [];
+const loadedListeners = new Set<() => void>();
+function markLoaded(name: string) {
+  if (loadedModules.includes(name)) return;
+  loadedModules = [...loadedModules, name];
+  loadedListeners.forEach((l) => l());
+}
+function useLoadedModules() {
+  return useSyncExternalStore(
+    (l) => {
+      loadedListeners.add(l);
+      return () => loadedListeners.delete(l);
+    },
+    () => loadedModules,
+    () => loadedModules,
+  );
+}
+// Stable loaders (module scope): the frame calls each one only when the person first opens it.
+const loadSampleCompanion = () => {
+  markLoaded("Agent");
+  return import("./SampleCompanion");
+};
+const loadSampleCanvas = () => {
+  markLoaded("Canvas");
+  return import("./SampleCanvas");
+};
 
 function isSample(id: string): id is SampleId {
   return (SAMPLE_IDS as readonly string[]).includes(id);
@@ -54,7 +84,14 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
   const [variant, setVariant] = useState<FrameVariant>(isSample(startProduct) ? DEFAULT_VARIANT[startProduct] : "workspace");
   const [itemId, setItemId] = useState<string | null>(initialItem ?? null);
   const [theme, setTheme] = useState<Theme>("light");
-  const [width, setWidth] = useState<Width>("1440");
+  const [width, setWidth] = useState<Width>("fit");
+  const [showOwner, setShowOwner] = useState(false);
+  const loaded = useLoadedModules();
+  // The side chat's link contract (side_chat=open|closed…): the link wins for this visit.
+  const [sideChatLink, setSideChatLink] = useState<boolean | null>(null);
+  useEffect(() => {
+    setSideChatLink(readSideChatLink(window.location.search)?.open ?? null);
+  }, []);
   const [favorites, setFavorites] = useState<string[]>(["chat", "crm", "docs"]);
   const [contactId, setContactId] = useState<string | null>(null);
   const [view, setView] = useState("all");
@@ -204,7 +241,9 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
       setStarred((keys) => (keys.includes(pageKey) ? keys.filter((k) => k !== pageKey) : [...keys, pageKey])),
   };
 
-  const stageWidth = Number(width);
+  const fit = width === "fit";
+  // The notes-like page (a Docs document) shows the faint ask bar; the others do not.
+  const askBar = productId === "docs" && variant !== "list";
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-textured">
@@ -246,21 +285,46 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
           value={width}
           onValueChange={setWidth}
           data={[
+            { value: "fit", label: "Fit" },
+            { value: "2560", label: "2560" },
+            { value: "1920", label: "1920" },
             { value: "1440", label: "1440" },
             { value: "1280", label: "1280" },
             { value: "1024", label: "1024" },
             { value: "375", label: "375" },
           ]}
         />
-        <span className="type-meta ml-auto text-muted-foreground">Static sample content</span>
+        <Button
+          variant={showOwner ? "outline" : "quiet"}
+          aria-pressed={showOwner}
+          onClick={() => setShowOwner(!showOwner)}
+        >
+          Show what&apos;s ours
+        </Button>
+        {showOwner ? (
+          <span className="type-meta flex items-center gap-3 text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <span aria-hidden className="size-2.5 rounded-sm border-2 border-dashed border-primary" />
+              Frame
+            </span>
+            <span className="flex items-center gap-1">
+              <span aria-hidden className="size-2.5 rounded-sm border-2 border-dashed border-success" />
+              Page
+            </span>
+          </span>
+        ) : null}
+        <span className="type-meta ml-auto text-muted-foreground" data-testid="modules-loaded">
+          Playground info · loaded: {loaded.length > 0 ? loaded.join(", ") : "none"}
+        </span>
       </div>
 
       {/* The stage: the frame at the chosen width. */}
-      <div className="min-h-0 flex-1 overflow-auto p-4">
+      <div className={fit ? "min-h-0 flex-1 overflow-hidden" : "min-h-0 flex-1 overflow-auto p-4"}>
         <div
           data-testid="frame-stage"
-          className="mx-auto overflow-hidden rounded-md outline outline-1 outline-border"
-          style={{ width: stageWidth, height: phone ? 760 : "100%", minHeight: 560 }}
+          data-mf-show-owner={showOwner ? "" : undefined}
+          className={fit ? "h-full w-full" : "mx-auto overflow-hidden rounded-md outline outline-1 outline-border"}
+          style={fit ? undefined : { width: Number(width), height: phone ? 760 : "100%", minHeight: 560 }}
         >
           <AppFrame
             products={LAB_PRODUCTS}
@@ -281,6 +345,15 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             tabs={tabs}
             variant={variant}
             properties={variant === "record" ? properties : undefined}
+            askBar={askBar}
+            pageKey={`lab-shell:${pageKey}`}
+            companionLink={sideChatLink}
+            onCompanionOpenChange={(open) => {
+              const next = sideChatAddress(window.location.search, { conversationId: null, open, hostedElsewhere: false });
+              window.history.replaceState(window.history.state, "", `${window.location.pathname}${next}`);
+            }}
+            loadCompanion={loadSampleCompanion}
+            loadCanvas={loadSampleCanvas}
             status={
               <>
                 {status ? null : <Check className="size-3.5" aria-hidden />}

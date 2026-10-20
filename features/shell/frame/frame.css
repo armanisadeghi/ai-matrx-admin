@@ -14,7 +14,9 @@
   --matrx-frame-tabs-h: 40px;
   --matrx-frame-footer-h: 32px;
   --matrx-frame-sidebar-w: 244px;
-  --matrx-frame-companion-w: 360px;
+  /* The side chat and the canvas are sized in AppFrame.tsx (THE WIDTH RULES): they are
+     numbers there so the frame can say exactly what fits. These two match FRAME_PROPERTIES_PX
+     and FRAME_BODY_MIN_PX. */
   --matrx-frame-properties-w: 288px;
   --matrx-frame-body-min-w: 360px;
   --matrx-frame-inset: 8px; /* the sheet's distance from the window edge */
@@ -121,6 +123,51 @@
   transition-property: width, transform, opacity, margin;
   transition-duration: var(--matrx-motion-duration-panel, 0ms);
   transition-timing-function: var(--matrx-motion-ease-panel, ease);
+}
+
+/* No motion while dragging (motion standard): a resize follows the pointer exactly. */
+[data-matrx-frame][data-dragging] .mf-slide {
+  transition: none;
+}
+
+/* The side chat's resize handle: invisible until hovered, focused or dragged. */
+[data-matrx-frame] .mf-resize-handle::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 2px;
+  width: 2px;
+  background: transparent;
+  transition: background-color 120ms;
+}
+[data-matrx-frame] .mf-resize-handle:hover::after,
+[data-matrx-frame] .mf-resize-handle:focus-visible::after,
+[data-matrx-frame][data-dragging] .mf-resize-handle::after {
+  background: hsl(var(--ring));
+}
+
+/* The ask bar: faint until the person engages it. */
+[data-matrx-frame] .mf-ask {
+  border: 1px solid hsl(var(--matrx-frame-hairline));
+  border-radius: var(--matrx-frame-radius);
+  background: hsl(var(--matrx-frame-sheet));
+}
+[data-matrx-frame] .mf-ask:focus-within {
+  border-color: hsl(var(--ring));
+}
+[data-matrx-frame] .mf-ask-input::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+/* OURS vs THE PAGE'S (playground aid): an ancestor carrying data-mf-show-owner outlines every
+   frame-owned region in one colour and every page-supplied region in another. */
+[data-mf-show-owner] [data-matrx-frame] [data-mf-owner="frame"] {
+  outline: 2px dashed hsl(var(--primary));
+  outline-offset: -2px;
+}
+[data-mf-show-owner] [data-matrx-frame] [data-mf-owner="page"] {
+  outline: 2px dashed hsl(var(--success));
+  outline-offset: -4px;
 }
 
 /* The drawer layer hides only after its slide-out finishes. */

@@ -1,4 +1,5 @@
 // Types for the new app frame. Host-agnostic: no Redux, no app imports.
+import type { ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { ChipHue } from "@ai-matrx/design-system/controls";
 
@@ -39,11 +40,39 @@ export interface FrameProduct {
 export type FrameVariant = "record" | "list" | "workspace" | "light";
 
 /**
- * desktop = sidebar + sheet + footer, side panels inline.
- * medium  = the sidebar is a drawer; the companion and the properties panel take turns (the body keeps a min width).
- * phone   = drawer + compressed header, no footer.
+ * wide    = (1600px and wider) every side panel inline: properties, the side chat and the canvas.
+ * desktop = sidebar + sheet + footer; properties and the side chat inline, the canvas takes turns with the side chat.
+ * medium  = the sidebar is a drawer; properties, the side chat and the canvas take turns (the body keeps a min width).
+ * phone   = drawer + compressed header, no footer; the side chat and the canvas cover the body.
  */
-export type FrameForm = "desktop" | "medium" | "phone";
+export type FrameForm = "wide" | "desktop" | "medium" | "phone";
+
+/**
+ * A heavy module the frame owns (the side chat, the canvas). The frame calls the loader only
+ * when the person first engages the module, never on render. Pass a STABLE function
+ * (module scope): the frame caches the lazy component per loader.
+ */
+export type FrameModuleLoader<P> = () => Promise<{ default: ComponentType<P> }>;
+
+/** Text the person typed in the page's ask bar, handed to the side chat once it loads. */
+export interface CompanionSeed {
+  /** Changes on every send, so the same text sent twice is two messages. */
+  id: number;
+  text: string;
+  /** The person pressed the ask bar's mic: the side chat starts dictation. */
+  dictate?: boolean;
+}
+
+/** What the frame gives the loaded side chat. */
+export interface CompanionProps {
+  onClose: () => void;
+  companionSeed?: CompanionSeed;
+}
+
+/** What the frame gives the loaded canvas. */
+export interface CanvasProps {
+  onClose: () => void;
+}
 
 export interface FrameCrumb {
   id: string;
@@ -77,6 +106,8 @@ export interface FrameHeaderTool {
   label: string;
   icon: LucideIcon;
   onSelect?: () => void;
+  /** The tool opens a menu or popover: it carries the right chevron (owner, 2026-10-14). */
+  opensMenu?: boolean;
   /** Default `"menu"`: on a phone the tool is an item in the "…" menu. */
   phone?: "show" | "menu";
 }

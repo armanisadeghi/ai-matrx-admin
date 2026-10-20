@@ -8,7 +8,7 @@
 // the keyboard: its copy in its family list is mouse-only.
 import { useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
-import { Check, Grip, Pencil, Star } from "lucide-react";
+import { Check, ChevronRight, Grip, Pencil, Star } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system/cn";
@@ -182,7 +182,7 @@ export function AppGrid({
       }}
     >
       <PopoverTrigger asChild>
-        <Button variant="quiet" icon={<Grip />} aria-label="All products" />
+        <Button variant="quiet" icon={<Grip />} iconEnd={<ChevronRight />} aria-label="All products" />
       </PopoverTrigger>
       <PopoverContent
         align="start"

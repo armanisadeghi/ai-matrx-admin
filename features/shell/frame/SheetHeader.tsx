@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   Bell as BellIcon,
   ChevronRight,
+  Webhook,
   CircleUserRound as AccountIcon,
   Copy,
   ExternalLink,
@@ -18,6 +19,7 @@ import {
   MoreHorizontal,
   PanelLeftOpen,
   Search as SearchIcon,
+  Shapes,
   Star,
   Trash2,
 } from "lucide-react";
@@ -59,6 +61,10 @@ export interface SheetHeaderProps {
   phoneActions?: readonly FrameAction[];
   /** The right-side tools (search, notifications, account). */
   tools?: readonly FrameHeaderTool[];
+  /** The frame's own canvas toggle, last in the right tools group (on a phone it is a "…" item). */
+  canvasToggle?: { open: boolean; onToggle: () => void };
+  /** The side chat's door, when SIDE_CHAT_DOOR is "header" (after the canvas toggle). */
+  sideChatToggle?: { open: boolean; onToggle: () => void };
   /** Desktop with the sidebar hidden: the controls that bring it (and the grid) back. */
   start?: ReactNode;
   onOpenDrawer: () => void;
@@ -71,7 +77,7 @@ function PageMenu({ actions }: { actions: readonly FrameAction[] }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="quiet" icon={<MoreHorizontal />} aria-label="More actions" />
+        <Button variant="quiet" icon={<MoreHorizontal />} iconEnd={<ChevronRight />} aria-label="More actions" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" surface="solid">
         {plain.map((a) => {
@@ -105,6 +111,8 @@ export function SheetHeader({
   actions,
   phoneActions,
   tools = [],
+  canvasToggle,
+  sideChatToggle,
   start,
   onOpenDrawer,
   onBack,
@@ -123,7 +131,16 @@ export function SheetHeader({
 
   const toolButton = (t: FrameHeaderTool) => {
     const Icon = t.icon;
-    return <Button key={t.id} variant="quiet" icon={<Icon />} aria-label={t.label} onClick={t.onSelect} />;
+    return (
+      <Button
+        key={t.id}
+        variant="quiet"
+        icon={<Icon />}
+        iconEnd={t.opensMenu ? <ChevronRight /> : undefined}
+        aria-label={t.label}
+        onClick={t.onSelect}
+      />
+    );
   };
 
   if (form === "phone") {
@@ -135,7 +152,11 @@ export function SheetHeader({
       .map((t) => ({ id: `tool-${t.id}`, label: t.label, icon: t.icon, onSelect: t.onSelect ?? (() => {}) }));
     return (
       // matrx-touch-targets: the platform's 44px touch ring on every control here.
-      <header className="mf-rule-b matrx-touch-targets flex h-[var(--matrx-frame-header-h)] shrink-0 items-center gap-1 px-2">
+      <header
+        data-mf-owner="frame"
+        data-mf-region="header"
+        className="matrx-touch-targets flex h-[var(--matrx-frame-header-h)] shrink-0 items-center gap-1 px-2"
+      >
         {canGoBack ? (
           <Button variant="quiet" icon={<ArrowLeft />} aria-label="Back" onClick={onBack} />
         ) : (
@@ -150,7 +171,11 @@ export function SheetHeader({
   }
 
   return (
-    <header className="mf-rule-b flex h-[var(--matrx-frame-header-h)] shrink-0 items-center gap-1 px-2">
+    <header
+      data-mf-owner="frame"
+      data-mf-region="header"
+      className="flex h-[var(--matrx-frame-header-h)] shrink-0 items-center gap-1 px-2"
+    >
       {start}
       <nav aria-label="Breadcrumb" className="flex min-w-0 items-center pl-1">
         <ol className="flex min-w-0 items-center gap-0.5">
@@ -182,8 +207,28 @@ export function SheetHeader({
         <PageMenu actions={actions} />
       </div>
       <div className="min-w-2 flex-1" />
-      {tools.length > 0 ? (
-        <div className="flex shrink-0 items-center gap-0.5">{tools.map(toolButton)}</div>
+      {tools.length > 0 || canvasToggle || sideChatToggle ? (
+        <div className="flex shrink-0 items-center gap-0.5">
+          {tools.map(toolButton)}
+          {canvasToggle ? (
+            <Button
+              variant={canvasToggle.open ? "outline" : "quiet"}
+              icon={<Shapes />}
+              aria-label="Canvas"
+              aria-pressed={canvasToggle.open}
+              onClick={canvasToggle.onToggle}
+            />
+          ) : null}
+          {sideChatToggle ? (
+            <Button
+              variant={sideChatToggle.open ? "outline" : "quiet"}
+              icon={<Webhook />}
+              aria-label="Side chat"
+              aria-pressed={sideChatToggle.open}
+              onClick={sideChatToggle.onToggle}
+            />
+          ) : null}
+        </div>
       ) : null}
     </header>
   );
@@ -223,8 +268,8 @@ function CrumbLink({ crumb }: { crumb: FrameCrumb }) {
 export function placeholderHeaderTools(onSelect?: (id: string) => void): FrameHeaderTool[] {
   return [
     { id: "search", label: "Search", icon: SearchIcon, phone: "show", onSelect: () => onSelect?.("search") },
-    { id: "notifications", label: "Notifications", icon: BellIcon, onSelect: () => onSelect?.("notifications") },
-    { id: "account", label: "Account", icon: AccountIcon, onSelect: () => onSelect?.("account") },
+    { id: "notifications", label: "Notifications", icon: BellIcon, opensMenu: true, onSelect: () => onSelect?.("notifications") },
+    { id: "account", label: "Account", icon: AccountIcon, opensMenu: true, onSelect: () => onSelect?.("account") },
   ];
 }
 
