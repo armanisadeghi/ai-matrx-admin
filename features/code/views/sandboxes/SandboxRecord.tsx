@@ -46,7 +46,8 @@ import {
   AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
 import { Skeleton, RecordId } from "@ai-matrx/design-system";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
+import { selectStoreRead, setStoreReadData } from "@/lib/redux/slices/storeReadsSlice";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";
 import {
   selectAuthReady,
@@ -87,6 +88,9 @@ const DEFAULT_CWD = "/home/agent";
 
 type TerminalEntry = SandboxConsoleEntry;
 
+/** How often a mounted, visible sandbox body re-reads its instance (a kept answer younger than this is not re-read). */
+const INSTANCE_POLL_MS = 10_000;
+
 export function SandboxRecord({
   id,
   embedded = false,
@@ -113,8 +117,17 @@ export function SandboxRecord({
   const organizationId = useAppSelector(selectOrganizationId);
   const { submit: submitLifecycle } = useSandboxLifecycleSubmission();
 
-  const [instance, setInstance] = useState<SandboxInstance | null>(null);
-  const [loading, setLoading] = useState(true);
+  // The instance is kept once per sandbox per tab (the remount law): a tile waking from sleep or
+  // remounting renders the kept answer at once and reads nothing while it is fresh. Only a successful
+  // read is kept. The poll below runs only while this body is mounted and the page is visible.
+  const dispatch = useAppDispatch();
+  const store = useAppStore();
+  const keptKey = `sandbox.instance:${id}`;
+  const [instance, setInstance] = useState<SandboxInstance | null>(() => {
+    const kept = selectStoreRead(store.getState(), keptKey);
+    return kept?.hasData ? (kept.data as SandboxInstance | null) : null;
+  });
+  const [loading, setLoading] = useState(() => !selectStoreRead(store.getState(), keptKey)?.hasData);
   const [error, setError] = useState<string | null>(null);
   const [commandInput, setCommandInput] = useState("");
   const [executing, setExecuting] = useState(false);
@@ -181,7 +194,11 @@ export function SandboxRecord({
       }
       const data = await resp.json();
       const current = generation === lifecycleReadGeneration.current && lifecycleScope.current.id === scope.id && lifecycleScope.current.userId === scope.userId && lifecycleScope.current.organizationId === scope.organizationId;
-      if (current) { setInstance(data.instance); setError(null); }
+      if (current) {
+        setInstance(data.instance);
+        setError(null);
+        dispatch(setStoreReadData({ key: keptKey, data: data.instance ?? null }));
+      }
       return current ? data.instance as SandboxInstance : undefined;
     } catch (err) {
       if (generation === lifecycleReadGeneration.current) setError(extractErrorMessage(err, "Unknown error"));
@@ -198,10 +215,15 @@ export function SandboxRecord({
   }, () => lifecycleScope.current.id === id && lifecycleScope.current.userId === userId && lifecycleScope.current.organizationId === organizationId);
 
   useEffect(() => {
-    fetchInstance();
-    const interval = setInterval(fetchInstance, 10000);
+    const kept = selectStoreRead(store.getState(), keptKey);
+    const fresh = Boolean(kept?.hasData) && Date.now() - (kept?.at ?? 0) < INSTANCE_POLL_MS;
+    if (!fresh) void fetchInstance();
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+      void fetchInstance();
+    }, INSTANCE_POLL_MS);
     return () => clearInterval(interval);
-  }, [fetchInstance]);
+  }, [fetchInstance, keptKey, store]);
 
   /** Enter in the terminal: run the line through the exec API (one command per call). */
   const handleExec = async (line: string) => {

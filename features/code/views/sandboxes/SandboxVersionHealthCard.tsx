@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { toast, toastErrorAlreadyCaptured } from "@/lib/toast";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
+import { selectStoreRead, setStoreReadData } from "@/lib/redux/slices/storeReadsSlice";
 import type { SandboxVersionHealth } from "@/types/sandbox";
 import {
   sandboxRuntimeReplaced,
@@ -140,7 +141,17 @@ export function SandboxVersionHealthCard({
   const runtimeRevision = useAppSelector((state) =>
     selectSandboxRuntimeRevision(state, sandboxId),
   );
-  const [loadState, setLoadState] = useState<LoadState>({ state: "loading" });
+  // The freshness answer and "no update is running" are kept once per sandbox per tab (the remount law):
+  // a tile waking or remounting shows the kept answer and probes nothing. A new runtime revision, a
+  // finished update or a saved in-flight operation reads again; only successful answers are kept.
+  const store = useAppStore();
+  const healthKey = `sandbox.version-health:${sandboxId}`;
+  const migrationIdleKey = `sandbox.migration-idle:${sandboxId}`;
+  const [loadState, setLoadState] = useState<LoadState>(() => {
+    const kept = selectStoreRead(store.getState(), healthKey);
+    const data = kept?.hasData ? (kept.data as { health: SandboxVersionHealth; revision: number | null }) : null;
+    return data && data.revision === runtimeRevision ? { state: "ready", health: data.health } : { state: "loading" };
+  });
   const [activeOperationId, setActiveOperationId] = useState<string | null>(
     () => savedOperationId(sandboxId),
   );
@@ -208,6 +219,7 @@ export function SandboxVersionHealthCard({
       )
         return;
       setLoadState({ state: "ready", health });
+      dispatch(setStoreReadData({ key: healthKey, data: { health, revision: runtimeRevision } }));
     } catch (error) {
       if (
         controller.signal.aborted ||
@@ -441,6 +453,7 @@ export function SandboxVersionHealthCard({
         !status.operation_id ||
         !isLiveMigrationOutcome(status.outcome)
       ) {
+        if (response.ok) dispatch(setStoreReadData({ key: migrationIdleKey, data: true }));
         return;
       }
       saveOperationId(sandboxId, status.operation_id);
@@ -572,11 +585,14 @@ export function SandboxVersionHealthCard({
     const generation = lifecycleRef.current.generation;
     const resumedOperationId = savedOperationId(sandboxId);
     operationStartRef.current = resumedOperationId;
+    const keptHealth = selectStoreRead(store.getState(), healthKey);
+    const healthKept = Boolean(keptHealth?.hasData) && (keptHealth?.data as { revision: number | null }).revision === runtimeRevision;
+    const idleKept = Boolean(selectStoreRead(store.getState(), migrationIdleKey)?.hasData);
     queueMicrotask(() => {
       if (disposed) return;
       setActiveOperationId(resumedOperationId);
-      void refresh(generation);
-      void discoverOrResumeMigration(generation);
+      if (!healthKept) void refresh(generation);
+      if (resumedOperationId || !idleKept) void discoverOrResumeMigration(generation);
     });
     return () => {
       disposed = true;

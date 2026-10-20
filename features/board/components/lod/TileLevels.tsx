@@ -15,7 +15,7 @@
  */
 
 import "./board-lod.css";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { MoreHorizontal, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DetailLevel } from "../../engine/lod";
@@ -32,6 +32,13 @@ export function LevelLayers({ level, render }: { level: DetailLevel; render: (le
     setFrom(shown);
     setShown(level);
   }
+  // The cross-fade ends on animationend; a pane that is not painting never fires it and the outgoing face
+  // would stay drawn over the right one. A timer past the fade clears it either way.
+  useEffect(() => {
+    if (from === null) return;
+    const t = setTimeout(() => setFrom(null), 700);
+    return () => clearTimeout(t);
+  }, [from, shown]);
   const leaving = from !== null && from !== "full" ? from : null;
   // Words → bars in place (the skeleton IS the layout at that threshold): no fade, so nothing doubles.
   const cut = from === "full" && shown === "structure";

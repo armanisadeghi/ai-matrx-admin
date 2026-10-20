@@ -28,6 +28,8 @@
  *     can see exactly what's happening at any time.
  */
 
+import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
+import { selectStoreRead, setStoreReadData } from "@/lib/redux/slices/storeReadsSlice";
 import {
   forwardRef,
   useCallback,
@@ -278,10 +280,23 @@ export const SandboxDiagnosticsPanel = forwardRef<
   const showInternalTabs = showFilesystem || showEnv || showRaw || showLogs;
   const initialTabValue: "filesystem" | "agent-env" | "env" | "raw" =
     showFilesystem ? "filesystem" : showEnv ? "agent-env" : "raw";
-  const [diag, setDiag] = useState<SandboxDiagnostics | null>(null);
+  // Diagnostics and logs are kept once per sandbox per tab (the remount law): a tile waking from sleep
+  // or remounting shows the kept answer and the poll below catches it up on its own beat; nothing is
+  // read at mount while an answer is kept. Only a successful read is kept; the polls pause while the
+  // page is hidden.
+  const store = useAppStore();
+  const dispatch = useAppDispatch();
+  const diagKey = `sandbox.diagnostics:${sandboxId}`;
+  const [diag, setDiag] = useState<SandboxDiagnostics | null>(() => {
+    const kept = selectStoreRead(store.getState(), diagKey);
+    return kept?.hasData ? (kept.data as SandboxDiagnostics) : null;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [logs, setLogs] = useState<string>("");
+  const [logs, setLogs] = useState<string>(() => {
+    const kept = selectStoreRead(store.getState(), `sandbox.logs:${sandboxId}:aidream:200`);
+    return kept?.hasData ? (kept.data as string) : "";
+  });
   const [logSource, setLogSource] = useState<LogSource>("aidream");
   const [logTail, setLogTail] = useState<number>(200);
   const [logsLoading, setLogsLoading] = useState(false);
@@ -328,6 +343,7 @@ export const SandboxDiagnosticsPanel = forwardRef<
       }
       const json = (await r.json()) as SandboxDiagnostics;
       setDiag(json);
+      dispatch(setStoreReadData({ key: diagKey, data: json }));
       if (json.overall_ok && !onReadyFiredRef.current && onReady) {
         onReadyFiredRef.current = true;
         onReady(json);
@@ -337,7 +353,7 @@ export const SandboxDiagnosticsPanel = forwardRef<
     } finally {
       setLoading(false);
     }
-  }, [sandboxId, onReady]);
+  }, [sandboxId, onReady, dispatch, diagKey]);
 
   useImperativeHandle(
     ref,
@@ -384,7 +400,9 @@ export const SandboxDiagnosticsPanel = forwardRef<
       if (!r.ok) {
         setLogs(`(could not fetch logs: HTTP ${r.status})\n${await r.text()}`);
       } else {
-        setLogs(await r.text());
+        const text = await r.text();
+        setLogs(text);
+        dispatch(setStoreReadData({ key: `sandbox.logs:${sandboxId}:${logSource}:${logTail}`, data: text }));
       }
     } catch (e) {
       setLogs(
@@ -393,7 +411,7 @@ export const SandboxDiagnosticsPanel = forwardRef<
     } finally {
       setLogsLoading(false);
     }
-  }, [sandboxId, logSource, logTail]);
+  }, [sandboxId, logSource, logTail, dispatch]);
 
   // ── Reset handler ────────────────────────────────────────────────────────
   const handleReset = useCallback(async () => {
@@ -620,9 +638,10 @@ export const SandboxDiagnosticsPanel = forwardRef<
     let cancelled = false;
     const tick = async () => {
       if (cancelled) return;
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
       await fetchDiagnostics();
     };
-    tick();
+    if (!selectStoreRead(store.getState(), diagKey)?.hasData) void tick();
     const interval = setInterval(
       tick,
       (diag?.overall_ok ? healthyPollSeconds : unhealthyPollSeconds) * 1000,
@@ -635,6 +654,8 @@ export const SandboxDiagnosticsPanel = forwardRef<
     sandboxId,
     diag?.overall_ok,
     fetchDiagnostics,
+    store,
+    diagKey,
     healthyPollSeconds,
     unhealthyPollSeconds,
   ]);
@@ -645,15 +666,16 @@ export const SandboxDiagnosticsPanel = forwardRef<
     let cancelled = false;
     const tick = async () => {
       if (cancelled) return;
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
       await fetchLogs();
     };
-    tick();
+    if (!selectStoreRead(store.getState(), `sandbox.logs:${sandboxId}:${logSource}:${logTail}`)?.hasData) void tick();
     const interval = setInterval(tick, 3000);
     return () => {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [sandboxId, showLogs, fetchLogs, logSource, logTail]);
+  }, [sandboxId, showLogs, fetchLogs, logSource, logTail, store]);
 
   if (error && !diag) {
     return (

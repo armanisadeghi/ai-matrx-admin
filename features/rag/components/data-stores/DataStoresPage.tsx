@@ -18,7 +18,7 @@
  */
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActiveContextLensChip } from "@/features/scopes/components/active-context/ActiveContextLensChip";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { RagHubHeader } from "@/features/rag/components/shell/RagHubHeader";
@@ -756,7 +756,13 @@ function StoreDetailPanel({
   const richMembers = useDataStoreMembersRich(storeId);
   // Keep the rich list in sync with the underlying detail.members count
   // so adding via picker / drag-drop refreshes both panels.
+  // The rich list is kept per store (read once per tab), so this re-reads only when the count CHANGES after
+  // mount — never on the mount itself (a tile waking or remounting reads nothing).
+  const seenMembers = useRef({ storeId, count: detail.members.length });
   useEffect(() => {
+    const seen = seenMembers.current;
+    if (seen.storeId === storeId && seen.count === detail.members.length) return;
+    seenMembers.current = { storeId, count: detail.members.length };
     richMembers.refresh();
     // We only want to fire when the membership count or store changes,
     // not on every richMembers identity change.

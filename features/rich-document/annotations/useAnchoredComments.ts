@@ -7,11 +7,11 @@
 
 import { defineChannelNamespace } from "@ai-matrx/data/realtime";
 import { useChannel } from "@ai-matrx/data/realtime/react";
-import { useEffect, useRef, useState } from "react";
 
 import { toast } from "@/lib/toast";
+import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 
-import { humanError } from "./errors";
+import { isSignedOutSentence } from "./errors";
 
 import {
   addAnchoredComment,
@@ -30,6 +30,8 @@ const officeComments = defineChannelNamespace({
   description: "One open Doc or Sheet: its comment threads (platform.comments changes).",
 });
 
+const NO_THREADS: AnchoredThread[] = [];
+
 export interface AnchoredComments {
   threads: AnchoredThread[];
   status: "loading" | "ready" | "error";
@@ -43,38 +45,21 @@ export interface AnchoredComments {
 }
 
 export function useAnchoredComments(token: string, id: string, href: string, enabled = true): AnchoredComments {
-  const [threads, setThreads] = useState<AnchoredThread[]>([]);
-  const [status, setStatus] = useState<AnchoredComments["status"]>("loading");
-  const [error, setError] = useState<AnchoredComments["error"]>(null);
-  const seq = useRef(0);
-
+  // The threads are kept by record, once per tab (the remount law): a tile waking from sleep or
+  // remounting renders the kept answer and reads nothing. `reload` is the deliberate re-read — another
+  // person's change (realtime), a tab-wake backfill, or this person's own write. A failed read is not kept.
+  const read = useStoreRead<AnchoredThread[]>(`rich-document.threads:${token}:${id}`, () => listAnchoredThreads(token, id), {
+    enabled,
+  });
+  const threads = read.data ?? NO_THREADS;
+  const status: AnchoredComments["status"] = !enabled ? "loading" : read.isError ? "error" : read.hasData ? "ready" : "loading";
+  // The sentence reaches the rail (a signed-out tab is told to sign in), never only the console.
+  const error: AnchoredComments["error"] = read.isError
+    ? { message: read.error ?? "The comments could not be read", signedOut: isSignedOutSentence(read.error) }
+    : null;
   const reload = () => {
-    const mine = ++seq.current;
-    void listAnchoredThreads(token, id, () => mine !== seq.current).then(
-      (t) => {
-        if (mine !== seq.current) return;
-        setThreads(t);
-        setError(null);
-        setStatus("ready");
-      },
-      (e: unknown) => {
-        if (mine !== seq.current) return;
-        // The sentence reaches the rail (a signed-out tab is told to sign in), never only the console.
-        const h = humanError("loading the comments", e);
-        setError({ message: h.message, signedOut: h.signedOut });
-        setStatus("error");
-      },
-    );
+    void read.refresh();
   };
-
-  useEffect(() => {
-    if (!enabled) return;
-    reload();
-    return () => {
-      seq.current++;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- read once per record
-  }, [token, id, enabled]);
 
   useChannel(
     enabled

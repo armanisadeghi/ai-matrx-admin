@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
+import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 import {
   resolveGoogleWorkspaceConnection,
   type GoogleConnectionRef,
@@ -20,31 +19,31 @@ export type GoogleWorkspaceConnectionState =
  * said "Connect" turns into actions without a reload.
  */
 export function useGoogleWorkspaceConnection(active = true) {
-  const [state, setState] = useState<GoogleWorkspaceConnectionState>({ status: "loading" });
-  const [nonce, setNonce] = useState(0);
   const openConnect = useOpenGoogleConnectWindow();
+  // Kept once per tab (a tile waking or remounting renders the kept account and reads nothing); a
+  // failed read is not kept. `refresh` is the deliberate re-read after the connect window closes.
+  const read = useStoreRead<GoogleConnectionRef | null>(
+    "google.workspace.connection",
+    () => resolveGoogleWorkspaceConnection(),
+    { enabled: active, staleAfterMs: 300_000 },
+  );
 
-  useEffect(() => {
-    if (!active) return;
-    const controller = new AbortController();
-    resolveGoogleWorkspaceConnection(controller.signal)
-      .then((connection) => {
-        if (controller.signal.aborted) return;
-        setState(connection ? { status: "ready", connection } : { status: "none" });
-      })
-      .catch((error: unknown) => {
-        if (controller.signal.aborted) return;
-        setState({ status: "error", error: error instanceof Error ? error.message : String(error) });
-      });
-    return () => controller.abort();
-  }, [nonce, active]);
+  const state: GoogleWorkspaceConnectionState = !active
+    ? { status: "loading" }
+    : read.isError
+      ? { status: "error", error: read.error ?? "The Google connection could not be read" }
+      : !read.hasData
+        ? { status: "loading" }
+        : read.data
+          ? { status: "ready", connection: read.data }
+          : { status: "none" };
 
   const connect = (reason?: string) =>
     openConnect({
       mode: "workspace",
       reason,
-      onWindowClose: () => setNonce((n) => n + 1),
+      onWindowClose: () => void read.refresh(),
     });
 
-  return { state, connect, refresh: () => setNonce((n) => n + 1) };
+  return { state, connect, refresh: () => void read.refresh() };
 }

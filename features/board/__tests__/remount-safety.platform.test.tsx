@@ -105,6 +105,8 @@ remountType(
       prepare: () => {
         seedRpc("fn_get_user_data_store", storeDetail);
         seedRpc("fn_list_user_data_stores", [{ id: STORE_ID, name: STORE_NAME, member_count: 0 }]);
+        seedRpc("fn_data_store_members_rich", { members: [] });
+        seedRpc("entity_access_summary", { entity_type: "data_store", entity_id: STORE_ID, viewer_is_owner: true, can_manage: true, direct_grants: [], containers: [] });
       },
       loadMs: 1500,
       kept: (tile) => ({ name: shows(tile, STORE_NAME), loading: shows(tile, "Loading…") }),
@@ -209,6 +211,29 @@ remountType(
       title: SANDBOX_NAME,
       prepare: () => {
         seedFetch(new RegExp(`/api/sandbox/${SANDBOX_ID}$`), () => ({ instance: sandboxInstance }));
+        // The diagnostics and the log tail the sandbox record's panel polls: answered, so they are kept.
+        seedFetch(new RegExp(`/api/sandbox/${SANDBOX_ID}/diagnostics$`), () => ({
+          sandbox_id: sandboxInstance.sandbox_id,
+          overall_ok: true,
+          sandbox: { status: "running", tier: "ec2", template: null, template_version: null, user_id: "u", container_id: null, proxy_url: null, ssh_port: null, expires_at: null, last_heartbeat_at: null, persistence_volume: null, hot_path: "/home/agent", cold_path: "/data" },
+          container: { present: true, running: true },
+          checks: {
+            matrx_agent_8000: { ok: true, status_code: 200, latency_ms: 4 },
+            aidream_health_8001: { ok: true, status_code: 200, latency_ms: 5 },
+            aidream_ready_8001: { ok: true, status_code: 200, latency_ms: 6 },
+          },
+        }));
+        seedFetch(new RegExp(`/api/sandbox/${SANDBOX_ID}/logs`), () => "aidream ready\n");
+        seedFetch(new RegExp(`/api/sandbox/${SANDBOX_ID}/version-health$`), () => ({
+          health: {
+            supported: true, sandbox_id: SANDBOX_ID, template: "default", tier: "hosted", status: "current", reason: "up to date",
+            running_image_id: null, running_version: "new", current_image_id: null, current_version: "new",
+            current_image_available: true, can_migrate: false, manager_version: "test", migration_action_reason: null,
+          },
+        }));
+        seedFetch(new RegExp(`/api/sandbox/${SANDBOX_ID}/migration$`), () => ({
+          sandbox_id: SANDBOX_ID, operation_id: "op-idle", outcome: "idle", execution_state: "done", phase: "cleanup_complete",
+        }));
       },
       loadMs: 1500,
       kept: (tile) => ({ name: shows(tile, SANDBOX_NAME), loading: skeleton(tile) }),

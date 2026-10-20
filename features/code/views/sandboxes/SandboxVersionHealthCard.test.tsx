@@ -11,6 +11,7 @@ const mockToastErrorAlreadyCaptured = jest.fn();
 jest.mock("@/lib/redux/hooks", () => ({
   useAppDispatch: () => mockDispatch,
   useAppSelector: () => 0,
+  useAppStore: () => ({ getState: () => ({ storeReads: { byKey: {} } }) }),
 }));
 jest.mock("../../redux/codeWorkspaceSlice", () => ({
   sandboxRuntimeReplaced: (sandboxId: string) => ({

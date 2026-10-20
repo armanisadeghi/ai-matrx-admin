@@ -8,7 +8,7 @@
 
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRefreshWhenChanged, useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 import {
   fetchAccessSummary,
   type AccessSummary,
@@ -41,46 +41,24 @@ export function useAccessSummary({
   enabled = true,
   refreshToken,
 }: UseAccessSummaryArgs): UseAccessSummaryResult {
-  const [summary, setSummary] = useState<AccessSummary | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [nonce, setNonce] = useState(0);
+  // Kept once per record per tab (the remount law): a tile waking from sleep or remounting shows the
+  // kept summary and reads nothing; a failed read is not kept. A new `refreshToken` or `reload()` is the
+  // deliberate re-read.
+  const read = useStoreRead<AccessSummary>(
+    entityId ? `sharing.access-summary:${entityType}:${entityId}` : null,
+    () => fetchAccessSummary(entityType, entityId as string),
+    { enabled: enabled && Boolean(entityId), staleAfterMs: 60_000 },
+  );
+  useRefreshWhenChanged(refreshToken, read.refresh);
 
-  // A slow response for a previous entity must never overwrite the current one.
-  const requestKey = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!enabled || !entityId) {
-      requestKey.current = null;
-      setSummary(null);
-      setError(null);
-      setLoading(false);
-      return;
-    }
-
-    const key = `${entityType}:${entityId}:${nonce}:${String(refreshToken)}`;
-    requestKey.current = key;
-    setLoading(true);
-    setError(null);
-
-    void (async () => {
-      try {
-        const next = await fetchAccessSummary(entityType, entityId);
-        if (requestKey.current !== key) return;
-        setSummary(next);
-      } catch (cause) {
-        if (requestKey.current !== key) return;
-        setSummary(null);
-        setError(
-          cause instanceof Error ? cause.message : "Could not load access",
-        );
-      } finally {
-        if (requestKey.current === key) setLoading(false);
-      }
-    })();
-  }, [entityType, entityId, enabled, nonce, refreshToken]);
-
-  const reload = useCallback(() => setNonce((n) => n + 1), []);
-
-  return { summary, loading, error, reload };
+  const active = enabled && Boolean(entityId);
+  const reload = () => {
+    void read.refresh();
+  };
+  return {
+    summary: active ? (read.data ?? null) : null,
+    loading: active && read.isLoading,
+    error: active && read.isError ? (read.error ?? "Could not load access") : null,
+    reload,
+  };
 }

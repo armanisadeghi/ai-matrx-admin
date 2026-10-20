@@ -15,6 +15,7 @@
  */
 
 import { useEffect, useState, useCallback } from "react";
+import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { createClient } from "@/utils/supabase/client";
@@ -136,6 +137,10 @@ async function dataStoreOrganizationId(
   return data.organization_id as string;
 }
 
+const NO_STORES: DataStoreWithMemberCount[] = [];
+const NO_MEMBERS: EnrichedMember[] = [];
+const NO_RICH_MEMBERS: RichMember[] = [];
+
 export function useDataStores(): {
   stores: DataStoreWithMemberCount[];
   loading: boolean;
@@ -150,41 +155,25 @@ export function useDataStores(): {
   }) => Promise<DataStore | null>;
 } {
   const userId = useAppSelector(selectUserId);
-  const [stores, setStores] = useState<DataStoreWithMemberCount[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [bumper, setBumper] = useState(0);
-
-  const refresh = useCallback(() => setBumper((b) => b + 1), []);
-
-  useEffect(() => {
-    if (!userId) return undefined;
-    let cancelled = false;
-    setLoading(true);
+  // Kept once per person per tab (the remount law): a tile waking or remounting shows the kept list and
+  // reads nothing; a failed read is not kept. `refresh` is the deliberate re-read (after a write).
+  const read = useStoreRead<DataStoreWithMemberCount[]>(
+    userId ? `rag.data-stores:${userId}` : null,
+    async () => {
+      const supabase = createClient();
+      const { data, error: rpcError } = await ragDb(supabase).rpc("fn_list_user_data_stores", { p_include_inactive: false });
+      if (rpcError) throw rpcError;
+      return ((data ?? []) as ApiDataStoreSummary[]).map(summaryToStore);
+    },
+  );
+  const stores = read.data ?? NO_STORES;
+  const loading = Boolean(userId) && read.isLoading;
+  const [actionError, setError] = useState<string | null>(null);
+  const error = actionError ?? (read.isError ? (read.error ?? "Could not load data stores") : null);
+  const refresh = () => {
     setError(null);
-
-    (async () => {
-      try {
-        const supabase = createClient();
-        const { data, error: rpcError } = await ragDb(supabase).rpc(
-          "fn_list_user_data_stores",
-          { p_include_inactive: false },
-        );
-        if (rpcError) throw rpcError;
-        if (cancelled) return;
-        setStores(((data ?? []) as ApiDataStoreSummary[]).map(summaryToStore));
-      } catch (e) {
-        if (cancelled) return;
-        setError(e instanceof Error ? e.message : "Could not load data stores");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [userId, bumper]);
+    void read.refresh();
+  };
 
   const createStore = useCallback(
     async (input: {
@@ -259,72 +248,49 @@ export interface EnrichedMember {
 
 export function useDataStoreDetail(storeId: string | null) {
   const userId = useAppSelector(selectUserId);
-  const [store, setStore] = useState<DataStore | null>(null);
-  const [members, setMembers] = useState<EnrichedMember[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  /** The raw read failure, for `<AccessGate error={…}/>`. */
-  const [readError, setReadError] = useState<unknown>(null);
-  const [bumper, setBumper] = useState(0);
-
-  const refresh = useCallback(() => setBumper((b) => b + 1), []);
-
-  useEffect(() => {
-    if (!storeId) {
-      setStore(null);
-      setMembers([]);
-      return undefined;
-    }
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    setReadError(null);
-
-    (async () => {
-      try {
-        const supabase = createClient();
-        const { data: raw, error: rpcError } = await ragDb(supabase).rpc(
-          "fn_get_user_data_store",
-          { p_store_id: storeId, p_member_limit: 500 },
-        );
-        if (rpcError) throw rpcError;
-        if (cancelled) return;
-        if (!raw) {
-          // Zero rows: denied / deleted / stale id / signed out. This hook
-          // cannot tell them apart and must not pick one — it reports the
-          // store as absent with no error, and the surface renders
-          // <AccessGate token="data_store"/>, which asks the platform.
-          setStore(null);
-          setMembers([]);
-          setReadError(null);
-          return;
-        }
-        const detail = raw as unknown as ApiDataStoreDetail;
-        setStore(detailToStore(detail));
-        setMembers(
-          (detail.members ?? []).map((m) => ({
-            dataStoreId: detail.id,
-            sourceKind: m.source_kind,
-            sourceId: m.source_id,
-            addedBy: null,
-            addedAt: m.added_at,
-            notes: m.notes,
-            label: m.label,
-          })),
-        );
-      } catch (e) {
-        if (cancelled) return;
-        setReadError(e);
-        setError("We couldn't load this data store.");
-      } finally {
-        if (!cancelled) setLoading(false);
+  // Kept once per store per tab (the remount law); a failed read is not kept. `refresh` re-reads after a write.
+  const read = useStoreRead<{ store: DataStore | null; members: EnrichedMember[] }>(
+    storeId ? `rag.data-store:${storeId}` : null,
+    async () => {
+      const supabase = createClient();
+      const { data: raw, error: rpcError } = await ragDb(supabase).rpc("fn_get_user_data_store", {
+        p_store_id: storeId as string,
+        p_member_limit: 500,
+      });
+      if (rpcError) throw rpcError;
+      if (!raw) {
+        // Zero rows: denied / deleted / stale id / signed out. This hook
+        // cannot tell them apart and must not pick one — it reports the
+        // store as absent with no error, and the surface renders
+        // <AccessGate token="data_store"/>, which asks the platform.
+        return { store: null, members: [] };
       }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [storeId, bumper]);
+      const detail = raw as unknown as ApiDataStoreDetail;
+      return {
+        store: detailToStore(detail),
+        members: (detail.members ?? []).map((m) => ({
+          dataStoreId: detail.id,
+          sourceKind: m.source_kind,
+          sourceId: m.source_id,
+          addedBy: null,
+          addedAt: m.added_at,
+          notes: m.notes,
+          label: m.label,
+        })),
+      };
+    },
+  );
+  const store = storeId ? (read.data?.store ?? null) : null;
+  const members = storeId ? (read.data?.members ?? NO_MEMBERS) : NO_MEMBERS;
+  const loading = Boolean(storeId) && read.isLoading;
+  const [actionError, setError] = useState<string | null>(null);
+  const error = actionError ?? (read.isError ? "We couldn't load this data store." : null);
+  /** The raw read failure, for `<AccessGate error={…}/>`. */
+  const readError: unknown = read.isError ? new Error(read.error ?? "The read failed") : null;
+  const refresh = () => {
+    setError(null);
+    void read.refresh();
+  };
 
   const addMember = useCallback(
     async (input: { sourceKind: string; sourceId: string; notes?: string }) => {
@@ -515,61 +481,37 @@ interface ApiRichMembersResponse {
 }
 
 export function useDataStoreMembersRich(storeId: string | null) {
-  const [members, setMembers] = useState<RichMember[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [bumper, setBumper] = useState(0);
-
-  const refresh = useCallback(() => setBumper((b) => b + 1), []);
-
-  useEffect(() => {
-    if (!storeId) {
-      setMembers([]);
-      return undefined;
-    }
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    (async () => {
-      try {
-        const supabase = createClient();
-        const { data: raw, error: rpcError } = await ragDb(supabase).rpc(
-          "fn_data_store_members_rich",
-          { p_store_id: storeId },
-        );
-        if (rpcError) throw rpcError;
-        if (cancelled) return;
-        const data = raw as unknown as ApiRichMembersResponse | null;
-        const list = Array.isArray(data?.members) ? data.members : [];
-        setMembers(
-          list.map((m) => ({
-            sourceKind: m.source_kind,
-            sourceId: m.source_id,
-            addedAt: m.added_at,
-            notes: m.notes,
-            name: m.name ?? m.source_id,
-            mimeType: m.mime_type,
-            fileSize: m.size_bytes,
-            processedDocumentId: m.processed_document_id,
-            pages: typeof m.pages === "number" ? m.pages : 0,
-            chunks: typeof m.chunks === "number" ? m.chunks : 0,
-            embeddingsOai:
-              typeof m.embeddings_oai === "number" ? m.embeddings_oai : 0,
-            status: (m.status as RichMember["status"]) ?? "unknown",
-          })),
-        );
-      } catch (e) {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Could not load members");
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [storeId, bumper]);
+  // Kept once per store per tab (the remount law); `refresh` re-reads after the membership changes.
+  const read = useStoreRead<RichMember[]>(
+    storeId ? `rag.data-store-members:${storeId}` : null,
+    async () => {
+      const supabase = createClient();
+      const { data: raw, error: rpcError } = await ragDb(supabase).rpc("fn_data_store_members_rich", { p_store_id: storeId as string });
+      if (rpcError) throw rpcError;
+      const data = raw as unknown as ApiRichMembersResponse | null;
+      const list = Array.isArray(data?.members) ? data.members : [];
+      return list.map((m) => ({
+        sourceKind: m.source_kind,
+        sourceId: m.source_id,
+        addedAt: m.added_at,
+        notes: m.notes,
+        name: m.name ?? m.source_id,
+        mimeType: m.mime_type,
+        fileSize: m.size_bytes,
+        processedDocumentId: m.processed_document_id,
+        pages: typeof m.pages === "number" ? m.pages : 0,
+        chunks: typeof m.chunks === "number" ? m.chunks : 0,
+        embeddingsOai: typeof m.embeddings_oai === "number" ? m.embeddings_oai : 0,
+        status: (m.status as RichMember["status"]) ?? "unknown",
+      }));
+    },
+  );
+  const members = storeId ? (read.data ?? NO_RICH_MEMBERS) : NO_RICH_MEMBERS;
+  const loading = Boolean(storeId) && read.isLoading;
+  const error = read.isError ? (read.error ?? "Could not load members") : null;
+  const refresh = () => {
+    void read.refresh();
+  };
 
   return { members, loading, error, refresh };
 }
