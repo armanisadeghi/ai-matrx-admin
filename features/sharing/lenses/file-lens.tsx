@@ -323,11 +323,12 @@ export function SharedFileLens({
   const kind = previewKind(mime);
   const urls = shareUrls(token);
 
-  // Full-screen target = the WHOLE viewer block (identity row + stage), so
-  // the "Exit full screen" control stays on screen. Targeting only the stage
-  // left the reader with the viewer's own fit/zoom icons and Esc as the only
-  // way out (found 2026-10-20).
-  const viewerRef = React.useRef<HTMLDivElement>(null);
+  // Full screen = the whole DOCUMENT goes full screen and the viewer block
+  // (identity row + stage) is pinned over it. Two failures this avoids (both
+  // found 2026-10-20): full-screening only the stage hid "Exit full screen",
+  // leaving Esc as the only way out; and full-screening any element hides
+  // every popover and tooltip, because they portal to <body>, outside it.
+  // The block sits below the popover layer (z 10001) so menus open on top.
   const capabilitiesRef = React.useRef<HTMLElement | null>(null);
   // pdfjs cannot render on the server (no DOMMatrix) — `mounted` is false in
   // SSR/hydration output so the lazy viewer only ever renders in the browser.
@@ -346,8 +347,8 @@ export function SharedFileLens({
   const toggleFullscreen = () => {
     if (document.fullscreenElement) {
       void document.exitFullscreen();
-    } else if (viewerRef.current) {
-      void viewerRef.current.requestFullscreen().catch(() => {
+    } else {
+      void document.documentElement.requestFullscreen().catch(() => {
         // Some mobile browsers (iOS Safari) refuse element fullscreen —
         // the "Open in new tab" door remains beside this button.
       });
@@ -367,7 +368,8 @@ export function SharedFileLens({
     if (!el) return;
     const failed =
       el instanceof HTMLImageElement
-        ? el.complete && el.naturalWidth === 0
+        ? // An SVG can legitimately report no intrinsic size; leave it to onError.
+          mime !== "image/svg+xml" && el.complete && el.naturalWidth === 0
         : el.error !== null;
     if (failed) setMediaFailed(true);
   };
@@ -379,10 +381,13 @@ export function SharedFileLens({
       {/* First screenful = the document. Header row + viewer fill the
           viewport exactly; the capability section sits below the fold. */}
       <div
-        ref={viewerRef}
         className={cn(
           "flex flex-col bg-background",
-          previewable ? "h-full shrink-0" : "shrink-0",
+          isFullscreen
+            ? "fixed inset-0 z-[10000]"
+            : previewable
+              ? "h-full shrink-0"
+              : "shrink-0",
         )}
       >
         {/* Compact identity + actions row */}
@@ -404,7 +409,9 @@ export function SharedFileLens({
               variant="quiet"
               onClick={() => {
                 const reveal = () =>
-                  capabilitiesRef.current?.scrollIntoView({ behavior: "smooth" });
+                  capabilitiesRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                  });
                 // The capability section sits outside the full-screen block.
                 if (document.fullscreenElement) {
                   void document.exitFullscreen().then(reveal, reveal);
@@ -432,11 +439,7 @@ export function SharedFileLens({
               </Button>
             )}
             {previewable && (
-              <Button
-                asChild
-                variant="outline"
-                aria-label="Open in a new tab"
-              >
+              <Button asChild variant="outline" aria-label="Open in a new tab">
                 <OutboundLink href={urls.public}>
                   <ExternalLink className="h-4 w-4" />
                   <span className="ml-1.5 hidden md:inline">New tab</span>
@@ -510,7 +513,7 @@ export function SharedFileLens({
                   src={urls.public}
                   controls
                   ref={checkMediaMounted}
-                onError={onMediaError}
+                  onError={onMediaError}
                   className="w-full"
                 />
               </div>
