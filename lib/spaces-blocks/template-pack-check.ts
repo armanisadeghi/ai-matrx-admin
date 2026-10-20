@@ -128,6 +128,11 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
   }
   const tables = new Map(every.map((t) => [t.token, t] as const));
   const views = new Map((spec.views ?? []).map((v) => [v.token, v] as const));
+  // INSTALL-ORDER: the assistant's variables bind tables this pack makes. A variable naming a table that is not one of them fails the
+  // first press of Use template ("The template binds ... which was not created") and leaves a half-made assistant behind.
+  (spec.agent?.variables ?? []).forEach((v, vi) => {
+    if (!tables.has(v.table)) say(`spec.agent.variables[${vi}]`, `It binds "${v.name}" to "${v.table}", which this pack does not make. Its tables are: ${[...tables.keys()].join(", ")}.`);
+  });
   for (const t of every) {
     if ((t.rows?.length ?? 0) < MIN_SAMPLE_ROWS) say(`spec.tables (${t.token}).rows`, `Seed at least ${MIN_SAMPLE_ROWS} realistic sample rows (it has ${t.rows?.length ?? 0}); every view opens on them.`);
   }
