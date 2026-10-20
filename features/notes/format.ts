@@ -12,7 +12,7 @@
 // explicitly via `content_included: false` rather than silently omitting it.
 
 import { humanLines } from "@/features/marketing/lib/copy-payloads";
-import { displayTitle } from "@ai-matrx/rich-content/markdown-core/plain-title";
+import { displayTitle, plainTitleFromMarkdown } from "@ai-matrx/rich-content/markdown-core/plain-title";
 import type { NoteListItem } from "@/features/notes/types";
 import type { NoteRecord } from "@/features/notes/redux/notes.types";
 
@@ -234,4 +234,33 @@ export function noteRecordMetaData(view: NoteRecordView) {
     content_included: false as const,
     content_omitted_chars: (content ?? "").length,
   };
+}
+
+/**
+ * A list row's one-line preview: the body's first lines in plain text, WITHOUT the line that is the
+ * note's own title (review 2026-10-19 #24: every phone row read "RVW controls probe / RVW controls
+ * probe"). Fenced blocks (a chart's JSON) are skipped. Empty when the body holds nothing but its title.
+ */
+export function notePreviewText(label: string, body: string | null | undefined, max = 200): string {
+  const title = label.trim().toLowerCase();
+  let skippedTitle = false;
+  const out: string[] = [];
+  let inFence = false;
+  for (const raw of (body ?? "").split(/\r?\n/)) {
+    const line = raw.trim();
+    if (/^(```|~~~)/.test(line)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence || !line || /^[-*_]{3,}$/.test(line)) continue;
+    const plain = plainTitleFromMarkdown(line).trim();
+    if (!plain) continue;
+    if (!skippedTitle && plain.toLowerCase() === title) {
+      skippedTitle = true;
+      continue;
+    }
+    out.push(plain);
+    if (out.join(" ").length >= max) break;
+  }
+  return out.join(" ").slice(0, max);
 }

@@ -1,8 +1,7 @@
 "use client";
 
 import { UntrustedCount } from "@ai-matrx/design-system";
-import { noteDisplayLabel } from "@/features/notes/format";
-import { plainTitleFromMarkdown } from "@ai-matrx/rich-content/markdown-core/plain-title";
+import { noteDisplayLabel, notePreviewText } from "@/features/notes/format";
 import React, { useRef, useState, useMemo } from "react";
 import { noteCreateErrorMessage } from "../../utils/writeErrors";
 import { selectNotesListError, selectNotesListStatus } from "../../redux/selectors";
@@ -160,10 +159,6 @@ export default function MobileNotesList({
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
-  const getPreviewText = (content: string | null | undefined) => {
-    return plainTitleFromMarkdown(content) || "No content";
-  };
-
   const isFiltered =
     filters.folder !== "all" ||
     filters.tags.length > 0 ||
@@ -310,9 +305,11 @@ export default function MobileNotesList({
                       <h3 className="mb-0.5 truncate text-sm font-semibold text-foreground">
                         {noteDisplayLabel(note)}
                       </h3>
-                      <p className="mb-1.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-                        {getPreviewText(note.content ?? note.content_preview)}
-                      </p>
+                      {notePreviewText(noteDisplayLabel(note), note.content ?? note.content_preview) && (
+                        <p className="mb-1.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                          {notePreviewText(noteDisplayLabel(note), note.content ?? note.content_preview)}
+                        </p>
+                      )}
                       <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Clock size={10} />

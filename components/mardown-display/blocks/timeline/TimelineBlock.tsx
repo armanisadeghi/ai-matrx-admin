@@ -32,6 +32,7 @@ import { downloadFile } from "@ai-matrx/kit/download";
 import { toast } from "@/lib/toast";
 import { icsFileName } from "@/lib/calendar/eventLinks";
 import { timelineCalendarEvents, timelineIcs } from "./timeline-calendar";
+import { CopySourceButton } from "../common/CopySourceButton";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 import { BlockControlsButton, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 
@@ -326,6 +327,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
         onDataImport={handleDataImport}
         extraActions={
           <>
+            <CopySourceButton source={source} />
             <BlockControlsButton controls={controls} title={timeline.title} />
             <IconButton
               icon={Printer}
@@ -450,6 +452,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
                             <span className="truncate">{event.date}</span>
                           </div>
 
+                          {event.description && (
                           <p
                             className={`text-xs text-muted-foreground leading-relaxed mt-1.5 ${
                               completedEvents.has(event.id)
@@ -459,6 +462,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
                           >
                             {event.description}
                           </p>
+                          )}
                         </div>
 
                         <ArrowRight className="hidden sm:block h-3 w-3 text-muted-foreground flex-shrink-0 mt-1" />

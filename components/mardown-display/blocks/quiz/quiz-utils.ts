@@ -420,3 +420,43 @@ export function getPerformanceData(scorePercentage: number): { message: string; 
   return { message: 'Keep Trying! You\'ll Improve', icon: 'book-open' };
 }
 
+
+/**
+ * THE EDITED QUIZ KEEPS THE ORDER ON SCREEN (review 2026-10-19 #16). Editing a quiz through its
+ * Controls re-dealt every question with a fresh shuffle, so the options jumped on every keystroke
+ * (3,4,5 → 5,4,3 → 4,5,3). A question the person already sees keeps its options where they are —
+ * matched by text, else by their original place — and only new options join at the end; a new
+ * question is dealt fresh. The session (answers, progress) starts over, as before.
+ */
+export function redealEditedQuiz(prev: QuizState, questions: OriginalQuestion[]): QuizState {
+  const fresh = initializeQuizState(questions);
+  const shown = new Map(prev.randomizedQuestions.map((q) => [q.id, q]));
+  fresh.randomizedQuestions = questions.map((q) => {
+    const old = shown.get(q.id);
+    if (!old) return randomizeQuestion(q);
+    const used = new Set<number>();
+    const order: number[] = [];
+    old.options.forEach((text, slot) => {
+      let k = q.options.findIndex((o, i) => o === text && !used.has(i));
+      const was = old.shuffleMap?.[slot];
+      if (k < 0 && typeof was === "number" && was < q.options.length && !used.has(was) && !old.options.includes(q.options[was]!)) k = was;
+      if (k >= 0) {
+        used.add(k);
+        order.push(k);
+      }
+    });
+    q.options.forEach((_, i) => {
+      if (!used.has(i)) order.push(i);
+    });
+    return {
+      id: q.id,
+      question: q.question,
+      options: order.map((i) => q.options[i]!),
+      correctAnswerIndex: order.indexOf(q.correctAnswer),
+      originalCorrectAnswer: q.correctAnswer,
+      shuffleMap: order,
+      explanation: q.explanation,
+    };
+  });
+  return fresh;
+}
