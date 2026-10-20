@@ -97,7 +97,7 @@ describe("split child rows carry the table's own row tint", () => {
     resolveRowColor(
       FEEDBACK_ROW_TINTS.style,
       { id: row.id, data: FEEDBACK_ROW_TINTS.documentOf?.(row) ?? {} },
-      () => null,
+      () => undefined,
     );
   const parentId = harborDentalFeedback.id;
 
