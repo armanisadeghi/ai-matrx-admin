@@ -145,6 +145,152 @@ async function provisionScopeTableInTheStore(
   return made;
 }
 
+/**
+ * A scope door refused an organization the boot named (42501): her organizations were read before
+ * one of them was archived or left (another tab, another owner, a cleanup run). Live 2026-10-20: an
+ * organization archived 0.3 s after the page's membership read refused the whole tree five seconds
+ * later. The tree reads her LIVE organizations, so the snapshot is re-read once and asked again
+ * only when the live set really changed; a refusal that stands is returned as it is.
+ */
+function refusedAnOrganization(result: RecordsResult<unknown> | null): boolean {
+  return !!result && !result.ok && result.error.sqlstate === "42501";
+}
+
+function orgSetKey(ids: readonly string[]): string {
+  return [...ids].sort().join(",");
+}
+
+async function readScopeTreeOnce(
+  opts: { shape?: "whole" | "skeleton" },
+  unlessSameAs?: string,
+): Promise<{ result: RecordsResult<ScopeTreeResponse> | null; askedOrgIds: string[] }> {
+  // SKELETON (lane SCOPES-TREE-PAGED): the same organizations and projects, and the scope types
+  // WITHOUT their scopes (`scopes: []`) — the first paint. The scopes come per type
+  // (`readTypeScopesPage`) or with the whole tree later.
+  const skeleton = opts.shape === "skeleton";
+  try {
+    requireUserId();
+
+    // The current user's org memberships via the canonical membership RPC
+    // (iam.memberships); org identity is resolved from the public
+    // organizations table below (no cross-schema embed).
+    // ONE READ OF HER ORGANIZATIONS AND PROJECTS PER BOOT (lane PAGE-BUNDLE-2): the skeleton and the
+    // whole tree both start here, a moment apart, and each read the same organizations and projects
+    // (2 × chunks × 2 tables per page load). They now share one read while it is in flight and for
+    // SHARED_BOOT_READ_MS after; a `refresh` asks again (`forgetSharedScopeBootRead`).
+    const boot = await sharedScopeBootRead(async () => {
+      // Her memberships and organization rows: the ONE shared read (`memberOrganizationRows.ts`).
+      const member = await readMemberOrganizationRows();
+      if (!member.ok) {
+        return { read: false as const, failed: { ok: false as const, error: mapThrownError(member.error, "scopesService") } };
+      }
+      const roleByOrgId = new Map(member.roleByOrgId);
+      type OrgRow = {
+        id: string;
+        name: string;
+        abbreviation: string;
+        logo_url: string | null;
+        slug: string;
+        settings: unknown;
+        created_by: string | null;
+        archived_at: string | null;
+      };
+      const orgsRes = { data: [...(member.rows as unknown as OrgRow[])] };
+      // Her organizations' projects — EVERY organization, scoped by the server
+      // (`projects.in_my_organizations`), never an id list built from the first page of her
+      // organizations (bounded organizations: that dropped every project past page 1).
+      let projectsRes: { data: Awaited<ReturnType<typeof listMyOrganizationsProjectSummaries>> };
+      try {
+        projectsRes = { data: await listMyOrganizationsProjectSummaries() };
+      } catch (e) {
+        return { read: false as const, failed: { ok: false as const, error: mapThrownError(e, "scopesService") } };
+      }
+      // A project's organization past the first page gets its row by id (one
+      // `iam.my_organizations_by_ids` call), so the tree has a node to hang it on.
+      const beyondFirstPage = [
+        ...new Set((projectsRes.data ?? []).map((p) => p.organization_id).filter((id) => id && !roleByOrgId.has(id))),
+      ];
+      if (beyondFirstPage.length > 0) {
+        const named = await readMyOrganizationsByIds(beyondFirstPage);
+        if (!named.ok) {
+          return { read: false as const, failed: { ok: false as const, error: mapThrownError(named.error, "scopesService") } };
+        }
+        for (const entry of named.entries) {
+          if (entry.organization.archived_at) continue; // the tree holds live organizations only
+          roleByOrgId.set(entry.organization.id, entry.role);
+          orgsRes.data.push(entry.organization as unknown as OrgRow);
+        }
+      }
+      // The project -> scope edges ride the SAME shared read: the skeleton and the whole tree both
+      // need them, and each asked `assoc_for_sources` again (the page-load repeat, 2026-10-13).
+      const projectScopesRes = await bulkEntityScopeIds(
+        "project",
+        (projectsRes.data ?? []).map((p) => p.id),
+      );
+      if (!projectScopesRes.ok) return { read: false as const, failed: projectScopesRes };
+      return { read: true as const, roleByOrgId, orgsRes, projectsRes, projectScopesRes };
+    });
+    if (!boot.read) return { result: boot.failed, askedOrgIds: [] };
+    const { roleByOrgId, orgsRes, projectsRes, projectScopesRes } = boot;
+
+    // THE SCOPE TYPES AND SCOPES, FROM THE STORE (lane SCOPES-READS-WEB): one call of
+    // `custom.context_tree` for the LIVE organizations of the caller's memberships — the door
+    // decides each one it is named and refuses an organization the caller cannot reach, so an
+    // archived organization (closed, never a place to work) is not named. The door answers the
+    // live working set only (the F6 rule: a removed type or scope never reaches a picker) and
+    // every scope, however many (no 1000-row page cap: one answer, not a paged table read).
+    const liveOrgIds = (orgsRes.data ?? [])
+      .filter((row) => !("archived_at" in row) || !row.archived_at)
+      .map((row) => row.id);
+    // A re-read after a refusal asks the door again only for a different live set.
+    if (unlessSameAs !== undefined && orgSetKey(liveOrgIds) === unlessSameAs) return { result: null, askedOrgIds: liveOrgIds };
+    // Beside it, in parallel: the project → scope edges of these projects (see below).
+    const treeRes = await (skeleton
+      ? scopeDoors().types(liveOrgIds).then((r): RecordsResult<ScopeTypeWithScopes[]> =>
+          r.ok ? ok(r.data.types.map((t) => ({ ...t, scopes: [] }))) : r,
+        )
+      : scopeDoors().tree(liveOrgIds));
+    if (!treeRes.ok) return { result: treeRes, askedOrgIds: liveOrgIds };
+    const treeTypes: ScopeTypeWithScopes[] = treeRes.data;
+
+    // Per-project scope_id list, read from the SOURCE side: the project →
+    // scope edges of these projects, and nothing else.
+    //
+    // NEVER from the target side (2026-09-27, rpc/assoc_for_targets 500 =
+    // Postgres 57014 statement timeout on every right-click menu mount):
+    // `assoc_for_targets('scope', <every scope>)` returned every edge INTO
+    // every scope from every source type (transcripts, agents, workflows …),
+    // row-checked each one, paged the whole set-returning function twice,
+    // and kept only the project edges — 3–4 s per page against an 8 s limit,
+    // for zero project edges (the project-tagged scopes sat past the 1000-row
+    // cap). The source-side read answers the same question from the ~30
+    // projects in ~60 ms. Guard: scope-tree-reads-project-tags-from-the-source-side.test.ts.
+    const projectScopes = new Map<string, string[]>(
+      Object.entries(projectScopesRes.data),
+    );
+
+    const organizations = assembleOrganizations({
+      orgRows: orgsRes.data ?? [],
+      roleByOrgId,
+      viewerId: requireUserId(),
+      scopeTypes: treeTypes,
+      projects: projectsRes.data ?? [],
+      projectScopes,
+    });
+
+    return {
+      result: ok({
+        organizations,
+        fetched_at: new Date().toISOString(),
+      }),
+      askedOrgIds: liveOrgIds,
+    };
+  } catch (e) {
+    const mapped = mapThrownError(e, "scopesService");
+    return { result: { ok: false, error: mapped }, askedOrgIds: [] };
+  }
+}
+
 export const scopesService = {
   /**
    * THIS SCOPE'S COPY OF A TEMPLATE-BACKED TABLE — the table id, creating it on first ask, in the
@@ -190,126 +336,14 @@ export const scopesService = {
   async getScopeTree(
     opts: { shape?: "whole" | "skeleton" } = {},
   ): Promise<RecordsResult<ScopeTreeResponse>> {
-    // SKELETON (lane SCOPES-TREE-PAGED): the same organizations and projects, and the scope types
-    // WITHOUT their scopes (`scopes: []`) — the first paint. The scopes come per type
-    // (`readTypeScopesPage`) or with the whole tree later.
-    const skeleton = opts.shape === "skeleton";
-    try {
-      requireUserId();
-
-      // The current user's org memberships via the canonical membership RPC
-      // (iam.memberships); org identity is resolved from the public
-      // organizations table below (no cross-schema embed).
-      // ONE READ OF HER ORGANIZATIONS AND PROJECTS PER BOOT (lane PAGE-BUNDLE-2): the skeleton and the
-      // whole tree both start here, a moment apart, and each read the same organizations and projects
-      // (2 × chunks × 2 tables per page load). They now share one read while it is in flight and for
-      // SHARED_BOOT_READ_MS after; a `refresh` asks again (`forgetSharedScopeBootRead`).
-      const boot = await sharedScopeBootRead(async () => {
-        // Her memberships and organization rows: the ONE shared read (`memberOrganizationRows.ts`).
-        const member = await readMemberOrganizationRows();
-        if (!member.ok) {
-          return { read: false as const, failed: { ok: false as const, error: mapThrownError(member.error, "scopesService") } };
-        }
-        const roleByOrgId = new Map(member.roleByOrgId);
-        type OrgRow = {
-          id: string;
-          name: string;
-          abbreviation: string;
-          logo_url: string | null;
-          slug: string;
-          settings: unknown;
-          created_by: string | null;
-          archived_at: string | null;
-        };
-        const orgsRes = { data: [...(member.rows as unknown as OrgRow[])] };
-        // Her organizations' projects — EVERY organization, scoped by the server
-        // (`projects.in_my_organizations`), never an id list built from the first page of her
-        // organizations (bounded organizations: that dropped every project past page 1).
-        let projectsRes: { data: Awaited<ReturnType<typeof listMyOrganizationsProjectSummaries>> };
-        try {
-          projectsRes = { data: await listMyOrganizationsProjectSummaries() };
-        } catch (e) {
-          return { read: false as const, failed: { ok: false as const, error: mapThrownError(e, "scopesService") } };
-        }
-        // A project's organization past the first page gets its row by id (one
-        // `iam.my_organizations_by_ids` call), so the tree has a node to hang it on.
-        const beyondFirstPage = [
-          ...new Set((projectsRes.data ?? []).map((p) => p.organization_id).filter((id) => id && !roleByOrgId.has(id))),
-        ];
-        if (beyondFirstPage.length > 0) {
-          const named = await readMyOrganizationsByIds(beyondFirstPage);
-          if (!named.ok) {
-            return { read: false as const, failed: { ok: false as const, error: mapThrownError(named.error, "scopesService") } };
-          }
-          for (const entry of named.entries) {
-            if (entry.organization.archived_at) continue; // the tree holds live organizations only
-            roleByOrgId.set(entry.organization.id, entry.role);
-            orgsRes.data.push(entry.organization as unknown as OrgRow);
-          }
-        }
-        // The project -> scope edges ride the SAME shared read: the skeleton and the whole tree both
-        // need them, and each asked `assoc_for_sources` again (the page-load repeat, 2026-10-13).
-        const projectScopesRes = await bulkEntityScopeIds(
-          "project",
-          (projectsRes.data ?? []).map((p) => p.id),
-        );
-        if (!projectScopesRes.ok) return { read: false as const, failed: projectScopesRes };
-        return { read: true as const, roleByOrgId, orgsRes, projectsRes, projectScopesRes };
-      });
-      if (!boot.read) return boot.failed;
-      const { roleByOrgId, orgsRes, projectsRes, projectScopesRes } = boot;
-
-      // THE SCOPE TYPES AND SCOPES, FROM THE STORE (lane SCOPES-READS-WEB): one call of
-      // `custom.context_tree` for the LIVE organizations of the caller's memberships — the door
-      // decides each one it is named and refuses an organization the caller cannot reach, so an
-      // archived organization (closed, never a place to work) is not named. The door answers the
-      // live working set only (the F6 rule: a removed type or scope never reaches a picker) and
-      // every scope, however many (no 1000-row page cap: one answer, not a paged table read).
-      const liveOrgIds = (orgsRes.data ?? [])
-        .filter((row) => !("archived_at" in row) || !row.archived_at)
-        .map((row) => row.id);
-      // Beside it, in parallel: the project → scope edges of these projects (see below).
-      const treeRes = await (skeleton
-        ? scopeDoors().types(liveOrgIds).then((r): RecordsResult<ScopeTypeWithScopes[]> =>
-            r.ok ? ok(r.data.types.map((t) => ({ ...t, scopes: [] }))) : r,
-          )
-        : scopeDoors().tree(liveOrgIds));
-      if (!treeRes.ok) return treeRes;
-      const treeTypes: ScopeTypeWithScopes[] = treeRes.data;
-
-      // Per-project scope_id list, read from the SOURCE side: the project →
-      // scope edges of these projects, and nothing else.
-      //
-      // NEVER from the target side (2026-09-27, rpc/assoc_for_targets 500 =
-      // Postgres 57014 statement timeout on every right-click menu mount):
-      // `assoc_for_targets('scope', <every scope>)` returned every edge INTO
-      // every scope from every source type (transcripts, agents, workflows …),
-      // row-checked each one, paged the whole set-returning function twice,
-      // and kept only the project edges — 3–4 s per page against an 8 s limit,
-      // for zero project edges (the project-tagged scopes sat past the 1000-row
-      // cap). The source-side read answers the same question from the ~30
-      // projects in ~60 ms. Guard: scope-tree-reads-project-tags-from-the-source-side.test.ts.
-      const projectScopes = new Map<string, string[]>(
-        Object.entries(projectScopesRes.data),
-      );
-
-      const organizations = assembleOrganizations({
-        orgRows: orgsRes.data ?? [],
-        roleByOrgId,
-        viewerId: requireUserId(),
-        scopeTypes: treeTypes,
-        projects: projectsRes.data ?? [],
-        projectScopes,
-      });
-
-      return ok({
-        organizations,
-        fetched_at: new Date().toISOString(),
-      });
-    } catch (e) {
-      const mapped = mapThrownError(e, "scopesService");
-      return { ok: false, error: mapped };
-    }
+    const first = await readScopeTreeOnce(opts);
+    if (!first.result) throw new Error("scopesService.getScopeTree: the first read always answers");
+    if (!refusedAnOrganization(first.result)) return first.result;
+    // Her organizations changed after they were read: read them again, and ask the door again only
+    // for a different live set (the same set refused again is a real refusal, returned as it is).
+    forgetSharedScopeBootRead();
+    const again = await readScopeTreeOnce(opts, orgSetKey(first.askedOrgIds));
+    return again.result ?? first.result;
   },
 
   /**
