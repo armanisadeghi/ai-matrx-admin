@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "6b20e2852ba2";
+export const KIND_REGISTRY_FINGERPRINT = "5104dca1a846";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -194,8 +194,8 @@ export interface AgentDefinitionMessage {
 /**
  * Instructions to the translator about a message — never content
  * (typed-messages FEATURE.md, Flag row). ``prefill``: the last assistant turn
- * the reply continues from. ``cache_boundary``: cache everything up to here.
- * ``example``: a few-shot user/assistant turn.
+ * the reply continues from. ``example``: a few-shot user/assistant turn. Cache
+ * marks are the platform's own (matrx_ai config/cache_marks.py).
  *  *
  *  * Shared by 2 kinds (agent_definition, agent_factory_build).
  */
@@ -206,7 +206,6 @@ export interface AgentDefinitionMessageFlags {
   __kind?: string;
   example?: boolean | null;
   prefill?: boolean | null;
-  cache_boundary?: boolean | null;
 }
 
 /**
@@ -214,31 +213,9 @@ export interface AgentDefinitionMessageFlags {
  * FIRST and the answer second — the birth floor reconciles a ceiling too small
  * to hold both (``agent_factory.guards.enforce_reasoning_output_budget``).
  *  *
- *  * From kind `agent_definition`.
+ *  * Shared by 2 kinds (agent_definition, agent_factory_build).
  */
-export interface AgentDefinitionSettings_AgentDefinition {
-  top_p?: number | null;
-  /**
-   * The registered kind this payload is an instance of, when it is one.
-   */
-  __kind?: string;
-  stream?: boolean;
-  temperature?: number | null;
-  reasoning_effort?: "none" | "minimal" | "low" | "medium" | "high" | "xhigh" | null;
-  max_output_tokens?: number | null;
-  reasoning_summary?: "concise" | "detailed" | "never" | "auto" | "always" | null;
-  internal_web_search?: boolean | null;
-  internal_url_context?: boolean | null;
-}
-
-/**
- * Run settings. A reasoning agent spends ``max_output_tokens`` on reasoning
- * FIRST and the answer second — the birth floor reconciles a ceiling too small
- * to hold both (``agent_factory.guards.enforce_reasoning_output_budget``).
- *  *
- *  * From kind `agent_factory_build`.
- */
-export interface AgentDefinitionSettings_AgentFactoryBuild {
+export interface AgentDefinitionSettings {
   top_p?: number | null;
   /**
    * The registered kind this payload is an instance of, when it is one.
@@ -252,6 +229,7 @@ export interface AgentDefinitionSettings_AgentFactoryBuild {
   reasoning_summary?: "concise" | "detailed" | "never" | "auto" | "always" | null;
   internal_web_search?: boolean | null;
   internal_url_context?: boolean | null;
+  extended_prompt_cache?: boolean | null;
 }
 
 /**
@@ -2707,32 +2685,20 @@ export interface CompetitorOpportunityArtifactSection {
 }
 
 /**
- * Everything a component author needs, returned by ``kind_create``.
+ * Where the component author's rules are, returned by ``kind_create``.
+ *
+ * The rules themselves live ONLY in the ``shape-authoring`` skill, attached to
+ * every run holding this tool — never restated in a tool result.
  *  *
  *  * From kind `kind_create_result`.
  */
 export interface ComponentAuthoringBundle {
+  rules?: string;
   /**
    * The registered kind this payload is an instance of, when it is one.
    */
   __kind?: string;
   compile_gate?: string;
-  props_contract?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    [key: string]: string | undefined;
-  };
-  allowed_imports?: string[];
-  design_doctrine?: string;
-  platform_components?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    [key: string]: string | undefined;
-  };
 }
 
 /**
@@ -3480,7 +3446,7 @@ export interface DomainItem {
  * * From kind `agent_test_case_state`.
  */
 export interface DoorPick {
-  door: "manual" | "manual_chat" | "agents" | "mandates" | "mcp_agent_run" | "agent_call" | "parity";
+  door: "manual" | "manual_chat" | "agents" | "mandates" | "mcp_agent_run" | "agent_call" | "parity" | "pairwise";
   seed?: string | null;
   /**
    * The registered kind this payload is an instance of, when it is one.
@@ -10470,7 +10436,7 @@ export interface SocialAccountItem {
 }
 
 /**
- * * From kind `social_search_results`.
+ * * Shared by 2 kinds (social_post, social_search_results).
  */
 export interface SocialBrowserCapture {
   notes?: string[];
@@ -10487,7 +10453,7 @@ export interface SocialBrowserCapture {
 /**
  * Set only when a setting clipped what the person asked for: which setting, its value, what was asked.
  *  *
- *  * From kind `social_search_results`.
+ *  * Shared by 3 kinds (social_post, social_profile, social_search_results).
  */
 export interface SocialLimitApplied {
   value: number;
@@ -10502,7 +10468,7 @@ export interface SocialLimitApplied {
 /**
  * Archive completeness; a cover never counts as a captured carousel slide.
  *  *
- *  * From kind `social_search_results`.
+ *  * Shared by 2 kinds (social_post, social_search_results).
  */
 export interface SocialMediaCoverage {
   /**
@@ -10520,35 +10486,22 @@ export interface SocialMediaCoverage {
 /**
  * One stored media file of a post. ``door`` is the signed-in server path that streams the bytes.
  *  *
- *  * From kind `social_post`.
+ *  * Shared by 2 kinds (social_post, social_search_results).
  */
-export interface SocialPostMedia_SocialPost {
+export interface SocialPostMedia {
   door: string;
   role: string;
+  width?: number | null;
   /**
    * The registered kind this payload is an instance of, when it is one.
    */
   __kind?: string;
+  height?: number | null;
   file_id: string;
+  checksum?: string | null;
   mime_type?: string | null;
   size_bytes?: number | null;
-}
-
-/**
- * One stored media file of a post. ``door`` is the signed-in server path that streams the bytes.
- *  *
- *  * From kind `social_search_results`.
- */
-export interface SocialPostMedia_SocialSearchResults {
-  door: string;
-  role: string;
-  /**
-   * The registered kind this payload is an instance of, when it is one.
-   */
-  __kind?: string;
-  file_id: string;
-  mime_type?: string | null;
-  size_bytes?: number | null;
+  duration_ms?: number | null;
   source_index?: number | null;
   source_identity?: string | null;
 }
@@ -12206,7 +12159,7 @@ export interface ActionItem {
  * One ad from an ad library (Meta, TikTok, Google, LinkedIn): copy, call to action, landing page,
  * how long it ran, and its media. ``library`` is the source.
  *  *
- *  * Kind `ad_creative` (registry v4).
+ *  * Kind `ad_creative` (registry v5).
  */
 export interface AdCreative {
   cta?: string | null;
@@ -12233,6 +12186,7 @@ export interface AdCreative {
   impressions?: number | null;
   landing_url?: string | null;
   advertiser_id?: string | null;
+  image_file_id?: string | null;
   platform_ad_id: string;
   advertiser_name?: string | null;
 }
@@ -12432,7 +12386,7 @@ export interface AgentDebrief {
  * live ``agent.definition`` row (with its v1 snapshot); rendered, it is the
  * agent a person is watching being built.
  *  *
- *  * Kind `agent_definition` (registry v10).
+ *  * Kind `agent_definition` (registry v11).
  */
 export interface AgentDefinition {
   name: string;
@@ -12445,7 +12399,7 @@ export interface AgentDefinition {
   category: string;
   messages: AgentDefinitionMessage[];
   model_id: string;
-  settings: AgentDefinitionSettings_AgentDefinition;
+  settings: AgentDefinitionSettings;
   description?: string;
   custom_tools?: string[];
   context_policies?: AgentDefinitionContextPolicy[];
@@ -12605,7 +12559,7 @@ export interface AgentFactoryBuildRequestOffer {
 }
 
 /**
- * Kind `agent_factory.contract_step.offer` (registry v12).
+ * Kind `agent_factory.contract_step.offer` (registry v13).
  */
 export interface AgentFactoryContractStepOffer {
   /**
@@ -12693,7 +12647,7 @@ export interface AgentFactoryContractStepOffer {
    */
   exemplars_prompt?: string;
   /**
-   * How many active kinds the menu lists — a check that it arrived whole.
+   * How many active kinds exist; the menu lists the closest of them.
    */
   active_kind_count: number;
   /**
@@ -12720,7 +12674,7 @@ export interface AgentFactoryContractStepOffer {
    */
   send_back_findings?: string;
   /**
-   * The FULL menu of ACTIVE output kinds, one per line: slug, label, one-line description, top-level keys. The answer's kind comes from this list or is a new-kind proposal.
+   * The general ACTIVE output kinds plus those closest to the job, one per line: slug, label, one-line description, top-level keys. The answer's kind comes from this list, is any other active kind named exactly, or is a new-kind proposal.
    */
   active_kinds_prompt: string;
   /**
@@ -13643,7 +13597,7 @@ export interface AgentFactoryToolStepOffer {
  * code saves it through the one guarded writer, so a build creates exactly one
  * agent row.
  *  *
- *  * Kind `agent_factory_build` (registry v6).
+ *  * Kind `agent_factory_build` (registry v7).
  */
 export interface AgentFactoryBuild {
   /**
@@ -15331,10 +15285,10 @@ export interface AgentTaskList {
 /**
  * One test case under one setup and repeat, ready to run.
  *  *
- *  * Kind `agent_test_case_ref` (registry v3).
+ *  * Kind `agent_test_case_ref` (registry v4).
  */
 export interface AgentTestCaseRef {
-  door?: "manual" | "manual_chat" | "agents" | "mandates" | "mcp_agent_run" | "agent_call" | "parity" | null;
+  door?: "manual" | "manual_chat" | "agents" | "mandates" | "mcp_agent_run" | "agent_call" | "parity" | "pairwise" | null;
   setup: RunSetup;
   /**
    * The registered kind this payload is an instance of.
@@ -15349,7 +15303,7 @@ export interface AgentTestCaseRef {
 /**
  * Everything a test case accumulates as it moves through the agent_test Steps.
  *  *
- *  * Kind `agent_test_case_state` (registry v3).
+ *  * Kind `agent_test_case_state` (registry v4).
  */
 export interface AgentTestCaseState {
   ref: AgentTestCaseRef;
@@ -24972,7 +24926,7 @@ export interface CoverageGap {
 /**
  * Kind ``coverage_tracker_run_result`` — derived field-for-field from ``TrackerRunResult``.
  *  *
- *  * Kind `coverage_tracker_run_result` (registry v4).
+ *  * Kind `coverage_tracker_run_result` (registry v5).
  */
 export interface CoverageTrackerRunResult {
   error?: string | null;
@@ -24995,6 +24949,7 @@ export interface CoverageTrackerRunResult {
   queries_refused?: number;
   items_unresolved?: number;
   mentions_created?: number;
+  notifications_sent?: number;
 }
 
 /**
@@ -29862,7 +29817,7 @@ export interface GoogleImageSearchResults {
 /**
  * Every argument the google_marketing tool accepts, derived from its own wire models. Each action uses the subset it declares; the node's input model is the one that enforces which.
  *  *
- *  * Kind `google_marketing_request` (registry v5).
+ *  * Kind `google_marketing_request` (registry v6).
  */
 export interface GoogleMarketingRequest {
   /**
@@ -29901,6 +29856,7 @@ export interface GoogleMarketingRequest {
    */
   channel_id?: string | null;
   start_date?: string | null;
+  sitemap_url?: string | null;
   /**
    * Container to grade, from read_tag_manager; omit when there is one.
    */
@@ -29913,6 +29869,10 @@ export interface GoogleMarketingRequest {
    * Lowest window position kept.
    */
   min_position?: number | null;
+  /**
+   * A UUID retained across retries of this exact request.
+   */
+  operation_id?: string | null;
   /**
    * Only when several Google accounts are connected: the email of the one to use.
    */
@@ -32782,7 +32742,7 @@ export interface KindContentBlockResult {
 /**
  * Receipt of ``kind_create`` — the authored (inactive) kind and its assets.
  *  *
- *  * Kind `kind_create_result` (registry v7).
+ *  * Kind `kind_create_result` (registry v8).
  */
 export interface KindCreateResult {
   kind?: string;
@@ -39921,10 +39881,11 @@ export interface NotableTimestamp {
 }
 
 /**
- * Kind `note_tool_result` (registry v5).
+ * Kind `note_tool_result` (registry v6).
  */
 export interface NoteToolResult {
   id?: string | null;
+  home?: string | null;
   note?: string | null;
   tags?: string[] | null;
   count?: number | null;
@@ -53275,7 +53236,7 @@ export interface SerpAnalysis {
  * dispatches on the nested `__kind` and renders the canonical component the
  * search pilot already built.
  *  *
- *  * Kind `serp_placement` (registry v9).
+ *  * Kind `serp_placement` (registry v10).
  */
 export interface SerpPlacement {
   /**
@@ -53561,7 +53522,7 @@ export interface SiteUrlVerificationResult {
 }
 
 /**
- * Kind `skill_tool_result` (registry v4).
+ * Kind `skill_tool_result` (registry v5).
  */
 export interface SkillToolResult {
   id?: string | null;
@@ -53569,7 +53530,12 @@ export interface SkillToolResult {
   hint?: string | null;
   mode?: string | null;
   count?: number | null;
-  hints?: (Record<string, unknown>)[] | null;
+  hints?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[] | null;
   label?: string | null;
   query?: string | null;
   /**
@@ -53577,20 +53543,48 @@ export interface SkillToolResult {
    */
   __kind?: "skill_tool_result";
   offset?: number | null;
+  members?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[] | null;
+  outline?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[] | null;
+  section?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  } | null;
+  skipped?: number | null;
   version?: number | null;
   category?: string | null;
   has_more?: boolean | null;
   skill_id?: string | null;
-  categories?: (Record<string, unknown>)[] | null;
+  categories?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[] | null;
   skill_type?: string | null;
   description?: string | null;
   next_offset?: number | null;
   total_chars?: number | null;
+  not_runnable?: string[] | null;
   total_active?: number | null;
   allowed_tools?: string[] | null;
   category_path?: JsonValue | null;
+  section_count?: number | null;
   chars_returned?: number | null;
+  next_section_id?: string | null;
   trigger_patterns?: JsonValue | null;
+  outline_truncated?: boolean | null;
   disable_auto_invocation?: boolean | null;
 }
 
@@ -53785,13 +53779,13 @@ export interface SocialDataTranscript {
  * One public post (TikTok, Instagram, YouTube, LinkedIn, Facebook, X, Threads) as stored in the shared
  * cache, with its stored media, transcript status and outlier stat. Provider is a field, never a slug.
  *  *
- *  * Kind `social_post` (registry v5).
+ *  * Kind `social_post` (registry v6).
  */
 export interface SocialPost {
   url?: string | null;
   stat?: SocialPostStat | null;
   is_ad?: boolean | null;
-  media?: SocialPostMedia_SocialPost[];
+  media?: SocialPostMedia[];
   title?: string | null;
   trace: SocialProviderTrace;
   /**
@@ -53811,16 +53805,18 @@ export interface SocialPost {
   transcript?: PostTranscript | null;
   media_notes?: string[];
   thumbnail_url?: string | null;
+  media_coverage?: SocialMediaCoverage;
   comments_stored?: number | null;
   duration_seconds?: number | null;
   platform_post_id: string;
   thumbnail_file_id?: string | null;
+  comments_limit_applied?: SocialLimitApplied | null;
 }
 
 /**
  * A public account with its audience numbers, plus what this fetch walked (posts pages, ids).
  *  *
- *  * Kind `social_profile` (registry v3).
+ *  * Kind `social_profile` (registry v4).
  */
 export interface SocialProfile {
   bio?: string | null;
@@ -53831,11 +53827,14 @@ export interface SocialProfile {
    */
   __kind?: "social_profile";
   handle: string;
+  reused?: boolean;
   category?: string | null;
   has_more?: boolean;
   platform: string;
   post_ids?: string[];
+  continued?: boolean;
   avatar_url?: string | null;
+  fetched_at?: string | null;
   list_trace?: SocialProviderTrace[];
   post_count?: number | null;
   profile_id: string;
@@ -53846,9 +53845,17 @@ export interface SocialProfile {
   display_name?: string | null;
   external_url?: string | null;
   pages_walked?: number;
+  limit_applied?: SocialLimitApplied | null;
   follower_count?: number | null;
+  posts_received?: number;
   posts_upserted?: number;
+  stopped_reason?: string | null;
   following_count?: number | null;
+  posts_requested?: number | null;
+  /**
+   * The platform's own id for the account (numeric LinkedIn company or Facebook page, YouTube UC… channel, Instagram/TikTok/X user id) — its identity under any link form.
+   */
+  platform_user_id?: string | null;
   cost_split_organizations?: number | null;
 }
 
@@ -53871,7 +53878,7 @@ export interface SocialProfileAnswerList {
  * profile with its recent posts. Every item is a stored ``social_post`` / ``social_profile`` — the rows the
  * search, trending and profile fetches already keep in the shared cache — so each card opens its record.
  *  *
- *  * Kind `social_search_results` (registry v3).
+ *  * Kind `social_search_results` (registry v4).
  */
 export interface SocialSearchResults {
   mode: "search" | "trending" | "profile";
@@ -59034,16 +59041,24 @@ export interface WebEvidenceAnchorTextDescriptivenessV1 {
 /**
  * Evidence payload for the Asset Delivery Evidence SEO check.
  *  *
- *  * Kind `web_evidence_asset_delivery_v1` (registry v4).
+ *  * Kind `web_evidence_asset_delivery_v1` (registry v5).
  */
 export interface WebEvidenceAssetDeliveryV1 {
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "web_evidence_asset_delivery_v1";
-  audits?: Record<string, number> | null;
+  audits?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: number | string | undefined;
+  } | null;
   strategy?: string | null;
   total_savings_ms?: number | null;
+  largest_saving_ms?: number | null;
+  largest_saving_audit?: string | null;
 }
 
 /**
@@ -59062,7 +59077,7 @@ export interface WebEvidenceBrokenImagesV1 {
 /**
  * Shared by ``broken_internal_links`` and ``broken_external_links``.
  *  *
- *  * Kind `web_evidence_broken_targets_v1` (registry v4).
+ *  * Kind `web_evidence_broken_targets_v1` (registry v5).
  */
 export interface WebEvidenceBrokenTargetsV1 {
   /**
@@ -59070,12 +59085,13 @@ export interface WebEvidenceBrokenTargetsV1 {
    */
   __kind?: "web_evidence_broken_targets_v1";
   broken_targets?: unknown[] | null;
+  blocked_targets?: unknown[] | null;
 }
 
 /**
  * Evidence payload for the Caching Policy Evidence SEO check.
  *  *
- *  * Kind `web_evidence_caching_policy_v1` (registry v4).
+ *  * Kind `web_evidence_caching_policy_v1` (registry v5).
  */
 export interface WebEvidenceCachingPolicyV1 {
   /**
@@ -59084,8 +59100,11 @@ export interface WebEvidenceCachingPolicyV1 {
   __kind?: "web_evidence_caching_policy_v1";
   strategy?: string | null;
   static_bytes?: number | null;
+  list_truncated?: boolean | null;
   short_ttl_urls?: string[] | null;
+  third_party_hosts?: string[] | null;
   well_cached_bytes?: number | null;
+  third_party_not_yours?: string[] | null;
 }
 
 /**
@@ -59104,7 +59123,7 @@ export interface WebEvidenceCanonicalConflictsV1 {
 /**
  * Evidence payload for the Cumulative Layout Shift Evidence SEO check.
  *  *
- *  * Kind `web_evidence_cls_v1` (registry v4).
+ *  * Kind `web_evidence_cls_v1` (registry v5).
  */
 export interface WebEvidenceClsV1 {
   cls?: number | null;
@@ -59112,6 +59131,7 @@ export interface WebEvidenceClsV1 {
    * The registered kind this payload is an instance of.
    */
   __kind?: "web_evidence_cls_v1";
+  source?: string | null;
   strategy?: string | null;
 }
 
@@ -59308,14 +59328,16 @@ export interface WebEvidenceHtmlLangValidityV1 {
 /**
  * Shared by ``broken_page_4xx`` and ``server_error_5xx``.
  *  *
- *  * Kind `web_evidence_http_status_v1` (registry v5).
+ *  * Kind `web_evidence_http_status_v1` (registry v6).
  */
 export interface WebEvidenceHttpStatusV1 {
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "web_evidence_http_status_v1";
+  in_sitemap?: boolean | null;
   http_status?: number | null;
+  inlink_pages?: number | null;
   blocked_reason?: string | null;
 }
 
@@ -59392,13 +59414,15 @@ export interface WebEvidenceImageOversizedV1 {
 /**
  * Evidence payload for the Interactivity (TBT/INP) Evidence SEO check.
  *  *
- *  * Kind `web_evidence_inp_tbt_v1` (registry v4).
+ *  * Kind `web_evidence_inp_tbt_v1` (registry v5).
  */
 export interface WebEvidenceInpTbtV1 {
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "web_evidence_inp_tbt_v1";
+  inp_ms?: number | null;
+  source?: string | null;
   tbt_ms?: number | null;
   strategy?: string | null;
 }
@@ -59449,7 +59473,7 @@ export interface WebEvidenceInternalRedirectLinksV1 {
 /**
  * Evidence payload for the Largest Contentful Paint Evidence SEO check.
  *  *
- *  * Kind `web_evidence_lcp_v1` (registry v4).
+ *  * Kind `web_evidence_lcp_v1` (registry v5).
  */
 export interface WebEvidenceLcpV1 {
   /**
@@ -59457,6 +59481,7 @@ export interface WebEvidenceLcpV1 {
    */
   __kind?: "web_evidence_lcp_v1";
   lcp_ms?: number | null;
+  source?: string | null;
   strategy?: string | null;
 }
 
@@ -59492,14 +59517,16 @@ export interface WebEvidenceMetaRefreshRedirectV1 {
 /**
  * Evidence payload for the Meta Robots Conflicts Evidence SEO check.
  *  *
- *  * Kind `web_evidence_meta_robots_conflicts_v1` (registry v4).
+ *  * Kind `web_evidence_meta_robots_conflicts_v1` (registry v5).
  */
 export interface WebEvidenceMetaRobotsConflictsV1 {
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "web_evidence_meta_robots_conflicts_v1";
+  in_sitemap?: boolean | null;
   meta_robots?: string | null;
+  inlink_pages?: number | null;
 }
 
 /**
@@ -59684,7 +59711,7 @@ export interface WebEvidenceSitemapCoverageV1 {
 /**
  * Evidence payload for the Sitemap Health Evidence SEO check.
  *  *
- *  * Kind `web_evidence_sitemap_health_v1` (registry v4).
+ *  * Kind `web_evidence_sitemap_health_v1` (registry v5).
  */
 export interface WebEvidenceSitemapHealthV1 {
   /**
@@ -59697,7 +59724,9 @@ export interface WebEvidenceSitemapHealthV1 {
   oversized?: unknown[] | null;
   redirecting?: unknown[] | null;
   unreachable?: unknown[] | null;
+  could_not_check?: unknown[] | null;
   not_found_or_error?: unknown[] | null;
+  unchecked_sitemaps?: unknown[] | null;
 }
 
 /**
