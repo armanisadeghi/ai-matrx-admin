@@ -1,5 +1,7 @@
 # Shell — the application chrome (sidebar, header, user block, mobile)
 
+> **New app frame in design (2026-10-20):** improving any shell chrome here (sidebar, menus, header, page tops, footer, side chat, Canvas, the ask-about-this-page input)? Keep going, and add one line to `common-docs/projects/app-frame/UPGRADES.md` so the new frame inherits it.
+
 **Purpose:** the one frame around every authenticated route (`AppShell`, used
 by `(core)` and `(admin)`; the `(dev)` layout mirrors it). Sub-features carry
 their own docs: sidebar `components/sidebar/FEATURE.md`, route headers
