@@ -11863,6 +11863,12 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
+    },
+    "migrations/campaign/serverrows_a_a_pages_levels_are_read_the_way_the_page_reads_them.sql": {
+      "source": "matrx-frontend",
+      "filename": "serverrows_a_a_pages_levels_are_read_the_way_the_page_reads_them.sql",
+      "checksum": "9b4630a39a53284d5477dd26fe2c498f98137354efafe72fae3cc3c8f5d89851",
+      "applied_at": "2026-10-20 06:58:20.616443+00"
     }
   }
 }
