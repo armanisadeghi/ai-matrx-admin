@@ -294,7 +294,8 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({
       )}
 
       <div
-        className={`w-full border transition-colors ${host.selected ? "border-primary" : "border-border"} rounded-xl ${isFullScreen ? "fixed inset-0 z-50 flex items-center justify-center p-2" : "py-2"}`}
+        data-block-frame="resources"
+        className={isFullScreen ? "fixed inset-0 z-50 flex w-full items-center justify-center p-2" : `my-3 w-full overflow-hidden rounded-lg border bg-card transition-colors ${host.selected ? "border-primary" : "border-border"}`}
       >
         <div
           className={`max-w-6xl mx-auto ${isFullScreen ? "bg-textured rounded-xl shadow-2xl h-full max-h-[95dvh] w-full flex flex-col overflow-hidden border border-border" : ""}`}
@@ -324,52 +325,43 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({
             </div>
           )}
 
+          {/* ONE frame (review 2 N3 class): the card's single header row — title left (always
+              visible: the actions wrap under it on a phone), every action right. */}
+          {!isFullScreen && (
+            <div
+              data-block-header
+              className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5"
+            >
+              <div className="flex min-w-[9rem] flex-1 items-center gap-2">
+                <FolderOpen className="h-3.5 w-3.5 shrink-0 text-primary" />
+                <h1 className="min-w-0 text-sm font-medium leading-tight text-foreground">
+                  <InlineControlText controls={controls} fieldKey="title" value={collection.title}>
+                    {collection.title}
+                  </InlineControlText>
+                </h1>
+              </div>
+              <div className="flex shrink-0 flex-wrap items-center gap-0.5">
+                <IconButton
+                  icon={Printer}
+                  tooltip={isPrinting ? "Saving…" : "Print / Save as PDF"}
+                  onClick={handlePrint}
+                  disabled={isPrinting}
+                />
+                <IconButton icon={ExternalLink} tooltip="Open Canvas" onClick={handleOpenCanvas} />
+                <IconButton icon={Maximize2} tooltip="Expand to full screen" onClick={() => setIsFullScreen(true)} />
+                <BlockControlsButton controls={controls} title="Resources controls" />
+                {host.actions}
+              </div>
+            </div>
+          )}
+
           <div className={isFullScreen ? "flex-1 overflow-y-auto" : ""}>
             <div ref={blockContentRef} className="p-2 space-y-3">
-              {/* Header */}
-              <div className="bg-gradient-to-br from-violet-100 via-purple-50 to-fuchsia-100 dark:from-violet-950/40 dark:via-purple-950/30 dark:to-fuchsia-950/40 rounded-xl p-2 border border-violet-200 dark:border-violet-800/50">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="flex items-start gap-2 flex-1 min-w-0">
-                    <div className="p-2 bg-violet-500 dark:bg-violet-600 rounded-lg flex-shrink-0">
-                      <FolderOpen className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h1 className="text-sm font-bold text-foreground leading-tight line-clamp-2">
-                        <InlineControlText controls={controls} fieldKey="title" value={collection.title}>
-                          {collection.title}
-                        </InlineControlText>
-                      </h1>
-                      {collection.description && (
-                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                          {collection.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {!isFullScreen && (
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <IconButton
-                        icon={Printer}
-                        tooltip={isPrinting ? "Saving…" : "Print / Save as PDF"}
-                        onClick={handlePrint}
-                        disabled={isPrinting}
-                      />
-                      <IconButton
-                        icon={ExternalLink}
-                        tooltip="Open Canvas"
-                        onClick={handleOpenCanvas}
-                      />
-                      <IconButton
-                        icon={Maximize2}
-                        tooltip="Expand to full screen"
-                        onClick={() => setIsFullScreen(true)}
-                      />
-                      <BlockControlsButton controls={controls} title="Resources controls" />
-                      {host.actions}
-                    </div>
-                  )}
-                </div>
+              {/* Summary: description, counts, search */}
+              <div>
+                {collection.description && (
+                  <p className="mb-2 text-xs text-muted-foreground line-clamp-2">{collection.description}</p>
+                )}
 
                 {/* Stats */}
                 <div className="grid grid-cols-4 gap-1.5 mb-2">
