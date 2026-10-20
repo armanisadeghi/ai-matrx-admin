@@ -155,9 +155,9 @@ function Fence({ streaming, items }: { streaming: boolean; items: Record<string,
 const items = () => (canvas ? canvas.getState().items : {});
 
 describe("the fence in the answer", () => {
-  it("while streaming: 'Replying to c3…', never the reply", () => {
+  it("while streaming: 'Replying to the comment…', never the reply", () => {
     render(<Fence streaming items={[{ to: "c3", body: REPLY_TEXT }]} />);
-    expect(host.textContent).toContain("Replying to c3…");
+    expect(host.textContent).toContain("Replying to the comment…");
     expect(host.textContent).not.toContain("truck scale —");
   });
 
@@ -172,6 +172,9 @@ describe("the fence in the answer", () => {
     expect(card.textContent).not.toContain("Checking the yard plan.");
     expect(card.textContent).toContain("Intake Agent");
     expect(card.textContent).toContain(REPLY_TEXT);
+    // Review 3, R9: the internal handle is never shown to a person.
+    expect(card.textContent).not.toMatch(/\bc3\b/);
+    expect(card.getAttribute("title")).not.toMatch(/\bc3\b/);
     act(() => card.click());
     const tab = items()["comment-thread::message:answer-1" as never] as unknown as { data: { focus: string | null } } | undefined;
     // Focused on the reply that landed, so the panel scrolls to that thread.
@@ -234,8 +237,9 @@ describe("nothing fails silently", () => {
     await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
     const line = host.querySelector('[data-comment-reply="c3"]')!;
     expect(line.getAttribute("data-comment-reply-state")).toBe("failed");
-    expect(line.textContent).toBe("Couldn't post reply to c3: it was not saved");
-    expect(host.querySelector("button")).toBeNull();
+    expect(line.textContent).toBe("Couldn't post the reply: it was not saved");
+    // No door to a thread; the error's own copy menu (ErrorAlchemyMenu) is not a door.
+    expect(host.querySelector("button:not([data-alchemy-trigger])")).toBeNull();
   });
 
   it("the end of the turn re-reads every open view of the thread", () => {

@@ -197,6 +197,69 @@ function writeNoteField<K extends keyof Note>(
   fields[field] = value;
 }
 
+// ── One undo / redo step over the record's stacks ───────────────────────────
+
+/** Undo the top step (and the linked partner made with it). The stack must not be empty. */
+function stepUndo(record: NoteRecord): void {
+  // A step the app made together with the one beneath it (a generated
+  // title) is undone with it — one Undo reverses what the person typed.
+  let entry = popNonEmpty(record._undoPast);
+  for (;;) {
+    const currentValue = record[entry.field] as Note[NoteUndoableField];
+    record._undoFuture.push({
+      field: entry.field,
+      value: currentValue,
+      timestamp: Date.now(),
+      byteEstimate: estimateBytes(currentValue),
+      ...(entry.linked ? { linked: true } : {}),
+    });
+
+    writeNoteUndoableField(record, entry.field, entry.value);
+
+    // Recalculate dirty: compare against clean baseline
+    const originalValue = record._fieldHistory[entry.field];
+    if (originalValue !== undefined && entry.value === originalValue) {
+      record._dirtyFields.delete(entry.field);
+    } else if (!record._dirtyFields.has(entry.field)) {
+      record._dirtyFields.add(entry.field);
+    }
+    record._dirty = record._dirtyFields.size > 0;
+
+    if (!entry.linked || record._undoPast.length === 0) break;
+    entry = popNonEmpty(record._undoPast);
+  }
+}
+
+/** Redo the top step (and its linked partner). The stack must not be empty. */
+function stepRedo(record: NoteRecord): void {
+  // The step's linked partner (its generated title) comes back with it.
+  for (;;) {
+    const entry = popNonEmpty(record._undoFuture);
+    const currentValue = record[entry.field] as Note[NoteUndoableField];
+    record._undoPast.push({
+      field: entry.field,
+      value: currentValue,
+      timestamp: Date.now(),
+      byteEstimate: estimateBytes(currentValue),
+      ...(entry.linked ? { linked: true } : {}),
+    });
+
+    writeNoteUndoableField(record, entry.field, entry.value);
+
+    record._dirtyFields.add(entry.field);
+    record._dirty = true;
+
+    const next = record._undoFuture[record._undoFuture.length - 1];
+    if (!next?.linked) break;
+  }
+}
+
+function sameValue(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (typeof a !== "object" || typeof b !== "object" || a === null || b === null) return false;
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 // ── Apply field edit with dirty tracking ─────────────────────────────────────
 
 function applyFieldEdit<K extends NoteUndoableField>(
@@ -206,6 +269,24 @@ function applyFieldEdit<K extends NoteUndoableField>(
   linked = false,
 ): void {
   const previousValue = record[field] as Note[K];
+
+  // 🚨 AN UNDO IS NEVER A NEW FORWARD EDIT (review 3 2026-10-20 R3). An editor with its own history
+  // (Write, a block's Controls ⌘Z) reports its undo as a plain change. Pushed as a forward step, the
+  // record's own Undo later RE-APPLIED the change just undone (Pie → Bar → Line, ⌘Z in Controls,
+  // Plain → Write, toolbar Undo gave Line). A change that lands on the record's previous value is that
+  // undo; one that lands on its next value is the redo — the two histories stay one.
+  if (!linked) {
+    const past = record._undoPast[record._undoPast.length - 1];
+    if (past && !past.linked && past.field === field && sameValue(past.value, value)) {
+      stepUndo(record);
+      return;
+    }
+    const future = record._undoFuture[record._undoFuture.length - 1];
+    if (future && !future.linked && future.field === field && sameValue(future.value, value)) {
+      stepRedo(record);
+      return;
+    }
+  }
 
   // Capture clean baseline once per field per clean cycle
   if (!record._dirtyFields.has(field)) {
@@ -626,60 +707,13 @@ const notesSlice = createSlice({
     undoNoteEdit(state, action: PayloadAction<{ id: string }>) {
       const record = state.notes[action.payload.id];
       if (!record || record._undoPast.length === 0) return;
-
-      // A step the app made together with the one beneath it (a generated
-      // title) is undone with it — one Undo reverses what the person typed.
-      let entry = popNonEmpty(record._undoPast);
-      for (;;) {
-        const currentValue = record[entry.field] as Note[NoteUndoableField];
-        record._undoFuture.push({
-          field: entry.field,
-          value: currentValue,
-          timestamp: Date.now(),
-          byteEstimate: estimateBytes(currentValue),
-          ...(entry.linked ? { linked: true } : {}),
-        });
-
-        writeNoteUndoableField(record, entry.field, entry.value);
-
-        // Recalculate dirty: compare against clean baseline
-        const originalValue = record._fieldHistory[entry.field];
-        if (originalValue !== undefined && entry.value === originalValue) {
-          record._dirtyFields.delete(entry.field);
-        } else if (!record._dirtyFields.has(entry.field)) {
-          record._dirtyFields.add(entry.field);
-        }
-        record._dirty = record._dirtyFields.size > 0;
-
-        if (!entry.linked || record._undoPast.length === 0) break;
-        entry = popNonEmpty(record._undoPast);
-      }
+      stepUndo(record);
     },
 
     redoNoteEdit(state, action: PayloadAction<{ id: string }>) {
       const record = state.notes[action.payload.id];
       if (!record || record._undoFuture.length === 0) return;
-
-      // The step's linked partner (its generated title) comes back with it.
-      for (;;) {
-        const entry = popNonEmpty(record._undoFuture);
-        const currentValue = record[entry.field] as Note[NoteUndoableField];
-        record._undoPast.push({
-          field: entry.field,
-          value: currentValue,
-          timestamp: Date.now(),
-          byteEstimate: estimateBytes(currentValue),
-          ...(entry.linked ? { linked: true } : {}),
-        });
-
-        writeNoteUndoableField(record, entry.field, entry.value);
-
-        record._dirtyFields.add(entry.field);
-        record._dirty = true;
-
-        const next = record._undoFuture[record._undoFuture.length - 1];
-        if (!next?.linked) break;
-      }
+      stepRedo(record);
     },
 
     clearNoteUndoHistory(state, action: PayloadAction<{ id: string }>) {

@@ -50,6 +50,7 @@ import { Spinner } from "@/components/ui/loaders/Spinner";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 const NO_MESSAGES: readonly MessageRecord[] = [];
 
+// The handle (c1, c2…) is the agent's name for a remark; it rides data-comment-reply, never the words on screen.
 function CommentReplyLine({ handle, body, conversationId, streaming }: { handle: string; body: string; conversationId: string | null; streaming: boolean }) {
   const canvas = useOptionalCanvas();
   const messages = useSelector((state: unknown) =>
@@ -97,7 +98,7 @@ function CommentReplyLine({ handle, body, conversationId, streaming }: { handle:
     return (
       <span className="inline-flex items-center gap-1.5 type-secondary text-muted-foreground" data-comment-reply={handle}>
         <Spinner size="xs" className="shrink-0" />
-        Replying to {handle}…
+        Replying to the comment…
       </span>
     );
   }
@@ -112,7 +113,7 @@ function CommentReplyLine({ handle, body, conversationId, streaming }: { handle:
         role="status"
       >
         <TriangleAlert className="h-3 w-3 shrink-0 text-destructive" aria-hidden />
-        Couldn&apos;t post reply to {handle}: it was not saved
+        Couldn&apos;t post the reply: it was not saved
       <ErrorAlchemyMenu /></span>
     );
   }
@@ -132,7 +133,7 @@ function CommentReplyLine({ handle, body, conversationId, streaming }: { handle:
     return (
       <span className="inline-flex items-center gap-1.5 type-secondary text-muted-foreground" data-comment-reply={handle}>
         <MessagesSquare className="h-3 w-3 shrink-0" aria-hidden />
-        Reply in thread · {handle}
+        Reply in thread
       </span>
     );
   }
@@ -210,7 +211,7 @@ function ReplyCard({
       data-clickable
       data-comment-reply={handle}
       data-comment-reply-state="posted"
-      title={`Open the thread on ${handle}`}
+      title="Open the comment thread"
       className="my-2 block max-w-full rounded-sm border-l-2 border-border py-0.5 pl-3 text-left hover:border-primary/60"
       onClick={onOpen}
       onKeyDown={(e) => {
@@ -225,7 +226,6 @@ function ReplyCard({
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Avatar author={root?.author ?? null} />
             <span className="font-medium text-foreground">{root?.author.name ?? "Comment"}</span>
-            <span>· {handle}</span>
           </div>
           <div className="mt-0.5 text-sm leading-5 text-muted-foreground">
             <RichContent level="inline" source={commentOpen || !more ? comment : `${head}…`} />
