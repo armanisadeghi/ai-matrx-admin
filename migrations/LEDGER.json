@@ -11701,6 +11701,12 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
+    },
+    "migrations/campaign/20261019230000_atfixh2_a_archiving_stands_down_the_schedules_it_owns.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261019230000_atfixh2_a_archiving_stands_down_the_schedules_it_owns.sql",
+      "checksum": "dd274a836f2dd5ad3e13c32c7ce371217698196980150e239bd79a2ae6b4ccbc",
+      "applied_at": "2026-10-20 00:44:32.745516+00"
     }
   }
 }
