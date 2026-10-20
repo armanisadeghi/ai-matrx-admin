@@ -1,6 +1,9 @@
 import type { UserFeedback } from "@/types/feedback.types";
 
+import { resolveRowColor } from "@ai-matrx/design-system/data-table";
+
 import {
+  FEEDBACK_ROW_TINTS,
   firstPopulatedFeedbackStage,
   getItemStage,
 } from "./FeedbackTable";
@@ -85,4 +88,25 @@ describe("feedback pipeline stage ownership", () => {
       expect(firstPopulatedFeedbackStage([...rows])).toBe(expected);
     },
   );
+});
+
+// The Mac look paints every cell opaque, so a split child's `border-l` rowClassName vanished;
+// the child is marked by the table's own row tint, which draws in every look (lane mac-default-2).
+describe("split child rows carry the table's own row tint", () => {
+  const tintOf = (row: UserFeedback) =>
+    resolveRowColor(
+      FEEDBACK_ROW_TINTS.style,
+      { id: row.id, data: FEEDBACK_ROW_TINTS.documentOf?.(row) ?? {} },
+      () => null,
+    );
+  const parentId = harborDentalFeedback.id;
+
+  it("tints a split child and leaves a top-level row plain", () => {
+    expect(tintOf({ ...feedbackAt("new"), parent_id: parentId })).toBe("slate");
+    expect(tintOf(feedbackAt("new"))).toBeNull();
+  });
+
+  it("keeps an approved open child green", () => {
+    expect(tintOf({ ...feedbackAt("in_progress", "approved"), parent_id: parentId })).toBe("green");
+  });
 });
