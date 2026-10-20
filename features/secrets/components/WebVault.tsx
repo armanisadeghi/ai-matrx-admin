@@ -20,6 +20,7 @@ import {
   locationFromParams,
   locationToParams,
   VaultApp,
+  type ApiVaultPortOptions,
   type Notify,
   type VaultHostCapabilities,
   type VaultLayout,
@@ -42,13 +43,19 @@ import { webVaultIdentity as identity, webVaultSignIn as signIn } from "../webVa
 import { useVaultInventory, VaultContextMenu } from "./VaultContextMenu";
 
 let sharedPort: VaultPort | null = null;
+type VaultPlatformDoor = NonNullable<ApiVaultPortOptions["platformDoor"]>;
+type VaultUserState = NonNullable<ApiVaultPortOptions["userState"]>;
+type VaultPasskeys = NonNullable<ApiVaultPortOptions["passkeys"]>;
+const vaultPortOptions: ApiVaultPortOptions = {
+  userState: supabase as unknown as VaultUserState,
+  platformDoor: (supabase as unknown as {
+    schema(name: "platform"): VaultPlatformDoor;
+  }).schema("platform"),
+  passkeys: supabase.auth as unknown as VaultPasskeys,
+};
 /** One port per tab: it holds only the server client and caches, never a person's plaintext. */
 function vaultPort(): VaultPort {
-  sharedPort ??= createApiVaultPort(serverApi, {
-    userState: supabase,
-    platformDoor: supabase.schema("platform"),
-    passkeys: supabase.auth,
-  });
+  sharedPort ??= createApiVaultPort(serverApi, vaultPortOptions);
   return sharedPort;
 }
 
