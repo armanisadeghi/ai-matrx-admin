@@ -893,7 +893,6 @@ export default function FeedbackTable() {
       ) : null}
       <Card className="p-3">
         <MatrxDataTable<UserFeedback>
-          look="mac"
           data={rows}
           columns={columns}
           getRowId={(r) => r.id}

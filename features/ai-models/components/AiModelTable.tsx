@@ -538,7 +538,6 @@ export default function AiModelTable(props: AiModelTableProps) {
 
   return (
     <MatrxDataTable<AiModel>
-      look="mac"
       tableId="ai/models"
       viewTabs={false}
       data={tierModels}

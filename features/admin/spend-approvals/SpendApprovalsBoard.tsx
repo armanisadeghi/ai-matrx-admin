@@ -790,7 +790,6 @@ export function SpendApprovalsBoard({
       )}
       <div className="min-h-0 flex-1">
         <MatrxDataTable
-          look="mac"
           data={visible}
           columns={columns}
           rowActionDefs={rowActionDefs}

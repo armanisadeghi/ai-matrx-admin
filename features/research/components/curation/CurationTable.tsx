@@ -625,7 +625,6 @@ export default function CurationTable() {
 
       <div className="flex-1 min-h-0 flex flex-col px-3 sm:px-4 pb-3">
         <MatrxDataTable<CurationOccurrence>
-          look="mac"
           tableId={`research/curation/${topicId}`}
           data={occurrences}
           columns={columns}
