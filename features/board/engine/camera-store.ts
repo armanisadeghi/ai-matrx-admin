@@ -194,6 +194,10 @@ export class BoardCameraStore {
     this.camera = this.pageLock ? this.lockedCamera(next) : next;
     this.markInteracting();
     for (const l of this.frameListeners) l();
+    // The level of detail follows the zoom THIS call, not the next animation frame: a pane that is not
+    // painting (a background tab, a throttled embed) never runs rAF, and a tile would keep the face of
+    // the zoom it was last drawn at (Structure at 3%). Cheap: one comparison per tile.
+    this.refreshLevels();
     this.scheduleCoarse();
   }
 
@@ -207,6 +211,7 @@ export class BoardCameraStore {
     this.size = size;
     if (this.pageLock) this.camera = this.lockedCamera(this.camera);
     for (const l of this.frameListeners) l();
+    this.refreshLevels();
     this.scheduleCoarse();
   }
 
@@ -809,6 +814,18 @@ export class BoardCameraStore {
     });
   }
 
+  /** Re-decide every tile's level from its rect and the camera's zoom; wakes only tiles that crossed a threshold. */
+  private refreshLevels(): void {
+    for (const [id, rect] of this.items) {
+      if (this.marks.has(id)) continue;
+      const level = detailLevelFor(rect, this.camera.z);
+      if (this.levels.get(id) === level) continue;
+      this.levels.set(id, level);
+      const ls = this.levelListeners.get(id);
+      if (ls) for (const l of [...ls]) l();
+    }
+  }
+
   /** Exposed for tests; normally driven by rAF. */
   recomputeCoarse(): void {
     const nextTier = detailTierForZoom(this.camera.z);
@@ -820,15 +837,8 @@ export class BoardCameraStore {
       visibleWorldRect(this.camera, this.size),
       CULL_MARGIN_SCREEN_PX / this.camera.z,
     );
+    this.refreshLevels();
     for (const [id, rect] of this.items) {
-      if (!this.marks.has(id)) {
-        const level = detailLevelFor(rect, this.camera.z);
-        if (this.levels.get(id) !== level) {
-          this.levels.set(id, level);
-          const ls = this.levelListeners.get(id);
-          if (ls) for (const l of [...ls]) l();
-        }
-      }
       const now = rectsIntersect(rect, view);
       const was = this.visible.has(id);
       if (now === was) continue;

@@ -86,6 +86,78 @@ describe("the level is chosen by the tile's ON-SCREEN size", () => {
   });
 });
 
+describe("the level follows the zoom the moment the camera moves (no animation frame needed)", () => {
+  // Bug 2026-10-19: tiles stayed on Structure at 10% and 3% and never reached Label. The level was only
+  // re-decided in a requestAnimationFrame; a pane that is not painting never ran it. These steps never
+  // call recomputeCoarse and never flush a frame.
+  const raf = globalThis.requestAnimationFrame;
+  beforeEach(() => {
+    globalThis.requestAnimationFrame = (() => 0) as unknown as typeof requestAnimationFrame;
+  });
+  afterEach(() => {
+    globalThis.requestAnimationFrame = raf;
+  });
+
+  it("0.7 → 0.25 → 0.1 → 0.03 on tiles of several sizes", () => {
+    const store = new BoardCameraStore({ x: 0, y: 0, z: 0.7 });
+    store.setSize({ w: 1600, h: 1000 });
+    const sizes = {
+      huge: { w: 2000, h: 1400 },
+      big: { w: 1200, h: 800 },
+      thousand: { w: 1000, h: 700 },
+      note: { w: 560, h: 1000 },
+      small: { w: 400, h: 300 },
+    };
+    for (const [id, s] of Object.entries(sizes)) store.registerItem(id, { x: 0, y: 0, ...s });
+    const at = (z: number) => {
+      store.setCamera({ x: 0, y: 0, z });
+      return Object.fromEntries(Object.keys(sizes).map((id) => [id, store.getLevel(id)]));
+    };
+    expect(at(0.7)).toEqual({ huge: "full", big: "full", thousand: "full", note: "full", small: "full" });
+    expect(at(0.25)).toEqual({ huge: "structure", big: "structure", thousand: "structure", note: "card", small: "label" });
+    expect(at(0.1)).toEqual({ huge: "structure", big: "card", thousand: "label", note: "label", small: "label" });
+    expect(at(0.03)).toEqual({ huge: "label", big: "label", thousand: "label", note: "label", small: "label" });
+    expect(at(0.25).note).toBe("card");
+    expect(at(0.7).huge).toBe("full");
+  });
+
+  it("a drawn tile swaps its face with the zoom and never keeps the old face over it", () => {
+    jest.useFakeTimers();
+    try {
+      const store = new BoardCameraStore({ x: 0, y: 0, z: 0.25 });
+      store.setSize({ w: 1600, h: 1000 });
+      function H() {
+        const [host, setHost] = useState<HTMLDivElement | null>(null);
+        return (
+          <BoardCameraStoreContext.Provider value={store}>
+            <FocusHostContext.Provider value={host}>
+              <div ref={setHost} />
+              <BoardTile id="t" rect={{ x: 0, y: 0, w: 1200, h: 800 }} title="Plan" onResize={null} structure={<div />}>
+                {() => <div />}
+              </BoardTile>
+            </FocusHostContext.Provider>
+          </BoardCameraStoreContext.Provider>
+        );
+      }
+      act(() => root.render(<H />));
+      const faces = () => [...container.querySelectorAll("[data-lod-level]")].map((e) => e.getAttribute("data-lod-level"));
+      expect(faces()).toEqual(["structure"]);
+      act(() => store.setCamera({ x: 0, y: 0, z: 0.1 }));
+      expect(faces()).toEqual(["card"]);
+      act(() => store.setCamera({ x: 0, y: 0, z: 0.03 }));
+      expect(faces()).toEqual(["label"]);
+      // animationend never arrives in a pane that is not painting: the outgoing face must still go.
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+      expect(container.querySelectorAll("[data-lod-leaving]").length).toBe(0);
+      expect(faces()).toEqual(["label"]);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});
+
 describe("below full detail a tile mounts no feature body", () => {
   function Harness({ store, onBody }: { store: BoardCameraStore; onBody: () => void }) {
     const [host, setHost] = useState<HTMLDivElement | null>(null);
