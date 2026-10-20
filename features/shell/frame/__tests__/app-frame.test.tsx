@@ -12,7 +12,10 @@
  *      on render), the canvas stays mounted once loaded, and the ask bar hands its text over;
  *   9. a page gets no say over the frame's look: no exported props type takes className or style;
  *  10. the side chat is closed by default and remembered per page; a link wins until the person acts;
- *  11. headers have no bottom rule; every menu or popover trigger carries the right chevron.
+ *  11. headers have no bottom rule (the top edge is the frame's hairline-or-fade); no chevron on the
+ *      right-side icons — chevrons belong only to switchable crumbs, as a down chevron;
+ *  12. the side chat adds no chat code to a page: no frame or playground file imports
+ *      @ai-matrx/chat statically (only a lazy loader may).
  *
  * PROVEN FAILING BEFORE PASSING (2026-10-18): removing the Tab wrap in useModalPanel's
  * onKeyDown turned case 5 RED; giving every tile tabIndex 0 in AppGrid turned case 6 RED.
@@ -145,7 +148,7 @@ describe("forms", () => {
     mount(base({ form: "medium", properties: <p>Props</p> }));
     const props = () => q('aside[aria-label="Properties"]');
     expect(props()).not.toBeNull();
-    const agent = [...frame().querySelectorAll("footer button")].find((b) => b.textContent?.includes("Side chat"))!;
+    const agent = q<HTMLButtonElement>('header button[aria-label="Side chat"]')!;
     act(() => (agent as HTMLButtonElement).click());
     expect(props()).toBeNull();
     // The person can switch back: the Properties toggle closes the companion.
@@ -224,6 +227,9 @@ describe("the app grid is one Tab stop", () => {
 const flush = () => act(async () => {
   await Promise.resolve();
   await new Promise((r) => setTimeout(r, 0));
+  // The frame reads storage and the address on the next animation frame.
+  await new Promise<void>((r) => requestAnimationFrame(() => r()));
+  await new Promise((r) => setTimeout(r, 0));
 });
 
 function footerButton(text: string) {
@@ -231,6 +237,8 @@ function footerButton(text: string) {
     b.textContent?.includes(text),
   )!;
 }
+/** The side chat's door: the header's right group (SIDE_CHAT_DOOR). */
+const sideChatDoor = () => q<HTMLButtonElement>('header button[aria-label="Side chat"]')!;
 
 function TestCompanion({ companionSeed }: CompanionProps) {
   return <div data-testid="loaded-companion">{companionSeed ? `seed:${companionSeed.text}` : "empty"}</div>;
@@ -272,12 +280,12 @@ describe("the side chat loads only when engaged", () => {
     await flush();
     expect(loader).not.toHaveBeenCalled();
     expect(q('[data-testid="loaded-companion"]')).toBeNull();
-    act(() => footerButton("Side chat").click());
+    act(() => sideChatDoor().click());
     await flush();
     expect(loader).toHaveBeenCalledTimes(1);
     expect(q('[data-testid="loaded-companion"]')).not.toBeNull();
-    act(() => footerButton("Side chat").click());
-    act(() => footerButton("Side chat").click());
+    act(() => sideChatDoor().click());
+    act(() => sideChatDoor().click());
     await flush();
     expect(loader).toHaveBeenCalledTimes(1);
   });
@@ -298,28 +306,30 @@ describe("the side chat loads only when engaged", () => {
     await flush();
     expect(loader).toHaveBeenCalledTimes(1);
     expect(q('[data-testid="loaded-companion"]')!.textContent).toBe("seed:What is due?");
-    expect(footerButton("Side chat").getAttribute("aria-pressed")).toBe("true");
+    expect(sideChatDoor().getAttribute("aria-pressed")).toBe("true");
   });
 
   it("is closed by default, remembered per page, and a link wins until the person acts", async () => {
     localStorage.clear();
     mount(base({ form: "desktop", pageKey: "a" }));
     await flush();
-    expect(footerButton("Side chat").getAttribute("aria-pressed")).toBe("false");
-    act(() => footerButton("Side chat").click());
+    expect(sideChatDoor().getAttribute("aria-pressed")).toBe("false");
+    act(() => sideChatDoor().click());
     expect(localStorage.getItem(companionOpenKey("a"))).toBe("open");
     act(() => root.unmount());
     mount(base({ form: "desktop", pageKey: "b" }));
     await flush();
-    expect(footerButton("Side chat").getAttribute("aria-pressed")).toBe("false");
+    expect(sideChatDoor().getAttribute("aria-pressed")).toBe("false");
     act(() => root.unmount());
     mount(base({ form: "desktop", pageKey: "a" }));
     await flush();
-    expect(footerButton("Side chat").getAttribute("aria-pressed")).toBe("true");
+    expect(sideChatDoor().getAttribute("aria-pressed")).toBe("true");
     act(() => root.unmount());
-    mount(base({ form: "desktop", pageKey: "a", companionLink: false }));
+    window.history.replaceState(null, "", "/?side_chat=closed");
+    mount(base({ form: "desktop", pageKey: "a" }));
     await flush();
-    expect(footerButton("Side chat").getAttribute("aria-pressed")).toBe("false");
+    expect(sideChatDoor().getAttribute("aria-pressed")).toBe("false");
+    window.history.replaceState(null, "", "/");
   });
 });
 
@@ -345,10 +355,10 @@ describe("the canvas loads only when engaged and then stays mounted", () => {
 
   it("below the wide form the canvas and the side chat take turns", async () => {
     mount(base({ form: "desktop" }));
-    act(() => footerButton("Side chat").click());
+    act(() => sideChatDoor().click());
     act(() => q<HTMLButtonElement>('header [aria-label="Canvas"]')!.click());
-    expect(footerButton("Side chat").getAttribute("aria-pressed")).toBe("false");
-    act(() => footerButton("Side chat").click());
+    expect(sideChatDoor().getAttribute("aria-pressed")).toBe("false");
+    act(() => sideChatDoor().click());
     expect(q('header [aria-label="Canvas"]')!.getAttribute("aria-pressed")).toBe("false");
   });
 });
@@ -389,10 +399,78 @@ describe("ours vs the page's", () => {
     expect(["body", "status", "properties"].map(owner)).toEqual(["page", "page", "page"]);
   });
 
-  it("headers have no bottom rule; menu and popover triggers carry the right chevron", () => {
+  it("headers have no bottom rule; right-side icons carry no chevron", () => {
     mount(base({ form: "desktop", sidebarOpen: false }));
     expect(q("header")!.className).not.toContain("mf-rule-b");
-    expect(q('header [aria-label="More actions"] svg.lucide-chevron-right')).not.toBeNull();
-    expect(q('header [aria-label="All products"] svg.lucide-chevron-right')).not.toBeNull();
+    for (const label of ["More actions", "All products", "Search", "Side chat", "Canvas"]) {
+      const b = q(`header [aria-label="${label}"]`);
+      expect(b).not.toBeNull();
+      expect(b!.querySelector("svg.lucide-chevron-right, svg.lucide-chevron-down")).toBeNull();
+    }
+  });
+
+  it("a switchable crumb has a down chevron listing its siblings; the top level may be its icon alone", async () => {
+    mount(
+      base({
+        form: "desktop",
+        crumbs: [
+          { id: "crm", label: "CRM", icon: Search, iconOnly: true, href: "/crm" },
+          { id: "people", label: "People & Companies", href: "/crm/people" },
+          {
+            id: "c1",
+            label: "Marisol",
+            optionsLabel: "People",
+            options: [
+              { label: "Marisol", href: "/crm/c1", active: true },
+              { label: "Theo", href: "/crm/c2" },
+            ],
+          },
+        ],
+      }),
+    );
+    const nav = q('nav[aria-label="Breadcrumb"]')!;
+    const top = nav.querySelector("a[href='/crm']")!;
+    expect(top.textContent).toBe("CRM"); // the sr-only name; the face is the icon
+    expect(top.querySelector("svg")).not.toBeNull();
+    const switcher = nav.querySelector<HTMLButtonElement>('[aria-label="Switch People"]')!;
+    expect(switcher.querySelector("svg.lucide-chevron-down")).not.toBeNull();
+    // Only the switchable level carries a chevron-down.
+    expect(nav.querySelectorAll("svg.lucide-chevron-down")).toHaveLength(1);
+    act(() => {
+      switcher.focus();
+      switcher.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+    });
+    await flush();
+    const items = [...document.querySelectorAll('[role="menuitem"]')].map((el) => el.textContent?.trim());
+    expect(items).toEqual(["Marisol", "Theo"]);
+    expect(document.querySelector('[role="menuitem"][aria-current="page"]')?.textContent?.trim()).toBe("Marisol");
+  });
+
+  it("the top edge: a fade by default, a hairline on request, on the last top band", () => {
+    mount(base({ form: "desktop" }));
+    expect(frame().getAttribute("data-header-edge")).toBe("fade");
+    expect(q("header")!.classList.contains("mf-top-edge")).toBe(true);
+    const css = readFileSync(join(__dirname, "..", "frame.css"), "utf8");
+    expect(css).toMatch(/\[data-header-edge="fade"\] \.mf-scroll-top \{\s*padding-top: var\(--matrx-frame-fade-h\)/);
+  });
+});
+
+describe("zero weight: no chat code before the side chat is engaged", () => {
+  it("no frame or playground file imports @ai-matrx/chat statically", () => {
+    const roots = [join(__dirname, ".."), join(__dirname, "..", "..", "..", "..", "app", "(lab)", "lab", "shell")];
+    const offenders: string[] = [];
+    let scanned = 0;
+    for (const dir of roots) {
+      for (const file of readdirSync(dir).filter((f) => /\.(ts|tsx)$/.test(f))) {
+        scanned += 1;
+        const src = readFileSync(join(dir, file), "utf8");
+        // `import … from "@ai-matrx/chat…"` or `export … from` — a lazy `import("…")` is the only allowed door.
+        if (/(?:^|\n)\s*(?:import|export)\b[^;]*?\bfrom\s*["']@ai-matrx\/chat/.test(src) || /(?:^|\n)\s*import\s*["']@ai-matrx\/chat/.test(src)) {
+          offenders.push(file);
+        }
+      }
+    }
+    expect(scanned).toBeGreaterThan(10);
+    expect(offenders).toEqual([]);
   });
 });

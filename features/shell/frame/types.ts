@@ -74,12 +74,40 @@ export interface CanvasProps {
   onClose: () => void;
 }
 
+/** One sibling a switchable crumb offers (the org/scopes breadcrumb's `ScopeCrumbOption` shape). */
+export interface FrameCrumbOption {
+  label: string;
+  href: string;
+  /** The level the person is on now: checked in the list. */
+  active?: boolean;
+  /** A plain click runs this instead of following `href` (a modified click keeps the link). */
+  onSelect?: () => void;
+}
+
+/**
+ * One breadcrumb level — DATA; the frame renders it. The rules (FEATURE.md § Breadcrumbs):
+ * every level is included by default; a product may omit its top level when its sidebar already
+ * covers it (Chat); the top level may show as its icon alone (`iconOnly`); a level with
+ * `options` is switchable — a down chevron beside it lists its siblings, exactly as the
+ * org/scopes breadcrumb does (`orgs > some-org ▾ > some-scope ▾`).
+ */
 export interface FrameCrumb {
   id: string;
   label: string;
   /** A real link; a plain click calls `onSelect` instead when both are given. */
   href?: string;
   onSelect?: () => void;
+  /** The level's icon; required for `iconOnly`. */
+  icon?: LucideIcon;
+  /** Show only the icon (the label stays the accessible name and the tooltip). */
+  iconOnly?: boolean;
+  /** Siblings to switch to: the crumb gets a down chevron that lists them. */
+  options?: readonly FrameCrumbOption[];
+  /** The heading over the sibling list ("People"). */
+  optionsLabel?: string;
+  /** A "see all" row under the list. */
+  optionsAllHref?: string;
+  optionsAllLabel?: string;
 }
 
 export interface FrameAction {
@@ -106,8 +134,6 @@ export interface FrameHeaderTool {
   label: string;
   icon: LucideIcon;
   onSelect?: () => void;
-  /** The tool opens a menu or popover: it carries the right chevron (owner, 2026-10-14). */
-  opensMenu?: boolean;
   /** Default `"menu"`: on a phone the tool is an item in the "…" menu. */
   phone?: "show" | "menu";
 }

@@ -7,9 +7,9 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { Check } from "lucide-react";
 import { Button, SegmentedControl } from "@ai-matrx/design-system/controls";
-import { readSideChatLink, sideChatAddress } from "@ai-matrx/chat/canvas/workspace/side-chat-address";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { AppFrame } from "@/features/shell/frame/AppFrame";
+import type { FrameHeaderEdge } from "@/features/shell/frame/AppFrame";
 import { PRODUCTS, PRODUCT_FAMILIES, productById } from "@/features/shell/frame/products";
 import { defaultPageActions, placeholderHeaderTools } from "@/features/shell/frame/SheetHeader";
 import type { FrameCrumb, FrameProduct, FrameVariant } from "@/features/shell/frame/types";
@@ -88,14 +88,7 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
   const [width, setWidth] = useState<Width>("fit");
   const [showOwner, setShowOwner] = useState(false);
   const loaded = useLoadedModules();
-  // The side chat's link contract (side_chat=open|closed…): the link wins for this visit.
-  const [sideChatLink, setSideChatLink] = useState<boolean | null>(null);
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      setSideChatLink(readSideChatLink(window.location.search)?.open ?? null);
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, []);
+  const [headerEdge, setHeaderEdge] = useState<FrameHeaderEdge>("fade");
   const [favorites, setFavorites] = useState<string[]>(["chat", "crm", "docs"]);
   const [contactId, setContactId] = useState<string | null>(null);
   const [view, setView] = useState("all");
@@ -148,10 +141,21 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
     const showRecord = variant === "record" || variant === "light";
     const record = contact ?? CONTACTS[0];
     if (showRecord) {
+      // The top level as its icon alone; the record is switchable (its siblings, the current one checked).
       crumbs = [
-        { id: "crm", label: "CRM", href: labHref("crm"), onSelect: () => setContactId(null) },
+        { id: "crm", label: "CRM", icon: product.icon, iconOnly: true, href: labHref("crm"), onSelect: () => setContactId(null) },
         { id: "people", label: "People & Companies", href: labHref("crm", "people"), onSelect: () => { setContactId(null); setVariant("list"); } },
-        { id: record.id, label: record.name },
+        {
+          id: record.id,
+          label: record.name,
+          optionsLabel: "People",
+          options: CONTACTS.map((c) => ({
+            label: c.name,
+            href: labHref("crm", "people"),
+            active: c.id === record.id,
+            onSelect: () => setContactId(c.id),
+          })),
+        },
       ];
       body = <ContactRecord contact={record} />;
       properties = <ContactProperties contact={record} />;
@@ -159,7 +163,7 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
       statusText = "Saved";
     } else {
       crumbs = [
-        { id: "crm", label: "CRM", href: labHref("crm") },
+        { id: "crm", label: "CRM", icon: product.icon, iconOnly: true, href: labHref("crm") },
         { id: "people", label: "People & Companies" },
       ];
       tabs = {
@@ -219,7 +223,7 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
   } else if (productId === "chat") {
     activeMenuItemId = itemId ?? DEFAULT_ITEM.chat;
     crumbs = [
-      { id: "chat", label: "Chat", href: labHref("chat") },
+      // Chat omits its top level: the chat sidebar already covers it.
       { id: "c-1", label: "Quarterly plan outline" },
     ];
     body = variant === "workspace" ? <WorkspaceSample label="Chat canvas" /> : <ChatThread />;
@@ -298,6 +302,15 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             { value: "375", label: "375" },
           ]}
         />
+        <SegmentedControl<FrameHeaderEdge>
+          aria-label="Header edge"
+          value={headerEdge}
+          onValueChange={setHeaderEdge}
+          data={[
+            { value: "hairline", label: "Hairline" },
+            { value: "fade", label: "Fade" },
+          ]}
+        />
         <Button
           variant={showOwner ? "outline" : "quiet"}
           aria-pressed={showOwner}
@@ -351,11 +364,8 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             properties={variant === "record" ? properties : undefined}
             askBar={askBar}
             pageKey={`lab-shell:${pageKey}`}
-            companionLink={sideChatLink}
-            onCompanionOpenChange={(open) => {
-              const next = sideChatAddress(window.location.search, { conversationId: null, open, hostedElsewhere: false });
-              replaceAddressWithoutNavigating(`${window.location.pathname}${next}`);
-            }}
+            onSideChatAddress={(search) => replaceAddressWithoutNavigating(`${window.location.pathname}${search}`)}
+            headerEdge={headerEdge}
             loadCompanion={loadSampleCompanion}
             loadCanvas={loadSampleCanvas}
             status={

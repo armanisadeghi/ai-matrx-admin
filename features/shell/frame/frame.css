@@ -125,6 +125,32 @@
   transition-timing-function: var(--matrx-motion-ease-panel, ease);
 }
 
+/* THE TOP EDGE (owner A/B, 2026-10-20): the last top band (the header, or the tabs row under it)
+   ends in a hairline or a fade. The fade is a band of the sheet colour fading out over the body:
+   content scrolls under it and fades; at rest every scroll area starts below it. */
+[data-matrx-frame] {
+  --matrx-frame-fade-h: 14px;
+}
+[data-matrx-frame][data-header-edge="hairline"] .mf-top-edge {
+  border-bottom: 1px solid hsl(var(--matrx-frame-hairline));
+}
+[data-matrx-frame][data-header-edge="fade"] .mf-top-edge {
+  position: relative;
+  z-index: 2;
+}
+[data-matrx-frame][data-header-edge="fade"] .mf-top-edge::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  height: var(--matrx-frame-fade-h);
+  pointer-events: none;
+  background: linear-gradient(to bottom, hsl(var(--matrx-frame-sheet)), hsl(var(--matrx-frame-sheet) / 0));
+}
+[data-matrx-frame][data-header-edge="fade"] .mf-scroll-top {
+  padding-top: var(--matrx-frame-fade-h);
+}
+
 /* No motion while dragging (motion standard): a resize follows the pointer exactly. */
 [data-matrx-frame][data-dragging] .mf-slide {
   transition: none;

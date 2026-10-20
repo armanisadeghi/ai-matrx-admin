@@ -23,6 +23,7 @@ together. Linear is the visual reference. It is built beside the old shell and i
   the sample loaders, so the lazy rule is visible. The sample side chat and canvas
   (`SampleCompanion.tsx`, `SampleCanvas.tsx`) arrive by dynamic import. A Docs document shows
   the ask bar. `?side_chat=open|closed` opens the page with the side chat in that state.
+  "Hairline | Fade" switches the header's lower edge for the owner's comparison.
 - `AppFrame.tsx`: the frame. Holds the forms, the variants, the drawer and the companion.
 - `AppGrid.tsx`: the 9-dot product grid. Tiles are grouped by family under an editable
   favorites group. A tile always opens its product in a new tab. The grid is one Tab stop,
@@ -33,8 +34,10 @@ together. Linear is the visual reference. It is built beside the old shell and i
 - `SheetHeader.tsx`: breadcrumbs (links), the star (only for items that can be favorited), the
   "…" menu (`defaultPageActions`) and the right-side slot. On phones the header shrinks to
   back or menu, the title and "…".
-- `SheetFooter.tsx`: the status slot, the side chat's door ("Side chat"), Properties, history
-  and help.
+- `SheetFooter.tsx`: the status slot, Properties, history and help.
+- `sideChatAddress.ts`: the frame's small reading of the `side_chat*` link, so no chat code
+  loads before the side chat opens (held to `@ai-matrx/chat`'s answers by
+  `__tests__/side-chat-address.test.ts`).
 - `FrameModules.tsx`: the heavy-module machinery: `lazyModule` (one `React.lazy` per loader),
   `ModuleSlot` (Suspense with a row skeleton, and an honest failure), the labelled stand-ins,
   the side chat's resize handle and the ask bar.
@@ -51,8 +54,8 @@ Every region carries `data-mf-owner="frame"|"page"` (and `data-mf-region`).
 |---|---|---|
 | Sidebar shell, drawer | frame | the product's menu items, the active item |
 | App grid | frame | the product list and favorites |
-| Header row (44px, no bottom rule), breadcrumb rendering, star slot, "…" button | frame | crumbs, whether the page can be favorited, the "…" items |
-| Right tools group | frame | the tools (search, notifications…); the canvas toggle is the frame's own |
+| Header row (44px), its lower edge, breadcrumb rendering, star slot, "…" button | frame | crumbs (and which are switchable), whether the page can be favorited, the "…" items |
+| Right tools group | frame | the tools (search, notifications…); the side chat and canvas doors are the frame's own |
 | Tabs row geometry | frame | the tabs |
 | Body | page | the content (`children`), properties content |
 | Ask bar slot | frame | on or off (`askBar`) |
@@ -69,9 +72,11 @@ Every region carries `data-mf-owner="frame"|"page"` (and `data-mf-region`).
   the width is remembered per device (`matrx-frame:companion-width`). Closed by default; the
   person's open or closed choice is remembered per page (`pageKey`). A host reads the
   `side_chat` link with `@ai-matrx/chat`'s `readSideChatLink` and passes `companionLink`: the
-  link wins until the person acts; `onCompanionOpenChange` lets the host rewrite the address
-  with `sideChatAddress`. ONE door: `SIDE_CHAT_DOOR` in `AppFrame.tsx` (`footer` today, or
-  `header`) moves it in one line; on a phone it is a "…" item.
+  link wins until the person acts. The frame reads that link itself (`sideChatAddress.ts`, no
+  chat import) and hands the new address to `onSideChatAddress`. ZERO WEIGHT: nothing of the
+  side chat is on a page until it is opened, and it arrives as one chunk; a test fails if any
+  frame or playground file imports `@ai-matrx/chat` statically. ONE door: the header's right
+  group (`SIDE_CHAT_DOOR`), the canvas toggle beside it; on a phone it is a "…" item.
 - **Canvas**: `loadCanvas`, the same lazy rule, then stays mounted (its state survives close
   and reopen). Its toggle is the last tool in the header's right group (Lucide `Shapes`). From
   the desktop form it is a full-height column at the sheet's right, header band included, so
@@ -82,10 +87,26 @@ Every region carries `data-mf-owner="frame"|"page"` (and `data-mf-region`).
   text as `companionSeed` (`dictate: true` from the mic). It sits in flow under the body, so it
   never covers the page's last line.
 
+## Breadcrumbs
+
+Crumbs are data (`FrameCrumb`); the frame renders them.
+- Every level is included by default. A product may omit its top level when its sidebar
+  already covers it (Chat has no "Chat" crumb).
+- The top level may show as its icon alone (`iconOnly`), like the Organizations home.
+- A level with `options` is switchable: a down chevron beside it lists its siblings, the
+  current one checked (`CRM-icon › People & Companies › Marisol ▾`). This is the org/scopes
+  breadcrumb's pattern (`features/scopes/components/pages/ScopeBreadcrumb.tsx`, same option
+  shape); the crumb's text still goes to the level.
+- Chevrons appear nowhere else: the right-side icons ("…", the grid, notifications, account,
+  side chat, canvas) carry none.
+
 ## Layout contract
 
 - **Variants** (`record` | `list` | `workspace` | `light`) change only the body. The header
-  (44px), tabs row (40px) and footer (32px) are identical in every variant. `light` keeps the
+  (44px), tabs row (40px) and footer (32px) are identical in every variant.
+- **Top edge** (owner A/B, 2026-10-20; `headerEdge`, default `fade`): the last top band (the
+  header, or the tabs row) ends in a hairline, or in a 14px fade the content scrolls under.
+  With the fade every scroll area starts 14px lower, so its first line is never covered. `light` keeps the
   sheet with a softer edge.
 - **Forms**, measured from the frame's own width (`formFor`):
   - `wide` (1600px and wider): inline sidebar; properties, the side chat and the canvas inline
@@ -138,6 +159,10 @@ the canvas and the ask bar, the per-page memory and the link, the forms and canv
 ownership attributes, and no `className`/`style` on any exported props type.
 
 ## Change log
+
+- 2026-10-20 (round 5): no chevrons on right-side icons; switchable crumbs (down chevron,
+  siblings) and icon-only top levels; the side chat's door moves to the header; the frame reads
+  the `side_chat` link with no chat import (guard + parity test); the header edge A/B.
 
 - 2026-10-20 (round 4):
   - The wide form (1600px and wider) and the width rules; playground widths Fit, 2560 and 1920.

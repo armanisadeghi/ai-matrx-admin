@@ -32,6 +32,7 @@ import {
 import { SheetFooter } from "./SheetFooter";
 import { SheetHeader, SidebarRestore } from "./SheetHeader";
 import type { FrameFavorite } from "./SheetHeader";
+import { sideChatAddressFor, sideChatOpenFromAddress } from "./sideChatAddress";
 import { useModalPanel } from "./useModalPanel";
 import type {
   CanvasProps,
@@ -79,11 +80,18 @@ export const FRAME_CANVAS_MIN_PX = 440;
 export const FRAME_CANVAS_MAX_PX = 960;
 
 /**
- * WHERE THE SIDE CHAT'S DOOR SITS — one line moves it (the owner has not ruled: a left strip or
- * the footer). `footer` = the "Side chat" button in the sheet's footer; `header` = the last tool
- * in the header's right group. On a phone the door is always a "…" item.
+ * WHERE THE SIDE CHAT'S DOOR SITS (owner, 2026-10-20: the header's right group, the canvas
+ * toggle beside it). One line moves it; a left strip, if ruled, becomes a value here. On a
+ * phone the door is always a "…" item.
  */
-export const SIDE_CHAT_DOOR: "footer" | "header" = "footer";
+export const SIDE_CHAT_DOOR: "header" = "header";
+
+/**
+ * The header's lower edge — an A/B the owner is comparing (2026-10-20): `hairline` = a 1px rule
+ * under the top band; `fade` = no rule, a fade band the content scrolls under (the first line
+ * sits below it at rest). One value survives; the prop goes when he picks.
+ */
+export type FrameHeaderEdge = "hairline" | "fade";
 
 /** Where this device remembers the side chat's width. */
 export const COMPANION_WIDTH_KEY = "matrx-frame:companion-width";
@@ -141,12 +149,11 @@ export interface AppFrameProps {
    */
   pageKey?: string;
   /**
-   * What this visit's link says about the side chat (the host reads `side_chat` with
-   * @ai-matrx/chat's `readSideChatLink`): true / false wins over the remembered choice until
-   * the person acts; null or absent says nothing.
+   * The person opened or closed the side chat. The frame reads the `side_chat` link itself (it
+   * wins over the remembered choice until the person acts) and hands back the address that now
+   * says what the panel is; the host replaces the address with it (no navigation).
    */
-  companionLink?: boolean | null;
-  /** The person opened or closed the side chat (the host rewrites the address with `sideChatAddress`). */
+  onSideChatAddress?: (search: string) => void;
   onCompanionOpenChange?: (open: boolean) => void;
   /** The canvas. Without it the frame shows a labelled stand-in. */
   loadCanvas?: FrameModuleLoader<CanvasProps>;
@@ -155,6 +162,8 @@ export interface AppFrameProps {
   form?: FrameForm;
   sidebarOpen?: boolean;
   onSidebarOpenChange?: (open: boolean) => void;
+  /** PLAYGROUND A/B ONLY (see FrameHeaderEdge); default `fade`. */
+  headerEdge?: FrameHeaderEdge;
 }
 
 export function formFor(width: number): FrameForm {
@@ -246,22 +255,39 @@ function useRememberedWidth() {
  * Whether the side chat is open: the visit's link wins until the person acts; otherwise what
  * the person left on THIS page (closed by default). Only the person's own act is remembered.
  */
-function useCompanionOpen(pageKey: string | undefined, link: boolean | null | undefined, onChange?: (open: boolean) => void) {
-  const [state, setState] = useState({ pageKey, remembered: false, acted: false });
+function useCompanionOpen(
+  pageKey: string | undefined,
+  onChange?: (open: boolean) => void,
+  onAddress?: (search: string) => void,
+) {
+  const [state, setState] = useState<{ pageKey?: string; remembered: boolean; acted: boolean; link: boolean | null }>({
+    pageKey,
+    remembered: false,
+    acted: false,
+    link: null,
+  });
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
       setState((previous) => {
         if (previous.pageKey === pageKey && previous.acted) return previous;
-        return { pageKey, remembered: pageKey ? readStorage(companionOpenKey(pageKey)) === "open" : false, acted: false };
+        return {
+          pageKey,
+          remembered: pageKey ? readStorage(companionOpenKey(pageKey)) === "open" : false,
+          acted: false,
+          link: sideChatOpenFromAddress(window.location.search),
+        };
       });
     });
     return () => window.cancelAnimationFrame(frame);
   }, [pageKey]);
-  const open = !state.acted && typeof link === "boolean" ? link : state.remembered;
+  const open = !state.acted && state.link !== null ? state.link : state.remembered;
   function set(next: boolean) {
-    setState({ pageKey, remembered: next, acted: true });
+    setState({ pageKey, remembered: next, acted: true, link: state.link });
     if (pageKey) writeStorage(companionOpenKey(pageKey), next ? "open" : "closed");
     onChange?.(next);
+    const search = window.location.search;
+    const address = sideChatAddressFor(search, next);
+    if (address !== search) onAddress?.(address);
   }
   return [open, set] as const;
 }
@@ -304,9 +330,10 @@ export function AppFrame(props: AppFrameProps) {
   const [sidebarOpen, setSidebarOpen] = useControllable(props.sidebarOpen, props.onSidebarOpenChange, true);
   const [companionOpen, setCompanionOpen] = useCompanionOpen(
     props.pageKey,
-    props.companionLink,
     props.onCompanionOpenChange,
+    props.onSideChatAddress,
   );
+  const headerEdge = props.headerEdge ?? "fade";
   const [canvasOpen, setCanvasOpen] = useState(false);
   const [canvasFull, setCanvasFull] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -510,6 +537,7 @@ export function AppFrame(props: AppFrameProps) {
       data-form={form}
       data-variant={variant}
       data-dragging={dragging ? "" : undefined}
+      data-header-edge={headerEdge}
       className="relative flex h-full w-full min-w-0 overflow-hidden"
     >
       <PortalContainerProvider container={root}>
@@ -558,6 +586,7 @@ export function AppFrame(props: AppFrameProps) {
                 tools={headerTools}
                 canvasToggle={{ open: canvasOpen, onToggle: () => toggleCanvas() }}
                 sideChatToggle={SIDE_CHAT_DOOR === "header" ? sideChatToggle : undefined}
+                topEdge={!tabs}
                 start={
                   !phone && !showSidebar ? (
                     <SidebarRestore
@@ -573,7 +602,7 @@ export function AppFrame(props: AppFrameProps) {
                 <div
                   data-mf-owner="frame"
                   data-mf-region="tabs"
-                  className="mf-rule-b mf-noscrollbar mf-tabs-row flex h-[var(--matrx-frame-tabs-h)] shrink-0 items-center overflow-x-auto"
+                  className="mf-top-edge mf-noscrollbar mf-tabs-row flex h-[var(--matrx-frame-tabs-h)] shrink-0 items-center overflow-x-auto"
                 >
                   <Tabs
                     variant="capsule"
@@ -649,7 +678,6 @@ export function AppFrame(props: AppFrameProps) {
               {!phone ? (
                 <SheetFooter
                   status={status}
-                  sideChat={SIDE_CHAT_DOOR === "footer" ? sideChatToggle : undefined}
                   propertiesToggle={hasProperties ? { shown: propertiesShown, onToggle: toggleProperties } : undefined}
                   onHistory={onHistory}
                   onHelp={onHelp}
@@ -756,14 +784,14 @@ function FrameBody({
   children: ReactNode;
 }) {
   if (variant === "workspace") {
-    return <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden">{children}</div>;
+    return <div className="mf-scroll-top relative min-h-0 min-w-0 flex-1 overflow-hidden">{children}</div>;
   }
   if (variant === "list") {
-    return <div className="min-h-0 min-w-0 flex-1 overflow-auto">{children}</div>;
+    return <div className="mf-scroll-top min-h-0 min-w-0 flex-1 overflow-auto">{children}</div>;
   }
   if (variant === "light") {
     return (
-      <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
+      <div className="mf-scroll-top min-h-0 min-w-0 flex-1 overflow-y-auto">
         <div className="mx-auto w-full max-w-3xl px-[var(--matrx-frame-gutter)] py-6">{children}</div>
       </div>
     );
@@ -773,7 +801,7 @@ function FrameBody({
     <>
       <div
         className={cn(
-          "min-h-0 flex-1 overflow-y-auto",
+          "mf-scroll-top min-h-0 flex-1 overflow-y-auto",
           phone ? "min-w-0" : "min-w-[var(--matrx-frame-body-min-w)]",
         )}
       >
@@ -787,7 +815,7 @@ function FrameBody({
           aria-label="Properties"
           data-mf-owner="page"
           data-mf-region="properties"
-          className="mf-rule-l w-[var(--matrx-frame-properties-w)] shrink-0 overflow-y-auto px-4 py-4"
+          className="mf-scroll-top mf-rule-l w-[var(--matrx-frame-properties-w)] shrink-0 overflow-y-auto px-4 py-4"
         >
           {properties}
         </aside>

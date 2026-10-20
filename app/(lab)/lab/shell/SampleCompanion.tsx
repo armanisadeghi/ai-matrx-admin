@@ -3,18 +3,18 @@
 // PLAYGROUND MODULE: a small sample side chat, loaded by the frame through a dynamic import
 // only when the person opens the side chat, so the lazy rule can be watched (the toolbar's
 // "Loaded" readout). Static sample content.
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Webhook } from "lucide-react";
 import { PanelTitle } from "@/features/shell/frame/FrameModules";
 import type { CompanionProps } from "@/features/shell/frame/types";
 
 export default function SampleCompanion({ onClose, companionSeed }: CompanionProps) {
   const [asked, setAsked] = useState<{ id: number; text: string; dictate?: boolean }[]>([]);
-  // Each seed the frame hands over (from the page's ask bar) arrives once, as a message.
-  useEffect(() => {
-    if (!companionSeed) return;
-    setAsked((list) => (list.some((m) => m.id === companionSeed.id) ? list : [...list, companionSeed]));
-  }, [companionSeed]);
+  // Each seed the frame hands over (from the page's ask bar) arrives once, as a message
+  // (adjusting state while rendering, React's pattern for a prop that brings new data).
+  if (companionSeed && !asked.some((m) => m.id === companionSeed.id)) {
+    setAsked([...asked, companionSeed]);
+  }
 
   return (
     <div className="flex h-full min-h-0 flex-col" data-testid="sample-companion">

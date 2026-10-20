@@ -10,6 +10,8 @@ import type { ReactNode } from "react";
 import {
   ArrowLeft,
   Bell as BellIcon,
+  Check,
+  ChevronDown,
   ChevronRight,
   Webhook,
   CircleUserRound as AccountIcon,
@@ -27,6 +29,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@ai-matrx/design-system";
@@ -65,6 +68,8 @@ export interface SheetHeaderProps {
   canvasToggle?: { open: boolean; onToggle: () => void };
   /** The side chat's door, when SIDE_CHAT_DOOR is "header" (after the canvas toggle). */
   sideChatToggle?: { open: boolean; onToggle: () => void };
+  /** This header is the sheet's last top band (no tabs row): it carries the frame's top edge. */
+  topEdge?: boolean;
   /** Desktop with the sidebar hidden: the controls that bring it (and the grid) back. */
   start?: ReactNode;
   onOpenDrawer: () => void;
@@ -77,7 +82,7 @@ function PageMenu({ actions }: { actions: readonly FrameAction[] }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="quiet" icon={<MoreHorizontal />} iconEnd={<ChevronRight />} aria-label="More actions" />
+        <Button variant="quiet" icon={<MoreHorizontal />} aria-label="More actions" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" surface="solid">
         {plain.map((a) => {
@@ -113,6 +118,7 @@ export function SheetHeader({
   tools = [],
   canvasToggle,
   sideChatToggle,
+  topEdge,
   start,
   onOpenDrawer,
   onBack,
@@ -136,7 +142,6 @@ export function SheetHeader({
         key={t.id}
         variant="quiet"
         icon={<Icon />}
-        iconEnd={t.opensMenu ? <ChevronRight /> : undefined}
         aria-label={t.label}
         onClick={t.onSelect}
       />
@@ -155,7 +160,7 @@ export function SheetHeader({
       <header
         data-mf-owner="frame"
         data-mf-region="header"
-        className="matrx-touch-targets flex h-[var(--matrx-frame-header-h)] shrink-0 items-center gap-1 px-2"
+        className={cn(topEdge && "mf-top-edge", "matrx-touch-targets flex h-[var(--matrx-frame-header-h)] shrink-0 items-center gap-1 px-2")}
       >
         {canGoBack ? (
           <Button variant="quiet" icon={<ArrowLeft />} aria-label="Back" onClick={onBack} />
@@ -174,7 +179,7 @@ export function SheetHeader({
     <header
       data-mf-owner="frame"
       data-mf-region="header"
-      className="flex h-[var(--matrx-frame-header-h)] shrink-0 items-center gap-1 px-2"
+      className={cn(topEdge && "mf-top-edge", "flex h-[var(--matrx-frame-header-h)] shrink-0 items-center gap-1 px-2")}
     >
       {start}
       <nav aria-label="Breadcrumb" className="flex min-w-0 items-center pl-1">
@@ -188,14 +193,15 @@ export function SheetHeader({
                     <ChevronRight className="size-3.5" />
                   </li>
                 ) : null}
-                <li className={cn("min-w-0", isLast ? "shrink" : "max-w-45 shrink-[2]")}>
-                  {isLast ? (
+                <li className={cn("flex min-w-0 items-center", isLast ? "shrink" : "max-w-45 shrink-[2]")}>
+                  {isLast && !crumb.iconOnly ? (
                     <h1 aria-current="page" className="type-title truncate px-1">
                       {crumb.label}
                     </h1>
                   ) : (
-                    <CrumbLink crumb={crumb} />
+                    <CrumbLink crumb={crumb} current={isLast} />
                   )}
+                  {crumb.options && crumb.options.length > 0 ? <CrumbSwitcher crumb={crumb} /> : null}
                 </li>
               </Fragment>
             );
@@ -210,15 +216,6 @@ export function SheetHeader({
       {tools.length > 0 || canvasToggle || sideChatToggle ? (
         <div className="flex shrink-0 items-center gap-0.5">
           {tools.map(toolButton)}
-          {canvasToggle ? (
-            <Button
-              variant={canvasToggle.open ? "outline" : "quiet"}
-              icon={<Shapes />}
-              aria-label="Canvas"
-              aria-pressed={canvasToggle.open}
-              onClick={canvasToggle.onToggle}
-            />
-          ) : null}
           {sideChatToggle ? (
             <Button
               variant={sideChatToggle.open ? "outline" : "quiet"}
@@ -226,6 +223,15 @@ export function SheetHeader({
               aria-label="Side chat"
               aria-pressed={sideChatToggle.open}
               onClick={sideChatToggle.onToggle}
+            />
+          ) : null}
+          {canvasToggle ? (
+            <Button
+              variant={canvasToggle.open ? "outline" : "quiet"}
+              icon={<Shapes />}
+              aria-label="Canvas"
+              aria-pressed={canvasToggle.open}
+              onClick={canvasToggle.onToggle}
             />
           ) : null}
         </div>
@@ -237,39 +243,108 @@ export function SheetHeader({
 const CRUMB_CLASS =
   "type-body block max-w-full truncate rounded-md px-1 text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring";
 
-/** An ancestor crumb: a real link when it has an href (a plain click runs onSelect). */
-function CrumbLink({ crumb }: { crumb: FrameCrumb }) {
+/** What a crumb shows: its label, or its icon alone (the label stays its name and tooltip). */
+function CrumbFace({ crumb }: { crumb: FrameCrumb }) {
+  const Icon = crumb.icon;
+  if (crumb.iconOnly && Icon) {
+    return (
+      <span className="flex size-5 items-center justify-center" title={crumb.label}>
+        <Icon className="size-4" aria-hidden />
+        <span className="sr-only">{crumb.label}</span>
+      </span>
+    );
+  }
+  return <>{crumb.label}</>;
+}
+
+/** An ancestor crumb (or an icon-only current one): a real link when it has an href (a plain click runs onSelect). */
+function CrumbLink({ crumb, current }: { crumb: FrameCrumb; current?: boolean }) {
+  const aria = current ? ({ "aria-current": "page" } as const) : {};
   if (crumb.href) {
     return (
       <a
         href={crumb.href}
         className={CRUMB_CLASS}
+        {...aria}
         onClick={(e) => {
           if (!crumb.onSelect || !isPlainClick(e)) return;
           e.preventDefault();
           crumb.onSelect();
         }}
       >
-        {crumb.label}
+        <CrumbFace crumb={crumb} />
       </a>
     );
   }
   if (crumb.onSelect) {
     return (
-      <button type="button" onClick={crumb.onSelect} className={CRUMB_CLASS}>
-        {crumb.label}
+      <button type="button" onClick={crumb.onSelect} className={CRUMB_CLASS} {...aria}>
+        <CrumbFace crumb={crumb} />
       </button>
     );
   }
-  return <span className="type-body block truncate px-1 text-muted-foreground">{crumb.label}</span>;
+  return (
+    <span className="type-body block truncate px-1 text-muted-foreground" {...aria}>
+      <CrumbFace crumb={crumb} />
+    </span>
+  );
 }
+
+/**
+ * A switchable level's down chevron and its sibling list — the org/scopes breadcrumb's pattern
+ * (features/scopes/components/pages/ScopeBreadcrumb.tsx `OptionsMenu`): the crumb's text goes to
+ * the level, the chevron beside it lists the siblings with the current one checked, an optional
+ * heading and an optional "see all" row.
+ */
+function CrumbSwitcher({ crumb }: { crumb: FrameCrumb }) {
+  const options = crumb.options ?? [];
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button type="button" aria-label={`Switch ${crumb.optionsLabel ?? crumb.label}`} className={SWITCH_CLASS}>
+          <ChevronDown className="size-3.5" aria-hidden />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" surface="solid">
+        {crumb.optionsLabel ? <DropdownMenuLabel>{crumb.optionsLabel}</DropdownMenuLabel> : null}
+        {options.map((o) => (
+          <DropdownMenuItem key={`${o.href}|${o.label}`} asChild size="sm">
+            <a
+              href={o.href}
+              aria-current={o.active ? "page" : undefined}
+              onClick={(e) => {
+                if (!o.onSelect || !isPlainClick(e)) return;
+                e.preventDefault();
+                o.onSelect();
+              }}
+            >
+              <Check aria-hidden className={cn(!o.active && "invisible")} />
+              <span className="truncate">{o.label}</span>
+            </a>
+          </DropdownMenuItem>
+        ))}
+        {crumb.optionsAllHref ? (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild size="sm">
+              <a href={crumb.optionsAllHref}>{crumb.optionsAllLabel ?? "View all"}</a>
+            </DropdownMenuItem>
+          </>
+        ) : null}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+const SWITCH_CLASS =
+  "flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring";
 
 /** Stand-ins for the existing right-side header icons; search stays visible on a phone. */
 export function placeholderHeaderTools(onSelect?: (id: string) => void): FrameHeaderTool[] {
   return [
     { id: "search", label: "Search", icon: SearchIcon, phone: "show", onSelect: () => onSelect?.("search") },
-    { id: "notifications", label: "Notifications", icon: BellIcon, opensMenu: true, onSelect: () => onSelect?.("notifications") },
-    { id: "account", label: "Account", icon: AccountIcon, opensMenu: true, onSelect: () => onSelect?.("account") },
+    { id: "notifications", label: "Notifications", icon: BellIcon, onSelect: () => onSelect?.("notifications") },
+    { id: "account", label: "Account", icon: AccountIcon, onSelect: () => onSelect?.("account") },
   ];
 }
 
