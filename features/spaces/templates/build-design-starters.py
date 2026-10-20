@@ -26,6 +26,7 @@ checker enforces the declared `reads_on` pairs for every design pack.
 
 Run:   python3 features/spaces/templates/build-design-starters.py          # writes the ten starters (--with-base: SP0363 too)
        python3 features/spaces/templates/build-design-starters.py --check  # contrast table only
+       ... --out DIR   # write there instead of packs/ (covers + versions are still read from packs/)
 Then:  pnpm spaces:templates:check <files>; bump VERSION on every published change.
 Clean-room: our own words and values; fonts are open-licence Google fonts or system fonts.
 """
@@ -91,6 +92,7 @@ COLOR_ROLES = [
     ("warning", "Feedback", "muted", "Waiting or at risk. Always paired with a word."),
 ]
 LINES = {"border", "input", "ring"}
+LEAD_COLORS = ["primary", "accent", "secondary", "link"]
 # Pairs the samples use beyond the declared ground (checked too).
 ALSO = {
     "foreground": [("muted", 4.5), ("card", 4.5), ("secondary", 4.5), ("popover", 4.5)],
@@ -752,9 +754,13 @@ def cover_text(s):
     return "\n".join(lines)
 
 
-def build(s):
+def build(s, kept=None):
+    """kept = the committed pack for this system, if any: its `cover` and `version` are hand-owned (a person
+    picks the gallery cover and bumps the version when publishing), so the generator carries them over and
+    never resets or bumps them. The constants are only the first-write defaults for a pack with no file yet."""
     base = bool(s.get("base"))
-    version = BASE_VERSION if base else STARTER_VERSION
+    kept = kept or {}
+    version = kept.get("version", BASE_VERSION if base else STARTER_VERSION)
     c = s["colors"]
     notes = s.get("notes", {})
     color_rows = []
@@ -765,6 +771,8 @@ def build(s):
         if on:
             v["reads_on"] = on
         color_rows.append({"key": f"col-{i:02d}", "values": v})
+    # The lead colors read first on the Colors table and the gallery card (keys keep their role numbering).
+    color_rows.sort(key=lambda r: LEAD_COLORS.index(r["values"]["name"]) if r["values"]["name"] in LEAD_COLORS else len(LEAD_COLORS))
     groups = list(dict.fromkeys(r[1] for r in COLOR_ROLES))
     type_rows = [{"key": f"typ-{i:02d}", "values": {"name": n, "group": g, "style": jd({"font": fo, "weight": w, "size": sz, "lineHeight": lh, "letterSpacing": ls}), "usage_note": note}} for i, (n, g, fo, w, sz, lh, ls, note) in enumerate(s["type"], 1)]
     tgroups = list(dict.fromkeys(t[1] for t in s["type"]))
@@ -852,7 +860,7 @@ def build(s):
         "version": version,
     }
     pack = {"packVersion": 1, "catalogueId": s["id"], "version": version, "title": title, "description": s["description"], "forWho": s["forWho"],
-            "icon": {"icon": "Palette"}, "cover": None, "category": "docs", "tags": s["tags"], "designProfile": design_profile(s), "spec": spec, "pages": [], "board": board}
+            "icon": {"icon": "Palette"}, "cover": kept.get("cover"), "category": "docs", "tags": s["tags"], "designProfile": design_profile(s), "spec": spec, "pages": [], "board": board}
     if s.get("waive_radius"):
         rad = next(i for i, t in enumerate(tables) if t["token"] == "radius")
         pack["waivers"] = [{"at": f"spec.tables[{rad}] (radius).rows[{j}] (rad-{j + 1:02d})", "because": "A square system: every corner is 0 on purpose; the rows differ by where they are used."} for j in (1, 2)]
@@ -861,6 +869,10 @@ def build(s):
 
 def main():
     check_only = "--check" in sys.argv
+    out_dir = PACKS
+    if "--out" in sys.argv:
+        out_dir = Path(sys.argv[sys.argv.index("--out") + 1]).resolve()
+        out_dir.mkdir(parents=True, exist_ok=True)
     bad = 0
     print("| Pack | Ink | Ground | Kind | Light | Dark | Needs |\n|---|---|---|---|---|---|---|")
     for s in ALL:
@@ -878,8 +890,11 @@ def main():
         return 0
     # The base board (SP0363) is written only with --with-base: its owner lands its Cover by hand.
     for s in ALL if "--with-base" in sys.argv else STARTERS:
-        p = PACKS / (s.get("file") or f"design-starter-{s['slug']}.pack.json")
-        p.write_text(json.dumps(build(s), indent=2, ensure_ascii=False) + "\n")
+        name = s.get("file") or f"design-starter-{s['slug']}.pack.json"
+        kept_file = PACKS / name
+        kept = json.loads(kept_file.read_text()) if kept_file.exists() else None
+        p = out_dir / name
+        p.write_text(json.dumps(build(s, kept), indent=2, ensure_ascii=False) + "\n")
         print("wrote", p.name)
     return 0
 
