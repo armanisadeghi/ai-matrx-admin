@@ -2158,6 +2158,10 @@ button.spaces-page-prop-name:hover { background: var(--spaces-hover); }
    toolbars wrapped "Group by" one letter per line and clipped the row chips. Below 640px the preview page keeps
    a 40rem canvas and the preview box scrolls sideways, so every view draws at a width it was built for. */
 @media (max-width: 639px) {
-  [data-space-template-preview] .spaces-tg-page { overflow-x: auto; }
+  [data-space-template-preview] .spaces-tg-page { overflow-x: auto; container-type: inline-size; }
   [data-space-template-preview] .spaces-tg-page > .spaces-page { min-width: 40rem; }
+  /* ADVERSARIAL-6 F5: the canvas scrolls, the TITLE does not — it fits the phone's box (wrapping, never cut to
+     "Animal Rescue Opera") and stays in view while the views scroll sideways. */
+  [data-space-template-preview] .spaces-tg-page .spaces-header { position: sticky; left: 0; max-width: calc(100cqw - 96px); }
+  [data-space-template-preview] .spaces-tg-page .spaces-title { overflow-wrap: anywhere; }
 }
