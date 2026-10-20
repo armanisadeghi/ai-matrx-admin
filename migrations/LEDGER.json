@@ -11731,6 +11731,12 @@
       "filename": "20261021240200_readspeed5_c_kept_values_are_served_again.sql",
       "checksum": "0483da1e6926ac5d42777cef5fc5602db67aac37e7153700f39885911d9d1b39",
       "applied_at": "2026-10-20 01:00:39.007509+00"
+    },
+    "migrations/campaign/20261020003000_readspeedorg3_a_a_granted_ids_plan_follows_the_size_of_the_question.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261020003000_readspeedorg3_a_a_granted_ids_plan_follows_the_size_of_the_question.sql",
+      "checksum": "0c8d865f12b03d6a1e6f8c24d851c5fdc8ef729c5315463185c4a2f236535d95",
+      "applied_at": "2026-10-20 01:19:27.387708+00"
     }
   }
 }
