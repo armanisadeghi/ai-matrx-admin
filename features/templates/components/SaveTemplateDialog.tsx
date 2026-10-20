@@ -91,12 +91,13 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId, initialTab
   const orgName = tableIds.map((t) => rowsOf.get(t)?.organization_name).find(Boolean) ?? null;
   const knobs = useScopedTemplateKnobs(organizationId);
 
+  // Save is off, with its reason beside it, until this workspace's row limit is read: never enabled and then refused.
+  const limitReason = !organizationId || knobs.seedRowCap !== null ? null : knobs.loading ? "Reading this workspace's limits" : "This workspace has no row limit set";
+
   const save = async () => {
     if (!organizationId || !ok) return;
-    if (knobs.seedRowCap === null) {
-      setError(`A limit is not set: ${knobs.missing.join(", ") || "templates.seed_row_cap"}`);
-      return;
-    }
+    // The button is off with its reason until the limit is read (limitReason), so a press never reaches a refusal.
+    if (knobs.seedRowCap === null) return;
     setSaving(true);
     setError(null);
     try {
@@ -208,6 +209,7 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId, initialTab
                 <ProTextarea value={describes} onChange={(e) => setDescribes(e.target.value)} placeholder="Who it is for" rows={2} />
                 {orgs.size > 1 ? <p className="type-body text-destructive">These tables live in different organizations — pick agents from one</p> : null}
                 {organizationId ? <p className="type-secondary text-muted-foreground">{`Saved in ${orgName ?? "its organization"}`}</p> : null}
+                {limitReason ? <p className="type-secondary text-muted-foreground" data-save-template-reason="">{limitReason}</p> : null}
               </>
             ) : null}
             {error ? <p className="type-body text-destructive" role="alert">{error}<ErrorAlchemyMenu error={error} /></p> : null}
@@ -220,7 +222,7 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId, initialTab
               Close
             </Button>
           ) : (
-            <Button icon={saving ? <Spinner size="xs" className="text-current" /> : null} variant="primary" onClick={() => void save()} disabled={!ok || !organizationId || !name.trim() || saving} data-save-template-save="">
+            <Button icon={saving ? <Spinner size="xs" className="text-current" /> : null} variant="primary" onClick={() => void save()} disabled={!ok || !organizationId || !name.trim() || saving || limitReason !== null} data-save-template-save="">
               Save
             </Button>
           )}
