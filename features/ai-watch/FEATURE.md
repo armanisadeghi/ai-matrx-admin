@@ -56,7 +56,8 @@ resume's earlier frames on the same request — never the door's provision as if
 
 **Records** — `ai-watch-records.ts`: `chat.user_request` (+ `metadata.mandate_watch`), the exact provider
 calls through the server (`GET /runs/{request_id}/snapshots?debug_view=1`, `fetchAiWatchSnapshots` — the browser
-never selects `chat.request_snapshot` payload columns; stage 5 revokes them), provision values by hash through
+never selects `chat.request_snapshot` payload columns; since stage 5, 2026-10-20, they are client-excluded and any
+select naming one, or `*`, is refused with 42501), provision values by hash through
 `GET /runs/{id}/values?debug_view=1`, `agent.definition_version` (instructions + output schema of the version
 that ran), `mandate.definition.version` (changed-since-run hint); runs lists via `readAllRows`. Run LISTS
 (`fetchAiWatchRuns`, `fetchFollowedRuns`, `everything-feed.ts`) select only the label fields of `metadata`
