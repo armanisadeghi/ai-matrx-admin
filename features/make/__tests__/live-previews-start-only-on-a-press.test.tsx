@@ -101,4 +101,14 @@ describe("a live template preview loads the app only when the visitor presses it
     act(() => (host.querySelector("[data-see-it-live]") as HTMLButtonElement).click());
     expect(requestFull).toHaveBeenCalledTimes(1);
   });
+
+  it.each(ISLANDS)("$name: the press outlives the remount at the full-tier switch (no second press needed)", ({ render }) => {
+    mount(render);
+    act(() => (host.querySelector("[data-see-it-live]") as HTMLButtonElement).click());
+    // The public layout swaps light -> full and the page mounts again.
+    act(() => root.unmount());
+    root = createRoot(host);
+    const requestFull = mount(render);
+    expect(requestFull).toHaveBeenCalledTimes(1);
+  });
 });

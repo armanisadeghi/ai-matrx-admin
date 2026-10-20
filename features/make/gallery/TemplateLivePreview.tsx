@@ -27,8 +27,12 @@ import type { LiveScreens } from "./TemplateLivePreviewImpl";
 // ON PRESS ONLY (ADVERSARIAL-5 F1, 2026-10-20): "reached" fired at once whenever the preview sat in the first screen,
 // pulling the whole app for a guest who never scrolled. The live screens now start only on a press: the "See it live"
 // button over the server HTML, or a press anywhere in the box. Guard: live-previews-start-only-on-a-press.test.tsx.
+/** Pressed previews in this tab, by their tables: the press outlives the remount at the full-tier switch. */
+const pressed = new Set<string>();
+const keyOf = (spec: TemplateSpec) => spec.tables.map((t) => t.token).join(",");
+
 export function TemplateLivePreview({ spec, today, children }: { spec: TemplateSpec; today: string; children: ReactNode }) {
-  const [wanted, setWanted] = useState(false);
+  const [wanted, setWanted] = useState(() => pressed.has(keyOf(spec)));
   const [Live, setLive] = useState<LiveScreens | null>(null);
   // On a light public page the live screens need the app tree first (store, query client, hosts).
   const appReady = useFullPublicTierWhen(wanted);
@@ -49,7 +53,10 @@ export function TemplateLivePreview({ spec, today, children }: { spec: TemplateS
       gone = true;
     };
   }, [wanted, appReady]);
-  const want = () => setWanted(true);
+  const want = () => {
+    pressed.add(keyOf(spec));
+    setWanted(true);
+  };
   return (
     <div className="relative min-h-[36rem] min-w-0" data-template-live={Live ? "on" : wanted ? "loading" : "off"} onPointerDown={want}>
       {Live ? null : (
