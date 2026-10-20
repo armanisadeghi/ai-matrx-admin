@@ -12,6 +12,7 @@
  *   mutable, persist, source.
  */
 
+import { BuilderRowAction } from "@/features/agents/components/builder/BuilderRowAction";
 import { useState, useCallback, useMemo } from "react";
 import { Plus, X, ChevronDown, Layers, Search, Link2, Pencil } from "lucide-react";
 import { useOpenScopeBatchImportWindow } from "@/features/overlays/definitions/scopeBatchImportWindow.overlay";
@@ -990,27 +991,13 @@ export function AgentContextPoliciesManager({
         )}
 
         <div className="ml-auto flex shrink-0 items-center gap-1">
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
-            onClick={openAdd}
-            aria-label="Add context policy"
-            title="Add context policy"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span className="hidden @[22rem]/policy-row:inline">Add</span>
-          </button>
-
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
-            onClick={() => openBatchImport({ agentId })}
+          <BuilderRowAction kind="add" label="Add" aria-label="Add context policy" title="Add context policy" onClick={openAdd} />
+          <BuilderRowAction
+            kind="batch"
             aria-label="Batch add"
             title="Batch add variables and context policies from a scope type"
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span className="hidden @[22rem]/policy-row:inline">Batch</span>
-          </button>
+            onClick={() => openBatchImport({ agentId })}
+          />
         </div>
       </div>
 

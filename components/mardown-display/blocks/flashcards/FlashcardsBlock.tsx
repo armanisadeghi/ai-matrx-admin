@@ -1,7 +1,7 @@
 "use client";
 import { FullScreenPortal } from "../FullScreenPortal";
-import React, { useEffect, useRef, useState } from "react";
-import { BookOpen, X, Zap } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { BookOpen, X } from "lucide-react";
 import ChatCollapsibleWrapper from "@ai-matrx/rich-content/display/blocks/ChatCollapsibleWrapper";
 import FlashcardMobileView from "./FlashcardMobileView";
 import {
@@ -17,7 +17,6 @@ import { InlineArtifactDebugStrip } from "@/features/canvas/components/CanvasArt
 import type { FlashcardsBlockData } from "@ai-matrx/agents/generated/stream-events";
 import { flashcardsPrinterLazy as flashcardsPrinter } from "@ai-matrx/print/flashcards-lazy";
 import { PrintOptionsDialog } from "@ai-matrx/print/react";
-import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
@@ -64,13 +63,9 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
   controls = null,
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showMobilePrompt, setShowMobilePrompt] = useState(false);
-  const isMobile = useIsMobile();
   const searchParams = useSearchParams();
   const isAdmin = useAppSelector(selectIsAdmin);
   const openFlashcardsBlockWindow = useOpenFlashcardsBlockWindow();
-  const stabilityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const promptedRef = useRef(false);
 
   const set = useFlashcardsSet({
     content,
@@ -88,7 +83,6 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
     enterMobileView,
     exitMobileView,
     mobileStartIndex,
-    dismissed: mobileDismissed,
   } = useFlashcardDeckView();
 
   const handleOpenInWindow = (e?: React.MouseEvent) => {
@@ -118,33 +112,11 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
 
   useEffect(() => {
     if (
-      !isMobile ||
-      promptedRef.current ||
-      mobileDismissed ||
-      set.flashcards.length === 0
-    )
-      return undefined;
-    if (stabilityTimer.current) clearTimeout(stabilityTimer.current);
-    stabilityTimer.current = setTimeout(() => {
-      if (!promptedRef.current && set.flashcards.length >= 1) {
-        promptedRef.current = true;
-        setShowMobilePrompt(true);
-        setTimeout(() => setShowMobilePrompt(false), 8000);
-      }
-    }, 1000);
-    return () => {
-      if (stabilityTimer.current) clearTimeout(stabilityTimer.current);
-    };
-  }, [isMobile, mobileDismissed, set.flashcards.length, set.isComplete]);
-
-  useEffect(() => {
-    if (
       searchParams.get("mode") === "flash" &&
       set.flashcards.length > 0 &&
       !isMobileView
     ) {
       enterMobileView(0);
-      promptedRef.current = true;
     }
   }, [searchParams, set.flashcards.length, isMobileView, enterMobileView]);
 
@@ -272,17 +244,6 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
           open={set.printOpen}
           onOpenChange={set.setPrintOpen}
         />
-
-        {showMobilePrompt && (
-          <MobileFlashPrompt
-            onDismiss={() => setShowMobilePrompt(false)}
-            onEnter={() => {
-              setShowMobilePrompt(false);
-              setIsFullscreen(false);
-              enterFlashMode();
-            }}
-          />
-        )}
       </>
     );
   }
@@ -348,53 +309,8 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
         open={set.printOpen}
         onOpenChange={set.setPrintOpen}
       />
-
-      {showMobilePrompt && (
-        <MobileFlashPrompt
-          onDismiss={() => setShowMobilePrompt(false)}
-          onEnter={() => {
-            setShowMobilePrompt(false);
-            enterMobileView();
-          }}
-        />
-      )}
     </>
   );
 };
-
-function MobileFlashPrompt({
-  onDismiss,
-  onEnter,
-}: {
-  onDismiss: () => void;
-  onEnter: () => void;
-}) {
-  return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 animate-in slide-in-from-bottom duration-300 pb-safe">
-      <div className="relative mx-3 mb-3 rounded-2xl border border-blue-700/50 bg-gradient-to-r from-blue-900 to-indigo-900 p-4 shadow-2xl">
-        <Button variant="quiet" icon={<X />} onClick={onDismiss} aria-label="Close" className="absolute right-3 top-3" />
-        <div className="flex items-start gap-3 pr-6">
-          <div className="mt-0.5 rounded-xl bg-blue-800/60 p-2">
-            <Zap className="h-5 w-5 text-blue-300" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-white">Flash Mode</p>
-            <p className="mt-0.5 text-xs leading-relaxed text-blue-200/70">
-              Study one card at a time — tap to flip, swipe to navigate.
-            </p>
-            <div className="mt-3 flex gap-2">
-              <Button variant="quiet" onClick={onEnter}>
-                Enter Flash Mode
-              </Button>
-              <Button variant="quiet" onClick={onDismiss}>
-                Not now
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default FlashcardsBlock;
