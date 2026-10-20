@@ -96,3 +96,50 @@ describe("blocks with a hero card are one framed box with a header row", () => {
     expect(inWrapper).not.toContain('variant="bar"');
   });
 });
+
+/**
+ * Review 2 (2026-10-19, N2 math, N3 comparison, N6 titles gone at 375px): the same rules over EVERY
+ * block with Controls, found by the scan above — no hand list.
+ *  - every header row wraps, so a phone drops the actions under the title instead of hiding it;
+ *  - no filled header action, no "coming soon" stub, no template subtitle that can print "undefined";
+ *  - a block that draws its own card has exactly one frame: no gradient hero card holding the title.
+ */
+function headerRows(text: string): string[] {
+  const rows: string[] = [];
+  for (const m of text.matchAll(/<div\b[^>]*?className=(?:"([^"]*)"|\{`([^`]*)`\})[^>]*>/g)) {
+    const cls = m[1] ?? m[2] ?? "";
+    const isHeader =
+      /\bdata-block-header\b/.test(m[0]) ||
+      (/\bjustify-between\b/.test(cls) && /\bborder-b\b/.test(cls) && /\bbg-muted\/(30|50)\b/.test(cls));
+    if (isHeader) rows.push(cls);
+  }
+  return rows;
+}
+
+describe("every block with Controls is one quiet frame whose title always shows", () => {
+  for (const { rel, text } of withControls) {
+    it(`${rel}`, () => {
+      for (const cls of headerRows(text)) expect(cls).toMatch(/\bflex-wrap\b/);
+      expect(text).not.toMatch(/className:\s*"bg-[a-z]+-[56]00[^"]*text-white/);
+      expect(text).not.toMatch(/\(coming soon\)/i);
+      expect(text).not.toMatch(/subtitle=\{`\$\{/);
+      if (/useBlockHostSlot\(/.test(text)) {
+        // The title sits in the header row, never in a gradient hero card inside the frame.
+        expect(text).not.toMatch(/<div className="bg-gradient-to-br[^"]*rounded-xl[^"]*border[^"]*">\s*<div className="flex items-start justify-between/);
+      }
+    });
+  }
+});
+
+describe("the math block never prints undefined", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { mathSubtitle } = require("../math/MathProblemBlock") as typeof import("../math/MathProblemBlock");
+  it.each([
+    [{ topic_name: undefined, module_name: undefined }, ""],
+    [{ topic_name: "Algebra", module_name: undefined }, "Algebra"],
+    [{ topic_name: "Algebra", module_name: "Linear" }, "Algebra • Linear"],
+    [{ topic_name: " ", module_name: "Linear" }, "Linear"],
+  ])("%j → %p", (parts, expected) => {
+    expect(mathSubtitle(parts as never)).toBe(expected);
+  });
+});

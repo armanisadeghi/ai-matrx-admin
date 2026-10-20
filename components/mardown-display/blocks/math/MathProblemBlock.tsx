@@ -64,7 +64,7 @@ const MathProblemBlock: React.FC<MathProblemBlockProps> = ({ problemData: initia
     // Print integration
     const { open: printOpen, setOpen: setPrintOpen, triggerPrint } = usePrintOptions(mathPrinter, problemData);
 
-    // Custom actions: Print. (The "Save to database (coming soon)" stub is gone: a screen is honest
+    // Custom actions: Print. (The save-to-database stub is gone: a screen is honest
     // or absent — the promise stays tracked in lib/coming-soon until it is built.)
     const customActions = [
         {
