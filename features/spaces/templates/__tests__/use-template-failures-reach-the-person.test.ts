@@ -14,6 +14,8 @@ jest.mock("../../data/sources", () => ({ registerSampleWorld: jest.fn() }));
 jest.mock("@/lib/toast", () => ({ toast: { warning: jest.fn(), success: jest.fn() }, errorSentence: (e: unknown) => String(e) }));
 
 import type { SpaceDoc, SpacesStore } from "../../contract";
+import { TEMPLATE_BUSY_MESSAGE } from "@ai-matrx/records/templates";
+
 import { installTemplateTables, makeTemplatePages, runUseTemplate, type PackRun, type PackRunJournal, type SpaceTemplateFull } from "../use-pack";
 
 const PAGES = ["Accounting Firm Desk", "Clients", "Engagements", "Deadlines", "Guide"];
@@ -102,8 +104,9 @@ describe("Use template failures reach the person, and Try again resumes", () => 
     rpc.mockImplementation(async (fn: string) => (fn === "template_install" ? { data: REFUSED, error: null } : { data: [], error: null }));
     const w = world();
     const t0 = Date.now();
+    // ADVERSARIAL-6 F4: ONE plain sentence (the records family's busy words); the step and raw text are the console's.
     await expect(makeTemplatePages(w.store, w.createRoot, template, installTemplateTables(template, "org-1", jest.fn() as never), undefined, w.journal)).rejects.toThrow(
-      "The template's tables stopped at step 13 (field_declare): canceling statement due to lock timeout. The database was busy. Try again picks up from that step.",
+      new RegExp(`^${TEMPLATE_BUSY_MESSAGE.replace(/[.;]/g, "\\$&")}$`),
     );
     expect(installCalls()).toHaveLength(1);
     expect(Date.now() - t0).toBeLessThan(2000);
@@ -116,7 +119,7 @@ describe("Use template failures reach the person, and Try again resumes", () => 
     const first = use(w);
     const r1 = await first.run;
     expect(r1).toMatchObject({ ok: false, stopped: false });
-    expect(r1.ok ? "" : r1.message).toMatch(/^The template's tables stopped at step 13 \(field_declare\): canceling statement due to lock timeout\..* Try again picks up from that step\. The pages made so far are in Trash; Try again brings them back and finishes them\.$/);
+    expect(r1.ok ? "" : r1.message).toBe(TEMPLATE_BUSY_MESSAGE);
     // No stage text outlives the failure.
     expect(first.stages.at(-1)).toBeNull();
     expect(installCalls()).toHaveLength(1);
@@ -142,7 +145,7 @@ describe("Use template failures reach the person, and Try again resumes", () => 
     rpc.mockImplementation(async (fn: string) => (fn === "template_install_fresh" ? { data: null, error: { code: "42501", message: "permission denied for table template_install" } } : { data: [], error: null }));
     const w = world();
     const r = await use(w).run;
-    expect(r.ok ? "" : r.message).toMatch(/^The template's tables were not made: permission denied for table template_install\. Try again picks up from that step\./);
+    expect(r.ok ? "" : r.message).toBe("Permission denied for table template_install.");
   });
 
   it("a dropped connection ends the run with its reason", async () => {
@@ -152,7 +155,7 @@ describe("Use template failures reach the person, and Try again resumes", () => 
     });
     const w = world();
     const r = await use(w).run;
-    expect(r.ok ? "" : r.message).toMatch(/^Failed to fetch The pages made so far are in Trash/);
+    expect(r.ok ? "" : r.message).toBe("We could not reach your data.");
   });
 
   it("a page write that fails while the tables still install ends the run at once and stops the install", async () => {
@@ -167,7 +170,7 @@ describe("Use template failures reach the person, and Try again resumes", () => 
       },
     }).run;
     expect(Date.now() - t0).toBeLessThan(2000);
-    expect(r.ok ? "" : r.message).toMatch(/^We couldn't create the Space: connection reset The pages made so far are in Trash/);
+    expect(r.ok ? "" : r.message).toBe("We couldn't create the Space: connection reset");
     expect(installSignalled).toBe(true);
     expect(w.live()).toEqual([]);
   });
@@ -188,9 +191,7 @@ describe("Use template failures reach the person, and Try again resumes", () => 
     expect(stalls[0]).toEqual(expect.any(Function));
     expect(stalls.at(-1)).toBeNull();
     expect(r).toMatchObject({ ok: false, stopped: true });
-    expect(r.ok ? "" : r.message).toBe(
-      "Stopped. The tables made so far are kept. The pages made so far are in Trash; Try again brings them back and finishes them.",
-    );
+    expect(r.ok ? "" : r.message).toBe("Stopped; the tables made so far are kept.");
     expect(stages.at(-1)).toBeNull();
     expect(w.journalValue()).toMatchObject({ trashed: true });
   });

@@ -65,7 +65,7 @@ describe("Use template tells the install its page", () => {
       if (!healed) throw new Error("We couldn't record the template's page: We could not reach your data.");
     };
     await expect(makeTemplatePages(w.store, w.createRoot, template, {}, undefined, w.journal, { notePage })).rejects.toThrow(
-      /^We couldn't record the template's page: We could not reach your data\. The pages made so far are in Trash/,
+      /^We couldn't record the template's page: We could not reach your data\.$/,
     );
     expect(w.live()).toEqual([]);
     expect(w.journalValue()).toMatchObject({ trashed: true, installId: "install-1" });

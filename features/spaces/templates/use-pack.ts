@@ -11,7 +11,7 @@
 // that copy's table, view and page ids; (3) the root page opened. A run that stops (refusal, failure, Cancel)
 // is resumed by Try again on the SAME copy and the SAME pages (PackRun journal), never a second set.
 
-import { allTables, listTemplateInstances, runTemplateDoor, templateUpgradeHint, upgradeTemplateInstall, type TemplateDoorAnswer, type TemplateSpec } from "@ai-matrx/records/templates";
+import { allTables, listTemplateInstances, newTemplateInstallId, runTemplateDoor, templateUpgradeHint, upgradeTemplateInstall, type TemplateDoorAnswer, type TemplateSpec } from "@ai-matrx/records/templates";
 import { storeDoors, supabaseDataSource } from "@ai-matrx/records/core";
 
 import { packPageSettings, packPagesInOrder, resolvePackBlocks, spaceTemplateMakes, type ResolvedTable, type SpaceTemplateCardFace, type SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
@@ -24,6 +24,7 @@ import type { PaintedSize } from "../editor/database-host";
 import { runHostSteps, upgradeCountsText } from "../data/install-host";
 import { registerSampleWorld } from "../data/sources";
 import { saveOnCurrent } from "../store/save-on-current";
+import { copyIsLive, copyRoots, templateDoorSentence } from "./template-copy";
 
 /**
  * WHERE "USE TEMPLATE" SPENDS ITS TIME: each phase is a `performance.measure` named `spaces:use-template:<phase>`
@@ -232,21 +233,17 @@ export class TemplateInstallRefused extends Error {
 /** The person stopped the run (Cancel): nothing more is asked of the store; what was made is kept for Try again. */
 export class TemplateUseStopped extends Error {
   constructor() {
-    super("Stopped. The tables made so far are kept.");
+    super("Stopped; the tables made so far are kept.");
     this.name = "TemplateUseStopped";
   }
 }
 
-/** Codes the database answers when it was busy, not when the template is wrong. */
-const BUSY_CODES = new Set(["57014", "55P03", "40P01", "40001"]);
-
-/** The store's refusal as one sentence: where it stopped, and the store's own words. */
+/**
+ * The store's refusal as ONE plain sentence (ADVERSARIAL-6 F4): the records family's words (template-copy.ts
+ * `templateDoorSentence`); the step, its label and the raw text go to the console. "Try again" is the screen's button.
+ */
 export function refusalSentence(refusal: Record<string, unknown> | null | undefined): string {
-  const said = typeof refusal?.["message"] === "string" && refusal["message"] ? String(refusal["message"]).replace(/[.\s]+$/, "") : "";
-  const step = typeof refusal?.["step"] === "number" ? ` at step ${refusal["step"]}` : "";
-  const label = typeof refusal?.["label"] === "string" && refusal["label"] ? ` (${refusal["label"]})` : "";
-  const busy = BUSY_CODES.has(String(refusal?.["code"] ?? "")) ? " The database was busy." : "";
-  return `The template's tables stopped${step}${label}: ${said || "the install stopped before it finished"}.${busy} Try again picks up from that step.`;
+  return templateDoorSentence(refusal ?? { message: "" });
 }
 
 /** Waits for `work`, or rejects with the signal's reason the moment it is aborted. */
@@ -301,7 +298,7 @@ export async function installTemplateTables(
 ): Promise<Record<string, ResolvedTable>> {
   const source = stoppable(supabaseDataSource(createClient()), signal);
   onStage?.("Making tables…");
-  const done = await timed("install-door", () =>
+  const door = timed("install-door", () =>
     runTemplateDoor(source, fresh ? "template_install_fresh" : "template_install", organizationId, t.id, {
       maxCalls: 400,
       // TEMPLATE-INSTALL-2: the id is the page's from before the first call (held for a refresh, else minted by the door runner and
@@ -316,9 +313,14 @@ export async function installTemplateTables(
       },
     }),
   );
+  // A thrown transport failure (a dropped connection) reads as the shared mapper's one sentence, never "Failed to fetch".
+  const done = await door.catch((err: unknown) => {
+    if (err instanceof TemplateInstallRefused || signal?.aborted) throw err;
+    throw new Error(templateDoorSentence(null, { code: "", message: err instanceof Error ? err.message : String(err) }));
+  });
   if (!done.ok || !done.answer?.done) {
     if (done.answer?.refusal) throw new TemplateInstallRefused(done.answer.refusal);
-    throw new Error(`The template's tables were not made: ${done.error?.message ?? "the install stopped before it finished"}. Try again picks up from that step.`);
+    throw new Error(templateDoorSentence(null, done.error ?? { code: "", message: "" }));
   }
   let answer: TemplateDoorAnswer = done.answer;
   // A fresh copy is made at the newest version; only the default install is upgraded in place.
@@ -329,7 +331,8 @@ export async function installTemplateTables(
     signal?.throwIfAborted();
     if (!up.ok || !up.answer) {
       const refusal = up.answer?.refusal as { message?: string } | null | undefined;
-      throw new Error(`The template's tables were not upgraded to version ${hint.to_version}: ${refusal?.message ?? up.error?.message ?? "the upgrade stopped before it finished."}`);
+      console.warn("[spaces] the template upgrade stopped", { to: hint.to_version, refusal, error: up.error });
+      throw new Error(templateDoorSentence(up.answer?.refusal ?? null, up.error ?? { code: "", message: "" }));
     }
     if (up.answer.upgraded !== false) toast.success(`Tables upgraded to version ${up.answer.version ?? hint.to_version}: ${upgradeCountsText(up.answer.counts)}.`);
     answer = up.answer;
@@ -389,7 +392,7 @@ export function withDeadline<T>(work: PromiseLike<T>, ms: number, message: strin
 /** How long a template link's opening reads (the library, the person's pages, their copies) may take before it is said. */
 export const USE_TEMPLATE_OPEN_DEADLINE_MS = 15_000;
 
-/** One finished copy of a template in an organization (custom.template_instances), as "You already have this" shows it. */
+/** One copy of a template in an organization (custom.template_instances), as "You already have this" shows it. */
 export interface InstalledCopy {
   installId: string;
   title: string | null;
@@ -398,42 +401,33 @@ export interface InstalledCopy {
   newerVersion: number | null;
   startedAt: string;
   finishedAt: string | null;
-}
-
-/** The organization's finished copies of a catalog id, newest first (ADVERSARIAL-5 F6: a second press offers Open). */
-export async function installedCopies(organizationId: string, catalogueId: string): Promise<InstalledCopy[]> {
-  const { ok, instances, error } = await listTemplateInstances(supabaseDataSource(createClient()), organizationId, catalogueId);
-  if (!ok) throw new Error(`We couldn't read your copies of this template: ${error?.message ?? "no answer"}`);
-  return instances
-    .filter((i) => i.state === "installed")
-    .map((i) => ({ installId: i.install_id, title: i.title, version: i.version, newerVersion: i.newer_version, startedAt: i.started_at, finishedAt: i.finished_at }))
-    .sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+  /** The copy's root page, by the id the run recorded on it (template-copy.ts): never found by title. */
+  root: SpaceId;
+  /** True when the copy was removed (Move to Trash on its root): offered as "Restore it", never "Open it". */
+  trashed: boolean;
 }
 
 /**
- * The root page of a copy made from another device or an older link: the top page a "Use template" run makes is titled
- * like the copy (FreshCopy.title) and is written while the copy installs. The live one closest to the install's start.
+ * The organization's copies of a catalog id that can be opened or restored, newest first (ADVERSARIAL-6 F2):
+ * - live: the install is installed AND its recorded root page is live → "Open it";
+ * - trashed: the install was removed AND its root page is in Trash → "Restore it".
+ * A copy whose root page is gone, was never recorded, or disagrees with its install (live tables, trashed page) is not
+ * offered: the default press must never end in "its pages were not found".
  */
-export async function findCopyRoot(organizationId: string, copy: InstalledCopy): Promise<SpaceId | null> {
-  if (!copy.title) return null;
-  const slack = 5 * 60 * 1000;
-  const start = Date.parse(copy.startedAt);
-  const end = copy.finishedAt ? Date.parse(copy.finishedAt) : Date.now();
-  const { data, error } = await createClient()
-    .schema("content")
-    .from("document")
-    .select("id, created_at")
-    .eq("organization_id", organizationId)
-    .eq("format", "spaces")
-    .eq("title", copy.title)
-    .is("deleted_at", null)
-    .gte("created_at", new Date(start - slack).toISOString())
-    .lte("created_at", new Date(end + slack).toISOString())
-    .limit(20);
-  if (error) throw new Error(`We couldn't find your copy's pages: ${error.message}`);
-  const rows = (data ?? []) as Array<{ id: string; created_at: string }>;
-  rows.sort((a, b) => Math.abs(Date.parse(a.created_at) - start) - Math.abs(Date.parse(b.created_at) - start));
-  return rows[0]?.id ?? null;
+export async function installedCopies(organizationId: string, catalogueId: string): Promise<InstalledCopy[]> {
+  const { ok, instances, error } = await listTemplateInstances(supabaseDataSource(createClient()), organizationId, catalogueId);
+  if (!ok) throw new Error(`We couldn't read your copies of this template: ${error?.message ?? "no answer"}`);
+  const candidates = instances.filter((i) => i.state !== "refused" && i.finished_at);
+  const roots = await copyRoots(organizationId, candidates.map((i) => i.install_id));
+  const out: InstalledCopy[] = [];
+  for (const i of candidates) {
+    const root = roots.get(i.install_id);
+    if (!root) continue;
+    const live = copyIsLive(i.state);
+    if (live === root.trashed) continue;
+    out.push({ installId: i.install_id, title: i.title, version: i.version, newerVersion: i.newer_version, startedAt: i.started_at, finishedAt: i.finished_at, root: root.id, trashed: !live });
+  }
+  return out.sort((a, b) => b.startedAt.localeCompare(a.startedAt));
 }
 
 /**
@@ -580,9 +574,9 @@ export async function makeTemplatePages(
     }
     run.trashed = undone;
     remember();
-    throw new Error(
-      `${reasonOf(err)} ${undone ? "The pages made so far are in Trash; Try again brings them back and finishes them." : "Try again finishes the pages made so far."}`,
-    );
+    // ADVERSARIAL-6 F4: one sentence on the screen; where the pages are is the console's (Try again finishes them either way).
+    console.warn(`[spaces] the template run stopped; the pages made so far are ${undone ? "in Trash" : "kept"} for Try again.`, err);
+    throw err instanceof Error ? err : new Error(reasonOf(err));
   }
 }
 
@@ -719,8 +713,11 @@ export const USE_TEMPLATE_STALL_MS = 20_000;
 export interface UseTemplateRun {
   template: SpaceTemplateFull;
   store: SpacesStore;
-  /** Makes the root page under the id the run chose (idempotent by id: a resume after a lost answer reuses it). */
-  createRoot: (title: string, id: SpaceId) => Promise<SpaceDoc>;
+  /**
+   * Makes the root page under the id the run chose (idempotent by id: a resume after a lost answer reuses it), stamped
+   * with the copy's install id (ADVERSARIAL-6 F1: the root's Trash and Restore follow the install; template-copy.ts).
+   */
+  createRoot: (title: string, id: SpaceId, installId: string) => Promise<SpaceDoc>;
   /** Installs the tables (installTemplateTables with the stage, the stop signal and the fresh copy). */
   install: (onStage: (stage: string) => void, signal: AbortSignal, fresh: FreshCopy) => Promise<Record<string, ResolvedTable>>;
   journal: PackRunJournal;
@@ -771,7 +768,10 @@ export async function runUseTemplate(r: UseTemplateRun): Promise<UseTemplateResu
   }, Math.max(50, Math.min(1000, Math.floor(stallMs / 4))));
 
   // The copy's install id lives with the pages in the journal: Try again continues the SAME copy.
-  let installId = r.journal.read()?.installId ?? r.journal.installId?.() ?? null;
+  // ADVERSARIAL-6 F1: the copy's id is chosen HERE, before the root page or the first install call, so the root is
+  // created carrying it (the same id the door then installs under; runTemplateDoor would otherwise mint it itself).
+  let installId: string = r.journal.read()?.installId ?? r.journal.installId?.() ?? newTemplateInstallId();
+  if (!r.journal.read()?.installId) r.journal.noteInstallId?.(installId);
   const journal: PackRunJournal = {
     read: () => {
       const run = r.journal.read();
@@ -810,7 +810,7 @@ export async function runUseTemplate(r: UseTemplateRun): Promise<UseTemplateResu
     tables.catch(() => undefined);
     const root = await makeTemplatePages(
       r.store,
-      r.createRoot,
+      (title, id) => r.createRoot(title, id, installId),
       r.template,
       tables,
       (done, total) => {

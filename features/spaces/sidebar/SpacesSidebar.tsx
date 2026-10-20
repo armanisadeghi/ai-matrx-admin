@@ -149,7 +149,8 @@ function RowMenu({ space, onRename }: { space: SpaceSummary; onRename: () => voi
         <button type="button" className="spaces-menu-row" data-danger="true" onClick={act(() =>
             void spaces
               .archiveSpace(space.id)
-              .then(() => toast.success("Moved to Trash"))
+              // A template copy's root says its own progress and result (SpacesProvider runCopy).
+              .then((done) => (done === "trashed" ? toast.success("Moved to Trash") : undefined))
               .catch((e: unknown) => toast.error(e instanceof Error ? e.message : "We couldn't move this page to Trash.")),
           )}>
           <span className="spaces-menu-row-icon">
@@ -403,7 +404,10 @@ function TrashPopover() {
                 icon={<Undo2 size={15} />}
                 onClick={(e) => {
                   e.stopPropagation();
-                  void restoreSpace(s.id).then(() => toast.success("Page restored"));
+                  void restoreSpace(s.id).then(
+                    () => toast.success("Page restored"),
+                    (err: unknown) => toast.error(err instanceof Error ? err.message : "We couldn't restore this page."),
+                  );
                 }}
               />
             </div>

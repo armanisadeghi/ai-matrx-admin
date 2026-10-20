@@ -24,6 +24,8 @@ import { listTemplateIds, setTemplate, copyTemplate } from "./templates";
 import { bringTemplateTables } from "./template-tables";
 import { attemptJournal } from "../templates/use-attempt";
 import { noteTemplatePage } from "../data/install-host";
+import { removeCopyQuestion, restorePageOrCopy, runCopyDoor, templateCopyMetadata, templateCopyOfPage, trashPageOrCopy, type TemplateCopy } from "../templates/template-copy";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { installTemplateTables, olderTemplateCopies, packRunJournal, readSpaceTemplate, readStarterTemplate, runUseTemplate, timed, USE_TEMPLATE_OPEN_DEADLINE_MS, withDeadline, type PreviewSizes } from "../templates/use-pack";
 
 const FAVORITES_KEY = "spaces:favorites";
@@ -126,7 +128,13 @@ interface SpacesContextValue {
   recent: SpaceId[];
   markVisited: (id: SpaceId) => void;
   createSpace: (parentId: SpaceId | null, options?: { open?: boolean; afterId?: SpaceId; title?: string; blocks?: SpaceBlock[] }) => Promise<SpaceDoc>;
-  archiveSpace: (id: SpaceId) => Promise<void>;
+  /**
+   * Move to Trash. ADVERSARIAL-6 F1: the ROOT page of a live template copy removes the copy (tables, views, assistant
+   * archived; pages to Trash) after a one-line confirm; "kept" when the person said no. `removeCopy`: the menu's
+   * "Remove template copy" (same path). Answers what happened.
+   */
+  archiveSpace: (id: SpaceId, options?: { removeCopy?: boolean }) => Promise<"trashed" | "removed" | "kept">;
+  /** Restore from Trash; a removed template copy's root restores the whole copy (records template_restore). */
   restoreSpace: (id: SpaceId) => Promise<void>;
   duplicateSpace: (id: SpaceId) => Promise<SpaceDoc>;
   moveSpace: (id: SpaceId, targetId: SpaceId | null, placement: DropPlacement) => Promise<void>;
@@ -537,8 +545,8 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
         runUseTemplate({
           template,
           store,
-          createRoot: async (title, id) => {
-            const doc = await createDatabaseSpacesStore(orgId).create({ id, parentId: null, title });
+          createRoot: async (title, id, installId) => {
+            const doc = await createDatabaseSpacesStore(orgId).create({ id, parentId: null, title, metadata: templateCopyMetadata({ installId, catalogueId: template.catalogue_id }) });
             store.notifyTree();
             return doc;
           },
@@ -589,10 +597,34 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
       setPackStage(null);
     }
   };
-  const archiveSpace = (id: SpaceId) => store.archive(id);
+  /**
+   * ADVERSARIAL-6 F1: removes or restores a whole template copy through the records door, never silently: one toast
+   * says how far it got (10–40 s for a big copy), then "Removed …" or one sentence with Try again.
+   */
+  const runCopy = async (door: "template_uninstall" | "template_restore", copy: TemplateCopy): Promise<boolean> => {
+    const id = `template-copy-${copy.installId}`;
+    const verb = door === "template_uninstall" ? "Removing" : "Restoring";
+    toast.loading(`${verb} ${copy.title}…`, { id, duration: Infinity });
+    const out = await runCopyDoor(door, copy, (done, total) => toast.loading(`${verb} ${copy.title} · ${done}/${total}`, { id, duration: Infinity }));
+    store.notifyTree();
+    if (out.ok) {
+      toast.success(door === "template_uninstall" ? `Removed ${copy.title}` : `Restored ${copy.title}`, { id, duration: 4000 });
+      return true;
+    }
+    toast.error(out.message, { id, duration: Infinity, action: { label: "Try again", onClick: () => void runCopy(door, copy) } });
+    return false;
+  };
+  const copyPorts = {
+    readCopy: templateCopyOfPage,
+    archive: (id: SpaceId) => store.archive(id),
+    restore: (id: SpaceId) => store.restore(id),
+    confirm: (copy: TemplateCopy, removeCopy: boolean) => confirm({ ...removeCopyQuestion(copy, removeCopy), variant: "destructive" }),
+    runDoor: runCopy,
+  };
+  const archiveSpace: SpacesContextValue["archiveSpace"] = (id, options) => trashPageOrCopy(id, copyPorts, options);
   /** A position after every top-level page (top-level order is created order). */
   const topLevelLast = (list: SpaceSummary[]) => list.filter((s) => !s.parentId).map((s) => s.position).sort().at(-1)?.concat("z") ?? "z";
-  const restoreSpace = (id: SpaceId) => store.restore(id);
+  const restoreSpace = (id: SpaceId) => restorePageOrCopy(id, copyPorts);
   const duplicateSpace = async (id: SpaceId) => {
     const copy = await store.duplicate(id, { withChildren: true });
     // The copy opens with its content at once (the duplicate already read it), never blank while re-read.

@@ -48,6 +48,7 @@ import { Cover, CoverPicker } from "./Cover";
 import { IconPicker } from "./IconPicker";
 import { AddPropertyMenu, PageProperties } from "./PageProperties";
 import { PageMenu } from "./PageMenu";
+import { copyIsLive, templateCopyOfPage } from "../templates/template-copy";
 import { SpaceIcon, isImageMedia } from "./SpaceIcon";
 import { TocRail } from "./TocRail";
 import { CommentMargin } from "../collab/CommentMargin";
@@ -440,6 +441,22 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
     else keepUnsaved(deviceStorage(), spaceId, d, base);
   };
   const [sourcePicker, pickSource] = useSourcePicker(spaceId);
+  // ADVERSARIAL-6 F1: whether this page is the root of a live template copy (null = not asked yet; asked when the ••• menu opens).
+  const [copyRootOf, setCopyRootOf] = useState<{ id: string; live: boolean } | null>(null);
+  const isCopyRoot = copyRootOf?.id === spaceId ? copyRootOf.live : null;
+  const setIsCopyRoot = (live: boolean) => setCopyRootOf({ id: spaceId, live });
+  /** Move to Trash (Notion stays on the page and shows the Trash banner); a copy's root removes the copy (SpacesProvider). */
+  const trashPage = (options?: { removeCopy?: boolean }) => {
+    void (async () => {
+      await flush();
+      const done = await spaces.archiveSpace(spaceId, options);
+      if (done === "kept") return;
+      setCopyRootOf(null);
+      const latest = await store.get(spaceId);
+      if (latest) adopt(latest);
+      else setDoc((d) => (d ? { ...d, isArchived: true } : d));
+    })().catch((e: unknown) => toast.error(e instanceof Error ? e.message : "We couldn't move this page to Trash."));
+  };
   /**
    * Write the page to the store — the host only (a member that is not host never writes; the host saves
    * what the room holds). A save whose content is already the stored content is skipped, so an idle room,
@@ -942,22 +959,22 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
               void spaces.moveSpace(doc.id, targetId, "inside").catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not move this page"));
             })
           }
-          onDelete={() => {
-            // Notion stays on the page and shows the Trash banner; the page turns read-only.
-            void (async () => {
-              await flush();
-              await spaces.archiveSpace(doc.id);
-              const latest = await store.get(doc.id);
-              if (latest) adopt(latest);
-              else setDoc((d) => (d ? { ...d, isArchived: true } : d));
-            })().catch((e: unknown) => toast.error(e instanceof Error ? e.message : "We couldn't move this page to Trash."));
-          }}
+          onDelete={() => trashPage()}
+          onRemoveCopy={isCopyRoot ? () => trashPage({ removeCopy: true }) : undefined}
           onUndo={() => editorRef.current?.undo()}
           onHistory={() => setHistoryOpen(true)}
           onExport={() => setExportOpen(true)}
           onAskAiChange={builder.wired && editable ? () => builder.ask({ spaceId: doc.id, ...pageForAi() }) : undefined}
           isTemplate={spaces.templates.ids ? spaces.templates.ids.includes(doc.id) : null}
-          onOpen={spaces.templates.ids === null ? spaces.templates.refresh : undefined}
+          onOpen={() => {
+            if (spaces.templates.ids === null) spaces.templates.refresh();
+            // ADVERSARIAL-6 F1: a template copy's root offers "Remove template copy" (read when the menu opens, never on load).
+            if (isCopyRoot === null)
+              void templateCopyOfPage(doc.id).then(
+                (copy) => setIsCopyRoot(!!copy && copyIsLive(copy.state)),
+                (e: unknown) => console.warn("[spaces] could not read whether this page is a template copy", e),
+              );
+          }}
           onTemplate={(on) =>
             void spaces.templates
               .setTemplate(doc.id, on)
