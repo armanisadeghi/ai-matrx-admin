@@ -1,7 +1,7 @@
 -- INVERSE of migrations/20261020050000_cfwrite_d_a_kinds_whose_table_refuses_custom_values_say_so.sql (lane CF-WRITE-4): puts custom.entity_record_read back, drops the lock columns.
 -- chair-step: restores one function body, drops one constraint and two columns.
 -- lock: custom
--- based-on: custom.entity_record_read(uuid, text, uuid) NEWHASH
+-- based-on: custom.entity_record_read(uuid, text, uuid) af8fe73677628f00bf60d6dbdec23cf5f067339a04ed76cd7c208434a3240e67
 set local lock_timeout = '3s';
 
 CREATE OR REPLACE FUNCTION custom.entity_record_read(p_organization_id uuid, p_token text, p_record_id uuid)

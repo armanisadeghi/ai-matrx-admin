@@ -21,6 +21,7 @@
 import { useState, type ReactNode } from "react";
 import { useOpenNotionImport } from "@/features/spaces/io/NotionImportDoor";
 import { useRouter } from "next/navigation";
+import { HeldArchiveStrip } from "./HeldArchiveLine";
 import { OpeningTablePage } from "./OpeningTablePage";
 import { RecordsMount, WhereItLives } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { ExpectedRows, TablePageSkeleton } from "@ai-matrx/records-ui/skeleton";
@@ -348,6 +349,8 @@ export function UnifiedTableBody({
   ) : (
     <>
       {before}
+      {/* A synced table's held-archive question: asked ONCE, here above the grid (never in the header). Absent unless held. */}
+      <HeldArchiveStrip tableId={tableId} />
       <RecordStoreTableSurface channel={mount.gridContext} enabled={mount.mergedGrid} tableId={tableId}>
         <OpeningTablePage
           organizationId={mount.readingOrganizationId}

@@ -52,8 +52,8 @@ export default function CrewCaptureRoute({
 }) {
   const { sheetId } = use(params);
   // Everything the page may ask for later is fetched now, while there is a signal.
-  useWarmOfflineCode();
   const userId = useAppSelector(selectUserId);
+  useWarmOfflineCode(userId);
   const dataSource = useRecordsDataSource();
   // A sheet that opened stays open: losing the signal later never swaps it for an apology.
   const sheet = useLatchedSheet(useObjectOrganization(dataSource, sheetId));

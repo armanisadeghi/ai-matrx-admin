@@ -44,6 +44,7 @@ import { declareTable, personActor, recordsDataSource, resolveTableStyle, type N
 import { withheldCells, type WithheldCells } from "../withheld-cells";
 
 import { createClient } from "@/utils/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { FieldChoice } from "@ai-matrx/design-system/field-formats";
 
 import type {
@@ -300,6 +301,32 @@ function gridRowsOf(rows: readonly ReadRow[], snap: Snapshot): GridRow[] {
       ...(withheld ? { withheld } : {}),
     };
   });
+}
+
+// ─── kept worked-out values ──────────────────────────────────────────────────
+//
+// READ-SPEED-5: the store keeps roll-up, lookup and formula values; a write marks them stale and the
+// page read works stale ones out itself, so an answer is never wrong. After a page read the store is
+// asked, without waiting, to work out what is stale (`custom.computed_refresh`, which also keeps the
+// reader's judgement), so the next view is served the kept values. It answers how many are still
+// stale; one more call follows when some are. At most once per Table per REFRESH_EVERY_MS.
+const REFRESH_EVERY_MS = 10_000;
+const refreshedAt = new Map<string, number>();
+
+function keepWorkedOutValuesFresh(tableId: string): void {
+  const now = Date.now();
+  if (now - (refreshedAt.get(tableId) ?? 0) < REFRESH_EVERY_MS) return;
+  refreshedAt.set(tableId, now);
+  const custom = (createClient() as unknown as SupabaseClient).schema("custom");
+  const once = async (): Promise<number> => {
+    const { data, error } = await custom.rpc("computed_refresh", { p_table_id: tableId, p_max_rows: 200 });
+    if (error) {
+      console.warn(`[record-store] kept values of table ${tableId} were not refreshed: ${error.message}`);
+      return 0;
+    }
+    return typeof data === "number" ? data : 0;
+  };
+  void once().then((left) => (left > 0 ? once() : 0));
 }
 
 /** One page through the store's page door (`client.listPage` → `custom.read_records_page`). */
@@ -591,6 +618,7 @@ export async function getTablePage(
   }
   // THESE ROWS ARE DRAWN: their versions are read now, so an edit is sent against what was seen.
   void versions.drew(clientFor(home), rows.map((r) => r.id));
+  keepWorkedOutValuesFresh(args.tableId);
   return {
     success: true,
     data: {

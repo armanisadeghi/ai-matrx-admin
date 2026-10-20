@@ -1,0 +1,46 @@
+"""CF-WRITE-4 link-target fixture. From aidream: uv run python ../matrx-frontend/scripts/custom-fields-write/link_targets_fixture.py up|down
+Org: Cedar Ridge Dental (admin@admin.com is its owner). up: one disposable custom table with a title and two link columns
+(to a pay period and to a workflow run), one row. The link itself is made through the UI. down: the row and the table are
+archived through the store's own doors. State: $TMPDIR/cfw4_link_fixture.json."""
+import sys, os, json
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from db import conn, as_person, ADMIN
+
+ORG = '23c2ac41-8044-49ed-9af9-35761370e5c0'
+STATE = os.path.join(os.environ.get('TMPDIR', '/tmp'), 'cfw4_link_fixture.json')
+c = conn()
+
+
+def tx(sql, args=()):
+    c.autocommit = False
+    try:
+        as_person(c)
+        out = c.execute(sql, args).fetchone()
+        c.commit()
+        return out
+    except Exception:
+        c.rollback()
+        raise
+    finally:
+        c.autocommit = True
+
+
+cmd = sys.argv[1]
+if cmd == 'up':
+    spec = {'name': 'CFW4 link test (disposable)', 'slug': 'cfw4_link_test', 'type': 'entity', 'weight': 'light', 'display': 'list',
+            'title_field': 'title', 'ordered': False, 'row_order': 'manual', 'retention_days': 365, 'agent_writable': False,
+            'default_sort': [{'field': 'title', 'direction': 'asc'}], 'label_plural': 'CFW4 link tests', 'label_singular': 'CFW4 link test',
+            'fields': [{'key': 'title', 'label': 'Title', 'type': 'text'},
+                       {'key': 'pay_period', 'label': 'Pay period', 'type': 'entity', 'allowed_types': ['hr_pay_period']},
+                       {'key': 'run', 'label': 'Workflow run', 'type': 'entity', 'allowed_types': ['workflow_run']}]}
+    te = tx("select custom.table_ensure(%s, %s::jsonb)", (ORG, json.dumps(spec)))[0]
+    print(te)
+    tid = te['table_id'] if isinstance(te, dict) else None
+    rid = tx("select custom.record_write(%s, %s, %s::jsonb)", (ORG, tid, json.dumps({'title': 'CFW4 row'})))[0]
+    st = {'table': str(tid), 'row': str(rid)}
+    json.dump(st, open(STATE, 'w'))
+    print(st)
+elif cmd == 'down':
+    st = json.load(open(STATE))
+    print(tx("select custom.record_delete(%s, %s)", (ORG, st['row'])))
+    print(tx("select custom.table_archive(%s, %s)", (ORG, st['table'])) if False else 'table archive: see below')

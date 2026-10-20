@@ -301,10 +301,13 @@ export function PublicFormRunner({
         clearTimeout(pending.current);
         pending.current = null;
       }
-      if (inFlight.current) await inFlight.current;
+      // AT-FIX-H 4: a draft save that never answers must not hold the send: wait for it a moment, then send anyway.
+      if (inFlight.current) await Promise.race([inFlight.current, new Promise((resolve) => setTimeout(resolve, 5000))]);
       try {
         const response = await fetch(`/api/forms/${form.form_id}/submit`, {
           method: "POST",
+          // AT-FIX-H 4: a send nobody answers ends as the "did not reach us" notice, never a button stuck on Sending.
+          signal: AbortSignal.timeout(45_000),
           headers: { "content-type": "application/json" },
           // THE SAVED PLACE'S SECRET IS THE CLIENT KEY: the store marks the place sent in the
           // same transaction, and a second press of Send writes nothing twice.

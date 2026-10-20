@@ -13,11 +13,12 @@ describe("a held archive is ONE question on every synced table's bar (review 7)"
     expect(openHold({ archive_held: 5, archive_confirm: "5:bbbbbbbbbbbb", archive_kept: "4:aaaaaaaaaaaa" })).toEqual({ held: 5, confirm: "5:bbbbbbbbbbbb" });
     expect(openHold({ archive_held: 0, archive_confirm: null })).toBeNull();
   });
-  it("Notion, Airtable/GitHub and the synced-table bar all render the one component, none a copy", () => {
+  it("Notion, Airtable/GitHub and the synced-table bar all hand the one question to the strip, none a copy", () => {
     const read = (p: string) => readFileSync(join(__dirname, p), "utf8");
     for (const bar of ["../../../spaces/io/NotionSyncBar.tsx", "../SourceSyncBar.tsx", "../../connect-database/SyncedTableBar.tsx"]) {
       const src = read(bar);
-      expect(src).toContain("<HeldArchiveLine");
+      expect(src).toContain("usePublishHeld(");
+      expect(src).not.toContain("<HeldArchiveLine");
       expect(src).toContain("answerHold(");
       expect(src).not.toMatch(/Archive them\?/);
     }

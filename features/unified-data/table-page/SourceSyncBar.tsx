@@ -18,8 +18,9 @@ import { supabase } from "@/utils/supabase/client";
 
 import { SYNC_SOURCES, syncSentence, type SyncReport } from "./sourceSync";
 import { sayError } from "@/features/unified-data/base/sayError";
-import { HeldArchiveLine } from "./HeldArchiveLine";
-import { answerHold, openHold } from "./heldArchive";
+import { HeldKeptChip } from "./HeldArchiveLine";
+import { answerHold, keptHold, openHold } from "./heldArchive";
+import { usePublishHeld } from "./heldArchiveStore";
 
 interface SourceRow { source_kind: string; synced_at: string | null; last_report?: SyncReport | null }
 
@@ -60,12 +61,10 @@ export function SourceSyncBar({ tableId, organizationId }: { tableId: string; or
 
   useEffect(() => { again.current = () => void syncNow(); }, [syncNow]);
 
-  if (!source) return null;
-  const kind = SYNC_SOURCES[source.source_kind]!;
-  const when = source.synced_at ? formatRelativeTime(source.synced_at, { style: "intl" }) : "never";
-  const held = openHold(source.last_report);
+  const held = openHold(source?.last_report);
+  const kept = keptHold(source?.last_report);
   const keep = async (token: string) => {
-    if (!organizationId) return;
+    if (!organizationId || !source) return;
     try {
       await answerHold(organizationId, tableId, "keep", token);
       setSource({ ...source, last_report: { ...(source.last_report ?? {}), archive_kept: token } });
@@ -73,11 +72,20 @@ export function SourceSyncBar({ tableId, organizationId }: { tableId: string; or
       toast.error(sayError(err, "Keep was not saved."));
     }
   };
+  const pending = held ?? kept;
+  // ONE question, asked in the strip above the grid; after Keep the chip says "N kept"
+  usePublishHeld(tableId, source && pending ? {
+    source: SYNC_SOURCES[source.source_kind]?.name ?? "The source", held: pending.held, confirm: pending.confirm, kept: !held, was, busy,
+    onArchive: () => void syncNow(pending.confirm), onKeep: () => void keep(pending.confirm),
+  } : null);
+
+  if (!source) return null;
+  const kind = SYNC_SOURCES[source.source_kind]!;
+  const when = source.synced_at ? formatRelativeTime(source.synced_at, { style: "intl" }) : "never";
   return (
     <div className="flex shrink-0 items-center gap-1" data-source-sync-bar={source.source_kind}>
-      {held ? (
-        <HeldArchiveLine source={kind.name} held={held.held} was={was} busy={busy}
-          onArchive={() => void syncNow(held.confirm)} onKeep={() => void keep(held.confirm)} />
+      {!held && kept ? (
+        <HeldKeptChip tableId={tableId} count={kept.held} />
       ) : (
         <span className="hidden max-w-[16rem] truncate px-1 text-xs text-muted-foreground md:inline" data-source-sync-when="">
           {busy ? `Syncing ${kind.name}` : `${kind.name} synced ${when}`}

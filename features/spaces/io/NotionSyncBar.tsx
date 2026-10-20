@@ -16,8 +16,9 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { postJson } from "@/lib/python-client";
 import { readNotionSyncState } from "./notionSyncState";
-import { HeldArchiveLine } from "@/features/unified-data/table-page/HeldArchiveLine";
-import { answerHold, openHold } from "@/features/unified-data/table-page/heldArchive";
+import { HeldKeptChip } from "@/features/unified-data/table-page/HeldArchiveLine";
+import { answerHold, keptHold, openHold } from "@/features/unified-data/table-page/heldArchive";
+import { usePublishHeld } from "@/features/unified-data/table-page/heldArchiveStore";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 
@@ -155,6 +156,25 @@ export function NotionSyncBar({ tableId, organizationId }: { tableId: string; or
     }
   }, [tableId, organizationId]);
 
+  // A held archive (the server's guard) is ONE question, asked in the strip above the grid; after Keep the chip says "N kept".
+  const report = state?.connected ? (state.report ?? null) : null;
+  const held = openHold(report);
+  const kept = keptHold(report);
+  const keep = async (token: string) => {
+    if (!organizationId) return;
+    try {
+      await answerHold(organizationId, tableId, "keep", token);
+      setState((prev) => (prev ? { ...prev, report: { ...(prev.report ?? {}), archive_kept: token } } : prev));
+    } catch (err) {
+      toast.error(extractErrorMessage(err));
+    }
+  };
+  const pending = held ?? kept;
+  usePublishHeld(tableId, pending ? {
+    source: "Notion", held: pending.held, confirm: pending.confirm, kept: !held, was, busy,
+    onArchive: () => void syncNow(pending.confirm), onKeep: () => void keep(pending.confirm),
+  } : null);
+
   if (state && !state.connected && fileImported) {
     return (
       <div className="flex shrink-0 items-center gap-1" data-notion-sync-bar="file-import">
@@ -168,25 +188,10 @@ export function NotionSyncBar({ tableId, organizationId }: { tableId: string; or
     );
   }
   if (!state?.connected) return null;
-  const report = state.report ?? null;
-  // A held archive (the server's guard) is one plain question with its way out, in place of the "synced" chip.
-  const held = openHold(report);
-  const keep = async (token: string) => {
-    if (!organizationId) return;
-    try {
-      await answerHold(organizationId, tableId, "keep", token);
-      setState((prev) => (prev ? { ...prev, report: { ...(prev.report ?? {}), archive_kept: token } } : prev));
-    } catch (err) {
-      toast.error(extractErrorMessage(err));
-    }
-  };
   return (
     <div className="flex shrink-0 items-center gap-1" data-notion-sync-bar="">
-      {held ? (
-        <div data-notion-sync-held="">
-          <HeldArchiveLine source="Notion" held={held.held} was={was} busy={busy}
-            onArchive={() => void syncNow(held.confirm)} onKeep={() => void keep(held.confirm)} />
-        </div>
+      {!held && kept ? (
+        <HeldKeptChip tableId={tableId} count={kept.held} />
       ) : (
         <Button type="button" variant="quiet" className="hidden max-w-[16rem] truncate md:inline-flex" onClick={() => setShowing(true)} data-notion-sync-when="">
           {busy ? "Syncing Notion" : `Notion synced ${ago(state.synced_at)}`}

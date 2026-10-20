@@ -86,7 +86,9 @@ import {
   TITLE_FLOOR_PX,
   TITLE_MIN_PX,
   ellipsizeLooseText,
+  emptyActionKeys,
   fitActions,
+  foldableActions,
   flattenActions,
   forwardRowTap,
   iconOnlyLabel,
@@ -96,6 +98,7 @@ import {
   OverflowMenuItem,
   overflowItemLabel,
   RESPONSIVE_DISPLAY,
+  splitFolded,
   toIconOnly,
 } from "./route-header-layout";
 
@@ -327,6 +330,7 @@ export default function RouteHeader({
   const [centerPad, setCenterPad] = useState<{ left: number; right: number } | null>(null);
   const [leftMax, setLeftMax] = useState<number | null>(null);
   const [folded, setFolded] = useState(0);
+  const [emptyKeys, setEmptyKeys] = useState<string>("");
   const [compactPrimary, setCompactPrimary] = useState(false);
   const [overflowOpen, setOverflowOpen] = useState(false);
 
@@ -334,10 +338,12 @@ export default function RouteHeader({
   // A never-drawn node (a hidden file input a button opens) stays mounted but is not an action.
   const actions = flat.filter((a) => !a.inert);
   const inert = flat.filter((a) => a.inert);
+  // An action that draws nothing right now (a bar that renders null) stays mounted in the row but is not a fold position.
+  const foldable = foldableActions(actions, emptyKeys);
   const leftNode = ellipsizeLooseText(left);
   const actionKeys = actions.map((a) => a.key).join("|");
-  const fold = Math.min(folded, actions.length);
-  const primary = actions.length > 0 ? actions[actions.length - 1] : null;
+  const fold = Math.min(folded, foldable.length);
+  const primary = foldable.length > 0 ? foldable[foldable.length - 1] : null;
   const primaryCanCompact = primary != null && iconOnlyLabel(primary.node) != null;
   const compact = compactPrimary && primaryCanCompact;
   const isPhone = useIsMobile();
@@ -362,9 +368,9 @@ export default function RouteHeader({
   const hasCenter = Boolean(center) && !centerToSheet;
 
   // Latest render's inputs for the (stable) observer callback.
-  const liveRef = useRef({ actions, fold, compact });
+  const liveRef = useRef({ actions: foldable, fold, compact });
   useLayoutEffect(() => {
-    liveRef.current = { actions, fold, compact };
+    liveRef.current = { actions: foldable, fold, compact };
   });
 
   useLayoutEffect(() => {
@@ -392,6 +398,13 @@ export default function RouteHeader({
           if (el.dataset.routeHeaderTwin != null) return;
           widthsRef.current.set(slot, el.offsetWidth);
         });
+      // Which of the drawn actions draw nothing (width 0): they never take a fold position.
+      const empties = emptyActionKeys(
+        Array.from(rightEl?.querySelectorAll<HTMLElement>("[data-route-header-action]") ?? [])
+          .filter((el) => el.dataset.routeHeaderTwin == null && el.dataset.routeHeaderCompact == null)
+          .map((el) => ({ key: el.dataset.routeHeaderAction ?? "", width: el.offsetWidth })),
+      );
+      setEmptyKeys((prev) => (prev === empties ? prev : empties));
 
       // The title keeps TITLE_MIN_PX of TEXT beside any back chevron, or its
       // whole natural width when that is smaller.
@@ -518,8 +531,9 @@ export default function RouteHeader({
     return () => setPhonePageActionCount(owner, 0);
   }, [owner, sheetActions.length, centerToSheet]);
 
-  const overflowActions = toSheet ? [] : actions.slice(0, fold);
-  const rowActions = toSheet ? (phonePrimary ? [phonePrimary] : []) : actions.slice(fold);
+  const folding = splitFolded(actions, foldable, fold);
+  const overflowActions = toSheet ? [] : folding.overflow;
+  const rowActions = toSheet ? (phonePrimary ? [phonePrimary] : []) : folding.row;
   const rowPrimary = toSheet ? phonePrimary : primary;
   const serverOrHydrating = useSyncExternalStore(
     noopSubscribe,

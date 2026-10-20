@@ -19,6 +19,12 @@ export function openHold(h: HeldArchive | null | undefined): { held: number; con
   return { held: Number(h.archive_held), confirm: String(h.archive_confirm) };
 }
 
+/** The hold the person answered Keep to, or null: how many rows stay while the source no longer lists them. */
+export function keptHold(h: HeldArchive | null | undefined): { held: number; confirm: string } | null {
+  if (!h?.archive_held || !h.archive_confirm || h.archive_kept !== h.archive_confirm) return null;
+  return { held: Number(h.archive_held), confirm: String(h.archive_confirm) };
+}
+
 const rows = (n: number) => `${n} ${n === 1 ? "row" : "rows"}`;
 
 /** The one line: "<Source> no longer lists N rows. Archive them?" — or, when the hold changed under an Archive click,

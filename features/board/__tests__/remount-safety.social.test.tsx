@@ -214,3 +214,18 @@ remountType(
     }),
   (r) => expectRemountSafe(r, { collection: true, loading: false }, [/^social\.swipe_collection$/, /^social\.swipe_collection_item$/]),
 );
+
+// Break: the video clone tile (the Socials clone studio) re-reads on wake / remount, or drops to its skeleton. This is the tile
+// before a project exists (a pasted link, no brand yet): the reference + brand panels.
+remountType(
+  "video-clone",
+  () =>
+    runCycle(type("video-clone"), { kind: "entity", entity: "video-clone", id: null, meta: { url: "https://www.tiktok.com/@harborview.homes/video/7311111111111111111" } }, {
+      title: "Video clone",
+      prepare: seedSocial,
+      wrap,
+      loadMs: 1500,
+      kept: (tile) => ({ studio: shows(tile, "Video clone") || (tile.container.textContent ?? "").length > 0, loading: skeleton(tile) }),
+    }),
+  (r) => expectRemountSafe(r, { studio: true, loading: false }, [/^social\./]),
+);

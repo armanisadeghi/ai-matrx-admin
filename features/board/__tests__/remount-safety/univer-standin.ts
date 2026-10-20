@@ -82,6 +82,7 @@ export function createUniverStandIn(commandServiceToken: unknown, mutationType: 
       emit({ id: "doc.mutation.rich-text-editing", type: mutationType, params: { restore: true } });
     };
 
+    const registeredCommands = new Set<string>();
     const commandService = {
       onMutationExecutedForCollab(listener: Listener) {
         listeners.add(listener);
@@ -89,6 +90,12 @@ export function createUniverStandIn(commandServiceToken: unknown, mutationType: 
       },
       onCommandExecuted() {
         return { dispose: () => undefined };
+      },
+      // The product's own commands (add comment, toggle comments) register here; the stand-in only keeps the ids.
+      hasCommand: (id: string) => registeredCommands.has(id),
+      registerCommand(command: { id: string }) {
+        registeredCommands.add(command.id);
+        return { dispose: () => void registeredCommands.delete(command.id) };
       },
       syncExecuteCommand(id: string, params: { at: number; text: string }, options?: Record<string, unknown>) {
         if (typeof params?.text !== "string") return true; // an undo/redo replay carries no insert
@@ -141,6 +148,9 @@ export function createUniverStandIn(commandServiceToken: unknown, mutationType: 
         return documentFacade();
       },
       getActiveDocument: () => (active ? documentFacade() : null),
+      // The editor listens for the zoom command; the stand-in has no zoom, so the listener never fires.
+      Event: { CommandExecuted: "CommandExecuted" },
+      addEvent: () => ({ dispose: () => undefined }),
     };
     // Facade calls the stand-in has no opinion on (dark mode, theme) are no-ops.
     const univerAPI = new Proxy(api, {
@@ -196,7 +206,11 @@ export const univerModules = {
   linkPreset: () => ({ UniverDocsHyperLinkPreset: () => ({ plugins: [] }) }),
   drawingPreset: () => ({ UniverDocsDrawingPreset: () => ({ plugins: [] }) }),
   findReplace: () => ({ UniverFindReplacePlugin: class UniverFindReplacePlugin {} }),
+  docs: () => ({ DocSkeletonManagerService: Symbol.for("univer.DocSkeletonManagerService"), DocSelectionManagerService: Symbol.for("univer.DocSelectionManagerService") }),
+  docsUi: () => ({ calcDocRangePositions: () => [] }),
+  docsToc: () => ({ UniverDocsTocPlugin: class UniverDocsTocPlugin {} }),
+  docsTocUi: () => ({ UniverDocsTocUIPlugin: class UniverDocsTocUIPlugin {} }),
   docsFindReplace: () => ({ UniverDocsFindReplacePlugin: class UniverDocsFindReplacePlugin {} }),
   ui: () => ({ INotificationService: Symbol.for("univer.INotificationService") }),
-  engineRender: () => ({ ICanvasColorService: Symbol.for("univer.ICanvasColorService"), DumbCanvasColorService: class DumbCanvasColorService {} }),
+  engineRender: () => ({ IRenderManagerService: Symbol.for("univer.IRenderManagerService"), ICanvasColorService: Symbol.for("univer.ICanvasColorService"), DumbCanvasColorService: class DumbCanvasColorService {} }),
 };

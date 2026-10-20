@@ -35,6 +35,12 @@ jest.mock("@univerjs/find-replace", () => jest.requireActual("./remount-safety/u
 jest.mock("@univerjs/find-replace/locale/en-US", () => jest.requireActual("./remount-safety/univer-standin").univerModules.locale());
 jest.mock("@univerjs/find-replace/lib/index.css", () => ({}));
 jest.mock("@univerjs/docs-find-replace", () => jest.requireActual("./remount-safety/univer-standin").univerModules.docsFindReplace());
+jest.mock("@univerjs/docs", () => jest.requireActual("./remount-safety/univer-standin").univerModules.docs());
+jest.mock("@univerjs/docs-ui", () => jest.requireActual("./remount-safety/univer-standin").univerModules.docsUi());
+jest.mock("@univerjs/docs-toc", () => jest.requireActual("./remount-safety/univer-standin").univerModules.docsToc());
+jest.mock("@univerjs/docs-toc-ui", () => jest.requireActual("./remount-safety/univer-standin").univerModules.docsTocUi());
+jest.mock("@univerjs/docs-toc-ui/locale/en-US", () => jest.requireActual("./remount-safety/univer-standin").univerModules.locale());
+jest.mock("@univerjs/docs-toc-ui/lib/index.css", () => ({}));
 jest.mock("@univerjs/ui", () => jest.requireActual("./remount-safety/univer-standin").univerModules.ui());
 jest.mock("@univerjs/engine-render", () => jest.requireActual("./remount-safety/univer-standin").univerModules.engineRender());
 

@@ -5,7 +5,7 @@ process.env.WALK_ORG_ID ??= "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f";
 const { client } = await store();
 const tag = Date.now().toString(36).slice(-4);
 const ok = (r, w) => { if (!r.ok) throw new Error(w + ": " + JSON.stringify(r.error)); return r.data; };
-let kind = "multi_choice";
+let kind = "multi_select";
 const retry = async (f) => { for (let i = 0; i < 40; i++) { const r = await f(); if (r.ok || !["timed_out","internal"].includes(r.error?.code)) return r; await new Promise((z) => setTimeout(z, 20000)); } return await f(); };
 let made = await retry(() => ensureTable(client, { name: `ATWJ main ${tag}`, fields: [
   { key: "name", label: "Name", type: "text", sort: 10 },

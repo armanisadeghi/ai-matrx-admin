@@ -21,8 +21,9 @@ import { extractErrorMessage } from "@/utils/errors";
 
 import { OUTSIDE_DATABASE_PROVIDER, refreshAnySyncedTable, sourceTakesEdits, syncedFromLabel, type SyncAnswer, type SyncAutoRefresh } from "./service";
 import { SyncedBadge } from "./SyncedBadge";
-import { HeldArchiveLine } from "@/features/unified-data/table-page/HeldArchiveLine";
-import { answerHold, openHold, type HeldArchive } from "@/features/unified-data/table-page/heldArchive";
+import { HeldKeptChip } from "@/features/unified-data/table-page/HeldArchiveLine";
+import { answerHold, keptHold, openHold, type HeldArchive } from "@/features/unified-data/table-page/heldArchive";
+import { usePublishHeld } from "@/features/unified-data/table-page/heldArchiveStore";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { sayError } from "@/features/unified-data/base/sayError";
 
@@ -134,6 +135,7 @@ export function SyncedTableBar({ tableId, organizationId }: { tableId: string; o
   }, [isOutside, orgId, source?.synced_at, refresh]);
 
   const held = openHold(hold ?? source);
+  const kept = keptHold(hold ?? source);
   const answer = async (kind: "keep" | "archive", token: string) => {
     if (!orgId) return;
     try {
@@ -150,15 +152,20 @@ export function SyncedTableBar({ tableId, organizationId }: { tableId: string; o
     }
   };
 
+  const pending = held ?? kept;
+  // ONE question, asked in the strip above the grid; after Keep the chip says "N kept"
+  usePublishHeld(tableId, source?.provider && pending ? {
+    source: HELD_SOURCE[source.provider] ?? "The source", held: pending.held, confirm: pending.confirm, kept: !held, was, busy,
+    onArchive: () => void answer("archive", pending.confirm), onKeep: () => void answer("keep", pending.confirm),
+  } : null);
+
   if (!source?.provider) return null;
   const from = source.label ? `${syncedFromLabel(source.provider)} · ${source.label}` : syncedFromLabel(source.provider);
   return (
     <div className="flex shrink-0 items-center gap-1" data-synced-table-bar={source.provider}>
       <SyncedBadge provider={source.provider} />
-      {held ? (
-        <HeldArchiveLine source={HELD_SOURCE[source.provider] ?? "The source"}
-          held={held.held} was={was} busy={busy}
-          onArchive={() => void answer("archive", held.confirm)} onKeep={() => void answer("keep", held.confirm)} />
+      {!held && kept ? (
+        <HeldKeptChip tableId={tableId} count={kept.held} />
       ) : (
         <span className="hidden max-w-[16rem] truncate text-xs text-muted-foreground md:inline" data-synced-table-when="">
           {busy ? "Syncing" : `Synced ${agoText(lastSynced)}`}

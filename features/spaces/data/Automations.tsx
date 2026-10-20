@@ -1,5 +1,6 @@
 "use client";
 
+import { AppCheckText, type AppCheckResult } from "./app-check-line";
 import { ProInput } from "@/components/official/ProInput";
 
 /**
@@ -581,6 +582,8 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
   const [slackContains, setSlackContains] = useState("");
   const [appTerms, setAppTerms] = useState<AutomationAppTriggerTerms | null>(null);
   const [checking, setChecking] = useState<string | null>(null);
+  // AT-FIX-H 3: what each "Check now" really answered, so the line moves the moment the server answers.
+  const [checked, setChecked] = useState<Record<string, AppCheckResult>>({});
   const [versionsOf, setVersionsOf] = useState<string | null>(null);
   const [condField, setCondField] = useState<string | null>(null);
   const [condIs, setCondIs] = useState("");
@@ -608,8 +611,9 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
   const checkNow = async (a: AutomationItem) => {
     setChecking(a.id);
     try {
-      const { data } = await postJson<{ says?: string }>(`/automations/app-triggers/${a.id}/check`, {}, { organizationId: organizationId ?? undefined });
+      const { data } = await postJson<{ ok?: boolean; says?: string }>(`/automations/app-triggers/${a.id}/check`, {}, { organizationId: organizationId ?? undefined });
       setSaid(data.says ?? null);
+      setChecked((was) => ({ ...was, [a.id]: { at: new Date().toISOString(), ok: data.ok !== false, says: data.says ?? null } }));
     } catch (e) {
       setSaid(e instanceof Error ? e.message : "The check did not run.");
     } finally {
@@ -1033,9 +1037,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
               {a.spec.trigger.on === "webhook" ? <WebhookUrl item={a} /> : null}
               {isAutomationAppTrigger(a.spec.trigger.on) && !a.archived_at ? (
                 <div className="flex items-center gap-1" data-testid="spaces-automation-app-check">
-                  <span className={`type-secondary min-w-0 flex-1 truncate ${a.app_says ? "text-destructive" : "text-muted-foreground"}`}>
-                    {a.app_says ?? (a.app_checked_at ? `Checked ${new Date(a.app_checked_at).toLocaleString()}` : "Not checked yet")}
-                  </span>
+                  <AppCheckText item={a} result={checked[a.id]} />
                   <Button variant="quiet" disabled={checking === a.id || !a.enabled} title={a.enabled ? undefined : "Switch it on first"} onClick={() => void checkNow(a)}>
                     {checking === a.id ? "Checking…" : "Check now"}
                   </Button>

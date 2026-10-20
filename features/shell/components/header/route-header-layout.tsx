@@ -198,6 +198,28 @@ export function flattenActions(node: ReactNode, prefix = ""): FlatAction[] {
   return out;
 }
 
+/** Keys (joined) of the drawn actions whose box is 0 wide: a component that renders nothing. */
+export function emptyActionKeys(drawn: readonly { key: string; width: number }[]): string {
+  return drawn.filter((d) => d.key !== "" && d.width === 0).map((d) => d.key).sort().join("|");
+}
+
+/** The actions that can take a fold position: an action that draws nothing never does. */
+export function foldableActions<T extends { key: string }>(actions: readonly T[], emptyKeys: string): T[] {
+  const empty = new Set(emptyKeys === "" ? [] : emptyKeys.split("|"));
+  return actions.filter((a) => !empty.has(a.key));
+}
+
+/** The first `fold` foldable actions go to the overflow; everything else (empty ones too) stays mounted in the row. */
+export function splitFolded<T extends { key: string }>(
+  actions: readonly T[],
+  foldable: readonly T[],
+  fold: number,
+): { overflow: T[]; row: T[] } {
+  const overflow = foldable.slice(0, fold);
+  const gone = new Set(overflow.map((a) => a.key));
+  return { overflow, row: actions.filter((a) => !gone.has(a.key)) };
+}
+
 export interface ActionFit {
   /** How many leading (lowest-priority) actions fold into the "…" overflow. */
   fold: number;
