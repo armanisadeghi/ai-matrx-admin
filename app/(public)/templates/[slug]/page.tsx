@@ -25,7 +25,7 @@ import {
   templateDescription,
   templateSignUpHref,
 } from "@/features/make/gallery/publicGallery";
-import { readPublicCatalogue, readTemplatePage } from "@/features/make/gallery/publicCatalogue.server";
+import { readPublicCatalogue, readTemplatePage, readTemplatePageState } from "@/features/make/gallery/publicCatalogue.server";
 import { SpaceTemplatePublicBody } from "@/features/make/gallery/SpaceTemplatePublicBody";
 
 export const revalidate = 60;
@@ -82,7 +82,26 @@ function relatedTo(card: GalleryCard, all: readonly GalleryCard[]): GalleryCard[
 export default async function PublicTemplatePage({ params, searchParams }: Props) {
   const { slug: raw } = await params;
   const key = decodeURIComponent(raw);
-  const page = await readTemplatePage(key);
+  const read = await readTemplatePageState(key);
+  // ADVERSARIAL-5 F3: the database did not answer, even after a retry, and no earlier read is kept: said in place.
+  if (read.state === "unavailable")
+    return (
+      <div className="bg-textured" data-template-unavailable="">
+        <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 px-4 py-16 sm:px-6">
+          <h1 className="text-xl font-semibold text-foreground">This template did not load</h1>
+          <p className="text-sm text-muted-foreground">The database is busy for a moment. Nothing is wrong with the template.</p>
+          <div className="flex gap-4 text-sm">
+            <Link href={`/templates/${encodeURIComponent(key)}`} prefetch={false} className="font-medium text-foreground underline">
+              Try again
+            </Link>
+            <Link href={PUBLIC_GALLERY_PATH} className="text-muted-foreground hover:text-foreground">
+              All templates
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  const page = read.state === "open" ? read.page : null;
 
   if (!page) {
     // ADVERSARIAL-2 #12: an unknown address answered 200. Only a template id can be an organization's own

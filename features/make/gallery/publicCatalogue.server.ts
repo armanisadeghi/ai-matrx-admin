@@ -10,8 +10,9 @@ import { cache } from "react";
 
 import { getScriptSupabaseClient } from "@/utils/supabase/getScriptClient";
 
-import { closedReason, platformFilter, readPublicCatalogueWith, type PublicRead } from "./publicGallery";
-import { shapeTemplatePage, type PublicTemplatePage } from "./templatePage";
+import { platformFilter, readPublicCatalogueWith, type PublicRead } from "./publicGallery";
+import type { PublicTemplatePage } from "./templatePage";
+import { createTemplatePageReader, isTransientDoorError, TEMPLATE_PAGE_RETRY_MS, type TemplatePageRead } from "./templatePageRead";
 
 async function readOnce(): Promise<PublicRead> {
   const sb = getScriptSupabaseClient();
@@ -47,8 +48,29 @@ function readShared(fresh = false): Promise<PublicRead> {
 /** The catalog read past the shared copy: before a page answers 404, it asks the catalog itself once. */
 export const readPublicCatalogueFresh = cache((): Promise<PublicRead> => readShared(true));
 
+// ADVERSARIAL-5 F3: the last OPEN catalog read this process made. A failed read (PGRST002 while PostgREST restarts) is
+// asked once more, then answered with it — the gallery and every template page's "related" row never 500 for a blip.
+let lastGoodCatalogue: PublicRead | null = null;
+
+async function readSharedOrLastGood(): Promise<PublicRead> {
+  try {
+    return await readShared();
+  } catch (first) {
+    if (!isTransientDoorError({ message: first instanceof Error ? first.message : String(first) }) && !lastGoodCatalogue) throw first;
+    await new Promise((r) => setTimeout(r, TEMPLATE_PAGE_RETRY_MS));
+    try {
+      return await readShared(true);
+    } catch (second) {
+      if (!lastGoodCatalogue) throw second;
+      console.warn(`[templates] the catalog read failed twice (${second instanceof Error ? second.message : String(second)}); showing the last good read.`);
+      return lastGoodCatalogue;
+    }
+  }
+}
+
 export const readPublicCatalogue = cache(async (): Promise<PublicRead> => {
-  const read = await readShared();
+  const read = await readSharedOrLastGood();
+  if (read.state === "open") lastGoodCatalogue = read;
   if (read.state === "closed") {
     console.warn(
       `[templates] the public gallery is empty because public.templates_public is ${read.reason === "absent" ? "not on this database" : "refused to a signed-out caller"}. ` +
@@ -60,17 +82,19 @@ export const readPublicCatalogue = cache(async (): Promise<PublicRead> => {
 
 export type { PublicTemplatePage } from "./templatePage";
 
+// One reader per server process: it keeps each template's last good read (ADVERSARIAL-5 F3, templatePageRead.ts).
+const readPageOnce = createTemplatePageReader((key) => getScriptSupabaseClient().schema("public").rpc("template_public_page", { p_key: key }));
+
 /**
  * THE PAGE READ (`public.template_public_page`): one published platform template by its readable
  * address, its catalog id or a version id — so an old address finds the template and the page
- * sends it on to the readable one. Null when no published platform template answers to the key.
+ * sends it on to the readable one. A transient database error is asked again, then answered with the last
+ * good read; "unavailable" only when neither answers (the page says so in place, never a 500).
  */
+export const readTemplatePageState = cache((key: string): Promise<TemplatePageRead> => readPageOnce(key));
+
+/** The page read as the page or null (missing, or unavailable right now): for metadata and the social image. */
 export const readTemplatePage = cache(async (key: string): Promise<PublicTemplatePage | null> => {
-  const sb = getScriptSupabaseClient();
-  const { data, error } = await sb.schema("public").rpc("template_public_page", { p_key: key });
-  if (error) {
-    if (closedReason(error)) return null;
-    throw new Error(`The template page could not be read: ${error.message ?? error.code ?? "unknown error"}`);
-  }
-  return shapeTemplatePage(data);
+  const read = await readTemplatePageState(key);
+  return read.state === "open" ? read.page : null;
 });
