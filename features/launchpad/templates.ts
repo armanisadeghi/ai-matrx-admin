@@ -8,7 +8,7 @@
 // Not the labeled-template mechanism (features/spaces/state/templates.ts): that labels ENTITY rows (a Space,
 // a board) through `platform.associations`, and a launchpad is a typed-table record with no entity token to
 // label. "Duplicate" on any launchpad is the per-person "save as a starting point" until that exists.
-import { Briefcase, Clapperboard, Gavel, LayoutGrid, Rocket, TrendingUp, Users, type LucideIcon } from "lucide-react";
+import { Briefcase, Clapperboard, Compass, Gavel, LayoutGrid, Rocket, TrendingUp, Users, type LucideIcon } from "lucide-react";
 import type { LaunchpadDoc } from "@/features/shell/shell-layout/contract";
 import { EMPTY_LAUNCHPAD_DOC, addWidget } from "./doc";
 import { DEFAULT_KPI_KEYS } from "./widgets/catalog";
@@ -122,6 +122,22 @@ export const LAUNCHPAD_TEMPLATES: readonly LaunchpadTemplate[] = [
         { type: "recent", config: { kind: "file" }, w: 6 },
         { type: "applet", w: 8, h: 18 },
         { type: "agents", w: 4, h: 18 },
+      ]),
+  },
+  {
+    // The welcome screen's composition (Meet Matrx) as a home: the three studios, the building blocks, then
+    // the person's own agents, chats and pins. Wears the Meet Matrx look best (custom-experience looks).
+    id: "meet-matrx",
+    title: "Meet Matrx",
+    hint: "The studios and building blocks, one click away",
+    icon: Compass,
+    doc: () =>
+      build([
+        { id: "w_studios", type: "meet_matrx", config: { part: "studios" }, w: 12, h: 13 },
+        { id: "w_blocks", type: "meet_matrx", config: { part: "blocks" }, w: 12, h: 19 },
+        { id: "w_agents", type: "agents", w: 4 },
+        { id: "w_recent_chats", type: "recent", config: { kind: "conversation" }, w: 4 },
+        { id: "w_favorites", type: "favorites", w: 4 },
       ]),
   },
   {

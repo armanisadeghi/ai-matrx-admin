@@ -46,7 +46,8 @@ import { AddRecordRow, recordKey, type PickedRecord } from "./AddRecordRow";
 import { ArrangeTree } from "./ArrangeTree";
 import { CatalogChecklist } from "./CatalogChecklist";
 import { HeaderPane } from "./HeaderPane";
-import { dockOf, headerOf, sidebarOf, startingBody, type EditorRegion } from "./regions";
+import { dockOf, headerOf, lookOf, sidebarOf, startingBody, withLook, type EditorRegion } from "./regions";
+import { LookPane } from "./LookPane";
 import { addRow, buildCatalogTree, placedRefs, removeNode, sameBody, tickEntry, untickEntry, type TreeRegion } from "./tree";
 
 /** Every record row in a region, by `${token}:${recordId}` → its node id. */
@@ -64,6 +65,7 @@ const REGION_TABS: ReadonlyArray<{ value: EditorRegion; label: string }> = [
   { value: "sidebar", label: "Sidebar" },
   { value: "header", label: "Header" },
   { value: "dock", label: "Dock" },
+  { value: "look", label: "Look" },
 ];
 
 function bodyOf(stored: StoredShellLayout | null): ShellLayoutBody | null {
@@ -71,7 +73,7 @@ function bodyOf(stored: StoredShellLayout | null): ShellLayoutBody | null {
 }
 
 function regionWord(region: EditorRegion): string {
-  return region === "sidebar" ? "sidebar" : region === "header" ? "header" : "dock";
+  return region === "sidebar" ? "sidebar" : region === "header" ? "header" : region === "look" ? "look" : "dock";
 }
 
 export function ShellLayoutEditor({ target, initialRegion = "sidebar" }: { target: ShellLayoutTargetKind; initialRegion?: EditorRegion }) {
@@ -205,7 +207,7 @@ export function ShellLayoutEditor({ target, initialRegion = "sidebar" }: { targe
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border px-2 py-1">
         <Tabs aria-label="Region" value={region} onValueChange={setRegion} data={REGION_TABS} />
-        {region !== "header" && isMobile ? (
+        {region !== "header" && region !== "look" && isMobile ? (
           <SegmentedControl
             aria-label="Pane"
             value={pane}
@@ -224,7 +226,11 @@ export function ShellLayoutEditor({ target, initialRegion = "sidebar" }: { targe
       ) : null}
       {target === "organization" && store.organizationId ? <MembersMayCustomize organizationId={store.organizationId} /> : null}
 
-      {region === "header" ? (
+      {region === "look" ? (
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <LookPane value={lookOf(body)} onChange={(look) => edit(withLook(body, look))} />
+        </div>
+      ) : region === "header" ? (
         <HeaderPane
           buttons={headerOf(body)}
           catalog={catalog}

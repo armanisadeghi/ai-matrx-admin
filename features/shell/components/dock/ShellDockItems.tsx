@@ -10,6 +10,7 @@ import { MobileDockItem } from "./MobileDockItems";
 import { navItemsForViewer } from "../../constants/nav-data";
 import { useRunNavTile } from "../../navigation/navPanelActions";
 import { useResolvedShellLayout } from "@/features/shell/shell-layout/useResolvedShellLayout";
+import { shellLookRowProps } from "@/features/shell/shell-layout/looks";
 
 export default function ShellDockItems({ isAuthenticated }: { isAuthenticated: boolean }) {
   const layout = useResolvedShellLayout();
@@ -19,12 +20,13 @@ export default function ShellDockItems({ isAuthenticated }: { isAuthenticated: b
     <>
       {items.map((item) => {
         const tileId = item.tileId;
+        const lookProps = shellLookRowProps(layout.look, item);
         return tileId ? (
-          <button key={item.id} type="button" className="shell-dock-item" aria-label={item.label} onClick={() => runTile(tileId)}>
+          <button key={item.id} type="button" className="shell-dock-item" aria-label={item.label} onClick={() => runTile(tileId)} {...lookProps.row} {...lookProps.tile}>
             <ShellIcon name={item.iconName} size={22} strokeWidth={1.75} />
           </button>
         ) : (
-          <MobileDockItem key={item.href} item={item} />
+          <MobileDockItem key={item.href} item={item} look={layout.look} />
         );
       })}
     </>

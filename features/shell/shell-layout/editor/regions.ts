@@ -12,6 +12,7 @@ import {
 } from "../contract";
 import { buildShellCatalog, defaultDockTree, defaultHeaderButtons, defaultSidebarTree, SHELL_CATALOG_VERSION, type ShellCatalogEntry } from "../catalog";
 import { SHELL_DOCK_MAX_ITEMS } from "../validate";
+import { isShellLookId, STANDARD_SHELL_LOOK, type ShellLookId } from "../looks";
 import {
   addEntryInto,
   addHeaderButton,
@@ -23,7 +24,7 @@ import {
   type CatalogTree,
 } from "./tree";
 
-export type EditorRegion = "sidebar" | "header" | "dock";
+export type EditorRegion = "sidebar" | "header" | "dock" | "look";
 
 export function sidebarOf(body: ShellLayoutBody | null): ShellNode[] {
   return body?.sidebar ?? defaultSidebarTree();
@@ -33,6 +34,16 @@ export function dockOf(body: ShellLayoutBody | null): ShellNode[] {
 }
 export function headerOf(body: ShellLayoutBody | null): HeaderButton[] {
   return body?.header ?? defaultHeaderButtons();
+}
+/** The body's Look (absent or unknown = standard). */
+export function lookOf(body: ShellLayoutBody | null): ShellLookId {
+  const id = body?.look?.id;
+  return isShellLookId(id) ? id : STANDARD_SHELL_LOOK;
+}
+/** The body with `look` chosen; standard removes the region (what you see is what is stored). */
+export function withLook(body: ShellLayoutBody, look: ShellLookId): ShellLayoutBody {
+  const { look: _old, ...rest } = body;
+  return look === STANDARD_SHELL_LOOK ? rest : { ...rest, look: { id: look } };
 }
 
 /** The body an editor starts from: the target's own, else (a person) the organization's copy, else a fresh one. */

@@ -4,7 +4,7 @@
 // Order (PLAN.md §5.2): guests → the built-in default, always; the Standard view switch → the
 // default; else the person's body wins WHOLE; else the organization's body; else the default.
 // Inside the winning body a region it does not carry (`sidebar`/`header`/`dock`/`landing` absent)
-// is the default for that region. Refs no catalog entry answers are dropped from render and named
+// is the default for that region (the `look` region: absent = the standard look). Refs no catalog entry answers are dropped from render and named
 // in `problems`. New catalog entries are offered in `whatsNew`, never injected into the tree.
 //
 // The output is the nav-data shape: `sidebar` and `dock` are `ShellNavItem[]` trees (top rows
@@ -36,6 +36,7 @@ import {
   type ShellCatalogEntry,
 } from "./catalog";
 import { resolveRetiredNavId } from "./retired-nav-ids";
+import { isShellLookId, STANDARD_SHELL_LOOK, type ShellLookId } from "./looks";
 
 /**
  * A Sidebar/Dock row as the renderers read it: a nav-data `ShellNavItem` whose children are
@@ -84,6 +85,8 @@ export interface ResolvedShellLayout {
   header: ResolvedHeaderButton[];
   /** Where sign-in lands; null = the platform default. `shellLandingHref` turns it into a path. */
   landing: ShellLanding | null;
+  /** The Look the shell wears; null = standard (no attribute is stamped). Guests and Standard view: null. */
+  look: ShellLookId | null;
   /** Catalog entries newer than the body's `basedOnCatalogVersion`, not dismissed, not placed. */
   whatsNew: ShellCatalogEntry[];
   /** Everything dropped while resolving, by path. Empty for the default. */
@@ -356,9 +359,16 @@ function defaultLayout(source: ShellLayoutSource): ResolvedShellLayout {
     dock: dockItems,
     header: defaultHeader(),
     landing: null,
+    look: null,
     whatsNew: [],
     problems: [],
   };
+}
+
+/** The look a winning body names; null = standard. */
+export function bodyShellLook(body: ShellLayoutBody | null): ShellLookId | null {
+  const id = body?.look?.id;
+  return isShellLookId(id) && id !== STANDARD_SHELL_LOOK ? id : null;
 }
 
 /** The layout this viewer sees. See the header of this file for the order. */
@@ -383,6 +393,7 @@ export function resolveShellLayout({
     dock: body.dock ? resolveTopNodes(body.dock, "dock", walk, false) : dockItems,
     header: body.header ? resolveHeader(body.header, walk) : defaultHeader(),
     landing: body.landing ?? null,
+    look: bodyShellLook(body),
     whatsNew: whatsNewFor(body, isAdmin),
     problems: walk.problems,
   };

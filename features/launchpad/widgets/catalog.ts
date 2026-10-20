@@ -7,7 +7,7 @@
 //
 // Sizes are 12-column grid units with 24px rows (GridCanvas): w 3 = a quarter of the desktop width,
 // h 10 ≈ 240px. The Start widgets' old s / m / l are w 3 / 6 / 12 (`START_SIZE_WIDTH`).
-import { AppWindow, CalendarDays, Clock, Gauge, LayoutDashboard, ListChecks, Rocket, Star, Table2, Blocks } from "lucide-react";
+import { AppWindow, CalendarDays, Clock, Compass, Gauge, LayoutDashboard, ListChecks, Rocket, Star, Table2, Blocks } from "lucide-react";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { METRIC_CARDS } from "@/features/dashboard/constants/metricCards";
 import { USER_LAUNCHPAD_DESTINATIONS } from "../catalog";
@@ -30,6 +30,13 @@ export const RECENT_KINDS = [
   { value: "task", label: "Tasks", one: "task" },
   { value: "project", label: "Projects", one: "project" },
   { value: "document", label: "Documents", one: "document" },
+] as const;
+
+/** What a Meet Matrx widget shows (its `part`). Pure here so the agent tools read it without the body. */
+export const MEET_MATRX_PART_OPTIONS = [
+  { value: "studios", label: "The studios" },
+  { value: "blocks", label: "The building blocks" },
+  { value: "all", label: "Both" },
 ] as const;
 
 export const DEFAULT_KPI_KEYS = "agents,conversations,knowledge_files,published_apps,notes,tasks";
@@ -188,6 +195,18 @@ export const LAUNCHPAD_WIDGET_CATALOG: readonly LaunchpadWidgetSpec[] = [
     describe: (c) => (configText(c, "path") ? appPageLabel(configText(c, "path")) : "App page (none chosen)"),
     href: (c) => configText(c, "path") || null,
     accepts: [{ key: "record", label: "Record to open", kind: "record" }],
+  },
+  {
+    // The Meet Matrx stage's cards (the welcome screen's studios and building blocks), each a door to its place.
+    type: "meet_matrx",
+    label: "Meet Matrx",
+    icon: Compass,
+    section: "work",
+    sizes: { defaultW: 12, defaultH: 13, minW: 4, minH: 6 },
+    defaultConfig: { part: "studios" },
+    fields: [{ key: "part", label: "Show", options: MEET_MATRX_PART_OPTIONS }],
+    describe: (c) => `Meet Matrx: ${(MEET_MATRX_PART_OPTIONS.find((p) => p.value === configText(c, "part")) ?? MEET_MATRX_PART_OPTIONS[0]).label.toLowerCase()}`,
+    href: () => "/meet-matrx",
   },
 ];
 

@@ -7,6 +7,8 @@
 //      the answer is in the page instead of waiting for the sync engine's own fetch.
 //   2. The organization layout follows the tab's active organization after boot (the server could only
 //      predict it).
+//   5. The Look: the server stamped `data-shell-look` on `.shell-root` for the first frame; a save, the
+//      editor's live preview or the Standard view switch changes it here, in place (no reload).
 //   3. The `matrx_shell` cookie mirrors "a custom layout is held" so the next server render can reserve
 //      the nav column if its seed is late; cleared when nothing is held.
 // Only where the (core) layout seeded the slice (`enabled`); everywhere else it does nothing.
@@ -21,6 +23,7 @@ import { holdsShellLayout, initialShellLayoutState, shellLayoutOrganizationChang
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { SHELL_MEMBERS_MAY_CUSTOMIZE_KNOB } from "./knob";
+import { selectShellLook } from "./useResolvedShellLayout";
 
 /** The streamed seed's own deadline (`CORE_SEED_STREAM_DEADLINE_MS`) plus a margin. */
 const STREAMED_SEED_WAIT_MS = 5_000;
@@ -79,6 +82,15 @@ export default function ShellLayoutSync() {
     const present = document.cookie.split("; ").some((c) => c === `${SHELL_VIEW_COOKIE}=standard`);
     if (standardView !== present) setShellStandardViewCookie(standardView);
   }, [standardView]);
+
+  const look = useAppSelector(selectShellLook);
+  useEffect(() => {
+    if (!enabled) return;
+    const root = document.querySelector<HTMLElement>(".shell-root");
+    if (!root) return;
+    if (look && root.dataset.shellLook !== look) root.dataset.shellLook = look;
+    if (!look && root.dataset.shellLook !== undefined) delete root.dataset.shellLook;
+  }, [enabled, look]);
 
   return null;
 }

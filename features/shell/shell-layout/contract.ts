@@ -51,6 +51,15 @@ export type HeaderButton =
 /** Where sign-in lands. Absent = the platform default destination. */
 export type ShellLanding = { kind: "launchpad"; key: string } | { kind: "href"; href: string };
 
+/**
+ * The visual half of a Layout: which Look the shell wears (amendment 2026-10-20, REGISTER.md). A Look is
+ * design tokens + data attributes over the same components (never a forked component): `standard` = today,
+ * `meet-matrx` = the Meet Matrx welcome's gradient tiles, glows and airy cards. Ids are in `./looks.ts`.
+ */
+export interface ShellLookRef {
+  id: string;
+}
+
 /** The stored body (schemaVersion 1). Each region is optional: absent = that region stays default. */
 export interface ShellLayoutBody {
   schemaVersion: typeof SHELL_LAYOUT_SCHEMA_VERSION;
@@ -60,6 +69,8 @@ export interface ShellLayoutBody {
   header?: HeaderButton[];
   dock?: ShellNode[];
   landing?: ShellLanding;
+  /** The Look; absent = `standard`. An unknown id is dropped with a problem. */
+  look?: ShellLookRef;
   /** Catalog ids the person dismissed from What's new (never offered again). */
   dismissedNew?: string[];
 }
