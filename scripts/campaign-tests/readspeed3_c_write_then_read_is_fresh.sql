@@ -56,7 +56,11 @@ begin
     perform set_config('mx.computed_store', '', true);
     perform set_config('role', 'postgres', true);
     perform set_config('request.jwt.claims', '', true);
-    insert into _rs3c_read select p_step, v_doc, v_slow, rc.vals, rc.stale
+    -- READ-SPEED-5 a: a column write leaves one organization mark (custom.computed_org_mark) instead of marking
+    -- every row; while it waits the row counts as stale (nothing kept is served there)
+    insert into _rs3c_read select p_step, v_doc, v_slow, rc.vals,
+           rc.stale or (to_regclass('custom.computed_org_mark') is not null
+                        and exists (select 1 from custom.computed_org_mark m where m.organization_id = rc.organization_id))
       from (select 1) o left join custom.record_computed rc on rc.record_id = p_c;
   end $f$;
 
