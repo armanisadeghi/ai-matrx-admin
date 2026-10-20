@@ -14,7 +14,8 @@
 // that keeps its height, so nothing jumps.
 
 import { useFullPublicTierWhen } from "@/features/public-shell/publicTier";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Play } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import type { TemplateSpec } from "@ai-matrx/records/templates";
 
@@ -23,21 +24,14 @@ import type { LiveScreens } from "./TemplateLivePreviewImpl";
 // ON DEMAND (GALLERY-PERF-2, 2026-10-19): the live screens load when the visitor reaches the preview (it scrolls
 // into view, or a pointer or focus enters it), through ONE import() of TemplateLivePreviewImpl — never on page load.
 // A failed load keeps the server HTML and says so in the console.
+// ON PRESS ONLY (ADVERSARIAL-5 F1, 2026-10-20): "reached" fired at once whenever the preview sat in the first screen,
+// pulling the whole app for a guest who never scrolled. The live screens now start only on a press: the "See it live"
+// button over the server HTML, or a press anywhere in the box. Guard: live-previews-start-only-on-a-press.test.tsx.
 export function TemplateLivePreview({ spec, today, children }: { spec: TemplateSpec; today: string; children: ReactNode }) {
   const [wanted, setWanted] = useState(false);
   const [Live, setLive] = useState<LiveScreens | null>(null);
-  const boxRef = useRef<HTMLDivElement>(null);
   // On a light public page the live screens need the app tree first (store, query client, hosts).
   const appReady = useFullPublicTierWhen(wanted);
-  useEffect(() => {
-    const box = boxRef.current;
-    if (wanted || !box || typeof IntersectionObserver === "undefined") return;
-    const seen = new IntersectionObserver((entries) => {
-      if (entries.some((e) => e.isIntersecting)) setWanted(true);
-    }, { rootMargin: "0px 0px -20% 0px" });
-    seen.observe(box);
-    return () => seen.disconnect();
-  }, [wanted]);
   useEffect(() => {
     if (!wanted || !appReady) return;
     let gone = false;
@@ -57,14 +51,20 @@ export function TemplateLivePreview({ spec, today, children }: { spec: TemplateS
   }, [wanted, appReady]);
   const want = () => setWanted(true);
   return (
-    <div
-      ref={boxRef}
-      className="min-h-[36rem] min-w-0"
-      data-template-live={Live ? "on" : "off"}
-      onPointerEnter={want}
-      onFocusCapture={want}
-      onTouchStart={want}
-    >
+    <div className="relative min-h-[36rem] min-w-0" data-template-live={Live ? "on" : wanted ? "loading" : "off"} onPointerDown={want}>
+      {Live ? null : (
+        // ui-exception: the light public tier has no controls barrel in its graph (ADVERSARIAL-5 F1); one native button.
+        <button
+          type="button"
+          onClick={want}
+          disabled={wanted}
+          data-see-it-live=""
+          className="absolute right-0 top-0 z-10 inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-sm font-medium text-foreground shadow-sm"
+        >
+          <Play size={14} aria-hidden="true" />
+          {wanted ? "Loading…" : "See it live"}
+        </button>
+      )}
       {Live ? <Live.Preview spec={spec} today={today} className="gap-6" booking={Live.booking} /> : children}
     </div>
   );
