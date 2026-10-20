@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0494",
-  "version": 5,
+  "version": 6,
   "title": "Design system — Soft rounded",
   "description": "Plum, peach and sage pastels, round shapes and gentle, unhurried motion.",
   "forWho": "Lifestyle shops, beauty, gifting and friendly services",
@@ -202,31 +202,33 @@
             }
           },
           {
-            "key": "col-13",
+            "key": "col-12",
             "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#e5f2e8\",\"dark\":\"#1c3022\"}",
-              "usage_note": "Sage: confirmations and 'in stock' moments."
-            }
-          },
-          {
-            "key": "col-11",
-            "values": {
-              "name": "secondary",
+              "name": "secondary-foreground",
               "group": "Secondary",
-              "value": "{\"light\":\"#ffe9dd\",\"dark\":\"#3a2a20\"}",
-              "usage_note": "Peach: second actions and soft highlights."
+              "value": "{\"light\":\"#6b3216\",\"dark\":\"#ffd2b8\"}",
+              "usage_note": "Label on a secondary button.",
+              "reads_on": "secondary"
             }
           },
           {
-            "key": "col-15",
+            "key": "col-14",
             "values": {
-              "name": "link",
+              "name": "accent-foreground",
               "group": "Accent",
-              "value": "{\"light\":\"#93286f\",\"dark\":\"#f0a3d6\"}",
-              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
-              "reads_on": "background"
+              "value": "{\"light\":\"#1f5a32\",\"dark\":\"#bfe5c9\"}",
+              "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
+              "reads_on": "accent"
+            }
+          },
+          {
+            "key": "col-20",
+            "values": {
+              "name": "destructive",
+              "group": "Feedback",
+              "value": "{\"light\":\"#c2263a\",\"dark\":\"#ff8f9c\"}",
+              "usage_note": "Errors and delete. Also reads on the page and on cards.",
+              "reads_on": "muted"
             }
           },
           {
@@ -316,23 +318,31 @@
             }
           },
           {
-            "key": "col-12",
+            "key": "col-11",
             "values": {
-              "name": "secondary-foreground",
+              "name": "secondary",
               "group": "Secondary",
-              "value": "{\"light\":\"#6b3216\",\"dark\":\"#ffd2b8\"}",
-              "usage_note": "Label on a secondary button.",
-              "reads_on": "secondary"
+              "value": "{\"light\":\"#ffe9dd\",\"dark\":\"#3a2a20\"}",
+              "usage_note": "Peach: second actions and soft highlights."
             }
           },
           {
-            "key": "col-14",
+            "key": "col-13",
             "values": {
-              "name": "accent-foreground",
+              "name": "accent",
               "group": "Accent",
-              "value": "{\"light\":\"#1f5a32\",\"dark\":\"#bfe5c9\"}",
-              "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
-              "reads_on": "accent"
+              "value": "{\"light\":\"#e5f2e8\",\"dark\":\"#1c3022\"}",
+              "usage_note": "Sage: confirmations and 'in stock' moments."
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#93286f\",\"dark\":\"#f0a3d6\"}",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
             }
           },
           {
@@ -372,16 +382,6 @@
               "value": "{\"light\":\"#b8408f\",\"dark\":\"#f0a3d6\",\"min\":3}",
               "usage_note": "Keyboard focus. Always visible, never removed.",
               "reads_on": "background"
-            }
-          },
-          {
-            "key": "col-20",
-            "values": {
-              "name": "destructive",
-              "group": "Feedback",
-              "value": "{\"light\":\"#c2263a\",\"dark\":\"#ff8f9c\"}",
-              "usage_note": "Errors and delete. Also reads on the page and on cards.",
-              "reads_on": "muted"
             }
           },
           {
@@ -1275,7 +1275,7 @@
         "Marigold Court"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [],
   "board": {

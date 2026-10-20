@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0496",
-  "version": 5,
+  "version": 6,
   "title": "Design system — Trust",
   "description": "Sober navy, crisp white and conservative corners for money and law.",
   "forWho": "Finance, legal, insurance and professional services",
@@ -202,31 +202,33 @@
             }
           },
           {
-            "key": "col-13",
+            "key": "col-19",
             "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#f4efe2\",\"dark\":\"#2b2616\"}",
-              "usage_note": "Parchment: notices and signed-document highlights, never decoration."
-            }
-          },
-          {
-            "key": "col-11",
-            "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#e7ecf3\",\"dark\":\"#1b2944\"}",
-              "usage_note": "Second actions and quiet selected states."
-            }
-          },
-          {
-            "key": "col-15",
-            "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#1d4f9e\",\"dark\":\"#93b5ec\"}",
-              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
+              "name": "ring",
+              "group": "Lines",
+              "value": "{\"light\":\"#2a5db0\",\"dark\":\"#93b5ec\",\"min\":3}",
+              "usage_note": "Keyboard focus. Always visible, never removed.",
               "reads_on": "background"
+            }
+          },
+          {
+            "key": "col-14",
+            "values": {
+              "name": "accent-foreground",
+              "group": "Accent",
+              "value": "{\"light\":\"#5c4a1a\",\"dark\":\"#e6d6a8\"}",
+              "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
+              "reads_on": "accent"
+            }
+          },
+          {
+            "key": "col-20",
+            "values": {
+              "name": "destructive",
+              "group": "Feedback",
+              "value": "{\"light\":\"#a51d24\",\"dark\":\"#f28b8b\"}",
+              "usage_note": "Errors and delete. Also reads on the page and on cards.",
+              "reads_on": "muted"
             }
           },
           {
@@ -316,6 +318,15 @@
             }
           },
           {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#e7ecf3\",\"dark\":\"#1b2944\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
             "key": "col-12",
             "values": {
               "name": "secondary-foreground",
@@ -326,13 +337,22 @@
             }
           },
           {
-            "key": "col-14",
+            "key": "col-13",
             "values": {
-              "name": "accent-foreground",
+              "name": "accent",
               "group": "Accent",
-              "value": "{\"light\":\"#5c4a1a\",\"dark\":\"#e6d6a8\"}",
-              "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
-              "reads_on": "accent"
+              "value": "{\"light\":\"#f4efe2\",\"dark\":\"#2b2616\"}",
+              "usage_note": "Parchment: notices and signed-document highlights, never decoration."
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#1d4f9e\",\"dark\":\"#93b5ec\"}",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
             }
           },
           {
@@ -362,26 +382,6 @@
               "group": "Lines",
               "value": "{\"light\":\"#d8dee7\",\"dark\":\"#24324e\",\"min\":3}",
               "usage_note": "Hairlines between rows and around cards. Decorative only."
-            }
-          },
-          {
-            "key": "col-19",
-            "values": {
-              "name": "ring",
-              "group": "Lines",
-              "value": "{\"light\":\"#2a5db0\",\"dark\":\"#93b5ec\",\"min\":3}",
-              "usage_note": "Keyboard focus. Always visible, never removed.",
-              "reads_on": "background"
-            }
-          },
-          {
-            "key": "col-20",
-            "values": {
-              "name": "destructive",
-              "group": "Feedback",
-              "value": "{\"light\":\"#a51d24\",\"dark\":\"#f28b8b\"}",
-              "usage_note": "Errors and delete. Also reads on the page and on cards.",
-              "reads_on": "muted"
             }
           },
           {
@@ -1276,7 +1276,7 @@
         "Calloway Square"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [],
   "board": {

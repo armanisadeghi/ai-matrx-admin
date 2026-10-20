@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0495",
-  "version": 5,
+  "version": 6,
   "title": "Design system — Dark-first developer tool",
   "description": "Dark by default: near-black panels, a mint action and mono details. Dense.",
   "forWho": "Developer tools, consoles, data and infrastructure products",
@@ -198,24 +198,6 @@
             }
           },
           {
-            "key": "col-13",
-            "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#e3efff\",\"dark\":\"#16263a\"}",
-              "usage_note": "Highlights: a selected row, a tip, something new."
-            }
-          },
-          {
-            "key": "col-11",
-            "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#e5e8ed\",\"dark\":\"#1f242c\"}",
-              "usage_note": "Second actions and quiet selected states."
-            }
-          },
-          {
             "key": "col-15",
             "values": {
               "name": "link",
@@ -223,6 +205,26 @@
               "value": "{\"light\":\"#0a5fb4\",\"dark\":\"#8cc8ff\"}",
               "usage_note": "Colored text: links and active tabs. Also reads on cards.",
               "reads_on": "background"
+            }
+          },
+          {
+            "key": "col-20",
+            "values": {
+              "name": "destructive",
+              "group": "Feedback",
+              "value": "{\"light\":\"#bf2a2a\",\"dark\":\"#ff7a7a\"}",
+              "usage_note": "Errors and delete. Also reads on the page and on cards.",
+              "reads_on": "muted"
+            }
+          },
+          {
+            "key": "col-23",
+            "values": {
+              "name": "warning",
+              "group": "Feedback",
+              "value": "{\"light\":\"#855000\",\"dark\":\"#ffb454\"}",
+              "usage_note": "Waiting or at risk. Always paired with a word.",
+              "reads_on": "muted"
             }
           },
           {
@@ -312,6 +314,15 @@
             }
           },
           {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#e5e8ed\",\"dark\":\"#1f242c\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
             "key": "col-12",
             "values": {
               "name": "secondary-foreground",
@@ -319,6 +330,15 @@
               "value": "{\"light\":\"#1b2027\",\"dark\":\"#d9dfe7\"}",
               "usage_note": "Label on a secondary button.",
               "reads_on": "secondary"
+            }
+          },
+          {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#e3efff\",\"dark\":\"#16263a\"}",
+              "usage_note": "Highlights: a selected row, a tip, something new."
             }
           },
           {
@@ -371,16 +391,6 @@
             }
           },
           {
-            "key": "col-20",
-            "values": {
-              "name": "destructive",
-              "group": "Feedback",
-              "value": "{\"light\":\"#bf2a2a\",\"dark\":\"#ff7a7a\"}",
-              "usage_note": "Errors and delete. Also reads on the page and on cards.",
-              "reads_on": "muted"
-            }
-          },
-          {
             "key": "col-21",
             "values": {
               "name": "destructive-foreground",
@@ -397,16 +407,6 @@
               "group": "Feedback",
               "value": "{\"light\":\"#0a7550\",\"dark\":\"#3ddc97\"}",
               "usage_note": "Same mint as primary: green means running or passed.",
-              "reads_on": "muted"
-            }
-          },
-          {
-            "key": "col-23",
-            "values": {
-              "name": "warning",
-              "group": "Feedback",
-              "value": "{\"light\":\"#855000\",\"dark\":\"#ffb454\"}",
-              "usage_note": "Waiting or at risk. Always paired with a word.",
               "reads_on": "muted"
             }
           }
@@ -1280,7 +1280,7 @@
         "Foundry Alley"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [],
   "board": {

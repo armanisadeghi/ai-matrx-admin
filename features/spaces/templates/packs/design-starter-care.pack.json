@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0497",
-  "version": 5,
+  "version": 6,
   "title": "Design system — Care",
   "description": "Calm lagoon blue, warm peach, 17px text and 44px targets, accessible by default.",
   "forWho": "Healthcare, clinics, therapy, wellness and care services",
@@ -198,31 +198,33 @@
             }
           },
           {
-            "key": "col-13",
+            "key": "col-14",
             "values": {
-              "name": "accent",
+              "name": "accent-foreground",
               "group": "Accent",
-              "value": "{\"light\":\"#fdf0e3\",\"dark\":\"#33261a\"}",
-              "usage_note": "Warm peach: reassurance notes and next steps."
+              "value": "{\"light\":\"#773c0d\",\"dark\":\"#f6cfa8\"}",
+              "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
+              "reads_on": "accent"
             }
           },
           {
-            "key": "col-11",
+            "key": "col-22",
             "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#dfeef2\",\"dark\":\"#1d3339\"}",
-              "usage_note": "Second actions and quiet selected states."
+              "name": "success",
+              "group": "Feedback",
+              "value": "{\"light\":\"#1c6636\",\"dark\":\"#86d6a0\"}",
+              "usage_note": "Done, live, saved. Always paired with a word.",
+              "reads_on": "muted"
             }
           },
           {
-            "key": "col-15",
+            "key": "col-20",
             "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#0a5d76\",\"dark\":\"#8fd8ec\"}",
-              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
-              "reads_on": "background"
+              "name": "destructive",
+              "group": "Feedback",
+              "value": "{\"light\":\"#ab2219\",\"dark\":\"#ff958b\"}",
+              "usage_note": "Errors and delete. Also reads on the page and on cards.",
+              "reads_on": "muted"
             }
           },
           {
@@ -312,6 +314,15 @@
             }
           },
           {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#dfeef2\",\"dark\":\"#1d3339\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
             "key": "col-12",
             "values": {
               "name": "secondary-foreground",
@@ -322,13 +333,22 @@
             }
           },
           {
-            "key": "col-14",
+            "key": "col-13",
             "values": {
-              "name": "accent-foreground",
+              "name": "accent",
               "group": "Accent",
-              "value": "{\"light\":\"#773c0d\",\"dark\":\"#f6cfa8\"}",
-              "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
-              "reads_on": "accent"
+              "value": "{\"light\":\"#fdf0e3\",\"dark\":\"#33261a\"}",
+              "usage_note": "Warm peach: reassurance notes and next steps."
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#0a5d76\",\"dark\":\"#8fd8ec\"}",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
             }
           },
           {
@@ -371,16 +391,6 @@
             }
           },
           {
-            "key": "col-20",
-            "values": {
-              "name": "destructive",
-              "group": "Feedback",
-              "value": "{\"light\":\"#ab2219\",\"dark\":\"#ff958b\"}",
-              "usage_note": "Errors and delete. Also reads on the page and on cards.",
-              "reads_on": "muted"
-            }
-          },
-          {
             "key": "col-21",
             "values": {
               "name": "destructive-foreground",
@@ -388,16 +398,6 @@
               "value": "{\"light\":\"#ffffff\",\"dark\":\"#2a0806\"}",
               "usage_note": "Label on a delete button.",
               "reads_on": "destructive"
-            }
-          },
-          {
-            "key": "col-22",
-            "values": {
-              "name": "success",
-              "group": "Feedback",
-              "value": "{\"light\":\"#1c6636\",\"dark\":\"#86d6a0\"}",
-              "usage_note": "Done, live, saved. Always paired with a word.",
-              "reads_on": "muted"
             }
           },
           {
@@ -1271,7 +1271,7 @@
         "Larkspur Road"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [],
   "board": {
