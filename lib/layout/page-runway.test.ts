@@ -41,6 +41,21 @@ describe("the page runway value", () => {
   });
 });
 
+describe("the launchpad page takes the runway", () => {
+  // At 1600x1000 the assists pill rests over the bottom-right widget at rest; the page must scroll that widget
+  // clear of it. Its one scroller is a page scroll owner the shell's ::after runway rule reaches, never opted out.
+  it("its scroller is an h-full overflow-y-auto [data-matrx-page-scroll] with no opt-out", () => {
+    const page = read("features/launchpad/components/LaunchpadPage.tsx");
+    const tag = /<div className="([^"]*)"[^>]*data-matrx-page-scroll[^>]*>/.exec(page);
+    expect(tag).not.toBeNull();
+    expect(tag?.[1]).toMatch(/\bh-full\b/);
+    expect(tag?.[1]).toMatch(/\boverflow-y-auto\b/);
+    expect(tag?.[0]).not.toContain("data-floating-clearance");
+    expect(tag?.[1]).not.toContain("scroll-page-end-space");
+    expect(SHELL_CSS).toMatch(/:is\(main, \[data-matrx-page-scroll\]\):is\(\.overflow-y-auto, \.overflow-auto\):not\(/);
+  });
+});
+
 describe("runwayVerdict", () => {
   it("half the screen, or what floats + the page end when that is taller", () => {
     expect(pageRunwayPx(800, 1280, 0)).toBe(400);
