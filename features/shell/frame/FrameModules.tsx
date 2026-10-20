@@ -6,7 +6,7 @@
 // engagement only, renders it through React.lazy inside Suspense, and shows a quiet
 // skeleton (never a spinner) while the chunk arrives. Also here: the side chat's resize
 // handle and the page's featherweight ask bar.
-import { Component, Suspense, lazy, useState } from "react";
+import { Component, Suspense, createElement, lazy, useMemo, useState } from "react";
 import type { ComponentType, KeyboardEvent, LazyExoticComponent, PointerEvent, ReactNode } from "react";
 import { ArrowUp, Mic, Shapes, Webhook, X } from "lucide-react";
 import { holdDragCursor } from "@ai-matrx/design-system";
@@ -87,7 +87,7 @@ export function ModuleSlot<P extends object>({
   /** The frame draws this panel's title row itself (the canvas): no title in the skeleton or failure. */
   bare?: boolean;
 }) {
-  const Loaded = lazyModule(loader);
+  const Loaded = useMemo(() => lazyModule(loader), [loader]);
   const closeLabel = `Close ${title.toLowerCase()}`;
   const titleRow = bare ? null : <PanelTitle icon={icon} title={title} onClose={onClose} closeLabel={closeLabel} />;
   return (
@@ -111,7 +111,7 @@ export function ModuleSlot<P extends object>({
           </div>
         }
       >
-        <Loaded {...props} />
+        {createElement(Loaded, props)}
       </Suspense>
     </ModuleBoundary>
   );

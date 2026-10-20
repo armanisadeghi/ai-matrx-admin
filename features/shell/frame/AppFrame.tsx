@@ -196,7 +196,7 @@ function useMeasuredWidth() {
     observer.observe(el);
     return () => observer.disconnect();
   }, [el]);
-  return { setEl, width };
+  return [width, setEl] as const;
 }
 
 function useControllable(value: boolean | undefined, onChange: ((v: boolean) => void) | undefined, initial: boolean) {
@@ -229,8 +229,11 @@ function writeStorage(key: string, value: string) {
 function useRememberedWidth() {
   const [stored, setStored] = useState<number | null>(null);
   useEffect(() => {
-    const n = Number(readStorage(COMPANION_WIDTH_KEY) ?? NaN);
-    if (Number.isFinite(n) && n > 0) setStored(n);
+    const frame = window.requestAnimationFrame(() => {
+      const n = Number(readStorage(COMPANION_WIDTH_KEY) ?? NaN);
+      if (Number.isFinite(n) && n > 0) setStored(n);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
   function remember(width: number) {
     setStored(width);
@@ -244,16 +247,19 @@ function useRememberedWidth() {
  * the person left on THIS page (closed by default). Only the person's own act is remembered.
  */
 function useCompanionOpen(pageKey: string | undefined, link: boolean | null | undefined, onChange?: (open: boolean) => void) {
-  const [remembered, setRemembered] = useState(false);
-  const [acted, setActed] = useState(false);
+  const [state, setState] = useState({ pageKey, remembered: false, acted: false });
   useEffect(() => {
-    setRemembered(pageKey ? readStorage(companionOpenKey(pageKey)) === "open" : false);
-    setActed(false);
+    const frame = window.requestAnimationFrame(() => {
+      setState((previous) => {
+        if (previous.pageKey === pageKey && previous.acted) return previous;
+        return { pageKey, remembered: pageKey ? readStorage(companionOpenKey(pageKey)) === "open" : false, acted: false };
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [pageKey]);
-  const open = !acted && typeof link === "boolean" ? link : remembered;
+  const open = !state.acted && typeof link === "boolean" ? link : state.remembered;
   function set(next: boolean) {
-    setActed(true);
-    setRemembered(next);
+    setState({ pageKey, remembered: next, acted: true });
     if (pageKey) writeStorage(companionOpenKey(pageKey), next ? "open" : "closed");
     onChange?.(next);
   }
@@ -262,11 +268,9 @@ function useCompanionOpen(pageKey: string | undefined, link: boolean | null | un
 
 /** True from the first time `on` is true: a module stays mounted (and inert) once engaged. */
 function useLatched(on: boolean) {
-  const [latched, setLatched] = useState(false);
-  useEffect(() => {
-    if (on) setLatched(true);
-  }, [on]);
-  return on || latched;
+  const [latched, setLatched] = useState(on);
+  if (on && !latched) setLatched(true);
+  return latched;
 }
 
 export function AppFrame(props: AppFrameProps) {
@@ -295,7 +299,7 @@ export function AppFrame(props: AppFrameProps) {
     onHelp,
   } = props;
   const { ref, form } = useMeasuredForm(props.form);
-  const sheet = useMeasuredWidth();
+  const [sheetWidth, setSheetElement] = useMeasuredWidth();
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
   const [sidebarOpen, setSidebarOpen] = useControllable(props.sidebarOpen, props.onSidebarOpenChange, true);
   const [companionOpen, setCompanionOpen] = useCompanionOpen(
@@ -328,7 +332,6 @@ export function AppFrame(props: AppFrameProps) {
   // From the desktop form the canvas is a full-height column beside the sheet's content (it takes
   // the header band too, so it never fights for space); on medium and phone it covers the sheet.
   const canvasInline = inlineSidebar;
-  const sheetWidth = sheet.width;
   const canvasW = canvasWidthFor(sheetWidth);
   const canvasFullShown = canvasOpen && canvasInline && canvasFull;
   // The body row's width: the sheet less the inline canvas (0 until measured).
@@ -540,7 +543,7 @@ export function AppFrame(props: AppFrameProps) {
           )}
           inert={drawerShown}
         >
-          <section ref={sheet.setEl} className="mf-sheet relative flex h-full min-h-0 overflow-hidden">
+          <section ref={setSheetElement} className="mf-sheet relative flex h-full min-h-0 overflow-hidden">
             {/* The sheet's content column — inert while the canvas covers it or is full screen. */}
             <div
               className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden"

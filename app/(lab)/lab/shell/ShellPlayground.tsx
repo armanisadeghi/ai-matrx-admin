@@ -8,6 +8,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { Check } from "lucide-react";
 import { Button, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { readSideChatLink, sideChatAddress } from "@ai-matrx/chat/canvas/workspace/side-chat-address";
+import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { AppFrame } from "@/features/shell/frame/AppFrame";
 import { PRODUCTS, PRODUCT_FAMILIES, productById } from "@/features/shell/frame/products";
 import { defaultPageActions, placeholderHeaderTools } from "@/features/shell/frame/SheetHeader";
@@ -90,7 +91,10 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
   // The side chat's link contract (side_chat=open|closed…): the link wins for this visit.
   const [sideChatLink, setSideChatLink] = useState<boolean | null>(null);
   useEffect(() => {
-    setSideChatLink(readSideChatLink(window.location.search)?.open ?? null);
+    const frame = window.requestAnimationFrame(() => {
+      setSideChatLink(readSideChatLink(window.location.search)?.open ?? null);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
   const [favorites, setFavorites] = useState<string[]>(["chat", "crm", "docs"]);
   const [contactId, setContactId] = useState<string | null>(null);
@@ -350,7 +354,7 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             companionLink={sideChatLink}
             onCompanionOpenChange={(open) => {
               const next = sideChatAddress(window.location.search, { conversationId: null, open, hostedElsewhere: false });
-              window.history.replaceState(window.history.state, "", `${window.location.pathname}${next}`);
+              replaceAddressWithoutNavigating(`${window.location.pathname}${next}`);
             }}
             loadCompanion={loadSampleCompanion}
             loadCanvas={loadSampleCanvas}
