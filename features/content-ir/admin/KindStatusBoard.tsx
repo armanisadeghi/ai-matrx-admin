@@ -37,6 +37,8 @@ import ShapeFindingsSummary from "@/features/content-ir/admin/ShapeFindingsSumma
 import { cn } from "@/lib/utils";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
+import { rowTintsWhere } from "@/components/official/table-row-tints";
+import type { StyleColor } from "@ai-matrx/design-system/data-table";
 
 /** A finding message minus its trailing "run pnpm …" instruction — admins read findings here, agents run the commands. */
 function plainFinding(message: string): string {
@@ -75,18 +77,18 @@ export function StatusIcon({ status }: { status: AssetStatus }) {
   }
 }
 
-function rowTone(row: KindBoardRow): string {
+function rowTone(row: KindBoardRow): StyleColor | null {
   if (row.redCodes.length > 0) {
-    return "bg-red-500/5 hover:bg-red-500/10";
+    return "red";
   }
   if (
     row.presence !== "both" ||
     row.driftedCells.length > 0 ||
     row.activeDrift
   ) {
-    return "bg-amber-500/5 hover:bg-amber-500/10";
+    return "amber";
   }
-  return "hover:bg-accent/30";
+  return null;
 }
 
 /**
@@ -339,7 +341,7 @@ export default function KindStatusBoard({
           detail={{ enabled: false }}
           density="condensed"
           toolbar={{ searchPlaceholder: "Search kinds and diagnostics…" }}
-          rowClassName={(row) => rowTone(row)}
+          tableStyle={rowTintsWhere(board.rows, (row) => row.kind, rowTone)}
           emptyState={{
             title: "No kinds in this status board",
             description:

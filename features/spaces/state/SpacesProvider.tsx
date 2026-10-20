@@ -23,6 +23,7 @@ import { hasSignedInSession, isRefusal, onSignedIn, readWhenSignedIn, type LoadA
 import { listTemplateIds, setTemplate, copyTemplate } from "./templates";
 import { bringTemplateTables } from "./template-tables";
 import { attemptJournal } from "../templates/use-attempt";
+import { noteTemplatePage } from "../data/install-host";
 import { installTemplateTables, olderTemplateCopies, packRunJournal, readSpaceTemplate, readStarterTemplate, runUseTemplate, timed, USE_TEMPLATE_OPEN_DEADLINE_MS, withDeadline, type PreviewSizes } from "../templates/use-pack";
 
 const FAVORITES_KEY = "spaces:favorites";
@@ -544,6 +545,7 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
           install: (onStage, signal, fresh) => timed("tables", () => installTemplateTables(template, orgId, dispatch, onStage, signal, fresh)),
           journal: options?.attempt ? attemptJournal(options.attempt, templateId) : packRunJournal(orgId, templateId),
           sizes,
+          notePage: (installId, root) => noteTemplatePage(orgId, installId, root),
           onStage: (stage) => setPackStage(stage),
           onRootReady: openRoot,
           onStalled: (cancel) => {

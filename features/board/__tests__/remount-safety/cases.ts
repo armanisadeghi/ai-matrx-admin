@@ -49,7 +49,7 @@ export const REMOUNT_LEDGER: Record<string, RemountStatus> = {
   "transcript": { status: "passing" },
   "transcript:quiet": { status: "passing" },
   "agent": { status: "passing" },
-  "agent:quiet": { status: "failing", owner: "board-office lane", why: "the agent tile's only remaining read is the catalog's lookup of an agent the list does not carry (agx_search, 3 per wake) from @ai-matrx/chat agent-identity useAgentSummaryRow; fixed in aidream (lookUpAgentOnce, pushed ac6a7708d3) and waits for the publish, then flip this row" },
+  "agent:quiet": { status: "passing" },
   "presentation": { status: "passing" },
   "presentation:quiet": { status: "passing" },
   "data-table": { status: "passing" },

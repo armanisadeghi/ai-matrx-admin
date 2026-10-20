@@ -576,7 +576,6 @@ function CheckBoard({
   return (
     <div className="min-h-0 flex-1">
       <MatrxDataTable
-        look="mac"
         tableId="admin-check-findings-board"
         data={rows}
         columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (r) => (
@@ -952,7 +951,6 @@ function CheckDetail({
       ) : (
         <div className="min-h-0 flex-1">
           <MatrxDataTable
-            look="mac"
             // Columns hide by state filter, and the table reads `hidden` only
             // when it mounts — a new filter is a new table.
             key={stateFilter}

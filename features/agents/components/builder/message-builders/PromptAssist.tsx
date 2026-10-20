@@ -72,6 +72,10 @@ function filledFrom(definition: VariableDefinition): string | undefined {
   return `Context · ${binding.itemKey}`;
 }
 
+function hasDefault(value: unknown): boolean {
+  return value !== undefined && value !== null && String(value).trim() !== "";
+}
+
 /** The token forms that use `name`: `{{name}}` and its section markers. */
 function usesVariable(text: string, name: string): boolean {
   return text.includes(`{{${name}}}`) || text.includes(`{{#${name}}}`) || text.includes(`{{^${name}}}`) || text.includes(`{{/${name}}}`);
@@ -117,7 +121,13 @@ export function promptVariableDefinitions(
         ...(from ? { filledFrom: from } : {}),
         ...(usedIn.length ? { usedIn } : {}),
         // The pill's "needs a value" tint and the Peek's input preview read the Test panel's value.
-        ...(testValues ? { value: testValues[definition.name] ?? "" } : {}),
+        // Before the panel has started (always so on a phone, where the panel is another tab) the value is
+        // the default the panel WILL show; a variable with no default claims nothing (no false "needs a value").
+        ...(testValues
+          ? { value: testValues[definition.name] ?? "" }
+          : hasDefault(definition.defaultValue)
+            ? { value: definition.defaultValue }
+            : {}),
       };
     });
 }

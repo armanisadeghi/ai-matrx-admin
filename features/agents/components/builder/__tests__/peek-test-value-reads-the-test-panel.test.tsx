@@ -95,3 +95,10 @@ it("claims no value before the panel has a conversation", async () => {
   expect(await read(store as never)).toBeNull();
   expect(variableNeedsValue(peek(null, "route").declared)).toBe(false);
 });
+
+it("with the panel not started (a phone: the panel is another tab) the Peek still shows the default as the Test value", () => {
+  const { model } = peek(null, "filed_type");
+  expect(model.previewLabel).toBe("Test value");
+  expect(model.preview).toMatchObject({ kind: "choices", picked: ["bug"] });
+  expect(peek(null, "route").model.previewLabel).toBe("Input");
+});

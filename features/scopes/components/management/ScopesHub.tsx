@@ -64,6 +64,8 @@ import type {
   OrgNode,
 } from "@/features/scopes/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { rowTintsWhere } from "@/components/official/table-row-tints";
+import { ScopeCellEmpty } from "./ScopeCellEmpty";
 
 /** Reasonable cap on context-item columns so wide catalogs don't explode
  *  the table; overflow is announced in the header ("+N more"). */
@@ -369,9 +371,7 @@ function ScopeTypeTable({
             {summary}
           </span>
         ) : (
-          <span className="text-muted-foreground/50">
-            {cellsStatus === "loading" ? "…" : "—"}
-          </span>
+          <ScopeCellEmpty loading={cellsStatus === "loading"} />
         );
       },
     })),
@@ -457,7 +457,6 @@ function ScopeTypeTable({
           columns={tableColumns}
           getRowId={(scope) => scope.id}
           detail={{ enabled: false }}
-          isFetching={cellsStatus === "loading"}
           // Frameless inside the section card (no box-in-box), and the same
           // progressive "Show more" the org page's table card uses — never a
           // numbered pager over a handful of rows.
@@ -486,9 +485,9 @@ function ScopeTypeTable({
           rowClassName={(scope) =>
             cn(
               isPending && "pointer-events-none opacity-60",
-              activeScopeIds.has(scope.id) && "bg-primary/5",
             )
           }
+          tableStyle={rowTintsWhere(type.scopes, (scope) => scope.id, (scope) => activeScopeIds.has(scope.id) && "blue")}
         />
       )}
     </section>

@@ -171,7 +171,8 @@ function parseProvision(v: JsonValue): PlacementProvision | null {
     name,
     kind: str(v.kind),
     supplied: v.supplied !== false,
-    value: "value" in v ? v.value : undefined,
+    // A withheld value arrives as `null` (AI Watch off); keep it undefined so it never draws as "Empty".
+    value: v.withheld === true ? undefined : "value" in v ? v.value : undefined,
     truncated: v.truncated === true,
     valueRef: str(v.value_ref),
     withheld: v.withheld === true,
@@ -249,7 +250,7 @@ function parseStoredRun(conversationId: string, data: unknown): StoredRun {
     provisions.push({
       name,
       kind: str(item.kind),
-      value: "value" in item ? item.value : undefined,
+      value: item.withheld === true ? undefined : "value" in item ? item.value : undefined,
       truncated: item.truncated === true,
       withheld: item.withheld === true,
       valueChars: num(item.value_chars),

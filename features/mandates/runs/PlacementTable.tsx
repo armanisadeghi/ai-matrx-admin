@@ -191,7 +191,7 @@ export function PlacementTable({ placement, values = [], problems = [], label }:
             name={p.name}
             value={value}
             truncated={p.truncated || resolved?.truncated}
-            withheld={value === undefined && (p.withheld || resolved?.withheld === true)}
+            withheld={(value === undefined || value === null) && (p.withheld || resolved?.withheld === true)}
             chars={p.valueChars ?? resolved?.valueChars ?? null}
           />
         }

@@ -1,0 +1,21 @@
+// AT-FIX-J2 item 4a: link-by-name import, walked as admin. Table menu > Import... > paste a CSV whose Person column holds NAMES.
+import { open, gotoTable, say, SHOTS } from "./at-fix-j2-lib.mjs";
+const { browser, page, who, shot } = await open(false);
+say("who", who);
+await gotoTable(page, process.env.TABLE);
+await page.getByRole("button", { name: "Table menu" }).first().click(); await page.waitForTimeout(800);
+await page.getByRole("menuitem", { name: /^Import…/ }).first().click(); await page.waitForTimeout(2500);
+await shot("im2-dialog");
+say("dialog", (await page.evaluate(() => document.querySelector("[role=dialog]")?.innerText ?? "(none)")).slice(0, 700));
+const dir = (await import("node:fs")).readFileSync("/tmp/atfj2-csvdir", "utf8").trim();
+const [fc] = await Promise.all([page.waitForEvent("filechooser"), page.getByRole("button", { name: "Choose a file", exact: true }).click()]);
+await fc.setFiles(dir + "/orders.csv");
+await page.waitForTimeout(4000); await shot("im3-chosen");
+const panel = async () => (await page.evaluate(() => [...document.querySelectorAll("aside,[data-side-panel],[role=complementary]")].map((e) => e.innerText).join("\n") || document.body.innerText.slice(-2500)));
+say("after file", (await panel()).slice(0, 2500));
+await page.getByRole("button", { name: /^Import \d+ rows?$/ }).first().click();
+await page.waitForTimeout(9000); await shot("im4-done");
+say("after import", (await page.evaluate(() => document.body.innerText)).split("\n").filter((l) => /import|link|skipp|Nobody|row/i.test(l)).slice(0, 30));
+await page.waitForTimeout(3000);
+say("grid", (await page.evaluate(() => [...document.querySelectorAll("[role=row]")].map((r) => r.innerText.replace(/\n+/g, " | ")))));
+await browser.close();

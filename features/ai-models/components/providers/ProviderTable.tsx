@@ -37,6 +37,7 @@ import {
 import type { AiProvider } from "../../types";
 import { readOf } from "@ai-matrx/design-system";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { oneRowTint } from "@/components/official/table-row-tints";
 
 function LinkIcon({
   href,
@@ -286,11 +287,7 @@ export default function ProviderTable({
         defaultSort={{ id: "name", direction: "asc" }}
         onRowOpen={onSelect}
         detail={{ enabled: false }}
-        rowClassName={(item) =>
-          item.id === selectedId
-            ? "bg-primary/10 hover:bg-primary/15"
-            : undefined
-        }
+        tableStyle={oneRowTint(selectedId)}
         // The read's failure is the table's to say, once: the failure with no
         // rows, a stale notice above rows kept from an earlier read.
         read={readOf({ loading: isLoading, error }, { what: "providers", onRetry })}

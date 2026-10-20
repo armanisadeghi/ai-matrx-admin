@@ -31,7 +31,6 @@ import {
 } from "@/components/ui/select";
 import { JsonTreeViewer } from "@/components/official/json-explorer/JsonTreeViewer";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { cn } from "@/lib/utils";
 import {
   fetchWorkItemFacets,
   listWorkItems,
@@ -54,6 +53,7 @@ import {
 } from "./presentation";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readOf, displayId } from "@ai-matrx/design-system";
+import { rowTintsWhere } from "@/components/official/table-row-tints";
 
 const ANY = "__any__";
 
@@ -425,13 +425,7 @@ export function WorkItemsPanel({
         onExpandedIdChange: setExpanded,
         render: (row) => <WorkItemDetail row={row} onOpenBatch={onOpenBatch} />,
       }}
-      rowClassName={(row) =>
-        cn(
-          row.status === "completed" &&
-            row.handler_status === "dead" &&
-            "bg-destructive/5",
-        )
-      }
+      tableStyle={rowTintsWhere(rows ?? [], (row) => row.id, (row) => row.status === "completed" && row.handler_status === "dead" && "red")}
       read={readOf({ loading, error }, { what: "the work items" })}
       emptyState={{
         icon: <Inbox className="h-6 w-6 text-muted-foreground" />,

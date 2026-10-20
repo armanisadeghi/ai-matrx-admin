@@ -75,6 +75,8 @@ import {
 import { ReadFailure } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { rowTintsWhere } from "@/components/official/table-row-tints";
+import type { StyleColor } from "@ai-matrx/design-system/data-table";
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -294,26 +296,13 @@ function compareComparisons(
 
 // ─── Status ───────────────────────────────────────────────────────────────
 
-const STATUS_BG: Record<ComparisonStatus, string> = {
-  matched: "bg-green-50/60 dark:bg-green-900/10",
-  missing_local: "bg-amber-50/70 dark:bg-amber-900/15",
-  before_cutoff: "bg-slate-50/70 dark:bg-slate-900/20",
-  excluded: "bg-muted/40 dark:bg-muted/20",
-  extra_local: "bg-blue-50/50 dark:bg-blue-900/10",
-};
-const STATUS_BG_SEL: Record<ComparisonStatus, string> = {
-  matched: "bg-green-100 dark:bg-green-900/30",
-  missing_local: "bg-amber-100 dark:bg-amber-900/30",
-  before_cutoff: "bg-slate-200/70 dark:bg-slate-800/50",
-  excluded: "bg-muted/60 dark:bg-muted/30",
-  extra_local: "bg-blue-100 dark:bg-blue-900/30",
-};
-const STATUS_LEFT: Record<ComparisonStatus, string> = {
-  matched: "border-l-green-400",
-  missing_local: "border-l-amber-400",
-  before_cutoff: "border-l-slate-400",
-  excluded: "border-l-muted-foreground/40",
-  extra_local: "border-l-blue-400",
+// A status is the table's row tint (every look paints it); the open row is `selectedId`.
+const STATUS_TINT: Record<ComparisonStatus, StyleColor> = {
+  matched: "green",
+  missing_local: "amber",
+  before_cutoff: "slate",
+  excluded: "gray",
+  extra_local: "blue",
 };
 
 function StatusBadge({
@@ -1256,9 +1245,7 @@ function ComparisonTable({
         onRowOpen={(comparison) =>
           onSelect(comparison.id === selectedId ? null : comparison)
         }
-        rowClassName={(comparison) =>
-          `${STATUS_LEFT[comparison.status]} ${comparison.id === selectedId ? STATUS_BG_SEL[comparison.status] : STATUS_BG[comparison.status]}`
-        }
+        tableStyle={rowTintsWhere(comparisons, (comparison) => comparison.id, (comparison) => STATUS_TINT[comparison.status])}
 
       />
     </div>

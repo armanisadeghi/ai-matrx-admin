@@ -62,6 +62,7 @@ import {
 import { readOf } from "@ai-matrx/design-system";
 import { adminCostColumns } from "@/components/cost/adminCostColumns";
 import { useAdminCost } from "@/components/cost/useAdminCost";
+import { oneRowTint } from "@/components/official/table-row-tints";
 
 const TONE_CLASS: Record<string, string> = {
   critical:
@@ -359,7 +360,7 @@ export function ProducerYieldConsole() {
         pageSize={50}
         read={readOf(register, { what: "the producer register" })}
         emptyState={{ title: "No producers on the register" }}
-        rowClassName={(row) => focused === row.producer_key ? "bg-amber-50 dark:bg-amber-950/40" : undefined}
+        tableStyle={oneRowTint(focused, "amber")}
         toolbar={{
           search: true,
           searchPlaceholder: "Search producers…",

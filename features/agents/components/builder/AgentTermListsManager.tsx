@@ -1,5 +1,6 @@
 "use client";
 
+import { BuilderRowAction } from "@/features/agents/components/builder/BuilderRowAction";
 import { isSyntheticAgentId } from "@ai-matrx/chat/agents/redux/agent-definition/synthetic-id";
 import { UnsavedAgentAttachmentRow } from "./UnsavedAgentAttachmentRow";
 import { useEffect, useState } from "react";
@@ -187,14 +188,7 @@ function TermListPicker({
   return (
     <Popover open={open} onOpenChange={setOpen} modal={false}>
       <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex shrink-0 items-center gap-1 rounded-md px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          title="Attach a term list"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Add
-        </button>
+        <BuilderRowAction kind="add" title="Attach a term list" />
       </PopoverTrigger>
       <PopoverContent /* sizing: fixed — search-as-you-type list; a content-sized box would reflow on every keystroke */ className="z-[200] w-72 p-0" align="end" side="bottom" sideOffset={6}>
         <Command>

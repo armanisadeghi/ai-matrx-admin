@@ -103,6 +103,16 @@ const MathProblemImpl: React.FC<MathProblemProps> = ({
         setDisplayedContent((prev) => [...prev, content]);
     };
 
+    const metaTiles = (
+        [
+            ["Course", course_name],
+            ["Topic", topic_name],
+            ["Module", module_name],
+        ] as const
+    )
+        .filter(([, value]) => typeof value === "string" && value.trim() !== "")
+        .map(([label, value]) => ({ label, value: value as string }));
+
     const rebuildContent = (
         renderStage = stage,
         renderSubStage = subStage,
@@ -125,20 +135,17 @@ const MathProblemImpl: React.FC<MathProblemProps> = ({
                             </p>
                         )}
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
-                        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-lg p-2 border border-emerald-200 dark:border-emerald-800">
-                            <div className="text-[10px] uppercase font-semibold text-emerald-600 dark:text-emerald-400 mb-0.5">Course</div>
-                            <div className="font-semibold text-xs text-emerald-900 dark:text-emerald-100">{course_name}</div>
+                    {/* Only the facts that are there: an empty Course / Topic / Module tile says nothing (review 2 N2). */}
+                    {metaTiles.length > 0 && (
+                        <div className={`grid gap-2 ${["grid-cols-1", "grid-cols-2", "grid-cols-3"][metaTiles.length - 1]}`}>
+                            {metaTiles.map((tile) => (
+                                <div key={tile.label} className="rounded-lg border border-border bg-muted/40 p-2">
+                                    <div className="text-[10px] uppercase font-semibold text-muted-foreground mb-0.5">{tile.label}</div>
+                                    <div className="font-semibold text-xs text-foreground">{tile.value}</div>
+                                </div>
+                            ))}
                         </div>
-                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-lg p-2 border border-blue-200 dark:border-blue-800">
-                            <div className="text-[10px] uppercase font-semibold text-blue-600 dark:text-blue-400 mb-0.5">Topic</div>
-                            <div className="font-semibold text-xs text-blue-900 dark:text-blue-100">{topic_name}</div>
-                        </div>
-                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg p-2 border border-purple-200 dark:border-purple-800">
-                            <div className="text-[10px] uppercase font-semibold text-purple-600 dark:text-purple-400 mb-0.5">Module</div>
-                            <div className="font-semibold text-xs text-purple-900 dark:text-purple-100">{module_name}</div>
-                        </div>
-                    </div>
+                    )}
                 </div>
             );
             return;

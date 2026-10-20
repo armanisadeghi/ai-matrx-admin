@@ -83,13 +83,19 @@ const TABLE_ID = "admin-feedback";
 const DONE: FeedbackStatus[] = ["resolved", "closed", "wont_fix", "deferred"];
 
 /** Approved but not yet done: a quiet green row, through the table's own tint so every look shows it. */
-const APPROVED_OPEN_TINT: MatrxDataTableStyleConfig<UserFeedback> = {
+export const FEEDBACK_ROW_TINTS: MatrxDataTableStyleConfig<UserFeedback> = {
   style: {
     version: TABLE_STYLE_VERSION,
-    rules: [{ id: "approved-open", field: "approved_open", op: "is_true", color: "green", target: "row" }],
+    // First rule wins: an approved open child stays green. A split child's own tint replaces the
+    // old `border-l` rowClassName, which the Mac look painted over (lane mac-default-2).
+    rules: [
+      { id: "approved-open", field: "approved_open", op: "is_true", color: "green", target: "row" },
+      { id: "split-child", field: "split_child", op: "is_true", color: "slate", target: "row" },
+    ],
   },
   documentOf: (r) => ({
     approved_open: r.admin_decision === "approved" && !DONE.includes(r.status),
+    split_child: Boolean(r.parent_id),
   }),
 };
 const statuses: Array<{ value: FeedbackStatus; label: string; color: string }> =
@@ -893,7 +899,6 @@ export default function FeedbackTable() {
       ) : null}
       <Card className="p-3">
         <MatrxDataTable<UserFeedback>
-          look="mac"
           data={rows}
           columns={columns}
           getRowId={(r) => r.id}
@@ -1045,10 +1050,7 @@ export default function FeedbackTable() {
               ],
             }),
           }}
-          tableStyle={APPROVED_OPEN_TINT}
-          rowClassName={(r) =>
-            r.parent_id ? "border-l-2 border-l-primary/20" : undefined
-          }
+          tableStyle={FEEDBACK_ROW_TINTS}
           getRowHref={(r) => feedbackHref(r.id)}
           selection={bulk.selection}
           detail={{ enabled: false }}

@@ -9,6 +9,7 @@ import { useSearchParams } from 'next/navigation';
 import { getSqlFunctionKey } from '../utils/functionIdentity';
 import { confirm } from '@/components/dialogs/confirm/ConfirmDialogHost';
 import type { ReadOutcome } from "@ai-matrx/design-system";
+import { oneRowTint } from "@/components/official/table-row-tints";
 interface SqlFunctionsListProps { functions: SqlFunction[]; loading: boolean; /** The list read's outcome (RC-B12 r13). */ read?: ReadOutcome; selectedFunctionKey?: string | null; /** `list` is the record page's sidebar: one compact line per function, the open one highlighted. */ presentation?: 'table' | 'list'; onViewDetails: (func: SqlFunction) => void; onEditFunction: (func: SqlFunction) => void; onDeleteFunction: (schema: string, name: string, argumentTypes: string) => Promise<boolean>; onSortChange: (field: SqlFunctionSort['field']) => void; sortField: SqlFunctionSort['field']; sortDirection: SqlFunctionSort['direction']; }
 export default function SqlFunctionsList({ functions, loading, read, selectedFunctionKey, presentation = 'table', onViewDetails, onEditFunction, onDeleteFunction }: SqlFunctionsListProps) {
   const searchParams = useSearchParams();
@@ -38,7 +39,7 @@ export default function SqlFunctionsList({ functions, loading, read, selectedFun
       toolbar={{ search: false }}
       viewTabs={false}
       emptyState={{ title: 'No SQL functions found' }}
-      rowClassName={(row) => selectedFunctionKey === getSqlFunctionKey(row) ? 'bg-primary/10' : undefined}
+      tableStyle={oneRowTint(selectedFunctionKey)}
       presentation={presentation}
       getRowHref={hrefFor}
       activeRowId={selectedFunctionKey}

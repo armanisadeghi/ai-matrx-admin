@@ -461,7 +461,6 @@ export default function TasksTableView() {
   return (
     <div className="h-full min-h-0 flex flex-col">
       <MatrxDataTable<TaskWithProject>
-        look="mac"
         drill={TASKS_DRILL}
         tableId="tasks-table"
         data={tasks}

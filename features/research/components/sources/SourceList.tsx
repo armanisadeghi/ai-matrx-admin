@@ -1680,7 +1680,6 @@ export default function SourceList() {
       />
 
       <MatrxDataTable<ResearchSource>
-        look="mac"
         tableId={`research/topic-sources/${topicId}`}
         data={sourceList}
         columns={columns}

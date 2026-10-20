@@ -83,8 +83,8 @@ export const MapBlock: React.FC<MapBlockProps> = ({
         className,
       )}
     >
-      <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/50 px-3 py-1.5">
-        <div className="flex min-w-0 items-center gap-2">
+      <div data-block-header className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
+        <div className="flex min-w-[9rem] flex-1 items-center gap-2">
           <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
           <span className="truncate text-sm font-medium text-foreground">
             <InlineControlText controls={controls} fieldKey="title" value={spec?.title ?? ""}>
@@ -103,7 +103,7 @@ export const MapBlock: React.FC<MapBlockProps> = ({
             </span>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-0.5">
+        <div className="flex shrink-0 flex-wrap items-center gap-0.5">
           {!isStreamActive && spec && placesList === "toggle" && (
             <Button variant="quiet" pressed={listOpen} icon={<List />} aria-label={listOpen ? "Hide places" : "Show places"} title={listOpen ? "Hide places" : "Show places"} onClick={() => setListOpen((v) => !v)} />
           )}

@@ -14,6 +14,7 @@
 // agent carries, with an Add button that opens the same picker the wrench always opened.
 // The wrench stays where it is for people who know it.
 
+import { BuilderRowAction } from "@/features/agents/components/builder/BuilderRowAction";
 import { getToolDisplayName } from "@ai-matrx/chat/tool-call-visualization/registry/registry";
 import { useEffect, useMemo } from "react";
 import { Wrench, Plus, X, Info } from "lucide-react";
@@ -156,15 +157,7 @@ export function AgentToolsRow({ agentId }: AgentToolsRowProps) {
           <AgentToolsModal
             agentId={agentId}
             renderTrigger={(open) => (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 gap-1 px-1.5 text-xs text-muted-foreground hover:text-foreground"
-                onClick={open}
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Add
-              </Button>
+              <BuilderRowAction kind="add" onClick={open} />
             )}
           />
         </div>

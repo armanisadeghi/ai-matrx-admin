@@ -98,6 +98,13 @@ interface MultipleChoiceQuizProps {
   blockIndex?: number;
   /** Block Controls for this quiz (null/absent = the surface cannot save: no controls). */
   controls?: BlockControlsHandle | null;
+  /** The block is still streaming: an answer not given YET is not "not given". */
+  isStreamActive?: boolean;
+}
+
+/** "The answer is not given" shows only for a complete block whose question has no right option. */
+export function showsAnswerNotGiven(correctAnswerIndex: number, isStreamActive: boolean | undefined): boolean {
+  return correctAnswerIndex < 0 && !isStreamActive;
 }
 
 // Component for expandable question text
@@ -245,6 +252,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   messageId,
   blockIndex,
   controls = null,
+  isStreamActive = false,
 }) => {
   // Canvas integration
   const { open: openCanvas } = useCanvas();
@@ -777,8 +785,8 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
               onEdit={controls ? setQuestionEdit : undefined}
             />
             {/* A question with no right answer says so (review 2026-10-19 #16) — never a silent quiz. */}
-            {currentQuestion.correctAnswerIndex < 0 && (
-              <p className="mt-1 text-xs text-muted-foreground" data-quiz-no-answer="">No right answer</p>
+            {showsAnswerNotGiven(currentQuestion.correctAnswerIndex, isStreamActive) && (
+              <p className="mt-1 text-xs text-muted-foreground" data-quiz-no-answer="">The answer is not given</p>
             )}
             {controls && questionEdit && questionRowIndex >= 0 && (
               <InlineRowPopover

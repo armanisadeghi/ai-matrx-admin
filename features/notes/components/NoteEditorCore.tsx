@@ -404,6 +404,9 @@ export function NoteEditorCore({
       ref={rootRef}
       // A full-page editor is a page: every pane in it owes the page runway (dev guard [page-runway]).
       data-matrx-page-runway={embedded ? undefined : ""}
+      // Every view of a note (Plain, Write, Read, Split) is a document: the page assistant's dock
+      // never reveals over it (@ai-matrx/chat isInWritingSurface; review 2 N1, Read view).
+      data-document-surface=""
       className={cn("relative w-full h-full", className)}
     >
       {/* Voice button overlay */}

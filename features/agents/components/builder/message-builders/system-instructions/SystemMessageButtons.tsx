@@ -1,4 +1,4 @@
-import { Maximize2, Copy, Check, Eraser, FileText, Webhook } from "lucide-react";
+import { Maximize2, Copy, Check, Eraser, FileText, Webhook, EllipsisVertical } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "@/lib/toast";
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
@@ -188,6 +188,7 @@ export function SystemMessageButtons({
     <ResponsiveIconButtonGroup
       buttons={buttons}
       sheetTitle="System Message Actions"
+      mobileMoreIcon={EllipsisVertical}
       size="sm"
     />
   );

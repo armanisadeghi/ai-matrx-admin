@@ -100,6 +100,7 @@ import {
   RAG_FILTER_LABELS,
   TYPE_FILTER_LABELS,
 } from "./columns";
+import { oneRowTint } from "@/components/official/table-row-tints";
 
 export interface FileTableProps {
   folders: CloudFolderRecord[];
@@ -753,9 +754,7 @@ export function FileTable({
           onRowOpen={(row) => handleRowActivate(row.item)}
           selectedId={activeFileId}
           highlightedIndex={focusedIndex >= 0 ? focusedIndex : undefined}
-          rowClassName={(row) =>
-            row.id === activeFileId ? "border-l-2 border-l-primary" : undefined
-          }
+          tableStyle={oneRowTint(activeFileId)}
           rowWrapper={rowWrapper}
           toolbar={{ searchPlaceholder: "Filter this list" }}
           columnState={{

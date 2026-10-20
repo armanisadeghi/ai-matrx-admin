@@ -13,6 +13,7 @@ import {
 } from "@ai-matrx/design-system/data-table";
 import type { InjuryDraft } from "../../state/types";
 import type { WcImpairmentDefinitionRead } from "../../api/types";
+import { rowTintsWhere } from "@/components/official/table-row-tints";
 
 const SIDE_LABELS: Record<string, string> = {
   left: "Left",
@@ -332,7 +333,7 @@ export function InjuriesTable({
           </div>
         ),
       }}
-      rowClassName={(row) => (!row.definition ? "bg-muted/15" : undefined)}
+      tableStyle={rowTintsWhere(rows, (row) => row.injury.tmpId, (row) => !row.definition && "gray")}
       emptyState={{ title: "No injuries yet" }}
     />
   );

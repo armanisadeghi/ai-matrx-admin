@@ -101,6 +101,7 @@ import {
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { openFromNotice } from "@/lib/notice-open/openFromNotice";
+import { oneRowTint } from "@/components/official/table-row-tints";
 type BusyAction =
   | "connect-files"
   | "enable-gmail"
@@ -806,9 +807,7 @@ export function GoogleWorkspaceReviewWorkspace({
               detail={{ enabled: false }}
               copy={ACCOUNT_COPY}
               searchText={(connection) => connectionName(connection)}
-              rowClassName={(connection) =>
-                connection.id === effectiveConnectionId ? "bg-primary/5" : undefined
-              }
+              tableStyle={oneRowTint(effectiveConnectionId)}
               emptyState={{ title: "No Google accounts connected" }}
             />
           )}

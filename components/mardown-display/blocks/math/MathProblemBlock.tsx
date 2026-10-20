@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { BookOpen, Database, Printer } from "lucide-react";
+import { Printer } from "lucide-react";
 import MathProblem from "@/features/math/components/MathProblem";
 import { MathProblemProps } from "@/features/math/types";
 import { normalizeMathProblemLatex } from "@/features/math/utils/latex-normalizer";
 import { downloadMathProblem, uploadMathProblem } from "@/features/math/utils/math-problem-persistence";
 import ContentBlockWrapper from "@ai-matrx/rich-content/display/blocks/common/ContentBlockWrapper";
 import { mathPrinter } from "./math-printer";
-import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { PrintOptionsDialog, usePrintOptions } from "@ai-matrx/print/react";
 import {
     BlockControlsButton,
@@ -22,6 +21,13 @@ interface MathProblemBlockProps {
     artifactId?: string;
     /** Block Controls for the problem (null/absent = this surface cannot save: no controls). */
     controls?: BlockControlsHandle | null;
+}
+
+/** "Topic • Module" from the parts that are there — never "undefined • undefined" (review 2 N2). */
+export function mathSubtitle(problem: Pick<MathProblemProps, "topic_name" | "module_name">): string {
+    return [problem.topic_name, problem.module_name]
+        .filter((part): part is string => typeof part === "string" && part.trim() !== "" && part !== "undefined")
+        .join(" • ");
 }
 
 const MathProblemBlock: React.FC<MathProblemBlockProps> = ({ problemData: initialProblemData, artifactId, controls = null }) => {
@@ -58,29 +64,21 @@ const MathProblemBlock: React.FC<MathProblemBlockProps> = ({ problemData: initia
     // Print integration
     const { open: printOpen, setOpen: setPrintOpen, triggerPrint } = usePrintOptions(mathPrinter, problemData);
 
-    // Custom actions: Print + database (future feature)
+    // Custom actions: Print. (The save-to-database stub is gone: a screen is honest
+    // or absent — the promise stays tracked in lib/coming-soon until it is built.)
     const customActions = [
         {
             icon: Printer,
             tooltip: "Print math problem",
             onClick: triggerPrint,
-            className: "bg-slate-500 dark:bg-slate-600 text-white hover:bg-slate-600 dark:hover:bg-slate-700"
         },
-        {
-            icon: Database,
-            tooltip: "Save to database (coming soon)",
-            onClick: () => {
-                void announceComingSoon("content-blocks.math-save-to-database");
-            },
-            className: "bg-indigo-500 dark:bg-indigo-600 text-white hover:bg-indigo-600 dark:hover:bg-indigo-700"
-        }
     ];
 
     return (
         <>
         <ContentBlockWrapper
             title={problem.title}
-            subtitle={`${problem.topic_name} • ${problem.module_name}`}
+            subtitle={mathSubtitle(problem)}
             enableCanvas={true}
             canvasType="math_problem"
             canvasData={problemData}
@@ -93,7 +91,6 @@ const MathProblemBlock: React.FC<MathProblemBlockProps> = ({ problemData: initia
             customActions={customActions}
             allowFullscreen={true}
             headerContent={<BlockControlsButton controls={controls} title="Math problem controls" />}
-            className="my-4"
             contentClassName="max-w-4xl mx-auto"
         >
             <MathProblem {...problem} />

@@ -37,6 +37,7 @@ import type { AiModelAliasRow, AiModelRow } from "../../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readOf } from "@ai-matrx/design-system";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { oneRowTint } from "@/components/official/table-row-tints";
 
 const ALIAS_KINDS = ["alias", "deprecated", "latest"] as const;
 type AliasKind = (typeof ALIAS_KINDS)[number];
@@ -398,11 +399,7 @@ export default function AliasesContainer() {
           }
           onRowOpen={startEdit}
           detail={{ enabled: false }}
-          rowClassName={(item) =>
-            item.id === editingId
-              ? "bg-primary/10 hover:bg-primary/15"
-              : undefined
-          }
+          tableStyle={oneRowTint(editingId)}
           read={readOf({ loading, error: loadError }, { what: "model aliases", onRetry: () => void load() })}
           emptyState={{ title: "No aliases yet" }}
           toolbar={{

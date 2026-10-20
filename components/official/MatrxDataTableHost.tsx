@@ -174,6 +174,9 @@ const ports: TableHost = {
   // Lane 7 W5 — every table that names its rows' registry token (`rowToken`) gets that token's
   // custom-field columns, for the organizations its rows belong to.
   useCustomFieldColumns: useHostTableCustomFieldColumns,
+  // THE MAC LOOK IS EVERY TABLE'S DEFAULT (Arman, 2026-10-19: "make a full switch"). A table's own
+  // `look="default"` is the way out; LiteTable and RecordList already draw only the Mac look.
+  defaultLook: "mac",
 };
 
 // THE FIRST TABLE ASKS FOR THE DENSITY KNOB. The host wraps every page, so resolving its density
