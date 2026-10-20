@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-20T02:27:27.040Z",
+  "generated_at": "2026-10-20T06:12:41.310Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -9685,6 +9685,12 @@
       "filename": "tablechrome_a_view_says_where_its_footer_sits.sql",
       "checksum": "e3d4e866a8f245d1b0ee23f0956d683a5476d41fc9fa04c7ddb6b515476dcefb",
       "applied_at": "2026-09-26 02:36:07.405543+00"
+    },
+    "migrations/campaign/tablecreatespeed2_a_a_table_its_home_and_its_columns_in_one_door.sql": {
+      "source": "matrx-frontend",
+      "filename": "tablecreatespeed2_a_a_table_its_home_and_its_columns_in_one_door.sql",
+      "checksum": "a090ea592b77f4fd6dd71b4dbe21a5180aa39c1d13459ae433f068eb4e5802a4",
+      "applied_at": "2026-10-20 06:12:39.403057+00"
     },
     "migrations/campaign/tablecreatespeed_a_levels_and_columns_in_one_call.sql": {
       "source": "matrx-frontend",
