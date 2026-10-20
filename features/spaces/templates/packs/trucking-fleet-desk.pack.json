@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0571",
-  "version": 5,
+  "version": 6,
   "title": "Trucking Fleet Desk",
   "description": "Small carrier desk: loads and rate per mile, drivers' hours, maintenance, driver files.",
   "forWho": "Small trucking companies and owner-operator fleets",
@@ -2906,7 +2906,7 @@
         "Terminal Road"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -3196,14 +3196,51 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "rate",
+                  "miles",
+                  "deadhead",
+                  "rpm",
+                  "all_rpm",
+                  "detention",
+                  "pod",
+                  "billing",
+                  "per_mile",
+                  "btn_dispatch",
+                  "btn_transit",
+                  "btn_delivered",
+                  "btn_problem",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "loa-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "deliver_by"
+                "dateField": "deliver_by",
+                "hiddenFields": [
+                  "status",
+                  "rate",
+                  "miles",
+                  "deadhead",
+                  "rpm",
+                  "all_rpm",
+                  "detention",
+                  "pod",
+                  "billing",
+                  "per_mile",
+                  "btn_dispatch",
+                  "btn_transit",
+                  "btn_delivered",
+                  "btn_problem",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "loa-t",
@@ -3348,7 +3385,15 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "miles_at",
+                  "mechanic",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "mai-t",
@@ -3449,14 +3494,23 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "doc-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "expires_on"
+                "dateField": "expires_on",
+                "hiddenFields": [
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "doc-t",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0261",
-  "version": 8,
+  "version": 9,
   "title": "Teacher Lesson Planner",
   "description": "Teachers: weekly lesson plans linked to standards and resources, with reflections.",
   "forWho": "Teachers planning weekly lessons",
@@ -1463,7 +1463,7 @@
         "Orchard Finch Road"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1522,7 +1522,18 @@
                 "name": "Week",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "on"
+                "dateField": "on",
+                "hiddenFields": [
+                  "minutes",
+                  "status",
+                  "prep_flag",
+                  "reflection",
+                  "reflection_notes",
+                  "homework",
+                  "taught_btn",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "id": "v-a",
@@ -1673,7 +1684,17 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "minutes",
+                  "prep_flag",
+                  "reflection",
+                  "reflection_notes",
+                  "homework",
+                  "taught_btn",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "id": "v-t",
@@ -1682,7 +1703,18 @@
                 "icon": "LayoutGrid",
                 "filters": {
                   "status": "Taught"
-                }
+                },
+                "hiddenFields": [
+                  "minutes",
+                  "status",
+                  "prep_flag",
+                  "reflection",
+                  "reflection_notes",
+                  "homework",
+                  "taught_btn",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "id": "view-u15",

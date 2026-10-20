@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0567",
-  "version": 5,
+  "version": 6,
   "title": "Publishing House Title Desk",
   "description": "Publisher: manuscripts, titles by editorial stage, rights, print runs and royalties.",
   "forWho": "Independent book publishers and small presses",
@@ -3796,7 +3796,7 @@
         "Bookbinder Alley"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -3935,7 +3935,19 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "titles_count",
+                  "advances",
+                  "royalties_due",
+                  "royalties_paid",
+                  "btn_claim",
+                  "add_title",
+                  "add_statement",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "aut-t",
@@ -4023,7 +4035,31 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "pub_date"
+                "dateField": "pub_date",
+                "hiddenFields": [
+                  "pages",
+                  "advance",
+                  "list_price",
+                  "royalty_rate",
+                  "units_sold",
+                  "earned",
+                  "unearned",
+                  "copies_printed",
+                  "rights_income",
+                  "rights_open",
+                  "editor",
+                  "steps_open",
+                  "steps_late",
+                  "health",
+                  "btn_copyedit",
+                  "btn_design",
+                  "btn_proofs",
+                  "btn_printer",
+                  "btn_claim",
+                  "add_step",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "tit-t",
@@ -4145,14 +4181,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_start",
+                  "btn_done",
+                  "btn_blocked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ste-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "owner",
+                  "btn_start",
+                  "btn_done",
+                  "btn_blocked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ste-t",
@@ -4265,14 +4318,29 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_ready",
+                  "btn_paid",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "sta-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "pay_by"
+                "dateField": "pay_by",
+                "hiddenFields": [
+                  "preparer",
+                  "btn_ready",
+                  "btn_paid",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "sta-t",
@@ -4397,7 +4465,16 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "respond_by"
+                "dateField": "respond_by",
+                "hiddenFields": [
+                  "words",
+                  "reader",
+                  "btn_meeting",
+                  "btn_pass",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ms-t",
@@ -4656,7 +4733,11 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "fee",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "rg-t"

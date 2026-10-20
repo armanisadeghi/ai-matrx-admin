@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0109",
-  "version": 11,
+  "version": 12,
   "title": "Incident Postmortems",
   "description": "Engineering and ops teams: log incidents, write blameless postmortems, track the fixes.",
   "forWho": "Engineering and operations teams",
@@ -1502,7 +1502,7 @@
         "Cobalt Ridge Drive"
       ]
     },
-    "version": 11
+    "version": 12
   },
   "pages": [
     {
@@ -1729,7 +1729,12 @@
                 "name": "By status",
                 "icon": "SquareKanban",
                 "groupField": "status",
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "take_btn",
+                  "assigned_to",
+                  "created"
+                ]
               },
               {
                 "layout": "grid",
@@ -1748,7 +1753,13 @@
                 "name": "Due",
                 "icon": "Calendar",
                 "dateField": "due_on",
-                "id": "view-2"
+                "id": "view-2",
+                "hiddenFields": [
+                  "done_btn",
+                  "take_btn",
+                  "assigned_to",
+                  "created"
+                ]
               },
               {
                 "id": "view-action-week",

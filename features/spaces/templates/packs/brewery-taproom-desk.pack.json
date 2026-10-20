@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0469",
-  "version": 8,
+  "version": 9,
   "title": "Brewery Taproom Desk",
   "description": "For brewers and taproom managers: batches, tanks, kegs, tap list, distributor orders.",
   "forWho": "Craft breweries, cideries and taproom operators",
@@ -2617,7 +2617,7 @@
         "Foundry Row"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2909,14 +2909,23 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "size"
+                "groupField": "size",
+                "hiddenFields": [
+                  "order",
+                  "added_at"
+                ]
               },
               {
                 "id": "keg-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "filled_on"
+                "dateField": "filled_on",
+                "hiddenFields": [
+                  "batch",
+                  "order",
+                  "added_at"
+                ]
               },
               {
                 "id": "keg-t",
@@ -2965,14 +2974,21 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "added_at"
+                ]
               },
               {
                 "id": "tap-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "next_clean"
+                "dateField": "next_clean",
+                "hiddenFields": [
+                  "btn_back_to_pouring",
+                  "added_at"
+                ]
               },
               {
                 "id": "tap-t",
@@ -3203,7 +3219,8 @@
                 "hiddenFields": [
                   "expected",
                   "actual",
-                  "btn_close_out"
+                  "btn_close_out",
+                  "added_at"
                 ]
               },
               {
@@ -3215,7 +3232,8 @@
                 "hiddenFields": [
                   "expected",
                   "actual",
-                  "btn_close_out"
+                  "btn_close_out",
+                  "added_at"
                 ]
               },
               {
@@ -3320,7 +3338,8 @@
                 "groupField": "status",
                 "hiddenFields": [
                   "size",
-                  "temp"
+                  "temp",
+                  "added_at"
                 ]
               },
               {
@@ -3790,7 +3809,8 @@
                 "groupField": "status",
                 "hiddenFields": [
                   "size",
-                  "temp"
+                  "temp",
+                  "added_at"
                 ]
               }
             ],

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0263",
-  "version": 8,
+  "version": 9,
   "title": "Team Offsite Planner",
   "description": "Team leads: plan a retreat with agenda, venues, attendees and budget.",
   "forWho": "People teams and team leads planning retreats",
@@ -1739,7 +1739,7 @@
         "Cormorant Steps"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1974,21 +1974,34 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "done_btn",
+                  "created"
+                ]
               },
               {
                 "id": "v-tc",
                 "name": "By category",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "done_btn",
+                  "created"
+                ]
               },
               {
                 "id": "v-tt",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "budget_item",
+                  "done_btn",
+                  "created"
+                ]
               },
               {
                 "id": "view-u19",
@@ -2087,7 +2100,11 @@
                 "name": "By RSVP",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "rsvp"
+                "groupField": "rsvp",
+                "hiddenFields": [
+                  "yes_btn",
+                  "invited"
+                ]
               },
               {
                 "id": "v-ra",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0314",
-  "version": 9,
+  "version": 10,
   "title": "Event Planner",
   "description": "Event organisers: guests and RSVPs, vendors, tasks, budget and run of show.",
   "forWho": "Small organisers and event planners",
@@ -2401,7 +2401,7 @@
         "Starling Passage"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2493,14 +2493,49 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "planner",
+                  "guest_count",
+                  "confirmed",
+                  "reply_pct",
+                  "t_total",
+                  "t_done",
+                  "t_pct",
+                  "v_booked",
+                  "spent",
+                  "left",
+                  "used_pct",
+                  "est_total",
+                  "add_task_btn",
+                  "add_guest_btn",
+                  "updated_at"
+                ]
               },
               {
                 "id": "view-cal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "event_on"
+                "dateField": "event_on",
+                "hiddenFields": [
+                  "budget",
+                  "planner",
+                  "guest_count",
+                  "confirmed",
+                  "reply_pct",
+                  "t_total",
+                  "t_done",
+                  "t_pct",
+                  "v_booked",
+                  "spent",
+                  "left",
+                  "used_pct",
+                  "est_total",
+                  "add_task_btn",
+                  "add_guest_btn",
+                  "updated_at"
+                ]
               },
               {
                 "id": "view-tbl",
@@ -2563,7 +2598,8 @@
                 "hiddenFields": [
                   "party",
                   "email_btn",
-                  "yes_btn"
+                  "yes_btn",
+                  "added_at"
                 ]
               },
               {

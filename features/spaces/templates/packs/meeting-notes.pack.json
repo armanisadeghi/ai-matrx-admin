@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0003",
-  "version": 10,
+  "version": 11,
   "title": "Meeting Notes",
   "description": "Teams that meet weekly: notes, decisions and action items for every meeting.",
   "forWho": "Teams that meet every week and want nothing to slip",
@@ -1380,7 +1380,7 @@
         "Larkspur Bend"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -1574,7 +1574,8 @@
                   "action_count",
                   "open_actions",
                   "edited",
-                  "add_action_item_btn"
+                  "add_action_item_btn",
+                  "created"
                 ]
               }
             ],
@@ -2064,7 +2065,12 @@
                 "name": "Board",
                 "layout": "kanban",
                 "groupField": "status",
-                "icon": "SquareKanban"
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "take_btn",
+                  "assigned_to",
+                  "created"
+                ]
               },
               {
                 "id": "view-table",
@@ -2083,7 +2089,13 @@
                 "name": "By due day",
                 "layout": "calendar",
                 "dateField": "due_on",
-                "icon": "Calendar"
+                "icon": "Calendar",
+                "hiddenFields": [
+                  "done_btn",
+                  "take_btn",
+                  "assigned_to",
+                  "created"
+                ]
               }
             ],
             "activeViewId": "view-board"

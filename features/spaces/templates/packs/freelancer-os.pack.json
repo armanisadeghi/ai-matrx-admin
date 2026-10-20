@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0300",
-  "version": 9,
+  "version": 10,
   "title": "Freelancer OS",
   "description": "Solo freelancers: clients, projects, tasks, time and invoices from one home page.",
   "forWho": "Solo freelancers and independent consultants",
@@ -2945,7 +2945,7 @@
         "Alderwick Lane"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -3065,7 +3065,8 @@
                 "dateField": "due_on",
                 "hiddenFields": [
                   "estimate",
-                  "done_btn"
+                  "done_btn",
+                  "created_at"
                 ]
               },
               {
@@ -3076,7 +3077,8 @@
                 "groupField": "status",
                 "hiddenFields": [
                   "estimate",
-                  "done_btn"
+                  "done_btn",
+                  "created_at"
                 ]
               },
               {
@@ -3239,7 +3241,20 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "source",
+                  "total_billed",
+                  "paid_total",
+                  "owed",
+                  "invoice_count",
+                  "project_count",
+                  "email_btn",
+                  "add_project_btn",
+                  "add_invoice_btn",
+                  "open_website",
+                  "added_at"
+                ]
               },
               {
                 "id": "view-tbl",
@@ -3280,7 +3295,13 @@
                 "name": "By stage",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "email_btn",
+                  "won_btn",
+                  "lost_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "view-tbl",

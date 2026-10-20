@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0306",
-  "version": 9,
+  "version": 10,
   "title": "Agency OS",
   "description": "Small agencies: clients, retainers, projects, capacity and proposals in one place.",
   "forWho": "Small design, marketing and dev agencies",
@@ -2734,7 +2734,7 @@
         "Ketterick Wharf"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2884,7 +2884,8 @@
                 "hiddenFields": [
                   "estimate",
                   "done_btn",
-                  "take_btn"
+                  "take_btn",
+                  "created_at"
                 ]
               },
               {
@@ -2897,7 +2898,8 @@
                   "estimate",
                   "done_btn",
                   "take_btn",
-                  "assigned_to"
+                  "assigned_to",
+                  "created_at"
                 ]
               },
               {
@@ -3104,7 +3106,11 @@
                 "name": "By stage",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "lost_btn",
+                  "created_at"
+                ]
               },
               {
                 "id": "view-tbl",

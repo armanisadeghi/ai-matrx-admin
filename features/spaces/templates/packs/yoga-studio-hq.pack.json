@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0510",
-  "version": 7,
+  "version": 8,
   "title": "Yoga Studio HQ",
   "description": "For yoga studios: class schedule, memberships and class packs, teacher pay, students.",
   "forWho": "Yoga and pilates studios",
@@ -2564,7 +2564,7 @@
         "Alder Walk"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2707,7 +2707,8 @@
                 "hiddenFields": [
                   "minutes",
                   "valid_days",
-                  "holders"
+                  "holders",
+                  "added_at"
                 ]
               },
               {
@@ -2817,14 +2818,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "visit_type",
+                  "minutes",
+                  "price",
+                  "mine",
+                  "done_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "boo-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "when_on"
+                "dateField": "when_on",
+                "hiddenFields": [
+                  "staff",
+                  "visit_type",
+                  "minutes",
+                  "price",
+                  "mine",
+                  "done_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "boo-t",
@@ -2934,7 +2952,10 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-t",
@@ -3035,7 +3056,14 @@
                 "name": "By day",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "weekday"
+                "groupField": "weekday",
+                "hiddenFields": [
+                  "capacity",
+                  "room",
+                  "pay_per_class",
+                  "booked_n",
+                  "added_at"
+                ]
               },
               {
                 "id": "cs-t",

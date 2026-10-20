@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0468",
-  "version": 7,
+  "version": 8,
   "title": "Food Truck Operations",
   "description": "For food truck owners: stops, sales, menu food cost, permits, commissary prep, bookings.",
   "forWho": "Food trucks, mobile kitchens and pop-up vendors",
@@ -2424,7 +2424,7 @@
         "Depot Street"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2576,14 +2576,49 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "orders",
+                  "avg_ticket",
+                  "food_cost",
+                  "food_pct",
+                  "weather",
+                  "sold_out",
+                  "spot_fee",
+                  "net",
+                  "hours",
+                  "prep_total",
+                  "prep_loaded",
+                  "lead",
+                  "btn_close_out_the_day",
+                  "add_prep_item",
+                  "added_at"
+                ]
               },
               {
                 "id": "sto-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "stop_on"
+                "dateField": "stop_on",
+                "hiddenFields": [
+                  "sales",
+                  "orders",
+                  "avg_ticket",
+                  "food_cost",
+                  "food_pct",
+                  "weather",
+                  "sold_out",
+                  "spot_fee",
+                  "net",
+                  "hours",
+                  "prep_total",
+                  "prep_loaded",
+                  "lead",
+                  "btn_close_out_the_day",
+                  "add_prep_item",
+                  "added_at"
+                ]
               },
               {
                 "id": "sto-t",
@@ -2706,14 +2741,23 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_renewed",
+                  "added_at"
+                ]
               },
               {
                 "id": "per-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "expires_on"
+                "dateField": "expires_on",
+                "hiddenFields": [
+                  "office",
+                  "btn_renewed",
+                  "added_at"
+                ]
               },
               {
                 "id": "per-t",
@@ -2817,7 +2861,8 @@
                 "groupField": "status",
                 "hiddenFields": [
                   "portions",
-                  "btn_load_it"
+                  "btn_load_it",
+                  "added_at"
                 ]
               },
               {
@@ -2828,7 +2873,8 @@
                 "dateField": "prep_on",
                 "hiddenFields": [
                   "portions",
-                  "btn_load_it"
+                  "btn_load_it",
+                  "added_at"
                 ]
               },
               {
@@ -3058,7 +3104,8 @@
                 "groupField": "status",
                 "hiddenFields": [
                   "food_pct",
-                  "per_stop"
+                  "per_stop",
+                  "added_at"
                 ]
               },
               {

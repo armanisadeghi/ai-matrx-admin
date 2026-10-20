@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0557",
-  "version": 5,
+  "version": 6,
   "title": "Tutoring Center Desk",
   "description": "Tutoring center desk: students, sessions, hour packages used, assessments and progress.",
   "forWho": "Tutoring centers and independent tutor groups",
@@ -2684,7 +2684,7 @@
         "Quarry Street"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2823,14 +2823,53 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "missed_or_cancelled",
+                  "guardian",
+                  "email",
+                  "phone",
+                  "tutor",
+                  "hours_bought",
+                  "hours_used",
+                  "hours_left",
+                  "missed",
+                  "btn_active",
+                  "btn_claim",
+                  "add_session",
+                  "add_package",
+                  "add_note",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "stu-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "next_review"
+                "dateField": "next_review",
+                "hiddenFields": [
+                  "school",
+                  "missed_or_cancelled",
+                  "guardian",
+                  "email",
+                  "phone",
+                  "tutor",
+                  "hours_bought",
+                  "hours_used",
+                  "hours_left",
+                  "missed",
+                  "btn_active",
+                  "btn_claim",
+                  "add_session",
+                  "add_package",
+                  "add_note",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "stu-t",
@@ -2943,14 +2982,33 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "hours",
+                  "charged",
+                  "btn_done",
+                  "btn_missed",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ses-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "session_at"
+                "dateField": "session_at",
+                "hiddenFields": [
+                  "status",
+                  "hours",
+                  "charged",
+                  "btn_done",
+                  "btn_missed",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ses-t",
@@ -3190,7 +3248,10 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "level"
+                "groupField": "level",
+                "hiddenFields": [
+                  "added_at"
+                ]
               },
               {
                 "id": "not-t",
@@ -3253,7 +3314,8 @@
                   "score",
                   "goal_score",
                   "to_goal",
-                  "btn_claim"
+                  "btn_claim",
+                  "added_at"
                 ]
               },
               {

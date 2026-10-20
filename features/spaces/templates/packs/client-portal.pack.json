@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0155",
-  "version": 8,
+  "version": 9,
   "title": "Agency Client Portal",
   "description": "Agencies: a private home page per client with projects, deliverables and invoices.",
   "forWho": "Agencies sharing work with several clients",
@@ -1479,7 +1479,7 @@
         "Moss Lantern Way"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1665,7 +1665,10 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "state"
+                "groupField": "state",
+                "hiddenFields": [
+                  "created"
+                ]
               },
               {
                 "id": "view-all-deliverables",
@@ -1776,7 +1779,10 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "created"
+                ]
               },
               {
                 "id": "view-invoice-week",
@@ -2039,7 +2045,10 @@
                 "id": "view-previews",
                 "name": "Previews",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "created"
+                ]
               },
               {
                 "id": "view-all",

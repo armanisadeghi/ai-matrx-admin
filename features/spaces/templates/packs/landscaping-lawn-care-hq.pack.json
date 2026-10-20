@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0502",
-  "version": 7,
+  "version": 8,
   "title": "Landscaping and Lawn Care HQ",
   "description": "For lawn care and landscaping companies: weekly routes, projects, crews and billing.",
   "forWho": "Landscaping and lawn care companies",
@@ -2758,7 +2758,7 @@
         "Orchard Gate"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2897,7 +2897,20 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "customer_status"
+                "groupField": "customer_status",
+                "hiddenFields": [
+                  "lawn_sqft",
+                  "gate_notes",
+                  "zones",
+                  "job_count",
+                  "open_jobs",
+                  "weekly_value",
+                  "billed",
+                  "awaiting",
+                  "value_tier",
+                  "add_job_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cus-t",
@@ -2946,14 +2959,45 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "crew_size",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "scheduled_on"
+                "dateField": "scheduled_on",
+                "hiddenFields": [
+                  "tech",
+                  "crew_size",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-t",
@@ -3124,7 +3168,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "inv-t",
@@ -3228,7 +3276,11 @@
                 "name": "Routes by day",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "route_day"
+                "groupField": "route_day",
+                "hiddenFields": [
+                  "status",
+                  "added_at"
+                ]
               },
               {
                 "id": "sv-t",

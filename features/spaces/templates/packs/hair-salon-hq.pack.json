@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0512",
-  "version": 7,
+  "version": 8,
   "title": "Hair Salon HQ",
   "description": "For hair salons: appointments, stylist commission, color formulas, rebooking, retail.",
   "forWho": "Hair salons and stylist teams",
@@ -2552,7 +2552,7 @@
         "Ladybird Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2694,7 +2694,8 @@
                 "groupField": "category",
                 "hiddenFields": [
                   "minutes",
-                  "times_done"
+                  "times_done",
+                  "added_at"
                 ]
               },
               {
@@ -2744,7 +2745,20 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "client_status"
+                "groupField": "client_status",
+                "hiddenFields": [
+                  "hair_notes",
+                  "phone",
+                  "email",
+                  "area",
+                  "visits",
+                  "spent",
+                  "no_shows",
+                  "paid_total",
+                  "deposit_flag",
+                  "add_booking_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-t",
@@ -2793,14 +2807,37 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "minutes",
+                  "price",
+                  "tip",
+                  "retail",
+                  "commission",
+                  "rebooked",
+                  "mine",
+                  "done_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "boo-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "when_on"
+                "dateField": "when_on",
+                "hiddenFields": [
+                  "visit_type",
+                  "minutes",
+                  "price",
+                  "tip",
+                  "retail",
+                  "commission",
+                  "rebooked",
+                  "mine",
+                  "done_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "boo-t",
@@ -2910,7 +2947,10 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-t",
@@ -3011,7 +3051,14 @@
                 "name": "By category",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_at",
+                  "markup",
+                  "reorder_flag",
+                  "added_at"
+                ]
               },
               {
                 "id": "pr-t",

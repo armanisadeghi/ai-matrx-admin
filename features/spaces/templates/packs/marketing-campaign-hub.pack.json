@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0152",
-  "version": 7,
+  "version": 8,
   "title": "Marketing Campaign Hub",
   "description": "Campaign managers: track each campaign's content, budget and results in one place.",
   "forWho": "Marketing leads and campaign managers",
@@ -1568,7 +1568,7 @@
         "Gullwing Quay"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1670,14 +1670,37 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "spend",
+                  "remaining",
+                  "used_pct",
+                  "spend_month",
+                  "piece_total",
+                  "pieces_live",
+                  "live_pct",
+                  "kpi_count",
+                  "created"
+                ]
               },
               {
                 "id": "view-timeline",
                 "name": "Timeline",
                 "layout": "timeline",
                 "icon": "ChartGantt",
-                "dateField": "starts_on"
+                "dateField": "starts_on",
+                "hiddenFields": [
+                  "budget",
+                  "spend",
+                  "remaining",
+                  "used_pct",
+                  "spend_month",
+                  "piece_total",
+                  "pieces_live",
+                  "live_pct",
+                  "kpi_count",
+                  "created"
+                ]
               },
               {
                 "id": "view-budgets",
@@ -1903,14 +1926,23 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "publish_on"
+                "dateField": "publish_on",
+                "hiddenFields": [
+                  "cost",
+                  "live_btn",
+                  "created"
+                ]
               },
               {
                 "id": "view-board",
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "live_btn",
+                  "created"
+                ]
               },
               {
                 "id": "view-all-content",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0515",
-  "version": 7,
+  "version": 8,
   "title": "Massage Therapy Practice HQ",
   "description": "For massage therapists: intake, session notes, memberships, rooms and reminders.",
   "forWho": "Massage therapists and small bodywork practices",
@@ -2323,7 +2323,7 @@
         "Wicker Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2466,7 +2466,8 @@
                 "hiddenFields": [
                   "minutes",
                   "times_done",
-                  "members_n"
+                  "members_n",
+                  "added_at"
                 ]
               },
               {
@@ -2516,7 +2517,20 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "client_status"
+                "groupField": "client_status",
+                "hiddenFields": [
+                  "avoid",
+                  "banked",
+                  "phone",
+                  "email",
+                  "area",
+                  "visits",
+                  "no_shows",
+                  "paid_total",
+                  "reminder",
+                  "add_booking_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-t",
@@ -2565,14 +2579,37 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "focus",
+                  "soap",
+                  "visit_type",
+                  "minutes",
+                  "price",
+                  "tip",
+                  "mine",
+                  "done_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "boo-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "when_on"
+                "dateField": "when_on",
+                "hiddenFields": [
+                  "room",
+                  "focus",
+                  "soap",
+                  "visit_type",
+                  "minutes",
+                  "price",
+                  "tip",
+                  "mine",
+                  "done_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "boo-t",
@@ -2682,7 +2719,10 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-t",

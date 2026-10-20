@@ -4,7 +4,7 @@
   "formerSlugs": [
     "spaces-sp0159"
   ],
-  "version": 6,
+  "version": 7,
   "title": "Account Management",
   "description": "Customer success teams: keep health, renewals and contacts for existing customers.",
   "forWho": "Customer success and account managers",
@@ -1334,7 +1334,7 @@
         "Marlin Terrace"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1428,14 +1428,29 @@
                 "name": "Health",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "health"
+                "groupField": "health",
+                "hiddenFields": [
+                  "arr",
+                  "last_touch",
+                  "days_since_touch",
+                  "open_site",
+                  "created"
+                ]
               },
               {
                 "id": "view-renewals",
                 "name": "Renewals",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "renewal_on"
+                "dateField": "renewal_on",
+                "hiddenFields": [
+                  "site",
+                  "arr",
+                  "last_touch",
+                  "days_since_touch",
+                  "open_site",
+                  "created"
+                ]
               },
               {
                 "id": "view-renewing-soon",

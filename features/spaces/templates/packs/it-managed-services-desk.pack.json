@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0460",
-  "version": 8,
+  "version": 9,
   "title": "IT Managed Services Desk",
   "description": "For MSP owners and techs: clients, devices, patching, tickets on SLA and agreements.",
   "forWho": "Managed IT service providers and IT consultancies",
@@ -2520,7 +2520,7 @@
         "Bellamy Street"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2825,14 +2825,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "kind"
+                "groupField": "kind",
+                "hiddenFields": [
+                  "backup",
+                  "endpoint_protection",
+                  "user",
+                  "client",
+                  "btn_retire_device",
+                  "added_at"
+                ]
               },
               {
                 "id": "ass-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "warranty_ends"
+                "dateField": "warranty_ends",
+                "hiddenFields": [
+                  "patch_status",
+                  "backup",
+                  "endpoint_protection",
+                  "user",
+                  "client",
+                  "btn_retire_device",
+                  "added_at"
+                ]
               },
               {
                 "id": "ass-t",
@@ -2945,14 +2962,37 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "hours",
+                  "billing",
+                  "client",
+                  "asset",
+                  "tech",
+                  "owner_me",
+                  "btn_fix_confirmed",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "tic-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "response_met",
+                  "hours",
+                  "billing",
+                  "client",
+                  "asset",
+                  "tech",
+                  "owner_me",
+                  "btn_fix_confirmed",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "tic-t",

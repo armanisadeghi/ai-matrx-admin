@@ -570,6 +570,9 @@ function checkTokens(blocks: PackBlock[], path: string, w: TokenWorld, say: (at:
             field(v.chart.field, "chart.field");
           }
           checkFilterWords(v, vat, src.table, fields, typeOf, choicesOf, say);
+          for (const key of cardStampFields(table.fields, v)) {
+            say(`${vat}.hiddenFields`, `"${key}" is a created/edited stamp and would end every ${String(v.layout)} card as a date with no label. Add "${key}" to hiddenFields (the Properties menu can still show it).`);
+          }
           if ((v.layout === "kanban" || v.layout === "board") && !str(v.groupField)) say(`${vat}.groupField`, "A board groups by a choice field: name it in groupField.");
           if ((v.layout === "calendar" || v.layout === "timeline") && !str(v.dateField)) say(`${vat}.dateField`, `A ${String(v.layout)} view places rows by a date field: name it in dateField.`);
         });
@@ -578,6 +581,29 @@ function checkTokens(blocks: PackBlock[], path: string, w: TokenWorld, say: (at:
     }
     if (Array.isArray(b.children)) checkTokens(b.children, `${at}.children`, w, say);
   });
+}
+
+const CARD_LAYOUTS = ["kanban", "gallery", "calendar", "timeline"];
+const STAMP_KINDS = ["created_time", "modified_time"];
+const DATE_ONLY_KINDS = ["date", "datetime"];
+
+/**
+ * The created/edited stamp fields a card view would show. A card draws values with no property name, so a stamp
+ * ("Oct 19, 2026, 5:30 PM") ends every card unexplained (ADVERSARIAL-5 F9). Mirrors features/spaces/data/view-spec.ts
+ * effectiveHidden: a saved hiddenFields list wins; else only the first four non-date properties show.
+ */
+export function cardStampFields(fields: ReadonlyArray<{ key: string; parityType?: unknown }>, view: Record<string, unknown>): string[] {
+  if (typeof view.layout !== "string" || !CARD_LAYOUTS.includes(view.layout)) return [];
+  const group = view.groupField;
+  const date = view.dateField;
+  const rest = fields.slice(1).filter((f) => f.key !== group);
+  let shown: typeof rest;
+  if (Array.isArray(view.hiddenFields)) shown = rest.filter((f) => !(view.hiddenFields as unknown[]).includes(f.key));
+  else {
+    const pool = rest.filter((f) => f.key !== date && !DATE_ONLY_KINDS.includes(String(f.parityType)));
+    shown = [...pool.slice(0, 4), ...rest.filter((f) => f.key !== date && DATE_ONLY_KINDS.includes(String(f.parityType)))];
+  }
+  return shown.filter((f) => STAMP_KINDS.includes(String(f.parityType))).map((f) => f.key);
 }
 
 const DATE_KINDS = ["datetime", "date", "created_time", "modified_time"];

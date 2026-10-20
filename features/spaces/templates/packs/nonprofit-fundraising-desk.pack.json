@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0550",
-  "version": 4,
+  "version": 5,
   "title": "Nonprofit Fundraising Desk",
   "description": "Donor CRM for nonprofits: gifts, pledges, monthly donors, campaigns and thank-you letters.",
   "forWho": "Small and mid-size nonprofits with a development team",
@@ -3371,7 +3371,7 @@
         "Larkspur Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -3510,14 +3510,53 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "phone",
+                  "comms",
+                  "steward",
+                  "gift_count",
+                  "total_given",
+                  "pledged_open",
+                  "committed",
+                  "giving_level",
+                  "open_tasks",
+                  "btn_won",
+                  "btn_lapsed",
+                  "btn_claim",
+                  "add_gift",
+                  "add_task",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "don-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "next_touch"
+                "dateField": "next_touch",
+                "hiddenFields": [
+                  "email",
+                  "phone",
+                  "comms",
+                  "steward",
+                  "gift_count",
+                  "total_given",
+                  "pledged_open",
+                  "committed",
+                  "giving_level",
+                  "open_tasks",
+                  "btn_won",
+                  "btn_lapsed",
+                  "btn_claim",
+                  "add_gift",
+                  "add_task",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "don-t",
@@ -3630,14 +3669,41 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "pledged",
+                  "committed",
+                  "open_pledges",
+                  "donor_gifts",
+                  "pct",
+                  "btn_live",
+                  "btn_close",
+                  "btn_claim",
+                  "add_gift",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cam-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "ends_on"
+                "dateField": "ends_on",
+                "hiddenFields": [
+                  "raised",
+                  "pledged",
+                  "committed",
+                  "open_pledges",
+                  "donor_gifts",
+                  "pct",
+                  "btn_live",
+                  "btn_close",
+                  "btn_claim",
+                  "add_gift",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cam-t",
@@ -3747,14 +3813,39 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "gift_type",
+                  "method",
+                  "tribute",
+                  "thanked",
+                  "ack_letter",
+                  "btn_received",
+                  "btn_thanked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "gif-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "gift_type",
+                  "status",
+                  "method",
+                  "tribute",
+                  "thanked",
+                  "ack_letter",
+                  "btn_received",
+                  "btn_thanked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "gif-t",
@@ -3855,14 +3946,23 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "tas-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "tas-t",
@@ -3963,14 +4063,33 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "paid",
+                  "balance",
+                  "btn_paid",
+                  "add_payment",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pl-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "next_due"
+                "dateField": "next_due",
+                "hiddenFields": [
+                  "status",
+                  "paid",
+                  "balance",
+                  "btn_paid",
+                  "add_payment",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pl-t",

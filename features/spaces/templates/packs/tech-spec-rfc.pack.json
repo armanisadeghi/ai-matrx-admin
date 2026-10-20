@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0108",
-  "version": 8,
+  "version": 9,
   "title": "Tech Spec & RFC Library",
   "description": "Engineering teams: write technical proposals, get them reviewed and log the decision.",
   "forWho": "Engineering teams that review designs before building",
@@ -1173,7 +1173,7 @@
         "Edgewater Quay"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1285,14 +1285,34 @@
                 "name": "By status",
                 "icon": "SquareKanban",
                 "groupField": "status",
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "risk",
+                  "related",
+                  "decision_count",
+                  "doc_link",
+                  "approve_btn",
+                  "open_doc_link",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "layout": "kanban",
                 "name": "By area",
                 "icon": "SquareKanban",
                 "groupField": "area",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "risk",
+                  "related",
+                  "decision_count",
+                  "doc_link",
+                  "approve_btn",
+                  "open_doc_link",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "layout": "grid",
@@ -1311,7 +1331,18 @@
                 "name": "Review deadlines",
                 "icon": "Calendar",
                 "dateField": "review_by",
-                "id": "view-3"
+                "id": "view-3",
+                "hiddenFields": [
+                  "days_to_review",
+                  "risk",
+                  "related",
+                  "decision_count",
+                  "doc_link",
+                  "approve_btn",
+                  "open_doc_link",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "layout": "list",

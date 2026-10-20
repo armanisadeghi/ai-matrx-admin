@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0503",
-  "version": 7,
+  "version": 8,
   "title": "Residential Cleaning Service HQ",
   "description": "For house cleaning companies: recurring cleans, teams, home details, supplies, billing.",
   "forWho": "Residential cleaning businesses",
@@ -2489,7 +2489,7 @@
         "Larkspur Avenue"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2628,7 +2628,22 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "customer_status"
+                "groupField": "customer_status",
+                "hiddenFields": [
+                  "bedrooms",
+                  "bathrooms",
+                  "entry",
+                  "pets",
+                  "instructions",
+                  "job_count",
+                  "open_jobs",
+                  "avg_rating",
+                  "billed",
+                  "awaiting",
+                  "value_tier",
+                  "add_job_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cus-t",
@@ -2677,14 +2692,47 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "rating",
+                  "reclean",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "scheduled_on"
+                "dateField": "scheduled_on",
+                "hiddenFields": [
+                  "team",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "rating",
+                  "reclean",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-t",
@@ -2855,7 +2903,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "inv-t",

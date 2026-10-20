@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0556",
-  "version": 5,
+  "version": 6,
   "title": "School Operations Office",
   "description": "School front office: enrollment, daily attendance, staff licenses, events, sub cover.",
   "forWho": "Principals and office managers at K-12 schools",
@@ -3439,7 +3439,7 @@
         "Sycamore Drive"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -3798,14 +3798,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_covered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "abs-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "absent_on"
+                "dateField": "absent_on",
+                "hiddenFields": [
+                  "plans_in",
+                  "btn_covered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "abs-t",
@@ -3906,14 +3919,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "req-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "needed_by"
+                "dateField": "needed_by",
+                "hiddenFields": [
+                  "btn_start",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "req-t",
@@ -4023,14 +4049,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "immunizations",
+                  "language",
+                  "btn_enrolled",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "en-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "start_on"
+                "dateField": "start_on",
+                "hiddenFields": [
+                  "records_in",
+                  "immunizations",
+                  "language",
+                  "btn_enrolled",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "en-t",
@@ -4158,7 +4201,8 @@
                   "excused",
                   "unexcused",
                   "tardy",
-                  "rate"
+                  "rate",
+                  "added_at"
                 ]
               }
             ],
@@ -4202,14 +4246,23 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ce-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "expires_on"
+                "dateField": "expires_on",
+                "hiddenFields": [
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ce-t",

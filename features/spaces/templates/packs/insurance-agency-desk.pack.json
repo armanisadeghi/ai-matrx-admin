@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0459",
-  "version": 6,
+  "version": 7,
   "title": "Insurance Agency Desk",
   "description": "For insurance agents: policies, carriers, renewals, claims and commission statements.",
   "forWho": "Independent insurance agencies and brokers",
@@ -2475,7 +2475,7 @@
         "Chandler Plaza"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2627,7 +2627,17 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "policy_count",
+                  "quotes_open",
+                  "premium_total",
+                  "claims_open",
+                  "owner_me",
+                  "add_policy",
+                  "btn_mail",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-t",
@@ -2685,14 +2695,47 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "billing",
+                  "premium",
+                  "commission_rate",
+                  "commission",
+                  "commission_received",
+                  "days_to_renewal",
+                  "claims_count",
+                  "client",
+                  "rep",
+                  "owner_me",
+                  "btn_start_renewal",
+                  "add_claim",
+                  "add_task",
+                  "added_at"
+                ]
               },
               {
                 "id": "pol-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "expires_on"
+                "dateField": "expires_on",
+                "hiddenFields": [
+                  "carrier",
+                  "billing",
+                  "premium",
+                  "commission_rate",
+                  "commission",
+                  "commission_received",
+                  "days_to_renewal",
+                  "claims_count",
+                  "client",
+                  "rep",
+                  "owner_me",
+                  "btn_start_renewal",
+                  "add_claim",
+                  "add_task",
+                  "added_at"
+                ]
               },
               {
                 "id": "pol-t",
@@ -2814,14 +2857,25 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "policy",
+                  "insured",
+                  "added_at"
+                ]
               },
               {
                 "id": "cla-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "reported_on"
+                "dateField": "reported_on",
+                "hiddenFields": [
+                  "adjuster",
+                  "policy",
+                  "insured",
+                  "added_at"
+                ]
               },
               {
                 "id": "cla-t",
@@ -2881,14 +2935,25 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_tick_done",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "tas-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "owner_me",
+                  "btn_tick_done",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "tas-t",
@@ -2998,7 +3063,12 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "note",
+                  "policy",
+                  "added_at"
+                ]
               },
               {
                 "id": "commis-t",

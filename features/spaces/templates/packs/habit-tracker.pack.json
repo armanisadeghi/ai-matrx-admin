@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0202",
-  "version": 4,
+  "version": 5,
   "title": "Habit Tracker",
   "description": "Anyone building routines: check habits off daily and watch streaks and monthly progress.",
   "forWho": "Anyone building routines",
@@ -1525,7 +1525,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1765,21 +1765,30 @@
                   "logged_on": {
                     "relative": "this_month"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "checked_in"
+                ]
               },
               {
                 "id": "view-8",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "logged_on"
+                "dateField": "logged_on",
+                "hiddenFields": [
+                  "checked_in"
+                ]
               },
               {
                 "id": "view-9",
                 "name": "Done or missed",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "done"
+                "groupField": "done",
+                "hiddenFields": [
+                  "checked_in"
+                ]
               },
               {
                 "id": "view-10",

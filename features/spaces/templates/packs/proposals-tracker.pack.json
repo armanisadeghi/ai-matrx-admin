@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0160",
-  "version": 8,
+  "version": 9,
   "title": "Proposals Tracker",
   "description": "Agencies and freelancers: track proposals from draft to decision, with line items.",
   "forWho": "Agencies and freelancers",
@@ -1168,7 +1168,7 @@
         "Hollis Mill Road"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1270,7 +1270,18 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "document",
+                  "reason",
+                  "itemized",
+                  "gap",
+                  "won_btn",
+                  "lost_btn",
+                  "open_document",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "id": "view-expiring-soon",
@@ -1307,7 +1318,19 @@
                 "name": "Sent calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "sent_on"
+                "dateField": "sent_on",
+                "hiddenFields": [
+                  "owner",
+                  "document",
+                  "reason",
+                  "itemized",
+                  "gap",
+                  "won_btn",
+                  "lost_btn",
+                  "open_document",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "id": "view-proposal-week",

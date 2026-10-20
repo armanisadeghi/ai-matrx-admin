@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0363",
-  "version": 8,
+  "version": 9,
   "title": "Design system board",
   "description": "Product teams: colours, type, spacing, corners and shadows as one editable board.",
   "forWho": "Product teams keeping one design system",
@@ -9,7 +9,7 @@
     "icon": "Palette"
   },
   "cover": {
-    "url": "gallery:agencies-design-studio-desk",
+    "url": "gallery:projects-drafting-tools",
     "offsetY": 50
   },
   "category": "docs",
@@ -176,6 +176,43 @@
         ],
         "rows": [
           {
+            "key": "col-09",
+            "values": {
+              "name": "primary",
+              "group": "Primary",
+              "value": "{\"light\":\"#2f5bea\",\"dark\":\"#6d8dff\"}",
+              "usage_note": "The fill of the one main action. Not a text colour: use link."
+            }
+          },
+          {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#eef3ff\",\"dark\":\"#1e2647\"}",
+              "usage_note": "Highlights: a selected row, a tip, something new."
+            }
+          },
+          {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#eef1f6\",\"dark\":\"#222836\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#2547c9\",\"dark\":\"#8aa4ff\"}",
+              "usage_note": "Coloured text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
+            }
+          },
+          {
             "key": "col-01",
             "values": {
               "name": "background",
@@ -252,15 +289,6 @@
             }
           },
           {
-            "key": "col-09",
-            "values": {
-              "name": "primary",
-              "group": "Primary",
-              "value": "{\"light\":\"#2f5bea\",\"dark\":\"#6d8dff\"}",
-              "usage_note": "The fill of the one main action. Not a text colour: use link."
-            }
-          },
-          {
             "key": "col-10",
             "values": {
               "name": "primary-foreground",
@@ -268,15 +296,6 @@
               "value": "{\"light\":\"#ffffff\",\"dark\":\"#0b1230\"}",
               "usage_note": "Label on a primary button.",
               "reads_on": "primary"
-            }
-          },
-          {
-            "key": "col-11",
-            "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#eef1f6\",\"dark\":\"#222836\"}",
-              "usage_note": "Second actions and quiet selected states."
             }
           },
           {
@@ -290,15 +309,6 @@
             }
           },
           {
-            "key": "col-13",
-            "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#eef3ff\",\"dark\":\"#1e2647\"}",
-              "usage_note": "Highlights: a selected row, a tip, something new."
-            }
-          },
-          {
             "key": "col-14",
             "values": {
               "name": "accent-foreground",
@@ -306,16 +316,6 @@
               "value": "{\"light\":\"#2342b8\",\"dark\":\"#c3d0ff\"}",
               "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
               "reads_on": "accent"
-            }
-          },
-          {
-            "key": "col-15",
-            "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#2547c9\",\"dark\":\"#8aa4ff\"}",
-              "usage_note": "Coloured text: links and active tabs. Also reads on cards.",
-              "reads_on": "background"
             }
           },
           {
@@ -1268,7 +1268,7 @@
         "Quillan Row"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [],
   "board": {

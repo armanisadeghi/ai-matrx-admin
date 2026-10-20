@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0103",
-  "version": 8,
+  "version": 9,
   "title": "OKRs & Goals",
   "description": "Leadership teams: set quarterly objectives and key results, then check in weekly.",
   "forWho": "Leadership teams setting quarterly goals",
@@ -1115,7 +1115,7 @@
         "Wrenhall Avenue"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1225,14 +1225,26 @@
                 "name": "By confidence",
                 "icon": "SquareKanban",
                 "groupField": "confidence",
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "kr_count",
+                  "avg_progress",
+                  "add_key_result_btn",
+                  "created"
+                ]
               },
               {
                 "layout": "kanban",
                 "name": "By team",
                 "icon": "SquareKanban",
                 "groupField": "team",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "kr_count",
+                  "avg_progress",
+                  "add_key_result_btn",
+                  "created"
+                ]
               },
               {
                 "layout": "grid",
@@ -1301,7 +1313,8 @@
                   "target_value",
                   "progress",
                   "gap",
-                  "atrisk_btn"
+                  "atrisk_btn",
+                  "edited"
                 ]
               },
               {
@@ -1316,7 +1329,8 @@
                   "target_value",
                   "progress",
                   "gap",
-                  "atrisk_btn"
+                  "atrisk_btn",
+                  "edited"
                 ]
               },
               {

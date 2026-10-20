@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0559",
-  "version": 5,
+  "version": 6,
   "title": "Music School Studio Desk",
   "description": "Music school desk: students, weekly lessons, tuition owed, recitals, exams and rentals.",
   "forWho": "Music schools, studios and lesson programs",
@@ -2876,7 +2876,7 @@
         "Cantor Row"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -3167,14 +3167,33 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "makeup",
+                  "minutes",
+                  "btn_done",
+                  "btn_missed",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "les-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "lesson_at"
+                "dateField": "lesson_at",
+                "hiddenFields": [
+                  "assigned",
+                  "makeup",
+                  "minutes",
+                  "btn_done",
+                  "btn_missed",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "les-t",
@@ -3289,14 +3308,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_overdue",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "tui-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "btn_paid",
+                  "btn_overdue",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "tui-t",
@@ -3397,14 +3429,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "condition",
+                  "serial",
+                  "btn_returned",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ren-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "return_by"
+                "dateField": "return_by",
+                "hiddenFields": [
+                  "deposit",
+                  "condition",
+                  "serial",
+                  "btn_returned",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ren-t",
@@ -3505,14 +3554,25 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pf-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "perform_on"
+                "dateField": "perform_on",
+                "hiddenFields": [
+                  "accompanist",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pf-t",

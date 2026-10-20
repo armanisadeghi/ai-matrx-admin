@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0162",
-  "version": 6,
+  "version": 7,
   "title": "Brand Assets Hub",
   "description": "Brand and design teams: a gallery of logos and photos with brand rules and approvals.",
   "forWho": "Brand managers, agencies and in-house design teams",
@@ -978,7 +978,7 @@
         "Cedar Tinsel Street"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1186,7 +1186,16 @@
                 "id": "view-by-type",
                 "name": "By type",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "approved",
+                  "owner",
+                  "tags",
+                  "usage_notes",
+                  "added_by",
+                  "approve_btn",
+                  "created"
+                ]
               },
               {
                 "id": "view-all-assets",
@@ -1205,7 +1214,15 @@
                 "name": "Needs approval",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "kind"
+                "groupField": "kind",
+                "hiddenFields": [
+                  "owner",
+                  "tags",
+                  "usage_notes",
+                  "added_by",
+                  "approve_btn",
+                  "created"
+                ]
               },
               {
                 "id": "view-unapproved",

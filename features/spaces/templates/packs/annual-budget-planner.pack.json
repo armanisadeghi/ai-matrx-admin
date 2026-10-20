@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0358",
-  "version": 4,
+  "version": 5,
   "title": "Annual Budget Planner",
   "description": "Households: plan the year's income, bills and savings, then compare with actuals.",
   "forWho": "Individuals and households",
@@ -1221,7 +1221,7 @@
         "Cobble Mill Road"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1561,7 +1561,10 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "paid_on"
+                "dateField": "paid_on",
+                "hiddenFields": [
+                  "logged_at"
+                ]
               }
             ],
             "activeViewId": "v-tr"

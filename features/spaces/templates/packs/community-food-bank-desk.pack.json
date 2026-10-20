@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0554",
-  "version": 5,
+  "version": 6,
   "title": "Community Food Bank Desk",
   "description": "For food pantries and food banks: donations, stock, distribution days, partners.",
   "forWho": "Food banks and neighborhood food pantries",
@@ -2616,7 +2616,7 @@
         "Hawthorne Row"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2763,7 +2763,8 @@
                   "gap",
                   "btn_restocked",
                   "btn_claim",
-                  "add_donation"
+                  "add_donation",
+                  "added_at"
                 ]
               },
               {
@@ -2906,7 +2907,16 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "expected_on"
+                "dateField": "expected_on",
+                "hiddenFields": [
+                  "pounds",
+                  "inkind",
+                  "inspected",
+                  "btn_received",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "don-t",
@@ -3015,7 +3025,8 @@
                   "per_house",
                   "btn_open",
                   "btn_done",
-                  "btn_claim"
+                  "btn_claim",
+                  "added_at"
                 ]
               },
               {
@@ -3296,7 +3307,8 @@
                 "icon": "SquareKanban",
                 "groupField": "status",
                 "hiddenFields": [
-                  "monthly_lb"
+                  "monthly_lb",
+                  "added_at"
                 ]
               },
               {

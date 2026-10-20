@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0570",
-  "version": 5,
+  "version": 6,
   "title": "Warehouse Operations Desk",
   "description": "Warehouse: SKUs and locations, receiving, picks, cycle counts and the dock schedule.",
   "forWho": "Warehouses, 3PLs and distribution centers",
@@ -3668,7 +3668,7 @@
         "Cargo Way"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -3807,14 +3807,49 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "velocity",
+                  "case_pack",
+                  "on_hand",
+                  "minimum",
+                  "incoming",
+                  "promised",
+                  "available",
+                  "picks_open",
+                  "counts_done",
+                  "btn_block",
+                  "btn_release",
+                  "btn_claim",
+                  "add_count",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "sku-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "reorder_by"
+                "dateField": "reorder_by",
+                "hiddenFields": [
+                  "zone",
+                  "velocity",
+                  "case_pack",
+                  "on_hand",
+                  "minimum",
+                  "incoming",
+                  "promised",
+                  "available",
+                  "picks_open",
+                  "counts_done",
+                  "btn_block",
+                  "btn_release",
+                  "btn_claim",
+                  "add_count",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "sku-t",
@@ -3924,14 +3959,43 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "pallets",
+                  "units",
+                  "units_received",
+                  "over_short",
+                  "condition",
+                  "receiver",
+                  "btn_arrived",
+                  "btn_received",
+                  "btn_problem",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "inb-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "eta_at"
+                "dateField": "eta_at",
+                "hiddenFields": [
+                  "status",
+                  "pallets",
+                  "units",
+                  "units_received",
+                  "over_short",
+                  "condition",
+                  "receiver",
+                  "btn_arrived",
+                  "btn_received",
+                  "btn_problem",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "inb-t",
@@ -4328,14 +4392,33 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "door"
+                "groupField": "door",
+                "hiddenFields": [
+                  "inbound",
+                  "outbound",
+                  "btn_checkin",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "dk-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "appt_at"
+                "dateField": "appt_at",
+                "hiddenFields": [
+                  "status",
+                  "inbound",
+                  "outbound",
+                  "btn_checkin",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "dk-t",
@@ -5268,7 +5351,17 @@
                 "name": "Dock calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "appt_at"
+                "dateField": "appt_at",
+                "hiddenFields": [
+                  "status",
+                  "inbound",
+                  "outbound",
+                  "btn_checkin",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "dw-2",

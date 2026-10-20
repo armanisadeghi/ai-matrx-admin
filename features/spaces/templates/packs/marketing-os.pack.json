@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0163",
-  "version": 8,
+  "version": 9,
   "title": "Marketing OS",
   "description": "Marketing teams: one home for campaigns, content, SEO, assets and leads.",
   "forWho": "Marketing teams that want everything in one place",
@@ -1579,7 +1579,7 @@
         "Piñon Wash Lane"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1840,14 +1840,23 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "publish_on"
+                "dateField": "publish_on",
+                "hiddenFields": [
+                  "cost",
+                  "pub_btn",
+                  "created"
+                ]
               },
               {
                 "id": "view-board",
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "pub_btn",
+                  "created"
+                ]
               },
               {
                 "id": "view-all-content",
@@ -2028,7 +2037,10 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "created"
+                ]
               },
               {
                 "id": "view-follow-up",
@@ -2162,7 +2174,12 @@
                     "YouTube"
                   ]
                 },
-                "dateField": "publish_on"
+                "dateField": "publish_on",
+                "hiddenFields": [
+                  "cost",
+                  "pub_btn",
+                  "created"
+                ]
               }
             ],
             "activeViewId": "view-instagram"
@@ -2391,7 +2408,12 @@
                     "Newsletter"
                   ]
                 },
-                "dateField": "publish_on"
+                "dateField": "publish_on",
+                "hiddenFields": [
+                  "cost",
+                  "pub_btn",
+                  "created"
+                ]
               }
             ],
             "activeViewId": "view-email"

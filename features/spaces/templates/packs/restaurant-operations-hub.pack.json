@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0463",
-  "version": 8,
+  "version": 9,
   "title": "Restaurant Operations Hub",
   "description": "For chefs and restaurant owners: recipe costs, food cost, pars, prep lists, inspections.",
   "forWho": "Independent restaurants and small restaurant groups",
@@ -3283,7 +3283,7 @@
         "Foundry Street"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3552,7 +3552,15 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "course"
+                "groupField": "course",
+                "hiddenFields": [
+                  "food_cost_pct",
+                  "margin",
+                  "cost_flag",
+                  "sold_week",
+                  "chef",
+                  "added_at"
+                ]
               },
               {
                 "id": "dis-t",
@@ -3601,14 +3609,21 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "delivery_on"
+                "dateField": "delivery_on",
+                "hiddenFields": [
+                  "btn_log_delivery",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-t",
@@ -3896,7 +3911,8 @@
                 "icon": "SquareKanban",
                 "groupField": "status",
                 "hiddenFields": [
-                  "score"
+                  "score",
+                  "added_at"
                 ]
               },
               {

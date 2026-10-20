@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0301",
-  "version": 9,
+  "version": 10,
   "title": "Creator Content Planner",
   "description": "Solo creators: script and schedule videos, podcasts, posts and emails in one plan.",
   "forWho": "Solo creators with YouTube, podcast and newsletter",
@@ -1455,7 +1455,7 @@
         "Marrow Street"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -1559,14 +1559,33 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "publish_on"
+                "dateField": "publish_on",
+                "hiddenFields": [
+                  "pillar",
+                  "priority",
+                  "reach",
+                  "asset_link",
+                  "campaign",
+                  "pub_btn",
+                  "open_asset_link",
+                  "created_at"
+                ]
               },
               {
                 "id": "view-board",
                 "name": "Pipeline",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "priority",
+                  "reach",
+                  "asset_link",
+                  "campaign",
+                  "pub_btn",
+                  "open_asset_link",
+                  "created_at"
+                ]
               },
               {
                 "id": "view-tbl",
@@ -1691,7 +1710,8 @@
                   "piece_count",
                   "published_count",
                   "live_pct",
-                  "reach_total"
+                  "reach_total",
+                  "updated_at"
                 ]
               },
               {
@@ -1704,7 +1724,8 @@
                   "piece_count",
                   "published_count",
                   "live_pct",
-                  "reach_total"
+                  "reach_total",
+                  "updated_at"
                 ]
               },
               {

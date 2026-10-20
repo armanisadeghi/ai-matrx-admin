@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0101",
-  "version": 7,
+  "version": 8,
   "title": "Team Wiki & Company Home",
   "description": "Companies of 10 to 200: a company home with news, team pages and a wiki that stays fresh.",
   "forWho": "Companies of 10 to 200 people",
@@ -1117,7 +1117,7 @@
         "Alderkeep Wharf"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1417,7 +1417,13 @@
                 "name": "By category",
                 "icon": "SquareKanban",
                 "groupField": "category",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "summary",
+                  "verify_btn",
+                  "edited",
+                  "created"
+                ]
               },
               {
                 "layout": "list",
@@ -1432,7 +1438,14 @@
                 "layout": "gallery",
                 "name": "Cards",
                 "icon": "LayoutGrid",
-                "id": "view-3"
+                "id": "view-3",
+                "hiddenFields": [
+                  "days_to_review",
+                  "summary",
+                  "verify_btn",
+                  "edited",
+                  "created"
+                ]
               }
             ],
             "activeViewId": "view-0"
@@ -1821,7 +1834,14 @@
                 "name": "Calendar",
                 "icon": "Calendar",
                 "dateField": "review_by",
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "days_to_review",
+                  "summary",
+                  "verify_btn",
+                  "edited",
+                  "created"
+                ]
               },
               {
                 "layout": "grid",

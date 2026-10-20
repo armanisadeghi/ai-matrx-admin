@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0360",
-  "version": 6,
+  "version": 7,
   "title": "Design System Docs",
   "description": "Design and front-end teams: document components, usage rules, owners and status.",
   "forWho": "Design and front-end teams",
@@ -1418,7 +1418,7 @@
         "Sallow Fen Street"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1509,14 +1509,41 @@
                 "id": "v-g",
                 "name": "Gallery",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "code_link",
+                  "tokens",
+                  "token_count",
+                  "guide_count",
+                  "version",
+                  "review_age",
+                  "review_flag",
+                  "stable_btn",
+                  "deprecate_btn",
+                  "open_design_link",
+                  "open_code_link",
+                  "edited_at"
+                ]
               },
               {
                 "id": "v-b",
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "tokens",
+                  "token_count",
+                  "guide_count",
+                  "version",
+                  "review_age",
+                  "review_flag",
+                  "stable_btn",
+                  "deprecate_btn",
+                  "open_design_link",
+                  "open_code_link",
+                  "edited_at"
+                ]
               },
               {
                 "id": "v-t",
@@ -1592,7 +1619,14 @@
                 "name": "By type",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "token_type"
+                "groupField": "token_type",
+                "hiddenFields": [
+                  "status",
+                  "used_count",
+                  "alias_count",
+                  "tk_stable",
+                  "updated_at"
+                ]
               },
               {
                 "id": "v-ta",

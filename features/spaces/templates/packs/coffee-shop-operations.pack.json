@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0467",
-  "version": 7,
+  "version": 8,
   "title": "Coffee Shop Operations",
   "description": "For cafe owners and baristas: drink margins, dial-ins, pars, waste, orders, machine care.",
   "forWho": "Independent coffee shops and cafes",
@@ -2443,7 +2443,7 @@
         "Almond Street"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2595,7 +2595,15 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "cost",
+                  "margin_usd",
+                  "margin_pct",
+                  "sold_week",
+                  "waste_month",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-t",
@@ -2776,14 +2784,23 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_service_done",
+                  "added_at"
+                ]
               },
               {
                 "id": "equ-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "next_service"
+                "dateField": "next_service",
+                "hiddenFields": [
+                  "days_to_service",
+                  "btn_service_done",
+                  "added_at"
+                ]
               },
               {
                 "id": "equ-t",
@@ -2884,14 +2901,21 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "arrives_on"
+                "dateField": "arrives_on",
+                "hiddenFields": [
+                  "btn_log_delivery",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-t",

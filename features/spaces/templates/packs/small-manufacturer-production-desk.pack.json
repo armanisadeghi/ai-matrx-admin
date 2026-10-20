@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0569",
-  "version": 5,
+  "version": 6,
   "title": "Small Manufacturer Production Desk",
   "description": "Small manufacturer: orders, bill of materials, unit cost, work orders, scrap, QC holds.",
   "forWho": "Small manufacturers and workshops making products to order",
@@ -3160,7 +3160,7 @@
         "Foundry Street"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -3469,7 +3469,24 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "run_on"
+                "dateField": "run_on",
+                "hiddenFields": [
+                  "planned_qty",
+                  "good_qty",
+                  "scrap_qty",
+                  "labor_hours",
+                  "supervisor",
+                  "scrap_pct",
+                  "checks_failed",
+                  "checks_flagged",
+                  "checks_total",
+                  "btn_start",
+                  "btn_done",
+                  "btn_claim",
+                  "add_check",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "run-t",
@@ -3791,7 +3808,8 @@
                 "groupField": "unit",
                 "hiddenFields": [
                   "qty",
-                  "line_cost"
+                  "line_cost",
+                  "added_at"
                 ]
               },
               {
@@ -3841,7 +3859,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "result"
+                "groupField": "result",
+                "hiddenFields": [
+                  "finding",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "che-t",

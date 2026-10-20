@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0461",
-  "version": 7,
+  "version": 8,
   "title": "Translation Agency Desk",
   "description": "For translation project managers: jobs, word counts, linguists, glossaries and reviews.",
   "forWho": "Translation and localization agencies",
@@ -2497,7 +2497,7 @@
         "Cormorant Way"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2649,7 +2649,16 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "job_count",
+                  "words_total",
+                  "words_open",
+                  "delivered_value",
+                  "add_job",
+                  "btn_mail",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-t",
@@ -2698,7 +2707,17 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "pairs"
+                "groupField": "pairs",
+                "hiddenFields": [
+                  "certified",
+                  "nda",
+                  "email",
+                  "words_day",
+                  "jobs_done",
+                  "jobs_open",
+                  "btn_mail",
+                  "added_at"
+                ]
               },
               {
                 "id": "lin-t",
@@ -2776,7 +2795,30 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "words",
+                  "fuzzy_words",
+                  "repeat_words",
+                  "billable_words",
+                  "rate",
+                  "price",
+                  "linguist_rate",
+                  "linguist_cost",
+                  "margin_pct",
+                  "po_number",
+                  "days_to_due",
+                  "client",
+                  "linguist",
+                  "pm",
+                  "checks_done",
+                  "avg_score",
+                  "owner_me",
+                  "btn_send_to_client",
+                  "add_review",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-t",
@@ -2889,7 +2931,10 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "pair"
+                "groupField": "pair",
+                "hiddenFields": [
+                  "added_at"
+                ]
               },
               {
                 "id": "ter-t",

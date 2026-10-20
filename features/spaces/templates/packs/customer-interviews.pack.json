@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0361",
-  "version": 6,
+  "version": 7,
   "title": "Customer Interview Notes",
   "description": "Product and success teams: log customer calls with themes, mood and follow-ups.",
   "forWho": "Product and customer success teams",
@@ -809,7 +809,7 @@
         "Piper Cove Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1035,20 +1035,55 @@
                 "name": "By stage",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "themes",
+                  "sentiment",
+                  "follow_up",
+                  "recording",
+                  "takeaway",
+                  "followed_btn",
+                  "open_recording",
+                  "logged_at",
+                  "edited_at"
+                ]
               },
               {
                 "id": "v-g",
                 "name": "By theme",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "stage",
+                  "themes",
+                  "sentiment",
+                  "follow_up",
+                  "recording",
+                  "takeaway",
+                  "followed_btn",
+                  "open_recording",
+                  "logged_at",
+                  "edited_at"
+                ]
               },
               {
                 "id": "v-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "held_on"
+                "dateField": "held_on",
+                "hiddenFields": [
+                  "stage",
+                  "themes",
+                  "sentiment",
+                  "follow_up",
+                  "recording",
+                  "takeaway",
+                  "followed_btn",
+                  "open_recording",
+                  "logged_at",
+                  "edited_at"
+                ]
               },
               {
                 "id": "v-f",

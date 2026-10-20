@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0256",
-  "version": 5,
+  "version": 6,
   "title": "Performance Review Cycle",
   "description": "HR and managers: run review rounds with goals, feedback and sign-off.",
   "forWho": "HR and managers running reviews",
@@ -1500,7 +1500,7 @@
         "Saltmarsh Way"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1559,14 +1559,33 @@
                 "name": "By stage",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "manager_rating",
+                  "final_rating",
+                  "due_flag",
+                  "achievement",
+                  "feedback_count",
+                  "summary",
+                  "created"
+                ]
               },
               {
                 "id": "v-c",
                 "name": "Due dates",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "self_rating",
+                  "manager_rating",
+                  "final_rating",
+                  "due_flag",
+                  "achievement",
+                  "feedback_count",
+                  "summary",
+                  "created"
+                ]
               },
               {
                 "id": "v-a",
@@ -1707,7 +1726,10 @@
                 "name": "By sentiment",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "sentiment"
+                "groupField": "sentiment",
+                "hiddenFields": [
+                  "logged"
+                ]
               }
             ],
             "activeViewId": "v-f"

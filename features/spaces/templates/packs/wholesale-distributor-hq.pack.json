@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0518",
-  "version": 7,
+  "version": 8,
   "title": "Wholesale Distributor HQ",
   "description": "For distributors: case stock and best-by dates, POs, routes, invoices and collections.",
   "forWho": "Small wholesale distributors and suppliers",
@@ -3144,7 +3144,7 @@
         "Warehouse Road"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3307,7 +3307,18 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "ship_by"
+                "dateField": "ship_by",
+                "hiddenFields": [
+                  "quantity",
+                  "total",
+                  "channel",
+                  "shorts",
+                  "pod",
+                  "packer",
+                  "ship_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-t",
@@ -3432,7 +3443,22 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "cost",
+                  "price",
+                  "on_hand",
+                  "reorder_at",
+                  "reorder_qty",
+                  "incoming",
+                  "lot",
+                  "bin",
+                  "margin_pct",
+                  "reorder_flag",
+                  "sold",
+                  "revenue",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-r",
@@ -3570,7 +3596,12 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "inv_status"
+                "groupField": "inv_status",
+                "hiddenFields": [
+                  "reminders",
+                  "inv_notes",
+                  "added_at"
+                ]
               },
               {
                 "id": "inv-t",
@@ -3645,7 +3676,19 @@
                 "name": "By route day",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "route_day"
+                "groupField": "route_day",
+                "hiddenFields": [
+                  "receiving",
+                  "pay_terms",
+                  "credit_limit",
+                  "order_n",
+                  "spent",
+                  "owed",
+                  "overdue_n",
+                  "tier",
+                  "add_order_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cus-t",

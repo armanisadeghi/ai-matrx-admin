@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0490",
-  "version": 4,
+  "version": 5,
   "title": "Design system — Near blank",
   "description": "The floor: grays, graphite actions and one blue accent. Complete, but plain.",
   "forWho": "Anyone starting a design system from almost nothing",
@@ -179,6 +179,43 @@
         ],
         "rows": [
           {
+            "key": "col-09",
+            "values": {
+              "name": "primary",
+              "group": "Primary",
+              "value": "{\"light\":\"#262626\",\"dark\":\"#ededed\"}",
+              "usage_note": "Graphite: the fill of the one main action. Swap it for the brand color first."
+            }
+          },
+          {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#eef3ff\",\"dark\":\"#1a2333\"}",
+              "usage_note": "Highlights: a selected row, a tip, something new."
+            }
+          },
+          {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#efefef\",\"dark\":\"#262626\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#2459d6\",\"dark\":\"#7aa2ff\"}",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
+            }
+          },
+          {
             "key": "col-01",
             "values": {
               "name": "background",
@@ -255,15 +292,6 @@
             }
           },
           {
-            "key": "col-09",
-            "values": {
-              "name": "primary",
-              "group": "Primary",
-              "value": "{\"light\":\"#262626\",\"dark\":\"#ededed\"}",
-              "usage_note": "Graphite: the fill of the one main action. Swap it for the brand color first."
-            }
-          },
-          {
             "key": "col-10",
             "values": {
               "name": "primary-foreground",
@@ -271,15 +299,6 @@
               "value": "{\"light\":\"#ffffff\",\"dark\":\"#171717\"}",
               "usage_note": "Label on a primary button.",
               "reads_on": "primary"
-            }
-          },
-          {
-            "key": "col-11",
-            "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#efefef\",\"dark\":\"#262626\"}",
-              "usage_note": "Second actions and quiet selected states."
             }
           },
           {
@@ -293,15 +312,6 @@
             }
           },
           {
-            "key": "col-13",
-            "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#eef3ff\",\"dark\":\"#1a2333\"}",
-              "usage_note": "Highlights: a selected row, a tip, something new."
-            }
-          },
-          {
             "key": "col-14",
             "values": {
               "name": "accent-foreground",
@@ -309,16 +319,6 @@
               "value": "{\"light\":\"#1d4fc4\",\"dark\":\"#a9c2ff\"}",
               "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
               "reads_on": "accent"
-            }
-          },
-          {
-            "key": "col-15",
-            "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#2459d6\",\"dark\":\"#7aa2ff\"}",
-              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
-              "reads_on": "background"
             }
           },
           {
@@ -1253,7 +1253,7 @@
         "Hollis Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [],
   "board": {

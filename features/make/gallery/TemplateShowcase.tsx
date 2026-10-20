@@ -635,7 +635,7 @@ export function thumbSwatches(value: unknown): string[] {
   return [];
 }
 
-/** A color value as swatches (light then dark), each with its hex. */
+/** A color value as swatches (light then dark). The hex is in each swatch's title, never text a narrow column cuts (ADVERSARIAL-5 F9). */
 function ThumbSwatches({ colors }: { colors: string[] }) {
   return (
     <span className="inline-flex items-center gap-1" data-template-thumb-swatches="">
@@ -643,7 +643,6 @@ function ThumbSwatches({ colors }: { colors: string[] }) {
         // The swatch IS the data's color (a template's own token value), so it is drawn from the value.
         <span key={i} className="inline-block size-3 shrink-0 rounded-sm border border-border" style={{ backgroundColor: c }} title={c} />
       ))}
-      <span className="truncate">{colors[0]}</span>
     </span>
   );
 }

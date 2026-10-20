@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0214",
-  "version": 7,
+  "version": 8,
   "title": "Moving Checklist",
   "description": "Anyone moving house: a timeline checklist, box inventory and address-change tracker.",
   "forWho": "Anyone moving house",
@@ -1351,7 +1351,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1427,14 +1427,23 @@
                 "name": "By timeframe",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "timeframe"
+                "groupField": "timeframe",
+                "hiddenFields": [
+                  "done_btn",
+                  "created"
+                ]
               },
               {
                 "id": "view-2",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "notes",
+                  "done_btn",
+                  "created"
+                ]
               },
               {
                 "id": "view-3",
@@ -1607,7 +1616,8 @@
                 "groupField": "room",
                 "hiddenFields": [
                   "weight",
-                  "moved_btn"
+                  "moved_btn",
+                  "packed_at"
                 ]
               },
               {
@@ -1618,14 +1628,20 @@
                 "groupField": "status",
                 "hiddenFields": [
                   "weight",
-                  "moved_btn"
+                  "moved_btn",
+                  "packed_at"
                 ]
               },
               {
                 "id": "view-11",
                 "name": "Gallery",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "weight",
+                  "moved_btn",
+                  "packed_at"
+                ]
               },
               {
                 "id": "view-12",

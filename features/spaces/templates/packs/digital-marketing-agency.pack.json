@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0450",
-  "version": 8,
+  "version": 9,
   "title": "Digital Marketing Agency HQ",
   "description": "For marketing agencies: retainers, scope, hours, campaigns, approvals and monthly reports.",
   "forWho": "Digital marketing agencies and growth studios",
@@ -3168,7 +3168,7 @@
         "Alder Quay"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3313,14 +3313,53 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "contract",
+                  "notice_days",
+                  "hours_included",
+                  "scope",
+                  "days_to_renewal",
+                  "manager",
+                  "hours_month",
+                  "used_pct",
+                  "hours_state",
+                  "campaigns_live",
+                  "spend_managed",
+                  "reports_owed",
+                  "owner_me",
+                  "add_campaign",
+                  "btn_mail",
+                  "btn_site",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "renews_on"
+                "dateField": "renews_on",
+                "hiddenFields": [
+                  "monthly_fee",
+                  "contract",
+                  "notice_days",
+                  "hours_included",
+                  "scope",
+                  "days_to_renewal",
+                  "manager",
+                  "hours_month",
+                  "used_pct",
+                  "hours_state",
+                  "campaigns_live",
+                  "spend_managed",
+                  "reports_owed",
+                  "owner_me",
+                  "add_campaign",
+                  "btn_mail",
+                  "btn_site",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-t",
@@ -3412,14 +3451,49 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "leads",
+                  "cpl",
+                  "spend_pct",
+                  "client",
+                  "lead",
+                  "hours_logged",
+                  "items_total",
+                  "items_done",
+                  "waiting_client",
+                  "progress",
+                  "owner_me",
+                  "btn_mark_live",
+                  "btn_close_campaign",
+                  "add_deliverable",
+                  "added_at"
+                ]
               },
               {
                 "id": "cam-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "ends_on"
+                "dateField": "ends_on",
+                "hiddenFields": [
+                  "spend",
+                  "leads",
+                  "cpl",
+                  "spend_pct",
+                  "client",
+                  "lead",
+                  "hours_logged",
+                  "items_total",
+                  "items_done",
+                  "waiting_client",
+                  "progress",
+                  "owner_me",
+                  "btn_mark_live",
+                  "btn_close_campaign",
+                  "add_deliverable",
+                  "added_at"
+                ]
               },
               {
                 "id": "cam-t",
@@ -3744,14 +3818,21 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "added_at"
+                ]
               },
               {
                 "id": "rep-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "btn_mark_sent",
+                  "added_at"
+                ]
               },
               {
                 "id": "rep-t",

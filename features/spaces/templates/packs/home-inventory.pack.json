@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0215",
-  "version": 5,
+  "version": 6,
   "title": "Home Inventory",
   "description": "Homeowners and renters: list what you own by room, with values and warranty dates.",
   "forWho": "Homeowners and renters",
@@ -1021,7 +1021,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1209,7 +1209,20 @@
                 "name": "Warranty calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "warranty_ends"
+                "dateField": "warranty_ends",
+                "hiddenFields": [
+                  "serial",
+                  "price",
+                  "current_value",
+                  "value_change",
+                  "warranty_days",
+                  "warranty_flag",
+                  "condition",
+                  "location_detail",
+                  "search_btn",
+                  "added",
+                  "edited"
+                ]
               },
               {
                 "id": "view-7",
@@ -1279,14 +1292,38 @@
                 "name": "By room",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "room"
+                "groupField": "room",
+                "hiddenFields": [
+                  "price",
+                  "current_value",
+                  "value_change",
+                  "warranty_days",
+                  "warranty_flag",
+                  "condition",
+                  "location_detail",
+                  "search_btn",
+                  "added",
+                  "edited"
+                ]
               },
               {
                 "id": "view-10",
                 "name": "By condition",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "condition"
+                "groupField": "condition",
+                "hiddenFields": [
+                  "serial",
+                  "price",
+                  "current_value",
+                  "value_change",
+                  "warranty_days",
+                  "warranty_flag",
+                  "location_detail",
+                  "search_btn",
+                  "added",
+                  "edited"
+                ]
               },
               {
                 "id": "view-11",
@@ -1304,7 +1341,20 @@
                 "id": "view-12",
                 "name": "Gallery",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "serial",
+                  "price",
+                  "current_value",
+                  "value_change",
+                  "warranty_days",
+                  "warranty_flag",
+                  "condition",
+                  "location_detail",
+                  "search_btn",
+                  "added",
+                  "edited"
+                ]
               }
             ],
             "activeViewId": "view-8"

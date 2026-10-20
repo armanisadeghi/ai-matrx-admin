@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0514",
-  "version": 7,
+  "version": 8,
   "title": "Day Spa HQ",
   "description": "For day spas: treatment rooms, therapists, gift cards, memberships and retail.",
   "forWho": "Day spas and wellness retreats",
@@ -2446,7 +2446,7 @@
         "Hollis Terrace"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2639,7 +2639,18 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "client_status"
+                "groupField": "client_status",
+                "hiddenFields": [
+                  "phone",
+                  "email",
+                  "area",
+                  "visits",
+                  "spent",
+                  "no_shows",
+                  "paid_total",
+                  "add_booking_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-t",
@@ -2688,14 +2699,35 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "addons",
+                  "visit_type",
+                  "minutes",
+                  "price",
+                  "tip",
+                  "mine",
+                  "done_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "boo-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "when_on"
+                "dateField": "when_on",
+                "hiddenFields": [
+                  "room",
+                  "addons",
+                  "visit_type",
+                  "minutes",
+                  "price",
+                  "tip",
+                  "mine",
+                  "done_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "boo-t",
@@ -2805,7 +2837,10 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-t",
@@ -2906,7 +2941,10 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "added_at"
+                ]
               },
               {
                 "id": "gc-t",

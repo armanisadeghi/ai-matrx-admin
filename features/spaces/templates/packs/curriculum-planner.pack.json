@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0260",
-  "version": 7,
+  "version": 8,
   "title": "Course & Curriculum Planner",
   "description": "Instructors and course designers: plan units, lessons and outcomes with pacing.",
   "forWho": "Instructors and course designers",
@@ -1582,7 +1582,7 @@
         "Pennywhistle Close"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1855,7 +1855,8 @@
                 "hiddenFields": [
                   "order",
                   "minutes",
-                  "ready_btn"
+                  "ready_btn",
+                  "created"
                 ]
               },
               {

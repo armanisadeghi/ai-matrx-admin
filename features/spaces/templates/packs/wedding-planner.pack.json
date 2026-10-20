@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0213",
-  "version": 8,
+  "version": 9,
   "title": "Wedding Planner",
   "description": "Couples: tasks, guest list, vendors, budget and seating for your wedding.",
   "forWho": "Couples planning a wedding",
@@ -1803,7 +1803,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1862,14 +1862,23 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "done_btn",
+                  "created"
+                ]
               },
               {
                 "id": "view-2",
                 "name": "Timeline",
                 "layout": "timeline",
                 "icon": "ChartGantt",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "owner",
+                  "done_btn",
+                  "created"
+                ]
               },
               {
                 "id": "view-3",
@@ -1916,14 +1925,26 @@
                 "name": "By RSVP",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "rsvp"
+                "groupField": "rsvp",
+                "hiddenFields": [
+                  "email_addr",
+                  "invite_sent",
+                  "yes_btn",
+                  "added"
+                ]
               },
               {
                 "id": "view-5",
                 "name": "By side",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "side"
+                "groupField": "side",
+                "hiddenFields": [
+                  "email_addr",
+                  "invite_sent",
+                  "yes_btn",
+                  "added"
+                ]
               },
               {
                 "id": "view-6",

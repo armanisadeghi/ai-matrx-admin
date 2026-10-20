@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0102",
-  "version": 7,
+  "version": 8,
   "title": "Product Roadmap",
   "description": "Product teams: a now, next, later roadmap with themes, releases and a status dashboard.",
   "forWho": "Product teams planning a quarter or two ahead",
@@ -1262,7 +1262,7 @@
         "Larkmoor Street"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1374,21 +1374,52 @@
                 "name": "Now, next, later",
                 "icon": "SquareKanban",
                 "groupField": "horizon",
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "owner",
+                  "impact",
+                  "effort",
+                  "customer_visible",
+                  "summary",
+                  "ship_btn",
+                  "edited",
+                  "created"
+                ]
               },
               {
                 "layout": "timeline",
                 "name": "Timeline",
                 "icon": "ChartGantt",
                 "dateField": "start_on",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "team",
+                  "owner",
+                  "impact",
+                  "effort",
+                  "customer_visible",
+                  "summary",
+                  "ship_btn",
+                  "edited",
+                  "created"
+                ]
               },
               {
                 "layout": "kanban",
                 "name": "By status",
                 "icon": "SquareKanban",
                 "groupField": "status",
-                "id": "view-2"
+                "id": "view-2",
+                "hiddenFields": [
+                  "owner",
+                  "impact",
+                  "effort",
+                  "customer_visible",
+                  "summary",
+                  "ship_btn",
+                  "edited",
+                  "created"
+                ]
               },
               {
                 "layout": "grid",
@@ -1409,7 +1440,18 @@
                 "filters": {
                   "status": "Shipped"
                 },
-                "id": "view-4"
+                "id": "view-4",
+                "hiddenFields": [
+                  "team",
+                  "owner",
+                  "impact",
+                  "effort",
+                  "customer_visible",
+                  "summary",
+                  "ship_btn",
+                  "edited",
+                  "created"
+                ]
               },
               {
                 "id": "view-roadmap-item-target-month",

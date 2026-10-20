@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0500",
-  "version": 7,
+  "version": 8,
   "title": "HVAC Company HQ",
   "description": "For HVAC contractors: service calls, equipment at each home, maintenance plans, parts.",
   "forWho": "HVAC companies and heating and cooling contractors",
@@ -3089,7 +3089,7 @@
       ],
       "notes": "Equipment makes (Arcton, Polarline, Kestrel, Brightwater, Sorrel, Holbeck, Vireo, Wrenfield) are invented."
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3228,7 +3228,17 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "customer_status"
+                "groupField": "customer_status",
+                "hiddenFields": [
+                  "job_count",
+                  "open_calls",
+                  "on_plan",
+                  "billed",
+                  "awaiting",
+                  "value_tier",
+                  "add_job_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cus-t",
@@ -3277,14 +3287,47 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "callback",
+                  "tech",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "scheduled_on"
+                "dateField": "scheduled_on",
+                "hiddenFields": [
+                  "priority",
+                  "callback",
+                  "tech",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-t",
@@ -3455,7 +3498,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "inv-t",
@@ -3559,7 +3606,14 @@
                 "name": "By condition",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "condition"
+                "groupField": "condition",
+                "hiddenFields": [
+                  "serial_no",
+                  "installed_year",
+                  "filter_size",
+                  "refrigerant",
+                  "added_at"
+                ]
               },
               {
                 "id": "eq-t",
@@ -3610,7 +3664,8 @@
                 "icon": "SquareKanban",
                 "groupField": "status",
                 "hiddenFields": [
-                  "visits_left"
+                  "visits_left",
+                  "added_at"
                 ]
               },
               {

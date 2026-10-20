@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0521",
-  "version": 7,
+  "version": 8,
   "title": "Independent Bookstore HQ",
   "description": "For bookstores: titles and stock, special orders, publisher orders and returns, events.",
   "forWho": "Independent bookstores and book sellers",
@@ -3087,7 +3087,7 @@
         "Chapter Street"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3256,7 +3256,17 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "ship_by"
+                "dateField": "ship_by",
+                "hiddenFields": [
+                  "quantity",
+                  "total",
+                  "deposit",
+                  "channel",
+                  "packer",
+                  "ship_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-t",
@@ -3361,7 +3371,20 @@
                 "name": "By section",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "supplier_rel",
+                  "price",
+                  "cost",
+                  "on_hand",
+                  "reorder_at",
+                  "staff_pick",
+                  "margin_pct",
+                  "reorder_flag",
+                  "sold",
+                  "revenue",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-t",
@@ -3423,7 +3446,15 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "ev_status"
+                "groupField": "ev_status",
+                "hiddenFields": [
+                  "seats",
+                  "rsvps",
+                  "books_ordered",
+                  "books_sold",
+                  "sell_rate",
+                  "added_at"
+                ]
               },
               {
                 "id": "ev-t",
@@ -3591,7 +3622,15 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "segment"
+                "groupField": "segment",
+                "hiddenFields": [
+                  "order_n",
+                  "spent",
+                  "waiting_n",
+                  "tier",
+                  "add_order_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cus-t",

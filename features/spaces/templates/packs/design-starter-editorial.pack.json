@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0492",
-  "version": 4,
+  "version": 5,
   "title": "Design system — Editorial",
   "description": "Warm paper, ink and an oxblood accent, with serif headings made for reading.",
   "forWho": "Publishers, writers, journals and cultural brands",
@@ -198,6 +198,43 @@
         ],
         "rows": [
           {
+            "key": "col-09",
+            "values": {
+              "name": "primary",
+              "group": "Primary",
+              "value": "{\"light\":\"#8a2b1f\",\"dark\":\"#e8937f\"}",
+              "usage_note": "Oxblood: buttons, the active section and links. Dark enough to read as text."
+            }
+          },
+          {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#f6e7cf\",\"dark\":\"#3a2e1c\"}",
+              "usage_note": "Parchment: a pull quote or an editor's note."
+            }
+          },
+          {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#ebe3d4\",\"dark\":\"#302a21\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#8a2b1f\",\"dark\":\"#e8937f\"}",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
+            }
+          },
+          {
             "key": "col-01",
             "values": {
               "name": "background",
@@ -274,15 +311,6 @@
             }
           },
           {
-            "key": "col-09",
-            "values": {
-              "name": "primary",
-              "group": "Primary",
-              "value": "{\"light\":\"#8a2b1f\",\"dark\":\"#e8937f\"}",
-              "usage_note": "Oxblood: buttons, the active section and links. Dark enough to read as text."
-            }
-          },
-          {
             "key": "col-10",
             "values": {
               "name": "primary-foreground",
@@ -290,15 +318,6 @@
               "value": "{\"light\":\"#fffaf3\",\"dark\":\"#2a0c06\"}",
               "usage_note": "Label on a primary button.",
               "reads_on": "primary"
-            }
-          },
-          {
-            "key": "col-11",
-            "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#ebe3d4\",\"dark\":\"#302a21\"}",
-              "usage_note": "Second actions and quiet selected states."
             }
           },
           {
@@ -312,15 +331,6 @@
             }
           },
           {
-            "key": "col-13",
-            "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#f6e7cf\",\"dark\":\"#3a2e1c\"}",
-              "usage_note": "Parchment: a pull quote or an editor's note."
-            }
-          },
-          {
             "key": "col-14",
             "values": {
               "name": "accent-foreground",
@@ -328,16 +338,6 @@
               "value": "{\"light\":\"#5a3a10\",\"dark\":\"#f0d3a6\"}",
               "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
               "reads_on": "accent"
-            }
-          },
-          {
-            "key": "col-15",
-            "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#8a2b1f\",\"dark\":\"#e8937f\"}",
-              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
-              "reads_on": "background"
             }
           },
           {
@@ -1289,7 +1289,7 @@
         "Ashby Mews"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [],
   "board": {

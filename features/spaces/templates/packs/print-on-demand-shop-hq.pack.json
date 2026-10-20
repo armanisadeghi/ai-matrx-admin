@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0520",
-  "version": 7,
+  "version": 8,
   "title": "Print on Demand Shop HQ",
   "description": "For print-on-demand shops: designs, listings, print partners, production, reprints.",
   "forWho": "Print-on-demand store owners and merch creators",
@@ -2744,7 +2744,7 @@
         "Inkwell Alley"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2883,14 +2883,41 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "quantity",
+                  "variant",
+                  "total",
+                  "partner_cost",
+                  "profit",
+                  "channel",
+                  "tracking",
+                  "packer",
+                  "ship_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "ship_by"
+                "dateField": "ship_by",
+                "hiddenFields": [
+                  "handler",
+                  "quantity",
+                  "variant",
+                  "total",
+                  "partner_cost",
+                  "profit",
+                  "channel",
+                  "tracking",
+                  "packer",
+                  "ship_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-t",
@@ -2995,7 +3022,14 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "issue_status"
+                "groupField": "issue_status",
+                "hiddenFields": [
+                  "fix",
+                  "cost",
+                  "partner_paid",
+                  "issue_notes",
+                  "added_at"
+                ]
               },
               {
                 "id": "iss-t",
@@ -3055,7 +3089,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "file_status"
+                "groupField": "file_status",
+                "hiddenFields": [
+                  "listings_n",
+                  "added_at"
+                ]
               },
               {
                 "id": "des-t",
@@ -3104,7 +3142,17 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "cost",
+                  "price",
+                  "sample_ok",
+                  "mockup",
+                  "margin_pct",
+                  "sold",
+                  "revenue",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-t",
@@ -3151,7 +3199,15 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "quality"
+                "groupField": "quality",
+                "hiddenFields": [
+                  "lead_days",
+                  "ship_days",
+                  "terms",
+                  "product_n",
+                  "issue_n",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "sup-t"
@@ -3186,7 +3242,15 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "segment"
+                "groupField": "segment",
+                "hiddenFields": [
+                  "order_n",
+                  "spent",
+                  "returns_n",
+                  "tier",
+                  "add_order_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cus-t",

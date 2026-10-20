@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0519",
-  "version": 7,
+  "version": 8,
   "title": "Subscription Box Business HQ",
   "description": "For subscription boxes: monthly editions, subscribers, renewals, failed charges, pauses.",
   "forWho": "Subscription box and curated gift businesses",
@@ -3201,7 +3201,7 @@
         "Dovecote Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3396,7 +3396,17 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "cost",
+                  "price",
+                  "on_hand",
+                  "reorder_at",
+                  "allergens",
+                  "reorder_flag",
+                  "sold",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-t",
@@ -3446,14 +3456,35 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "kind",
+                  "total",
+                  "postage",
+                  "tracking",
+                  "packer",
+                  "ship_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "ship_by"
+                "dateField": "ship_by",
+                "hiddenFields": [
+                  "handler",
+                  "kind",
+                  "total",
+                  "postage",
+                  "tracking",
+                  "packer",
+                  "ship_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-t",
@@ -3555,7 +3586,17 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "sub_status"
+                "groupField": "sub_status",
+                "hiddenFields": [
+                  "ship_state",
+                  "cancel_reason",
+                  "order_n",
+                  "spent",
+                  "owed",
+                  "tier",
+                  "add_order_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cus-t",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0157",
-  "version": 9,
+  "version": 10,
   "title": "SEO Hub",
   "description": "SEO and content teams: research keywords, brief posts and track rankings.",
   "forWho": "SEO and content teams",
@@ -1410,7 +1410,7 @@
         "Switchback Road"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -1617,7 +1617,9 @@
                   "comments",
                   "shares",
                   "engagement",
-                  "pub_btn"
+                  "pub_btn",
+                  "created",
+                  "edited"
                 ]
               },
               {
@@ -1633,7 +1635,8 @@
                   "shares",
                   "engagement",
                   "edited",
-                  "pub_btn"
+                  "pub_btn",
+                  "created"
                 ]
               },
               {
