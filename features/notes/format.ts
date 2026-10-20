@@ -241,6 +241,18 @@ export function noteRecordMetaData(view: NoteRecordView) {
  * note's own title (review 2026-10-19 #24: every phone row read "RVW controls probe / RVW controls
  * probe"). Fenced blocks (a chart's JSON) are skipped. Empty when the body holds nothing but its title.
  */
+/**
+ * The first content line IS the title when it equals it, or when the title is that line cut short
+ * ("Line 1: the quick brown fox..." over "Line 1: the quick brown fox jumps…" — review 2 #24: a
+ * note titled from its own long first line).
+ */
+function isTitleLine(line: string, title: string): boolean {
+  const l = line.toLowerCase();
+  if (l === title) return true;
+  const cut = title.replace(/\s*(?:\.\.\.|…)$/, "").trim();
+  return cut.length >= 8 && cut !== title && l.replace(/\s*(?:\.\.\.|…)$/, "").startsWith(cut);
+}
+
 export function notePreviewText(label: string, body: string | null | undefined, max = 200): string {
   const title = label.trim().toLowerCase();
   let skippedTitle = false;
@@ -255,7 +267,7 @@ export function notePreviewText(label: string, body: string | null | undefined, 
     if (inFence || !line || /^[-*_]{3,}$/.test(line)) continue;
     const plain = plainTitleFromMarkdown(line).trim();
     if (!plain) continue;
-    if (!skippedTitle && plain.toLowerCase() === title) {
+    if (!skippedTitle && out.length === 0 && isTitleLine(plain, title)) {
       skippedTitle = true;
       continue;
     }
