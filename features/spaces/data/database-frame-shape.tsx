@@ -19,6 +19,7 @@ import { ArrowDownUp, ArrowUpRight, ChevronDown, ListFilter, Maximize2, Plus, Se
 import type { ReactNode } from "react";
 
 import type { SpaceDbView } from "./sources";
+import { gridBodyReservePx, reserveStyle } from "./database-body-reserve";
 import { viewIcon } from "./view-icons";
 
 /** What the person may do with the block's structure, decided before the first paint. */
@@ -117,6 +118,7 @@ export function DatabaseFrameShape({
   const { views, active } = frameViews(p);
   const isChart = active.layout === "chart";
   const controls = frameControls(isChart, role);
+  const reserve = reserveStyle(active.layout === "grid" ? gridBodyReservePx(rows) : null);
   const title = typeof p["title"] === "string" && p["title"] ? (p["title"] as string) : "Untitled";
   return (
     <div
@@ -170,7 +172,7 @@ export function DatabaseFrameShape({
         ) : null}
       </div>
       {isChart ? null : (
-        <div className="spaces-db-body">
+        <div className="spaces-db-body" {...reserve.attrs} style={reserve.style}>
           <ExpectedRows rows={rows} groups={groups ?? null}>
             <RecordsSkeleton layout={skeletonLayoutFor(active.layout)} embedded {...(rows && rows > 0 ? { rows } : {})} />
           </ExpectedRows>

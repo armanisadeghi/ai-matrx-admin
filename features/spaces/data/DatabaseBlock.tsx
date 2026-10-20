@@ -72,6 +72,7 @@ import { LAYOUTS, viewIcon, type Layout } from "./view-icons";
 import { useUrlView } from "./url-view";
 import { useStructureEdit } from "../page/structure";
 import { DatabaseLoadingBox } from "../editor/database-loading-box";
+import { ReservedBody } from "./database-body-reserve";
 import { frameControls, type TabControl, type ToolControl } from "./database-frame-shape";
 import { newViewId, readDatabaseProps, type ChartSettings, type DatabaseBlockProps, type SpaceDbView, type SpaceViewLayout } from "./sources";
 
@@ -550,7 +551,7 @@ function DatabaseBody({
   // rows; its own "New record" line, which writes the row in place). The magnifier is this block's own, in
   // its toolbar row beside filter and sort (searchBox={false}; N-19).
   return (
-    <div className="spaces-db-body">
+    <ReservedBody grid={view.layout === "grid"}>
       <ViewSwitcher
         view={spec}
         chooser={false}
@@ -588,7 +589,7 @@ function DatabaseBody({
               KEEP_FOR_THE_VISIT
         }
       />
-    </div>
+    </ReservedBody>
   );
 }
 
