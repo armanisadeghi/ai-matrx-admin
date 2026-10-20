@@ -55,6 +55,7 @@ import { useKeptTextSelection } from "@/lib/working-copy/useKeptTextSelection";
 import { useKeptRichCaret } from "@/lib/working-copy/useKeptRichCaret";
 import { useNotesSurfaceRuntime } from "@/features/notes/agent-context/useNotesSurfaceRuntime";
 import { useNoteUndoRedo } from "../hooks/useNoteUndoRedo";
+import { useNoteHostHistory } from "../hooks/useNoteHostHistory";
 import { toast } from "@/lib/toast";
 import { NOTES_EDITOR_CONTEXT_MENU_PROPS } from "@/features/notes/agent-context/buildNotesEditorContextData";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
@@ -437,6 +438,9 @@ export function NoteContentEditor({
     editorHistoryDepth: () =>
       richMode ? (richEditorRef.current?.historyDepth() ?? null) : null,
   });
+  // The toolbar's Undo / Redo with an empty editor history (right after a mode switch) step the
+  // note's record history, as ⌘Z does.
+  useNoteHostHistory(editorRootRef, undo, redo);
 
   // ── Context menu handlers ─────────────────────────────────────────
   const handleSave = useCallback(() => {
