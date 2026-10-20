@@ -41,7 +41,7 @@ jest.mock("../gallery/publicCatalogue.server", () => {
       offsetsAsked.push(offset);
       return pages[offset / 200] ?? { data: { total: 0, limit: 200, offset, cards: [] }, error: null };
     });
-  return {
+  const api = {
     readPublicCatalogue,
     // The page read answers only what the public catalog holds (platform cards), by address,
     // catalog id or version id — the same rule as public.template_public_page.
@@ -50,6 +50,14 @@ jest.mock("../gallery/publicCatalogue.server", () => {
       if (read.state !== "open") return null;
       const card = read.cards.find((c) => c.slug === key || c.catalogue_id === key || c.id === key);
       return card ? { card, spec: { id: card.slug ?? card.catalogue_id, tables: [], views: [], forms: [], extras: [] }, updatedAt: null } : null;
+    },
+  };
+  // ADVERSARIAL-5 F3: the page reads its state (open / missing / unavailable); answered from the same fake.
+  return {
+    ...api,
+    readTemplatePageState: async (key: string) => {
+      const page = await api.readTemplatePage(key);
+      return page ? { state: "open", page } : { state: "missing" };
     },
   };
 });
