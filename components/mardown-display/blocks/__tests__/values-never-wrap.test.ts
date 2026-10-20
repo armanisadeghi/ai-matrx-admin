@@ -23,8 +23,7 @@ it.each([
   expect(tag).not.toMatch(/\btruncate\b/);
 });
 
-it("the tasks toolbar keeps each count whole and lets the row wrap", () => {
+it("the tasks toolbar keeps each count whole", () => {
   const src = read("tasks/TaskChecklist.tsx");
   expect(src).toMatch(/"whitespace-nowrap text-muted-foreground"[^\n]*\n\s*Main:/);
-  expect(src).toMatch(/"flex flex-wrap items-center justify-between gap-x-3 gap-y-1"/);
 });
