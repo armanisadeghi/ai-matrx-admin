@@ -222,7 +222,11 @@ remountType(
   () =>
     runCycle(type("video-clone"), { kind: "entity", entity: "video-clone", id: null, meta: { url: "https://www.tiktok.com/@harborview.homes/video/7311111111111111111" } }, {
       title: "Video clone",
-      prepare: seedSocial,
+      prepare: () => {
+        seedSocial();
+        // The pasted link becomes a stored post once; the tile keeps its id in its saved source, so no mount after the first posts again.
+        seedFetch(/\/social\/ingest\/post$/, () => ({ post_id: POST_ID }));
+      },
       wrap,
       loadMs: 1500,
       kept: (tile) => ({ studio: shows(tile, "Video clone") || (tile.container.textContent ?? "").length > 0, loading: skeleton(tile) }),
