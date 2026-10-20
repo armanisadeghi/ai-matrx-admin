@@ -18,12 +18,12 @@
 import { useEffect, useState } from "react";
 import { useRecordsClient } from "@ai-matrx/records/react";
 import { readVersionNow } from "@ai-matrx/records/versions";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { RootState } from "@/lib/redux/rootReducer";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useUserRole } from "@/features/organizations/hooks";
-import type { ShellLayoutBody, StoredShellLayout } from "./contract";
+import type { StoredShellLayout } from "./contract";
 import {
   clearShellLayout,
   listShellLayoutVersions,
@@ -32,8 +32,10 @@ import {
   saveShellLayout,
   type ShellLayoutResult,
 } from "./service";
+import { shellLayoutSaveLane, type ShellLayoutBodyInput } from "./saveLane";
 import {
   fetchShellLayoutSeed,
+  shellLayoutPreviewChanged,
   initialShellLayoutState,
   shellLayoutCleared,
   shellLayoutLoaded,
@@ -75,6 +77,7 @@ const selectHeldOrganizations = (state: RootState) => (state.shellLayout ?? init
 export function useShellLayoutStore() {
   const client = useRecordsClient();
   const dispatch = useAppDispatch();
+  const reduxStore = useAppStore();
   const userId = useAppSelector(selectUserId);
   // org-filter: write-target — where a first person layout is saved and whose organization layout is edited
   const organizationId = client.config.organizationId ?? null;
@@ -106,15 +109,41 @@ export function useShellLayoutStore() {
 
   const rowOf = (target: ShellLayoutTarget): StoredShellLayout | null => (target === "person" ? rows.person : rows.organization) ?? null;
 
-  const save = async (target: ShellLayoutTarget, body: ShellLayoutBody, note: string): Promise<ShellLayoutResult<StoredShellLayout>> => {
+  // The row as the store holds it NOW (a queued save reads it when its turn comes, never at the click).
+  const freshRowOf = (target: ShellLayoutTarget): StoredShellLayout | null => {
+    const held = reduxStore.getState().shellLayout ?? initialShellLayoutState;
+    if (target === "person") return held.person ?? null;
+    return organizationId ? (held.organizations[organizationId] ?? null) : null;
+  };
+
+  /**
+   * Save through the page's ONE save lane (`saveLane.ts`): one write at a time, each against the version
+   * the previous one left, so a person's quick consecutive edits never refuse each other. `body` may be
+   * a function of the layout as it then stands. `optimistic`: the shell wears it at once.
+   */
+  const save = async (
+    target: ShellLayoutTarget,
+    body: ShellLayoutBodyInput,
+    note: string,
+    options: { optimistic?: boolean } = {},
+  ): Promise<ShellLayoutResult<StoredShellLayout>> => {
     if (!userId) return { ok: false, error: "Sign in to save a layout." };
     if (!organizationId) return { ok: false, error: "No organization to save your layout in." };
     if (target === "organization" && !role.isAdmin) return { ok: false, error: "Only an owner or admin can change the organization's layout." };
     setSaving(true);
-    const answer = await saveShellLayout(client, { target, body, note, userId, organizationId, current: rowOf(target) });
+    const answer = await shellLayoutSaveLane.save(
+      {
+        readCurrent: () => freshRowOf(target),
+        write: (current, next) => saveShellLayout(client, { target, body: next, note, userId, organizationId, current }),
+        stored: (row) => void dispatch(shellLayoutStored({ target, stored: row })),
+        readPreview: () => (reduxStore.getState().shellLayout ?? initialShellLayoutState).previewBody,
+        setPreview: (text) => void dispatch(shellLayoutPreviewChanged(text)),
+      },
+      body,
+      options,
+    );
     setSaving(false);
-    if (answer.ok) dispatch(shellLayoutStored({ target, stored: answer.data }));
-    else if (answer.stale) void revalidateHeldLayouts(dispatch, true);
+    if (!answer.ok && answer.stale) void revalidateHeldLayouts(dispatch, true);
     return answer;
   };
 

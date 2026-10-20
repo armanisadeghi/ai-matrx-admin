@@ -9,6 +9,7 @@ import { SettingsSwitch } from "@/components/official/settings/primitives/Settin
 import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
 import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import type { RootState } from "@/lib/redux/rootReducer";
 import { toast } from "@/lib/toast";
 import { useOpenShellLayoutEditor } from "@/features/overlays/definitions/shellLayoutEditorWindow.overlay";
 import { selectHoldsShellLayout, selectShellStandardView } from "@/features/shell/shell-layout/useResolvedShellLayout";
@@ -18,7 +19,7 @@ import { ShellLayoutMount } from "@/features/shell/shell-layout/editor/ShellLayo
 import { useShellLayoutStore } from "@/features/shell/shell-layout/useShellLayoutStore";
 import { parseShellLayoutBody } from "@/features/shell/shell-layout/validate";
 import { accentOf, lookOf, startingBody, withAccent, withLook } from "@/features/shell/shell-layout/editor/regions";
-import { AccentPane } from "@/features/shell/shell-layout/editor/AccentPane";
+import { AccentPane, DEFAULT_SWATCH_LABEL } from "@/features/shell/shell-layout/editor/AccentPane";
 import { accentDef } from "@ai-matrx/design-system/accents";
 import type { ShellAccentRef } from "@/features/shell/shell-layout/contract";
 import { LookPane } from "@/features/shell/shell-layout/editor/LookPane";
@@ -57,40 +58,47 @@ export default function LayoutTab() {
   );
 }
 
-/** The Look the shell wears (the layout's `look`) and its accent color, saved on choosing — the same panes as the editor's Look tab. */
+/**
+ * The Look the shell wears (the layout's `look`) and its accent color, saved on choosing — the same panes
+ * as the editor's Look tab. OPTIMISTIC: the shell wears a choice at once, the saves queue one after the
+ * other (each builds on the layout the previous one left), and a refused save puts the shell back and
+ * says so (`saveLane.ts`). The panes never go disabled while saving, so quick choices simply add up.
+ */
 function LookSection() {
   const store = useShellLayoutStore();
+  // A choice still saving is what the shell wears (the preview body): the panes mark it chosen too.
+  const pending = useAppSelector(selectShellPreviewBody);
   if (store.loading) return null;
   const own = store.person ? parseShellLayoutBody(store.person.body).body : null;
   const org = store.organization ? parseShellLayoutBody(store.organization.body).body : null;
-  const current = lookOf(own ?? org);
+  const shown = pending ? parseShellLayoutBody(pending).body : own;
+  const current = lookOf(shown ?? org);
   const choose = async (look: ReturnType<typeof lookOf>) => {
     if (look === current) return;
-    const body = withLook(startingBody(own, org, "person"), look);
-    const answer = await store.save("person", body, `Look: ${shellLookDef(look).label}`);
-    if (!answer.ok) toast.error(answer.error);
+    const answer = await store.save("person", (now) => withLook(startingBody(now, org, "person"), look), `Look: ${shellLookDef(look).label}`, { optimistic: true });
+    if (!answer.ok) toast.error(`Your look was not saved: ${answer.error}`);
   };
-  const accent = accentOf(own);
+  const accent = accentOf(shown);
   const orgAccent = accentOf(org);
   const chooseAccent = async (next: ShellAccentRef | null) => {
-    const body = withAccent(startingBody(own, org, "person"), next);
     const note = next === null ? "Accent: default" : "id" in next ? `Accent: ${accentDef(next.id)?.label ?? next.id}` : `Accent: ${next.hex}`;
-    const answer = await store.save("person", body, note);
-    if (!answer.ok) toast.error(answer.error);
+    const answer = await store.save("person", (now) => withAccent(startingBody(now, org, "person"), next), note, { optimistic: true });
+    if (!answer.ok) toast.error(`Your accent color was not saved: ${answer.error}`);
   };
   return (
     <SettingsSection title="Look">
-      <LookPane value={current} disabled={store.saving} onChange={(look) => void choose(look)} />
+      <LookPane value={current} onChange={(look) => void choose(look)} />
       <AccentPane
         value={accent}
         inherited={orgAccent}
-        inheritedLabel={orgAccent ? "Organization color" : "Standard"}
-        disabled={store.saving}
+        inheritedLabel={orgAccent ? "Organization color" : DEFAULT_SWATCH_LABEL}
         onChange={(next) => void chooseAccent(next)}
       />
     </SettingsSection>
   );
 }
+
+const selectShellPreviewBody = (state: RootState) => state.shellLayout?.previewBody ?? null;
 
 const DEFAULT_LANDING = "default";
 
@@ -104,9 +112,10 @@ function LandingSection() {
   const current = own?.landing?.kind === "launchpad" ? own.landing.key : DEFAULT_LANDING;
   const options = [{ value: DEFAULT_LANDING, label: "Dashboard" }, ...launchpads.entries.map((e) => ({ value: e.key, label: e.title }))];
   const choose = async (key: string) => {
-    const base = startingBody(own, org, "person");
-    const { landing: _old, ...rest } = base;
-    const body = key === DEFAULT_LANDING ? rest : { ...rest, landing: { kind: "launchpad" as const, key } };
+    const body = (now: typeof own) => {
+      const { landing: _old, ...rest } = startingBody(now, org, "person");
+      return key === DEFAULT_LANDING ? rest : { ...rest, landing: { kind: "launchpad" as const, key } };
+    };
     const answer = await store.save("person", body, key === DEFAULT_LANDING ? "Start on the dashboard" : `Start on ${key}`);
     if (!answer.ok) toast.error(answer.error);
   };

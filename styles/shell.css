@@ -148,6 +148,27 @@
   --shell-auth-text: rgba(255, 255, 255, 0.75);
 }
 
+/* THE ACCENT re-tints the shell's selection states (custom-experience P4). The values above are the
+   built-in blue, kept literal so an uncustomized shell renders byte-identical; once an accent is chosen
+   (`data-matrx-accent` on <html> and `.shell-root`, @ai-matrx/design-system accent.css) every
+   active-row / selected-route color derives from --primary / --primary-ink instead, in both themes.
+   Guard: features/shell/shell-layout/__tests__/accent-selection-states.test.ts. */
+[data-matrx-accent] {
+  --shell-pill-bg: hsl(var(--primary) / 0.12);
+  --shell-pill-border: hsl(var(--primary) / 0.2);
+  --shell-pill-text: hsl(var(--primary-ink));
+  --shell-pill-badge-bg: hsl(var(--primary) / 0.2);
+  --shell-nav-selected-text: hsl(var(--primary-ink));
+}
+.dark[data-matrx-accent],
+.dark [data-matrx-accent] {
+  --shell-pill-bg: hsl(var(--primary) / 0.18);
+  --shell-pill-border: hsl(var(--primary) / 0.3);
+  --shell-pill-text: hsl(var(--primary-ink));
+  --shell-pill-badge-bg: hsl(var(--primary) / 0.2);
+  --shell-nav-selected-text: rgba(255, 255, 255, 0.98);
+}
+
 /* ---------------------------------------------------------------------------
    4. View Transitions — Active Route Pill Animation
    --------------------------------------------------------------------------- */

@@ -47,7 +47,7 @@ import { ArrangeTree } from "./ArrangeTree";
 import { CatalogChecklist } from "./CatalogChecklist";
 import { HeaderPane } from "./HeaderPane";
 import { accentOf, dockOf, headerOf, lookOf, sidebarOf, startingBody, withAccent, withLook, type EditorRegion } from "./regions";
-import { AccentPane } from "./AccentPane";
+import { AccentPane, DEFAULT_SWATCH_LABEL } from "./AccentPane";
 import { LookPane } from "./LookPane";
 import { addRow, buildCatalogTree, placedRefs, removeNode, sameBody, tickEntry, untickEntry, type TreeRegion } from "./tree";
 
@@ -234,7 +234,7 @@ export function ShellLayoutEditor({ target, initialRegion = "sidebar" }: { targe
           <AccentPane
             value={accentOf(body)}
             inherited={target === "person" ? accentOf(organizationBody) : null}
-            inheritedLabel={target === "person" && accentOf(organizationBody) ? "Organization color" : "Standard"}
+            inheritedLabel={target === "person" && accentOf(organizationBody) ? "Organization color" : DEFAULT_SWATCH_LABEL}
             onChange={(accent) => edit(withAccent(body, accent))}
           />
         </div>

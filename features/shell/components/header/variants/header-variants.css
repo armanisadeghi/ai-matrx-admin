@@ -420,7 +420,8 @@
 }
 
 .hdr-pill-badge-active {
-  background: rgba(59, 130, 246, 0.2);
+  /* The built-in blue; an accent re-points it (styles/shell.css, THE ACCENT). */
+  background: var(--shell-pill-badge-bg, rgba(59, 130, 246, 0.2));
   color: var(--shell-pill-text);
 }
 
