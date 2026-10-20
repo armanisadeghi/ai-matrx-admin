@@ -158,8 +158,8 @@ export function TemplatePackPreview({
       )}
       <nav
         aria-label="Template pages"
-        // ADVERSARIAL-6 F5: on a phone the "See it live" pill sits over this tab row's end; the row keeps clear of it.
-        className={`flex shrink-0 gap-1 overflow-x-auto border-b border-border p-2 md:flex-col md:overflow-y-auto md:border-b-0 md:border-r ${live || failed ? "" : "pr-36 md:pr-2"}`}
+        // ADVERSARIAL-6 F5: on a phone the "See it live" pill sits at this tab row's end; the row ends before it, so no tab is under it.
+        className={`flex shrink-0 gap-1 overflow-x-auto border-b border-border p-2 md:flex-col md:overflow-y-auto md:border-b-0 md:border-r ${live || failed ? "" : "mr-32 md:mr-0"}`}
       >
         {pages.map((p) => (
           <button

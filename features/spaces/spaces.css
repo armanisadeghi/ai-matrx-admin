@@ -2161,7 +2161,10 @@ button.spaces-page-prop-name:hover { background: var(--spaces-hover); }
   [data-space-template-preview] .spaces-tg-page { overflow-x: auto; container-type: inline-size; }
   [data-space-template-preview] .spaces-tg-page > .spaces-page { min-width: 40rem; }
   /* ADVERSARIAL-6 F5: the canvas scrolls, the TITLE does not — it fits the phone's box (wrapping, never cut to
-     "Animal Rescue Opera") and stays in view while the views scroll sideways. */
-  [data-space-template-preview] .spaces-tg-page .spaces-header { position: sticky; left: 0; max-width: calc(100cqw - 96px); }
+     "Animal Rescue Opera") and stays in view while the views scroll sideways. The box width is read once on the
+     page (a registered length, so 100cqw resolves against the scrolling box, not the canvas inside it). */
+  [data-space-template-preview] .spaces-tg-page > .spaces-page { --spaces-tg-box: 100cqw; }
+  [data-space-template-preview] .spaces-tg-page .spaces-header { position: sticky; left: 48px; max-width: calc(var(--spaces-tg-box) - 64px); }
   [data-space-template-preview] .spaces-tg-page .spaces-title { overflow-wrap: anywhere; }
 }
+@property --spaces-tg-box { syntax: "<length>"; inherits: true; initial-value: 0px; }
