@@ -9,6 +9,7 @@
  * not a DB gateway).
  */
 
+import { plainBuildState } from "./plain-stop-reason";
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
 import { createClient } from "@/utils/supabase/client";
 import { operationFailed } from "@/utils/errors";
@@ -194,7 +195,7 @@ export async function getFactoryBuild(buildId: string, signal?: AbortSignal): Pr
     startedAt: exec.started_at,
     endedAt: exec.ended_at,
     checkpointAt: cp?.created_at ?? null,
-    state: (cp?.state ?? null) as FactoryBuildState | null,
+    state: plainBuildState((cp?.state ?? null) as FactoryBuildState | null),
   };
 }
 

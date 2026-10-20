@@ -9,11 +9,11 @@ import { ChunkTolerant } from "../ChunkTolerant";
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 class Above extends React.Component<{ children: React.ReactNode }, { hit: boolean }> {
-  state = { hit: false };
+  override state = { hit: false };
   static getDerivedStateFromError() {
     return { hit: true };
   }
-  render() {
+  override render() {
     return this.state.hit ? <b data-testid="above" /> : this.props.children;
   }
 }

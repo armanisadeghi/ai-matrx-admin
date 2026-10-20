@@ -18,11 +18,12 @@ jest.mock("@/components/mardown-display/blocks/agent-factory-kinds/AgentFactoryK
 import { BuildProgress } from "../components/BuildProgress";
 const flush = () => act(async () => void (await new Promise((r) => setTimeout(r, 0))));
 
-it("shows the failure reason inline", async () => {
+it("shows the failure reason inline, in plain words, even for an old build with developer text", async () => {
   const host = document.createElement("div");
   document.body.appendChild(host);
   act(() => { createRoot(host).render(<BuildProgress buildId="build-1" />); });
   await flush(); await flush();
   expect(host.querySelector("details")).toBeNull();
-  expect(host.querySelector('[data-testid="build-failure-reason"]')?.textContent).toContain("daily AI spend ceiling");
+  expect(host.querySelector('[data-testid="build-failure-reason"]')?.textContent).not.toContain("daily AI spend ceiling");
+  expect(host.querySelector('[data-testid="build-failure-reason"]')?.textContent).toContain("Something went wrong while building this agent");
 });

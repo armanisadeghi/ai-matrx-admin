@@ -139,6 +139,9 @@ export interface FactoryBuildState {
   send_backs?: number;
   outcome?: FactoryOutcome | null;
   error?: string | null;
+  /** The developer text behind `error`; detail only, never shown as the reason. */
+  error_detail?: string | null;
+  unproven_reason?: "leak" | "floor" | null;
   /** The finished build as the registered `agent_factory_build` kind. */
   build?: Record<string, unknown> | null;
   /**

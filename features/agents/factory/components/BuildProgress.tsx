@@ -31,6 +31,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminPerson } from "@/lib/redux/selectors/userSelectors";
 import { outcomeChip } from "@/components/mardown-display/blocks/agent-factory-kinds/AgentFactoryKindBlocks";
 import { StateChip, isRecord } from "@/components/mardown-display/blocks/result-kinds/result-kind-shared";
+import { plainBuildState } from "../plain-stop-reason";
 import { getFactoryBuild, keepBuildAnyway, startAgentBuild } from "../service";
 import {
   KEPT_OUTCOMES,
@@ -155,7 +156,7 @@ export const WORKFLOW_PLAN_PATH = "/agents/orchestras";
 export const TEXT_ANSWER_FORMAT = "Markdown text";
 
 function OutcomePanel({
-  state,
+  state: storedState,
   spineStatus,
   busy,
   onKeep,
@@ -177,6 +178,8 @@ function OutcomePanel({
   /** Back to the door's description box with the request's own words in it (doors that have one). */
   onEditDescription?: () => void;
 }) {
+  // An older build still stores developer text as its reason; the person reads the plain line.
+  const state = plainBuildState(storedState) as FactoryBuildState;
   // A build whose worker died before the reaper settled it: the spine says failed or
   // canceled while the checkpoint never got an outcome — show it stopped, never blank.
   const outcome =
