@@ -127,8 +127,12 @@ export function useAppletPageValues(): AppletPageValuesPort | null {
       ? {
           read(name) {
             const c = latest.current;
-            const accept = c ? acceptsOf(c.doc, widgetId).find((p) => p.key === name) : undefined;
-            if (!c || !accept) return undefined;
+            if (!c) return undefined;
+            // A value this Applet published (its outputs) reads back as the page holds it, so after a reload
+            // the Applet shows what the widgets it feeds still show — never "nothing" beside a live record.
+            if (publishesOf(c.doc, widgetId).some((p) => p.key === name)) return c.bus.read(widgetId, name);
+            const accept = acceptsOf(c.doc, widgetId).find((p) => p.key === name);
+            if (!accept) return undefined;
             const binding = bindingInto(c.doc, widgetId, name);
             if (!binding) return undefined;
             const from = publishedKind(c.doc, binding.from.widgetId, binding.from.key);
@@ -161,6 +165,11 @@ export function useAppletPageValues(): AppletPageValuesPort | null {
     return () => stops.forEach((s) => s());
   }, [bus, wiring, listeners]);
   return port;
+}
+
+function publishesOf(doc: LaunchpadDoc, widgetId: string) {
+  const widget = doc.widgets.find((w) => w.id === widgetId);
+  return (widget ? getLaunchpadWidgetSpec(widget.type)?.publishes : undefined) ?? [];
 }
 
 function acceptsOf(doc: LaunchpadDoc, widgetId: string) {
