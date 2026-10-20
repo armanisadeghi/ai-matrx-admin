@@ -49,6 +49,8 @@ export interface AnnotationAuthor {
    * whose run it was — `name` is the agent's, and its words are never edited under its name.
    */
   agent?: { id: string | null; name: string } | null;
+  /** The platform wrote it (`created_by_tier = 'system'`): `name` is the system's, never editable. */
+  system?: boolean;
 }
 
 export interface CommentReply {
