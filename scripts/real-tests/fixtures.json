@@ -642,8 +642,9 @@
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "d4aab0b56a644260dbd88dc81ce2ab05c22f9161972a52e504bfe6db71c062a1",
-   "version": 2
+   "sha256": "59a716154a11310979cc27599de218deeae3b7e6200c03daaba7b501b045ed39",
+   "version": 3,
+   "note": "intended (fixture-change lane 2026-10-20): default holder Platform Routing Desk now carries consumption_map destination->destination_city, window->delivery_window (PUT /mandates/<key>/default-holder; holder agent and floating version unchanged)"
   },
   "mandate_routing_line_org": {
    "kind": "row",
@@ -663,8 +664,9 @@
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "cb60918bae17fd91be61bc3f4998baa2829dd7da0cd07e268eddf8c71fc980f4",
-   "version": 2
+   "sha256": "33f1dbdee87517210a22ed7510e120115e77b8ddf6e78d6a8dfaae7b3e093ed6",
+   "version": 3,
+   "note": "intended (fixture-change lane 2026-10-20): default holder Platform Routing Desk now carries consumption_map destination->destination_city, window->delivery_window (PUT /mandates/<key>/default-holder; holder agent and floating version unchanged)"
   },
   "binding_org_v2": {
    "kind": "row",
