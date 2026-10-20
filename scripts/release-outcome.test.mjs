@@ -58,6 +58,13 @@ test("green requires READY and the live domain serving that deployment", () => {
   assert.ok(unverifiedAt < greenAt, "the unverified branch must return before green");
 });
 
+test("a served descendant is diagnosed as SUPERSEDED without weakening exact-SHA green", () => {
+  assert.match(outcomeScript, /release_outcome_superseded/);
+  assert.match(outcomeScript, /merge-base --is-ancestor/);
+  assert.match(outcomeScript, /SUPERSEDED/);
+  assert.match(outcomeScript, /Remedy: release current main/);
+});
+
 test("the skip check runs the real ignore script, not a copy of its rules", () => {
   assert.match(outcomeScript, /bash "\$\(_release_outcome_dir\)\/vercel-ignore-build\.sh"/);
   // No second implementation of the prefix table.

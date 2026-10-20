@@ -50,7 +50,8 @@
 #   RELEASE_OUTCOME_SERVE_WAIT_SECONDS  promotion wall after READY, default 300
 #   RELEASE_OUTCOME_FETCH_CMD           test seam: prints "STATE<TAB>uid<TAB>url"
 #   RELEASE_OUTCOME_SERVED_CMD          test seam: prints the served deployment id
-# The two *_CMD seams exist so the self-test drives the real banner logic with a
+#   RELEASE_OUTCOME_DEPLOYMENT_CMD      test seam: <uid> -> "commitSha<TAB>createdAt"
+# The *_CMD seams exist so the self-test drives the real banner logic with a
 # stubbed deployment record instead of mocking the banner itself.
 #
 # Self-test (the guard, proven failing-then-passing on every run):
@@ -197,6 +198,43 @@ release_outcome_serving() {
     echo ""
 }
 
+# Resolves the deployment which currently owns a domain alias. The commit SHA
+# distinguishes an unpromoted release from one superseded by a descendant;
+# createdAt is evidence for the operator, not the predicate.
+release_outcome_deployment() {
+    local uid="$1"
+    if [[ -n "${RELEASE_OUTCOME_DEPLOYMENT_CMD:-}" ]]; then
+        "$RELEASE_OUTCOME_DEPLOYMENT_CMD" "$uid"
+        return $?
+    fi
+    [[ -n "$uid" ]] || return 1
+    local token body
+    token="$(release_outcome_token)" || return 1
+    body="$(curl -sS -m 30 -H "Authorization: Bearer $token" \
+        "https://api.vercel.com/v13/deployments/${uid}?teamId=${RELEASE_OUTCOME_TEAM_ID}" 2>/dev/null || true)"
+    [[ -n "$body" ]] || return 1
+    node -e '
+        let d; try { d = JSON.parse(process.argv[1]); } catch (e) { process.exit(1); }
+        const sha = d.meta?.githubCommitSha || d.gitSource?.sha || "";
+        const created = d.createdAt || d.created || "";
+        if (!sha) process.exit(1);
+        process.stdout.write(String(sha) + "\t" + String(created) + "\n");
+    ' "$body"
+}
+
+# Prints "servedDeploymentId<TAB>servedCommitSha<TAB>createdAt" only when the
+# served commit is a Git descendant of this release. A newer timestamp alone is
+# never enough: green remains exact-SHA only.
+release_outcome_superseded() {
+    local release_sha="$1" served_uid="$2" record served_sha created
+    [[ -n "$release_sha" && -n "$served_uid" ]] || return 1
+    record="$(release_outcome_deployment "$served_uid")" || return 1
+    IFS=$'\t' read -r served_sha created <<< "$record"
+    [[ -n "$served_sha" && "$served_sha" != "$release_sha" ]] || return 1
+    git -C "$(_release_outcome_dir)/.." merge-base --is-ancestor "$release_sha" "$served_sha" 2>/dev/null || return 1
+    printf '%s\t%s\t%s\n' "$served_uid" "$served_sha" "$created"
+}
+
 # A satellite (admin/demos/lab) that the ignore step skipped ON PURPOSE — its own pages unchanged
 # and built within the hour (scripts/satellite-builds.mjs, Arman 2026-10-11) — shows on Vercel as
 # CANCELED. That is the rule working, not a dead rollout: read the deployment's own build log and
@@ -276,10 +314,13 @@ release_outcome_watch() {
 }
 
 # After READY, the deployment still has to become the one the domain serves.
-# rc 0 → serving; rc 1 → READY but a different deployment is still live.
+# rc 0 → serving; rc 1 → a different deployment is live. On rc 1,
+# RELEASE_OUTCOME_SERVING_DIAG is SUPERSEDED|uid|sha|createdAt when that
+# deployment is a descendant of the release SHA.
 release_outcome_await_serving() {
-    local bt="$1" uid="$2"
-    local domain project_name wall poll started elapsed served
+    local bt="$1" uid="$2" sha="$3"
+    local domain project_name wall poll started elapsed served superseded
+    RELEASE_OUTCOME_SERVING_DIAG=""
     domain="$(release_outcome_domain "$bt")"
     project_name="$(release_outcome_project_name "$bt")"
     wall="${RELEASE_OUTCOME_SERVE_WAIT_SECONDS:-300}"
@@ -293,6 +334,12 @@ release_outcome_await_serving() {
             return 0
         fi
         if (( elapsed >= wall )); then
+            if superseded="$(release_outcome_superseded "$sha" "$served")"; then
+                local served_uid served_sha served_created
+                IFS=$'\t' read -r served_uid served_sha served_created <<< "$superseded"
+                RELEASE_OUTCOME_SERVING_DIAG="SUPERSEDED|${served_uid}|${served_sha}|${served_created}"
+                echo -e "${_RO_RED}[FAIL]${_RO_NC}  ${domain} serves descendant ${served_sha:0:10} (${served_uid}), not ${sha:0:10}; this release is SUPERSEDED." >&2
+            fi
             echo -e "${_RO_RED}[FAIL]${_RO_NC}  ${domain} still serves ${served:-<unknown>}, not ${uid}, at the ${wall}s wall." >&2
             return 1
         fi
@@ -351,41 +398,61 @@ release_outcome_report() {
 
     # (2) Poll each targeted project to a terminal state.
     local verdict state uid url line
-    local dead=() unverified=() good=() good_ids=() by_design=()
+    local dead=() superseded=() unverified=() good=() good_ids=() by_design=()
+    local dead_count=0 superseded_count=0
     for bt in "${will_build[@]}"; do
         line="$(release_outcome_watch "$bt" "$sha")" || true
         IFS=$'\t' read -r verdict state uid url <<< "$line"
         case "$verdict" in
             READY)
-                if release_outcome_await_serving "$bt" "$uid"; then
+                if release_outcome_await_serving "$bt" "$uid" "$sha"; then
                     good+=("$bt"); good_ids+=("$(release_outcome_project_name "$bt")=$uid")
+                elif [[ "$RELEASE_OUTCOME_SERVING_DIAG" == SUPERSEDED\|* ]]; then
+                    superseded+=("$(release_outcome_project_name "$bt")|${url}|${RELEASE_OUTCOME_SERVING_DIAG}")
+                    superseded_count=$((superseded_count + 1))
                 else
                     dead+=("$(release_outcome_project_name "$bt")|READY-NOT-SERVING|${url}")
+                    dead_count=$((dead_count + 1))
                 fi ;;
             SKIPPED_BY_DESIGN) by_design+=("$(release_outcome_project_name "$bt")") ;;
             UNVERIFIED) unverified+=("$(release_outcome_project_name "$bt")") ;;
-            *)          dead+=("$(release_outcome_project_name "$bt")|${state}|${url}") ;;
+            *)          dead+=("$(release_outcome_project_name "$bt")|${state}|${url}"); dead_count=$((dead_count + 1)) ;;
         esac
     done
 
     # (3) The verdict. Green ONLY when every targeted project is READY + serving.
-    if [[ ${#dead[@]} -gt 0 ]]; then
+    if [[ $dead_count -gt 0 || $superseded_count -gt 0 ]]; then
         local lines=("ROLLOUT FAILED — this release is NOT live." "")
         local d name st u
-        for d in "${dead[@]}"; do
+        for d in ${dead[@]+"${dead[@]}"}; do
             IFS='|' read -r name st u <<< "$d"
             lines+=("  ${name}: ${st}")
             [[ -n "$u" ]] && lines+=("    ${u}")
         done
+        for d in ${superseded[@]+"${superseded[@]}"}; do
+            local served_uid served_sha served_created
+            IFS='|' read -r name u _ served_uid served_sha served_created <<< "$d"
+            lines+=("  ${name}: SUPERSEDED")
+            lines+=("    ${u}")
+            lines+=("    ${served_uid} serves descendant ${served_sha}${served_created:+ (created ${served_created})}")
+        done
         lines+=("" "  commit : ${sha}" "  message: ${msg%%$'\n'*}" "")
-        lines+=("The push succeeded and the tag exists, so git looks fine — but the")
-        lines+=("Vercel build above did not reach production. Users are still on the")
-        lines+=("previous build.")
-        lines+=("")
-        lines+=("Remedy: open the Vercel URL above, read the build log, fix the cause,")
-        lines+=("then release again. READY-NOT-SERVING means the build succeeded but")
-        lines+=("the domain still serves an older deployment — check promotion /")
-        lines+=("deployment protection on that project.")
+        if [[ $superseded_count -gt 0 && $dead_count -eq 0 ]]; then
+            lines+=("A newer descendant deployment serves the domain. Exact-SHA proof is")
+            lines+=("still absent for this release, so it remains non-green.")
+            lines+=("")
+            lines+=("Remedy: release current main. Do not promote or retry this older release.")
+        else
+            lines+=("The push succeeded and the tag exists, so git looks fine — but the")
+            lines+=("Vercel build above did not reach production. Users are still on the")
+            lines+=("previous build.")
+            lines+=("")
+            lines+=("Remedy: open the Vercel URL above, read the build log, fix the cause,")
+            lines+=("then release again. READY-NOT-SERVING means the build succeeded but")
+            lines+=("the domain still serves an older deployment — check promotion /")
+            lines+=("deployment protection on that project.")
+            [[ $superseded_count -gt 0 ]] && lines+=("A newer descendant also serves the domain above; release current main after fixing the failed rollout.")
+        fi
         _ro_box "$_RO_RED" "${lines[@]}"
         return 1
     fi
@@ -440,7 +507,17 @@ _release_outcome_self_test() {
         printf '#!/usr/bin/env bash\necho "%s"\n' "$1" > "$tmp/served.sh"
         chmod +x "$tmp/served.sh"
     }
-    RO_OUT=""; RO_ERR=""; RO_RC=0
+    mk_deployment() {  # <commit sha> [createdAt]
+        printf '#!/usr/bin/env bash\nprintf "%%s\\t%%s\\n" "%s" "%s"\n' "$1" "${2:-fixture-created}" > "$tmp/deployment.sh"
+        chmod +x "$tmp/deployment.sh"
+    }
+    mk_deployment_json() {  # <commit sha> <createdAt>; exercises the curl/JSON parser
+        mkdir -p "$tmp/bin"
+        printf '#!/usr/bin/env bash\ncat <<%s\n{"meta":{"githubCommitSha":"%s"},"createdAt":%s}\n%s\n' \
+            JSON "$1" "$2" JSON > "$tmp/bin/curl"
+        chmod +x "$tmp/bin/curl"
+    }
+    RO_OUT=""; RO_ERR=""; RO_RC=0; RO_SHA="$SHA"; RO_DEPLOYMENT=""
     RO_WALL=1; RO_POLL=0   # per-case overrides; reset by every caller that cares
     run_case() {  # <state> <uid> <served> <target> <msg> [version]
         mk_fetch "$1" "$2"; mk_served "$3"
@@ -449,7 +526,8 @@ _release_outcome_self_test() {
             export RELEASE_OUTCOME_POLL_SECONDS="$RO_POLL" RELEASE_OUTCOME_WAIT_SECONDS="$RO_WALL"
             export RELEASE_OUTCOME_SERVE_WAIT_SECONDS="$RO_WALL"
             [[ -n "${RO_EVENTS:-}" ]] && export RELEASE_OUTCOME_EVENTS_CMD="$RO_EVENTS"
-            release_outcome_report "$4" "$5" "$SHA" "${6:-}" 2>"$tmp/err"
+            [[ -n "$RO_DEPLOYMENT" ]] && export RELEASE_OUTCOME_DEPLOYMENT_CMD="$RO_DEPLOYMENT"
+            release_outcome_report "$4" "$5" "$RO_SHA" "${6:-}" 2>"$tmp/err"
         )"
         RO_RC=$?
         RO_ERR="$(cat "$tmp/err")"
@@ -544,6 +622,41 @@ _release_outcome_self_test() {
     [[ $RO_RC -ne 0 ]] && grep -q "READY-NOT-SERVING" <<< "$RO_OUT" && ! grep -q "Released and LIVE" <<< "$RO_OUT" \
         && pass "READY but not promoted → non-green (the served deploymentId must match)" \
         || failt "READY-not-serving produced rc=$RO_RC and: $RO_OUT"
+
+    # ── 5b. A descendant which took the alias supersedes this release ───────
+    local ancestor_sha descendant_sha
+    ancestor_sha="$(git -C "$here/.." rev-parse "${BASELINE}^{commit}" 2>/dev/null || true)"
+    descendant_sha="$(git -C "$here/.." rev-parse HEAD 2>/dev/null || true)"
+    if [[ -n "$ancestor_sha" && -n "$descendant_sha" ]] && git -C "$here/.." merge-base --is-ancestor "$ancestor_sha" "$descendant_sha"; then
+        # Do not let the command seam hide a parser regression: this calls the
+        # real curl/Node path against a fixture curl executable.
+        mk_deployment_json "$descendant_sha" 123
+        local parsed_deployment
+        parsed_deployment="$(PATH="$tmp/bin:$PATH" VERCEL_TOKEN=fixture release_outcome_deployment dpl_json)"
+        [[ "$parsed_deployment" == "$descendant_sha"$'\t123' ]] \
+            && pass "deployment JSON parser emits tab-delimited commit SHA and createdAt" \
+            || failt "deployment JSON parser emitted: $parsed_deployment"
+
+        mk_deployment "$descendant_sha" fixture-created
+        RO_SHA="$ancestor_sha"; RO_DEPLOYMENT="$tmp/deployment.sh"
+        run_case READY dpl_release dpl_descendant main "release: v0.4.9999 - t"
+        RO_SHA="$SHA"; RO_DEPLOYMENT=""
+        [[ $RO_RC -ne 0 ]] && grep -q "SUPERSEDED" <<< "$RO_OUT" && grep -q "dpl_descendant" <<< "$RO_OUT" \
+            && grep -q "release current main" <<< "$RO_OUT" && ! grep -q "Released and LIVE" <<< "$RO_OUT" \
+            && pass "served descendant → SUPERSEDED, non-green, release current main" \
+            || failt "superseded descendant produced rc=$RO_RC and: $RO_OUT // stderr: $RO_ERR"
+    else
+        failt "could not resolve a real ancestor/descendant pair for the superseded guard"
+    fi
+
+    # A different deployment for the same SHA is not a descendant supersession.
+    mk_deployment "$SHA" fixture-created
+    RO_DEPLOYMENT="$tmp/deployment.sh"
+    run_case READY dpl_release dpl_same_sha main "release: v0.4.9999 - t"
+    RO_DEPLOYMENT=""
+    [[ $RO_RC -ne 0 ]] && grep -q "READY-NOT-SERVING" <<< "$RO_OUT" && ! grep -q "SUPERSEDED" <<< "$RO_OUT" \
+        && pass "same commit under another deployment → READY-NOT-SERVING, not SUPERSEDED" \
+        || failt "same-SHA deployment produced rc=$RO_RC and: $RO_OUT"
 
     # ── 6. The ONE green case ───────────────────────────────────────────────
     run_case READY dpl_new dpl_new main "release: v0.4.9999 - t" 0.4.9999
