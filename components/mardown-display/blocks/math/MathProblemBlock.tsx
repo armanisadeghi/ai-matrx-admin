@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Printer } from "lucide-react";
+import { Calculator, Printer } from "lucide-react";
 import MathProblem from "@/features/math/components/MathProblem";
 import { MathProblemProps } from "@/features/math/types";
 import { normalizeMathProblemLatex } from "@/features/math/utils/latex-normalizer";
@@ -77,6 +77,7 @@ const MathProblemBlock: React.FC<MathProblemBlockProps> = ({ problemData: initia
     return (
         <>
         <ContentBlockWrapper
+            icon={Calculator}
             title={problem.title}
             subtitle={mathSubtitle(problem)}
             enableCanvas={true}
@@ -93,7 +94,7 @@ const MathProblemBlock: React.FC<MathProblemBlockProps> = ({ problemData: initia
             headerContent={<BlockControlsButton controls={controls} title="Math problem controls" />}
             contentClassName="max-w-4xl mx-auto"
         >
-            <MathProblem {...problem} />
+            <MathProblem {...problem} embedded />
         </ContentBlockWrapper>
         <PrintOptionsDialog
             printer={mathPrinter}

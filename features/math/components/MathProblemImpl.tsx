@@ -23,6 +23,7 @@ const MathProblemImpl: React.FC<MathProblemProps> = ({
     final_statement,
     problem_statement,
     solutions,
+    embedded = false,
 }) => {
     const router = useRouter();
     const [currentSolutionIndex, setCurrentSolutionIndex] = useState(0);
@@ -124,17 +125,26 @@ const MathProblemImpl: React.FC<MathProblemProps> = ({
         if (renderStage === "overview") {
             addContent(
                 <div key="overview" className="space-y-3">
-                    <div className="relative bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-xl p-4 border-2 border-blue-200 dark:border-blue-800">
-                        <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-500 to-purple-500 rounded-l-xl" />
-                        <h2 className="text-lg font-bold mb-1 text-blue-900 dark:text-blue-100 ml-2.5">
-                            <InlineMathText text={title} />
-                        </h2>
-                        {description && (
-                            <p className="text-sm text-blue-700 dark:text-blue-300 ml-2.5">
+                    {embedded ? (
+                        // The block's header already carries the title: say only what it does not.
+                        description && (
+                            <p className="text-sm text-muted-foreground">
                                 <InlineMathText text={description} />
                             </p>
-                        )}
-                    </div>
+                        )
+                    ) : (
+                    <div className="relative bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-xl p-4 border-2 border-blue-200 dark:border-blue-800">
+                            <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-500 to-purple-500 rounded-l-xl" />
+                            <h2 className="text-lg font-bold mb-1 text-blue-900 dark:text-blue-100 ml-2.5">
+                                <InlineMathText text={title} />
+                            </h2>
+                            {description && (
+                                <p className="text-sm text-blue-700 dark:text-blue-300 ml-2.5">
+                                    <InlineMathText text={description} />
+                                </p>
+                            )}
+                        </div>
+                    )}
                     {/* Only the facts that are there: an empty Course / Topic / Module tile says nothing (review 2 N2). */}
                     {metaTiles.length > 0 && (
                         <div className={`grid gap-2 ${["grid-cols-1", "grid-cols-2", "grid-cols-3"][metaTiles.length - 1]}`}>
@@ -402,7 +412,9 @@ const MathProblemImpl: React.FC<MathProblemProps> = ({
                 <h2 className="text-2xl font-bold mb-4">Congratulations!</h2>
                 <div className="space-x-4">
                     <Button variant="primary" onClick={reset}>Review Again</Button>
-                    <Button variant="primary" onClick={() => router.push("/education/subjects/quick-math")}>Choose Another Lesson</Button>
+                    {!embedded && (
+                        <Button variant="primary" onClick={() => router.push("/education/subjects/quick-math")}>Choose Another Lesson</Button>
+                    )}
                 </div>
             </div>
         );
@@ -410,6 +422,22 @@ const MathProblemImpl: React.FC<MathProblemProps> = ({
 
     return (
         <div className="flex flex-col h-full">
+            {embedded ? (
+                <div ref={contentRef} className="space-y-2">
+
+                        {displayedContent.map((content, index) => (
+                            <motion.div
+                                key={index}
+                                ref={index === displayedContent.length - 1 ? lastContentRef : null}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                {content}
+                            </motion.div>
+                        ))}
+                </div>
+            ) : (
             <Card className="flex-grow overflow-y-auto overflow-x-hidden" ref={contentRef}>
                 <CardContent className="p-2 sm:p-3 pb-20">
                     <div className="space-y-2 max-w-4xl mx-auto">
@@ -427,8 +455,9 @@ const MathProblemImpl: React.FC<MathProblemProps> = ({
                     </div>
                 </CardContent>
             </Card>
+            )}
 
-            <ControlPanel onReset={reset} onBack={previousStep} onNext={nextStep} started={stage !== "overview"} />
+            <ControlPanel embedded={embedded} onReset={reset} onBack={previousStep} onNext={nextStep} started={stage !== "overview"} />
         </div>
     );
 };

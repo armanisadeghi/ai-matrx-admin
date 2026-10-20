@@ -160,7 +160,7 @@ export const StatsBlock: React.FC<StatsBlockProps> = ({ content = "", isStreamAc
                   }
                 >
                   <div className="truncate text-xs font-medium uppercase tracking-wide text-muted-foreground">{s.label}</div>
-                  <div className="mt-1 text-2xl font-bold tabular-nums text-foreground">{s.value}</div>
+                  <div className="mt-1 whitespace-nowrap text-xl font-bold tabular-nums text-foreground sm:text-2xl" data-stat-value="">{s.value}</div>
                   {s.change && (
                     <div className={cn("mt-1 flex items-center gap-0.5 text-xs font-medium", t?.cls)}>
                       {t && <t.Icon className="h-3.5 w-3.5" />}

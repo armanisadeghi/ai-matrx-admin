@@ -77,4 +77,10 @@ export type MathProblemProps = Pick<
     | 'final_statement'
     | 'problem_statement'
     | 'solutions'
->;
+> & {
+    /**
+     * Drawn inside another frame (a note or chat block that already has its own header): no outer card,
+     * no second title, and no link that leaves the surface the problem sits in.
+     */
+    embedded?: boolean;
+};
