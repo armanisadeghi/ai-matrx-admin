@@ -11725,6 +11725,12 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
+    },
+    "migrations/campaign/20261021240200_readspeed5_c_kept_values_are_served_again.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261021240200_readspeed5_c_kept_values_are_served_again.sql",
+      "checksum": "0483da1e6926ac5d42777cef5fc5602db67aac37e7153700f39885911d9d1b39",
+      "applied_at": "2026-10-20 01:00:39.007509+00"
     }
   }
 }
