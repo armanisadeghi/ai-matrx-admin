@@ -66,7 +66,7 @@ import { useAgentBuilderWriteHandlers } from "@/features/agents/hooks/useAgentBu
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
-import { studioMode } from "../modes";
+import { studioMode, studioPageHref, studioStartStep } from "../modes";
 import { planImprove, runToSave } from "../improve";
 import {
   CHAT_CASE_SOURCE,
@@ -86,7 +86,7 @@ import { STUDIO_ASSISTANT_MANDATE, STUDIO_SURFACE_NAME, buildFromWorkspace, chec
 import { approvalText, codeApprove, type WorkspaceInput } from "../workspace";
 import { StudioWorkspacePane, useStudioWorkspace } from "./StudioWorkspacePane";
 import { useStudioBuilderFeed } from "../studio-builder-feed";
-import { StudioStart } from "./StudioStart";
+import { StudioStart, keepStudioDraft } from "./StudioStart";
 import { StudioRun } from "./StudioRun";
 import { StudioControls, type ControlsTab } from "./StudioControls";
 import { StudioTurnModel } from "./StudioTurnModel";
@@ -132,12 +132,21 @@ export function AgentStudioPage() {
   };
   const mode = studioMode(state.mode);
   const planPatch = { planId: state.planId, planStep: state.planStep };
-  if (!mode) {
+  // A way in that is its own page (Import from Claude, Use Claude Code): its link goes there.
+  const pageHref = studioPageHref(state.mode);
+  useEffect(() => {
+    if (pageHref) router.replace(pageHref);
+  }, [pageHref, router]);
+  // `?mode=` opens the mode it names: a way in with its own first step (Describe it's box, Improve's
+  // agent picker, From my examples' fields) opens on that step until it has started something.
+  const startStep = studioStartStep(state);
+  if (!mode || startStep) {
     return (
       <StudioStart
         onStart={(patch) => router.push(studioHref({ ...planPatch, ...patch }))}
         onBack={() => router.back()}
         initialJob={studioJobParam(new URLSearchParams(params.toString()))}
+        initialMode={startStep ?? undefined}
         planLink={<PlanBackLink state={state} />}
       />
     );
@@ -594,7 +603,16 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   } else if (state.buildId) {
     center = (
       <div className="h-full overflow-y-auto p-3">
-        <BuildProgress buildId={state.buildId} onFinished={onBuildFinished} onRebuilt={(id) => go({ buildId: id })} onKept={(id) => go({ agentId: id })} />
+        <BuildProgress
+          buildId={state.buildId}
+          onFinished={onBuildFinished}
+          onRebuilt={(id) => go({ buildId: id })}
+          onKept={(id) => go({ agentId: id })}
+          onEditDescription={(description) => {
+            keepStudioDraft(description);
+            router.push(studioHref({ mode: "describe", planId: state.planId, planStep: state.planStep }));
+          }}
+        />
       </div>
     );
   } else {

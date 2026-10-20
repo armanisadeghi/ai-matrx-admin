@@ -65,6 +65,11 @@ export interface BuildProgressProps {
    * somewhere themselves (a mandate's holder controls) leave this off.
    */
   forwardWhenKept?: boolean;
+  /**
+   * A stopped build's "Edit description": the door reopens its description box holding this
+   * request's own words. Doors with no box leave it off (Try again still shows).
+   */
+  onEditDescription?: (description: string) => void;
   className?: string;
 }
 
@@ -134,6 +139,15 @@ export function WorkflowSuggestion({ suggestion }: { suggestion: NonNullable<Fac
   );
 }
 
+const PROOF_STEPS: ReadonlySet<FactoryStepName> = new Set<FactoryStepName>(["proof", "proof_review"]);
+export const PROOF_SKIPPED_LINE = "No examples to prove it on. Its first 3 runs are judged.";
+
+/** The build was asked unproven and no proof case ran: Proof and Judge are not coming. */
+export function proofSkippedFor(state: FactoryBuildState | null | undefined): boolean {
+  if (!state?.request?.unproven) return false;
+  return (state.proof?.length ?? 0) === 0;
+}
+
 /** Where "Plan it as a workflow" opens: the Orchestras home (teams of agents under a conductor). */
 export const WORKFLOW_PLAN_PATH = "/agents/orchestras";
 
@@ -148,6 +162,7 @@ function OutcomePanel({
   onBuildUnproven,
   onBuildAsText,
   onRetry,
+  onEditDescription,
 }: {
   state: FactoryBuildState;
   /** The execution's real status — the checkpoint can still say running after a worker died. */
@@ -159,6 +174,8 @@ function OutcomePanel({
   onBuildAsText: () => void;
   /** A build that stopped: the same request again. */
   onRetry: () => void;
+  /** Back to the door's description box with the request's own words in it (doors that have one). */
+  onEditDescription?: () => void;
 }) {
   // A build whose worker died before the reaper settled it: the spine says failed or
   // canceled while the checkpoint never got an outcome — show it stopped, never blank.
@@ -200,14 +217,14 @@ function OutcomePanel({
       </Button>
     ) : (
       <Button variant="outline" onClick={onBuildUnproven} disabled={busy}>
-        Build unproven
+        Build anyway
       </Button>
     );
   } else if (outcome === "no_proof_inputs") {
     line = "The proof needs 3 example inputs.";
     actions = (
       <Button variant="outline" onClick={onBuildUnproven} disabled={busy}>
-        Build unproven
+        Build anyway
       </Button>
     );
   } else if (outcome === "needs_new_kind") {
@@ -220,13 +237,25 @@ function OutcomePanel({
       </Button>
     );
   } else if (outcome) {
-    // Every stop shows what happened, a retry and a way out — never a dead end (owner 2026-10-19).
     line = outcome === "worker_lost" ? "Stopped mid-build." : "The build stopped.";
     actions = (
+      <Button variant="outline" onClick={onBuildUnproven} disabled={busy}>
+        Build anyway
+      </Button>
+    );
+  }
+  // Every build that was not kept ends with the person's own words one press away and Try again —
+  // never a dead end, whatever the outcome (owner 2026-10-19; build-never-a-dead-end.test.tsx).
+  const stopped = Boolean(outcome) && !kept;
+  if (stopped) {
+    actions = (
       <>
-        <Button variant="outline" onClick={onBuildUnproven} disabled={busy}>
-          Build unproven
-        </Button>
+        {actions}
+        {onEditDescription ? (
+          <Button variant="outline" onClick={onEditDescription} disabled={busy}>
+            Edit description
+          </Button>
+        ) : null}
         <Button variant="primary" onClick={onRetry} disabled={busy}>
           Try again
         </Button>
@@ -281,7 +310,7 @@ export function buildIsSettled(
   return pollsSoFar >= MAX_POLLS_FOR_AGENT_ID;
 }
 
-export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardWhenKept, className }: BuildProgressProps) {
+export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardWhenKept, onEditDescription, className }: BuildProgressProps) {
   const router = useRouter();
   // A "Build unproven" follow-up replaces the build this view tracks.
   const [rebuiltId, setRebuiltId] = useState<string | null>(null);
@@ -333,7 +362,13 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
     }
   }, [over, settled, detail, currentId, onFinished, forwardWhenKept, router]);
 
-  const cells = detail ? stepCells(detail) : [];
+  // An unproven build (build-first: no examples to prove it on) never runs Proof or Judge — its
+  // first 3 real runs are judged instead. Those steps read as skipped, with the reason, never as
+  // steps still waiting (review 2026-10-20, beekeeping build 3a3aea1d).
+  const proofSkipped = proofSkippedFor(detail?.state);
+  const cells = (detail ? stepCells(detail) : []).map((c) =>
+    proofSkipped && PROOF_STEPS.has(c.step) && c.status === "pending" ? { ...c, status: "skipped" as const } : c,
+  );
 
   const keep = async () => {
     setBusy(true);
@@ -423,6 +458,12 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
         ))}
       </ol>
 
+      {proofSkipped ? (
+        <p data-testid="proof-skipped" className="type-secondary text-muted-foreground">
+          {PROOF_SKIPPED_LINE}
+        </p>
+      ) : null}
+
       {state.workflow_suggestion ? <WorkflowSuggestion suggestion={state.workflow_suggestion} /> : null}
 
       {over ? (
@@ -435,7 +476,13 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
             </Button>
           </div>
         ) : (
-          <OutcomePanel state={state} spineStatus={detail.spineStatus} busy={busy} onKeep={() => void keep()} onBuildUnproven={() => void rebuild("unproven")} onBuildAsText={() => void rebuild("as_text")} onRetry={() => void rebuild("retry")} />
+          <OutcomePanel state={state} spineStatus={detail.spineStatus} busy={busy} onKeep={() => void keep()} onBuildUnproven={() => void rebuild("unproven")} onBuildAsText={() => void rebuild("as_text")} onRetry={() => void rebuild("retry")}
+            onEditDescription={
+              onEditDescription && typeof state.request?.spec?.purpose === "string"
+                ? () => onEditDescription(String(state.request?.spec?.purpose))
+                : undefined
+            }
+          />
         )
       ) : null}
     </div>

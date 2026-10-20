@@ -50,18 +50,29 @@ const opensInPlace = (mode: StudioMode): mode is StudioMode & { id: OpenMode } =
 /** The description survives leaving the page for this tab's session (a way in that navigates, Back). */
 export const STUDIO_DRAFT_KEY = "agent-studio:start:describe";
 
+/** Puts words in the Describe box for this tab's session (a stopped build's "Edit description"). */
+export function keepStudioDraft(text: string): void {
+  try {
+    if (text.trim()) sessionStorage.setItem(STUDIO_DRAFT_KEY, text);
+  } catch {
+    // Storage refused (private mode): the box opens empty.
+  }
+}
+
 interface StudioStartProps {
   onStart: (patch: Partial<StudioState>) => void;
   onBack: () => void;
   /** An Orchestra Studio step's job: "Describe it" opens prefilled with it. */
   initialJob?: string;
+  /** The way in open first (`?mode=` names it); Describe it when absent. */
+  initialMode?: OpenMode;
   /** The "from plan … step n" back-link, when opened from a plan. */
   planLink?: React.ReactNode;
 }
 
-export function StudioStart({ onStart, onBack, initialJob = "", planLink }: StudioStartProps) {
+export function StudioStart({ onStart, onBack, initialJob = "", initialMode = "describe", planLink }: StudioStartProps) {
   const router = useRouter();
-  const [open, setOpen] = useState<OpenMode>("describe");
+  const [open, setOpen] = useState<OpenMode>(initialMode);
   const [description, setDescriptionState] = useState(initialJob);
   // Build-first: examples are optional, so none are asked for up front — one quiet
   // "Add an example" opens the shared field with a single box.
