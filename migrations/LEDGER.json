@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-20T06:12:41.310Z",
+  "generated_at": "2026-10-20T06:40:49.147Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -308,6 +308,12 @@
       "checksum": "0cf383b1e0e520871a51f78d1daed4470a618ba88e41bd06a9e514be5a8794ad",
       "applied_at": "2026-10-20 02:05:29.834702+00"
     },
+    "migrations/campaign/20261021270000_accessbatchagree_a_the_picker_gate_is_one_rule_in_set_form.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261021270000_accessbatchagree_a_the_picker_gate_is_one_rule_in_set_form.sql",
+      "checksum": "20078359cb73a2b18e466ecb020f35b92bf0dcd9a7553b9956c390a7402b7480",
+      "applied_at": "2026-10-20 06:40:45.256736+00"
+    },
     "migrations/campaign/20261022240000_readspeed6_a_a_column_write_holds_only_the_tables_it_feeds.sql": {
       "source": "matrx-frontend",
       "filename": "20261022240000_readspeed6_a_a_column_write_holds_only_the_tables_it_feeds.sql",
@@ -325,6 +331,18 @@
       "filename": "20261023240000_readspeed7_a_a_partial_reader_is_served_every_column_whose_every_source_she_sees.sql",
       "checksum": "c9a28afd175586c72000375d837b572a9f6ea4512acdedac343bbe9f36525df5",
       "applied_at": "2026-10-20 02:27:18.73479+00"
+    },
+    "migrations/campaign/20261024240000_versionhotrow_a_access_writers_never_wait_on_each_other.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261024240000_versionhotrow_a_access_writers_never_wait_on_each_other.sql",
+      "checksum": "8aeb595dd30f0a0e86100b280a22959619b53e007faa53351ecd3e100826bac5",
+      "applied_at": "2026-10-20 06:32:44.558011+00"
+    },
+    "migrations/campaign/20261024240100_versionhotrow_b_the_access_version_reader_keeps_its_plan.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261024240100_versionhotrow_b_the_access_version_reader_keeps_its_plan.sql",
+      "checksum": "db2d5f6ff22ce67f0a1a868993de97477c4cd648cb843593f547edc8287632b8",
+      "applied_at": "2026-10-20 06:39:49.091879+00"
     },
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
