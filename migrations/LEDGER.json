@@ -392,6 +392,12 @@
       "checksum": "50b3e5b6c1cf31285e159b178465f37f85ee04e0cf1376c8ce3c2e25d7a06a81",
       "applied_at": "2026-10-20 07:41:57.449916+00"
     },
+    "migrations/campaign/20261026240000_versionperorg_a_an_access_write_moves_only_the_organizations_it_touches.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261026240000_versionperorg_a_an_access_write_moves_only_the_organizations_it_touches.sql",
+      "checksum": "f2577b9ab02712fc4278bfec6e357310fd71723545e9c622eb0eabaefc4d986f",
+      "applied_at": "2026-10-20 08:33:13.914368+00"
+    },
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
       "filename": "a_chunk_is_the_size_the_client_door_can_actually_carry.sql",
