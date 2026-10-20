@@ -16,6 +16,8 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
             initialAgentId={
               typeof data?.initialAgentId === "string" ? data.initialAgentId : null
             }
+            initialTableIds={Array.isArray(data?.tableIds) ? (data.tableIds as unknown[]).filter((t): t is string => typeof t === "string") : undefined}
+            initialName={typeof data?.name === "string" ? data.name : undefined}
           />
         );
 }

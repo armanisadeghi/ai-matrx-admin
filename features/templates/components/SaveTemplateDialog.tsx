@@ -30,15 +30,20 @@ export interface SaveTemplateDialogProps {
   isOpen: boolean;
   onClose: () => void;
   initialAgentId?: string | null;
+  /** AT-FIX-H3: a base saved as a template starts from its tables, with no agent to pick. */
+  initialTableIds?: string[];
+  /** The template's starting name. */
+  initialName?: string;
 }
 
 
-export function SaveTemplateDialog({ isOpen, onClose, initialAgentId }: SaveTemplateDialogProps) {
+export function SaveTemplateDialog({ isOpen, onClose, initialAgentId, initialTableIds, initialName }: SaveTemplateDialogProps) {
+  const fromTables = (initialTableIds?.length ?? 0) > 0;
   const [agentId, setAgentId] = useState<string | null>(initialAgentId ?? null);
   const [found, setFound] = useState<{ agents: SetupAgent[]; tableIds: string[] } | { error: string } | null>(null);
   const [skipped, setSkipped] = useState<Set<string>>(new Set());
   const [includeRows, setIncludeRows] = useState(true);
-  const [name, setName] = useState("");
+  const [name, setName] = useState(initialName ?? "");
   const [describes, setDescribes] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -77,9 +82,9 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId }: SaveTemp
   }, [agentId]);
 
   const rowsOf = useMemo(() => new Map(tables.rows.map((r) => [r.table_id, r])), [tables.rows]);
-  const ok = found && "agents" in found ? found : null;
+  const ok = fromTables ? { agents: [] as SetupAgent[], tableIds: initialTableIds ?? [] } : found && "agents" in found ? found : null;
   const chosenAgents = ok ? ok.agents.filter((a) => !skipped.has(a.id)) : [];
-  const tableIds = ok ? tablesReadBy(chosenAgents) : [];
+  const tableIds = ok ? (fromTables ? ok.tableIds : tablesReadBy(chosenAgents)) : [];
   // The tables' organization: the draft door reads them there, and the template is saved there.
   const orgs = new Set(tableIds.map((t) => rowsOf.get(t)?.organization_id).filter(Boolean) as string[]);
   const organizationId = orgs.size === 1 ? [...orgs][0]! : null;
@@ -118,7 +123,7 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId }: SaveTemp
       <DialogContent size="lg" data-save-template="">
         <DialogHeader>
           <DialogTitle>Save as template</DialogTitle>
-          <DialogDescription>An agent, the tables it reads and the agents that share them</DialogDescription>
+          <DialogDescription>{fromTables ? "The tables of this base, with their views" : "An agent, the tables it reads and the agents that share them"}</DialogDescription>
         </DialogHeader>
 
         {saved ? (
@@ -141,7 +146,7 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId }: SaveTemp
           </div>
         ) : (
           <div className="space-y-4">
-            <AgentListDropdown
+            {fromTables ? null : <AgentListDropdown
               activeAgentId={agentId ?? undefined}
               onSelect={(id: string) => {
                 setAgentId(id);
@@ -158,7 +163,7 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId }: SaveTemp
                   </span>
                 </Button>
               }
-            />
+            />}
             {found && "error" in found ? <p className="type-body text-destructive">{found.error}<ErrorAlchemyMenu error={found.error} /></p> : null}
             {agentId && !found ? (
               <p className="flex items-center gap-2 type-body text-muted-foreground">
@@ -167,7 +172,7 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId }: SaveTemp
             ) : null}
             {ok ? (
               <>
-                <div className="space-y-1.5">
+                {ok.agents.length > 0 ? <div className="space-y-1.5">
                   <p className="type-secondary font-medium text-muted-foreground">Agents</p>
                   {ok.agents.map((a, i) => (
                     <label key={a.id} className="flex items-center gap-2 text-sm">
@@ -186,7 +191,7 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId }: SaveTemp
                       <span className="truncate">{a.name}</span>
                     </label>
                   ))}
-                </div>
+                </div> : null}
                 <div className="space-y-1.5">
                   <p className="type-secondary font-medium text-muted-foreground">Tables</p>
                   {tableIds.map((t) => (

@@ -40,7 +40,8 @@ const RELATED = 6;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const page = await readTemplatePage(decodeURIComponent(slug));
-  if (!page) return { title: "Template not found", robots: { index: false, follow: true } };
+  // An organization's own saved template opens here by its id (signed in) and is never in the public read: its tab says so, it is not "not found".
+  if (!page) return { title: TEMPLATE_ID.test(decodeURIComponent(slug)) ? "Saved template" : "Template not found", robots: { index: false, follow: true } };
   const { card, spec } = page;
   const path = publicTemplateHref(card);
   const space = page.pack ? card.space : null;

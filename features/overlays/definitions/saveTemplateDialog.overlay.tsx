@@ -19,6 +19,10 @@ const OVERLAY_ID = "saveTemplateDialog" as const;
 export interface OpenSaveTemplateDialogOptions {
   /** Start with this agent picked. */
   initialAgentId?: string | null;
+  /** Save these tables (a whole base) as the template, with no agent to pick. */
+  tableIds?: string[];
+  /** The template's starting name (a base's name). */
+  name?: string;
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
@@ -30,6 +34,8 @@ export function createSaveTemplateDialogOpener(store: AppStore) {
         overlayId: OVERLAY_ID,
         data: {
           initialAgentId: opts.initialAgentId ?? null,
+          tableIds: opts.tableIds ?? null,
+          name: opts.name ?? null,
         },
       }),
     );
