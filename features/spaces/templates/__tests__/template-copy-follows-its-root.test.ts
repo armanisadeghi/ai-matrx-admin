@@ -5,11 +5,11 @@
 // F4: a failed install said the raw database text plus up to three sentences, with "Try again" twice.
 //
 // The seams: the real installedCopies / templateCopyOfPage over a fake supabase client that answers
-// custom.template_instances and content.document the way the live store does (the root page carries the install it was
-// made by, `metadata.from_template`), and the real trash/restore lifecycle over fake ports with a fake install.
+// custom.template_instances and content.document the way the live store does (the install records its pages: template_instances answers root_page_id and pages, and
+// template_instance_of_page answers which install a page belongs to; the page itself carries nothing), and the real trash/restore lifecycle over fake ports with a fake install.
 
 type Doc = { id: string; organization_id: string; format: string; title: string; created_at: string; deleted_at: string | null; metadata: Record<string, unknown> };
-type Install = { install_id: string; state: string; title: string; version: number; started_at: string; finished_at: string | null; tables: unknown[] };
+type Install = { install_id: string; state: string; title: string; version: number; started_at: string; finished_at: string | null; tables: unknown[]; root_page_id: string | null; pages: Array<{ id: string; title: string }> };
 
 const db: { docs: Doc[]; installs: Install[] } = { docs: [], installs: [] };
 
@@ -37,7 +37,14 @@ function query(rows: () => Doc[]) {
 jest.mock("@/utils/supabase/client", () => ({
   createClient: () => ({
     schema: () => ({
-      rpc: async (fn: string) => (fn === "template_instances" ? { data: db.installs.map((i) => ({ ...i, newer_version: null, upgrade: null, instance_no: 2, mode: "fresh", template_id: "tpl" })), error: null } : { data: null, error: null }),
+      rpc: async (fn: string, args: Record<string, unknown>) => {
+        if (fn === "template_instances") return { data: db.installs.map((i) => ({ ...i, newer_version: null, upgrade: null, instance_no: 2, mode: "fresh", template_id: "tpl" })), error: null };
+        if (fn === "template_instance_of_page") {
+          const i = db.installs.find((x) => x.pages.some((pg) => pg.id === args.p_page_id));
+          return { data: i ? { id: i.install_id, catalogue_id: "SP0203", status: i.state, root_page_id: i.root_page_id, template_version: i.version } : null, error: null };
+        }
+        return { data: null, error: null };
+      },
       from: () => query(() => db.docs),
     }),
   }),
@@ -50,7 +57,7 @@ import { TEMPLATE_BUSY_MESSAGE } from "@ai-matrx/records/templates";
 
 import type { SpaceDoc, SpacesStore } from "../../contract";
 import { installedCopies, refusalSentence, runUseTemplate, type PackRun, type SpaceTemplateFull } from "../use-pack";
-import { removeCopyQuestion, restorePageOrCopy, templateCopyMetadata, templateCopyOfPage, templateDoorSentence, trashPageOrCopy, type CopyLifecyclePorts, type TemplateCopy } from "../template-copy";
+import { removeCopyQuestion, restorePageOrCopy, templateCopyOfPage, templateDoorSentence, trashPageOrCopy, type CopyLifecyclePorts, type TemplateCopy } from "../template-copy";
 
 const ORG = "org-1";
 const at = "2026-10-20T06:00:00.000Z";
@@ -61,9 +68,11 @@ const root = (id: string, installId: string, title: string, deleted: boolean): D
   title,
   created_at: at,
   deleted_at: deleted ? at : null,
-  metadata: templateCopyMetadata({ installId, catalogueId: "SP0203" }),
+  metadata: {},
 });
-const install = (id: string, state: string, title = "Personal Goal Tracker"): Install => ({ install_id: id, state, title, version: 6, started_at: at, finished_at: at, tables: [{}, {}, {}] });
+const install = (id: string, state: string, title = "Personal Goal Tracker"): Install => ({ install_id: id, state, title, version: 6, started_at: at, finished_at: at, tables: [{}, {}, {}], root_page_id: null, pages: [] });
+/** The install records `rootId` as its page (template_install_note), as the run does. */
+const recorded = (i: Install, rootId: string, title = "Personal Goal Tracker"): Install => ({ ...i, root_page_id: rootId, pages: [{ id: rootId, title }] });
 
 beforeEach(() => {
   db.docs = [];
@@ -73,40 +82,41 @@ beforeEach(() => {
 
 describe("F2: 'You already have' offers only a copy that can be opened, or restored", () => {
   it("a copy whose root was trashed by hand while its tables stayed installed is NOT offered (it would end in a dead end)", async () => {
-    db.installs = [install("inst-a", "installed")];
+    db.installs = [recorded(install("inst-a", "installed"), "root-a")];
     db.docs = [root("root-a", "inst-a", "Personal Goal Tracker", true)];
     expect(await installedCopies(ORG, "SP0203")).toEqual([]);
   });
 
   it("a removed copy (install uninstalled, root in Trash) is offered as trashed, so the screen says Restore it", async () => {
-    db.installs = [install("inst-a", "uninstalled")];
+    db.installs = [recorded(install("inst-a", "uninstalled"), "root-a")];
     db.docs = [root("root-a", "inst-a", "Personal Goal Tracker", true)];
     expect(await installedCopies(ORG, "SP0203")).toEqual([expect.objectContaining({ installId: "inst-a", root: "root-a", trashed: true })]);
   });
 
   it("a live copy is offered as live, with its recorded root", async () => {
-    db.installs = [install("inst-a", "installed")];
+    db.installs = [recorded(install("inst-a", "installed"), "root-a")];
     db.docs = [root("root-a", "inst-a", "Personal Goal Tracker", false)];
     expect(await installedCopies(ORG, "SP0203")).toEqual([expect.objectContaining({ installId: "inst-a", root: "root-a", trashed: false })]);
   });
 
   it("a copy with no recorded root page is not offered (never found by title)", async () => {
     db.installs = [install("inst-a", "installed")];
-    db.docs = [{ ...root("root-a", "inst-a", "Personal Goal Tracker", false), metadata: {} }];
+    db.docs = [root("root-a", "inst-a", "Personal Goal Tracker", false)];
     expect(await installedCopies(ORG, "SP0203")).toEqual([]);
   });
 });
 
 describe("F3: Open it uses the root the copy recorded", () => {
   it("a renamed root is still the copy's root", async () => {
-    db.installs = [install("inst-a", "installed")];
+    db.installs = [recorded(install("inst-a", "installed"), "root-a")];
     db.docs = [root("root-a", "inst-a", "Our goals", false)];
     expect((await installedCopies(ORG, "SP0203"))[0]?.root).toBe("root-a");
   });
 
-  it("the page side reads the same link: a renamed root is the copy's root, a duplicate (no stamp) is not", async () => {
-    db.installs = [install("inst-a", "installed")];
-    db.docs = [root("root-a", "inst-a", "Our goals", false), { ...root("dup", "inst-a", "Our goals", false), metadata: {} }];
+  it("the page side reads the same link: a renamed root is the copy's root, a duplicate (not recorded by the install) is not, and neither is a later recorded page", async () => {
+    db.installs = [{ ...recorded(install("inst-a", "installed"), "root-a"), pages: [{ id: "root-a", title: "Our goals" }, { id: "sub-a", title: "Goals" }] }];
+    db.docs = [root("root-a", "inst-a", "Our goals", false), root("dup", "inst-a", "Our goals", false), root("sub-a", "inst-a", "Goals", false)];
+    expect(await templateCopyOfPage("sub-a")).toBeNull();
     expect(await templateCopyOfPage("root-a")).toMatchObject({ installId: "inst-a", rootId: "root-a", state: "installed", tables: 3 });
     expect(await templateCopyOfPage("dup")).toBeNull();
   });
