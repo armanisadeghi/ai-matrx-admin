@@ -3,6 +3,7 @@
 // features/mandates/runs/RunFacts.tsx — the facts row of a run and the live
 // output block shared by both sides of the Runs tab.
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { StatusToken, PropertyRow } from "@ai-matrx/design-system/controls";
@@ -98,10 +99,18 @@ export function StreamedRunBlock({
   audience: "admin" | "product";
 }) {
   const { unit: costDisplay, rate: costRate } = useCostDisplay();
+  // NEVER SILENT: the block sits under its button inside the run pane's own scroller, so a refusal
+  // (the server's words) or a starting run can land below the pane's fold — bring it into view the
+  // moment it appears (live defect 2026-10-20: a 409 drew under the fold and read as "nothing happened").
+  const blockRef = useRef<HTMLDivElement>(null);
+  const shown = state.requestId ?? state.result;
+  useEffect(() => {
+    if (shown) blockRef.current?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+  }, [shown]);
   if (!state.requestId && !state.result) return null;
   const stored = state.stored;
   return (
-    <div className="space-y-2">
+    <div ref={blockRef} className="space-y-2">
       {state.requestId ? (
         <LiveRunDisplay
           requestId={state.requestId}

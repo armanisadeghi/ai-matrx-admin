@@ -155,7 +155,7 @@ export function RunAsItHappened({
               variant="outline"
               disabled={replay.running}
               title="Runs the model again and stores a test run"
-              onClick={() => void replay.start((dispatch, onAdopted) => streamReplay(dispatch, run.conversationId, mandateKey, onAdopted))}
+              onClick={() => void replay.start((dispatch, onAdopted) => streamReplay(dispatch, run.conversationId, mandateKey, run.organizationId, onAdopted))}
             >
               {replay.running ? "Replaying…" : "Replay exactly"}
             </Button>
