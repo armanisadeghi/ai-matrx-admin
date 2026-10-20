@@ -53,11 +53,16 @@ const StructuredPlanViewer: React.FC<StructuredPlanViewerProps> = ({
   useEffect(() => {
     if (!content) return;
     
-    // Count headings (bolded text)
-    const headingCount = (content.match(/\*\*[^*]+\*\*/g) || []).length;
+    // Count section headings: whole-line bold runs (the structured_info
+    // grammar). A leading bold line is the document title, not a section; a
+    // bold label inside a bullet (`* **Label:** text`) is not a heading.
+    const headingLines = content.match(/^[ \t]*\*\*[^*\n]+\*\*[ \t]*$/gm) || [];
+    const leadingTitle =
+      headingLines.length > 0 && content.trimStart().startsWith((headingLines[0] ?? "").trim());
+    const headingCount = headingLines.length - (leadingTitle ? 1 : 0);
     
-    // Count bullet points
-    const bulletCount = (content.match(/^\s*\*/gm) || []).length;
+    // Count bullet points (`* ` / `- ` items, never a bold line)
+    const bulletCount = (content.match(/^\s*[*-]\s/gm) || []).length;
     
     // Count words
     const wordCount = content

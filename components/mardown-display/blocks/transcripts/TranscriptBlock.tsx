@@ -9,7 +9,7 @@ import { ChevronDown, Database, FileText, Upload } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
 import AdvancedTranscriptViewer from "@/components/mardown-display/blocks/transcripts/AdvancedTranscriptViewer";
 import { ImportTranscriptModal } from "@/features/transcripts/components/ImportTranscriptModal";
-import { parseTranscript } from "./transcript-parser";
+import { parseTranscript, type ParsedTranscript } from "./transcript-parser";
 import { useToast } from "@/components/ui/use-toast";
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import { useOpenSaveToTable } from "@/features/overlays/definitions/saveToTable.overlay";
@@ -17,14 +17,16 @@ import { transcriptTableRows } from "@/features/transcripts/format";
 
 interface TranscriptBlockProps {
   content: string;
+  /** Already-parsed transcript (a kind value's bridge output) — skips re-parsing `content`. */
+  parsed?: ParsedTranscript;
 }
 
-const TranscriptBlock: React.FC<TranscriptBlockProps> = ({ content }) => {
+const TranscriptBlock: React.FC<TranscriptBlockProps> = ({ content, parsed: given }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const { toast } = useToast();
 
-  const parsed = useMemo(() => parseTranscript(content), [content]);
+  const parsed = useMemo(() => given ?? parseTranscript(content), [given, content]);
   const openSaveToTable = useOpenSaveToTable();
 
   const collapsibleTitle = parsed.title ?? "Transcript";

@@ -1625,7 +1625,16 @@ const SHAPE_BLOCK_DISPATCH = {
   // NOTE: like `table` — normally consumed by the unified artifact stage
   // (TranscriptArtifact); preserved legacy path below.
   transcript: ({ block, index }) => (
-    <BlockComponents.TranscriptBlock key={index} content={block.content} />
+    <BlockComponents.TranscriptBlock
+      key={index}
+      content={block.content}
+      // A JSON __kind arrival carries the bridge's parsed transcript in serverData.
+      parsed={
+        Array.isArray((block.serverData as { segments?: unknown } | null | undefined)?.segments)
+          ? (block.serverData as never)
+          : undefined
+      }
+    />
   ),
 
   // NOTE: normally consumed by the unified artifact stage
