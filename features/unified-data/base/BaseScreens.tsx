@@ -590,7 +590,7 @@ export function SnapshotsDialog({ open, onClose, homeId, organizationId, name, t
         const left = (res as { leftInLists?: readonly string[] }).leftInLists ?? [];
         setNote(left.length > 0
           ? `The snapshot stopped at ${res.stoppedAt.name}; ${left.length === 1 ? "1 copy is" : `${left.length} copies are`} still in your lists as "Snapshot ${when} · …".`
-          : `The snapshot stopped at ${res.stoppedAt.name}; nothing is left in your lists.`);
+          : `The snapshot stopped at ${res.stoppedAt.name}: ${sayError(res.error, "it did not finish")}. Nothing is left in your lists.`);
         return;
       }
       await saveSnapshot(organizationId, b.id, res.snapshot);
