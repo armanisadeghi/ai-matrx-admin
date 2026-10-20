@@ -24,7 +24,8 @@
 
 import { useState, type ReactNode } from "react";
 import { Loader2, X } from "lucide-react";
-import { Button, TextInputDialog } from "@ai-matrx/design-system";
+import { TextInputDialog } from "@ai-matrx/design-system";
+import { Button } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
@@ -158,9 +159,10 @@ export function EntityBulkActions<TRow>({
           <Button
             key={action.id}
             type="button"
-            size="sm"
-            variant={action.variant ?? "outline"}
-            className="h-11 gap-1.5 px-2 text-xs lg:h-7"
+            // One family (lane mac-fixes): the /controls Button, sized by the table's control
+            // scale (look="mac" included); its touch hit area grows to 44px by itself.
+            variant={action.variant === "destructive" ? "danger" : action.variant === "default" ? "primary" : "outline"}
+            icon={busy ? <Loader2 className="animate-spin" /> : Icon ? <Icon /> : undefined}
             disabled={pending !== null || unavailable !== null || selection.count === 0}
             title={unavailable ?? (compact ? action.label : undefined)}
             aria-label={`${action.label} — ${bulkCountLabel(selection.count, noun)}`}
@@ -170,12 +172,7 @@ export function EntityBulkActions<TRow>({
               void run(action);
             }}
           >
-            {busy ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : Icon ? (
-              <Icon className="h-3.5 w-3.5" />
-            ) : null}
-            {compact && Icon ? null : action.label}
+            {compact && Icon ? undefined : action.label}
           </Button>
         );
       })}
@@ -335,13 +332,7 @@ export function EntityBulkSelectAllBanner<TRow>({
           </span>{" "}
           so far.
         </span>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-11 gap-1 px-2 text-xs lg:h-7"
-          onClick={selection.cancelSelectAllMatching}
-        >
-          <X className="h-3.5 w-3.5" />
+        <Button variant="quiet" icon={<X />} onClick={selection.cancelSelectAllMatching}>
           Cancel
         </Button>
       </BannerShell>
@@ -363,12 +354,7 @@ export function EntityBulkSelectAllBanner<TRow>({
           those {count === 1 ? "one" : count.toLocaleString()}.
           <ErrorAlchemyMenu error={resolveError} />
         </span>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-11 px-2 text-xs lg:h-7"
-          onClick={selection.runSelectAllMatching}
-        >
+        <Button variant="quiet" onClick={selection.runSelectAllMatching}>
           Try again
         </Button>
       </BannerShell>
@@ -385,13 +371,7 @@ export function EntityBulkSelectAllBanner<TRow>({
           </span>{" "}
           in total, including the ones not on this page.
         </span>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-11 gap-1 px-2 text-xs lg:h-7"
-          onClick={selection.clear}
-        >
-          <X className="h-3.5 w-3.5" />
+        <Button variant="quiet" icon={<X />} onClick={selection.clear}>
           Clear selection
         </Button>
         {actionsSlot}
@@ -407,9 +387,7 @@ export function EntityBulkSelectAllBanner<TRow>({
           matches <span className="tabular-nums">{matchingTotal.toLocaleString()}</span>.
         </span>
         <Button
-          size="sm"
           variant="outline"
-          className="h-11 px-2 text-xs lg:h-7"
           data-entity-bulk-select-all-matching
           onClick={selection.runSelectAllMatching}
         >
@@ -450,13 +428,7 @@ export function EntityBulkSelectAllBanner<TRow>({
         <span className="font-medium">
           {bulkCountLabel(count, noun)} selected
         </span>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-11 gap-1 px-2 text-xs lg:h-7"
-          onClick={selection.clear}
-        >
-          <X className="h-3.5 w-3.5" />
+        <Button variant="quiet" icon={<X />} onClick={selection.clear}>
           Clear
         </Button>
         {actionsSlot}

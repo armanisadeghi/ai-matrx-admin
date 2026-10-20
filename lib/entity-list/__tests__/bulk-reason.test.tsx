@@ -125,3 +125,16 @@ describe("bulk confirm asks one reason", () => {
     expect(run).not.toHaveBeenCalled();
   });
 });
+
+// lane mac-fixes (2026-10-19), trial P7: the bulk verbs drew as legacy bordered h-7 capsules, so a
+// look="mac" table's selection bar held 28 px legacy buttons beside its Mac-scale controls. They
+// are the /controls Button now (one family), which the table's control scale sizes.
+describe("bulk verbs are the controls family", () => {
+  it("each verb is a /controls button; a destructive verb is the danger variant", async () => {
+    const root = await mount({ id: "close", label: "Close", variant: "destructive", run: jest.fn(async () => ({ done: "Closed" })) } as unknown as EntityBulkAction<Row>);
+    const button = document.querySelector('[data-entity-bulk-action="close"]');
+    expect(button?.getAttribute("data-matrx-control")).toBe("button");
+    expect(button?.getAttribute("data-variant")).toBe("danger");
+    act(() => root.unmount());
+  });
+});
