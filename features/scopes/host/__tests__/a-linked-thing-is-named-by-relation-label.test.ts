@@ -27,7 +27,7 @@ const baseTitles = {
 };
 
 jest.mock("@ai-matrx/associations/core", () => ({ createAssociationsStore: () => ({ titles: baseTitles }) }));
-jest.mock("@ai-matrx/records/core", () => ({ storeDoors: () => ({ entityReferenceWords: (...a: unknown[]) => door(...a) }) }));
+jest.mock("@ai-matrx/records/core", () => ({ onRecordChanged: () => () => undefined, storeDoors: () => ({ entityReferenceWords: (...a: unknown[]) => door(...a) }) }));
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
 jest.mock("@/utils/auth/getUserId", () => ({ requireUserId: () => "u" }));
 jest.mock("@/utils/supabase/sessionBarrier", () => ({ sessionStateNow: () => "attached" }));

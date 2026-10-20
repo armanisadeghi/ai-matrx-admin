@@ -30,7 +30,7 @@ import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { withOrganizationRefusalShown } from "@ai-matrx/chat/host/org";
 import { associationsErrorSink } from "./errorSink";
 import { withRelationLabels } from "./relationLabelTitles";
-import { storeDoors } from "@ai-matrx/records/core";
+import { onRecordChanged, storeDoors } from "@ai-matrx/records/core";
 import { getActiveOrgId } from "@/lib/organizations/activeOrg";
 import { getAssociationsEntityOverlay } from "@/features/scopes/registry/entityRegistry";
 
@@ -89,6 +89,22 @@ export function getAssociationsStore(): AssociationsStore {
     // is asked of platform.relation_label. Every consumer reads `store.titles`, so the wrap is made here, once.
     const doors = storeDoors(supabase);
     store.titles = withRelationLabels(store.titles, doors.entityReferenceWords, getActiveOrgId);
+    followRecordWrites(store);
   }
   return store;
+}
+
+/**
+ * A LINK MADE IN A CELL SHOWS AT ONCE. The records client writes an entity-reference cell through the
+ * store's own door, and the store writes the `record -> <thing>` edge itself, so this package store never
+ * hears of it and a Linked list that already read that record kept saying "Nothing linked yet" until a
+ * reload. The records client announces every record it writes (`onRecordChanged`); here, once, the edges
+ * of a record somebody is looking at are read again. Every list that shows links reads this store, so
+ * all of them follow. A record nobody has loaded here (status idle) costs no read.
+ */
+export function followRecordWrites(target: AssociationsStore): () => void {
+  return onRecordChanged((recordId) => {
+    if (target.getEdges("record", recordId).status === "idle") return;
+    void target.load("record", recordId, { force: true });
+  });
 }
