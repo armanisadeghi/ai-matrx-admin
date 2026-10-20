@@ -164,6 +164,41 @@ type ContextHit =
   | { kind: "ambiguous" }
   | { kind: "none" };
 
+const THINKING_CLOSER = /<\/(?:thinking|reasoning)>/gi;
+const THINKING_OPENER = /<(?:thinking|reasoning)>/i;
+
+/**
+ * THE SAVED CONTEXT, MINUS A REASONING TRACE. An answer streamed in this tab is
+ * held with its reasoning inline (`<reasoning>…</reasoning>` inside the text),
+ * while the stored row keeps reasoning in its own part, so a reload draws the
+ * answer without it. A passage pinned right after the stream therefore saved
+ * reasoning as its context, and that context can never agree after a reload:
+ * the lone, exact quote was refused and the comment lost its mark (review 3,
+ * R4, 2026-10-20). Context is only the answer's own text: the part of the
+ * saved prefix after the last reasoning closer, and of the saved suffix before
+ * the first opener. When what remains is only whitespace, no context was saved.
+ */
+export function contextOutsideThinking(prefix: string, suffix: string): { prefix: string; suffix: string } {
+  let p = prefix;
+  let s = suffix;
+  let lastClose = -1;
+  let closerLength = 0;
+  for (const m of prefix.matchAll(THINKING_CLOSER)) {
+    lastClose = m.index ?? -1;
+    closerLength = m[0].length;
+  }
+  if (lastClose >= 0) {
+    p = prefix.slice(lastClose + closerLength);
+    if (!p.trim()) p = "";
+  }
+  const open = suffix.search(THINKING_OPENER);
+  if (open >= 0) {
+    s = suffix.slice(0, open);
+    if (!s.trim()) s = "";
+  }
+  return { prefix: p, suffix: s };
+}
+
 /**
  * Every occurrence of the quote, scored by how much of the saved prefix and
  * suffix surrounds it, then by nearness to the saved position. Requires the
@@ -174,8 +209,7 @@ export function bestContextMatch(anchor: TextAnchor, body: string): ContextHit {
   const exact = anchor.exact;
   if (!exact) return { kind: "none" };
   const index = buildCodePointIndex(body);
-  const prefix = anchor.prefix ?? "";
-  const suffix = anchor.suffix ?? "";
+  const { prefix, suffix } = contextOutsideThinking(anchor.prefix ?? "", anchor.suffix ?? "");
   const candidates: { startCp: number; score: number; distance: number }[] = [];
   let from = 0;
   for (;;) {
