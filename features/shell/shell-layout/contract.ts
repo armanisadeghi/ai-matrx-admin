@@ -130,9 +130,27 @@ export interface LaunchpadWidget {
   layout: { lg: GridPlacement; sm?: GridPlacement };
 }
 
+/** One end of a page-bus connection: a widget on this launchpad and one of its declared value keys. */
+export interface LaunchpadBindingEnd {
+  widgetId: string;
+  key: string;
+}
+
+/**
+ * THE PAGE BUS (amendment 2026-10-20, lane L): `from` is a value a widget publishes (its type's
+ * `publishes`), `to` an input another widget accepts (`accepts`). Values live for the browser
+ * session only; only the connection is saved. One input takes at most one connection.
+ */
+export interface LaunchpadBinding {
+  from: LaunchpadBindingEnd;
+  to: LaunchpadBindingEnd;
+}
+
 export interface LaunchpadDoc {
   schemaVersion: typeof LAUNCHPAD_DOC_SCHEMA_VERSION;
   widgets: LaunchpadWidget[];
+  /** Page-bus connections (amendment 2026-10-20). Absent = none; schema stays v1. */
+  bindings?: LaunchpadBinding[];
 }
 
 /** `slot` of a launchpad row: unique per organization copy of the table. */

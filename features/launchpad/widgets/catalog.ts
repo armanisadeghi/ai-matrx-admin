@@ -76,6 +76,8 @@ export const LAUNCHPAD_WIDGET_CATALOG: readonly LaunchpadWidgetSpec[] = [
     defaultConfig: { kind: "conversation" },
     fields: [{ key: "kind", label: "Kind", options: RECENT_KINDS.map((k) => ({ value: k.value, label: k.label })) }],
     describe: (c) => `Recent ${recentLabel(configText(c, "kind")).toLowerCase()}`,
+    publishes: [{ key: "selected", label: "Selected item", kind: "record" }],
+    accepts: [{ key: "search", label: "Search", kind: "text" }],
   },
   {
     type: "tasks",
@@ -87,6 +89,8 @@ export const LAUNCHPAD_WIDGET_CATALOG: readonly LaunchpadWidgetSpec[] = [
     fields: [],
     describe: () => "Open and overdue tasks",
     href: () => "/tasks",
+    publishes: [{ key: "selected", label: "Selected task", kind: "record" }],
+    accepts: [{ key: "filter", label: "Filter", kind: "text" }],
   },
   {
     type: "agenda",
@@ -137,6 +141,10 @@ export const LAUNCHPAD_WIDGET_CATALOG: readonly LaunchpadWidgetSpec[] = [
     defaultConfig: {},
     fields: [{ key: "tableId", label: "Table", picker: "dataTable" }],
     describe: (c) => (configText(c, "tableId") ? "First rows of one of your tables" : "Table (none chosen)"),
+    publishes: [
+      { key: "selected", label: "Selected row", kind: "record" },
+      { key: "rows", label: "Shown rows", kind: "rows" },
+    ],
   },
   {
     type: "applet",
@@ -147,6 +155,16 @@ export const LAUNCHPAD_WIDGET_CATALOG: readonly LaunchpadWidgetSpec[] = [
     defaultConfig: {},
     fields: [{ key: "appId", label: "Applet", picker: "applet" }],
     describe: (c) => configText(c, "name") || (configText(c, "appId") ? "Applet" : "Applet (none chosen)"),
+    // The Applet reads these with `useValue("in_record")` and publishes with `useValue("out_record")`'s setter.
+    publishes: [
+      { key: "out_record", label: "Record it picks", kind: "record" },
+      { key: "out_text", label: "Text it sets", kind: "text" },
+    ],
+    accepts: [
+      { key: "in_record", label: "Record", kind: "record" },
+      { key: "in_file", label: "File", kind: "file" },
+      { key: "in_text", label: "Text", kind: "text" },
+    ],
   },
   {
     type: "launchpad_link",
@@ -169,6 +187,7 @@ export const LAUNCHPAD_WIDGET_CATALOG: readonly LaunchpadWidgetSpec[] = [
     fields: [{ key: "path", label: "Page address", picker: "appPage" }],
     describe: (c) => (configText(c, "path") ? appPageLabel(configText(c, "path")) : "App page (none chosen)"),
     href: (c) => configText(c, "path") || null,
+    accepts: [{ key: "record", label: "Record to open", kind: "record" }],
   },
 ];
 
