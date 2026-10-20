@@ -11869,6 +11869,24 @@
       "filename": "serverrows_a_a_pages_levels_are_read_the_way_the_page_reads_them.sql",
       "checksum": "9b4630a39a53284d5477dd26fe2c498f98137354efafe72fae3cc3c8f5d89851",
       "applied_at": "2026-10-20 06:58:20.616443+00"
+    },
+    "migrations/campaign/20261020004000_pagebundlespeed_b_a_a_small_table_page_reads_only_its_own_rows_and_links.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261020004000_pagebundlespeed_b_a_a_small_table_page_reads_only_its_own_rows_and_links.sql",
+      "checksum": "5955ad0e555c84f1a4baff938624743b43f9ff569eb518ac298274a1428d779b",
+      "applied_at": "2026-10-20 06:59:07.033192+00"
+    },
+    "migrations/campaign/20261020005000_pagebundlespeed_c_a_a_day_zone_is_asked_once_per_statement.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261020005000_pagebundlespeed_c_a_a_day_zone_is_asked_once_per_statement.sql",
+      "checksum": "74fc0e234649b107c9caf74509f6ae2b04433bd97dfe098a7a6cc99db7668b42",
+      "applied_at": "2026-10-20 07:03:13.985927+00"
+    },
+    "migrations/campaign/pagebundlespeed_a_a_relation_fields_and_confidential_tables_are_found_by_index.sql": {
+      "source": "matrx-frontend",
+      "filename": "pagebundlespeed_a_a_relation_fields_and_confidential_tables_are_found_by_index.sql",
+      "checksum": "1fbac2fb287350a5d48a7a443b4247c879eeb03e94db4028a2d001afe97b596a",
+      "applied_at": "2026-10-20 06:47:46.084352+00"
     }
   }
 }
