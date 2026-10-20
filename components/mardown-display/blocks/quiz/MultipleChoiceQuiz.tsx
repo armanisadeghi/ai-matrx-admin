@@ -778,7 +778,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
             />
             {/* A question with no right answer says so (review 2026-10-19 #16) — never a silent quiz. */}
             {currentQuestion.correctAnswerIndex < 0 && (
-              <p className="mt-1 text-xs text-muted-foreground" data-quiz-no-answer="">No right answer</p>
+              <p className="mt-1 text-xs text-muted-foreground" data-quiz-no-answer="">The answer is not given</p>
             )}
             {controls && questionEdit && questionRowIndex >= 0 && (
               <InlineRowPopover
