@@ -176,12 +176,18 @@ export interface SavedTemplate {
   left: string[];
 }
 
+/** The steps of a save, in order: the store reads the tables (and their rows), then the template is declared. */
+export type SaveStage = "reading" | "saving";
+
 /** Draft, build and declare the organization's own template. */
 export async function saveAsTemplate(
   client: SupabaseClient,
   organizationId: string,
   choices: SaveChoices & { tableIds: string[]; includeRows: boolean; rowsPerTable: number },
+  /** Said as each step starts, so a long save shows where it is (reading the tables, then saving the template). */
+  onStage?: (stage: SaveStage) => void,
 ): Promise<SavedTemplate> {
+  onStage?.("reading");
   const drafted = await storeDoors(client).templateFromTables({
     organizationId,
     tableIds: choices.tableIds,
@@ -197,6 +203,7 @@ export async function saveAsTemplate(
   } catch (err) {
     throw new Error(`The template could not be built: ${err instanceof Error ? err.message : String(err)}`);
   }
+  onStage?.("saving");
   const declared = await storeDoors(client).templateDeclare("org", declaration);
   if (declared.error) throw new Error(declared.error.message);
   const answer = declared.data as unknown as { template_id: string; catalogue_id: string };

@@ -26,7 +26,7 @@ describe("the installed one-offs list on /make", () => {
     const gallery = readFileSync(join(__dirname, "../gallery/TemplateGallery.tsx"), "utf8");
     expect(gallery).toMatch(/installedOneOff\?: boolean/);
     expect(gallery).toMatch(/installedOneOff && !stuck && run\.phase !== "running" \? null/);
-    expect(gallery).toMatch(/card\.scope === "org" && !installedOneOff \? <ArchiveOrgTemplate/);
+    expect(gallery).toMatch(/card\.scope === "org" && !installedOneOff \?[\s\S]{0,260}<ArchiveOrgTemplate/);
     expect(gallery).toMatch(/card\.ephemeral \? <KeepOneOff/);
   });
 });

@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
 import { isInterface, isPage } from "@ai-matrx/records-ui/helpers";
@@ -30,6 +31,7 @@ import { useOrganizationRequired } from "@/features/organizations/useOrganizatio
 import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 
 import { AirtableImportDialog } from "./AirtableImportDialog";
+import { archiveBase } from "./archiveBase";
 import { makeEmptyBase } from "./makeEmptyBase";
 import {
   followBaseSnapshotJob, planBaseMove, readBaseMoveJob, snapshotProgressLine, startBaseMoveJob, startBaseSnapshotJob, startSnapshotRestoreJob,
@@ -38,7 +40,7 @@ import {
 import { GithubImportDialog } from "./GithubImportDialog";
 import { SheetsImportDialog } from "./SheetsImportDialog";
 import {
-  baseMoveAccessKept, baseMoveRemoveAccess, listBases, listSnapshots, readBase, saveBase, saveSnapshot, setSnapshotSchedule, trashSnapshot,
+  archiveBaseIdentity, baseMoveAccessKept, baseMoveRemoveAccess, listBases, listSnapshots, readBase, saveBase, saveSnapshot, setSnapshotSchedule, trashSnapshot,
   type BaseIdentity, type BaseSnapshotRow, type HomeTable, type KeptAccess,
 } from "./baseStore";
 import { useBasePort } from "./useBasePort";
@@ -232,6 +234,9 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
   const [extras, setExtras] = useState<Extras>({ pages: [], automations: [] });
   const [error, setError] = useState<string | null>(null);
   const [dialog, setDialog] = useState<null | "edit" | "duplicate" | "move" | "snapshots" | "airtable" | "sheets" | "github">(null);
+  const [archiving, setArchiving] = useState<null | "ask" | { done: number; total: number } | { problem: string }>(null);
+  const port = useBasePort();
+  const router = useRouter();
 
   const openSaveTemplate = useOpenSaveTemplateDialog();
   const [reloads, setReloads] = useState(0);
@@ -239,9 +244,13 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
   const readAll = useCallback(async (apply: { tables: (t: HomeTable[]) => void; identity: (i: BaseIdentity | null) => void; extras: (e: Extras) => void; error: (m: string) => void }) => {
     try {
       const ts = (await homeTables(client, organizationId)).filter((t) => t.home_id === homeId);
+      // A base with no tables left (a leftover name row) still has its organization: the page was opened through it.
+      const org = ts[0]?.organization_id ?? organizationId;
+      // The tables and the saved name land TOGETHER: the page draws only when both are read, so it never paints the
+      // first table's name or "Name this base" for the moment before the saved name arrives (a shift and a false prompt).
+      const identity = await readBase(org, homeId);
+      apply.identity(identity);
       apply.tables(ts);
-      const org = ts[0]?.organization_id;
-      apply.identity(org ? await readBase(org, homeId) : null);
       const pages: Extras["pages"] = [];
       const automations: Extras["automations"] = [];
       for (const t of ts) {
@@ -267,19 +276,63 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
 
   if (error) return <div className="p-4"><ErrorNotice message={error} size="inline" /></div>;
   if (tables === null) return <div className="p-4"><Words>Reading the base…</Words></div>;
-  if (tables.length === 0) return <div className="p-4"><Words>This base has no tables you can open.</Words></div>;
+  const archiveNow = async (list: HomeTable[]) => {
+    setArchiving({ done: 0, total: list.length });
+    const result = await archiveBase(list, {
+      archiveTable: async (id) => {
+        if (!port.archive) return { ok: false, message: "Archiving is not available here." };
+        const r = await port.archive(id);
+        return r.ok ? { ok: true } : { ok: false, message: r.error.message };
+      },
+      archiveIdentity: identity ? () => archiveBaseIdentity(identity.id) : null,
+      onProgress: (done, total) => setArchiving({ done, total }),
+    });
+    if (!result.ok) {
+      setArchiving({ problem: result.sentence });
+      load();
+      return;
+    }
+    router.push("/data/bases");
+  };
+  const archiveDialog = (list: HomeTable[], label: string) => (
+    <>
+      <ConfirmDialog
+        open={archiving === "ask"}
+        onOpenChange={(open) => !open && setArchiving(null)}
+        title={`Archive ${label}?`}
+        description={list.length ? `Its ${list.length} ${list.length === 1 ? "table is" : "tables are"} archived with it. Restore them from the Archived filter.` : "It has no tables left. Its name is archived."}
+        confirmLabel="Archive"
+        variant="destructive"
+        onConfirm={() => void archiveNow(list)}
+      />
+      {archiving && typeof archiving === "object" && "total" in archiving ? <Words>{`Archiving ${archiving.done} of ${archiving.total}`}</Words> : null}
+      {archiving && typeof archiving === "object" && "problem" in archiving ? <ErrorNotice message={archiving.problem} operation="Archive the base" size="inline" /> : null}
+    </>
+  );
+
+  if (tables.length === 0) {
+    return (
+      <div className="flex flex-col gap-2 p-4" data-base-page={homeId}>
+        <Words>This base has no tables you can open.</Words>
+        {identity ? <div><Button variant="quiet" onClick={() => setArchiving("ask")} data-base-archive="">Archive base</Button></div> : null}
+        {archiveDialog([], identity?.name ?? "this base")}
+      </div>
+    );
+  }
   const name = identity?.name ?? tables[0]?.name ?? "Untitled base";
   const org = tables[0]!.organization_id;
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-4" data-base-page={homeId}>
-      <header className="flex items-start gap-3">
+      {/* The title row and the verbs are two rows: with the ten verbs beside the title, the title column was squeezed to 0px
+          (the saved name was in the page and could not be seen). */}
+      <header className="flex flex-wrap items-start gap-3">
         <Swatch color={identity?.color ?? null} icon={identity?.icon ?? null} name={name} />
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-lg font-semibold" data-base-name="">{name}</h1>
           {identity?.description ? <Words>{identity.description}</Words> : null}
         </div>
-        <div className="flex flex-wrap justify-end gap-2">
+        <div className="flex w-full flex-wrap gap-2">
           <ActivityFeedButton subjectId={homeId} organizationId={org} />
           <Button variant="quiet" onClick={() => setDialog("edit")}>{identity ? "Edit" : "Name this base"}</Button>
           <Button variant="quiet" onClick={() => setDialog("duplicate")} data-base-duplicate="">Duplicate</Button>
@@ -289,8 +342,10 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
           <Button variant="quiet" onClick={() => setDialog("airtable")} data-base-airtable="">From Airtable</Button>
           <Button variant="quiet" onClick={() => setDialog("sheets")} data-base-sheets="">From Google Sheets</Button>
           <Button variant="quiet" onClick={() => setDialog("github")} data-base-github="">From GitHub</Button>
+          <Button variant="quiet" onClick={() => setArchiving("ask")} disabled={typeof archiving === "object" && archiving !== null && "total" in archiving} data-base-archive="">Archive</Button>
         </div>
       </header>
+      {archiveDialog(tables, name)}
 
       <section aria-label="Tables">
         <h2 className="mb-1 text-sm font-medium">Tables · {tables.length}</h2>

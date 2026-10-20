@@ -19,6 +19,7 @@ import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { TIMED_OUT_SENTENCE } from "@ai-matrx/design-system";
 
+import { SignedInHintContext } from "@/lib/scoped-config/signedInHint";
 import { PublicGalleryPage } from "../gallery/PublicGalleryPage";
 import { GALLERY_RETRY_PAUSE_MS } from "../gallery/GalleryTimedOut";
 import { readPublicCatalogueWith } from "../gallery/publicGallery";
@@ -58,7 +59,10 @@ it("a real failure still throws (never read as a timeout)", async () => {
 });
 
 it("/templates draws its header, search and rail, and says the timeout in place instead of crashing or saying 'empty'", async () => {
-  const markup = renderToStaticMarkup(await PublicTemplatesPage({ searchParams: Promise.resolve({}) }));
+  // A guest in the light public layout: no store, and the layout says nobody is signed in (a bare harness would count as signed in).
+  const markup = renderToStaticMarkup(
+    <SignedInHintContext.Provider value={false}>{await PublicTemplatesPage({ searchParams: Promise.resolve({}) })}</SignedInHintContext.Provider>,
+  );
   expect(markup).toContain('data-public-templates="timed_out"');
   expect(markup).toContain(TIMED_OUT_SENTENCE);
   expect(markup).toContain("Try again");

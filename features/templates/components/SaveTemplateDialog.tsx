@@ -21,7 +21,7 @@ import { templatePreviewHref } from "@/features/make/gallery/galleryHref";
 import { createClient } from "@/utils/supabase/client";
 import { useScopedTemplateKnobs } from "../knobs";
 import { TEMPLATES_CHANGED_EVENT } from "../events";
-import { agentsReading, readSetupAgents, saveAsTemplate, tablesReadBy, type SavedTemplate, type SetupAgent } from "../saveAsTemplate";
+import { agentsReading, readSetupAgents, saveAsTemplate, tablesReadBy, type SaveStage, type SavedTemplate, type SetupAgent } from "../saveAsTemplate";
 
 import { Spinner } from "@/components/ui/loaders/Spinner";
 import { ProTextarea } from "@/components/official/ProTextarea";
@@ -46,6 +46,7 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId, initialTab
   const [name, setName] = useState(initialName ?? "");
   const [describes, setDescribes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [stage, setStage] = useState<SaveStage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<SavedTemplate | null>(null);
   const tables = useTablesEverywhere();
@@ -109,13 +110,14 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId, initialTab
         tableNames: Object.fromEntries(tableIds.map((t) => [t, rowsOf.get(t)?.table_name ?? ""])),
         includeRows,
         rowsPerTable: knobs.seedRowCap,
-      });
+      }, setStage);
       setSaved(result);
       window.dispatchEvent(new Event(TEMPLATES_CHANGED_EVENT));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setSaving(false);
+      setStage(null);
     }
   };
 
@@ -217,6 +219,11 @@ export function SaveTemplateDialog({ isOpen, onClose, initialAgentId, initialTab
         )}
 
         <DialogFooter>
+          {stage ? (
+            <span className="mr-auto self-center type-secondary text-muted-foreground" role="status" data-save-template-stage={stage}>
+              {stage === "reading" ? `Reading ${tableIds.length} ${tableIds.length === 1 ? "table" : "tables"}${includeRows ? (tableIds.length === 1 ? " and its rows" : " and their rows") : ""}` : "Saving the template"}
+            </span>
+          ) : null}
           {saved ? (
             <Button variant="quiet" onClick={onClose}>
               Close
