@@ -444,6 +444,20 @@ const nextConfig = {
     // jspdf/html2canvas deps (the alias target resolves from the app root) stay.
     resolveAlias: {
       jspdf: "jspdf/dist/jspdf.es.min.js",
+      // pdf.js ships TWO builds of the same version. The default one targets
+      // only the newest browsers — 6.x calls Map#getOrInsertComputed,
+      // Math.sumPrecise, Uint8Array.fromBase64, Promise.try, Float16Array… with
+      // no fallback, so every PDF surface threw "getOrInsertComputed is not a
+      // function" and took the WHOLE page down on current Safari and most
+      // Chrome (found 2026-10-20 on the anonymous /s/ share page). The legacy
+      // build is the same API carrying its own polyfills — pdf.js's documented
+      // answer for broad browser support. All three paths react-pdf imports
+      // are pinned so the main thread, viewer helpers and fallback worker stay
+      // one build (the served worker is copied from the same legacy folder by
+      // scripts/copy-pdfjs-worker.ts). Guard: features/pdf/__tests__/pdfjs-legacy-build.test.ts
+      "pdfjs-dist": "pdfjs-dist/legacy/build/pdf.mjs",
+      "pdfjs-dist/web/pdf_viewer.mjs": "pdfjs-dist/legacy/web/pdf_viewer.mjs",
+      "pdfjs-dist/build/pdf.worker.mjs": "pdfjs-dist/legacy/build/pdf.worker.mjs",
       // rich-content and chat still request thinking helpers from kit/text,
       // but kit@0.36.1 publishes them from content-ir/source instead.
       "@ai-matrx/kit/text": "./lib/compat/kit-text.ts",
@@ -1087,6 +1101,10 @@ const nextConfig = {
       ...config.resolve.alias,
       "@ai-matrx/kit/text": path.join(__dirname, "lib/compat/kit-text.ts"),
       "@ai-matrx/kit/json-extract": "@ai-matrx/content-ir/json-extract",
+      // Same legacy pdf.js pin as turbopack.resolveAlias above (`$` = exact).
+      "pdfjs-dist$": "pdfjs-dist/legacy/build/pdf.mjs",
+      "pdfjs-dist/web/pdf_viewer.mjs$": "pdfjs-dist/legacy/web/pdf_viewer.mjs",
+      "pdfjs-dist/build/pdf.worker.mjs$": "pdfjs-dist/legacy/build/pdf.worker.mjs",
       "@/providers/chatUiRegistrationProfile": path.join(
         __dirname,
         MATRX_PROFILE === "demos"

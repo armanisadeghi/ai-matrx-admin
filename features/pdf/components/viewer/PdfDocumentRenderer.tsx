@@ -56,6 +56,7 @@ import { cn } from "@/lib/utils";
 import { TooltipIcon } from "@/features/files/components/core/Tooltip/TooltipIcon";
 import { PdfLoadingState } from "@/features/pdf/components/viewer/PdfLoadingState";
 import { resolvePageSwipe } from "./page-swipe";
+import { shouldRearmWheel } from "./wheel-rearm";
 import { planPdfToolbar, TOOLBAR_METRICS } from "./toolbar/toolbar-plan";
 import { useMediaQueryState } from "@ai-matrx/kit/media-query";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
@@ -348,6 +349,7 @@ const VIEWPORT_PADDING_PX = 24;
 // continuous gesture flips at most one page.
 const WHEEL_FLIP_THRESHOLD = 40;
 const WHEEL_GESTURE_IDLE_MS = 180;
+// A new swipe inside a decaying trackpad tail re-arms: ./wheel-rearm.ts
 // Native scroll within a zoomed page is only "exhausted" within this many
 // px of the edge. Keeps edge detection robust against sub-pixel rounding.
 const WHEEL_EDGE_EPSILON_PX = 2;
@@ -720,6 +722,8 @@ export default function PdfDocumentRenderer({
   const wheelDir = useRef(0);
   const wheelLocked = useRef(false);
   const wheelIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wheelLastAbs = useRef(0);
+  const wheelFlippedAt = useRef(0);
 
   // Live values for the wheel handler. The listener is attached ONCE (so a
   // page flip doesn't tear it down — doing so used to clear the idle timer
@@ -773,13 +777,26 @@ export default function PdfDocumentRenderer({
       e.preventDefault();
 
       const dir = goingDown ? 1 : -1;
+      const abs = Math.abs(e.deltaY);
       // Direction reversed → start a fresh gesture immediately.
       if (dir !== wheelDir.current) {
         wheelDir.current = dir;
         wheelAccum.current = 0;
         wheelLocked.current = false;
+      } else if (
+        shouldRearmWheel({
+          locked: wheelLocked.current,
+          abs,
+          lastAbs: wheelLastAbs.current,
+          sinceFlipMs: e.timeStamp - wheelFlippedAt.current,
+        })
+      ) {
+        // Rising edge inside a decaying tail → the reader swiped again.
+        wheelAccum.current = 0;
+        wheelLocked.current = false;
       }
-      wheelAccum.current += Math.abs(e.deltaY);
+      wheelLastAbs.current = abs;
+      wheelAccum.current += abs;
 
       // Reset the gesture once the wheel goes quiet, re-arming the next
       // flip. This is what makes one continuous swipe flip one page.
@@ -799,6 +816,7 @@ export default function PdfDocumentRenderer({
 
       wheelLocked.current = true;
       wheelAccum.current = 0;
+      wheelFlippedAt.current = e.timeStamp;
       // Land at the top of the new page so reading continues naturally
       // regardless of where the previous page was scrolled.
       node.scrollTop = 0;
