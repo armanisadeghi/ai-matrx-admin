@@ -577,9 +577,11 @@ export function SnapshotsDialog({ open, onClose, homeId, organizationId, name, t
       if (plan.job) {
         const jobId = await startBaseSnapshotJob(organizationId, { homeId, tables: picked, label: when });
         const view = await followBaseSnapshotJob(organizationId, jobId, (v) => setBusy(snapshotProgressLine(v, "snapshot")));
-        if (view.state !== "done") { setNote(view.state === "refused" ? view.message : "The snapshot stopped before it finished."); return; }
-        const result = view.result as { label?: string; origin?: "manual" | "schedule"; tables?: BaseSnapshotRow["tables"] };
-        await saveSnapshot(organizationId, b.id, { label: result.label ?? when, origin: result.origin ?? "manual", tables: result.tables ?? [] });
+        if (view.state !== "done") { setNote(view.state === "refused" ? view.message : "The snapshot stopped before it finished."); await load(b); return; }
+        // The job writes the snapshot row itself (FIX-SNAP3: it is kept even when nobody is left on this page); the screen only
+        // reads the list. A server from before that change answers no snapshot_id, so the row is written here as before.
+        const result = view.result as { label?: string; origin?: "manual" | "schedule"; tables?: BaseSnapshotRow["tables"]; snapshot_id?: string };
+        if (!result.snapshot_id) await saveSnapshot(organizationId, b.id, { label: result.label ?? when, origin: result.origin ?? "manual", tables: result.tables ?? [] });
         setLabel(""); await load(b);
         return;
       }
@@ -635,10 +637,17 @@ export function SnapshotsDialog({ open, onClose, homeId, organizationId, name, t
         {note ? <Words>{note}</Words> : null}
         <ul className="divide-y divide-border rounded-md border border-border">
           {rows.length === 0 ? <li className="px-3 py-2"><Words>No snapshots yet.</Words></li> : rows.map((s) => (
-            <li key={s.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm" data-snapshot={s.id}>
-              <span className="min-w-0 truncate">{s.label}<span className="ml-2 text-xs text-muted-foreground">{s.tables.length} tables · {new Date(s.created_at).toLocaleDateString()}</span></span>
+            <li key={s.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm" data-snapshot={s.id} data-snapshot-state={s.state ?? "done"}>
+              {s.state === "failed" ? (
+                <span className="min-w-0 flex-1" data-snapshot-failed="">
+                  <span className="truncate">{s.label}<span className="ml-2 text-xs text-muted-foreground">{new Date(s.created_at).toLocaleDateString()}</span></span>
+                  <ErrorNotice message={s.failure || "The snapshot stopped before it finished."} operation="Take snapshot" size="inline" />
+                </span>
+              ) : (
+                <span className="min-w-0 truncate">{s.label}<span className="ml-2 text-xs text-muted-foreground">{s.tables.length} tables · {new Date(s.created_at).toLocaleDateString()}</span></span>
+              )}
               <span className="flex gap-1">
-                <Button variant="quiet" disabled={!!busy} onClick={() => void restore(s)} data-snapshot-restore="">Restore as new base</Button>
+                {s.state === "failed" ? null : <Button variant="quiet" disabled={!!busy} onClick={() => void restore(s)} data-snapshot-restore="">Restore as new base</Button>}
                 <Button variant="quiet" disabled={!!busy} onClick={async () => { await trashSnapshot(s.id); await load(base); }}>Remove</Button>
               </span>
             </li>

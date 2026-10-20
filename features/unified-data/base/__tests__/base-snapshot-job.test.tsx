@@ -158,3 +158,36 @@ test("a small base's snapshot stays on the direct path", async () => {
   expect(snapshotBase).toHaveBeenCalled();
   expect(postJson).not.toHaveBeenCalled();
 });
+
+// FIX-SNAP3: the server job writes the snapshot row itself (kept even when nobody stays on the page); the screen only reads.
+test("a job that answers its own snapshot_id is never written again by the page; the list is re-read", async () => {
+  listSnapshots.mockResolvedValue([]);
+  tableRowCounts.mockResolvedValue({ ok: true, data: [{ table_id: "t1", visible_rows: 1050 }] });
+  postJson.mockResolvedValueOnce({ data: { job_id: "job-s" } });
+  getJson.mockResolvedValueOnce({ data: { state: "done", kind: "snapshot", result: { label: "Before", origin: "manual", tables: SNAP_TABLES, snapshot_id: "snap-9" } } });
+  const host = mount(dialog());
+  await settle();
+  const readsBefore = listSnapshots.mock.calls.length;
+  await act(async () => { (host.querySelector("[data-snapshot-take]") as HTMLButtonElement).click(); });
+  await settle();
+  expect(saveSnapshot).not.toHaveBeenCalled();
+  expect(listSnapshots.mock.calls.length).toBeGreaterThan(readsBefore);
+});
+
+test("a page that opens after the job finished shows its snapshot, and a stopped one with its sentence", async () => {
+  listSnapshots.mockResolvedValue([
+    { id: "snap-9", label: "Before", origin: "manual", tables: SNAP_TABLES, created_at: "2026-10-19T18:00:00Z", state: "done", job_id: "job-s" },
+    { id: "snap-8", label: "Earlier", origin: "manual", tables: [], created_at: "2026-10-19T17:00:00Z", state: "failed", failure: "The snapshot stopped before it finished. Nothing was kept and nothing is left in your lists; try again.", job_id: "job-f" },
+  ]);
+  const host = mount(dialog());
+  await settle();
+  const done = host.querySelector("[data-snapshot='snap-9']")!;
+  expect(done.textContent).toContain("Before");
+  expect(done.textContent).toContain("1 tables");
+  expect(done.querySelector("[data-snapshot-restore]")).not.toBeNull();
+  const failed = host.querySelector("[data-snapshot='snap-8']")!;
+  expect(failed.getAttribute("data-snapshot-state")).toBe("failed");
+  expect(failed.textContent).toContain("The snapshot stopped before it finished.");
+  expect(failed.querySelector("[data-snapshot-restore]")).toBeNull();
+  expect(buttonNamed(failed as HTMLElement, "Remove")).toBeDefined();
+});
