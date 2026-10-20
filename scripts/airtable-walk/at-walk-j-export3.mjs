@@ -1,0 +1,14 @@
+import { open, gotoTable, say } from "./at-walk-h-lib.mjs";
+import { mkdirSync } from "node:fs";
+const D = process.env.HOME + "/lane-resume/atwj-dl/"; mkdirSync(D, { recursive: true });
+const WHO = process.env.WHO === "member" ? "member" : "admin";
+const { browser, page, who, shot } = await open(WHO === "member");
+say("who", who);
+await gotoTable(page, process.env.TABLE); await page.waitForTimeout(6000);
+const gridNames = async () => page.evaluate(() => { const want = /^(Alpha|Bravo|Charlie|Delta|Echo|Foxtrot)$/; const out = []; document.querySelectorAll("div,span,td").forEach((e) => { if (e.children.length === 0 && want.test(e.textContent.trim())) { const r = e.getBoundingClientRect(); if (r.x < 300 && r.y > 120) out.push([r.y, e.textContent.trim()]); } }); return out.sort((a, b) => a[0] - b[0]).map((x) => x[1]); });
+say("opened grid", await gridNames(), await page.locator('[aria-label^="Sort"], button:has-text("Sort")').first().innerText().catch(() => "?"));
+await page.getByRole("button", { name: "Table menu" }).first().click(); await page.waitForTimeout(600);
+await page.getByText(/^Export/).first().click(); await page.waitForTimeout(2000);
+const [d] = await Promise.all([page.waitForEvent("download", { timeout: 90000 }), page.getByRole("button", { name: "CSV", exact: true }).first().click()]);
+const f = D + WHO + "-plain-" + d.suggestedFilename(); await d.saveAs(f); say("downloaded", f);
+await browser.close();

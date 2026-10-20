@@ -1,0 +1,10 @@
+import { open, gotoTable, say, SHOTS } from "./at-walk-h-lib.mjs";
+const id = process.env.TABLE;
+const { browser, page, who, errs, shot } = await open(process.env.WHO === "member");
+say("who", who);
+await gotoTable(page, id);
+await shot("j-grid");
+const names = await page.$$eval("[data-table-toolbar] button, [data-table-toolbar] [role=button], [data-table-toolbar] input", (els) => els.map((e) => (e.getAttribute("aria-label") || e.innerText || e.placeholder || "").trim().slice(0, 40)));
+say("toolbar", names);
+say("headers", await page.$$eval("[role=columnheader]", (els) => els.map((e) => e.innerText.trim())));
+await browser.close();
