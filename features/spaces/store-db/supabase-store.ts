@@ -495,7 +495,7 @@ export class SupabaseSpacesStore implements SpacesStore {
     return (sibs[i - 1]?.position ?? 0) + POSITION_GAP / 2;
   }
 
-  async create(input: { parentId: SpaceId | null; title?: string; blocks?: SpaceBlock[]; afterId?: SpaceId }): Promise<SpaceDoc> {
+  async create(input: { id?: SpaceId; parentId: SpaceId | null; title?: string; blocks?: SpaceBlock[]; afterId?: SpaceId }): Promise<SpaceDoc> {
     // A new top-level Space is Organization (`internal`): defaults lean open. A sub-page inherits its
     // parent's organization and visibility; "Private" is a person choosing `personal` (hidden from lists).
     let organizationId = this.organizationId;
@@ -516,6 +516,7 @@ export class SupabaseSpacesStore implements SpacesStore {
       web = { web_include_sub_pages: parent.web_include_sub_pages, web_allow_duplicate: parent.web_allow_duplicate };
     }
     const row = {
+      ...(input.id ? { id: input.id } : {}),
       organization_id: organizationId,
       document_type_id: await this.spaceTypeId(),
       format: "spaces",
@@ -531,6 +532,19 @@ export class SupabaseSpacesStore implements SpacesStore {
       .insert(row as never)
       .select(DOC_COLUMNS)
       .single();
+    // IDEMPOTENT BY ID (ADVERSARIAL-5 F5): a caller-chosen id that is already taken is this same page, written before a
+    // refresh cut the run off. Answer it, and put it under its parent if the link never landed — never a second page.
+    if (error?.code === "23505" && input.id) {
+      const existing = await this.get(input.id);
+      if (existing) {
+        if (input.parentId && existing.parentId !== input.parentId) {
+          const position = await this.slot(input.parentId, existing.id, { afterId: input.afterId });
+          await this.link(existing.id, input.parentId, position);
+          return (await this.get(existing.id)) ?? existing;
+        }
+        return existing;
+      }
+    }
     if (error || !data) fail("create the Space", error);
     if (input.parentId) {
       const position = await this.slot(input.parentId, data.id, { afterId: input.afterId });
