@@ -17,7 +17,7 @@
 \endif
 
 begin;
-set local statement_timeout = '900s';
+set local statement_timeout = '58s';  -- READ-SPEED-6: inside the transaction (the pooler drops session settings)
 
 do $t$
 declare
@@ -60,22 +60,40 @@ begin
     -- every row; while it waits the row counts as stale (nothing kept is served there)
     insert into _rs3c_read select p_step, v_doc, v_slow, rc.vals,
            rc.stale or (to_regclass('custom.computed_org_mark') is not null
-                        and exists (select 1 from custom.computed_org_mark m where m.organization_id = rc.organization_id))
+                        and case when to_regprocedure('custom._computed_marked(uuid,uuid)') is not null
+                                 then custom._computed_marked(rc.organization_id, rc.table_id)  -- READ-SPEED-6: a mark this Table's values come from
+                                 else exists (select 1 from custom.computed_org_mark m where m.organization_id = rc.organization_id) end)
       from (select 1) o left join custom.record_computed rc on rc.record_id = p_c;
   end $f$;
 
-  perform custom.computed_refresh_drain(600000);
+  -- READ-SPEED-6: the refresh job's work for this Table, done here (the org-wide drain returns at once while another
+  -- session holds its lock, and works other Tables first)
+  create or replace function pg_temp._rs3c_refresh(p_org uuid, p_t uuid) returns void language plpgsql as $r$
+  declare v_ids uuid[]; v_t uuid;
+  begin
+    perform custom._computed_apply_org_mark(p_org);
+    foreach v_t in array custom._computed_component(p_org, p_t) loop
+    loop
+      select coalesce(array_agg(x.record_id), '{}') into v_ids from (select rc.record_id from custom.record_computed rc
+        where rc.organization_id = p_org and rc.table_id = v_t and rc.stale limit 500) x;
+      exit when cardinality(v_ids) = 0;
+      perform custom.computed_refresh(p_org, v_t, v_ids);
+    end loop;
+    end loop;
+  end $r$;
+
+  perform pg_temp._rs3c_refresh(c_org, c_cust);
   perform pg_temp._rs3c('1 refreshed', v_c, c_admin);
 
   update custom.record set data = jsonb_set(data, '{amount}', to_jsonb((data ->> 'amount')::numeric + 100))
    where organization_id = c_org and id = v_i;
   perform pg_temp._rs3c('2 amount +100, before refresh', v_c, c_admin);
-  perform custom.computed_refresh_drain(600000);
+  perform pg_temp._rs3c_refresh(c_org, c_cust);
   perform pg_temp._rs3c('2 amount +100, refreshed', v_c, c_admin);
 
   update custom.record set data = data - 'customer' where organization_id = c_org and id = v_i;
   perform pg_temp._rs3c('3 link removed, before refresh', v_c, c_admin);
-  perform custom.computed_refresh_drain(600000);
+  perform pg_temp._rs3c_refresh(c_org, c_cust);
   perform pg_temp._rs3c('3 link removed, refreshed', v_c, c_admin);
 
   update custom.record f
@@ -83,7 +101,7 @@ begin
    where f.organization_id = c_org and f.table_id = custom.field_kernel_id() and f.deleted_at is null
      and f.data ->> 'entity_definition_id' = c_cust::text and f.data ->> 'key' = 'value_tier';
   perform pg_temp._rs3c('4 formula changed, before refresh', v_c, c_admin);
-  perform custom.computed_refresh_drain(600000);
+  perform pg_temp._rs3c_refresh(c_org, c_cust);
   perform pg_temp._rs3c('4 formula changed, refreshed', v_c, c_admin);
 
   for v_doc, v_slow, v_kept, v_stale, v_b in
@@ -104,7 +122,9 @@ begin
     select (doc ->> 'billed')::numeric into v_b0 from _rs3c_read where step = '1 refreshed';
     select (doc ->> 'billed')::numeric into v_b from _rs3c_read where step = '2 amount +100, before refresh';
     if v_b is distinct from v_b0 + 100 then v_fail := v_fail || format('billed after +100 is %s, expected %s', v_b, v_b0 + 100); end if;
-    if (select count(*) from custom.record_computed where organization_id = c_org and stale) > 0 then
+    if (select count(*) from custom.record_computed where organization_id = c_org and stale
+          and (to_regprocedure('custom._computed_component(uuid,uuid)') is null
+               or table_id = any (custom._computed_component(c_org, c_cust)))) > 0 then  -- READ-SPEED-6: the Tables refreshed
       v_fail := v_fail || 'kept rows still stale after the last refresh'::text;
     end if;
     if cardinality(v_fail) > 0 then

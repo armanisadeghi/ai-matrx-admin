@@ -15,7 +15,7 @@
 \endif
 
 begin;
-set local statement_timeout = '900s';
+set local statement_timeout = '58s';  -- READ-SPEED-6: inside the transaction (the pooler drops session settings)
 
 do $t$
 declare
@@ -36,12 +36,40 @@ begin
     perform set_config('request.jwt.claims', '', true);
     if to_regprocedure('custom.computed_refresh_drain(integer)') is not null then
       -- the new records queued as the write triggers (READ-SPEED-3 b) queue them, then the job's work
-      perform custom._computed_mark_org(c_org);
-      perform custom.computed_refresh_drain(900000);
+      -- READ-SPEED-6: only these Tables are marked and worked out (a whole-organization drain ran 150-600 s and
+      -- broke the one-minute rule); the refresh door's own reader work (kept judgement and masks) is done too
+      if to_regprocedure('custom._computed_mark_tables(uuid,uuid[])') is not null then
+        perform custom._computed_mark_tables(c_org, array[c_tid]);
+        perform custom._computed_apply_org_mark(c_org);
+        declare v_t uuid; v_ids uuid[]; begin
+          foreach v_t in array array[c_tid] loop
+            loop
+              select coalesce(array_agg(rc.record_id), '{}') into v_ids from (select rc.record_id from custom.record_computed rc
+                where rc.organization_id = c_org and rc.table_id = v_t and rc.stale limit 500) rc;
+              exit when cardinality(v_ids) = 0;
+              perform custom.computed_refresh(c_org, v_t, v_ids);
+            end loop;
+            perform custom._computed_warm('87a6e699-3622-4869-8843-d0867456c0dd'::uuid, c_org, v_t);
+          end loop;
+        end;
+      else
+        perform custom._computed_mark_org(c_org);
+        perform custom.computed_refresh_drain(900000);
+      end if;
     end if;
     -- until READ-SPEED-3 b (the write triggers) lands, kept values are served only when forced (proofs only)
     perform set_config('mx.computed_store', 'force', true);
+end
+$t$;
 
+-- READ-SPEED-6: the read is its own statement, as a page read is (the setup's statement memo is not its)
+do $t$
+declare
+  c_org   constant uuid := '884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f';
+  c_tid   constant uuid := '28e2af9e-ddab-4f02-adea-b3387916c5d4';
+  c_admin constant text := '{"sub":"87a6e699-3622-4869-8843-d0867456c0dd","role":"authenticated"}';
+  v_n integer; v0 timestamptz; v_ms numeric; v_page jsonb; v_prev numeric; v_x numeric; e jsonb;
+begin
   perform set_config('request.jwt.claims', c_admin, true);
   perform set_config('role', 'authenticated', true);
   v0 := clock_timestamp();
