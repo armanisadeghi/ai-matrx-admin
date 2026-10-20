@@ -85,7 +85,13 @@ export function SharedResourceView({
       {fullBleed ? (
         // Full-bleed lens (e.g. a shared file's viewer): the lens owns the
         // whole body — definite height, its own scroll, no padded column.
-        <div ref={contentRef} className="h-full bg-textured">
+        // The marker pins the public layout to the viewport (globals.css);
+        // without it `h-full` is content height and the viewer collapses.
+        <div
+          ref={contentRef}
+          data-public-viewport-surface
+          className="h-full bg-textured"
+        >
           {lens({ result, token })}
         </div>
       ) : (

@@ -38,11 +38,11 @@ import {
   FileSearch,
   FolderLock,
   ListChecks,
+  Fullscreen,
   Loader2,
-  Maximize2,
   MessageCircleQuestion,
   Mic,
-  Minimize2,
+  Shrink,
   ScanSearch,
   ShieldCheck,
   SlidersHorizontal,
@@ -228,10 +228,6 @@ function CapabilitySection({
             <h2 className="text-xl font-semibold text-foreground sm:text-2xl">
               {heading}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              This file was shared with AI Matrx — where AI actually works on
-              your documents, not just stores them.
-            </p>
           </div>
           <Button variant="primary" asChild className="shrink-0">
             <Link href={href} target="_blank" rel="noopener noreferrer">
@@ -280,9 +276,11 @@ function ViewerFallback() {
 function NoPreviewCard({
   name,
   attachmentUrl,
+  message = "This file type has no online preview — download it to open it on your device.",
 }: {
   name: string;
   attachmentUrl: string;
+  message?: string;
 }) {
   return (
     <div className="flex h-full items-center justify-center p-6">
@@ -291,10 +289,7 @@ function NoPreviewCard({
         <p className="mb-1 truncate text-sm font-semibold text-foreground">
           {name}
         </p>
-        <p className="mb-6 text-sm text-muted-foreground">
-          This file type has no online preview — download it to open it on
-          your device.
-        </p>
+        <p className="mb-6 text-sm text-muted-foreground">{message}</p>
         <Button variant="primary" asChild>
           <a href={attachmentUrl}>
             <Download className="mr-1.5 h-4 w-4" />
@@ -328,7 +323,12 @@ export function SharedFileLens({
   const kind = previewKind(mime);
   const urls = shareUrls(token);
 
-  const stageRef = React.useRef<HTMLDivElement>(null);
+  // Full screen = the whole DOCUMENT goes full screen and the viewer block
+  // (identity row + stage) is pinned over it. Two failures this avoids (both
+  // found 2026-10-20): full-screening only the stage hid "Exit full screen",
+  // leaving Esc as the only way out; and full-screening any element hides
+  // every popover and tooltip, because they portal to <body>, outside it.
+  // The block sits below the popover layer (z 10001) so menus open on top.
   const capabilitiesRef = React.useRef<HTMLElement | null>(null);
   // pdfjs cannot render on the server (no DOMMatrix) — `mounted` is false in
   // SSR/hydration output so the lazy viewer only ever renders in the browser.
@@ -347,15 +347,34 @@ export function SharedFileLens({
   const toggleFullscreen = () => {
     if (document.fullscreenElement) {
       void document.exitFullscreen();
-    } else if (stageRef.current) {
-      void stageRef.current.requestFullscreen().catch(() => {
+    } else {
+      void document.documentElement.requestFullscreen().catch(() => {
         // Some mobile browsers (iOS Safari) refuse element fullscreen —
         // the "Open in new tab" door remains beside this button.
       });
     }
   };
 
-  const previewable = kind !== "none";
+  // A media element this browser cannot decode (an iPhone HEVC clip in
+  // Firefox, a codec the build lacks) must not leave a dead player on the
+  // page — it falls back to the honest download card.
+  const [mediaFailed, setMediaFailed] = React.useState(false);
+  const onMediaError = () => setMediaFailed(true);
+  // The tag arrives in server HTML, so a fast failure can fire BEFORE
+  // hydration attaches onError — read the element's own state on mount too.
+  const checkMediaMounted = (
+    el: HTMLImageElement | HTMLMediaElement | null,
+  ) => {
+    if (!el) return;
+    const failed =
+      el instanceof HTMLImageElement
+        ? // An SVG can legitimately report no intrinsic size; leave it to onError.
+          mime !== "image/svg+xml" && el.complete && el.naturalWidth === 0
+        : el.error !== null;
+    if (failed) setMediaFailed(true);
+  };
+
+  const previewable = kind !== "none" && !mediaFailed;
 
   return (
     <div className="flex h-full flex-col overflow-y-auto scrollbar-thin">
@@ -363,8 +382,12 @@ export function SharedFileLens({
           viewport exactly; the capability section sits below the fold. */}
       <div
         className={cn(
-          "flex flex-col",
-          previewable ? "h-full shrink-0" : "shrink-0",
+          "flex flex-col bg-background",
+          isFullscreen
+            ? "fixed inset-0 z-[10000]"
+            : previewable
+              ? "h-full shrink-0"
+              : "shrink-0",
         )}
       >
         {/* Compact identity + actions row */}
@@ -384,9 +407,18 @@ export function SharedFileLens({
             <Button
               iconEnd={<ArrowDown className="hidden" />}
               variant="quiet"
-              onClick={() =>
-                capabilitiesRef.current?.scrollIntoView({ behavior: "smooth" })
-              }
+              onClick={() => {
+                const reveal = () =>
+                  capabilitiesRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                  });
+                // The capability section sits outside the full-screen block.
+                if (document.fullscreenElement) {
+                  void document.exitFullscreen().then(reveal, reveal);
+                } else {
+                  reveal();
+                }
+              }}
               aria-label="See what AI can do with this file"
             >
               <AGENT_ICON className="h-4 w-4 text-primary" />
@@ -394,11 +426,7 @@ export function SharedFileLens({
             </Button>
             {previewable && fullscreenSupported && (
               <Button
-                icon={isFullscreen ? (
-                  <Minimize2 />
-                ) : (
-                  <Maximize2 />
-                )}
+                icon={isFullscreen ? <Shrink /> : <Fullscreen />}
                 variant="outline"
                 onClick={toggleFullscreen}
                 aria-label={
@@ -411,11 +439,7 @@ export function SharedFileLens({
               </Button>
             )}
             {previewable && (
-              <Button
-                asChild
-                variant="outline"
-                aria-label="Open in a new tab"
-              >
+              <Button asChild variant="outline" aria-label="Open in a new tab">
                 <OutboundLink href={urls.public}>
                   <ExternalLink className="h-4 w-4" />
                   <span className="ml-1.5 hidden md:inline">New tab</span>
@@ -432,10 +456,7 @@ export function SharedFileLens({
         </div>
 
         {/* The stage — fullscreen target, fills the rest of the viewport. */}
-        <div
-          ref={stageRef}
-          className="relative min-h-0 flex-1 bg-background"
-        >
+        <div className="relative min-h-0 flex-1 bg-background">
           {kind === "pdf" &&
             (mounted ? (
               <React.Suspense fallback={<ViewerFallback />}>
@@ -449,7 +470,14 @@ export function SharedFileLens({
             ) : (
               <ViewerFallback />
             ))}
-          {kind === "image" && (
+          {mediaFailed && kind !== "pdf" && (
+            <NoPreviewCard
+              name={name}
+              attachmentUrl={urls.attachment}
+              message="This file can't be shown in this browser — download it to open it on your device."
+            />
+          )}
+          {kind === "image" && !mediaFailed && (
             <div className="flex h-full items-center justify-center overflow-auto p-3 sm:p-4">
               {/* Token-backed durable public byte URL — safe for a raw tag on
                   this anonymous page where InlineMediaRef (authed re-mint)
@@ -457,27 +485,37 @@ export function SharedFileLens({
               <img
                 src={urls.public}
                 alt={name}
+                ref={checkMediaMounted}
+                onError={onMediaError}
                 className="max-h-full max-w-full rounded-md object-contain"
               />
             </div>
           )}
-          {kind === "video" && (
+          {kind === "video" && !mediaFailed && (
             <div className="flex h-full items-center justify-center p-3 sm:p-4">
               <video
                 src={urls.public}
                 controls
+                ref={checkMediaMounted}
+                onError={onMediaError}
                 className="max-h-full max-w-full rounded-md"
               />
             </div>
           )}
-          {kind === "audio" && (
+          {kind === "audio" && !mediaFailed && (
             <div className="flex h-full items-center justify-center p-6">
               <div className="w-full max-w-xl rounded-xl border border-border bg-card p-6 text-center">
                 <Mic className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
                 <p className="mb-4 truncate text-sm font-semibold text-foreground">
                   {name}
                 </p>
-                <audio src={urls.public} controls className="w-full" />
+                <audio
+                  src={urls.public}
+                  controls
+                  ref={checkMediaMounted}
+                  onError={onMediaError}
+                  className="w-full"
+                />
               </div>
             </div>
           )}

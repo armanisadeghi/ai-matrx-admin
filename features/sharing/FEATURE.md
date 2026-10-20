@@ -281,7 +281,11 @@ asking to OWN a copy and therefore needs an account.
 **Full-bleed lenses.** A lens whose body is a viewer (not a document) registers in
 `FULL_BLEED_LENSES` (`lenses/registry.tsx`); the shell (`SharedResourceView`) then renders it
 with definite height and no padded max-width column — the lens owns the whole landing body and
-its own scroll. First member: `file`.
+its own scroll. First member: `file`. The definite height is NOT free: the public layout is
+`min-h-dvh` + document scroll, so the full-bleed wrapper carries `data-public-viewport-surface`,
+which `app/globals.css` uses to pin the layout to `100dvh` and hide the footer (the public
+header stays). Drop the marker and every viewer collapses to 0px. Guard:
+`lenses/__tests__/a-shared-viewer-has-a-definite-height.test.ts`.
 
 **The file lens is a product surface (`lenses/file-lens.tsx`, 2026-08-13).** A shared file's
 recipient is a prospect (VISION.md: a share IS a referral), so the landing does two jobs:
@@ -424,6 +428,8 @@ Stable. Grants **really grant**: every table on canonical RLS (`iam.apply_rls`) 
 ---
 
 ## Change log
+
+- `2026-10-20` — **Shared PDFs rendered blank; fixed.** The public layout moved to `min-h-dvh` + document scroll, so the file lens's `h-full` stage resolved to 0px and every shared PDF showed nothing until Full screen. New `data-public-viewport-surface` marker (full-bleed branch of `SharedResourceView`) pins the layout to the viewport. Full screen now puts the whole document in full screen and pins the viewer block (title row + stage) over it, so "Exit full screen" stays visible and the viewer's popovers/tooltips (portaled to body) still show; uses a distinct icon from the viewer's fit-page icon, and "What AI can do" leaves full screen first. Image/video/audio that the browser cannot decode fall back to the download card instead of a dead player. Also fixed in the shared PDF viewer (see `features/pdf/FEATURE.md`): the page-crashing pdf.js 6 browser-API requirement and trackpad paging stalling after one flip.
 
 - `2026-10-18` — **Secure link confirms through the vault's ONE gate.** `SecureLinkPanel` wraps its form in `@ai-matrx/vault` `IdentityGate` over `webVaultIdentity`, so a Google-only person can confirm (the password-only `VaultRevealReauthDialog` is deleted) and the send runs again by itself once confirmed.
 
