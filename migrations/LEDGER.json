@@ -260,6 +260,12 @@
       "checksum": "05fbdcd5dfe949f1c36f22510d315450e1250e034836f782a7ffcb5944074ed2",
       "applied_at": "2026-10-20 07:27:26.684155+00"
     },
+    "migrations/campaign/20261020090000_withheldhonest2_a_a_saved_views_filter_on_a_withheld_column_is_skipped.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261020090000_withheldhonest2_a_a_saved_views_filter_on_a_withheld_column_is_skipped.sql",
+      "checksum": "092dfa7a6d04ebd25a58c73d5daa6acadea73bb477787ed66819d4f273981b4f",
+      "applied_at": "2026-10-20 07:37:41.453185+00"
+    },
     "migrations/campaign/20261020240100_readspeed4_b_writes_mark_stale_views_refresh_reader_check_kept.sql": {
       "source": "matrx-frontend",
       "filename": "20261020240100_readspeed4_b_writes_mark_stale_views_refresh_reader_check_kept.sql",
@@ -379,6 +385,12 @@
       "filename": "20261024240100_versionhotrow_b_the_access_version_reader_keeps_its_plan.sql",
       "checksum": "db2d5f6ff22ce67f0a1a868993de97477c4cd648cb843593f547edc8287632b8",
       "applied_at": "2026-10-20 06:39:49.091879+00"
+    },
+    "migrations/campaign/20261025240000_accessrevoke_a_a_revoked_grant_is_in_force_nowhere.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261025240000_accessrevoke_a_a_revoked_grant_is_in_force_nowhere.sql",
+      "checksum": "50b3e5b6c1cf31285e159b178465f37f85ee04e0cf1376c8ce3c2e25d7a06a81",
+      "applied_at": "2026-10-20 07:41:57.449916+00"
     },
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -11911,12 +11923,6 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
-    },
-    "migrations/campaign/20261020090000_withheldhonest2_a_a_saved_views_filter_on_a_withheld_column_is_skipped.sql": {
-      "source": "matrx-frontend",
-      "filename": "20261020090000_withheldhonest2_a_a_saved_views_filter_on_a_withheld_column_is_skipped.sql",
-      "checksum": "092dfa7a6d04ebd25a58c73d5daa6acadea73bb477787ed66819d4f273981b4f",
-      "applied_at": "2026-10-20 07:37:41.453185+00"
     }
   }
 }
