@@ -82,9 +82,9 @@ function relatedTo(card: GalleryCard, all: readonly GalleryCard[]): GalleryCard[
 export default async function PublicTemplatePage({ params, searchParams }: Props) {
   const { slug: raw } = await params;
   const key = decodeURIComponent(raw);
-  const read = await readTemplatePageState(key);
+  const pageRead = await readTemplatePageState(key);
   // ADVERSARIAL-5 F3: the database did not answer, even after a retry, and no earlier read is kept: said in place.
-  if (read.state === "unavailable")
+  if (pageRead.state === "unavailable")
     return (
       <div className="bg-textured" data-template-unavailable="">
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 px-4 py-16 sm:px-6">
@@ -101,7 +101,7 @@ export default async function PublicTemplatePage({ params, searchParams }: Props
         </div>
       </div>
     );
-  const page = read.state === "open" ? read.page : null;
+  const page = pageRead.state === "open" ? pageRead.page : null;
 
   if (!page) {
     // ADVERSARIAL-2 #12: an unknown address answered 200. Only a template id can be an organization's own
