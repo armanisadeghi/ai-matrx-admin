@@ -25,11 +25,11 @@ signed-in person, while the browser is still loading the app. With the person's 
 
 | Knob | Default | Meaning |
 |---|---|---|
-| `data/server_rows` | ON (platform, 2026-10-08) | draw the grid's first page in the server's HTML when the server's seed wins the race |
-| `data/server_rows_cap_ms` | 1200 | the longest the page waits for the server's reads, counted from the request's start; past it gate = off, seed = null, the browser asks at once |
-| `data/server_rows_budget_ms` | 8000 | retired by SSR-ROWS-3 (no reader); archiving it is a platform-admin act, still to do |
+| `data/server_rows` | OFF (platform; see the last section) | draw the grid's first page in the server's HTML when the server's seed wins the race |
+| `data/server_rows_cap_ms` | 1200 | no reader since SERVER-ROWS-2 (2026-10-20): nothing waits out a cap; carried in the gate only |
+| `data/server_rows_budget_ms` | 8000 | the hang guard (SERVER-ROWS-2): a store that never answers ends the server's boundary here (gate off, seed null); mirrored by `SERVER_ROWS_HANG_GUARD_MS` |
 
-Both live knobs reach the server inside `custom.table_page_bundle`'s `server_rows` part (`serverRowsOf`, `@ai-matrx/records-ui/first-page`), so deciding costs no extra read.
+`data/server_rows` and the cap reach the server inside `custom.table_page_bundle`'s `server_rows` part (`serverRowsOf`, `@ai-matrx/records-ui/first-page`), so deciding costs no extra read.
 
 ## How the reads run (SSR-ROWS-3)
 
@@ -165,3 +165,12 @@ Live, www.aimatrx.com, Brightline service jobs (420 rows), ON by a temporary per
 | admin 3 | 1376 (342) | 2769 | 1073 (342) | 2158 |
 
 The member's seed now carries rows (5 of 6 ON loads), and every landed ON is 0.5–1.5 s faster. Two ON loads missed the cap and broke "every ON ≤ its paired OFF + 300 ms" (member 3 cold +528 ms, admin 1 warm +3246 ms, an app stall). **Platform default stays OFF.** What is left is the miss itself: a seed past the cap costs about the cap. The chain is where → bundle → page → (levels, headers, aggregates) in series, owned by the bundle and read lanes.
+
+## Nothing waits out a cap (SERVER-ROWS-2, 2026-10-20)
+
+The two failed pairs above had the same cause. The 1.2 s cap answered "no seed" for a server seed that landed at about 1.3 s. The server's HTML then kept only the skeleton, the late seed was thrown away, and the browser asked every door again from hydration. Fix (matrx-frontend `2cd8ea076b`): `readTablePage` has no cap. The gate answers when the bundle names the knob. The seed answers when its reads land, however late. The rows stream into the same server render, inside the route's Suspense boundary, which falls back to the same `TableRouteSkeleton` box. The browser's racing data source takes each door from whichever answers first: its own call or the server's late seed. Only a store that never answers is cut off, at `data/server_rows_budget_ms` (8 s, `SERVER_ROWS_HANG_GUARD_MS`).
+Guard: `__tests__/a-seed-slower-than-the-cap-never-delays-first-paint.test.tsx`. A 1.6 s seed: the shell and skeleton flush at once, the server's page streams in at about 1.6 s, and the browser takes the server's page over its own 4 s read. It FAILS 2/2 on the old code and PASSES 2/2 now.
+
+Why a seed passes 1.2 s: the chain is serial. Timed door by door from a node client, Brightline service jobs (420 rows): `where_id_opens` 180–390 ms → `table_page_bundle` 330–660 → `read_records_page` 280–820 → `record_headers[100]` (the page's rows carry no version) and the member's `my_levels[100]` 160–400. That totals 0.96–1.98 s before any cold-connection cost. No cheap cut exists in this repo. The two levers are a page read that returns each row's version (that drops the headers hop), and a smaller bundle. Both belong to the read and bundle lanes.
+
+Local check (dev preview, test@test.com, ON by override): first byte 0.5–1.2 s, rows streamed in the same response at 1.9–2.9 s (past the old cap, so before the fix they were dropped), CLS 0.000 on every load.
