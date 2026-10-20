@@ -7,7 +7,7 @@
  * see. The line under the box says which it read, and one click flips it.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type KeyboardEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Compass, ListPlus, Search } from "lucide-react";
 import { Button, Chip } from "@ai-matrx/design-system/controls";
@@ -64,11 +64,26 @@ export function AskBar({
   const canFind = find && text.trim().length >= 2 && !finding && !needsPlace && reading !== null && !plan.isFetching;
   const canFill = !find && parsed.items.length >= 1;
   const go = () => (find ? canFind && onFind() : canFill && onFill());
+  // Enter is a press of Find even while the line is still being read: it waits for the reading, then goes once.
+  const [queuedFor, setQueuedFor] = useState<string | null>(null);
+  const wantsFind = find && text.trim().length >= 2 && !finding;
+  useEffect(() => {
+    if (queuedFor === null) return;
+    if (queuedFor !== text) { setQueuedFor(null); return; }
+    if (canFind) { setQueuedFor(null); onFind(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queuedFor, text, canFind]);
+  const onEnter = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing) return;
+    e.preventDefault();
+    if (find ? canFind : canFill) go();
+    else if (wantsFind && !needsPlace) setQueuedFor(text);
+  };
 
   return (
     <div className="space-y-2">
       <form className="flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); go(); }}>
-        <ProInput value={text} onChange={(e) => onText(e.target.value)} aria-label="Describe or list"
+        <ProInput value={text} onChange={(e) => onText(e.target.value)} onKeyDown={onEnter} aria-label="Describe or list"
           placeholder={PLACEHOLDER[kindKey] ?? "Describe it, or list names with vs"} wrapperClassName="flex-1" />
         <Button type="submit" variant="outline" disabled={find ? !canFind : !canFill}
           icon={find || !canFill ? <Search className="h-4 w-4" /> : <ListPlus className="h-4 w-4" />}>

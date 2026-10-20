@@ -123,6 +123,8 @@ export function ToolPage({
   const title = card?.display_name ?? facts?.displayName ?? "Tool";
   const rawSummary = card?.summary ?? facts?.summary ?? "";
   const noun = card?.display_noun ?? facts?.displayNoun ?? "";
+  // "Lookup" is the catalog's own word, not a person's: say what the Tool is about instead.
+  const plainNoun = /^lookup$/i.test(noun.trim()) ? jobFamilyOf(card?.job_family).label.replace(/^Other$/, "") : noun;
   const adminView = useToolsAdminView();
   const { text: summary, flagged } = memberSummary(rawSummary, adminView);
 
@@ -244,7 +246,7 @@ export function ToolPage({
           {summary ? <p className="mt-1 text-sm text-muted-foreground">{summary}</p> : null}
           {form.data ? (
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              {noun ? <Badge tone="neutral">{noun}</Badge> : null}
+              {plainNoun ? <Badge tone="neutral">{plainNoun}</Badge> : null}
               {facts?.offNotice ? <Badge tone="warning">Paused</Badge> : flagged ? <Badge tone="warning">May not work right now</Badge> : null}
             </div>
           ) : null}

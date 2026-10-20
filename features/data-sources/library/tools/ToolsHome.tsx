@@ -83,6 +83,8 @@ export function ToolsHome({
   // A recognized lookup is the answer to the box; the list of Tools waits one press away (and returns on a new query).
   const [listOpenFor, setListOpenFor] = useState<string | null>(null);
   const hideList = lookup !== null && listOpenFor !== query;
+  // A business name is answered by its offers once the Tool search settles: hold their row's space meanwhile so nothing jumps.
+  const offersPending = family === null && entity?.kind === "business" && entity.offers.length > 0 && !settled;
   const help = !lookup && (family === "people" || family === "company") ? lookupHelp(query) : null;
 
   return (
@@ -101,6 +103,17 @@ export function ToolsHome({
           hero
           className="w-full"
           autoFocus
+          onKeyDown={(e) => {
+            if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing) return;
+            // Enter presses the box's first answer: a recognized lookup, else the first thing it offers.
+            const first = offers[0];
+            if (lookup) onLookup(lookup);
+            else if (first) {
+              if (first.href) window.open(first.href, "_blank", "noopener,noreferrer");
+              else onOffer(first);
+            } else return;
+            e.preventDefault();
+          }}
         />
       </section>
 
@@ -127,6 +140,13 @@ export function ToolsHome({
         </section>
       ) : null}
 
+      {offersPending ? (
+        <div className="flex flex-wrap gap-2" aria-hidden data-entity-offers-pending="">
+          {[162, 118, 122].map((w) => (
+            <div key={w} className="h-7 animate-pulse rounded-md bg-muted" style={{ width: `${w}px` }} />
+          ))}
+        </div>
+      ) : null}
       {lookup ? <LookupSuggestion plan={lookup} onLookup={onLookup} /> : null}
       {offers.length > 0 ? (
         <section className="flex flex-wrap gap-2" aria-label="What you can do" data-entity-offers={entity?.kind}>
@@ -176,7 +196,7 @@ export function ToolsHome({
             <>
           {line ? <p className="text-sm text-muted-foreground">{line}</p> : null}
 
-          {firstLoad ? (
+          {firstLoad && offersPending ? null : firstLoad ? (
             <RegionSkeleton shape="cards" count={4} aria-label="Loading Tools" />
           ) : status === "failed" && tools.length === 0 ? (
             <EmptyState

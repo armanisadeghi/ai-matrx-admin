@@ -189,3 +189,10 @@ export function mergeHistory(
 export function isCheckRequired(refusal: string | null | undefined): boolean {
   return refusal === "verification_required";
 }
+
+/** A load failure in a plain sentence: a missing route or a bare "Not Found" is never shown as the raw status text. */
+export function plainLoadError(err: unknown, message: string, what: string): string {
+  const status = typeof err === "object" && err !== null ? (err as { status?: unknown }).status : undefined;
+  if (status === 404 || /^\s*(404\s*)?not found\.?\s*$/i.test(message)) return `${what} isn't available yet.`;
+  return message;
+}
