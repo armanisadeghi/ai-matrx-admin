@@ -422,7 +422,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
         break;
 
       case "cost":
-        if (typeof value === "string") {
+        if (typeof value === "string" && /^\$+$/.test(value)) {
           const costLevel = value.length; // $ = 1, $$ = 2, $$$ = 3
           return (
             <div className="flex items-center gap-1">
