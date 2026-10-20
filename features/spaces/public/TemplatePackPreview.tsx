@@ -16,8 +16,14 @@
 // reads the template from the public door (loadPublicPackTemplate) and loads the editor, then swaps each outline for
 // the live page. The box has a fixed height and scrolls inside, so the swap moves nothing. A failed read keeps the
 // outline and says so in the console.
+//
+// ON PRESS ONLY (ADVERSARIAL-5 F1, 2026-10-20): on a template page this box is in the first screen, so "reached" (it
+// scrolls into view, a pointer passes over it) fired on every visit and pulled the whole app (8.3 MB for a guest who
+// never scrolled). The live editor now starts only on a press: the "See it live" button over the server-drawn
+// snapshot, or a press anywhere in the box. Hover, focus and scrolling start nothing. Guard:
+// features/make/__tests__/live-previews-start-only-on-a-press.test.tsx.
 
-import { FileText } from "lucide-react";
+import { FileText, Play } from "lucide-react";
 import { useFullPublicTierWhen } from "@/features/public-shell/publicTier";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
@@ -73,20 +79,8 @@ export function TemplatePackPreview({
   const [wanted, setWanted] = useState(false);
   const [live, setLive] = useState<Live | null>(null);
   const [failed, setFailed] = useState(false);
-  const boxRef = useRef<HTMLDivElement>(null);
   // On a light public page the live screens need the app tree first (store, query client, hosts).
   const appReady = useFullPublicTierWhen(wanted);
-
-  // Reached = the preview scrolls into view (or a pointer or focus enters it, below).
-  useEffect(() => {
-    const box = boxRef.current;
-    if (wanted || !box || typeof IntersectionObserver === "undefined") return;
-    const seen = new IntersectionObserver((entries) => {
-      if (entries.some((e) => e.isIntersecting)) setWanted(true);
-    }, { rootMargin: "0px 0px -20% 0px" });
-    seen.observe(box);
-    return () => seen.disconnect();
-  }, [wanted]);
 
   useEffect(() => {
     if (!wanted || !appReady) return;
@@ -135,14 +129,24 @@ export function TemplatePackPreview({
   if (!current) return null;
   return (
     <div
-      className="spaces-root flex h-[40rem] min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card md:grid md:grid-cols-[13rem_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)]"
-      ref={boxRef}
+      className="spaces-root relative flex h-[40rem] min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card md:grid md:grid-cols-[13rem_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)]"
       data-space-template-preview={catalogueId}
-      data-live={live ? "on" : failed ? "failed" : "off"}
-      onPointerEnter={want}
-      onFocusCapture={want}
-      onTouchStart={want}
+      data-live={live ? "on" : failed ? "failed" : wanted ? "loading" : "off"}
+      onPointerDown={want}
     >
+      {live || failed ? null : (
+        // ui-exception: the light public tier has no controls barrel in its graph (ADVERSARIAL-5 F1); one native button.
+        <button
+          type="button"
+          onClick={want}
+          disabled={wanted}
+          data-see-it-live=""
+          className="absolute right-3 top-3 z-10 inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-sm font-medium text-foreground shadow-sm"
+        >
+          <Play size={14} aria-hidden="true" />
+          {wanted ? "Loading…" : "See it live"}
+        </button>
+      )}
       <nav
         aria-label="Template pages"
         className="flex shrink-0 gap-1 overflow-x-auto border-b border-border p-2 md:flex-col md:overflow-y-auto md:border-b-0 md:border-r"
