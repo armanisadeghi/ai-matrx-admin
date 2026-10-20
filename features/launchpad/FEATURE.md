@@ -2,7 +2,7 @@
 
 **Status:** `active`
 **Tier:** `2`
-**Last updated:** `2026-10-19`
+**Last updated:** `2026-10-20`
 
 ## Purpose
 
@@ -64,13 +64,39 @@ Two things live here, one feature:
   placements for every widget. Drag the header to move, the corner to resize, arrow keys to nudge (Shift
   resizes); overlaps push down and the grid compacts. One commit per gesture.
 - **Add a widget type**: one entry in `widgets/catalog.ts` (type, label, lucide icon, Board section, grid
-  sizes `defaultW/defaultH/minW/minH/maxW?/maxH?`, default config, fields, `describe`, optional `href` and
-  `publishes` — the page-bus slot, unwired today) + one body in `widgets/registry.tsx` taking
+  sizes `defaultW/defaultH/minW/minH/maxW?/maxH?`, default config, fields, `describe`, optional `href`,
+  `publishes` and `accepts` — its page-bus ports, below) + one body in `widgets/registry.tsx` taking
   `{ config, editing, capacity }`. The registry test fails without both. A new field picker goes in
   `LaunchpadPanels.tsx`.
 - Widgets today: counts, count, recent, tasks, today, favorites, pinned agents, data page, table (the Start
   nine), Applet (`AppletInPage`), launchpad link, app page (the Board's Page item body — any app address,
-  which also covers a Space page).
+  which also covers a Space page), Meet Matrx (`meet_matrx`: the welcome stage's studios / building blocks,
+  drawn by the same `IntroStage` over `MEET_MATRX_GROUPS`; its frame draws no box of its own).
+
+## The page bus (widgets talk)
+
+- **Contract** (`bus/ports.ts`; amendment recorded in common-docs `projects/custom-experience/REGISTER.md`): a
+  widget type declares `publishes: [{ key, label, kind }]` and `accepts: [{ key, label, kind }]`; kinds are
+  `record` `{token,id,label,href?}`, `file` `{file_id,label}`, `text`, `rows` `{token?,rows:[{id,label}]}`. A
+  launchpad doc stores `bindings: [{ from: {widgetId,key}, to: {widgetId,key} }]` (`LaunchpadDoc.bindings`,
+  absent = none, schema stays 1). One connection per input. `canFeed`: exact kind, plus a record or file feeds
+  text (its label) and a file record feeds a file input. A value carrying `__kind` passes through whole.
+- **Runtime** (`bus/store.ts`, `bus/react.tsx`): `PageBusProvider` (one store per page, in `LaunchpadPage`),
+  `WidgetBusScope` per slot (`LaunchpadGrid`), `usePageInput(key, kind)` / `usePageOutput(key)`. Every hook
+  subscribes to ONE address, so a publish redraws only the widgets wired to it (guard: the render-count test
+  in `__tests__/pageBus.test.tsx`). Values live for the tab's session (`sessionStorage`
+  `matrx:client:launchpad.bus:<key>`), never the database; only the connection is saved.
+- **Ports today:** Recent publishes Selected item, accepts Search · Tasks publishes Selected task, accepts Filter
+  (title words) · Table publishes Selected row and Shown rows · App page accepts Record to open (the picked
+  record's page wins over the saved address) · Applet accepts `in_record` `in_file` `in_text`, publishes
+  `out_record` `out_text`. A row list picks instead of opening ONLY while its value is connected (`WidgetRow.onSelect`;
+  the open arrow stays at the row's end); unconnected widgets behave as before.
+- **Applet bridge:** `useAppletPageValues()` → `AppletInPage` → `AppletHostMount` → `@ai-matrx/applets`
+  `PlatformHostOptions.pageValues`: Applet code reads `useValue("in_record")` and publishes with
+  `useValue("out_record")[1](value)` — structured values travel as named surface values, never as user input.
+- **Editor:** Set up shows "<Input> from" pickers listing compatible published values on the page
+  (`compatibleSources`); a connected widget shows a quiet cable mark in its header in Edit mode (tooltip names
+  the connections, `connectionLine`). The version note says "Connected widgets".
 
 ## Agent
 
@@ -116,6 +142,13 @@ No existing primitive combined the user navigation hierarchy, start actions,
 and favorites into an always-open launcher.
 
 ## Change log
+
+- `2026-10-20` — Lane K (custom-experience): the `meet_matrx` widget and the "Meet Matrx" template (studios,
+  building blocks, then agents, recent chats, favorites).
+
+- `2026-10-20` — Lane L (custom-experience): the page bus — ports on the widget catalog, `LaunchpadDoc.bindings`,
+  the per-address store, "… from" pickers in Set up, row picking, App page / Tasks / Recent inputs, and the Applet
+  bridge through `@ai-matrx/applets` `pageValues`.
 
 - `2026-10-19` — Lane J: the server read waits up to 6 s (was 2.5 s, which every cold function instance missed
   live, so the first load after a deploy or idle fell back to the ~12 s browser read). Warm loads paint the grid at

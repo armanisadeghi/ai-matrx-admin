@@ -12,20 +12,25 @@ import ShellIcon from "../ShellIcon";
 import { navToneIconClass, type ShellNavItem } from "../../constants/nav-data";
 import { cn } from "@/lib/utils";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { shellLookRowProps, type ShellLookId } from "@/features/shell/shell-layout/looks";
 
 interface NavItemProps {
   item: ShellNavItem;
+  /** The shell's Look (null = standard: the row's HTML is unchanged). */
+  look?: ShellLookId | null;
 }
 
-export default function NavItem({ item }: NavItemProps) {
+export default function NavItem({ item, look = null }: NavItemProps) {
+  const lookProps = shellLookRowProps(look, item);
   if (item.external || item.openInNewTab) {
     return (
       <OutboundLink
         href={item.href}
         title={item.label}
         className="shell-nav-item shell-tactile-subtle"
+        {...lookProps.row}
       >
-        <span className={cn("shell-nav-icon", navToneIconClass(item.tone))}>
+        <span className={cn("shell-nav-icon", navToneIconClass(item.tone))} {...lookProps.tile}>
           <ShellIcon name={item.iconName} size={18} strokeWidth={1.75} />
         </span>
         <span className="shell-nav-label">{item.label}</span>
@@ -42,8 +47,9 @@ export default function NavItem({ item }: NavItemProps) {
       title={item.label}
       data-nav-href={item.href}
       className="shell-nav-item shell-tactile-subtle"
+      {...lookProps.row}
     >
-      <span className={cn("shell-nav-icon", navToneIconClass(item.tone))}>
+      <span className={cn("shell-nav-icon", navToneIconClass(item.tone))} {...lookProps.tile}>
         <ShellIcon name={item.iconName} size={18} strokeWidth={1.75} />
       </span>
       <span className="shell-nav-label">{item.label}</span>

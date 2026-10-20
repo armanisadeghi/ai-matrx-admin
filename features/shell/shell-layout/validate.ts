@@ -10,7 +10,8 @@
 //   - a `ref` no catalog entry answers → KEPT (it may be an admin row, or come back) and reported;
 //     the resolver drops it from render;
 //   - a missing reserved header control → re-added at its default place and reported;
-//   - a Dock longer than SHELL_DOCK_MAX_ITEMS → cut to the limit and reported.
+//   - a Dock longer than SHELL_DOCK_MAX_ITEMS → cut to the limit and reported;
+//   - a `look` naming no registered look (./looks.ts) → dropped (standard applies) and reported.
 // An editor refuses to save while `problems` is non-empty; the boot path renders the repaired body.
 
 import { isShellIconName, type ShellIconName } from "@/features/shell/shellIconMap";
@@ -26,6 +27,7 @@ import {
 } from "./contract";
 import { DEFAULT_HEADER_CONTROLS, isKnownCatalogId } from "./catalog";
 import { resolveRetiredNavId } from "./retired-nav-ids";
+import { isShellLookId } from "./looks";
 
 /** The most rows a phone Dock holds. */
 export const SHELL_DOCK_MAX_ITEMS = 8;
@@ -36,7 +38,7 @@ export interface ParsedShellLayout {
 }
 
 const HEADER_CONTROL_IDS: readonly HeaderControlId[] = DEFAULT_HEADER_CONTROLS;
-const BODY_KEYS = new Set(["schemaVersion", "basedOnCatalogVersion", "sidebar", "header", "dock", "landing", "dismissedNew"]);
+const BODY_KEYS = new Set(["schemaVersion", "basedOnCatalogVersion", "sidebar", "header", "dock", "landing", "look", "dismissedNew"]);
 
 type Raw = Record<string, unknown>;
 
@@ -323,6 +325,14 @@ function parseLanding(raw: unknown, ctx: Ctx): ShellLanding | undefined {
   return undefined;
 }
 
+/** A Look reference: a known look id, else dropped (the standard look applies) and reported. */
+function parseLook(raw: unknown, ctx: Ctx): { id: string } | undefined {
+  if (isRecord(raw) && isShellLookId(raw.id)) return { id: raw.id };
+  const id = isRecord(raw) ? raw.id : raw;
+  ctx.problems.push(`look: unknown look ${JSON.stringify(id)}; the standard look is used`);
+  return undefined;
+}
+
 /** Validates an already-decoded value as a layout body (same rules as `parseShellLayoutBody`). */
 export function validateShellLayoutBody(value: unknown): ParsedShellLayout {
   const ctx: Ctx = { problems: [], seenIds: new Set() };
@@ -361,6 +371,10 @@ export function validateShellLayoutBody(value: unknown): ParsedShellLayout {
     const landing = parseLanding(value.landing, ctx);
     if (landing) body.landing = landing;
   }
+  if (value.look !== undefined) {
+    const look = parseLook(value.look, ctx);
+    if (look) body.look = look;
+  }
   if (value.dismissedNew !== undefined) {
     if (Array.isArray(value.dismissedNew)) {
       body.dismissedNew = value.dismissedNew.filter((id): id is string => typeof id === "string");
@@ -393,6 +407,7 @@ export function serializeShellLayoutBody(body: ShellLayoutBody): string {
     ...(body.header !== undefined ? { header: body.header } : {}),
     ...(body.dock !== undefined ? { dock: body.dock } : {}),
     ...(body.landing !== undefined ? { landing: body.landing } : {}),
+    ...(body.look !== undefined ? { look: { id: body.look.id } } : {}),
     ...(body.dismissedNew !== undefined ? { dismissedNew: body.dismissedNew } : {}),
   };
   return JSON.stringify(ordered);

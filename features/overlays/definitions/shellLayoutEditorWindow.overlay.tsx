@@ -13,7 +13,7 @@ import type { OverlayWire } from "./overlay-types";
 const OVERLAY_ID = "shellLayoutEditorWindow" as const;
 
 export interface OpenShellLayoutEditorOptions {
-  region?: "sidebar" | "header" | "dock";
+  region?: "sidebar" | "header" | "dock" | "look";
   /** `organization` edits the organization's layout (owner/admin); default the person's own. */
   target?: "person" | "organization";
   /** The organization whose layout is edited (target `organization`). */

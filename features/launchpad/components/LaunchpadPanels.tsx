@@ -77,19 +77,35 @@ export interface LaunchpadChoice {
   title: string;
 }
 
+/** One input of the widget being set up and what on the page can feed it (`compatibleSources`). */
+export interface WidgetConnectionChoice {
+  key: string;
+  label: string;
+  /** `busAddress(widgetId, key)` of the connected source, or "" for none. */
+  value: string;
+  options: readonly { value: string; label: string }[];
+}
+
+const NOT_CONNECTED = "none";
+
 export function ConfigureWidgetPanel({
   widget,
   spec,
   launchpads,
+  connections,
   onResize,
   onConfigure,
+  onConnect,
   onClose,
 }: {
   widget: LaunchpadWidget;
   spec: LaunchpadWidgetSpec | undefined;
   launchpads: readonly LaunchpadChoice[];
+  connections: readonly WidgetConnectionChoice[];
   onResize: (size: { w?: number; h?: number }) => void;
   onConfigure: (patch: Record<string, string>) => void;
+  /** Connect input `key` to the source at `address` (null = disconnect). */
+  onConnect: (key: string, address: string | null) => void;
   onClose: () => void;
 }) {
   const lg = widget.layout.lg;
@@ -150,6 +166,25 @@ export function ConfigureWidgetPanel({
             </label>
           );
         })}
+        {connections.length ? (
+          <div className="flex flex-col gap-2 border-t border-border pt-3" data-launchpad-connections>
+            {connections.map((c) => (
+              <label key={c.key} className="flex flex-col gap-1 text-xs text-muted-foreground">
+                {`${c.label} from`}
+                <Select
+                  aria-label={`${c.label} from`}
+                  value={c.value || NOT_CONNECTED}
+                  disabled={c.options.length === 0}
+                  options={[
+                    { value: NOT_CONNECTED, label: c.options.length ? "Not connected" : "Nothing on this page offers it" },
+                    ...c.options,
+                  ]}
+                  onValueChange={(v) => onConnect(c.key, v === NOT_CONNECTED ? null : v)}
+                />
+              </label>
+            ))}
+          </div>
+        ) : null}
       </div>
     </PanelShell>
   );

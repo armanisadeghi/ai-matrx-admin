@@ -5,7 +5,7 @@
 // frame (../widgets/frame.tsx) and fills its grid box. An unknown widget type renders a named "unavailable"
 // box and is never dropped. In Edit mode the header is the drag handle, the corner resizes, arrows nudge.
 import { useSyncExternalStore } from "react";
-import { CircleSlash, Settings2, X } from "lucide-react";
+import { Cable, CircleSlash, Settings2, X } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { GridCanvas, type GridCanvasPlacements } from "@ai-matrx/design-system";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
@@ -13,6 +13,7 @@ import type { LaunchpadDoc, LaunchpadWidget } from "@/features/shell/shell-layou
 import { getLaunchpadWidgetType } from "../widgets/registry";
 import { describeLaunchpadWidget } from "../widgets/catalog";
 import { WidgetFrame, WidgetList, WidgetNotice, widgetCapacity } from "../widgets/frame";
+import { WidgetBusScope } from "../bus/react";
 
 const noSubscription = () => () => {};
 /** False in the server HTML and while hydrating, true after: widget bodies (their own reads, clocks and
@@ -63,16 +64,36 @@ export function LaunchpadGrid({
         if (!widget) return null;
         const h = state.breakpoint === "sm" ? (widget.layout.sm?.h ?? widget.layout.lg.h) : widget.layout.lg.h;
         return (
-          <LaunchpadSlot
-            widget={widget}
-            capacity={widgetCapacity(h, touch)}
-            editing={editing ?? null}
-            previewing={previewing ?? false}
-          />
+          <WidgetBusScope widgetId={widget.id}>
+            <LaunchpadSlot
+              widget={widget}
+              capacity={widgetCapacity(h, touch)}
+              editing={editing ?? null}
+              previewing={previewing ?? false}
+              connection={editing ? connectionLine(doc, widget.id) : null}
+            />
+          </WidgetBusScope>
         );
       }}
     />
   );
+}
+
+/** "Filter from Table · Shown to Today" — this widget's page-bus connections in one line, or null. */
+export function connectionLine(doc: LaunchpadDoc, widgetId: string): string | null {
+  const name = (id: string) => {
+    const w = doc.widgets.find((x) => x.id === id);
+    return w ? describeLaunchpadWidget(w) : "a removed widget";
+  };
+  const portLabel = (id: string, key: string, side: "publishes" | "accepts") => {
+    const w = doc.widgets.find((x) => x.id === id);
+    return (w ? getLaunchpadWidgetType(w.type)?.[side]?.find((p) => p.key === key)?.label : undefined) ?? key;
+  };
+  const parts = (doc.bindings ?? []).flatMap((b) => [
+    ...(b.to.widgetId === widgetId ? [`${portLabel(widgetId, b.to.key, "accepts")} from ${name(b.from.widgetId)}`] : []),
+    ...(b.from.widgetId === widgetId ? [`${portLabel(widgetId, b.from.key, "publishes")} to ${name(b.to.widgetId)}`] : []),
+  ]);
+  return parts.length ? parts.join(" · ") : null;
 }
 
 function LaunchpadSlot({
@@ -80,16 +101,29 @@ function LaunchpadSlot({
   capacity,
   editing,
   previewing,
+  connection,
 }: {
   widget: LaunchpadWidget;
   capacity: number;
   editing: LaunchpadGridEditing | null;
   previewing: boolean;
+  /** This widget's connections in Edit mode (a quiet mark in the header; the line is its tooltip). */
+  connection: string | null;
 }) {
   const type = getLaunchpadWidgetType(widget.type);
   const hydrated = useHydrated();
   const controls = editing ? (
     <>
+      {connection ? (
+        <span
+          className="flex h-7 w-7 shrink-0 items-center justify-center text-muted-foreground"
+          title={connection}
+          aria-label={connection}
+          data-launchpad-connected
+        >
+          <Cable className="h-3.5 w-3.5" aria-hidden />
+        </span>
+      ) : null}
       <Button
         variant="quiet"
         icon={<Settings2 />}

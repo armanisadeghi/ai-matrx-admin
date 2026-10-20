@@ -13,6 +13,7 @@
 
 import "@/styles/shell.css";
 import "@/features/shell/components/header/variants/header-variants.css";
+import "@/features/shell/shell-layout/shell-looks.css";
 import { Providers } from "@/app/Providers";
 import Sidebar from "@/features/shell/components/sidebar/Sidebar";
 import { PrepaintScript } from "@/components/ssr/PrepaintScript";
@@ -27,6 +28,8 @@ import VisualViewportSync from "@/features/shell/components/VisualViewportSync";
 import FloatingClearanceSync from "@/features/shell/components/FloatingClearanceSync";
 import ShellSidebarCookieSync from "@/features/shell/components/ShellSidebarCookieSync";
 import ShellLayoutSync from "@/features/shell/shell-layout/ShellLayoutSync";
+import { heldShellLook } from "@/features/shell/shell-layout/held";
+import { shellLookAttributes } from "@/features/shell/shell-layout/looks";
 import ShellChatWidthInstant from "@/features/shell/components/ShellChatWidthInstant";
 import { ShellChromeRouteSync } from "@/features/shell/components/ShellChromeMode";
 import { shellChromeAttributes } from "@/features/shell/constants/canvas-chrome-routes";
@@ -106,12 +109,16 @@ export default async function AppShell({
     sidebarExpanded,
     cookieStore.get(SHELL_DOMAIN_PANEL_COOKIE)?.value,
   );
+  // THE LOOK (custom-experience, 2026-10-20): stamped on the first frame from the layout the (core) layout
+  // already picked — no read of its own. Nothing chosen (everyone uncustomized, guests) = no attribute.
+  const shellLook = isAuthenticated && initialReduxState.shellLayout ? heldShellLook(initialReduxState.shellLayout, { isGuest: false }) : null;
   return (
     <Providers initialReduxState={initialReduxState}>
       <SettingsRouteProvider>
         <div
           className="shell-root"
           data-pathname={pathname}
+          {...shellLookAttributes(shellLook)}
           {...shellChromeAttributes(pathname, isAuthenticated)}
           {...(domainPanel ? { "data-domain-panel": "" } : {})}
           {...(chatAvailable ? { "data-shell-chat-available": "" } : {})}

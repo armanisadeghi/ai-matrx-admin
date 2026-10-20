@@ -25,7 +25,9 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { toast } from "@/lib/toast";
 import { START_LAUNCHPAD_KEY, useLaunchpadHistory, useLaunchpads, versionAuthor, versionNote } from "../useLaunchpads";
-import { addWidget, applyPlacements, parseLaunchpadDoc, configureWidget, readingOrder, removeWidget, resizeWidget, sameLaunchpadDoc, summarizeEdit } from "../doc";
+import { EMPTY_LAUNCHPAD_DOC, addWidget, applyPlacements, compatibleSources, parseLaunchpadDoc, configureWidget, readingOrder, removeWidget, resizeWidget, sameLaunchpadDoc, setBinding, summarizeEdit } from "../doc";
+import { PageBusProvider } from "../bus/react";
+import { bindingInto, busAddress, splitBusAddress } from "../bus/ports";
 import { keyFromTitle, personOwner } from "../launchpad.typed-table";
 import { describeLaunchpadWidget, getLaunchpadWidgetSpec } from "../widgets/catalog";
 import { sizeWord } from "../tools/agentEdits";
@@ -249,6 +251,7 @@ function LaunchpadBody({
             : undefined
         }
       />
+      <PageBusProvider busKey={launchpadKey} doc={shown ?? early?.doc ?? EMPTY_LAUNCHPAD_DOC}>
       <div className="h-full overflow-y-auto px-3 pb-6 pt-[calc(var(--shell-header-h)+0.75rem)]" data-matrx-page-scroll>
         {pads.loading ? (
           early ? (
@@ -309,6 +312,7 @@ function LaunchpadBody({
           />
         )}
       </div>
+      </PageBusProvider>
       {panel?.kind === "add" && draft ? (
         <AddWidgetPanel
           onClose={() => setPanel(null)}
@@ -334,8 +338,21 @@ function LaunchpadBody({
           spec={getLaunchpadWidgetSpec(configuring.type)}
           launchpads={pads.entries.filter((e) => e.key !== launchpadKey).map((e) => ({ key: e.key, title: e.title }))}
           onClose={() => setPanel(null)}
+          connections={(getLaunchpadWidgetSpec(configuring.type)?.accepts ?? []).map((port) => {
+            const to = { widgetId: configuring.id, key: port.key };
+            const bound = bindingInto(draft, configuring.id, port.key);
+            return {
+              key: port.key,
+              label: port.label,
+              value: bound ? busAddress(bound.from.widgetId, bound.from.key) : "",
+              options: compatibleSources(draft, to).map((s) => ({ value: busAddress(s.from.widgetId, s.from.key), label: s.label })),
+            };
+          })}
           onResize={(size) => setDraft(resizeWidget(draft, configuring.id, size))}
           onConfigure={(patch) => setDraft(configureWidget(draft, configuring.id, patch))}
+          onConnect={(key, address) => {
+            setDraft(setBinding(draft, { widgetId: configuring.id, key }, address ? splitBusAddress(address) : null));
+          }}
         />
       ) : null}
       {panel?.kind === "history" ? (

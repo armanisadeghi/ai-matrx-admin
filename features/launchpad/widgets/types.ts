@@ -7,6 +7,7 @@
 import type { ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { BoardSection } from "@/features/board/items/types";
+import type { LaunchpadPort } from "../bus/ports";
 
 /** The size a widget opens at and the limits the grid keeps it within (12-column grid units). */
 export interface LaunchpadWidgetSizes {
@@ -37,8 +38,9 @@ export interface LaunchpadWidgetBodyProps {
 
 /**
  * What a widget is, without its body — the catalog an agent, the Add panel and the history notes read.
- * `publishes` is the place for the page bus (a later phase): the values this widget will offer other
- * widgets ("selected file"). Declared now, wired by nobody yet.
+ * `publishes` / `accepts` are its page-bus ports (../bus/ports.ts): the values it offers other widgets
+ * ("Selected row") and the inputs another widget can feed it ("Filter"). Keys are saved in a launchpad's
+ * bindings — never rename one.
  */
 export interface LaunchpadWidgetSpec {
   type: string;
@@ -52,7 +54,8 @@ export interface LaunchpadWidgetSpec {
   describe: (config: Readonly<Record<string, unknown>>) => string;
   /** Where the widget's header title links (its feature's page), or none. */
   href?: (config: Readonly<Record<string, unknown>>) => string | null;
-  publishes?: readonly { name: string; label: string }[];
+  publishes?: readonly LaunchpadPort[];
+  accepts?: readonly LaunchpadPort[];
 }
 
 export interface LaunchpadWidgetType extends LaunchpadWidgetSpec {

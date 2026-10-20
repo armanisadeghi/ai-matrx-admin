@@ -21,6 +21,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
+import { shellLookRowProps, type ShellLookId } from "@/features/shell/shell-layout/looks";
 import AppLink from "@/components/navigation/AppLink";
 import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
@@ -45,6 +46,8 @@ import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface NavFlyoutGroupProps {
   item: ShellNavItem;
+  /** The shell's Look (null = standard: the row's HTML is unchanged). Only the top row wears it. */
+  look?: ShellLookId | null;
   /**
    * Sibling groups used to pick the single most-specific owner. Required so a
    * placeholder that borrows another module's href cannot light up beside it.
@@ -102,7 +105,9 @@ export default function NavFlyoutGroup({
   item,
   candidates,
   suppressActive = false,
+  look = null,
 }: NavFlyoutGroupProps) {
+  const lookProps = shellLookRowProps(look, item);
   const children = item.children ?? [];
   const pathname = usePathname() ?? "";
   // Gated destinations (Make, Records) appear where their switch is on.
@@ -710,8 +715,9 @@ export default function NavFlyoutGroup({
           isGroupActive && "shell-active-pill",
         )}
         onFocus={onRowFocus}
+        {...lookProps.row}
       >
-        <span className={cn("shell-nav-icon", navToneIconClass(item.tone))}>
+        <span className={cn("shell-nav-icon", navToneIconClass(item.tone))} {...lookProps.tile}>
           <ShellIcon name={item.iconName} size={18} strokeWidth={1.75} />
         </span>
         <span className="shell-nav-label">{item.label}</span>

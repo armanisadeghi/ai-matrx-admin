@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
-import { AlertTriangle, GripVertical } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, GripVertical } from "lucide-react";
 import { cn } from "@ai-matrx/design-system";
 import { GRID_CANVAS_GAP_PX, GRID_CANVAS_ROW_PX } from "@ai-matrx/design-system";
 
@@ -89,6 +89,12 @@ export interface WidgetRow {
   icon?: LucideIcon | undefined;
   tone?: "default" | "warning" | "muted";
   action?: ReactNode;
+  /**
+   * The page bus: when present the row PICKS (offers this row to the widgets connected to this one) instead
+   * of opening; `href` then opens from a quiet arrow at the row's end. Absent = the row opens, as always.
+   */
+  onSelect?: (() => void) | undefined;
+  selected?: boolean | undefined;
 }
 
 /** A list body: skeleton rows while loading (same count the slot holds), then up to that many rows. */
@@ -155,7 +161,33 @@ export function WidgetList({
         );
         return (
           <li key={row.key} style={{ height: rowPx }} className="flex items-center gap-1">
-            {row.href ? (
+            {row.onSelect ? (
+              <>
+                <button
+                  type="button"
+                  data-clickable
+                  aria-pressed={Boolean(row.selected)}
+                  onClick={row.onSelect}
+                  className={cn(
+                    "flex h-full min-w-0 flex-1 items-center gap-2 rounded px-2 text-left hover:bg-muted",
+                    row.selected && "bg-muted font-medium",
+                  )}
+                >
+                  {inner}
+                </button>
+                {row.href ? (
+                  <Link
+                    href={row.href}
+                    data-clickable
+                    aria-label={`Open ${row.title}`}
+                    title="Open"
+                    className="flex h-full w-7 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted"
+                  >
+                    <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+                  </Link>
+                ) : null}
+              </>
+            ) : row.href ? (
               <Link
                 href={row.href}
                 data-clickable
