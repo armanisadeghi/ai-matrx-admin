@@ -94,7 +94,9 @@ Two things live here, one feature:
   the open arrow stays at the row's end); unconnected widgets behave as before.
 - **Applet bridge:** `useAppletPageValues()` → `AppletInPage` → `AppletHostMount` → `@ai-matrx/applets`
   `PlatformHostOptions.pageValues`: Applet code reads `useValue("in_record")` and publishes with
-  `useValue("out_record")[1](value)` — structured values travel as named surface values, never as user input.
+  `useValue("out_record")[1](value)` — structured values travel as named surface values, never as user input. An
+  Applet reads its own outputs back from the page (`useValue("out_record")` after a reload shows what the widgets
+  it feeds still show).
 - **Editor:** Set up shows "<Input> from" pickers listing compatible published values on the page
   (`compatibleSources`); a connected widget shows a quiet cable mark in its header in Edit mode (tooltip names
   the connections, `connectionLine`). The version note says "Connected widgets".
@@ -151,6 +153,8 @@ and favorites into an always-open launcher.
 - `2026-10-20` — Lane K (custom-experience): the `meet_matrx` widget and the "Meet Matrx" template (studios,
   building blocks, then agents, recent chats, favorites).
 
+- `2026-10-20` — Lane N: the Applet bridge proven in a browser ("Bus demo" launchpad + Applet); an Applet now reads
+  its own published values back from the page, so a reload no longer shows "nothing sent" beside a live record.
 - `2026-10-20` — Lane L (custom-experience): the page bus — ports on the widget catalog, `LaunchpadDoc.bindings`,
   the per-address store, "… from" pickers in Set up, row picking, App page / Tasks / Recent inputs, and the Applet
   bridge through `@ai-matrx/applets` `pageValues`.

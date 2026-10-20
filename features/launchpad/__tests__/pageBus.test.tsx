@@ -6,7 +6,7 @@ import { createRoot } from "react-dom/client";
 import { addWidget, compatibleSources, parseLaunchpadDoc, removeWidget, serializeLaunchpadDoc, setBinding, summarizeEdit, EMPTY_LAUNCHPAD_DOC } from "../doc";
 import { canFeed, coercePageValue, parseBindings } from "../bus/ports";
 import { createPageBus } from "../bus/store";
-import { PageBusProvider, WidgetBusScope, usePageInput, usePageOutput } from "../bus/react";
+import { PageBusProvider, WidgetBusScope, useAppletPageValues, usePageInput, usePageOutput, type AppletPageValuesPort } from "../bus/react";
 import type { LaunchpadDoc } from "@/features/shell/shell-layout/contract";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -153,5 +153,64 @@ describe("page bus — in React", () => {
     // The value lives for this tab's session: a fresh bus for the same launchpad reads it back.
     expect(createPageBus("test-pad").read("table", "selected")).toEqual({ token: "record", id: "r1", label: "Acme renewal" });
     act(() => root.unmount());
+  });
+});
+
+describe("page bus — the Applet bridge", () => {
+  it("an Applet reads its inputs, publishes its outputs, and reads its own outputs back after a reload", () => {
+    let doc = EMPTY_LAUNCHPAD_DOC;
+    doc = addWidget(doc, { type: "recent", config: { kind: "note" }, id: "notes" });
+    doc = addWidget(doc, { type: "applet", config: { appId: "a1" }, id: "app" });
+    doc = addWidget(doc, { type: "app_page", config: {}, id: "page" });
+    doc = setBinding(doc, { widgetId: "app", key: "in_record" }, { widgetId: "notes", key: "selected" });
+    doc = setBinding(doc, { widgetId: "page", key: "record" }, { widgetId: "app", key: "out_record" });
+    const mount = () => {
+      let port: AppletPageValuesPort | null = null;
+      let pick: ((v: { token: string; id: string; label: string } | null) => void) | null = null;
+      const seen: Record<string, unknown> = {};
+      function Notes() {
+        pick = usePageOutput<{ token: string; id: string; label: string }>("selected").publish;
+        return null;
+      }
+      function Applet() {
+        port = useAppletPageValues();
+        return null;
+      }
+      function Page() {
+        seen.page = usePageInput("record", "record");
+        return null;
+      }
+      const host = document.createElement("div");
+      const root = createRoot(host);
+      act(() =>
+        root.render(
+          <PageBusProvider busKey="bridge-pad" doc={doc}>
+            <WidgetBusScope widgetId="notes"><Notes /></WidgetBusScope>
+            <WidgetBusScope widgetId="app"><Applet /></WidgetBusScope>
+            <WidgetBusScope widgetId="page"><Page /></WidgetBusScope>
+          </PageBusProvider>,
+        ),
+      );
+      return { port: () => port!, pick: (v: { token: string; id: string; label: string }) => act(() => pick!(v)), seen, unmount: () => act(() => root.unmount()) };
+    };
+    const first = mount();
+    const heard: string[] = [];
+    first.port().subscribe((name) => heard.push(name));
+    first.pick({ token: "note", id: "n1", label: "Plan" });
+    expect(first.port().read("in_record")).toEqual({ token: "note", id: "n1", label: "Plan" });
+    expect(heard).toContain("in_record");
+    const fixed = { __kind: "note_ref", token: "note", id: "n2", label: "Photosynthesis" };
+    act(() => first.port().publish("out_record", fixed));
+    expect(first.seen.page).toEqual(fixed);
+    // Not a published key of this widget: refused.
+    act(() => first.port().publish("in_record", { token: "x", id: "y", label: "z" }));
+    expect(first.port().read("in_record")).toEqual({ token: "note", id: "n1", label: "Plan" });
+    first.unmount();
+    // Reload: a fresh page in the same tab — the Applet reads back what it sent, as the page still shows it.
+    const again = mount();
+    expect(again.seen.page).toEqual(fixed);
+    expect(again.port().read("out_record")).toEqual(fixed);
+    expect(again.port().read("in_record")).toEqual({ token: "note", id: "n1", label: "Plan" });
+    again.unmount();
   });
 });
