@@ -12,6 +12,7 @@
 
 import { withRunDebugView } from "@/features/workflow-runtime/transport/debug-view";
 import { callApi, type ApiCallConfig } from "@/lib/api/call-api";
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import type { AppDispatch } from "@/lib/redux/store";
 import { isJsonObject, type JsonObject, type JsonValue } from "@/types/json";
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
@@ -99,6 +100,12 @@ export interface WithheldEntry {
 
 export interface StoredRun {
   conversationId: string;
+  /**
+   * The run's own organization (its conversation's). Acting on this run — Replay, Try, the
+   * placement preview — carries THIS organization (`ensureOrgId(recordOrg)`), never the active one.
+   * Null only from a server that does not send it yet (then the active organization is used).
+   */
+  organizationId: string | null;
   createdAt: string | null;
   ranBy: string | null;
   holder: RunHolder & { name: string | null; versionNumber: number | null };
@@ -258,6 +265,7 @@ function parseStoredRun(conversationId: string, data: unknown): StoredRun {
   }
   return {
     conversationId: str(d.conversation_id) ?? conversationId,
+    organizationId: str(d.organization_id),
     createdAt: str(d.created_at),
     ranBy,
     holder: {
@@ -299,12 +307,19 @@ interface ContractCall {
   body?: JsonObject;
   stream?: boolean;
   consumeStream?: ApiCallConfig["consumeStream"];
+  /**
+   * The organization this call acts in, already resolved (`ensureOrgId(recordOrg)`): a call that acts
+   * on a stored run carries the RUN's organization. Absent → callApi's own (the active organization).
+   */
+  organizationId?: string;
 }
 
 function contractCall(dispatch: AppDispatch, call: ContractCall) {
   // CONTRACT ROUTES: not in the generated `paths` yet (see header).
+  const { organizationId, ...rest } = call;
   const config = {
-    ...call,
+    ...rest,
+    ...(organizationId ? { scopeOverrides: { organization_id: organizationId } } : {}),
     expectedErrorStatuses: [400, 401, 403, 404, 409, 422],
   } as unknown as ApiCallConfig<"/ai/mandates/{mandate_key}", "POST">;
   return dispatch(callApi(config));
@@ -341,10 +356,13 @@ export async function previewPlacement(
   dispatch: AppDispatch,
   mandateKey: AnyMandateKey,
   input: { provisions: JsonObject; holder: TestHolder; configOverrides: JsonObject },
+  /** The stored run's organization — the preview resolves the Holder in THAT organization. */
+  runOrganizationId: string | null,
 ): Promise<PlacementPreview> {
   const res = await contractCall(dispatch, {
     path: `/mandates/${seg(mandateKey)}/placement`,
     method: "POST",
+    organizationId: await ensureOrgId(runOrganizationId),
     body: {
       provisions: input.provisions,
       holder: { ...input.holder },
@@ -370,10 +388,13 @@ export interface StreamedRun {
 
 async function streamContract(
   dispatch: AppDispatch,
-  call: { path: string; body: JsonObject },
+  call: { path: string; body: JsonObject; runOrganizationId: string | null },
   onAdopted: (ids: { requestId: string; conversationId: string }) => void,
 ): Promise<StreamedRun> {
   const started = performance.now();
+  // Acting on a stored run: the RUN's organization, never the active one (a run of another
+  // organization replayed in the active one is refused 409 mandate_unfulfilled — its Holder is bound there).
+  const organizationId = await ensureOrgId(call.runOrganizationId);
   let failure: string | null = null;
   let conversationId: string | null = null;
   const consumeStream = dispatch(
@@ -393,6 +414,7 @@ async function streamContract(
     body: call.body,
     stream: true,
     consumeStream,
+    organizationId,
   });
   const durationMs = Math.round(performance.now() - started);
   if (res.error) return { ok: false, error: res.error.message || "The run did not start.", conversationId, durationMs };
@@ -404,12 +426,16 @@ export function streamTestRun(
   dispatch: AppDispatch,
   mandateKey: AnyMandateKey,
   input: { provisions: JsonObject; holder: TestHolder; configOverrides: JsonObject; userInput: string | null },
+  /** The stored run's organization — the test run starts in THAT organization. */
+  runOrganizationId: string | null,
   onAdopted: (ids: { requestId: string; conversationId: string }) => void,
 ): Promise<StreamedRun> {
   return streamContract(
     dispatch,
     {
-      path: `/ai/mandates/${seg(mandateKey)}`,
+      runOrganizationId,
+      // AI WATCH, as on the replay below.
+      path: withRunDebugView(`/ai/mandates/${seg(mandateKey)}`),
       body: {
         conversation_id: crypto.randomUUID(),
         is_new: true,
@@ -430,11 +456,19 @@ export function streamReplay(
   dispatch: AppDispatch,
   conversationId: string,
   mandateKey: AnyMandateKey,
+  /** The stored run's organization — the replay runs in THAT organization. */
+  runOrganizationId: string | null,
   onAdopted: (ids: { requestId: string; conversationId: string }) => void,
 ): Promise<StreamedRun> {
   return streamContract(
     dispatch,
-    { path: `/mandates/runs/${seg(conversationId)}/replay${forMandate(mandateKey)}`, body: {} },
+    {
+      // AI WATCH: `?debug_view=1` while this tab is in debug mode (the server marks the replay only for
+      // a permitted viewer — then it streams `context_analysis`).
+      path: withRunDebugView(`/mandates/runs/${seg(conversationId)}/replay${forMandate(mandateKey)}`),
+      body: {},
+      runOrganizationId,
+    },
     onAdopted,
   );
 }
