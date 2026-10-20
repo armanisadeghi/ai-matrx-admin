@@ -615,7 +615,13 @@ export function FactoryBuildPage({ buildId }: { buildId: string }) {
           {state.error ? (
             <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-md border border-destructive/40 bg-destructive/5 p-2.5 font-mono type-secondary text-destructive-ink">
               {state.error}
-            <ErrorAlchemyMenu error={state.error} /></pre>
+            <ErrorAlchemyMenu error={state.error_detail || state.error} /></pre>
+          ) : null}
+          {state.error_detail ? (
+            <details data-testid="build-error-detail" className="type-secondary text-muted-foreground">
+              <summary className="cursor-pointer">Detail</summary>
+              <pre className="whitespace-pre-wrap break-words">{state.error_detail}</pre>
+            </details>
           ) : null}
         </header>
 
