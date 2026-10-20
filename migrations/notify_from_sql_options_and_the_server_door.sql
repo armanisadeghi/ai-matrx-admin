@@ -1,5 +1,6 @@
--- draft: email-to-spine lane — applied to clone; production apply must FOLLOW dm_soft_expiry_and_dm_pairs_with_email.sql (needs communication.notification_pair_channels)
--- based-on: communication.notify_from_sql(uuid, text, uuid, text, text, jsonb, text, text, uuid, text) a9fc65dc42ab85be6a750b77ff46ce6131b43de90a50cf8fb70fad13fa6977a6
+-- draft: email-to-spine server door; preserves the current live pairing/opt-out body and reuses its registered door.
+-- based-on: communication.notify_from_sql(uuid, text, uuid, text, text, jsonb, text, text, uuid, text) 3a524b77c89f21d1909b77c78f0c0f56ee4cd290f9d501a84d6de3d2299bf2be
+-- based-on: communication.notify_from_sql(uuid, text, uuid, text, text, jsonb, text, text, uuid, text, jsonb) fc164fabee15162452953db369dc5358648100e7441c1b60181f9747ec259148
 --
 -- THE SERVER'S DOOR TO THE SQL PRODUCER, and the two facts a server caller has that a SQL
 -- trigger does not.
@@ -55,6 +56,8 @@ declare
   v_dm        jsonb;
   v_opted_out jsonb;
   v_metadata  jsonb;
+  v_email_base boolean;
+  v_email_follows_dm boolean := false;
 begin
   if p_organization_id is null then
     raise exception 'A notice has to belong to an organization.' using errcode = '22004';
@@ -106,9 +109,25 @@ begin
   end if;
 
   -- THE PAIRING RULE — the same function the user rung ends with. Applied BEFORE the
-  -- person's own "off", so an opted-out email still brings its DM.
+  -- person's own "off", so an opted-out email still brings its DM (a DM without an email is fine).
+  v_email_base := coalesce(v_defaults ->> 'email', 'false') = 'true';
   v_defaults := communication.notification_pair_channels(
                   p_event_key, p_organization_id, p_recipient_user_id, v_defaults);
+
+  -- EMAIL REQUIRES DM (owner ruling, 2026-10-02). A person who turned this notice's DM off —
+  -- in their notification preferences (the rule itself withheld the email above) or in a switch
+  -- the caller holds (`p_options.opted_out` names `dm`) — has turned its email off too, whenever
+  -- the rule pairs this email. The email is then a NAMED `opted_out` skip, never a silent absence
+  -- and never an email without its DM.
+  if p_recipient_user_id is not null and v_email_base
+     and (coalesce(v_defaults ->> 'email', 'false') <> 'true'
+          or (v_opted_out ? 'dm'
+              and communication.notification_pair_channels(
+                    p_event_key, p_organization_id, p_recipient_user_id,
+                    '{"email": true}'::jsonb, false) ->> 'dm' = 'true')) then
+    v_email_follows_dm := true;
+    v_defaults := v_defaults || '{"email": true}'::jsonb;
+  end if;
 
   v_kind := case when p_recipient_user_id is not null then 'user' else 'address' end;
 
@@ -119,7 +138,12 @@ begin
     v_status   := 'render_pending';
     v_metadata := '{}'::jsonb;
 
-    if v_opted_out ? ch then
+    if ch = 'email' and v_email_follows_dm then
+      v_status  := 'skipped';
+      v_errcode := 'opted_out';
+      v_errmsg  := 'This person turned off messages for notices like this, so its email is off too '
+                || '— an email never goes without its message.';
+    elsif v_opted_out ? ch then
       v_status  := 'skipped';
       v_errcode := 'opted_out';
       v_errmsg  := format('This person turned %s notices like this off in their settings.', ch);
@@ -242,7 +266,9 @@ values
    'server_only: called by matrx-frontend server routes as service_role after their own '
    'authenticated access checks, and by SQL producers through the 10-argument delegation. A client '
    'calling it could message any person in any organization as anyone (p_options.dm.sender_user_id).',
-   false, false);
+   false, false)
+-- The consolidated migration may already have registered this exact server-only door.
+on conflict do nothing;
 
 revoke all on function communication.notify_from_sql(uuid, text, uuid, text, text, jsonb, text, text, uuid, text, jsonb)
   from public, anon, authenticated;
