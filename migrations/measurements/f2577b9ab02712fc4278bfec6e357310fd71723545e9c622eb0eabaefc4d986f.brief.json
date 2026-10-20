@@ -1,0 +1,7 @@
+{
+  "file": "20261026240000_versionperorg_a_an_access_write_moves_only_the_organizations_it_touches.sql",
+  "sha256": "f2577b9ab02712fc4278bfec6e357310fd71723545e9c622eb0eabaefc4d986f",
+  "target": "clone",
+  "totalMs": 5648,
+  "measuredAt": "2026-10-20T08:32:24.483Z"
+}
