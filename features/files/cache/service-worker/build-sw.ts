@@ -37,6 +37,8 @@ async function main(): Promise<void> {
         // The SW runs as a classic script. We intentionally do NOT mark it
         // `type: 'module'` — older Safari versions reject module workers.
         legalComments: "none",
+        // The capture cache's name carries this, so a release replaces it (offline-routing.ts).
+        define: { __SW_BUILD_ID__: JSON.stringify(Date.now().toString(36)) },
         logLevel: "info",
     });
 

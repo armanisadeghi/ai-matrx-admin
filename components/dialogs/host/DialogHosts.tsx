@@ -24,6 +24,7 @@ import {
   subscribeDialogHosts,
 } from "./dialogHostsLatch";
 import "./requestHostsOnOpen";
+import { ChunkTolerant } from "@/components/errors/ChunkTolerant";
 
 const DialogHostsImpl = dynamic(() => import("./DialogHostsImpl"), {
   ssr: false,
@@ -48,5 +49,11 @@ export function DialogHosts() {
   }, [requested]);
 
   if (!requested) return null;
-  return <DialogHostsImpl />;
+  // The hosts are an extra: offline, their chunk may never arrive, and that must not take the page down
+  // (a capture sheet on a phone loses its signal mid-round). `ChunkTolerant` swallows only that failure.
+  return (
+    <ChunkTolerant what="the dialog hosts">
+      <DialogHostsImpl />
+    </ChunkTolerant>
+  );
 }

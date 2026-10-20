@@ -54,7 +54,7 @@ function query(result: unknown) {
   return chain;
 }
 
-describe("createNewNote empty-note reuse integration", () => {
+describe("createNewNote integration", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     getUserId.mockReturnValue("user-1");
@@ -170,136 +170,20 @@ describe("createNewNote empty-note reuse integration", () => {
     })).resolves.toMatchObject({ id: noteId, project_id: projectId });
   });
 
-  it("forwards every explicit reuse field through update, association sync, and Redux tab hydration", async () => {
-    const reused = {
-      id: noteId,
-      label: "New Note",
-      content: "",
-      organization_id: organizationId,
-      deleted_at: null,
-    };
-    const reuseLookup = query({ data: [reused], error: null });
-    const existingOrganization = query({ data: { organization_id: organizationId }, error: null });
-    const updated = {
-      ...reused,
-      label: "Incident handoff",
-      metadata: { source: "war-room" },
-      position: 7,
-      published_to_web: false,
-    };
-    const update = query({ data: updated, error: null });
-    update.select.mockReturnValue(update);
+  it("an empty create inserts a NEW row and never returns an existing empty note", async () => {
+    const existingEmpty = { id: noteId, label: "New Note", content: "", organization_id: organizationId, deleted_at: null };
+    const newId = "66666666-6666-4666-8666-666666666666";
+    // One chain: a lookup read (`order`) would return the old empty note; the insert (`single`) returns the new row.
+    const chain = query({ data: { ...existingEmpty, id: newId, version: 1, updated_at: "2026-09-12T00:00:00.000Z" }, error: null });
+    chain.order.mockResolvedValue({ data: [existingEmpty], error: null });
+    const inserted = chain;
+    schema.mockReturnValue({ from: jest.fn().mockReturnValue(chain) });
+    listForSources.mockResolvedValue({ ok: true, data: { edges: [] } });
 
-    const from = jest
-      .fn()
-      .mockReturnValueOnce(reuseLookup)
-      .mockReturnValueOnce(existingOrganization)
-      .mockReturnValueOnce(update);
-    schema.mockReturnValue({ from });
-    listForSources
-      .mockResolvedValueOnce({ ok: true, data: { edges: [] } })
-      .mockResolvedValueOnce({
-        ok: true,
-        data: {
-          edges: [
-            { sourceId: noteId, targetType: "project", targetId: projectId },
-            { sourceId: noteId, targetType: "task", targetId: taskId },
-          ],
-        },
-      });
+    const note = await createNote({ organization_id: organizationId });
 
-    const store = configureStore({
-      reducer: {
-        notes: notesReducer,
-        userAuth: () => ({ id: "user-1" }),
-      },
-    });
-    const action = await store.dispatch(createNewNote({
-      organization_id: organizationId,
-      label: "Incident handoff",
-      metadata: { source: "war-room" },
-      position: 7,
-      published_to_web: false,
-      project_id: projectId,
-      task_id: taskId,
-    }));
-
-    if (!createNewNote.fulfilled.match(action)) {
-      throw new Error("Expected empty-note reuse to hydrate the created note.");
-    }
-    expect(update.update).toHaveBeenCalledWith({
-      label: "Incident handoff",
-      metadata: { source: "war-room" },
-      position: 7,
-      published_to_web: false,
-    });
-    expect(setTargets).toHaveBeenNthCalledWith(1, {
-      sourceType: "note",
-      sourceId: noteId,
-      targetType: "project",
-      targetIds: [projectId],
-      orgId: organizationId,
-    });
-    expect(setTargets).toHaveBeenNthCalledWith(2, {
-      sourceType: "note",
-      sourceId: noteId,
-      targetType: "task",
-      targetIds: [taskId],
-      orgId: organizationId,
-    });
-    expect(store.getState().notes.notes[noteId]).toMatchObject({
-      label: "Incident handoff",
-      metadata: { source: "war-room" },
-      position: 7,
-      published_to_web: false,
-      project_id: projectId,
-      task_id: taskId,
-      _fetchStatus: "full",
-    });
-    expect(store.getState().notes.openTabs).toContain(noteId);
-    expect(store.getState().notes.activeNoteId).toBe(noteId);
-  });
-
-  it("keeps existing context links untouched when a reused create omits them", async () => {
-    const reused = {
-      id: noteId,
-      label: "New Note",
-      content: "",
-      organization_id: organizationId,
-      deleted_at: null,
-    };
-    const reuseLookup = query({ data: [reused], error: null });
-    const from = jest.fn().mockReturnValueOnce(reuseLookup);
-    schema.mockReturnValue({ from });
-    listForSources.mockResolvedValue({
-      ok: true,
-      data: {
-        edges: [
-          { sourceId: noteId, targetType: "project", targetId: projectId },
-          { sourceId: noteId, targetType: "task", targetId: taskId },
-        ],
-      },
-    });
-    const store = configureStore({
-      reducer: {
-        notes: notesReducer,
-        userAuth: () => ({ id: "user-1" }),
-      },
-    });
-
-    const action = await store.dispatch(createNewNote({
-      organization_id: organizationId,
-    }));
-
-    if (!createNewNote.fulfilled.match(action)) {
-      throw new Error("Expected the omitted-field reuse to return the existing note.");
-    }
-    expect(from).toHaveBeenCalledTimes(1);
-    expect(setTargets).not.toHaveBeenCalled();
-    expect(store.getState().notes.notes[noteId]).toMatchObject({
-      project_id: projectId,
-      task_id: taskId,
-      _fetchStatus: "full",
-    });
+    expect(inserted.insert).toHaveBeenCalledTimes(1);
+    expect(note.id).toBe(newId);
+    expect(note.id).not.toBe(noteId);
   });
 });

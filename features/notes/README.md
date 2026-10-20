@@ -341,7 +341,7 @@ function MyComponent() {
         deleteNote,
         copyNote,           // Duplicate any note
         refreshNotes,
-        findOrCreateEmptyNote,  // Never creates duplicates
+        createEmptyNote,  // Always creates a new note
     } = useNotesContext();
     
     // Use the shared state

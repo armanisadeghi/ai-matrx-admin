@@ -46,6 +46,26 @@ export function audienceOf(r: { audience?: AlarmAudience | null }): AlarmAudienc
   return r.audience && ALARM_AUDIENCES.includes(r.audience) ? r.audience : "owner_decision";
 }
 
+/** Where `platform.attention_card` routed an item (the dock's triage; `features/admin/attention/triage.ts`). */
+export type CardRoute = "owner_card" | "over_budget" | "agent_fix" | "info_only" | "muted";
+
+/**
+ * Who an alarm is for, answered the way THE DOCK answers it (review 4, F5): one answer to "what is mine".
+ * The list used the stored audience while the card applies its own routing (item overrides, owner rulings,
+ * readiness), so the alarms page said "Your decision 25" beside a card of 5. The card's route wins; an
+ * alarm the card did not read (resolved, muted, or the triage read failed) keeps its stored audience.
+ */
+export function audienceAsTheCardRoutes(
+  r: { id: string; audience?: AlarmAudience | null },
+  routes: ReadonlyMap<string, CardRoute> | null | undefined,
+): AlarmAudience {
+  const route = routes?.get(`spend-alarms:${r.id}`);
+  if (route === "owner_card" || route === "over_budget") return "owner_decision";
+  if (route === "agent_fix") return "agent_fix";
+  if (route === "info_only") return "info_only";
+  return audienceOf(r);
+}
+
 /** Every ref key the writer may send (aidream `REF_KEYS`). */
 export type AlarmRefs = Partial<
   Record<

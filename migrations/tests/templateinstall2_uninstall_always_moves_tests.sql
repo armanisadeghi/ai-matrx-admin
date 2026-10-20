@@ -6,6 +6,8 @@
 -- 20261020031000 (a client-chosen install id was refused), green after.
 -- ============================================================
 begin;
+-- the whole file is one session; the doors set their own 90 s, the test's loops may run longer than a client call
+set local statement_timeout = '600s';
 -- phase A (owner): the template and the ids this test uses
 select set_config('ti2.tpl', (select t.id::text from custom.template t where t.catalogue_id = 'SP0215' and t.retired_at is null order by t.template_version desc limit 1), true),
        set_config('ti2.iid', gen_random_uuid()::text, true),

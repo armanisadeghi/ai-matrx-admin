@@ -398,11 +398,13 @@ export default function AiModelTable(props: AiModelTableProps) {
       ...modelFiltersToColumns(tabState.filters),
     },
   };
-  const applyQuery = (next: MatrxDataTableQueryState) =>
+  const applyQuery = (next: MatrxDataTableQueryState) => {
+    console.log("APPLYQ", JSON.stringify(next.columnFilters), new Error().stack?.split("\n").slice(2,12).join("|"));
     onUpdateTabState({
       ...modelQueryToTab(next),
       tableQuery: modelQueryExtras(next),
     });
+  };
   const providerMap = Object.fromEntries(
     providers.map((provider) => [provider.id, provider.name ?? provider.id]),
   );
@@ -522,6 +524,46 @@ export default function AiModelTable(props: AiModelTableProps) {
       toolbar={{
         title: "AI Models",
         titleCount: { value: models.length, label: "models" },
+        facets: [
+          {
+            type: "button-group",
+            id: "status",
+            value:
+              tabState.filters.is_deprecated === undefined
+                ? "all"
+                : tabState.filters.is_deprecated
+                  ? "deprecated"
+                  : "active",
+            defaultValue: "active",
+            options: [
+              { value: "active", label: "Active" },
+              { value: "deprecated", label: "Deprecated" },
+              { value: "all", label: "All" },
+            ],
+            onChange: (value) => {
+              console.log("FACETCHANGE", value);
+              const rest = Object.fromEntries(
+                Object.entries(state.columnFilters).filter(
+                  ([id]) => id !== "is_deprecated",
+                ),
+              );
+              applyQuery({
+                ...state,
+                page: 1,
+                columnFilters:
+                  value === "all"
+                    ? rest
+                    : {
+                        ...rest,
+                        is_deprecated: {
+                          kind: "boolean",
+                          value: value === "deprecated",
+                        },
+                      },
+              });
+            },
+          },
+        ],
         intelligentSearch: {},
         refresh: { onRefresh },
         add: { onAdd: onCreate },

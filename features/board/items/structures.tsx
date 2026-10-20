@@ -360,6 +360,35 @@ export const WorkbookStructure: S = () => {
   );
 };
 
+/** A presentation: ribbon on top, slide rail beside a 16:9 slide, speaker notes under it. */
+export const PresentationStructure: S = () => (
+  <div className="flex h-full flex-col">
+    <Row gap={8} style={{ paddingInline: u(10), height: u(32) }}>
+      <Bar w={30} h={7} strong />
+      <Rule vertical />
+      <Bar w="36%" h={7} />
+    </Row>
+    <div className="flex min-h-0 flex-1 border-t border-border" style={{ borderTopWidth: u(1) }}>
+      <Stack gap={8} style={{ width: u(130), padding: u(10) }}>
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div key={i} className="rounded-md bg-muted" style={{ aspectRatio: "16 / 9", boxShadow: i === 0 ? `inset 0 0 0 ${u(2)} hsl(var(--primary))` : undefined }} />
+        ))}
+      </Stack>
+      <Stack gap={10} style={{ flex: 1, padding: u(14) }}>
+        <div className="rounded-md bg-card" style={{ aspectRatio: "16 / 9", boxShadow: `inset 0 0 0 ${u(1)} hsl(var(--border))`, padding: u(24) }}>
+          <Stack gap={10}>
+            <Bar w="55%" h={14} strong />
+            <Bar w="80%" h={7} />
+            <Bar w="65%" h={7} />
+          </Stack>
+        </div>
+        <Bar w="70%" h={6} />
+        <Bar w="45%" h={6} />
+      </Stack>
+    </div>
+  </div>
+);
+
 /** One record: label over value, down the page. */
 export const RecordStructure: S = () => (
   <Pad>

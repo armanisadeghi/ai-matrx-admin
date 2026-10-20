@@ -8,7 +8,7 @@
  * caller change.
  */
 import { createElement } from "react";
-import { clientLazy } from "@ai-matrx/kit/client-lazy";
+import { LazyErrorAlchemyMenu } from "@/components/errors/LazyErrorAlchemyMenu";
 import type { ErrorAlchemyMenuProps } from "@/components/errors/ErrorAlchemyMenu";
 import type { ErrorAlchemyInput } from "@/components/errors/error-alchemy";
 import type { ErrorToastDecorator } from "@/lib/toast";
@@ -25,9 +25,12 @@ import type { ErrorToastDecorator } from "@/lib/toast";
  * front door on the menu itself would multiply a chunk-group split across all of them
  * (code-splitting skill, rule 6 caveat / D115).
  */
-const ErrorAlchemyMenu = clientLazy<ErrorAlchemyMenuProps>(() =>
-  import("@/components/errors/ErrorAlchemyMenu").then((m) => m.ErrorAlchemyMenu),
-);
+// THE EDGE IS `LazyErrorAlchemyMenu` (AT-FIX-I, 2026-10-19): it holds the same one `import()` behind a
+// boundary that renders nothing if the chunk cannot arrive. The bare `clientLazy` here threw its
+// ChunkLoadError to the page when a phone was offline: any background call that failed offline raised an
+// error toast, the toast's menu chunk could not load, and the whole page became "A required part of the
+// page failed to load" - on a capture sheet, with an answer half typed.
+const ErrorAlchemyMenu: (props: ErrorAlchemyMenuProps) => ReturnType<typeof LazyErrorAlchemyMenu> = LazyErrorAlchemyMenu;
 
 function descriptionText(description: unknown): string | undefined {
   return typeof description === "string" && description.trim() !== ""

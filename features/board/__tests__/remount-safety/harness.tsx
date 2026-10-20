@@ -443,6 +443,7 @@ export async function runCycle(type: BoardItemType, source: NodeSource, steps: C
     const openedBefore = tile.opened().length;
     const navigatedBefore = navigations().length;
 
+    if (process.env.DBG_TRACE) process.stderr.write(`[DBG-a4f2] ${Date.now() % 100000} WAKE-START\n`); // DBG-a4f2
     const wakeMark = ledgerMark();
     await tile.hide();
     await tile.show();

@@ -8,6 +8,7 @@ import { RecordId } from "@ai-matrx/design-system";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { Spinner } from "@/components/ui/loaders/Spinner";
 import { toast } from "@/lib/toast";
+import { plainLoadError } from "@/features/admin/tool-control/words";
 import { extractErrorMessage } from "@/utils/errors";
 import { formatRelativeTime } from "@/utils/datetime";
 import {
@@ -161,7 +162,7 @@ export function AdminToolLayer({ toolId }: { toolId: string }) {
         </div>
       </header>
 
-      {error ? <p className="px-3 py-2 text-sm text-destructive">{extractErrorMessage(error)}</p> : null}
+      {error ? <p className="px-3 py-2 text-sm text-destructive">{plainLoadError(error, extractErrorMessage(error), "The source list")}</p> : null}
       {loading ? <p className="px-3 py-2 text-sm text-muted-foreground">Loading…</p> : null}
 
       <div className="overflow-x-auto">

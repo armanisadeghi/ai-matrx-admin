@@ -16,9 +16,10 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
 import { UnifiedDataTablePage } from "@/features/unified-data/table-page/UnifiedDataTablePage";
 import { UnifiedRecordPage } from "@/features/unified-data/table-page/UnifiedRecordPage";
-import { askClientTableSeed } from "./clientTableSeed";
+import { askClientTableSeedHonestly } from "./clientTableSeed";
 import { primeTablePage } from "./primeTablePage";
 import { RecordRouteSkeleton, TableRouteSkeleton } from "./TableRouteSkeleton";
+import { TableTimedOut } from "./TableTimedOut";
 import { TablePageSeedContext } from "./tablePageSeedContext";
 import type { ServerRowsGate, TablePageSeed } from "./tablePageSeed.server";
 
@@ -78,7 +79,7 @@ function Seeded({ tableId, seed, children }: { tableId: string; seed: TablePageS
  *    client-rendered by the update), and the server's seed, arriving later, is ignored.
  * Until one lands the page shows the route's own skeleton, the same box `loading.tsx` drew.
  */
-type OwnSeed = { key: string; seed: TablePageSeed | null };
+type OwnSeed = { key: string; seed: TablePageSeed | null; timedOut: boolean; retry: () => void };
 const pageKey = (tableId: string, recordId: string | null) => (recordId ? `${tableId}/r/${recordId}` : tableId);
 
 function RacedPage({
@@ -103,6 +104,10 @@ function RacedPage({
   // Two components, so the one that waits on the server (`use`) is never the one the browser's
   // answer replaces it with.
   const key = pageKey(tableId, recordId);
+  // The store timed out twice (the second was our one automatic retry): say so, in the skeleton's own box.
+  if (own && own.key === key && own.timedOut && settled.current !== key) {
+    return <TableTimedOut skeleton={skeleton} onRetry={own.retry} />;
+  }
   if (own && own.key === key && settled.current !== key) {
     return (
       <Seeded tableId={tableId} seed={own.seed}>
@@ -163,9 +168,10 @@ function useOwnSeed(
   const dataSource = useRecordsDataSource();
   const userId = useAppSelector(selectUserId);
   const key = pageKey(tableId, recordId);
-  const asking = useRef<{ key: string; answer: Promise<TablePageSeed | null> } | null>(null);
-  if (typeof window !== "undefined" && asking.current?.key !== key) {
-    asking.current = { key, answer: askClientTableSeed(dataSource, tableId, { userId, rows, recordId, server: seed, opening }) };
+  const [attempt, setAttempt] = useState(0);
+  const asking = useRef<{ key: string; attempt: number; answer: ReturnType<typeof askClientTableSeedHonestly> } | null>(null);
+  if (typeof window !== "undefined" && (asking.current?.key !== key || asking.current.attempt !== attempt)) {
+    asking.current = { key, attempt, answer: askClientTableSeedHonestly(dataSource, tableId, { userId, rows, recordId, server: seed, opening }) };
   }
   const [own, setOwn] = useState<OwnSeed | null>(null);
   useEffect(() => {
@@ -173,12 +179,22 @@ function useOwnSeed(
     if (!asked) return;
     let current = true;
     void asked.answer.then((answered) => {
-      if (current) setOwn({ key: asked.key, seed: answered });
+      if (current)
+        setOwn({
+          key: asked.key,
+          seed: answered.seed,
+          timedOut: answered.timedOut.length > 0,
+          // Try again: the skeleton comes back in the same box and the first reads are asked afresh.
+          retry: () => {
+            setOwn(null);
+            setAttempt((n) => n + 1);
+          },
+        });
     });
     return () => {
       current = false;
     };
-  }, [key]);
+  }, [key, attempt]);
   return own;
 }
 

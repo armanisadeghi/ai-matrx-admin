@@ -6,6 +6,7 @@
  */
 
 import { classifyText } from "@ai-matrx/chat/mandates/invoke/smart-box";
+import { detectPlatform } from "@/features/marketing/social/link";
 
 export type EntityKind = "business" | "handle" | "website" | "social_link" | "email" | "phone";
 
@@ -57,8 +58,17 @@ function businessOffers(name: string): EntityOffer[] {
   ];
 }
 
-function socialOffer(account: string): EntityOffer {
-  return job("social", "See this social account", "social_profile", { account }, false);
+/** The platform a typed account or link names, or null when it cannot be told (a bare handle). */
+function platformOf(account: string): string | null {
+  if (/^@?[^@\s/]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(account)) return "mastodon";
+  const host = hostOf(account.includes("://") ? account : `https://${account}`);
+  if (host && /(^|\.)mastodon\.[a-z]+$/i.test(host)) return "mastodon";
+  return detectPlatform(account);
+}
+
+function socialOffer(account: string, platform?: string | null): EntityOffer {
+  const known = platform ?? platformOf(account);
+  return job("social", "See this social account", "social_profile", known ? { account, platform: known } : { account }, false);
 }
 
 function siteOffers(domain: string): EntityOffer[] {
@@ -82,7 +92,7 @@ export function readEntity(raw: string): EntityRead | null {
   // Mastodon "@user@host" / "user@host.social": a handle, never an email.
   const fedi = /^@?([A-Za-z0-9_.-]+)@([A-Za-z0-9.-]+\.[A-Za-z]{2,})$/.exec(folded);
   if (fedi && (folded.startsWith("@") || FEDIVERSE_HOST.test(fedi[2] as string))) {
-    return { kind: "handle", folded, offers: [socialOffer(`@${fedi[1]}@${fedi[2]}`)] };
+    return { kind: "handle", folded, offers: [socialOffer(`@${fedi[1]}@${fedi[2]}`, "mastodon")] };
   }
 
   const seen = classifyText(folded, { anyEnding: true });

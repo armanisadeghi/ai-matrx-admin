@@ -56,6 +56,8 @@ export const BOARD_ADDABLE_ITEM_KEYS = [
   "visual-map",
   "report",
   "sandbox",
+  "cover",
+  "video-clone",
 ] as const;
 
 /** Item types `board_find_records` searches (each has a search token or a finder). */

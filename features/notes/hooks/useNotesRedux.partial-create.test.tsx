@@ -29,7 +29,7 @@ jest.mock("../redux/slice", () => ({
 jest.mock("../redux/thunks", () => ({
   createNewNote,
   fetchNotesList: jest.fn(), fetchNoteContent: jest.fn(), saveNote: jest.fn(),
-  deleteNote: jest.fn(), copyNote: jest.fn(), findOrCreateEmptyNote: jest.fn(),
+  deleteNote: jest.fn(), copyNote: jest.fn(), createEmptyNote: jest.fn(),
   saveNoteField: jest.fn(), moveNoteToFolder: jest.fn(), moveNoteToNewFolder: jest.fn(),
 }));
 

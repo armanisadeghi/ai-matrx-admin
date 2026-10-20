@@ -23,19 +23,19 @@ SELECT custom._computed_mark_org(o.organization_id)
 
 
 -- ── ACCESS WRITES MOVE THE PLATFORM ACCESS VERSION (once per transaction) ───────────────────────────────────
-CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE ON iam.permissions FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
-CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE ON platform.entity_grants FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
-CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE ON iam.memberships FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
-CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE ON iam.membership_grant FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
-CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE ON iam.team FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
-CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE ON platform.share_links FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
-CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE ON custom.portal FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
-CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE ON custom.portal_principal FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
-CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE ON custom.portal_table FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
-CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE ON iam.access_setup FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
-CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE ON custom.carrying_rule FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
-CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE ON platform.knob_override FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
-CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE ON platform.entity_relationships FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
+CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE ON iam.permissions FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
+CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE ON platform.entity_grants FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
+CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE ON iam.memberships FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
+CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE ON iam.membership_grant FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
+CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE ON iam.team FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
+CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE ON platform.share_links FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
+CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE ON custom.portal FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
+CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE ON custom.portal_principal FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
+CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE ON custom.portal_table FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
+CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE ON iam.access_setup FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
+CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE ON custom.carrying_rule FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
+CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE ON platform.knob_override FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
+CREATE TRIGGER zzzzzz_access_version AFTER INSERT OR UPDATE OR DELETE ON platform.entity_relationships FOR EACH STATEMENT EXECUTE FUNCTION custom._access_version_bump_stmt();
 
 CREATE TRIGGER zzzzzz_computed_stale_i AFTER INSERT ON platform.associations REFERENCING NEW TABLE AS new_rows
   FOR EACH STATEMENT EXECUTE FUNCTION custom._computed_assoc_stmt();

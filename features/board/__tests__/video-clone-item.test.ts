@@ -21,7 +21,7 @@ describe("video clone board item", () => {
   it("mounts the Socials studio itself, never a look-alike", () => {
     const item = read("items/video-clone-items.tsx");
     expect(item).toMatch(/<VideoProjectStudio projectId=/);
-    expect(item).toMatch(/<CloneWorkspace /);
+    expect(item).toMatch(/<CloneWorkspace\b/);
   });
 
   it("declares the project values an agent needs", () => {

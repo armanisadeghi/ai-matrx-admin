@@ -47,6 +47,9 @@ export function installBrowserGaps(): void {
   g.ResizeObserver ??= InertObserver;
   g.IntersectionObserver ??= InertObserver;
   g.fetch = fakeFetch;
+  // The person is in this tab for the whole case. jsdom answers `hasFocus()` true only once some element holds focus, so
+  // without this "is the person looking" flips mid-case and a look the dock owes at first mount lands during the wake.
+  if (typeof document !== "undefined") document.hasFocus = () => true;
   // jsdom's XMLHttpRequest makes REAL requests; nothing in this suite may reach a server.
   g.XMLHttpRequest = FakeXMLHttpRequest;
   if (typeof window !== "undefined") (window as unknown as Record<string, unknown>).XMLHttpRequest = FakeXMLHttpRequest;

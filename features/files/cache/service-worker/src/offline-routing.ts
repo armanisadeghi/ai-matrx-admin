@@ -73,3 +73,69 @@ export function isImmutableAssetRequest(
  */
 const CONTENT_HASHED_FILENAME =
   /(?:^|[.-])(?=[a-z0-9]*\d)[a-z0-9]{8,}\.[a-z0-9]+$/i;
+
+// ---------------------------------------------------------------------------
+// Offline capture (CAPTURE-OFFLINE-SHELL, 2026-10-19)
+// ---------------------------------------------------------------------------
+// The crew capture page `/capture/<sheet>` must open on a phone with no signal after it was opened once
+// online. It rides THIS worker (never a second registration at scope "/", see sw.ts) and the same three
+// shapes as study: network-first navigations, hashed immutable chunks, and — new — the sheet's definition.
+// The rules stay narrow on purpose: exactly `/capture/<one segment>`, exactly two named store doors.
+
+/** `/capture/<sheet>` (one path segment, optional trailing slash) — the only page the capture shell serves. */
+const CAPTURE_PATH = /^\/capture\/[^/]+\/?$/;
+
+export function isCaptureNavigationRequest(
+  method: string,
+  mode: string,
+  requestOrigin: string,
+  pathname: string,
+  swOrigin: string,
+): boolean {
+  return (
+    method === "GET" &&
+    mode === "navigate" &&
+    requestOrigin === swOrigin &&
+    CAPTURE_PATH.test(pathname)
+  );
+}
+
+/** A capture page's own path (what a page may ask the worker to keep). */
+export function isCapturePath(pathname: string): boolean {
+  return CAPTURE_PATH.test(pathname);
+}
+
+/** The two store doors that define a sheet: which organization it lives in, and its questions. */
+const CAPTURE_DEFINITION_DOOR = /\/rest\/v1\/rpc\/(capture_open|where_id_opens)$/;
+
+export function isCaptureDefinitionRequest(method: string, pathname: string): boolean {
+  return method === "POST" && CAPTURE_DEFINITION_DOOR.test(pathname);
+}
+
+/** The cache holding capture shells. The build id is in the NAME, so a release can never read the last one's. */
+export const CAPTURE_CACHE_PREFIX = "matrx-capture-shell-";
+export function captureCacheName(buildId: string): string {
+  return `${CAPTURE_CACHE_PREFIX}${buildId}`;
+}
+
+/** Names of capture caches that belong to some OTHER build: deleted on activate. */
+export function staleCaptureCaches(names: string[], buildId: string): string[] {
+  const keep = captureCacheName(buildId);
+  return names.filter((n) => n.startsWith(CAPTURE_CACHE_PREFIX) && n !== keep);
+}
+
+/** Every same-origin `/_next/static/` file the page's HTML names (scripts, styles, preloads), de-duplicated. */
+export function nextStaticUrls(html: string, origin: string): string[] {
+  const found = new Set<string>();
+  const re = /(?:src|href)=["']([^"']*\/_next\/static\/[^"']+)["']|["'](\/_next\/static\/[^"'\\]+)["']/g;
+  for (let m = re.exec(html); m; m = re.exec(html)) {
+    const raw = m[1] ?? m[2];
+    try {
+      const u = new URL(raw, origin);
+      if (u.origin === origin) found.add(u.pathname + u.search);
+    } catch {
+      // not a URL — skip
+    }
+  }
+  return [...found];
+}

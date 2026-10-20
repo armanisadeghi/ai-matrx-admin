@@ -36,7 +36,7 @@ import { createPresentation, listAccessiblePresentations, type PresentationRow }
 import { WorkbooksResourcePicker } from "@/features/resource-manager/resource-picker/WorkbooksResourcePicker";
 import { entityComments, type BoardItemType, type ItemBodyProps, type PickerProps } from "./types";
 import { RecordDraftBody, type CreateRecord } from "./RecordDraftBody";
-import { WorkbookStructure } from "./structures";
+import { PresentationStructure, WorkbookStructure } from "./structures";
 import { RecordList } from "./feature-items";
 import { titleToAdopt } from "./feature-items.logic";
 import {
@@ -221,6 +221,7 @@ export const OFFICE_ITEMS: readonly BoardItemType[] = [
     status: { none: "Its save status lives in the editor's own bar, not in a store the board can read." },
     // Slide rail beside a 16:9 slide, notes under it, ribbon above: wide and tall.
     defaultSize: { w: 1200, h: 820 },
+    structure: PresentationStructure,
     matches: (s) => s.kind === "entity" && s.entity === PRESENTATION_ITEM_KEY,
     Body: PresentationBody,
     startNew: { label: "New presentation", create: () => ({ title: NEW_PRESENTATION_NAME, source: officeSource(PRESENTATION_ITEM_KEY, null) }) },

@@ -43,11 +43,23 @@
 // ---------------------------------------------------------------------------
 
 import {
+    captureCacheName,
+    isCaptureDefinitionRequest,
+    isCaptureNavigationRequest,
+    isCapturePath,
     isImmutableAssetRequest,
     isStudyNavigationRequest,
+    nextStaticUrls,
+    staleCaptureCaches,
+    CAPTURE_CACHE_PREFIX,
 } from "./offline-routing";
 
 declare const self: ServiceWorkerGlobalScope;
+// Stamped per build by build-sw.ts (esbuild define). The capture cache name carries it, so a release
+// replaces the cache instead of reading the last one's.
+declare const __SW_BUILD_ID__: string | undefined;
+const BUILD_ID = typeof __SW_BUILD_ID__ === "string" ? __SW_BUILD_ID__ : "dev";
+const CAPTURE_CACHE = captureCacheName(BUILD_ID);
 
 const SW_VERSION = "1";
 const DB_NAME = "matrx-blob-cache";
@@ -188,6 +200,120 @@ async function handleImmutableAsset(request: Request): Promise<Response> {
     }
 }
 
+// ---------------------------------------------------------------------------
+// Offline capture: /capture/<sheet> opens with no signal once it was opened online.
+// Same worker, same rules as study — network FIRST, cache only after a real failure.
+// ---------------------------------------------------------------------------
+
+/** Stable GET key for a cached navigation or definition (the cache API cannot key a POST). */
+function captureKey(kind: string, id: string): Request {
+    return new Request(`${self.location.origin}/__capture/${kind}/${encodeURIComponent(id)}`);
+}
+
+async function hashOf(text: string): Promise<string> {
+    return sha256Hex(text);
+}
+
+/** Fetch and keep every hashed chunk a captured page names, so the shell can boot with no signal. */
+async function keepAssets(urls: string[]): Promise<void> {
+    const cache = await caches.open(CAPTURE_CACHE);
+    await Promise.all(
+        urls.map(async (url) => {
+            try {
+                const parsed = new URL(url, self.location.origin);
+                if (
+                    !isImmutableAssetRequest("GET", parsed.origin, parsed.pathname, self.location.origin)
+                ) {
+                    return;
+                }
+                if (await caches.match(parsed.pathname + parsed.search)) return;
+                const res = await fetch(parsed.pathname + parsed.search);
+                if (res.ok) await cache.put(parsed.pathname + parsed.search, res);
+            } catch {
+                // One missed chunk must not stop the rest being kept.
+            }
+        }),
+    );
+}
+
+/** Keep a capture page's HTML (per sheet) and the chunks it names. Never throws. */
+async function keepCapturePage(pathname: string, response: Response): Promise<void> {
+    try {
+        if (!response.ok || response.redirected || response.type === "opaqueredirect") return;
+        const html = await response.clone().text();
+        const cache = await caches.open(CAPTURE_CACHE);
+        await cache.put(captureKey("page", pathname.replace(/\/$/, "")), response);
+        await keepAssets(nextStaticUrls(html, self.location.origin));
+    } catch {
+        // Keeping is best-effort; the page itself already loaded.
+    }
+}
+
+async function handleCaptureNavigation(
+    event: FetchEvent,
+    parsed: URL,
+): Promise<Response> {
+    const key = captureKey("page", parsed.pathname.replace(/\/$/, ""));
+    try {
+        const response = await fetch(event.request);
+        event.waitUntil(keepCapturePage(parsed.pathname, response.clone()));
+        return response;
+    } catch {
+        const cache = await caches.open(CAPTURE_CACHE);
+        const kept = await cache.match(key);
+        if (kept) return kept;
+        return new Response(OFFLINE_HTML_FALLBACK, {
+            status: 503,
+            headers: {
+                "Content-Type": "text/html; charset=utf-8",
+                "Cache-Control": "no-store",
+            },
+        });
+    }
+}
+
+/** Whether the page that made this request is a capture page (only those sheets are kept). */
+async function fromCapturePage(event: FetchEvent): Promise<boolean> {
+    try {
+        const id = event.clientId || event.resultingClientId;
+        if (!id) return false;
+        const client = await self.clients.get(id);
+        return !!client && isCapturePath(new URL(client.url).pathname);
+    } catch {
+        return false;
+    }
+}
+
+/** A sheet's definition (which organization it lives in; its questions): the store first, the kept copy only when it cannot answer. */
+async function handleCaptureDefinition(event: FetchEvent): Promise<Response> {
+    const request = event.request;
+    let key: Request | null = null;
+    try {
+        const body = await request.clone().text();
+        const door = new URL(request.url).pathname.split("/").pop() ?? "door";
+        key = captureKey("def", `${door}:${await hashOf(body)}`);
+    } catch {
+        key = null;
+    }
+    try {
+        const response = await fetch(request);
+        if (key && response.ok && (await fromCapturePage(event))) {
+            const copy = response.clone();
+            event.waitUntil(
+                caches.open(CAPTURE_CACHE).then((cache) => cache.put(key as Request, copy)).catch(() => undefined),
+            );
+        }
+        return response;
+    } catch (err) {
+        if (key) {
+            const cache = await caches.open(CAPTURE_CACHE);
+            const kept = await cache.match(key);
+            if (kept) return kept;
+        }
+        throw err;
+    }
+}
+
 self.addEventListener("install", (event) => {
     // skipWaiting so a new SW version takes over without a manual reload.
     // The cache schema is versioned independently inside IndexedDB.
@@ -209,13 +335,15 @@ self.addEventListener("activate", (event) => {
             try {
                 const names = await caches.keys();
                 await Promise.all(
-                    names
-                        .filter(
+                    [
+                        ...names.filter(
                             (name) =>
                                 name.startsWith("matrx-study-shell-") &&
                                 name !== SHELL_CACHE,
-                        )
-                        .map((name) => caches.delete(name)),
+                        ),
+                        // A release replaces the capture cache; nothing from the last build survives.
+                        ...staleCaptureCaches(names, BUILD_ID),
+                    ].map((name) => caches.delete(name)),
                 );
             } catch {
                 // Cleanup is best-effort; never block activation on it.
@@ -582,6 +710,22 @@ self.addEventListener("fetch", (event) => {
     // on a real failure (navigations) or serve immutable hashed assets
     // (chunks), so neither can produce the stale-or-eaten-response class the
     // comment above warns about.
+    if (
+        isCaptureNavigationRequest(
+            event.request.method,
+            event.request.mode,
+            parsed.origin,
+            parsed.pathname,
+            self.location.origin,
+        )
+    ) {
+        event.respondWith(handleCaptureNavigation(event, parsed));
+        return;
+    }
+    if (isCaptureDefinitionRequest(event.request.method, parsed.pathname)) {
+        event.respondWith(handleCaptureDefinition(event));
+        return;
+    }
     if (isStudyNavigation(event.request, parsed)) {
         event.respondWith(handleStudyNavigation(event.request));
         return;
@@ -730,11 +874,36 @@ interface RegisterUrlMappingMsg extends MessageBase {
     checksum: string | null;
 }
 
+interface CaptureWarmMsg extends MessageBase {
+    kind: "capture-warm";
+    /** The capture page's path, `/capture/<sheet>`. */
+    path: string;
+    /** `/_next/static/...` files the page has already loaded (they came before this worker controlled it). */
+    assets: string[];
+}
+interface CaptureForgetMsg extends MessageBase {
+    kind: "capture-forget";
+}
+
 type IncomingMessage =
+    | CaptureWarmMsg
+    | CaptureForgetMsg
     | SetConfigMsg
     | InvalidateMsg
     | ClearUserMsg
     | RegisterUrlMappingMsg;
+
+/** Drop every kept capture page and definition (sign-out / user change: they are the person's own). */
+async function forgetCapture(): Promise<void> {
+    try {
+        const names = await caches.keys();
+        await Promise.all(
+            names.filter((n) => n.startsWith(CAPTURE_CACHE_PREFIX)).map((n) => caches.delete(n)),
+        );
+    } catch {
+        // best-effort
+    }
+}
 
 self.addEventListener("message", async (event) => {
     const msg = event.data as IncomingMessage;
@@ -764,7 +933,28 @@ self.addEventListener("message", async (event) => {
             return;
         case "clear-user":
             await idbDeleteByIndex(STORE_BLOBS, "userId", msg.userId);
+            await forgetCapture();
             return;
+        case "capture-forget":
+            await forgetCapture();
+            return;
+        case "capture-warm": {
+            // The page was opened before this worker controlled it, so its HTML and chunks never passed
+            // through the fetch listener. Ask for them again, now, while there is a signal.
+            if (!isCapturePath(msg.path)) return;
+            event.waitUntil(
+                (async () => {
+                    try {
+                        const res = await fetch(msg.path, { credentials: "same-origin" });
+                        await keepCapturePage(msg.path, res);
+                        await keepAssets(Array.isArray(msg.assets) ? msg.assets : []);
+                    } catch {
+                        // Offline already: nothing to warm.
+                    }
+                })(),
+            );
+            return;
+        }
         case "register-url-mapping": {
             // The in-memory set is the synchronous source-of-truth used by
             // the fetch listener's pre-check. Add it FIRST so a fetch that

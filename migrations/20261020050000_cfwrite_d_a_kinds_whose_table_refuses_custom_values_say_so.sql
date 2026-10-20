@@ -1,12 +1,12 @@
 -- additive: yes
--- Two columns on platform.entity_types (both defaulted), five registry rows set, one function body. Nothing is dropped, revoked or deleted.
+-- Two columns on platform.entity_types (both defaulted), six registry rows set, one function body. Nothing is dropped, revoked or deleted.
 -- lane: CF-WRITE-4
 -- lock: custom
 -- Inverse: migrations/inverse/20261020050000_cfwrite_d_a_kinds_whose_table_refuses_custom_values_say_so_down.sql
 -- based-on: custom.entity_record_read(uuid, text, uuid) b54e708feb57420b7406b06ada7f51e98795d7e05b364d16642d4982971dbf6e
 --
 -- CF-WRITE-4 - A KIND WHOSE TABLE REFUSES EVERY CUSTOM-VALUE WRITE SAYS SO ON THE REGISTRY.
--- document_version, univer_payload, web_crawl_url, esign_envelope_signer and seo_site_offering_value refuse a custom-value
+-- document_version, univer_payload, web_crawl_url, web_crawl_event (found by the every-token guard), esign_envelope_signer and seo_site_offering_value refuse a custom-value
 -- write by their own row rule whoever the person is, yet may_edit read true (the access ladder). The registry now carries
 -- platform.entity_types.custom_values_locked (+ custom_values_locked_reason); custom.entity_record_read answers
 -- may_edit=false and may_edit_reason for any kind that declares it. A future locked kind is one UPDATE, not code.
@@ -15,9 +15,14 @@ set local lock_timeout = '3s';
 ALTER TABLE platform.entity_types
   ADD COLUMN IF NOT EXISTS custom_values_locked boolean NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS custom_values_locked_reason text;
-ALTER TABLE platform.entity_types DROP CONSTRAINT IF EXISTS entity_types_custom_values_locked_has_reason;
-ALTER TABLE platform.entity_types ADD CONSTRAINT entity_types_custom_values_locked_has_reason
-  CHECK (NOT custom_values_locked OR nullif(btrim(custom_values_locked_reason), '') IS NOT NULL);
+DO $c$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid = 'platform.entity_types'::regclass AND conname = 'entity_types_custom_values_locked_has_reason') THEN
+    ALTER TABLE platform.entity_types ADD CONSTRAINT entity_types_custom_values_locked_has_reason
+      CHECK (NOT custom_values_locked OR nullif(btrim(custom_values_locked_reason), '') IS NOT NULL);
+  END IF;
+END
+$c$;
 COMMENT ON COLUMN platform.entity_types.custom_values_locked IS 'True when this kind''s table refuses every custom-value write whoever the person is (append-only, versioned, locked after signing). custom.entity_record_read then answers may_edit=false with custom_values_locked_reason. CF-WRITE-4.';
 COMMENT ON COLUMN platform.entity_types.custom_values_locked_reason IS 'The words shown beside a read-only custom-fields section for a locked kind. Required when custom_values_locked.';
 
@@ -26,6 +31,7 @@ UPDATE platform.entity_types SET custom_values_locked = true, custom_values_lock
     ('document_version', 'This record is locked once saved. Only its label and note can change.'),
     ('univer_payload', 'This record is locked once saved. A new save makes a new version.'),
     ('web_crawl_url', 'This record is locked once saved. Crawl results are append-only.'),
+    ('web_crawl_event', 'This record is locked once saved. Crawl events are append-only.'),
     ('esign_envelope_signer', 'This record is locked once the person has signed.'),
     ('seo_site_offering_value', 'This record is locked while the site has not selected this offering.')
   ) v(token, reason)

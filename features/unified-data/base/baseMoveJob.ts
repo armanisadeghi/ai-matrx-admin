@@ -77,12 +77,32 @@ export async function readBaseSnapshotJob(organizationId: string, jobId: string)
   return data;
 }
 
-/** Follow a job once a second until it lands or is refused; every running view goes to `onView`. */
+/** Reads (one a second) with the same phase and progress before the screen stops following a job and says so (FIX-SNAP2). */
+export const SNAPSHOT_JOB_STALL_READS = 120;
+
+/**
+ * Follow a job once a second until it lands or is refused; every running view goes to `onView`. A job whose phase and
+ * progress (the clock aside) stay the same for SNAPSHOT_JOB_STALL_READS reads answers `refused` with code "stalled" —
+ * never "Copying…" forever (live walk 2026-10-19).
+ */
 export async function followBaseSnapshotJob(organizationId: string, jobId: string, onView: (v: BaseSnapshotJobView) => void): Promise<BaseSnapshotJobView> {
+  let lastMark: string | null = null;
+  let still = 0;
   for (;;) {
     const view = await readBaseSnapshotJob(organizationId, jobId);
     onView(view);
     if (view.state !== "running") return view;
+    const { seconds: _clock, ...moved } = view.progress ?? {};
+    const mark = JSON.stringify([view.phase, moved]);
+    still = mark === lastMark ? still + 1 : 0;
+    lastMark = mark;
+    if (still >= SNAPSHOT_JOB_STALL_READS) {
+      const p = view.progress ?? {};
+      const at = typeof p.total === "number" ? ` at ${(p.done ?? 0).toLocaleString("en-US")} of ${p.total.toLocaleString("en-US")} rows` : "";
+      const what = view.kind === "restore" ? "restore" : "snapshot";
+      return { state: "refused", kind: view.kind, code: "stalled",
+        message: `The ${what} stopped moving${at} for ${Math.round(SNAPSHOT_JOB_STALL_READS / 60)} minutes, so this screen stopped waiting. Open Snapshots again later to see whether it finished.` };
+    }
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }

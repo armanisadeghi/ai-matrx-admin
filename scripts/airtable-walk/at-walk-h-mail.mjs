@@ -1,0 +1,11 @@
+import { store } from "./store.mjs";
+process.env.WALK_ORG_ID ??= "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f";
+const { client } = await store();
+const [, , MAIN, ROW] = process.argv;
+const f = (await client.fields({ table_id: MAIN })).data;
+const r = await client.automationDeclare({ table_id: MAIN, spec: { name: "ATWH send mail", trigger: { on: "property_edited", field: f.find((x) => x.key === "owner_note").id }, actions: [{ do: "gmail", to: "aimatrxoauthreview@gmail.com", subject: "ATWH-nonexistent-subject walk H", body: "AT-WALK-H test mail for the Gmail trigger." }] } });
+const id = r.data.automation_id ?? r.data.id; console.log("declared", id);
+console.log(JSON.stringify(await client.automationTest({ automation_id: id, record_id: ROW })).slice(0, 300));
+await new Promise((x) => setTimeout(x, 40000));
+console.log(JSON.stringify((await client.automationRuns({ automation_id: id, limit: 1 })).data.runs[0]).slice(0, 700));
+console.log("archive", JSON.stringify(await client.automationArchive({ automation_id: id })).slice(0, 100));

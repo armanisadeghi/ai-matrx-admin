@@ -286,7 +286,7 @@ export function reportKindComponentIncident(
     }
     try {
       const { supabase } = await import("@/utils/supabase/client");
-      await supabase.rpc("log_kind_component_incident", {
+      const { error: refused } = await supabase.rpc("log_kind_component_incident", {
         p_kind: input.kind,
         p_error_type: input.errorType,
         p_error_message: input.message,
@@ -302,6 +302,12 @@ export function reportKindComponentIncident(
         p_browser_info: (browserInfo() ?? undefined) as Json | undefined,
         p_route: window.location.pathname,
       });
+      // supabase-js answers a refusal as a value, not a throw: say it, so a dropped incident is never silent.
+      if (refused) {
+        console.warn(
+          `[content-ir] the render incident for "${input.kind}" was refused: ${refused.message}`,
+        );
+      }
     } catch (error) {
       // Never surface: the render already degraded gracefully, and an alarm
       // that throws is worse than one that misses.

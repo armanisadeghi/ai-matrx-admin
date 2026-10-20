@@ -30,7 +30,7 @@ import {
   createNewNote,
   deleteNote as deleteNoteThunk,
   copyNote as copyNoteThunk,
-  findOrCreateEmptyNote as findOrCreateEmptyNoteThunk,
+  createEmptyNote as createEmptyNoteThunk,
   saveNoteField,
 } from "../redux/thunks";
 import {
@@ -184,9 +184,9 @@ export function useNotesRedux() {
     await dispatch(fetchNotesList()).unwrap();
   }, [dispatch]);
 
-  const findOrCreateEmptyNote = useCallback(
+  const createEmptyNote = useCallback(
     async (target?: { homeScopeId?: string | null; organizationId?: string | null }): Promise<Note> => {
-      return await dispatch(findOrCreateEmptyNoteThunk(target)).unwrap();
+      return await dispatch(createEmptyNoteThunk(target)).unwrap();
     },
     [dispatch],
   );
@@ -229,7 +229,7 @@ export function useNotesRedux() {
     deleteNote: deleteNoteFn,
     copyNote: copyNoteFn,
     refreshNotes,
-    findOrCreateEmptyNote,
+    createEmptyNote,
     openTabs,
     openNoteInTab,
     closeTab,

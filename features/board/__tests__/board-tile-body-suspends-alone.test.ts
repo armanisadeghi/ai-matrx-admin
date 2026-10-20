@@ -10,6 +10,6 @@ const src = readFileSync(path.resolve(__dirname, "..", "components/BoardTile.tsx
 
 describe("a tile body suspends alone", () => {
   it("wraps the body in its own Suspense boundary", () => {
-    expect(src).toMatch(/<Suspense fallback=\{<TileSkeleton[^>]*\/>\}>\s*<AfterFirstPaint/);
+    expect(src).toMatch(/<Suspense fallback=\{<TileSkeleton[^>]*\/>\}>\s*(?:<TileAutoHeightContext\.Provider[^>]*>\s*)?<AfterFirstPaint/);
   });
 });

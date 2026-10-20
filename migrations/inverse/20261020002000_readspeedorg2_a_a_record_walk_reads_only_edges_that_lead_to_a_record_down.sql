@@ -1,8 +1,8 @@
 -- target: branch,production
 -- lane: READ-SPEED-ORG-2
 -- lock: custom
--- based-on: custom.carrying_edges_in(uuid) NEWHASH_E
--- based-on: custom.read_door_granted_ids(uuid, uuid) NEWHASH_G
+-- based-on: custom.carrying_edges_in(uuid) 1811e49043e5cc327f3aee89bcc33df2717ffead2782b9bab1e52c932016c55b
+-- based-on: custom.read_door_granted_ids(uuid, uuid) a224575799b5c8f14ecb33c551ac26cdec4f5e7694ae1e11bbb411b9a63477e7
 -- chair-step: Inverse of READ-SPEED-ORG-2 a: carrying_edges_in keeps edges by item type again; the writing branch of read_door_granted_ids joins again (the bodies before 20261020002000_readspeedorg2_a_a_record_walk_reads_only_edges_that_lead_to_a_record).
 
 CREATE OR REPLACE FUNCTION custom.carrying_edges_in(p_organization_id uuid)

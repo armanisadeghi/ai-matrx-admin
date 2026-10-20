@@ -42,6 +42,7 @@ import {
 import { MobileActionBar } from "@/components/official/mobile-action-bar/MobileActionBar";
 import NotesFilterSheet, { NotesFilterState } from "./NotesFilterSheet";
 import type { Note } from "@/features/notes/types";
+import { useSelectNoteMode } from "../../hooks/usePreferredDefaultEditorMode";
 import { useNoteHomes } from "../../homes/useNoteHomes";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
@@ -58,8 +59,9 @@ export default function MobileNotesList({
   onFiltersChange,
 }: MobileNotesListProps) {
   const dispatch = useAppDispatch();
-  const { notes, findOrCreateEmptyNote, isLoading } = useNotesRedux();
+  const { notes, createEmptyNote, isLoading } = useNotesRedux();
   const homes = useNoteHomes();
+  const selectNoteMode = useSelectNoteMode();
   const listStatus = useAppSelector(selectNotesListStatus);
   const listError = useAppSelector(selectNotesListError);
   const sharedNotes = useAppSelector(selectSharedWithMeNotes);
@@ -128,10 +130,14 @@ export default function MobileNotesList({
     try {
       // A filtered home gets the new note; otherwise the active organization's General.
       const home = filters.folder === "all" ? undefined : homes.byId.get(filters.folder);
-      const note = await findOrCreateEmptyNote(
+      const note = await createEmptyNote(
         home && !home.isGeneral ? { homeScopeId: home.scopeId, organizationId: home.organizationId } : home ? { organizationId: home.organizationId } : undefined,
       );
-      if (note) onNoteSelect(note);
+      if (note) {
+        // A brand-new note opens in Write, whatever the phone default is.
+        selectNoteMode(note.id, "write");
+        onNoteSelect(note);
+      }
     } catch (error) {
       // A tap that does nothing is a lying screen: say why, in words.
       console.error("Error creating note:", error);

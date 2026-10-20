@@ -18,7 +18,7 @@ jest.mock("next/navigation", () => ({
   useSearchParams: () => params,
   usePathname: () => "/board",
 }));
-jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: (sel: () => unknown) => sel() }));
+jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: (sel: () => unknown) => sel(), useAppDispatch: () => jest.fn() }));
 jest.mock("@/lib/redux/slices/appContextSlice", () => ({ selectOrganizationId: () => "org-1" }));
 jest.mock("@/lib/redux/selectors/userSelectors", () => ({
   selectAuthReady: () => true,
@@ -26,7 +26,7 @@ jest.mock("@/lib/redux/selectors/userSelectors", () => ({
   selectAccessToken: () => "tok",
 }));
 jest.mock("@/components/loaders/ShimmerText", () => ({ ShimmerText: ({ text }: { text: string }) => <span>{text}</span> }));
-jest.mock("@ai-matrx/design-system", () => ({ ErrorNotice: ({ message }: { message: string }) => <div>{message}</div> }));
+jest.mock("@ai-matrx/design-system", () => ({ ErrorNotice: ({ message }: { message: string }) => <div>{message}</div>, TextInputDialog: () => null }));
 jest.mock("@/components/ui/button", () => ({ Button: (p: { children: unknown }) => <button>{p.children as string}</button> }));
 jest.mock("@ai-matrx/design-system/controls", () => ({
   Button: (p: { children: unknown }) => <button>{p.children as string}</button>,

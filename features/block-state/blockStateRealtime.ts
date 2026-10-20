@@ -46,7 +46,18 @@ interface Entry {
   listeners: Set<(signal: BlockStateFeedSignal) => void>;
   handles: ChannelHandle[];
   stop: () => void;
+  /** Closes the channels once nobody has listened for `FEED_GRACE_MS`; cleared when a listener returns. */
+  closing: ReturnType<typeof setTimeout> | null;
 }
+
+/**
+ * How long a feed stays open after its last listener leaves. A conversation tile that remounts (scrolled
+ * away and back, reordered, a board reopened in the same tab) re-attaches to the SAME open channels: the
+ * feed was never down, so nothing could have been missed and nothing is re-listed. Only a channel that
+ * was really closed re-reads (`onBackfill`), because Realtime has no replay. A knob: raise it to keep
+ * feeds longer, 0 closes at once as before.
+ */
+export const FEED_GRACE_MS = 15_000;
 
 const entries = new Map<string, Entry>();
 
@@ -59,7 +70,7 @@ export function subscribeBlockStateFeed(
   const id = `${unit.scope}:${unit.entityId}:${userId}`;
   let entry = entries.get(id);
   if (!entry) {
-    const created: Entry = { listeners: new Set(), handles: [], stop: () => {} };
+    const created: Entry = { listeners: new Set(), handles: [], stop: () => {}, closing: null };
     const fan = (signal: BlockStateFeedSignal) => {
       for (const l of Array.from(created.listeners)) l(signal);
     };
@@ -103,15 +114,24 @@ export function subscribeBlockStateFeed(
     entries.set(id, created);
     entry = created;
   }
+  if (entry.closing) {
+    clearTimeout(entry.closing);
+    entry.closing = null;
+  }
   entry.listeners.add(listener);
   return () => {
     const current = entries.get(id);
     if (!current) return;
     current.listeners.delete(listener);
-    if (current.listeners.size === 0) {
+    if (current.listeners.size > 0 || current.closing) return;
+    const close = () => {
+      current.closing = null;
+      if (current.listeners.size > 0) return;
       current.stop();
       for (const h of current.handles) h.close();
-      entries.delete(id);
-    }
+      if (entries.get(id) === current) entries.delete(id);
+    };
+    if (FEED_GRACE_MS <= 0) close();
+    else current.closing = setTimeout(close, FEED_GRACE_MS);
   };
 }

@@ -27,6 +27,8 @@ const NO_THREAD_OF_THEIR_OWN = new Set([
   "social-swipe-collection",
   // A report is a view over the person's records (agent drift over their agents), not a record: no entity token.
   "report",
+  // A video clone is a studio over a social video project: the tile saves the project id, no entity token yet.
+  "video-clone",
 ]);
 
 const recordTypes = BOARD_ITEM_TYPES.filter((t) => "name" in t.surface);

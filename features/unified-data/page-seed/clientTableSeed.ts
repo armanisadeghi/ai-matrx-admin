@@ -12,6 +12,7 @@
 import { askTablePageSeed } from "@ai-matrx/records-ui/first-page";
 import { seedIndex, seedKey } from "@ai-matrx/records/core";
 import type { RecordsDataSource } from "@ai-matrx/records";
+import { isTimedOutError } from "@ai-matrx/design-system";
 
 import { ensureObjectOrganization, readObjectOrganizationAnswer } from "@/features/unified-data/objectOrganization";
 import type { TablePageSeed } from "./tablePageSeed.server";
@@ -104,5 +105,63 @@ export async function askClientTableSeed(
   } catch (thrown: unknown) {
     console.warn(`[page-seed] the browser could not ask table ${tableId}'s first reads; the page asks for itself.`, thrown);
     return null;
+  }
+}
+
+/**
+ * THE DOORS WHOSE TIMEOUT THE PERSON MUST BE TOLD ABOUT (lane AT-FIX-G4). When the table's bundle (or
+ * the record's, or the table facts) is cancelled at the store's statement timeout, the page used to sit
+ * on its skeleton through every internal retry and then draw — or not — with nothing said. A timeout is
+ * a refusal the person can act on, so it is found here, retried once, and then said.
+ */
+const WATCHED_DOORS: readonly string[] = ["table_page_bundle", "record_page_bundle", "table_facts"];
+
+/** The one automatic retry waits this long first (the store usually answers a second look at once: its plan is warm). */
+export const TIMEOUT_RETRY_PAUSE_MS = 1500;
+
+/** The doors asked through `source` whose LAST answer was the store's statement timeout (a retry that answered clears it). */
+function watchingTimeouts(source: RecordsDataSource): { source: RecordsDataSource; timedOut: () => string[] } {
+  const last = new Map<string, boolean>();
+  const rpc: RecordsDataSource["rpc"] = (fn, args, options) => {
+    const asked = Promise.resolve(source.rpc(fn, args, options));
+    if (WATCHED_DOORS.includes(fn)) {
+      void asked.then(
+        (answered) => void last.set(fn, Boolean(answered?.error) && isTimedOutError(answered.error)),
+        () => void last.set(fn, false),
+      );
+    }
+    return asked as ReturnType<RecordsDataSource["rpc"]>;
+  };
+  return {
+    source: new Proxy(source, { get: (target, prop, receiver) => (prop === "rpc" ? rpc : Reflect.get(target, prop, receiver)) }),
+    timedOut: () => [...last].filter(([, timedOut]) => timedOut).map(([fn]) => fn),
+  };
+}
+
+export interface HonestTableSeed {
+  seed: TablePageSeed | null;
+  /** The watched doors that STILL answered a statement timeout after the one automatic retry. Empty = nothing to say. */
+  timedOut: string[];
+}
+
+/**
+ * `askClientTableSeed`, honest about a store timeout: one automatic retry, then the doors that still
+ * timed out are returned so the page can say so (the shared timeout sentence + Try again) instead of
+ * drawing a skeleton through the store's own retries. Never rejects.
+ */
+export async function askClientTableSeedHonestly(
+  dataSource: RecordsDataSource,
+  tableId: string,
+  options: Parameters<typeof askClientTableSeed>[2] = {},
+): Promise<HonestTableSeed> {
+  let attempt = 0;
+  for (;;) {
+    const watched = watchingTimeouts(dataSource);
+    const seed = await askClientTableSeed(watched.source, tableId, options);
+    const timedOut = watched.timedOut();
+    if (timedOut.length === 0 || attempt >= 1) return { seed, timedOut };
+    attempt += 1;
+    console.warn(`[page-seed] ${timedOut.join(", ")} timed out for table ${tableId}; asking once more.`);
+    await new Promise((resolve) => setTimeout(resolve, TIMEOUT_RETRY_PAUSE_MS));
   }
 }

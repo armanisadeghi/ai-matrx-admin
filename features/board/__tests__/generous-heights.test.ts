@@ -20,7 +20,7 @@ describe("generous heights", () => {
 
   it("note, document and chat open ~900+ tall; tables and files 800+", () => {
     const h = (k: string) => BOARD_ITEM_TYPES.find((t) => t.key === k)?.defaultSize.h ?? 0;
-    for (const k of ["note", "document", "chat"]) expect(h(k)).toBeGreaterThanOrEqual(900);
+    for (const k of ["note", "udt_document", "chat"]) expect(h(k)).toBeGreaterThanOrEqual(900);
     for (const k of ["file"]) expect(h(k)).toBeGreaterThanOrEqual(800);
   });
 });
