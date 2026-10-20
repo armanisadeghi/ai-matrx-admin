@@ -94,7 +94,7 @@ import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/eng
 import { useSurfaceBody } from "@ai-matrx/chat/surfaces/runtime/registry";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { useTaskEditorControllerCtx } from "./TaskEditorControllerContext";
-import { SectionHeader, PropertyRow } from "./editorPrimitives";
+import { PropertyRow } from "./editorPrimitives";
 import { LinkedRecordsSection } from "@/features/scopes/components/linked-records/LinkedRecordsSection";
 import { insertBlockAtLine } from "@/utils/text-insertion";
 
@@ -838,16 +838,6 @@ export function TaskEditorBody({
               )}
               {/* Subtasks */}
               <section data-surface-value="subtasks">
-                <SectionHeader
-                  icon={CheckSquare}
-                  label={subtasksLabel}
-                  count={
-                    subtasksRead.status === "error"
-                      ? undefined
-                      : subtasks.length
-                  }
-                  className="mb-1"
-                />
                 <div
                   className={cn(
                     "overflow-hidden bg-card/40",
