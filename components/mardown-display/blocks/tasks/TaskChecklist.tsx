@@ -630,7 +630,8 @@ const TaskChecklist = ({
           <div className={cn("mt-2", narrow ? "space-y-2" : "space-y-4")}>
             <div
               className={cn(
-                "flex flex-wrap items-center justify-between gap-x-3 gap-y-1",
+                "flex items-center justify-between",
+                narrow && "flex-wrap gap-x-3 gap-y-1",
               )}
               data-testid="task-checklist-toolbar"
               data-canvas-fit={narrow ? "narrow" : undefined}
