@@ -596,18 +596,12 @@ export default function AiModelTable(props: AiModelTableProps) {
               { value: "deprecated", label: "Deprecated" },
               { value: "all", label: "All" },
             ],
-            // The package resets the page right after this returns, from the state it had before; a
-            // write made now would be overwritten, so ours lands on the next task.
             onChange: (value) =>
-              setTimeout(
-                () =>
-                  setColumnFilter(
-                    "is_deprecated",
-                    value === "all"
-                      ? undefined
-                      : { kind: "boolean", value: value === "deprecated" },
-                  ),
-                0,
+              setColumnFilter(
+                "is_deprecated",
+                value === "all"
+                  ? undefined
+                  : { kind: "boolean", value: value === "deprecated" },
               ),
           },
           selectFacet("output_capability", "Output", "All outputs", outputOptions),
