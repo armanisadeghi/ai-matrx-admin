@@ -100,6 +100,12 @@ type Conflict = {
 // One link per record, shared by every control showing it (toolbar button, File menu, list row),
 // so an action in one is never stale in another.
 const linkCache = new Map<string, GoogleFileLink | null>();
+/**
+ * Records whose link AND pending approval were read successfully this tab. A tile waking from sleep or
+ * remounting finds its record here and reads nothing (the remount law); a failed read is never added, so
+ * the next mount asks again, and a record with an approval still waiting is not added either.
+ */
+const settledLinks = new Set<string>();
 const linkListeners = new Set<() => void>();
 const cacheKey = (kind: LinkedRecordKind, id: string) => `${kind}:${id}`;
 function publishLink(kind: LinkedRecordKind, id: string, link: GoogleFileLink | null) {
@@ -161,6 +167,8 @@ export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, act
 
   useEffect(() => {
     if (!active) return;
+    // Read and settled already this tab: the shared cache holds the link, `loaded` started true.
+    if (settledLinks.has(key)) return;
     let live = true;
     void readGoogleLink(adapter.recordKind, adapter.recordId).then((res) => {
       if (!live) return;
@@ -175,6 +183,7 @@ export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, act
       // An approval this record is waiting on (a create, or a push into the linked file): record it once applied.
       void completePendingLink(adapter.recordKind, adapter.recordId, res.link)
         .then((outcome) => {
+          if (outcome.state !== "waiting") settledLinks.add(key);
           if (!live || outcome.state !== "linked") return;
           setLink(outcome.link);
           toast.success(res.link ? `Pushed to ${appName}` : `Linked to ${appName}`);
@@ -184,7 +193,7 @@ export function useGoogleLink(adapter: GoogleLinkAdapter, editable: boolean, act
     return () => {
       live = false;
     };
-  }, [adapter.recordKind, adapter.recordId, active]);
+  }, [adapter.recordKind, adapter.recordId, active, key]);
 
   // An imported record's first open: what the editor shows IS Google's content,
   // so its fingerprint is the baseline "changed here since?" compares against.

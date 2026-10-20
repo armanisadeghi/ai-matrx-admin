@@ -44,6 +44,17 @@ const type = (key: string) => {
 };
 const shows = (container: HTMLElement, text: string) => (container.textContent ?? "").includes(text);
 
+/** What `entity_access_summary` answers for a record its viewer owns (the access panel under a record tile). */
+const accessSummaryOf = (entityType: string, entityId: string) => ({
+  entity_type: entityType,
+  entity_id: entityId,
+  owner_id: PERSON.id,
+  viewer_is_owner: true,
+  can_manage: true,
+  direct_grants: [],
+  containers: [],
+});
+
 const WORKBOOK_ID = "3f8a1c6e-92d4-4b07-a5e3-1c7d0b9f2a64";
 const WORKBOOK_NAME = "Rent roll 2027";
 const workbookRow = {
@@ -205,6 +216,10 @@ remountType(
       title: AGENT_NAME,
       prepare: () => {
         seed("agent.definition", [agentRow]);
+        seedRpc("agx_get_version_history", []);
+        seedRpc("agx_get_list_full", []);
+        seedRpc("agx_search", []);
+        seedRpc("entity_access_summary", accessSummaryOf("agent", AGENT_ID));
       },
       loadMs: 1500,
       kept: (tile) => ({ instruction: shows(tile.container, AGENT_INSTRUCTION), loading: shows(tile.container, "Loading agent data") }),

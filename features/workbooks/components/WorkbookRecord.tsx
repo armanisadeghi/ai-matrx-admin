@@ -7,10 +7,11 @@
  * shell stays as it is). One component, two consumers.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Loader2 } from "lucide-react";
 
+import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 import { supabase } from "@/utils/supabase/client";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
@@ -33,6 +34,12 @@ import {
 import { isServiceFailure } from "@/features/data-tables/types";
 import { type Workbook } from "@ai-matrx/office/core";
 import { canActOn } from "@/features/access-gate/service/canActOn";
+
+interface OpenWorkbook {
+  workbook: Workbook;
+  userId: string | null;
+  canEdit: boolean;
+}
 
 // Univer hard-depends on `window` / `document`. Mount client-only.
 const WorkbookEditor = dynamic(
@@ -60,41 +67,36 @@ export function WorkbookRecord({
   /** The workbook's current name (renamed here, by an agent or by a collaborator). */
   onName?: (name: string) => void;
 }) {
-  const [workbook, setWorkbook] = useState<Workbook | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [canEdit, setCanEdit] = useState(false);
+  // The workbook, who is looking and whether they may edit: read ONCE per workbook per tab and kept
+  // (a tile waking from sleep or remounting shows the kept answer and reads nothing). A failed read
+  // is never kept, so the next mount asks again.
   // Editability must be RESOLVED before the editor mounts. Univer boots once
   // per workbookId; if `editable` flips false→true after mount, the boot
   // effect tears down and recreates Univer, and disposing it mid-render
   // crashes Univer's React popups — content loads, then vanishes. Gate the
-  // mount on this flag so `editable` is stable from the first frame.
-  const [permsResolved, setPermsResolved] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      const res = await getWorkbook(id);
-      if (isServiceFailure(res)) {
-        setError(res.error);
-        return;
-      }
-      setWorkbook(res.data);
-
-      const { data: userData } = await getClaimsUser(supabase);
-      const userId = userData?.user?.id ?? null;
-      setCurrentUserId(userId);
-
-      // Editor gate: owner ALWAYS edits; non-owner edits when the access kernel
-      // (canActOn → iam.has_access) allows editor — the same question the write doors ask. has_permission is the source of truth
-      // for sharing, so the UI matches what the RLS-protected RPCs will accept.
-      if (userId && userId === res.data.user_id) {
-        setCanEdit(true);
-      } else {
-        setCanEdit(await canActOn("workbook", id, "editor"));
-      }
-      setPermsResolved(true);
-    })();
-  }, [id]);
+  // mount on the answer so `editable` is stable from the first frame.
+  const open = useStoreRead<OpenWorkbook>(`workbook.open:${id}`, async () => {
+    const res = await getWorkbook(id);
+    if (isServiceFailure(res)) throw new Error(res.error);
+    const { data: userData } = await getClaimsUser(supabase);
+    const userId = userData?.user?.id ?? null;
+    // Editor gate: owner ALWAYS edits; non-owner edits when the access kernel
+    // (canActOn → iam.has_access) allows editor — the same question the write doors ask. has_permission is the source of truth
+    // for sharing, so the UI matches what the RLS-protected RPCs will accept.
+    const canEdit = userId && userId === res.data.user_id ? true : await canActOn("workbook", id, "editor");
+    return { workbook: res.data, userId, canEdit };
+  });
+  const error = open.error;
+  const workbook = open.data?.workbook ?? null;
+  const currentUserId = open.data?.userId ?? null;
+  const canEdit = open.data?.canEdit ?? false;
+  const permsResolved = open.hasData;
+  const setWorkbook = (next: Workbook | ((w: Workbook | null) => Workbook | null)) =>
+    open.setData((prev) => {
+      if (!prev) return prev as unknown as OpenWorkbook;
+      const value = typeof next === "function" ? next(prev.workbook) : next;
+      return value ? { ...prev, workbook: value } : prev;
+    });
 
   const currentName = workbook?.workbook_name ?? null;
   useEffect(() => {

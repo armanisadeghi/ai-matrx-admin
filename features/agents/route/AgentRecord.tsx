@@ -9,7 +9,7 @@
  * reads the agent itself, once, when the store does not hold it yet.
  */
 
-import { useEffect } from "react";
+import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { useAgentView } from "@ai-matrx/chat/agents/identity/agent-identity";
@@ -37,12 +37,16 @@ export function AgentRecord({
   const agent = useAgentView(agentId);
   const loaded = hydrated || Boolean(agent?._loadedFields?.messages);
 
-  // The page's layout fills the store before the body mounts; a tile has no layout, so it reads the agent once.
-  useEffect(() => {
-    if (!loaded) void dispatch(fetchFullAgent(agentId));
-    // Once per agent: `loaded` flips when the read lands and must not start another.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agentId]);
+  // The page's layout fills the store before the body mounts; a tile has no layout, so it reads the agent
+  // once per tab (kept by id: a wake or remount reads nothing; the rows themselves live in the agents slice).
+  useStoreRead<null>(
+    `agent.full:${agentId}`,
+    async () => {
+      await dispatch(fetchFullAgent(agentId)).unwrap();
+      return null;
+    },
+    { enabled: !loaded },
+  );
 
   const getScope = () => {
     const state = store.getState();

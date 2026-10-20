@@ -261,6 +261,11 @@ export function captureConsoleErrors(): { errors: string[]; restore: () => void 
     // act() scopes (a promise settling while the harness polls) — a property of
     // the harness's clock, never something a person sees.
     if (typeof args[0] === "string" && args[0].startsWith("An update to %s inside a test was not wrapped in act")) return;
+    // Univer's own notice that a dependency-injection identifier was created twice: the stand-in
+    // (`univer-standin.ts`) loads the real `@univerjs/core` for its constants and a package above it loads
+    // it again, so two copies each register `rpc.remote-sync.service`. A double load of the harness's
+    // module registry, never a second editor a person could see (the case's editor count asserts that).
+    if (typeof args[0] === "string" && /^Identifier ".+" already exists\. Returning the cached identifier decorator\.$/.test(args[0])) return;
     if (process.env.REMOUNT_DEBUG) process.stderr.write(`[console.error] ${require("util").inspect(args, { depth: 6 }).slice(0, 2500)}\n`);
     errors.push(args.map((a) => (a instanceof Error ? a.message : typeof a === "string" ? a : JSON.stringify(a))).join(" ").slice(0, 400));
   });

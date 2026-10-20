@@ -44,6 +44,7 @@ import { ProTextarea, type ProTextareaElement } from "@/components/official/ProT
 import { SlideEditContext, type SlideEditPort } from "@/components/mardown-display/blocks/presentations/slide-edit";
 import { PRESET_LIST } from "@/components/mardown-display/blocks/presentations/presets";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 import { canActOn } from "@/features/access-gate/service/canActOn";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { FileTitleMarks } from "@/features/file-actions/FileTitleMarks";
@@ -100,6 +101,11 @@ function layoutOf(layout: unknown, type: unknown): string {
   return raw;
 }
 
+interface OpenPresentation {
+  row: PresentationRow;
+  mayEdit: boolean;
+}
+
 export function PresentationEditor({ presentationId, embedded = false, onName }: { presentationId: string; /** The presentation's current name once read (renamed here, by an agent or by a collaborator). */ onName?: (name: string) => void; /** Inside a board tile: the shell is left alone and the header's product mark is not a link. */ embedded?: boolean }) {
   const router = useRouter();
   const userId = useAppSelector(selectUserId);
@@ -108,7 +114,6 @@ export function PresentationEditor({ presentationId, embedded = false, onName }:
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [sizeOpen, setSizeOpen] = useState(false);
   const openFeedback = useOpenFeedbackWindow();
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [mayEdit, setMayEdit] = useState(false);
   // Nothing is editable (or saved) until the stored deck has loaded: the blank deck shown while
   // loading must never take an edit, and never be written over the real one.
@@ -154,34 +159,52 @@ export function PresentationEditor({ presentationId, embedded = false, onName }:
           toast.error("Could not save the presentation", { description: res.error });
           return false;
         }
+        openRef.current.setData((prev) => (prev ? { ...prev, row: { ...prev.row, deck: d } } : (prev as unknown as OpenPresentation)));
         return true;
       },
       onState: setSaveState,
     }));
-  const load = async () => {
+  // The stored deck, its row and whether this person may edit: read ONCE per presentation per tab and
+  // kept (a tile waking from sleep or remounting renders the kept answer and reads nothing; a failed
+  // read is not kept). Every save and rename writes through to the kept row, so a remount seeds the
+  // deck that was last saved, never an older one.
+  const open = useStoreRead<OpenPresentation>(`presentation.open:${presentationId}`, async () => {
     const res = await getPresentation(presentationId);
-    if (isServiceFailure(res)) {
-      setLoadError(res.error);
-      return;
-    }
-    setRow(res.data);
-    saverFor().markSaved(0);
-    dispatchHist({ type: "reset", deck: res.data.deck });
-    setSaveState("saved");
-  };
-
-  const loadRef = useRef(load);
-  useEffect(() => {
-    loadRef.current = load;
+    if (isServiceFailure(res)) throw new Error(res.error);
+    return { row: res.data, mayEdit: await canActOn("presentation", presentationId, "editor") };
   });
+  const openRef = useRef(open);
   useEffect(() => {
-    let live = true;
-    void loadRef.current();
-    void canActOn("presentation", presentationId, "editor").then((ok) => live && setMayEdit(ok));
-    return () => {
-      live = false;
-    };
-  }, [presentationId]);
+    openRef.current = open;
+  });
+  /** A local change to the row, in this view and in the kept answer. */
+  const setRowKept = (update: (r: PresentationRow | null) => PresentationRow | null) => {
+    setRow(update);
+    open.setData((prev) => (prev ? { ...prev, row: update(prev.row) ?? prev.row } : (prev as unknown as OpenPresentation)));
+  };
+  // Seed the editor from the kept answer: once per mount, and again after `load()` (a restored version).
+  const seeded = useRef(false);
+  const seedKey = useRef(presentationId);
+  useEffect(() => {
+    if (seedKey.current !== presentationId) {
+      seedKey.current = presentationId;
+      seeded.current = false;
+    }
+    if (!open.data || seeded.current) return;
+    seeded.current = true;
+    setRow(open.data.row);
+    setMayEdit(open.data.mayEdit);
+    saverFor().markSaved(0);
+    dispatchHist({ type: "reset", deck: open.data.row.deck });
+    setSaveState("saved");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- seeded by the kept answer, not by every render
+  }, [open.data, presentationId]);
+  const loadError = open.error;
+  /** Read the stored deck again now (after a version is restored) and show it. */
+  const load = async () => {
+    seeded.current = false;
+    await open.refresh();
+  };
 
   // Autosave: every content change (revision) is saved after a short pause; each save is one version.
   // Saves run one at a time (an older whole-deck write can never land last) and leaving the page
@@ -213,7 +236,7 @@ export function PresentationEditor({ presentationId, embedded = false, onName }:
 
   // A collaborator's (or an agent's) rename shows here live.
   useLiveFileName({ table: "presentation", column: "name", id: presentationId }, (name) => {
-    setRow((r) => (r && r.name !== name ? { ...r, name } : r));
+    setRowKept((r) => (r && r.name !== name ? { ...r, name } : r));
   });
 
   const dispatch = (a: DeckAction) => {
@@ -226,7 +249,7 @@ export function PresentationEditor({ presentationId, embedded = false, onName }:
       toast.error("Could not rename", { description: res.error });
       return;
     }
-    setRow((r) => (r ? { ...r, name: res.data.name } : r));
+    setRowKept((r) => (r ? { ...r, name: res.data.name } : r));
   };
 
   const uploadImage = async (file: File | undefined) => {
@@ -359,7 +382,7 @@ export function PresentationEditor({ presentationId, embedded = false, onName }:
     listHref: "/presentations",
     // The editor offers its LIVE deck (unsaved edits included).
     downloads: deckDownloads(() => Promise.resolve(deckRef.current), row?.name ?? "presentation"),
-    onProjectMoved: (projectId) => setRow((r) => (r ? { ...r, project_id: projectId } : r)),
+    onProjectMoved: (projectId) => setRowKept((r) => (r ? { ...r, project_id: projectId } : r)),
     menubar: menuBar.fileMenuProps(),
     ...(row && userId !== null && row.user_id === userId ? { google: { adapter: presentationGoogleAdapter(() => deckRef.current, row.id, row.name), editable: canEdit } } : {}),
     ...(canEdit ? { onRename: applyRename } : {}),
@@ -504,7 +527,7 @@ export function PresentationEditor({ presentationId, embedded = false, onName }:
       if (!canEditRef.current) throw new Error("This presentation is not editable yet or is open in view-only mode.");
       const res = await renamePresentation(presentationId, value.trim());
       if (isServiceFailure(res)) throw new Error(res.error);
-      setRow((r) => (r ? { ...r, name: res.data.name } : r));
+      setRowKept((r) => (r ? { ...r, name: res.data.name } : r));
     },
     deck_actions: async (value: unknown) => {
       if (!Array.isArray(value) || value.length === 0 || value.length > 40) throw new Error("deck_actions expects an array of 1 to 40 steps.");
@@ -558,7 +581,7 @@ export function PresentationEditor({ presentationId, embedded = false, onName }:
                 adapter={PRESENTATION_ADAPTER}
                 row={row}
                 canManage={isOwner}
-                onProjectMoved={(projectId) => setRow((r) => (r ? { ...r, project_id: projectId } : r))}
+                onProjectMoved={(projectId) => setRowKept((r) => (r ? { ...r, project_id: projectId } : r))}
               />
               <EditorSaveStatus state={saveState} {...(canEdit ? { onSaveNow: () => void saveNow() } : {})} />
             </>

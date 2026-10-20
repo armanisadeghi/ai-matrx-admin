@@ -76,12 +76,20 @@ it("the list's read is limited to the board's conversations", async () => {
     wrap,
     kept: () => null,
   });
-  // Every list read of conversations carries `id in (the board's set)`.
+  // The board's `id in (its set)` filter is present, and no list read of conversations is wider than the
+  // board: the list also reads the child sessions of the board's chats (`parent_conversation_id in …`),
+  // so every read carries the board's id set, its children by `in`, or one chat's children by `eq` — never the exact filter set.
   const listReads = backendCalls().filter(
     (c) => c.target === "chat.conversation" && c.op === "select" && c.filters.some(([name]) => name === "order"),
   );
   expect(listReads.length).toBeGreaterThan(0);
+  expect(listReads.some((read) => read.filters.some((f) => JSON.stringify(f) === JSON.stringify(["in", ["id", [CONVERSATION_ID]]])))).toBe(true);
   for (const read of listReads) {
-    expect(read.filters).toContainEqual(["in", ["id", [CONVERSATION_ID]]]);
+    const limited = read.filters.some(
+      (f) =>
+        (f[0] === "in" && Array.isArray(f[1]) && (f[1][0] === "id" || f[1][0] === "parent_conversation_id") && JSON.stringify(f[1][1]) === JSON.stringify([CONVERSATION_ID])) ||
+        (f[0] === "eq" && Array.isArray(f[1]) && f[1][0] === "parent_conversation_id" && f[1][1] === CONVERSATION_ID),
+    );
+    expect(limited).toBe(true);
   }
 });

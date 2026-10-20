@@ -20,6 +20,7 @@ import {
 import {
   fetchFullAgent,
 } from "@/features/agents/redux/fetch-full-agent.thunk";
+import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 import { fetchAgentVersionHistory } from "@/features/agents/redux/builder-versions.thunks";
 import {
   resetAgentToSource,
@@ -243,7 +244,6 @@ export function AgentViewContent({ agentId, recordSections, embedded = false }: 
   const dispatch = useAppDispatch();
   const [mounted, setMounted] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("pretty");
-  const [currentVersionId, setCurrentVersionId] = useState<string | null>(null);
   const [categoryLabel, setCategoryLabel] = useState<string | null>(null);
 
   useEffect(() => {
@@ -270,40 +270,22 @@ export function AgentViewContent({ agentId, recordSections, embedded = false }: 
       : agent.id
     : agentId;
 
-  useEffect(() => {
-    if (!agent) {
-      setCurrentVersionId(null);
-      return undefined;
-    }
-
-    if (agent.isVersion) {
-      setCurrentVersionId(agent.id);
-      return undefined;
-    }
-
-    if (agent.version == null) {
-      setCurrentVersionId(null);
-      return undefined;
-    }
-
-    let cancelled = false;
-    dispatch(fetchAgentVersionHistory({ agentId: liveAgentId, limit: 100 }))
-      .unwrap()
-      .then((items) => {
-        if (cancelled) return;
-        const current = items.find(
-          (item) => item.version_number === agent.version,
-        );
-        setCurrentVersionId(current?.version_id ?? null);
-      })
-      .catch(() => {
-        if (!cancelled) setCurrentVersionId(null);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [agent, dispatch, liveAgentId]);
+  // The version history, read once per agent per tab (the remount law); the current version is derived.
+  const history = useStoreRead<{ version_id: string; version_number: number }[]>(
+    `agent.version-history:${liveAgentId}`,
+    async () => {
+      const items = await dispatch(fetchAgentVersionHistory({ agentId: liveAgentId, limit: 100 })).unwrap();
+      return items.map((item) => ({ version_id: item.version_id, version_number: item.version_number }));
+    },
+    { enabled: Boolean(agent) && !agent?.isVersion && agent?.version != null },
+  );
+  const currentVersionId: string | null = !agent
+    ? null
+    : agent.isVersion
+      ? agent.id
+      : agent.version == null
+        ? null
+        : (history.data?.find((item) => item.version_number === agent.version)?.version_id ?? null);
 
   useEffect(() => {
     if (!category) {
