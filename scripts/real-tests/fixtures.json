@@ -734,8 +734,10 @@
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "0ccc9d584d82c9f47439ce9dd6120e586abbbc413259c9d8b05063b79d4a90ba",
-   "version": 1
+   "sha256": "1b9aa97c9f8b78aca9e0013d362c1b0f0135eda010c1b5bc13034d7c56318249",
+   "version": 1,
+   "ignore_version": true,
+   "note": "intended (plant-pb02 lane 2026-10-20): the binding door re-normalizes the consumption map (adds item_separator newline to each entry) and every write advances the version counter; v2 pin, holder agent and map targets unchanged"
   },
   "workflow_routing": {
    "kind": "row",
