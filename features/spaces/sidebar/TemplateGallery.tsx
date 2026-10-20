@@ -29,7 +29,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { SPACE_TEMPLATE_CATEGORIES, spaceTemplateMakes, spaceTemplateMakesLine } from "@/lib/spaces-blocks/template-pack";
-import { searchTemplates } from "@/lib/spaces-blocks/template-search";
+import { searchTemplates, templateResultCount } from "@/lib/spaces-blocks/template-search";
 
 import type { SpaceDoc, SpaceSummary } from "../contract";
 import { SpaceEditor } from "../editor/SpaceEditor";
@@ -122,8 +122,10 @@ export function TemplateGallery({
 
   // THE ONE TEMPLATE SEARCH (lib/spaces-blocks/template-search.ts): words, synonyms, what is inside, ranked.
   const needle = q.trim();
+  // The rail counts follow the same search as the cards, so "All templates 12 of 183" always matches what is shown.
   const counts = new Map<string, number>();
-  for (const c of cards ?? [])
+  const matching = searchTemplates(cards ?? [], needle, (c) => c.space);
+  for (const c of matching)
     counts.set(c.space.category, (counts.get(c.space.category) ?? 0) + 1);
   const shown = searchTemplates(
     (cards ?? []).filter(
@@ -135,6 +137,12 @@ export function TemplateGallery({
   const ownShown = searchTemplates(ownPages, needle, (id) => ({
     title: mine[id]?.title ?? "",
   }));
+
+  const allCount = needle
+    ? templateResultCount(needle, matching.length, (cards ?? []).length)
+    : (cards?.length ?? undefined);
+  const shownCount = (category === MINE ? 0 : shown.length) +
+    (category === MINE || (category === ALL && needle) ? ownShown.length : 0);
 
   const pick = (key: string | null) => {
     const card = key ? cards?.find((c) => c.id === key) : undefined;
@@ -178,7 +186,7 @@ export function TemplateGallery({
               <RailRow
                 icon={<LayoutGrid size={16} />}
                 label="All templates"
-                count={cards?.length}
+                count={allCount}
                 active={category === ALL && !picked}
                 onClick={() => (setCategory(ALL), pick(null))}
               />
@@ -236,6 +244,15 @@ export function TemplateGallery({
                           (c) => c.key === category,
                         )?.label ?? "Templates")}
                 </h2>
+                {needle && cards ? (
+                  <p
+                    className="type-secondary text-muted-foreground"
+                    data-template-result-count={shownCount}
+                    role="status"
+                  >
+                    {shownCount === 1 ? "1 result" : `${shownCount} results`}
+                  </p>
+                ) : null}
                 {error ? (
                   <ErrorNotice
                     title="Templates could not be listed"
@@ -328,7 +345,7 @@ function RailRow({
 }: {
   icon?: ReactNode;
   label: string;
-  count?: number;
+  count?: number | string;
   active: boolean;
   onClick: () => void;
 }) {

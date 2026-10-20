@@ -205,3 +205,12 @@ describe("the adversarial review's queries (ADVERSARIAL-3 D5)", () => {
     expect(searchTemplates(faces, "board", (f) => f).map((f) => f.title)).toEqual([]);
   });
 });
+
+describe("templateResultCount (the gallery's count beside a search)", () => {
+  const { templateResultCount } = require("../template-search") as typeof import("../template-search");
+  it("says shown of total while a query is typed, the plain total otherwise", () => {
+    const shown = searchTemplates(FACES, "design system", (f) => f).length;
+    expect(templateResultCount("design system", shown, FACES.length)).toBe(`${shown} of ${FACES.length}`);
+    expect(templateResultCount("   ", FACES.length, FACES.length)).toBe(String(FACES.length));
+  });
+});

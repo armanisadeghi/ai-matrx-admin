@@ -147,7 +147,7 @@ export function TemplatePackPreview({
         // ui-exception: the light public tier has no controls barrel in its graph (ADVERSARIAL-5 F1); one native button.
         // The position sits on a wrapper, never on the button: the tap-target pill guard skips the text of an
         // absolutely positioned element, so it read only the icon and reported the pill off-centre.
-        <div className="absolute right-3 top-3 z-10">
+        <div className="z-10 flex shrink-0 justify-end px-2 pt-2 md:absolute md:right-3 md:top-3 md:p-0">
           <button
             type="button"
             onClick={want}
@@ -162,8 +162,8 @@ export function TemplatePackPreview({
       )}
       <nav
         aria-label="Template pages"
-        // ADVERSARIAL-6 F5: on a phone the "See it live" pill sits at this tab row's end; the row ends before it, so no tab is under it.
-        className={`flex shrink-0 gap-1 overflow-x-auto border-b border-border p-2 md:flex-col md:overflow-y-auto md:border-b-0 md:border-r ${live || failed ? "" : "mr-32 md:mr-0"}`}
+        // ADVERSARIAL-6 F5/VERIFY: on a phone the "See it live" pill has its own line above this tab row (it is only absolute from md up), so no tab length or count can sit under it.
+        className="flex shrink-0 gap-1 overflow-x-auto border-b border-border p-2 md:flex-col md:overflow-y-auto md:border-b-0 md:border-r"
       >
         {pages.map((p) => (
           <button

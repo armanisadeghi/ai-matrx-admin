@@ -427,3 +427,11 @@ export function packLayouts(pack: FindPack): string[] {
   for (const p of pack.pages) walk(p.blocks);
   return [...out];
 }
+
+/**
+ * The count a gallery says beside a search: "12 of 183" while a query is typed, the plain total when not. It is built from the
+ * very list `searchTemplates` returned, so the number on screen can never disagree with the cards shown.
+ */
+export function templateResultCount(query: string, shown: number, total: number): string {
+  return query.trim() ? `${shown} of ${total}` : String(total);
+}
