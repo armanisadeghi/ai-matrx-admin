@@ -12399,6 +12399,7 @@ export type Database = {
         Returns: {
           enforced: boolean
           expires_at: string
+          hold_reason: string
           id: string
           organization_id: string
           status: string
@@ -17622,6 +17623,91 @@ export type Database = {
             columns: ["user_request_id"]
             isOneToOne: false
             referencedRelation: "user_request_summary"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      request_values: {
+        Row: {
+          context: Json
+          conversation_id: string
+          created_at: string
+          created_by: string | null
+          door: string | null
+          id: string
+          mandate_key: string | null
+          metadata: Json
+          organization_id: string
+          placement_values: Json
+          test_expires_at: string | null
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string | null
+          user_request_id: string | null
+          variables: Json
+          version: number
+          watch_values: Json
+        }
+        Insert: {
+          context?: Json
+          conversation_id: string
+          created_at?: string
+          created_by?: string | null
+          door?: string | null
+          id?: string
+          mandate_key?: string | null
+          metadata?: Json
+          organization_id: string
+          placement_values?: Json
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          user_request_id?: string | null
+          variables?: Json
+          version?: number
+          watch_values?: Json
+        }
+        Update: {
+          context?: Json
+          conversation_id?: string
+          created_at?: string
+          created_by?: string | null
+          door?: string | null
+          id?: string
+          mandate_key?: string | null
+          metadata?: Json
+          organization_id?: string
+          placement_values?: Json
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          user_request_id?: string | null
+          variables?: Json
+          version?: number
+          watch_values?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_values_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "admin_conversation_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_values_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversation"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_values_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_summary"
             referencedColumns: ["id"]
           },
         ]
@@ -36617,6 +36703,24 @@ export type Database = {
         }
         Relationships: []
       }
+      access_version: {
+        Row: {
+          bumped_at: string
+          organization_id: string
+          version: number
+        }
+        Insert: {
+          bumped_at?: string
+          organization_id: string
+          version?: number
+        }
+        Update: {
+          bumped_at?: string
+          organization_id?: string
+          version?: number
+        }
+        Relationships: []
+      }
       agent_table_origin: {
         Row: {
           conversation_id: string | null
@@ -37470,8 +37574,11 @@ export type Database = {
           created_by: string | null
           deleted_at: string | null
           expires_at: string | null
+          failure: string | null
           id: string
+          job_id: string | null
           label: string
+          last_restore: Json | null
           metadata: Json
           organization_id: string
           origin: string
@@ -37479,6 +37586,7 @@ export type Database = {
           published_to_web_at: string | null
           published_to_web_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          state: string
           tables: Json
           test_expires_at: string | null
           test_run_id: string | null
@@ -37493,8 +37601,11 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           expires_at?: string | null
+          failure?: string | null
           id?: string
+          job_id?: string | null
           label: string
+          last_restore?: Json | null
           metadata?: Json
           organization_id: string
           origin?: string
@@ -37502,6 +37613,7 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          state?: string
           tables?: Json
           test_expires_at?: string | null
           test_run_id?: string | null
@@ -37516,8 +37628,11 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           expires_at?: string | null
+          failure?: string | null
           id?: string
+          job_id?: string | null
           label?: string
+          last_restore?: Json | null
           metadata?: Json
           organization_id?: string
           origin?: string
@@ -37525,6 +37640,7 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          state?: string
           tables?: Json
           test_expires_at?: string | null
           test_run_id?: string | null
@@ -37567,6 +37683,81 @@ export type Database = {
           kind?: string
           note?: string | null
           role?: string
+        }
+        Relationships: []
+      }
+      computed_org_mark: {
+        Row: {
+          id: string
+          marked_at: string
+          organization_id: string
+          table_id: string | null
+        }
+        Insert: {
+          id?: string
+          marked_at?: string
+          organization_id: string
+          table_id?: string | null
+        }
+        Update: {
+          id?: string
+          marked_at?: string
+          organization_id?: string
+          table_id?: string | null
+        }
+        Relationships: []
+      }
+      computed_reader_cols: {
+        Row: {
+          cols: string[]
+          judged_at: string
+          organization_id: string
+          reader_id: string
+          table_id: string
+          versions: number[]
+        }
+        Insert: {
+          cols: string[]
+          judged_at?: string
+          organization_id: string
+          reader_id: string
+          table_id: string
+          versions: number[]
+        }
+        Update: {
+          cols?: string[]
+          judged_at?: string
+          organization_id?: string
+          reader_id?: string
+          table_id?: string
+          versions?: number[]
+        }
+        Relationships: []
+      }
+      computed_reader_judgement: {
+        Row: {
+          judged_at: string
+          ok: boolean
+          organization_id: string
+          reader_id: string
+          table_id: string
+          versions: number[]
+        }
+        Insert: {
+          judged_at?: string
+          ok: boolean
+          organization_id: string
+          reader_id: string
+          table_id: string
+          versions: number[]
+        }
+        Update: {
+          judged_at?: string
+          ok?: boolean
+          organization_id?: string
+          reader_id?: string
+          table_id?: string
+          versions?: number[]
         }
         Relationships: []
       }
@@ -38647,6 +38838,36 @@ export type Database = {
           },
         ]
       }
+      read_mask_kept: {
+        Row: {
+          kept_at: string
+          level: string
+          mask: Json
+          organization_id: string
+          reader_id: string
+          table_id: string
+          versions: number[]
+        }
+        Insert: {
+          kept_at?: string
+          level: string
+          mask: Json
+          organization_id: string
+          reader_id: string
+          table_id: string
+          versions: number[]
+        }
+        Update: {
+          kept_at?: string
+          level?: string
+          mask?: Json
+          organization_id?: string
+          reader_id?: string
+          table_id?: string
+          versions?: number[]
+        }
+        Relationships: []
+      }
       record: {
         Row: {
           created_at: string
@@ -38749,6 +38970,36 @@ export type Database = {
           reason?: string | null
           revoked_at?: string | null
           verb?: string
+        }
+        Relationships: []
+      }
+      record_computed: {
+        Row: {
+          computed_at: string | null
+          gen: number
+          organization_id: string
+          record_id: string
+          stale: boolean
+          table_id: string
+          vals: Json | null
+        }
+        Insert: {
+          computed_at?: string | null
+          gen?: number
+          organization_id: string
+          record_id: string
+          stale?: boolean
+          table_id: string
+          vals?: Json | null
+        }
+        Update: {
+          computed_at?: string | null
+          gen?: number
+          organization_id?: string
+          record_id?: string
+          stale?: boolean
+          table_id?: string
+          vals?: Json | null
         }
         Relationships: []
       }
@@ -40926,6 +41177,8 @@ export type Database = {
       }
     }
     Functions: {
+      _access_version_bump: { Args: { p_org: string }; Returns: undefined }
+      _access_versions: { Args: { p_org: string }; Returns: number[] }
       _action_check: {
         Args: { p_actions: Json; p_organization_id: string; p_table_id: string }
         Returns: Json
@@ -41004,6 +41257,10 @@ export type Database = {
         Args: { p_automation_id: string }
         Returns: number
       }
+      _automation_failed_run_notice: {
+        Args: { p_run_id: string }
+        Returns: boolean
+      }
       _automation_fields: {
         Args: { p_organization_id: string; p_table_id: string }
         Returns: Json
@@ -41034,6 +41291,10 @@ export type Database = {
       _automation_is: {
         Args: { p_field_id: string; p_value: Json }
         Returns: Json
+      }
+      _automation_is_on: {
+        Args: { p_automation_id: string; p_organization_id: string }
+        Returns: boolean
       }
       _automation_now: { Args: never; Returns: string }
       _automation_number: {
@@ -41248,6 +41509,79 @@ export type Database = {
       _code_depends_refuse: {
         Args: { p_doc: Json; p_table_id: string; p_what: string }
         Returns: undefined
+      }
+      _computed_apply_org_mark: { Args: { p_org: string }; Returns: boolean }
+      _computed_col_sources: {
+        Args: { p_field_id: string; p_org: string }
+        Returns: Record<string, unknown>
+      }
+      _computed_component: {
+        Args: { p_org: string; p_table: string }
+        Returns: string[]
+      }
+      _computed_compute: {
+        Args: { p_ids: string[]; p_org: string; p_table: string }
+        Returns: number
+      }
+      _computed_door_org: { Args: { p_table: string }; Returns: string }
+      _computed_eligible: {
+        Args: { p_org: string; p_table: string }
+        Returns: boolean
+      }
+      _computed_keep_reader_cols: {
+        Args: {
+          p_me: string
+          p_ok: boolean
+          p_org: string
+          p_table: string
+          p_ver: number[]
+        }
+        Returns: undefined
+      }
+      _computed_mark: {
+        Args: { p_hard_deleted?: string[]; p_ids: string[]; p_org: string }
+        Returns: number
+      }
+      _computed_mark_org: { Args: { p_org: string }; Returns: undefined }
+      _computed_mark_tables: {
+        Args: { p_org: string; p_tables: string[] }
+        Returns: undefined
+      }
+      _computed_marked: {
+        Args: { p_org: string; p_table: string }
+        Returns: boolean
+      }
+      _computed_reader_cols: {
+        Args: { p_me: string; p_org: string; p_table: string }
+        Returns: string[]
+      }
+      _computed_reader_cols_ok: {
+        Args: { p_me: string; p_org: string; p_table: string }
+        Returns: string[]
+      }
+      _computed_reader_judge: {
+        Args: { p_me: string; p_org: string; p_table: string }
+        Returns: boolean
+      }
+      _computed_reader_ok: {
+        Args: { p_me: string; p_org: string; p_table: string }
+        Returns: boolean
+      }
+      _computed_sort_value: {
+        Args: { p_id: string; p_key: string; p_org: string }
+        Returns: Json
+      }
+      _computed_tainted: {
+        Args: { p_org: string; p_table: string }
+        Returns: Json
+      }
+      _computed_vals: {
+        Args: { p_cache?: Json; p_row: Record<string, unknown> }
+        Returns: Json
+      }
+      _computed_warm: {
+        Args: { p_me: string; p_org: string; p_table: string }
+        Returns: boolean
       }
       _context_side_effects: { Args: { p_events: Json }; Returns: undefined }
       _copied_metadata: { Args: { p_meta: Json }; Returns: Json }
@@ -41532,6 +41866,27 @@ export type Database = {
         Returns: Json
       }
       _entity_decoded: { Args: { p_text: string }; Returns: string }
+      _entity_reference_fallback_label: {
+        Args: { p_created: string; p_id: string; p_kind_label: string }
+        Returns: string
+      }
+      _entity_reference_granted_ids: {
+        Args: { p_type: string }
+        Returns: string[]
+      }
+      _entity_reference_lane: {
+        Args: {
+          p_ids: string[]
+          p_organization_id: string
+          p_search: string
+          p_token: string
+          p_want: number
+        }
+        Returns: {
+          id: string
+          title: string
+        }[]
+      }
       _entity_reference_target_ok: {
         Args: { p_id: string; p_organization_id: string; p_token: string }
         Returns: boolean
@@ -41763,6 +42118,7 @@ export type Database = {
         Returns: Json
       }
       _html_element_names: { Args: never; Returns: string[] }
+      _in_compute_lane: { Args: never; Returns: boolean }
       _inbox_items: {
         Args: {
           p_include_decided?: boolean
@@ -42138,6 +42494,16 @@ export type Database = {
         Returns: Json
       }
       _public_pictures: { Args: { p_organization_id: string }; Returns: Json }
+      _read_mask_compute: {
+        Args: {
+          p_action?: string
+          p_level: Database["public"]["Enums"]["permission_level"]
+          p_organization_id: string
+          p_table_id: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       _read_record_with: {
         Args: {
           p_by_id: boolean
@@ -42279,6 +42645,23 @@ export type Database = {
           p_view_id: string
         }
         Returns: Json
+      }
+      _schedules_stand_down: {
+        Args: {
+          p_at?: string
+          p_by: string
+          p_id: string
+          p_organization_id: string
+        }
+        Returns: number
+      }
+      _schedules_stand_up: {
+        Args: { p_by: string; p_id: string; p_organization_id: string }
+        Returns: number
+      }
+      _schedules_stand_up_for_automation: {
+        Args: { p_automation_id: string; p_organization_id: string }
+        Returns: number
       }
       _seen_one: { Args: { p_id: string; p_user_id: string }; Returns: boolean }
       _share_write_person: {
@@ -42799,6 +43182,15 @@ export type Database = {
         Args: { p_organization_id: string; p_record_id: string; p_state?: Json }
         Returns: string
       }
+      agg_split_parts: {
+        Args: {
+          p_alias: string
+          p_key: string
+          p_organization_id: string
+          p_table_id: string
+        }
+        Returns: string[]
+      }
       agg_sql: {
         Args: {
           p_bucket?: Json
@@ -42809,6 +43201,7 @@ export type Database = {
           p_organization_id: string
           p_required?: string
           p_search?: string
+          p_split_multi?: boolean
           p_table_id: string
           p_time_zone?: string
           p_window?: Json
@@ -43031,6 +43424,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      archive_guard_count: { Args: { p_value: Json }; Returns: number }
       archive_guard_decide: {
         Args: {
           p_confirm: string
@@ -43040,9 +43434,14 @@ export type Database = {
           p_log: Json
           p_now?: string
           p_organization_id: string
+          p_scope: string
           p_share?: number
         }
         Returns: Json
+      }
+      archive_guard_knob: {
+        Args: { p_key: string; p_organization_id: string }
+        Returns: number
       }
       archive_guard_log_add: {
         Args: {
@@ -43825,7 +44224,16 @@ export type Database = {
           value: Json
         }[]
       }
+      computed_refresh:
+        | {
+            Args: { p_ids: string[]; p_org: string; p_table: string }
+            Returns: number
+          }
+        | { Args: { p_max_rows?: number; p_table_id: string }; Returns: number }
+      computed_refresh_drain: { Args: { p_ms?: number }; Returns: number }
+      computed_refresh_progress: { Args: { p_org: string }; Returns: Json }
       computed_sort_ceiling: { Args: never; Returns: number }
+      computed_warm: { Args: { p_table_id: string }; Returns: boolean }
       confidential_anchor: { Args: { p_id: string }; Returns: string }
       confidential_answer: {
         Args: {
@@ -44611,6 +45019,24 @@ export type Database = {
         }
         Returns: Json
       }
+      entity_custom_value_apply: {
+        Args: {
+          p_clear: string[]
+          p_expected_version?: number
+          p_organization_id: string
+          p_patch: Json
+          p_record_id: string
+          p_token: string
+        }
+        Returns: number
+      }
+      entity_custom_values_lock: {
+        Args: { p_token: string }
+        Returns: {
+          locked: boolean
+          reason: string
+        }[]
+      }
       entity_field_declare: {
         Args: { p_organization_id: string; p_spec: Json; p_token: string }
         Returns: string
@@ -44918,6 +45344,10 @@ export type Database = {
       field_declare: {
         Args: { p_organization_id: string; p_spec: Json; p_table_id: string }
         Returns: string
+      }
+      field_declare_many: {
+        Args: { p_organization_id: string; p_specs: Json; p_table_id: string }
+        Returns: string[]
       }
       field_dependants: {
         Args: { p_field_id: string; p_organization_id: string }
@@ -45590,6 +46020,20 @@ export type Database = {
           searchable: string
         }[]
       }
+      interface_chart: {
+        Args: { p_chart_id: string; p_interface_id: string }
+        Returns: Json
+      }
+      interface_chart_formula_ok: {
+        Args: {
+          p_allowed: string[]
+          p_depth: number
+          p_key: string
+          p_org: string
+          p_table: string
+        }
+        Returns: boolean
+      }
       interface_read: { Args: { p_interface_id: string }; Returns: Json }
       interface_rows: {
         Args: {
@@ -46235,6 +46679,15 @@ export type Database = {
         Returns: {
           id: string
           level: Database["public"]["Enums"]["permission_level"]
+        }[]
+      }
+      my_levels_across: {
+        Args: { p_asks: Json }
+        Returns: {
+          id: string
+          level: Database["public"]["Enums"]["permission_level"]
+          organization_id: string
+          refused: string
         }[]
       }
       opening_view_shape: {
@@ -47102,6 +47555,7 @@ export type Database = {
           p_organization_id: string
           p_required?: string
           p_search?: string
+          p_split_multi?: boolean
           p_table_id: string
           p_time_zone?: string
         }
@@ -83126,6 +83580,15 @@ export type Database = {
           organization_id: string
         }[]
       }
+      custom_fields_may_write: {
+        Args: {
+          p_custom_only?: boolean
+          p_organization_id: string
+          p_row_id: string
+          p_token: string
+        }
+        Returns: boolean
+      }
       custom_fields_write_gate:
         | {
             Args: {
@@ -101562,6 +102025,8 @@ export type Database = {
           content_role: string | null
           copy_mode: string | null
           custom_fields_enabled: boolean
+          custom_values_locked: boolean
+          custom_values_locked_reason: string | null
           data_class: Database["platform"]["Enums"]["data_class"] | null
           data_class_reason: string | null
           default_auto_ingest: boolean
@@ -101633,6 +102098,8 @@ export type Database = {
           content_role?: string | null
           copy_mode?: string | null
           custom_fields_enabled?: boolean
+          custom_values_locked?: boolean
+          custom_values_locked_reason?: string | null
           data_class?: Database["platform"]["Enums"]["data_class"] | null
           data_class_reason?: string | null
           default_auto_ingest?: boolean
@@ -101708,6 +102175,8 @@ export type Database = {
           content_role?: string | null
           copy_mode?: string | null
           custom_fields_enabled?: boolean
+          custom_values_locked?: boolean
+          custom_values_locked_reason?: string | null
           data_class?: Database["platform"]["Enums"]["data_class"] | null
           data_class_reason?: string | null
           default_auto_ingest?: boolean
@@ -108015,6 +108484,7 @@ export type Database = {
         }[]
       }
       attention_card: { Args: never; Returns: Json }
+      attention_card_settle: { Args: never; Returns: number }
       attention_classify: {
         Args: { p_items: Json; p_now?: string }
         Returns: Json
@@ -159496,6 +159966,79 @@ export type Database = {
           workflow_type?: string
         }
         Relationships: []
+      }
+      definition_overview: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          definition_id: string
+          id: string
+          metadata: Json
+          organization_id: string
+          source: string
+          spec: Json
+          structure_hash: string
+          test_expires_at: string | null
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          definition_id: string
+          id?: string
+          metadata?: Json
+          organization_id: string
+          source?: string
+          spec: Json
+          structure_hash: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          definition_id?: string
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          source?: string
+          spec?: Json
+          structure_hash?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "definition_overview_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "card"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "definition_overview_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "definition"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "definition_overview_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "v_definition_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       definition_version: {
         Row: {
