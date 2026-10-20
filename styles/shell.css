@@ -2690,6 +2690,20 @@ html[data-board-embed] .flex-col > [data-matrx-page-dock] {
   position: relative !important;
   inset: auto !important;
   flex-shrink: 0;
+  /* GLASS ONLY FLOATS (tap-target placement rule 1): in flow the dock is a solid row. Every glass
+     surface inside it — .matrx-glass-*, bg-glass / backdrop-blur-glass, tap-target glass — reads
+     these leaf tokens, so re-declaring them here turns the whole dock solid with no call-site
+     change. Same tokens in light and dark (they resolve through --card / --accent / --border). */
+  --matrx-glass-bg: hsl(var(--card));
+  --matrx-glass-bg-hover: hsl(var(--accent));
+  --matrx-glass-bg-active: hsl(var(--accent));
+  --matrx-glass-border-color: hsl(var(--border));
+  --matrx-glass-border-width: 1px;
+  --matrx-glass-border-width-thin: 1px;
+  --matrx-glass-blur: 0px;
+  --matrx-glass-saturate: 1;
+  --matrx-glass-shadow: none;
+  --matrx-glass-shadow-lg: none;
 }
 
 /* ---------------------------------------------------------------------------
