@@ -192,7 +192,8 @@ export const LAUNCHPAD_WIDGET_CATALOG: readonly LaunchpadWidgetSpec[] = [
     sizes: { defaultW: 6, defaultH: 20, minW: 3, minH: 8 },
     defaultConfig: {},
     fields: [{ key: "path", label: "Page address", picker: "appPage" }],
-    describe: (c) => (configText(c, "path") ? appPageLabel(configText(c, "path")) : "App page (none chosen)"),
+    describe: (c, page) =>
+      configText(c, "path") ? appPageLabel(configText(c, "path")) : page?.connected ? "Picked record" : "App page (none chosen)",
     href: (c) => configText(c, "path") || null,
     accepts: [{ key: "record", label: "Record to open", kind: "record" }],
   },
