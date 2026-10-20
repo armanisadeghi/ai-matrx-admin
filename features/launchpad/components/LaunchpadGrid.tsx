@@ -71,6 +71,7 @@ export function LaunchpadGrid({
               editing={editing ?? null}
               previewing={previewing ?? false}
               connection={editing ? connectionLine(doc, widget.id) : null}
+              connectedIn={Boolean(doc.bindings?.some((b) => b.to.widgetId === widget.id))}
             />
           </WidgetBusScope>
         );
@@ -102,6 +103,7 @@ function LaunchpadSlot({
   editing,
   previewing,
   connection,
+  connectedIn,
 }: {
   widget: LaunchpadWidget;
   capacity: number;
@@ -109,6 +111,8 @@ function LaunchpadSlot({
   previewing: boolean;
   /** This widget's connections in Edit mode (a quiet mark in the header; the line is its tooltip). */
   connection: string | null;
+  /** Some input of this widget is wired on the page (its header names what it shows then). */
+  connectedIn: boolean;
 }) {
   const type = getLaunchpadWidgetType(widget.type);
   const hydrated = useHydrated();
@@ -146,7 +150,7 @@ function LaunchpadSlot({
     <WidgetFrame
       type={widget.type}
       icon={type.icon}
-      title={type.describe(widget.config)}
+      title={type.describe(widget.config, { connected: connectedIn })}
       href={type.href?.(widget.config)}
       controls={controls}
       editing={Boolean(editing)}

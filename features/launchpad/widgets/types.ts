@@ -51,7 +51,8 @@ export interface LaunchpadWidgetSpec {
   defaultConfig: Readonly<Record<string, string>>;
   fields: readonly LaunchpadWidgetField[];
   /** One line naming this widget with this config ("Recent notes", "Tasks"). */
-  describe: (config: Readonly<Record<string, unknown>>) => string;
+  /** `connected`: some input of this widget is wired on the page (the grid passes it; others may omit it). */
+  describe: (config: Readonly<Record<string, unknown>>, page?: { connected: boolean }) => string;
   /** Where the widget's header title links (its feature's page), or none. */
   href?: (config: Readonly<Record<string, unknown>>) => string | null;
   publishes?: readonly LaunchpadPort[];
