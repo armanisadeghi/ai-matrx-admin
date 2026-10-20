@@ -14,7 +14,7 @@ import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { useOpenArtifactInCanvas } from "@/features/canvas/hooks/useOpenArtifactInCanvas";
 import { useArtifactContentToggle } from "@/features/canvas/host/useArtifactCanvas";
 import { cn } from "@/lib/utils";
-import { artifactTitleRepeatsCard } from "./artifact-own-title";
+import { artifactTitleRepeatsCard, isPlaceholderArtifactTitle } from "./artifact-own-title";
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
 import { useCanvasOpenGuard } from "@/features/canvas/hooks/useCanvasOpenGuard";
 import type { CanvasContentType } from "@/features/canvas/canvasContent";
@@ -109,9 +109,9 @@ const ArtifactBlock: React.FC<ArtifactBlockProps> = ({
   const payloadTitle =
     (structuredServerData?.title as unknown) ??
     (safeJsonParse(content) as { title?: unknown } | null)?.title;
-  const showTitleLabel = !(
-    isComplete && artifactTitleRepeatsCard(canvasType, artifactTitle, payloadTitle)
-  );
+  const showTitleLabel =
+    !(isComplete && artifactTitleRepeatsCard(canvasType, artifactTitle, payloadTitle)) &&
+    !isPlaceholderArtifactTitle(canvasType, artifactType, artifactTitle);
   const dedupKey = taskId || `artifact:${artifactId}`;
 
   /** Build the canvas data shape. JSON types get parsed, strings pass through. */

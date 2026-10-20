@@ -43,7 +43,7 @@ jest.mock("@ai-matrx/rich-content/display/chat-markdown/block-registry/json-pars
 
 import ArtifactBlock from "../ArtifactBlock";
 
-function render(artifactType: string, isComplete = true, payloadTitle = "Roman Republic"): string {
+function render(artifactType: string, isComplete = true, payloadTitle = "Roman Republic", artifactTitle = "Roman Republic"): string {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const root = createRoot(host);
@@ -51,7 +51,7 @@ function render(artifactType: string, isComplete = true, payloadTitle = "Roman R
     root.render(
       <ArtifactBlock
         content={JSON.stringify({ __kind: "x", title: payloadTitle })}
-        metadata={{ artifactType, artifactTitle: "Roman Republic", isComplete }}
+        metadata={{ artifactType, artifactTitle, isComplete }}
       />,
     );
   });
@@ -79,5 +79,14 @@ describe("an artifact's title shows once", () => {
 
   it("while streaming the label stays (no card header yet)", () => {
     expect(render("timeline", false)).toContain("Roman Republic");
+  });
+
+  it("a numbered placeholder title (\"Chart 1\") is never drawn: it names nothing the person wrote", () => {
+    // Live 2026-10-19: "Chart 1" sat above a chart whose own header read "RVW visits · Pie chart".
+    expect(render("chart", true, "RVW visits", "Chart 1")).not.toContain("Chart 1");
+    expect(render("progress", true, "Onboarding", "Progress tracker 2")).not.toContain("Progress tracker 2");
+    expect(render("html", true, "x", "Html 3")).not.toContain("Html 3");
+    // A real title that happens to end in a number keeps its label.
+    expect(render("chart", true, "RVW visits", "Q3 revenue 2026")).toContain("Q3 revenue 2026");
   });
 });
