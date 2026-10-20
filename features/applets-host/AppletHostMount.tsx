@@ -17,6 +17,7 @@ import {
   createPlatformHost,
   isNewTableSource,
   sampleRowsOf,
+  type AppletPageValues,
   type PlatformHost,
 } from "@ai-matrx/applets/platform";
 import { holdWrites, type HeldWrite } from "@ai-matrx/applets/preview";
@@ -170,6 +171,7 @@ export function AppletHostMount({
   embedded = false,
   definition = null,
   visitor = false,
+  pageValues,
 }: {
   appletId: string;
   slug: string;
@@ -190,8 +192,14 @@ export function AppletHostMount({
    * their OWN records, through a guest session in its own cookie (lib/guest/), made on the first save.
    */
   visitor?: boolean;
+  /**
+   * The page around the Applet (a launchpad's page bus): values other widgets hand it and the values it
+   * sets, offered back. Must be stable for the mount's life (it is read once, when the host is built).
+   */
+  pageValues?: AppletPageValues | null;
 }) {
   const pathname = usePathname();
+  const [heldPageValues] = useState(pageValues ?? null);
   const search = useSearchParams().toString();
   const store = useAppStore();
   const [mounted, setMounted] = useState<Mounted | null>(null);
@@ -297,6 +305,7 @@ export function AppletHostMount({
       },
       // The page's live values (ALC-18): the Applet's surface answers an unset value from them.
       surfaces: { live: liveValues },
+      ...(heldPageValues ? { pageValues: heldPageValues } : {}),
       reportError(err) {
         previewRef.current?.onError?.({
           where: err.where,
@@ -441,7 +450,7 @@ export function AppletHostMount({
       stopHeld?.();
       host.dispose();
     };
-  }, [appletId, basePath, store, isPreview, inPlace, filesKey, attempt, serverDefinition, visitor]);
+  }, [appletId, basePath, store, isPreview, inPlace, filesKey, attempt, serverDefinition, visitor, heldPageValues]);
 
   // Route changes the browser makes (back, forward, a link) reach the Applet's pages.
   useEffect(() => {
