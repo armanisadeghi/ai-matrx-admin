@@ -158,7 +158,8 @@ export function TemplatePackPreview({
       )}
       <nav
         aria-label="Template pages"
-        className="flex shrink-0 gap-1 overflow-x-auto border-b border-border p-2 md:flex-col md:overflow-y-auto md:border-b-0 md:border-r"
+        // ADVERSARIAL-6 F5: on a phone the "See it live" pill sits over this tab row's end; the row keeps clear of it.
+        className={`flex shrink-0 gap-1 overflow-x-auto border-b border-border p-2 md:flex-col md:overflow-y-auto md:border-b-0 md:border-r ${live || failed ? "" : "pr-36 md:pr-2"}`}
       >
         {pages.map((p) => (
           <button
