@@ -30,5 +30,5 @@ it("opens the dialog-host latch on mount, before anyone types", () => {
 
 it("the capture route calls the hook", () => {
   const src = fs.readFileSync(path.join(process.cwd(), "app/(link)/capture/[sheetId]/page.tsx"), "utf8");
-  expect(src).toMatch(/useWarmOfflineCode\(userId\)/);
+  expect(src).toMatch(/useWarmOfflineCode\(\)/);
 });

@@ -1,0 +1,159 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      app/(link)/capture/[sheetId]/page.tsx
+Why held:  both sides changed the same code
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at app/(link)/capture/[sheetId]/page.tsx
+  Both grew from the same COMMON version: commit 3b1c73190c, 2026-10-19 16:31.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-19 17:13  (uncommitted edit; the time the file was last saved on this Mac)
+    2026-10-19 17:17  e7677bbcf8  collected by the sync; the edit itself happened at or before this time
+  GITHUB:
+    2026-10-19 17:03  2a86efede4  "capture: an error toast's copy menu that cannot load offline no longer takes the page down; a sheet that opened stays open (AT-FIX-I)"
+    2026-10-19 16:56  783b0bc07e  "capture: a lazy shell extra that cannot arrive offline no longer takes the page down (AT-FIX-I)"
+  LOCAL's latest change is 10m AFTER GITHUB's latest change.
+
+SIZE: common version 105 lines, LOCAL 110 lines, GITHUB 110 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 7 lines and removed 2 lines.
+  GITHUB added 7 lines and removed 2 lines.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+  LOCAL has 6 of the 7 lines GITHUB added.
+    Lines GITHUB added that LOCAL does NOT have:
+      | useWarmOfflineCode();
+    (some of those lines also appear in other changed files, which may be a coincidence: features/capture/__tests__/capture-page-works-offline.test.tsx)
+  GITHUB has 6 of the 7 lines LOCAL added.
+    Lines LOCAL added that GITHUB does NOT have:
+      | useWarmOfflineCode(userId);
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 51ebaf12a6d3:'app/(link)/capture/[sheetId]/page.tsx') <(git show e7677bbcf8d2:'app/(link)/capture/[sheetId]/page.tsx')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show e7677bbcf8d2:'app/(link)/capture/[sheetId]/page.tsx'
+  GITHUB: git show 51ebaf12a6d3:'app/(link)/capture/[sheetId]/page.tsx'
+
+---------------- LOCAL VERSION BELOW ----------------
+// record-view: none — a public link addressed by a one-time token or code, not a record page
+"use client";
+
+// app/(link)/capture/[sheetId]/page.tsx — THE LINK THE CREW OPENS ON THEIR PHONES.
+//
+// PRODUCTS row 15: *"Let my crew photograph each bin and log the weight on site."*
+//
+// WHY IT IS IN `(link)` AND NOT `(core)`. This is a phone, held in one hand, in a yard,
+// and it is the whole screen — no product shell, no sidebar, no marketing header. The
+// `(link)` group exists for exactly that (lane FORMS moved `/f/<id>` into it after a first
+// render showed a patient intake form wearing our Download / Sign in header). It is the
+// same reason, one screen further: chrome here is somebody scrolling past a question while
+// holding a clipboard.
+//
+// WHY IT IS SIGNED-IN AND `/f/<id>` IS NOT. A public form is answered by a stranger, so
+// the unguessable link IS the capability and the server has to be the caller. A capture
+// sheet is answered by a MEMBER of the organization holding `editor` on the Table, so the
+// browser calls the five `custom.capture_*` doors as ITSELF, with that person's own
+// session, and the doors decide. The link is an address, not a secret: a crew member who
+// drops their phone in a skip has leaked nothing.
+//
+// WHY THE ORGANIZATION IS NOT ASKED FOR — AND NOT TAKEN FROM THE PHONE EITHER (lane
+// ACCESS-IS-PERSONAL, owner's law 2026-09-23: "the permission is to the person, not the org").
+// `custom.capture_open` takes the organization id. It used to be handed whichever organization
+// the person happened to be working in, so a crew member of Rincon who last worked in her
+// franchise group got "no such sheet" at the bin. The SHEET names its own organization now:
+// `custom.where_id_opens(<sheet>)` answers it, only for somebody who may open the sheet's
+// Table, and the door is handed that. Nobody standing at a bin is shown a picker, and nobody
+// is refused for having picked the wrong thing earlier.
+
+import { use } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { CaptureRun, RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { OrganizationContextNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
+import type { OrganizationState } from "@/features/organizations/useOrganizationRequired";
+import { useObjectOrganization } from "@/features/unified-data/objectOrganization";
+import { uploadCaptureFile } from "@/features/capture/uploadCaptureFile";
+import { useWarmOfflineCode } from "@/features/capture/useWarmOfflineCode";
+import { useLatchedSheet } from "@/features/capture/useLatchedSheet";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/recordsUiHost";
+import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
+
+export default function CrewCaptureRoute({
+  params,
+}: {
+  params: Promise<{ sheetId: string }>;
+}) {
+  const { sheetId } = use(params);
+  // Everything the page may ask for later is fetched now, while there is a signal.
+  const userId = useAppSelector(selectUserId);
+  useWarmOfflineCode(userId);
+  const dataSource = useRecordsDataSource();
+  // A sheet that opened stays open: losing the signal later never swaps it for an apology.
+  const sheet = useLatchedSheet(useObjectOrganization(dataSource, sheetId));
+  const organizationId: string | null = sheet.state === "found" ? sheet.organizationId : null;
+  const organizationState: OrganizationState = organizationId ? "ready" : "resolving";
+  const recordsConfig = useAppRecordsConfig(organizationId);
+
+  return (
+    <main className="min-h-dvh bg-background">
+      {sheet.state === "resolving" ? (
+        <p className="p-4 text-sm text-muted-foreground">Opening the capture sheet&hellip;</p>
+      ) : sheet.state === "not-given" ? (
+        <div className="space-y-2 p-4">
+          <p className="text-sm font-medium">You have not been given this capture sheet</p>
+          <p className="text-xs text-muted-foreground">
+            It opens for anyone who can open its table. Nobody has given you that table, or the
+            sheet no longer exists. Ask whoever sent you this link to share the table with you.
+          </p>
+        </div>
+      ) : sheet.state === "unavailable" ? (
+        <div className="space-y-2 p-4">
+          <p className="text-sm font-medium">We could not open this capture sheet <ErrorAlchemyMenu /></p>
+          <p className="text-xs text-muted-foreground">
+            The record store did not answer, so nothing was opened. This is not an answer about
+            your access. {sheet.why}
+          </p>
+          <Button variant="outline" onClick={sheet.retry}>
+            Try again
+          </Button>
+        </div>
+      ) : organizationState !== "ready" ? (
+        <div className="p-4">
+          <OrganizationContextNotice state={organizationState} what="Capture" />
+        </div>
+      ) : (
+        <RecordsMount
+          letTheStoreDecideRights
+          config={recordsConfig}
+          host={{
+            Link,
+            density: "condensed",
+            // THE ONE BYTE STORE. A photograph and a voice note go where every other
+            // captured file on this platform goes — `files.files`, through the files
+            // feature's own handler. Inventing a second byte path is that feature's
+            // named failure class, and it is not invented here.
+            upload: uploadCaptureFile,
+          }}
+        >
+          <CaptureRun sheetId={sheetId} />
+        </RecordsMount>
+      )}
+    </main>
+  );
+}

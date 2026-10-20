@@ -32,6 +32,9 @@ Its files stay as they are.
 
 ## Held files
 - _conflicts/2026-10-19-155631/pnpm-lock.yaml.held — LOCAL latest 2026-10-19 15:43; GITHUB latest 2026-10-19 16:28; LOCAL lacks 19 of GITHUB's 48 new lines; GITHUB lacks 94 of LOCAL's 123 new lines; recover: git show e08ad18543:'pnpm-lock.yaml' / c92aa2e320:'pnpm-lock.yaml'
+- _conflicts/2026-10-19-171655/app/(link)/capture/[sheetId]/page.tsx.held — LOCAL latest 2026-10-19 17:13; GITHUB latest 2026-10-19 17:03; LOCAL lacks 1 of GITHUB's 7 new lines; GITHUB lacks 1 of LOCAL's 7 new lines; recover: git show e7677bbcf8:'app/(link)/capture/[sheetId]/page.tsx' / 51ebaf12a6:'app/(link)/capture/[sheetId]/page.tsx'
+- _conflicts/2026-10-19-171655/features/capture/__tests__/capture-page-works-offline.test.tsx.held — LOCAL latest 2026-10-19 17:14; GITHUB latest 2026-10-19 16:56; LOCAL lacks 1 of GITHUB's 24 new lines; GITHUB lacks 1 of LOCAL's 24 new lines; recover: git show e7677bbcf8:'features/capture/__tests__/capture-page-works-offline.test.tsx' / 51ebaf12a6:'features/capture/__tests__/capture-page-works-offline.test.tsx'
+- _conflicts/2026-10-19-171655/features/capture/useWarmOfflineCode.ts.held — LOCAL latest 2026-10-19 17:13; GITHUB latest 2026-10-19 16:56; LOCAL lacks 1 of GITHUB's 13 new lines; GITHUB lacks 33 of LOCAL's 46 new lines; recover: git show e7677bbcf8:'features/capture/useWarmOfflineCode.ts' / 51ebaf12a6:'features/capture/useWarmOfflineCode.ts'
 
 ## Resolution log
 
