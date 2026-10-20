@@ -12399,6 +12399,7 @@ export type Database = {
         Returns: {
           enforced: boolean
           expires_at: string
+          hold_reason: string
           id: string
           organization_id: string
           status: string
@@ -17622,6 +17623,91 @@ export type Database = {
             columns: ["user_request_id"]
             isOneToOne: false
             referencedRelation: "user_request_summary"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      request_values: {
+        Row: {
+          context: Json
+          conversation_id: string
+          created_at: string
+          created_by: string | null
+          door: string | null
+          id: string
+          mandate_key: string | null
+          metadata: Json
+          organization_id: string
+          placement_values: Json
+          test_expires_at: string | null
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string | null
+          user_request_id: string | null
+          variables: Json
+          version: number
+          watch_values: Json
+        }
+        Insert: {
+          context?: Json
+          conversation_id: string
+          created_at?: string
+          created_by?: string | null
+          door?: string | null
+          id?: string
+          mandate_key?: string | null
+          metadata?: Json
+          organization_id: string
+          placement_values?: Json
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          user_request_id?: string | null
+          variables?: Json
+          version?: number
+          watch_values?: Json
+        }
+        Update: {
+          context?: Json
+          conversation_id?: string
+          created_at?: string
+          created_by?: string | null
+          door?: string | null
+          id?: string
+          mandate_key?: string | null
+          metadata?: Json
+          organization_id?: string
+          placement_values?: Json
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          user_request_id?: string | null
+          variables?: Json
+          version?: number
+          watch_values?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_values_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "admin_conversation_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_values_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversation"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_values_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_summary"
             referencedColumns: ["id"]
           },
         ]
@@ -36617,6 +36703,24 @@ export type Database = {
         }
         Relationships: []
       }
+      access_version: {
+        Row: {
+          bumped_at: string
+          organization_id: string
+          version: number
+        }
+        Insert: {
+          bumped_at?: string
+          organization_id: string
+          version?: number
+        }
+        Update: {
+          bumped_at?: string
+          organization_id?: string
+          version?: number
+        }
+        Relationships: []
+      }
       agent_table_origin: {
         Row: {
           conversation_id: string | null
@@ -37567,6 +37671,33 @@ export type Database = {
           kind?: string
           note?: string | null
           role?: string
+        }
+        Relationships: []
+      }
+      computed_reader_judgement: {
+        Row: {
+          judged_at: string
+          ok: boolean
+          organization_id: string
+          reader_id: string
+          table_id: string
+          versions: number[]
+        }
+        Insert: {
+          judged_at?: string
+          ok: boolean
+          organization_id: string
+          reader_id: string
+          table_id: string
+          versions: number[]
+        }
+        Update: {
+          judged_at?: string
+          ok?: boolean
+          organization_id?: string
+          reader_id?: string
+          table_id?: string
+          versions?: number[]
         }
         Relationships: []
       }
@@ -38749,6 +38880,36 @@ export type Database = {
           reason?: string | null
           revoked_at?: string | null
           verb?: string
+        }
+        Relationships: []
+      }
+      record_computed: {
+        Row: {
+          computed_at: string | null
+          gen: number
+          organization_id: string
+          record_id: string
+          stale: boolean
+          table_id: string
+          vals: Json | null
+        }
+        Insert: {
+          computed_at?: string | null
+          gen?: number
+          organization_id: string
+          record_id: string
+          stale?: boolean
+          table_id: string
+          vals?: Json | null
+        }
+        Update: {
+          computed_at?: string | null
+          gen?: number
+          organization_id?: string
+          record_id?: string
+          stale?: boolean
+          table_id?: string
+          vals?: Json | null
         }
         Relationships: []
       }
@@ -40926,6 +41087,8 @@ export type Database = {
       }
     }
     Functions: {
+      _access_version_bump: { Args: { p_org: string }; Returns: undefined }
+      _access_versions: { Args: { p_org: string }; Returns: number[] }
       _action_check: {
         Args: { p_actions: Json; p_organization_id: string; p_table_id: string }
         Returns: Json
@@ -41003,6 +41166,10 @@ export type Database = {
       _automation_delivery_settle_stale: {
         Args: { p_automation_id: string }
         Returns: number
+      }
+      _automation_failed_run_notice: {
+        Args: { p_run_id: string }
+        Returns: boolean
       }
       _automation_fields: {
         Args: { p_organization_id: string; p_table_id: string }
@@ -41248,6 +41415,44 @@ export type Database = {
       _code_depends_refuse: {
         Args: { p_doc: Json; p_table_id: string; p_what: string }
         Returns: undefined
+      }
+      _computed_component: {
+        Args: { p_org: string; p_table: string }
+        Returns: string[]
+      }
+      _computed_door_org: { Args: { p_table: string }; Returns: string }
+      _computed_eligible: {
+        Args: { p_org: string; p_table: string }
+        Returns: boolean
+      }
+      _computed_mark: {
+        Args: { p_hard_deleted?: string[]; p_ids: string[]; p_org: string }
+        Returns: number
+      }
+      _computed_mark_org: { Args: { p_org: string }; Returns: undefined }
+      _computed_reader_judge: {
+        Args: { p_me: string; p_org: string; p_table: string }
+        Returns: boolean
+      }
+      _computed_reader_ok: {
+        Args: { p_me: string; p_org: string; p_table: string }
+        Returns: boolean
+      }
+      _computed_sort_value: {
+        Args: { p_id: string; p_key: string; p_org: string }
+        Returns: Json
+      }
+      _computed_tainted: {
+        Args: { p_org: string; p_table: string }
+        Returns: Json
+      }
+      _computed_vals: {
+        Args: { p_cache?: Json; p_row: Record<string, unknown> }
+        Returns: Json
+      }
+      _computed_warm: {
+        Args: { p_me: string; p_org: string; p_table: string }
+        Returns: boolean
       }
       _context_side_effects: { Args: { p_events: Json }; Returns: undefined }
       _copied_metadata: { Args: { p_meta: Json }; Returns: Json }
@@ -42799,6 +43004,15 @@ export type Database = {
         Args: { p_organization_id: string; p_record_id: string; p_state?: Json }
         Returns: string
       }
+      agg_split_parts: {
+        Args: {
+          p_alias: string
+          p_key: string
+          p_organization_id: string
+          p_table_id: string
+        }
+        Returns: string[]
+      }
       agg_sql: {
         Args: {
           p_bucket?: Json
@@ -42809,6 +43023,7 @@ export type Database = {
           p_organization_id: string
           p_required?: string
           p_search?: string
+          p_split_multi?: boolean
           p_table_id: string
           p_time_zone?: string
           p_window?: Json
@@ -43031,6 +43246,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      archive_guard_count: { Args: { p_value: Json }; Returns: number }
       archive_guard_decide: {
         Args: {
           p_confirm: string
@@ -43040,9 +43256,14 @@ export type Database = {
           p_log: Json
           p_now?: string
           p_organization_id: string
+          p_scope: string
           p_share?: number
         }
         Returns: Json
+      }
+      archive_guard_knob: {
+        Args: { p_key: string; p_organization_id: string }
+        Returns: number
       }
       archive_guard_log_add: {
         Args: {
@@ -43825,7 +44046,16 @@ export type Database = {
           value: Json
         }[]
       }
+      computed_refresh:
+        | {
+            Args: { p_ids: string[]; p_org: string; p_table: string }
+            Returns: number
+          }
+        | { Args: { p_max_rows?: number; p_table_id: string }; Returns: number }
+      computed_refresh_drain: { Args: { p_ms?: number }; Returns: number }
+      computed_refresh_progress: { Args: { p_org: string }; Returns: Json }
       computed_sort_ceiling: { Args: never; Returns: number }
+      computed_warm: { Args: { p_table_id: string }; Returns: boolean }
       confidential_anchor: { Args: { p_id: string }; Returns: string }
       confidential_answer: {
         Args: {
@@ -44610,6 +44840,17 @@ export type Database = {
           p_token: string
         }
         Returns: Json
+      }
+      entity_custom_value_apply: {
+        Args: {
+          p_clear: string[]
+          p_expected_version?: number
+          p_organization_id: string
+          p_patch: Json
+          p_record_id: string
+          p_token: string
+        }
+        Returns: number
       }
       entity_field_declare: {
         Args: { p_organization_id: string; p_spec: Json; p_token: string }
@@ -45589,6 +45830,20 @@ export type Database = {
           id: string
           searchable: string
         }[]
+      }
+      interface_chart: {
+        Args: { p_chart_id: string; p_interface_id: string }
+        Returns: Json
+      }
+      interface_chart_formula_ok: {
+        Args: {
+          p_allowed: string[]
+          p_depth: number
+          p_key: string
+          p_org: string
+          p_table: string
+        }
+        Returns: boolean
       }
       interface_read: { Args: { p_interface_id: string }; Returns: Json }
       interface_rows: {
@@ -47102,6 +47357,7 @@ export type Database = {
           p_organization_id: string
           p_required?: string
           p_search?: string
+          p_split_multi?: boolean
           p_table_id: string
           p_time_zone?: string
         }
@@ -83126,6 +83382,15 @@ export type Database = {
           organization_id: string
         }[]
       }
+      custom_fields_may_write: {
+        Args: {
+          p_custom_only?: boolean
+          p_organization_id: string
+          p_row_id: string
+          p_token: string
+        }
+        Returns: boolean
+      }
       custom_fields_write_gate:
         | {
             Args: {
@@ -108015,6 +108280,7 @@ export type Database = {
         }[]
       }
       attention_card: { Args: never; Returns: Json }
+      attention_card_settle: { Args: never; Returns: number }
       attention_classify: {
         Args: { p_items: Json; p_now?: string }
         Returns: Json
@@ -159496,6 +159762,79 @@ export type Database = {
           workflow_type?: string
         }
         Relationships: []
+      }
+      definition_overview: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          definition_id: string
+          id: string
+          metadata: Json
+          organization_id: string
+          source: string
+          spec: Json
+          structure_hash: string
+          test_expires_at: string | null
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          definition_id: string
+          id?: string
+          metadata?: Json
+          organization_id: string
+          source?: string
+          spec: Json
+          structure_hash: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          definition_id?: string
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          source?: string
+          spec?: Json
+          structure_hash?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "definition_overview_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "card"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "definition_overview_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "definition"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "definition_overview_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "v_definition_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       definition_version: {
         Row: {
