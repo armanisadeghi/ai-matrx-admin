@@ -19,6 +19,9 @@ import { WORKFLOWS_APP_URL } from "@/features/shell/constants/nav-data";
 
 export const MEET_MATRX_PATH = "/meet-matrx";
 
+/** The stage's title: its first word, and the word drawn in the brand gradient. */
+export const MEET_MATRX_TITLE = "Meet";
+export const MEET_MATRX_ACCENT = "Matrx";
 export const MEET_MATRX_LEAD = "Three studios to build with. Six pieces to build from.";
 
 /**
@@ -81,8 +84,8 @@ export function MeetMatrx({ eyebrow, children }: { eyebrow?: ReactNode; children
   return (
     <IntroStage
       eyebrow={eyebrow}
-      title="Meet"
-      accent="Matrx"
+      title={MEET_MATRX_TITLE}
+      accent={MEET_MATRX_ACCENT}
       lead={MEET_MATRX_LEAD}
       groups={MEET_MATRX_GROUPS}
       renderLink={meetMatrxLink}

@@ -790,7 +790,10 @@ export function NotesView({
         // The shortcut root wraps the phone tree too, or the view's own keys
         // (⌘K, ⌘N, find) would never count as pressed inside it.
         <div ref={shortcutRootRef} className="contents">
-          <MobileNotesView singleNoteId={singleNote ?? routeNoteId} />
+          {/* `?active=` opens its note on a phone too (every note door is `/notes?active=<id>`, and a
+              launchpad App page frames /notes narrow enough to be "mobile"): it wins over the path id,
+              the same order as the desktop restore above. */}
+          <MobileNotesView singleNoteId={singleNote ?? (syncUrl ? urlActive : null) ?? routeNoteId} />
         </div>
       ) : (
         <div

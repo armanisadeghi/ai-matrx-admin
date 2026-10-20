@@ -34,6 +34,7 @@ export const RECENT_KINDS = [
 
 /** What a Meet Matrx widget shows (its `part`). Pure here so the agent tools read it without the body. */
 export const MEET_MATRX_PART_OPTIONS = [
+  { value: "hero", label: "The welcome title" },
   { value: "studios", label: "The studios" },
   { value: "blocks", label: "The building blocks" },
   { value: "all", label: "Both" },

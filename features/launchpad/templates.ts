@@ -133,6 +133,7 @@ export const LAUNCHPAD_TEMPLATES: readonly LaunchpadTemplate[] = [
     icon: Compass,
     doc: () =>
       build([
+        { id: "w_hero", type: "meet_matrx", config: { part: "hero" }, w: 12, h: 9 },
         { id: "w_studios", type: "meet_matrx", config: { part: "studios" }, w: 12, h: 13 },
         { id: "w_blocks", type: "meet_matrx", config: { part: "blocks" }, w: 12, h: 19 },
         { id: "w_agents", type: "agents", w: 4 },
