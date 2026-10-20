@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0455",
-  "version": 8,
+  "version": 9,
   "title": "Photography Studio Desk",
   "description": "For photographers: inquiries, packages, contracts, deposits, shoots and gallery delivery.",
   "forWho": "Portrait, wedding and brand photographers",
@@ -2193,7 +2193,7 @@
         "Weaver Close"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2338,7 +2338,16 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "shoot_count",
+                  "in_progress",
+                  "spend",
+                  "owner_me",
+                  "add_shoot",
+                  "btn_mail",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-t",
@@ -2452,14 +2461,51 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "balance",
+                  "balance_paid",
+                  "contract_signed",
+                  "questionnaire",
+                  "second",
+                  "images_delivered",
+                  "gallery",
+                  "client",
+                  "package",
+                  "photographer",
+                  "tasks_open",
+                  "days_to_shoot",
+                  "owner_me",
+                  "btn_hand_over_gallery",
+                  "add_task",
+                  "added_at"
+                ]
               },
               {
                 "id": "sho-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "shoot_on"
+                "dateField": "shoot_on",
+                "hiddenFields": [
+                  "deposit",
+                  "balance",
+                  "balance_paid",
+                  "contract_signed",
+                  "questionnaire",
+                  "second",
+                  "images_delivered",
+                  "gallery",
+                  "client",
+                  "package",
+                  "photographer",
+                  "tasks_open",
+                  "days_to_shoot",
+                  "owner_me",
+                  "btn_hand_over_gallery",
+                  "add_task",
+                  "added_at"
+                ]
               },
               {
                 "id": "sho-t",
@@ -2575,14 +2621,25 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_tick_done",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "tas-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "owner_me",
+                  "btn_tick_done",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "tas-t",

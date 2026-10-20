@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0200",
-  "version": 9,
+  "version": 10,
   "title": "Life OS",
   "description": "Anyone: tasks, projects, notes and goals in one home, with a daily view.",
   "forWho": "Anyone running their whole life from one place",
@@ -2107,7 +2107,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2222,7 +2222,17 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "estimate_min",
+                  "project",
+                  "assignee",
+                  "minutes_tracked",
+                  "days_left",
+                  "due_flag",
+                  "take_btn",
+                  "created"
+                ]
               },
               {
                 "id": "view-4",
@@ -2395,14 +2405,20 @@
                 "icon": "LayoutGrid",
                 "filters": {
                   "favorite": true
-                }
+                },
+                "hiddenFields": [
+                  "edited"
+                ]
               },
               {
                 "id": "view-13",
                 "name": "By type",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "kind"
+                "groupField": "kind",
+                "hiddenFields": [
+                  "edited"
+                ]
               },
               {
                 "id": "view-14",

@@ -4,7 +4,11 @@ import { formatRelativeTime } from "@ai-matrx/kit/format";
 
 const NOTION = { minUnit: "minute", absoluteAfter: 86_400_000, absolute: "monthDay" } as const;
 
-export function editedAgo(iso: string, now = Date.now()): string {
+/** A page nobody changed after it was made (an install writes its pages a moment after making them). */
+const UNTOUCHED_MS = 120_000;
+
+export function editedAgo(iso: string, now = Date.now(), createdIso?: string): string {
+  if (createdIso && Date.parse(iso) - Date.parse(createdIso) < UNTOUCHED_MS) return `Created ${formatRelativeTime(createdIso, { ...NOTION, now })}`;
   return `Edited ${formatRelativeTime(iso, { ...NOTION, now })}`;
 }
 

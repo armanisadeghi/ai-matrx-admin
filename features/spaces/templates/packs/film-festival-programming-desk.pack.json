@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0568",
-  "version": 4,
+  "version": 5,
   "title": "Film Festival Programming Desk",
   "description": "Film festival: submissions, screener and jury scores, programming slots, venues, guests.",
   "forWho": "Film festival programmers and organizers",
@@ -3135,7 +3135,7 @@
         "Adobe Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -3304,7 +3304,31 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "decide_by"
+                "dateField": "decide_by",
+                "hiddenFields": [
+                  "minutes",
+                  "premiere",
+                  "entry",
+                  "screener_link",
+                  "exhibition",
+                  "score",
+                  "prescreen_avg",
+                  "scores_owed",
+                  "program_votes",
+                  "email",
+                  "programmer",
+                  "screenings_count",
+                  "guests_count",
+                  "btn_review",
+                  "btn_select",
+                  "btn_decline",
+                  "btn_claim",
+                  "add_screening",
+                  "add_guest",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "fil-t",
@@ -3435,7 +3459,19 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "starts_at"
+                "dateField": "starts_at",
+                "hiddenFields": [
+                  "tickets_sold",
+                  "comps",
+                  "q_and_a",
+                  "tech_check",
+                  "host",
+                  "btn_scheduled",
+                  "btn_held",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "scr-t",
@@ -3618,14 +3654,35 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "travel_booked",
+                  "pickup",
+                  "host",
+                  "btn_confirmed",
+                  "btn_arrived",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "gue-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "arrives_on"
+                "dateField": "arrives_on",
+                "hiddenFields": [
+                  "hotel_booked",
+                  "travel_booked",
+                  "pickup",
+                  "host",
+                  "btn_confirmed",
+                  "btn_arrived",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "gue-t",
@@ -3749,7 +3806,15 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "score",
+                  "verdict",
+                  "btn_scored",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "rv-t",

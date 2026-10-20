@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0504",
-  "version": 7,
+  "version": 8,
   "title": "Auto Repair Shop HQ",
   "description": "For independent auto repair shops: repair orders, vehicles, parts, and pickups.",
   "forWho": "Independent auto repair shops and garages",
@@ -2730,7 +2730,7 @@
         "Foundry Road"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2869,7 +2869,16 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "customer_status"
+                "groupField": "customer_status",
+                "hiddenFields": [
+                  "job_count",
+                  "open_jobs",
+                  "billed",
+                  "awaiting",
+                  "value_tier",
+                  "add_job_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cus-t",
@@ -3135,7 +3144,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "inv-t",

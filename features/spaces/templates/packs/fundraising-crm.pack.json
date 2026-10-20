@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0357",
-  "version": 7,
+  "version": 8,
   "title": "Fundraising CRM",
   "description": "Startup founders: run an investor pipeline with rounds, updates and a cap table.",
   "forWho": "Startup founders",
@@ -2046,7 +2046,7 @@
         "Hollin Wharf"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2302,7 +2302,20 @@
                 "name": "Pipeline",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "focus",
+                  "intro",
+                  "next_step",
+                  "probability",
+                  "interaction_count",
+                  "expected",
+                  "round",
+                  "email",
+                  "passed_btn",
+                  "add_interaction_btn",
+                  "updated_at"
+                ]
               },
               {
                 "id": "v-n",
@@ -2321,13 +2334,41 @@
                 "name": "Follow-ups",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "next_step_on"
+                "dateField": "next_step_on",
+                "hiddenFields": [
+                  "sector",
+                  "focus",
+                  "intro",
+                  "next_step",
+                  "probability",
+                  "interaction_count",
+                  "expected",
+                  "round",
+                  "email",
+                  "passed_btn",
+                  "add_interaction_btn",
+                  "updated_at"
+                ]
               },
               {
                 "id": "v-f",
                 "name": "By firm",
                 "layout": "gallery",
-                "icon": "Building2"
+                "icon": "Building2",
+                "hiddenFields": [
+                  "sector",
+                  "focus",
+                  "intro",
+                  "next_step",
+                  "probability",
+                  "interaction_count",
+                  "expected",
+                  "round",
+                  "email",
+                  "passed_btn",
+                  "add_interaction_btn",
+                  "updated_at"
+                ]
               }
             ],
             "activeViewId": "v-p"

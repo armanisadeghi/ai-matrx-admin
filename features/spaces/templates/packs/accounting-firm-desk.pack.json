@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0457",
-  "version": 8,
+  "version": 9,
   "title": "Accounting Firm Desk",
   "description": "For accounting firms: clients, monthly close checklists, tax deadlines, document requests.",
   "forWho": "Bookkeeping, tax and accounting firms",
@@ -2125,7 +2125,7 @@
         "Linden Terrace"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2270,7 +2270,21 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "software",
+                  "year_end",
+                  "contact_email",
+                  "owner",
+                  "closes_late",
+                  "requests_waiting",
+                  "open_deadlines",
+                  "owner_me",
+                  "add_close",
+                  "add_request",
+                  "btn_mail",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-t",
@@ -2463,14 +2477,29 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "days_left",
+                  "client",
+                  "preparer",
+                  "btn_record_filing",
+                  "added_at"
+                ]
               },
               {
                 "id": "dea-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "extension",
+                  "days_left",
+                  "client",
+                  "preparer",
+                  "btn_record_filing",
+                  "added_at"
+                ]
               },
               {
                 "id": "dea-t",
@@ -2574,7 +2603,8 @@
                 "groupField": "status",
                 "hiddenFields": [
                   "reminders",
-                  "btn_log_arrival"
+                  "btn_log_arrival",
+                  "added_at"
                 ]
               },
               {
@@ -2585,7 +2615,8 @@
                 "dateField": "due_on",
                 "hiddenFields": [
                   "reminders",
-                  "btn_log_arrival"
+                  "btn_log_arrival",
+                  "added_at"
                 ]
               },
               {

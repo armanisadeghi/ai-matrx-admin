@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0497",
-  "version": 4,
+  "version": 5,
   "title": "Design system — Care",
   "description": "Calm lagoon blue, warm peach, 17px text and 44px targets, accessible by default.",
   "forWho": "Healthcare, clinics, therapy, wellness and care services",
@@ -189,6 +189,43 @@
         ],
         "rows": [
           {
+            "key": "col-09",
+            "values": {
+              "name": "primary",
+              "group": "Primary",
+              "value": "{\"light\":\"#0a6580\",\"dark\":\"#7fd0e6\"}",
+              "usage_note": "Lagoon blue: the main action; dark enough for white text and for links."
+            }
+          },
+          {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#fdf0e3\",\"dark\":\"#33261a\"}",
+              "usage_note": "Warm peach: reassurance notes and next steps."
+            }
+          },
+          {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#dfeef2\",\"dark\":\"#1d3339\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#0a5d76\",\"dark\":\"#8fd8ec\"}",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
+            }
+          },
+          {
             "key": "col-01",
             "values": {
               "name": "background",
@@ -265,15 +302,6 @@
             }
           },
           {
-            "key": "col-09",
-            "values": {
-              "name": "primary",
-              "group": "Primary",
-              "value": "{\"light\":\"#0a6580\",\"dark\":\"#7fd0e6\"}",
-              "usage_note": "Lagoon blue: the main action; dark enough for white text and for links."
-            }
-          },
-          {
             "key": "col-10",
             "values": {
               "name": "primary-foreground",
@@ -281,15 +309,6 @@
               "value": "{\"light\":\"#ffffff\",\"dark\":\"#05222b\"}",
               "usage_note": "Label on a primary button.",
               "reads_on": "primary"
-            }
-          },
-          {
-            "key": "col-11",
-            "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#dfeef2\",\"dark\":\"#1d3339\"}",
-              "usage_note": "Second actions and quiet selected states."
             }
           },
           {
@@ -303,15 +322,6 @@
             }
           },
           {
-            "key": "col-13",
-            "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#fdf0e3\",\"dark\":\"#33261a\"}",
-              "usage_note": "Warm peach: reassurance notes and next steps."
-            }
-          },
-          {
             "key": "col-14",
             "values": {
               "name": "accent-foreground",
@@ -319,16 +329,6 @@
               "value": "{\"light\":\"#773c0d\",\"dark\":\"#f6cfa8\"}",
               "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
               "reads_on": "accent"
-            }
-          },
-          {
-            "key": "col-15",
-            "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#0a5d76\",\"dark\":\"#8fd8ec\"}",
-              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
-              "reads_on": "background"
             }
           },
           {
@@ -1271,7 +1271,7 @@
         "Larkspur Road"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [],
   "board": {

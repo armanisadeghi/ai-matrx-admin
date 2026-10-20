@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0452",
-  "version": 8,
+  "version": 9,
   "title": "Recruiting Agency Desk",
   "description": "For recruiters: job orders, candidates by stage, placements, fees and guarantees.",
   "forWho": "Recruiting, staffing and executive search firms",
@@ -9,7 +9,7 @@
     "emoji": "🧲"
   },
   "cover": {
-    "url": "gallery:agencies-office-chairs-row",
+    "url": "gallery:sales-conference-table-city-view",
     "offsetY": 50
   },
   "category": "agencies",
@@ -2385,7 +2385,7 @@
         "Morrow Street"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2396,7 +2396,7 @@
         "emoji": "🧲"
       },
       "cover": {
-        "url": "gallery:agencies-office-chairs-row",
+        "url": "gallery:sales-conference-table-city-view",
         "offsetY": 50
       },
       "settings": {
@@ -2599,14 +2599,51 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "salary",
+                  "fee_rate",
+                  "fee_est",
+                  "days_open",
+                  "days_to_target",
+                  "subs",
+                  "interviews",
+                  "active_subs",
+                  "placed_salary",
+                  "fee_earned",
+                  "client",
+                  "recruiter",
+                  "owner_me",
+                  "btn_close_as_filled",
+                  "add_submission",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "target_on"
+                "dateField": "target_on",
+                "hiddenFields": [
+                  "must_haves",
+                  "salary",
+                  "fee_rate",
+                  "fee_est",
+                  "days_open",
+                  "days_to_target",
+                  "subs",
+                  "interviews",
+                  "active_subs",
+                  "placed_salary",
+                  "fee_earned",
+                  "client",
+                  "recruiter",
+                  "owner_me",
+                  "btn_close_as_filled",
+                  "add_submission",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-t",
@@ -2719,7 +2756,19 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "phone",
+                  "desired_salary",
+                  "notice",
+                  "relocate",
+                  "owner",
+                  "subs",
+                  "in_play",
+                  "owner_me",
+                  "btn_mail",
+                  "added_at"
+                ]
               },
               {
                 "id": "can-t",
@@ -2788,14 +2837,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "guarantee",
+                  "fee_status",
+                  "btn_confirm_placement",
+                  "added_at"
+                ]
               },
               {
                 "id": "sub-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "interview_on"
+                "dateField": "interview_on",
+                "hiddenFields": [
+                  "fee",
+                  "guarantee",
+                  "fee_status",
+                  "btn_confirm_placement",
+                  "added_at"
+                ]
               },
               {
                 "id": "sub-t",

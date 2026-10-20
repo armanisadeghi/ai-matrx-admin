@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0350",
-  "version": 4,
+  "version": 5,
   "title": "Expense Tracker",
   "description": "Individuals and freelancers: log spending, set category budgets, see where it went.",
   "forWho": "Individuals and freelancers",
@@ -836,7 +836,7 @@
         "Fennel Court"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1034,14 +1034,23 @@
                 "name": "By payment",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "payment_method"
+                "groupField": "payment_method",
+                "hiddenFields": [
+                  "recurring",
+                  "logged_at"
+                ]
               },
               {
                 "id": "v-cal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "spent_on"
+                "dateField": "spent_on",
+                "hiddenFields": [
+                  "notes",
+                  "recurring",
+                  "logged_at"
+                ]
               },
               {
                 "id": "v-cat",

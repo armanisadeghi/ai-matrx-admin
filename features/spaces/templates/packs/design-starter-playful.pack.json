@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0498",
-  "version": 4,
+  "version": 5,
   "title": "Design system — Playful consumer",
   "description": "Coral, sunny yellow and sky blue with pill buttons and a bounce in its step.",
   "forWho": "Consumer apps, games, food and delivery, social products",
@@ -194,6 +194,43 @@
         ],
         "rows": [
           {
+            "key": "col-09",
+            "values": {
+              "name": "primary",
+              "group": "Primary",
+              "value": "{\"light\":\"#f2434f\",\"dark\":\"#ff7a7f\"}",
+              "usage_note": "Coral: a FILL with dark labels. As text it fails (2.9:1); use link."
+            }
+          },
+          {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#cfe7ff\",\"dark\":\"#1a3558\"}",
+              "usage_note": "Sky: info chips and the delivery map."
+            }
+          },
+          {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#ffdf5e\",\"dark\":\"#3a3010\"}",
+              "usage_note": "Sunshine: second actions and stickers, always with secondary-foreground."
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#b8203a\",\"dark\":\"#ff9aa0\"}",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
+            }
+          },
+          {
             "key": "col-01",
             "values": {
               "name": "background",
@@ -270,15 +307,6 @@
             }
           },
           {
-            "key": "col-09",
-            "values": {
-              "name": "primary",
-              "group": "Primary",
-              "value": "{\"light\":\"#f2434f\",\"dark\":\"#ff7a7f\"}",
-              "usage_note": "Coral: a FILL with dark labels. As text it fails (2.9:1); use link."
-            }
-          },
-          {
             "key": "col-10",
             "values": {
               "name": "primary-foreground",
@@ -286,15 +314,6 @@
               "value": "{\"light\":\"#2a0a0c\",\"dark\":\"#2a0a0c\"}",
               "usage_note": "Label on a primary button.",
               "reads_on": "primary"
-            }
-          },
-          {
-            "key": "col-11",
-            "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#ffdf5e\",\"dark\":\"#3a3010\"}",
-              "usage_note": "Sunshine: second actions and stickers, always with secondary-foreground."
             }
           },
           {
@@ -308,15 +327,6 @@
             }
           },
           {
-            "key": "col-13",
-            "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#cfe7ff\",\"dark\":\"#1a3558\"}",
-              "usage_note": "Sky: info chips and the delivery map."
-            }
-          },
-          {
             "key": "col-14",
             "values": {
               "name": "accent-foreground",
@@ -324,16 +334,6 @@
               "value": "{\"light\":\"#0b3e75\",\"dark\":\"#bcdcff\"}",
               "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
               "reads_on": "accent"
-            }
-          },
-          {
-            "key": "col-15",
-            "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#b8203a\",\"dark\":\"#ff9aa0\"}",
-              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
-              "reads_on": "background"
             }
           },
           {
@@ -1268,7 +1268,7 @@
         "Peppercorn Avenue"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [],
   "board": {

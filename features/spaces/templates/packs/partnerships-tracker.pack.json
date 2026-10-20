@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0161",
-  "version": 8,
+  "version": 9,
   "title": "Partnerships Tracker",
   "description": "Partner and business development teams: partners, milestones and referral revenue share.",
   "forWho": "Business development and partner teams",
@@ -1317,7 +1317,7 @@
         "Embarcadero Mews"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1417,7 +1417,18 @@
                 "name": "Stage",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "signed",
+                  "referred",
+                  "commission_total",
+                  "referred_month",
+                  "ms_count",
+                  "ms_done",
+                  "ms_pct",
+                  "open_site",
+                  "created"
+                ]
               },
               {
                 "id": "view-active-partners",

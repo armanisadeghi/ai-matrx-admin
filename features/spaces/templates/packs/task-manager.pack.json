@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0201",
-  "version": 8,
+  "version": 9,
   "title": "Personal To-Do List",
   "description": "Anyone with a long to-do list: capture tasks, sort by priority, use smart lists.",
   "forWho": "Anyone with a long to-do list",
@@ -981,7 +981,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1227,21 +1227,58 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "done",
+                  "repeats",
+                  "minutes",
+                  "notes",
+                  "days_left",
+                  "due_flag",
+                  "finish_btn",
+                  "take_btn",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "id": "view-6",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "assignee",
+                  "done",
+                  "repeats",
+                  "minutes",
+                  "notes",
+                  "days_left",
+                  "due_flag",
+                  "finish_btn",
+                  "take_btn",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "id": "view-7",
                 "name": "By priority",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "priority"
+                "groupField": "priority",
+                "hiddenFields": [
+                  "done",
+                  "repeats",
+                  "minutes",
+                  "notes",
+                  "days_left",
+                  "due_flag",
+                  "finish_btn",
+                  "take_btn",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "id": "view-8",

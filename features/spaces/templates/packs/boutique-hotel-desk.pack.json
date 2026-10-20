@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0465",
-  "version": 7,
+  "version": 8,
   "title": "Boutique Hotel Desk",
   "description": "For innkeepers: rooms, reservations, housekeeping status, repairs, occupancy and ADR.",
   "forWho": "Boutique hotels, inns and bed and breakfasts",
@@ -2440,7 +2440,7 @@
         "Cobbler's Green"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2929,14 +2929,25 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_mark_fixed",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "rep-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "fix_by"
+                "dateField": "fix_by",
+                "hiddenFields": [
+                  "owner_me",
+                  "btn_mark_fixed",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "rep-t",

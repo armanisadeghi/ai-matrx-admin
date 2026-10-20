@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0507",
-  "version": 7,
+  "version": 8,
   "title": "Pest Control Business HQ",
   "description": "For pest control operators: service plans, routes, application records, callbacks.",
   "forWho": "Pest control and extermination companies",
@@ -2671,7 +2671,7 @@
         "Plover Street"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2810,7 +2810,17 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "customer_status"
+                "groupField": "customer_status",
+                "hiddenFields": [
+                  "property_notes",
+                  "job_count",
+                  "open_jobs",
+                  "billed",
+                  "awaiting",
+                  "value_tier",
+                  "add_job_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cus-t",
@@ -2859,14 +2869,47 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "callback",
+                  "tech",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "scheduled_on"
+                "dateField": "scheduled_on",
+                "hiddenFields": [
+                  "priority",
+                  "callback",
+                  "tech",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-t",
@@ -3038,7 +3081,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "inv-t",
@@ -3154,7 +3201,11 @@
                 "name": "By target pest",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "target"
+                "groupField": "target",
+                "hiddenFields": [
+                  "weather",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "ap-t"

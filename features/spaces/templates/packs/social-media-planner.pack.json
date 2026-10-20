@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0153",
-  "version": 6,
+  "version": 7,
   "title": "Social Media Planner",
   "description": "Social managers and small brands: schedule posts on one calendar, with hashtag sets.",
   "forWho": "Social managers, creators and small brands",
@@ -1258,7 +1258,7 @@
         "Driftwood Row"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1358,14 +1358,39 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "publish_on"
+                "dateField": "publish_on",
+                "hiddenFields": [
+                  "owner",
+                  "hashtag_set",
+                  "caption",
+                  "reach",
+                  "likes",
+                  "saves",
+                  "engagement",
+                  "posted_btn",
+                  "sched_btn",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "id": "view-board",
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "hashtag_set",
+                  "caption",
+                  "reach",
+                  "likes",
+                  "saves",
+                  "engagement",
+                  "posted_btn",
+                  "sched_btn",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "id": "view-all-posts",
@@ -1383,7 +1408,20 @@
                 "id": "view-grid-preview",
                 "name": "Grid preview",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "owner",
+                  "hashtag_set",
+                  "caption",
+                  "reach",
+                  "likes",
+                  "saves",
+                  "engagement",
+                  "posted_btn",
+                  "sched_btn",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "id": "view-post-week",

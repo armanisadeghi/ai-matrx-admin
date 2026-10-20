@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0158",
-  "version": 7,
+  "version": 8,
   "title": "Lead Tracker",
   "description": "Small sales teams: capture leads, follow up on time and turn the best into deals.",
   "forWho": "Small sales teams and agencies",
@@ -988,7 +988,7 @@
         "Peachtree Hollow"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1088,7 +1088,19 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "score",
+                  "owner",
+                  "followup_due",
+                  "deal",
+                  "notes",
+                  "email_btn",
+                  "qualify_btn",
+                  "contacted_btn",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "id": "view-by-source",
@@ -1107,7 +1119,20 @@
                 "name": "Follow-up calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "next_followup"
+                "dateField": "next_followup",
+                "hiddenFields": [
+                  "status",
+                  "score",
+                  "owner",
+                  "followup_due",
+                  "deal",
+                  "notes",
+                  "email_btn",
+                  "qualify_btn",
+                  "contacted_btn",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "id": "view-lead-intake",

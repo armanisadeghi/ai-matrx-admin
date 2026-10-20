@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0516",
-  "version": 7,
+  "version": 8,
   "title": "Online Store Operations Hub",
   "description": "For online shops: SKUs and stock, purchase orders, fulfillment, returns, sales by channel.",
   "forWho": "Small online shops selling their own goods",
@@ -3367,7 +3367,7 @@
         "Cobbler Row"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3520,14 +3520,45 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "quantity",
+                  "total",
+                  "ship_paid",
+                  "postage",
+                  "discount",
+                  "channel",
+                  "carrier",
+                  "tracking",
+                  "gift",
+                  "packer",
+                  "ship_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "ship_by"
+                "dateField": "ship_by",
+                "hiddenFields": [
+                  "handler",
+                  "quantity",
+                  "total",
+                  "ship_paid",
+                  "postage",
+                  "discount",
+                  "channel",
+                  "carrier",
+                  "tracking",
+                  "gift",
+                  "packer",
+                  "ship_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-t",
@@ -3780,7 +3811,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "ret_status"
+                "groupField": "ret_status",
+                "hiddenFields": [
+                  "refund",
+                  "restock",
+                  "ret_notes",
+                  "added_at"
+                ]
               },
               {
                 "id": "ret-t",
@@ -3821,7 +3858,17 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "supplier_rel",
+                  "weight_oz",
+                  "margin_pct",
+                  "variant_n",
+                  "units",
+                  "sold",
+                  "revenue",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-t",
@@ -3862,7 +3909,15 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "segment"
+                "groupField": "segment",
+                "hiddenFields": [
+                  "order_n",
+                  "spent",
+                  "returns_n",
+                  "tier",
+                  "add_order_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cus-t",

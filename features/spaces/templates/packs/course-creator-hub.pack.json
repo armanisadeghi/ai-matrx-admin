@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0312",
-  "version": 9,
+  "version": 10,
   "title": "Course Creator Hub",
   "description": "Course creators: build, film, sell and launch an online course with students.",
   "forWho": "Educators selling courses and cohorts",
@@ -1788,7 +1788,7 @@
         "Beckett Alley"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -1887,7 +1887,8 @@
                   "revenue",
                   "launch_count",
                   "module_count",
-                  "add_module_btn"
+                  "add_module_btn",
+                  "updated_at"
                 ]
               },
               {
@@ -1929,14 +1930,21 @@
                 "name": "Pipeline",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "updated_at"
+                ]
               },
               {
                 "id": "view-cal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "pub_btn",
+                  "updated_at"
+                ]
               },
               {
                 "id": "view-tbl",
@@ -2041,7 +2049,11 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "state"
+                "groupField": "state",
+                "hiddenFields": [
+                  "email_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "view-tbl",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0499",
-  "version": 4,
+  "version": 5,
   "title": "Design system — Premium",
   "description": "Ivory, near-black and muted gold; fine serif type, sharp corners, slow motion.",
   "forWho": "Luxury, hospitality, jewellery, fashion and fine goods",
@@ -9,7 +9,7 @@
     "icon": "Palette"
   },
   "cover": {
-    "url": "gallery:hospitality-wine-glasses-bar",
+    "url": "gallery:retail-shop-window-display",
     "offsetY": 50
   },
   "category": "docs",
@@ -193,6 +193,43 @@
         ],
         "rows": [
           {
+            "key": "col-09",
+            "values": {
+              "name": "primary",
+              "group": "Primary",
+              "value": "{\"light\":\"#141210\",\"dark\":\"#e8dfcc\"}",
+              "usage_note": "Ink: the one main action. Gold never fills a button."
+            }
+          },
+          {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#c9a961\",\"dark\":\"#b8975a\"}",
+              "usage_note": "Muted gold: a single rule, a selected date, the focus ring's family."
+            }
+          },
+          {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#efebe3\",\"dark\":\"#23211d\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#7a5c22\",\"dark\":\"#d9bf86\"}",
+              "usage_note": "Antique gold, dark enough to read: links and the active tab.",
+              "reads_on": "background"
+            }
+          },
+          {
             "key": "col-01",
             "values": {
               "name": "background",
@@ -269,15 +306,6 @@
             }
           },
           {
-            "key": "col-09",
-            "values": {
-              "name": "primary",
-              "group": "Primary",
-              "value": "{\"light\":\"#141210\",\"dark\":\"#e8dfcc\"}",
-              "usage_note": "Ink: the one main action. Gold never fills a button."
-            }
-          },
-          {
             "key": "col-10",
             "values": {
               "name": "primary-foreground",
@@ -285,15 +313,6 @@
               "value": "{\"light\":\"#fcfbf8\",\"dark\":\"#141210\"}",
               "usage_note": "Label on a primary button.",
               "reads_on": "primary"
-            }
-          },
-          {
-            "key": "col-11",
-            "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#efebe3\",\"dark\":\"#23211d\"}",
-              "usage_note": "Second actions and quiet selected states."
             }
           },
           {
@@ -307,15 +326,6 @@
             }
           },
           {
-            "key": "col-13",
-            "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#c9a961\",\"dark\":\"#b8975a\"}",
-              "usage_note": "Muted gold: a single rule, a selected date, the focus ring's family."
-            }
-          },
-          {
             "key": "col-14",
             "values": {
               "name": "accent-foreground",
@@ -323,16 +333,6 @@
               "value": "{\"light\":\"#141210\",\"dark\":\"#141210\"}",
               "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
               "reads_on": "accent"
-            }
-          },
-          {
-            "key": "col-15",
-            "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#7a5c22\",\"dark\":\"#d9bf86\"}",
-              "usage_note": "Antique gold, dark enough to read: links and the active tab.",
-              "reads_on": "background"
             }
           },
           {
@@ -1275,7 +1275,7 @@
         "Rue Orsanne"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [],
   "board": {

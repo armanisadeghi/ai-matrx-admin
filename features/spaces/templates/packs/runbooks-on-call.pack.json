@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0110",
-  "version": 8,
+  "version": 9,
   "title": "Runbooks & On-call",
   "description": "Infrastructure and support engineers: runbooks per service plus a weekly on-call schedule.",
   "forWho": "Infrastructure and support engineering teams",
@@ -1332,7 +1332,7 @@
         "Foxcroft Lane"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1551,14 +1551,30 @@
                 "name": "By type",
                 "icon": "SquareKanban",
                 "groupField": "type",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "freshness",
+                  "link",
+                  "retested_btn",
+                  "open_link",
+                  "edited",
+                  "created"
+                ]
               },
               {
                 "layout": "kanban",
                 "name": "By freshness",
                 "icon": "SquareKanban",
                 "groupField": "freshness",
-                "id": "view-2"
+                "id": "view-2",
+                "hiddenFields": [
+                  "days_since_test",
+                  "link",
+                  "retested_btn",
+                  "open_link",
+                  "edited",
+                  "created"
+                ]
               },
               {
                 "layout": "list",

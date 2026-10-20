@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0302",
-  "version": 10,
+  "version": 11,
   "title": "Freelance Client Portal",
   "description": "Solo freelancers: a private page per client for deliverables, approvals and invoices.",
   "forWho": "Solo freelancers delivering work to clients",
@@ -1507,7 +1507,7 @@
         "Tallow Court"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -1621,7 +1621,8 @@
                   "files_ok",
                   "approved_pct",
                   "update_count",
-                  "email_btn"
+                  "email_btn",
+                  "updated_at"
                 ]
               },
               {
@@ -1629,7 +1630,19 @@
                 "name": "Delivery timeline",
                 "layout": "timeline",
                 "icon": "ChartGantt",
-                "dateField": "kickoff_on"
+                "dateField": "kickoff_on",
+                "hiddenFields": [
+                  "task_count",
+                  "tasks_done",
+                  "progress",
+                  "open_tasks",
+                  "file_count",
+                  "files_ok",
+                  "approved_pct",
+                  "update_count",
+                  "email_btn",
+                  "updated_at"
+                ]
               },
               {
                 "id": "view-tbl",
@@ -1670,14 +1683,21 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "created_at"
+                ]
               },
               {
                 "id": "view-cal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "done_btn",
+                  "created_at"
+                ]
               },
               {
                 "id": "view-tbl",

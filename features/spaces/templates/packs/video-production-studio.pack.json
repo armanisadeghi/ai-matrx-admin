@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0454",
-  "version": 8,
+  "version": 9,
   "title": "Video Production Studio",
   "description": "For video producers: productions, shot lists, crew and gear bookings, and edit rounds.",
   "forWho": "Video and film production companies",
@@ -2432,7 +2432,7 @@
         "Tannery Row"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2582,7 +2582,8 @@
                   "prod_count",
                   "prod_live",
                   "add_production",
-                  "btn_mail"
+                  "btn_mail",
+                  "added_at"
                 ]
               },
               {
@@ -2798,14 +2799,23 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_tick_off",
+                  "added_at"
+                ]
               },
               {
                 "id": "sho-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "shoot_day"
+                "dateField": "shoot_day",
+                "hiddenFields": [
+                  "production",
+                  "btn_tick_off",
+                  "added_at"
+                ]
               },
               {
                 "id": "sho-t",
@@ -2948,7 +2958,8 @@
                 "groupField": "status",
                 "hiddenFields": [
                   "version",
-                  "btn_approve_cut"
+                  "btn_approve_cut",
+                  "added_at"
                 ]
               },
               {
@@ -2959,7 +2970,8 @@
                 "dateField": "due_on",
                 "hiddenFields": [
                   "version",
-                  "btn_approve_cut"
+                  "btn_approve_cut",
+                  "added_at"
                 ]
               },
               {

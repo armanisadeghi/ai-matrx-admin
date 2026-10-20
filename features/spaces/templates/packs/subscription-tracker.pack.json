@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0356",
-  "version": 5,
+  "version": 6,
   "title": "Subscription Tracker",
   "description": "Individuals and teams: every recurring payment with cost, renewal date and reminders.",
   "forWho": "Individuals and small teams",
@@ -809,7 +809,7 @@
         "Quillon Terrace"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1053,14 +1053,41 @@
                 "name": "Renewals",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "next_renewal"
+                "dateField": "next_renewal",
+                "hiddenFields": [
+                  "days_left",
+                  "renew_state",
+                  "category",
+                  "payment",
+                  "status",
+                  "login",
+                  "remind",
+                  "pause_btn",
+                  "cancel_btn",
+                  "open_login",
+                  "added_at",
+                  "updated_at"
+                ]
               },
               {
                 "id": "v-b",
                 "name": "By category",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "days_left",
+                  "renew_state",
+                  "payment",
+                  "status",
+                  "login",
+                  "remind",
+                  "pause_btn",
+                  "cancel_btn",
+                  "open_login",
+                  "added_at",
+                  "updated_at"
+                ]
               },
               {
                 "id": "v-all",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0453",
-  "version": 7,
+  "version": 8,
   "title": "PR Agency Desk",
   "description": "For PR agencies: client retainers, campaigns, a media list, pitches and earned coverage.",
   "forWho": "Public relations and communications agencies",
@@ -2545,7 +2545,7 @@
         "Candlewick Court"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2760,14 +2760,45 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "lead",
+                  "pitch_count",
+                  "reply_count",
+                  "waiting",
+                  "reply_rate",
+                  "coverage_count",
+                  "positive",
+                  "reach_total",
+                  "owner_me",
+                  "btn_send_to_media",
+                  "add_pitch",
+                  "add_coverage",
+                  "added_at"
+                ]
               },
               {
                 "id": "cam-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "embargo_on"
+                "dateField": "embargo_on",
+                "hiddenFields": [
+                  "client",
+                  "lead",
+                  "pitch_count",
+                  "reply_count",
+                  "waiting",
+                  "reply_rate",
+                  "coverage_count",
+                  "positive",
+                  "reach_total",
+                  "owner_me",
+                  "btn_send_to_media",
+                  "add_pitch",
+                  "add_coverage",
+                  "added_at"
+                ]
               },
               {
                 "id": "cam-t",
@@ -2877,7 +2908,14 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "relationship"
+                "groupField": "relationship",
+                "hiddenFields": [
+                  "notes",
+                  "owner",
+                  "pitched_count",
+                  "covered",
+                  "added_at"
+                ]
               },
               {
                 "id": "med-t",
@@ -2937,14 +2975,25 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "followups",
+                  "btn_won_coverage",
+                  "added_at"
+                ]
               },
               {
                 "id": "pit-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "follow_up_on"
+                "dateField": "follow_up_on",
+                "hiddenFields": [
+                  "exclusive",
+                  "followups",
+                  "btn_won_coverage",
+                  "added_at"
+                ]
               },
               {
                 "id": "pit-t",

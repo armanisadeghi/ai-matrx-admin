@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0458",
-  "version": 8,
+  "version": 9,
   "title": "Consulting Practice Desk",
   "description": "For consultants: proposals, engagements, days sold versus used, deliverables and readouts.",
   "forWho": "Management and operations consulting practices",
@@ -2507,7 +2507,7 @@
         "Halsey Avenue"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2652,7 +2652,17 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "engagement_count",
+                  "won_value",
+                  "open_props",
+                  "pipeline",
+                  "add_proposal",
+                  "add_engagement",
+                  "btn_mail",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-t",
@@ -2716,7 +2726,16 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "decide_by"
+                "dateField": "decide_by",
+                "hiddenFields": [
+                  "chance",
+                  "weighted",
+                  "client",
+                  "lead",
+                  "btn_mark_won",
+                  "btn_mark_lost",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-t",
@@ -2842,7 +2861,23 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "ends_on"
+                "dateField": "ends_on",
+                "hiddenFields": [
+                  "days_sold",
+                  "days_logged",
+                  "days_left",
+                  "burn_pct",
+                  "fee_per_day",
+                  "deliv_total",
+                  "deliv_done",
+                  "deliv_open",
+                  "client",
+                  "lead",
+                  "owner_me",
+                  "btn_close_engagement",
+                  "add_deliverable",
+                  "added_at"
+                ]
               },
               {
                 "id": "eng-t",
@@ -2955,14 +2990,25 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_send_to_client",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "del-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "owner_me",
+                  "btn_send_to_client",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "del-t",
@@ -3077,7 +3123,8 @@
                 "icon": "Calendar",
                 "dateField": "worked_on",
                 "hiddenFields": [
-                  "days"
+                  "days",
+                  "added_at"
                 ]
               },
               {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0563",
-  "version": 5,
+  "version": 6,
   "title": "App Development Agency Studio",
   "description": "App agency: projects, sprints, change requests, store releases, retainers and bugs.",
   "forWho": "App and software development agencies",
@@ -4064,7 +4064,7 @@
         "Cobbler Way"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -4203,14 +4203,35 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "projects_live",
+                  "contracted",
+                  "retainer_fee",
+                  "btn_claim",
+                  "add_project",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "follow_up_on"
+                "dateField": "follow_up_on",
+                "hiddenFields": [
+                  "owner",
+                  "projects_live",
+                  "contracted",
+                  "retainer_fee",
+                  "btn_claim",
+                  "add_project",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-t",
@@ -4320,14 +4341,61 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "day_rate",
+                  "lead",
+                  "miles_total",
+                  "miles_done",
+                  "progress",
+                  "bugs_open",
+                  "bugs_critical",
+                  "release_ready",
+                  "changes_value",
+                  "changes_waiting",
+                  "contract_now",
+                  "sprints_done",
+                  "releases_out",
+                  "btn_build",
+                  "btn_qa",
+                  "btn_launched",
+                  "btn_claim",
+                  "add_milestone",
+                  "add_bug",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "launch_on"
+                "dateField": "launch_on",
+                "hiddenFields": [
+                  "contract",
+                  "day_rate",
+                  "lead",
+                  "miles_total",
+                  "miles_done",
+                  "progress",
+                  "bugs_open",
+                  "bugs_critical",
+                  "release_ready",
+                  "changes_value",
+                  "changes_waiting",
+                  "contract_now",
+                  "sprints_done",
+                  "releases_out",
+                  "btn_build",
+                  "btn_qa",
+                  "btn_launched",
+                  "btn_claim",
+                  "add_milestone",
+                  "add_bug",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-t",
@@ -4443,14 +4511,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_blocked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "mil-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "btn_done",
+                  "btn_blocked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "mil-t",
@@ -4563,14 +4644,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_fixing",
+                  "btn_verify",
+                  "btn_closed",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "bug-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "fix_by"
+                "dateField": "fix_by",
+                "hiddenFields": [
+                  "found_in",
+                  "btn_fixing",
+                  "btn_verify",
+                  "btn_closed",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "bug-t",
@@ -4688,7 +4786,8 @@
                   "points_planned",
                   "points_done",
                   "done_pct",
-                  "btn_close"
+                  "btn_close",
+                  "added_at"
                 ]
               },
               {
@@ -4884,14 +4983,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_live",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "rl-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "release_on"
+                "dateField": "release_on",
+                "hiddenFields": [
+                  "rejection",
+                  "btn_live",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "rl-t",

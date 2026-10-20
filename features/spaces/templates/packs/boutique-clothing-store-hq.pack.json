@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0517",
-  "version": 7,
+  "version": 8,
   "title": "Boutique Clothing Store HQ",
   "description": "For clothing boutiques: sizes and stock, seasonal buys, markdowns, holds, consignment.",
   "forWho": "Independent clothing and accessory boutiques",
@@ -3346,7 +3346,7 @@
         "Willow Passage"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3485,14 +3485,35 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "quantity",
+                  "total",
+                  "price_type",
+                  "channel",
+                  "packer",
+                  "ship_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "ship_by"
+                "dateField": "ship_by",
+                "hiddenFields": [
+                  "handler",
+                  "quantity",
+                  "total",
+                  "price_type",
+                  "channel",
+                  "packer",
+                  "ship_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-t",
@@ -3605,7 +3626,19 @@
                 "name": "By markdown stage",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "markdown"
+                "groupField": "markdown",
+                "hiddenFields": [
+                  "supplier_rel",
+                  "cost",
+                  "price",
+                  "now_price",
+                  "margin_pct",
+                  "units",
+                  "sold",
+                  "sell_through",
+                  "revenue",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-t",
@@ -3618,7 +3651,19 @@
                 "name": "By season",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "season"
+                "groupField": "season",
+                "hiddenFields": [
+                  "cost",
+                  "price",
+                  "now_price",
+                  "markdown",
+                  "margin_pct",
+                  "units",
+                  "sold",
+                  "sell_through",
+                  "revenue",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "pro-b"
@@ -3791,7 +3836,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "ret_status"
+                "groupField": "ret_status",
+                "hiddenFields": [
+                  "refund",
+                  "restock",
+                  "ret_notes",
+                  "added_at"
+                ]
               },
               {
                 "id": "ret-t",
@@ -3832,7 +3883,17 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "segment"
+                "groupField": "segment",
+                "hiddenFields": [
+                  "birthday_month",
+                  "emails_ok",
+                  "order_n",
+                  "spent",
+                  "returns_n",
+                  "tier",
+                  "add_order_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cus-t",

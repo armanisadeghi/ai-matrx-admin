@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0566",
-  "version": 5,
+  "version": 6,
   "title": "Podcast Network Operations Desk",
   "description": "Podcast network: shows, episodes, ad inventory, downloads and sponsor deals.",
   "forWho": "Podcast networks and multi-show audio studios",
@@ -3556,7 +3556,7 @@
         "Vinyl Street"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -3695,7 +3695,22 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "cpm",
+                  "slots",
+                  "episodes_published",
+                  "avg_downloads",
+                  "in_pipeline",
+                  "sponsor_value",
+                  "ad_value",
+                  "downloads_total",
+                  "btn_claim",
+                  "add_episode",
+                  "add_deal",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "sho-t",
@@ -3773,7 +3788,21 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "publish_on"
+                "dateField": "publish_on",
+                "hiddenFields": [
+                  "minutes",
+                  "downloads_7d",
+                  "downloads",
+                  "spots_sold",
+                  "spots_open",
+                  "editor",
+                  "btn_recorded",
+                  "btn_editing",
+                  "btn_scheduled",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "epi-t",
@@ -3892,14 +3921,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_claim",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "gue-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "record_day"
+                "dateField": "record_day",
+                "hiddenFields": [
+                  "btn_confirmed",
+                  "btn_claim",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "gue-t",
@@ -4030,7 +4072,22 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "flight_ends"
+                "dateField": "flight_ends",
+                "hiddenFields": [
+                  "reads_owed",
+                  "reads_done",
+                  "reads_left",
+                  "spots_aired",
+                  "makegoods",
+                  "promo",
+                  "guaranteed",
+                  "owner",
+                  "btn_booked",
+                  "btn_delivered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "dea-t",
@@ -4143,14 +4200,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "position"
+                "groupField": "position",
+                "hiddenFields": [
+                  "btn_aired",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ad-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "airs_on"
+                "dateField": "airs_on",
+                "hiddenFields": [
+                  "status",
+                  "btn_aired",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ad-t",
@@ -4257,7 +4327,11 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "deals_live",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "spn-t"

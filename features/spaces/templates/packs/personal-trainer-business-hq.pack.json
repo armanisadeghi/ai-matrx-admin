@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0511",
-  "version": 7,
+  "version": 8,
   "title": "Personal Trainer Business HQ",
   "description": "For personal trainers: client programs, sessions left, weekly check-ins, renewals.",
   "forWho": "Personal trainers and small coaching businesses",
@@ -3514,7 +3514,7 @@
         "Granary Row"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3674,14 +3674,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "location",
+                  "focus",
+                  "rpe",
+                  "mine",
+                  "done_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "boo-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "when_on"
+                "dateField": "when_on",
+                "hiddenFields": [
+                  "visit_type",
+                  "location",
+                  "focus",
+                  "rpe",
+                  "mine",
+                  "done_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "boo-t",
@@ -3774,7 +3791,21 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "client_status"
+                "groupField": "client_status",
+                "hiddenFields": [
+                  "email",
+                  "goal",
+                  "health",
+                  "visits",
+                  "no_shows",
+                  "checkin_n",
+                  "paid_total",
+                  "owed",
+                  "failed_n",
+                  "risk",
+                  "add_booking_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-t",
@@ -4019,7 +4050,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-t",

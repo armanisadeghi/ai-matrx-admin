@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0495",
-  "version": 4,
+  "version": 5,
   "title": "Design system — Dark-first developer tool",
   "description": "Dark by default: near-black panels, a mint action and mono details. Dense.",
   "forWho": "Developer tools, consoles, data and infrastructure products",
@@ -189,6 +189,43 @@
         ],
         "rows": [
           {
+            "key": "col-09",
+            "values": {
+              "name": "primary",
+              "group": "Primary",
+              "value": "{\"light\":\"#0a7550\",\"dark\":\"#3ddc97\"}",
+              "usage_note": "Mint: the run button and live signals."
+            }
+          },
+          {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#e3efff\",\"dark\":\"#16263a\"}",
+              "usage_note": "Highlights: a selected row, a tip, something new."
+            }
+          },
+          {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#e5e8ed\",\"dark\":\"#1f242c\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#0a5fb4\",\"dark\":\"#8cc8ff\"}",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
+            }
+          },
+          {
             "key": "col-01",
             "values": {
               "name": "background",
@@ -265,15 +302,6 @@
             }
           },
           {
-            "key": "col-09",
-            "values": {
-              "name": "primary",
-              "group": "Primary",
-              "value": "{\"light\":\"#0a7550\",\"dark\":\"#3ddc97\"}",
-              "usage_note": "Mint: the run button and live signals."
-            }
-          },
-          {
             "key": "col-10",
             "values": {
               "name": "primary-foreground",
@@ -281,15 +309,6 @@
               "value": "{\"light\":\"#ffffff\",\"dark\":\"#03140c\"}",
               "usage_note": "Label on a primary button.",
               "reads_on": "primary"
-            }
-          },
-          {
-            "key": "col-11",
-            "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#e5e8ed\",\"dark\":\"#1f242c\"}",
-              "usage_note": "Second actions and quiet selected states."
             }
           },
           {
@@ -303,15 +322,6 @@
             }
           },
           {
-            "key": "col-13",
-            "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#e3efff\",\"dark\":\"#16263a\"}",
-              "usage_note": "Highlights: a selected row, a tip, something new."
-            }
-          },
-          {
             "key": "col-14",
             "values": {
               "name": "accent-foreground",
@@ -319,16 +329,6 @@
               "value": "{\"light\":\"#0b4a8a\",\"dark\":\"#8cc8ff\"}",
               "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
               "reads_on": "accent"
-            }
-          },
-          {
-            "key": "col-15",
-            "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#0a5fb4\",\"dark\":\"#8cc8ff\"}",
-              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
-              "reads_on": "background"
             }
           },
           {
@@ -1280,7 +1280,7 @@
         "Foundry Alley"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [],
   "board": {

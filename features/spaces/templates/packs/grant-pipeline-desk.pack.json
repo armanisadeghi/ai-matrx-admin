@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0552",
-  "version": 6,
+  "version": 7,
   "title": "Grant Pipeline and Reporting Desk",
   "description": "Grant pipeline: funders, LOIs, applications, awards, budgets vs. spending and reports due.",
   "forWho": "Nonprofit grant writers and development directors",
@@ -2902,7 +2902,7 @@
         "Tamarack Street"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3041,14 +3041,49 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "relationship"
+                "groupField": "relationship",
+                "hiddenFields": [
+                  "email",
+                  "owner",
+                  "grants_count",
+                  "awarded_total",
+                  "asked_total",
+                  "decided",
+                  "won",
+                  "win_rate",
+                  "ever_asked",
+                  "btn_claim",
+                  "add_grant",
+                  "add_touch",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "fun-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "next_check_in"
+                "dateField": "next_check_in",
+                "hiddenFields": [
+                  "relationship",
+                  "email",
+                  "owner",
+                  "grants_count",
+                  "awarded_total",
+                  "asked_total",
+                  "decided",
+                  "won",
+                  "win_rate",
+                  "ever_asked",
+                  "btn_claim",
+                  "add_grant",
+                  "add_touch",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "fun-t",
@@ -3158,14 +3193,47 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "awarded",
+                  "restricted",
+                  "match",
+                  "spent",
+                  "left",
+                  "writer",
+                  "reports_open",
+                  "btn_submitted",
+                  "btn_awarded",
+                  "btn_declined",
+                  "btn_claim",
+                  "add_report",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "gra-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "deadline"
+                "dateField": "deadline",
+                "hiddenFields": [
+                  "ask",
+                  "awarded",
+                  "restricted",
+                  "match",
+                  "spent",
+                  "left",
+                  "writer",
+                  "reports_open",
+                  "btn_submitted",
+                  "btn_awarded",
+                  "btn_declined",
+                  "btn_claim",
+                  "add_report",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "gra-t",
@@ -3275,14 +3343,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_submitted",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "rep-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "author",
+                  "btn_submitted",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "rep-t",
@@ -3392,14 +3473,25 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "outcome"
+                "groupField": "outcome",
+                "hiddenFields": [
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "tou-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "held_on"
+                "dateField": "held_on",
+                "hiddenFields": [
+                  "btn_held",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "tou-t",

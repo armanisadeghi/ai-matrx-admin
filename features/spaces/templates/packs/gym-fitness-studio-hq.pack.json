@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0509",
-  "version": 8,
+  "version": 9,
   "title": "Gym and Fitness Studio HQ",
   "description": "For gyms: memberships, freezes, class capacity, PT packages, failed dues.",
   "forWho": "Gyms and boutique fitness studios",
@@ -3617,7 +3617,7 @@
         "Mercer Street"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3770,7 +3770,21 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "client_status"
+                "groupField": "client_status",
+                "hiddenFields": [
+                  "fob",
+                  "billing_day",
+                  "emergency",
+                  "health",
+                  "visits",
+                  "no_shows",
+                  "paid_total",
+                  "owed",
+                  "failed_n",
+                  "risk",
+                  "add_booking_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-t",
@@ -3843,14 +3857,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "visit_type",
+                  "mine",
+                  "done_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "boo-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "when_on"
+                "dateField": "when_on",
+                "hiddenFields": [
+                  "staff",
+                  "visit_type",
+                  "mine",
+                  "done_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "boo-t",
@@ -4195,7 +4222,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "req_status"
+                "groupField": "req_status",
+                "hiddenFields": [
+                  "save_offer",
+                  "fee",
+                  "notes",
+                  "added_at"
+                ]
               },
               {
                 "id": "req-t",

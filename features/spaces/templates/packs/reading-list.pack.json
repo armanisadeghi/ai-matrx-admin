@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0206",
-  "version": 5,
+  "version": 6,
   "title": "Reading List",
   "description": "Readers: a bookshelf with status and ratings, a reading log and genre totals.",
   "forWho": "Readers who like to track",
@@ -1157,7 +1157,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1440,7 +1440,8 @@
                 "dateField": "read_on",
                 "hiddenFields": [
                   "pages",
-                  "minutes"
+                  "minutes",
+                  "logged_at"
                 ]
               },
               {

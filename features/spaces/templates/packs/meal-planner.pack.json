@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0209",
-  "version": 6,
+  "version": 7,
   "title": "Meal Planner",
   "description": "Home cooks and families: plan the week's meals from your recipes, with a shopping list.",
   "forWho": "Home cooks and families",
@@ -1539,7 +1539,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1626,7 +1626,8 @@
                 "hiddenFields": [
                   "servings",
                   "overdue_flag",
-                  "cooked_btn"
+                  "cooked_btn",
+                  "planned_at"
                 ]
               },
               {

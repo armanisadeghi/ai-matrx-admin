@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0564",
-  "version": 5,
+  "version": 6,
   "title": "Security Consultancy Engagement Desk",
   "description": "Security consultancy: engagements, scope, findings by severity, fixes and retests.",
   "forWho": "Cybersecurity consultancies and assessment firms",
@@ -3386,7 +3386,7 @@
         "Sentinel Court"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -3525,14 +3525,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "engagements_active",
+                  "btn_claim",
+                  "add_engagement",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "next_review"
+                "dateField": "next_review",
+                "hiddenFields": [
+                  "manager",
+                  "engagements_active",
+                  "btn_claim",
+                  "add_engagement",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-t",
@@ -3642,14 +3659,61 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "days",
+                  "method",
+                  "lead",
+                  "findings_total",
+                  "critical_total",
+                  "high_total",
+                  "findings_open",
+                  "critical_open",
+                  "medium_low_open",
+                  "resolved",
+                  "retests_due",
+                  "out_of_scope",
+                  "deliverables_open",
+                  "btn_testing",
+                  "btn_reporting",
+                  "btn_delivered",
+                  "btn_claim",
+                  "add_finding",
+                  "add_deliverable",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "eng-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "report_due"
+                "dateField": "report_due",
+                "hiddenFields": [
+                  "fee",
+                  "days",
+                  "method",
+                  "lead",
+                  "findings_total",
+                  "critical_total",
+                  "high_total",
+                  "findings_open",
+                  "critical_open",
+                  "medium_low_open",
+                  "resolved",
+                  "retests_due",
+                  "out_of_scope",
+                  "deliverables_open",
+                  "btn_testing",
+                  "btn_reporting",
+                  "btn_delivered",
+                  "btn_claim",
+                  "add_finding",
+                  "add_deliverable",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "eng-t",
@@ -3910,14 +3974,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_sent",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "del-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "btn_review",
+                  "btn_sent",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "del-t",
@@ -4036,7 +4113,10 @@
                 "name": "In or out",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "in_scope"
+                "groupField": "in_scope",
+                "hiddenFields": [
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "sc-t"
@@ -4079,14 +4159,29 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_pass",
+                  "btn_fail",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "rt-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "retest_on"
+                "dateField": "retest_on",
+                "hiddenFields": [
+                  "tester",
+                  "btn_pass",
+                  "btn_fail",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "rt-t",

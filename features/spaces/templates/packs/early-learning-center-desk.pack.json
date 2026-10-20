@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0558",
-  "version": 5,
+  "version": 6,
   "title": "Early Learning Center Desk",
   "description": "Childcare center desk: rooms and ratios, enrollment, waitlist, tuition, licensing checks.",
   "forWho": "Daycares, preschools and early learning centers",
@@ -2662,7 +2662,7 @@
         "Meadowlark Court"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2869,14 +2869,41 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "billed",
+                  "allergy",
+                  "immunized",
+                  "allergy_notes",
+                  "pickup",
+                  "guardian",
+                  "guardian_phone",
+                  "btn_leave",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "chi-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "review_on"
+                "dateField": "review_on",
+                "hiddenFields": [
+                  "owed",
+                  "billed",
+                  "allergy",
+                  "immunized",
+                  "allergy_notes",
+                  "pickup",
+                  "guardian",
+                  "guardian_phone",
+                  "btn_leave",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "chi-t",
@@ -2977,14 +3004,33 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_tour",
+                  "btn_offer",
+                  "btn_enrolled",
+                  "btn_claim",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "inq-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "tour_on"
+                "dateField": "tour_on",
+                "hiddenFields": [
+                  "owner",
+                  "btn_tour",
+                  "btn_offer",
+                  "btn_enrolled",
+                  "btn_claim",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "inq-t",
@@ -3100,14 +3146,23 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "saf-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "saf-t",
@@ -3221,7 +3276,14 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "family_part",
+                  "btn_paid",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "tu-t",

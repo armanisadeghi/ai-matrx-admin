@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0553",
-  "version": 5,
+  "version": 6,
   "title": "Faith Community Operations Hub",
   "description": "For congregations: members, attendance, giving, care requests, rooms and volunteers.",
   "forWho": "Churches, temples, mosques and other faith communities",
@@ -3101,7 +3101,7 @@
         "Kestrel Avenue"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -3553,7 +3553,8 @@
                 "hiddenFields": [
                   "capacity",
                   "booked_count",
-                  "all_bookings"
+                  "all_bookings",
+                  "added_at"
                 ]
               },
               {
@@ -3603,14 +3604,25 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "rol-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "role_day"
+                "dateField": "role_day",
+                "hiddenFields": [
+                  "btn_filled",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "rol-t",
@@ -3711,14 +3723,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "prayer",
+                  "btn_scheduled",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "car-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "visit_by"
+                "dateField": "visit_by",
+                "hiddenFields": [
+                  "notes",
+                  "prayer",
+                  "btn_scheduled",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "car-t",
@@ -3846,7 +3875,8 @@
                   "kids",
                   "online",
                   "guests",
-                  "in_room"
+                  "in_room",
+                  "added_at"
                 ]
               }
             ],

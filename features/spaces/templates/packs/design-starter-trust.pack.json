@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0496",
-  "version": 4,
+  "version": 5,
   "title": "Design system — Trust",
   "description": "Sober navy, crisp white and conservative corners for money and law.",
   "forWho": "Finance, legal, insurance and professional services",
@@ -193,6 +193,43 @@
         ],
         "rows": [
           {
+            "key": "col-09",
+            "values": {
+              "name": "primary",
+              "group": "Primary",
+              "value": "{\"light\":\"#12305e\",\"dark\":\"#93b5ec\"}",
+              "usage_note": "Navy: the main action, dark enough to also read as text."
+            }
+          },
+          {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#f4efe2\",\"dark\":\"#2b2616\"}",
+              "usage_note": "Parchment: notices and signed-document highlights, never decoration."
+            }
+          },
+          {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#e7ecf3\",\"dark\":\"#1b2944\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#1d4f9e\",\"dark\":\"#93b5ec\"}",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
+            }
+          },
+          {
             "key": "col-01",
             "values": {
               "name": "background",
@@ -269,15 +306,6 @@
             }
           },
           {
-            "key": "col-09",
-            "values": {
-              "name": "primary",
-              "group": "Primary",
-              "value": "{\"light\":\"#12305e\",\"dark\":\"#93b5ec\"}",
-              "usage_note": "Navy: the main action, dark enough to also read as text."
-            }
-          },
-          {
             "key": "col-10",
             "values": {
               "name": "primary-foreground",
@@ -285,15 +313,6 @@
               "value": "{\"light\":\"#ffffff\",\"dark\":\"#0a1730\"}",
               "usage_note": "Label on a primary button.",
               "reads_on": "primary"
-            }
-          },
-          {
-            "key": "col-11",
-            "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#e7ecf3\",\"dark\":\"#1b2944\"}",
-              "usage_note": "Second actions and quiet selected states."
             }
           },
           {
@@ -307,15 +326,6 @@
             }
           },
           {
-            "key": "col-13",
-            "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#f4efe2\",\"dark\":\"#2b2616\"}",
-              "usage_note": "Parchment: notices and signed-document highlights, never decoration."
-            }
-          },
-          {
             "key": "col-14",
             "values": {
               "name": "accent-foreground",
@@ -323,16 +333,6 @@
               "value": "{\"light\":\"#5c4a1a\",\"dark\":\"#e6d6a8\"}",
               "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
               "reads_on": "accent"
-            }
-          },
-          {
-            "key": "col-15",
-            "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#1d4f9e\",\"dark\":\"#93b5ec\"}",
-              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
-              "reads_on": "background"
             }
           },
           {
@@ -1276,7 +1276,7 @@
         "Calloway Square"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [],
   "board": {

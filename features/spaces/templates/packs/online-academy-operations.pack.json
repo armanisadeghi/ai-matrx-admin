@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0561",
-  "version": 5,
+  "version": 6,
   "title": "Online Academy Operations Desk",
   "description": "Online academy: courses, cohorts, enrollments, completion, refunds and live sessions.",
   "forWho": "Online course academies and cohort-based programs",
@@ -3547,7 +3547,7 @@
         "Pembroke Row"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -3985,7 +3985,18 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "email",
+                  "progress",
+                  "certificate",
+                  "btn_accept",
+                  "btn_complete",
+                  "btn_claim",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "enr-t",
@@ -4043,14 +4054,25 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "hel-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "reply_by"
+                "dateField": "reply_by",
+                "hiddenFields": [
+                  "btn_solved",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "hel-t",
@@ -4283,14 +4305,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "amount",
+                  "handler",
+                  "btn_refunded",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "rf-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "decide_by"
+                "dateField": "decide_by",
+                "hiddenFields": [
+                  "status",
+                  "amount",
+                  "handler",
+                  "btn_refunded",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "rf-t",

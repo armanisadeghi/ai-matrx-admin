@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0313",
-  "version": 8,
+  "version": 9,
   "title": "Invoicing & Expenses for Small Business",
   "description": "Small business owners: bill clients, chase late payers and watch monthly spending.",
   "forWho": "Small business owners",
@@ -1396,7 +1396,7 @@
         "Linnet Row"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1499,7 +1499,8 @@
                   "invoice_no",
                   "updated_at",
                   "paid_btn",
-                  "sent_btn"
+                  "sent_btn",
+                  "created_at"
                 ]
               },
               {
@@ -1639,14 +1640,20 @@
                 "name": "By category",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "logged_at"
+                ]
               },
               {
                 "id": "view-cal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "spent_on"
+                "dateField": "spent_on",
+                "hiddenFields": [
+                  "logged_at"
+                ]
               },
               {
                 "id": "view-tbl",

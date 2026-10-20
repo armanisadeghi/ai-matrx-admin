@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0305",
-  "version": 9,
+  "version": 10,
   "title": "Creator Studio",
   "description": "YouTube creators: take video ideas to publish day with sponsors, results and gear.",
   "forWho": "Video and channel creators",
@@ -1928,7 +1928,7 @@
         "Hobbler Street"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2013,7 +2013,15 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "publish_on"
+                "dateField": "publish_on",
+                "hiddenFields": [
+                  "views",
+                  "ctr",
+                  "sponsor_paid",
+                  "sponsor",
+                  "pub_btn",
+                  "updated_at"
+                ]
               },
               {
                 "id": "view-gal",
@@ -2133,7 +2141,10 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "verdict"
+                "groupField": "verdict",
+                "hiddenFields": [
+                  "added_at"
+                ]
               },
               {
                 "id": "view-tbl",

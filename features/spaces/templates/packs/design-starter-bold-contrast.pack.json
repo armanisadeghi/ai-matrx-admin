@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0493",
-  "version": 4,
+  "version": 5,
   "title": "Design system — Bold high-contrast",
   "description": "Black, white and a hot orange; square corners and hard offset shadows.",
   "forWho": "Brands that want to be loud, direct and unmistakable",
@@ -189,6 +189,43 @@
         ],
         "rows": [
           {
+            "key": "col-09",
+            "values": {
+              "name": "primary",
+              "group": "Primary",
+              "value": "{\"light\":\"#ff4f00\",\"dark\":\"#ff5c14\"}",
+              "usage_note": "Hot orange: a FILL with black labels. As text it fails on white (3.3:1); use link."
+            }
+          },
+          {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#ffe500\",\"dark\":\"#ffe500\"}",
+              "usage_note": "Yellow sticker fill. Text on it is always accent-foreground (black)."
+            }
+          },
+          {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#e8e8e8\",\"dark\":\"#262626\"}",
+              "usage_note": "Light gray fill for second actions; foreground reads on it."
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#c23a00\",\"dark\":\"#ff8a4d\"}",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
+            }
+          },
+          {
             "key": "col-01",
             "values": {
               "name": "background",
@@ -265,15 +302,6 @@
             }
           },
           {
-            "key": "col-09",
-            "values": {
-              "name": "primary",
-              "group": "Primary",
-              "value": "{\"light\":\"#ff4f00\",\"dark\":\"#ff5c14\"}",
-              "usage_note": "Hot orange: a FILL with black labels. As text it fails on white (3.3:1); use link."
-            }
-          },
-          {
             "key": "col-10",
             "values": {
               "name": "primary-foreground",
@@ -281,15 +309,6 @@
               "value": "{\"light\":\"#000000\",\"dark\":\"#000000\"}",
               "usage_note": "Label on a primary button.",
               "reads_on": "primary"
-            }
-          },
-          {
-            "key": "col-11",
-            "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#e8e8e8\",\"dark\":\"#262626\"}",
-              "usage_note": "Light gray fill for second actions; foreground reads on it."
             }
           },
           {
@@ -303,15 +322,6 @@
             }
           },
           {
-            "key": "col-13",
-            "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#ffe500\",\"dark\":\"#ffe500\"}",
-              "usage_note": "Yellow sticker fill. Text on it is always accent-foreground (black)."
-            }
-          },
-          {
             "key": "col-14",
             "values": {
               "name": "accent-foreground",
@@ -319,16 +329,6 @@
               "value": "{\"light\":\"#000000\",\"dark\":\"#000000\"}",
               "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
               "reads_on": "accent"
-            }
-          },
-          {
-            "key": "col-15",
-            "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#c23a00\",\"dark\":\"#ff8a4d\"}",
-              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
-              "reads_on": "background"
             }
           },
           {
@@ -1271,7 +1271,7 @@
         "Gantry Way"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [],
   "board": {

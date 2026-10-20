@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0111",
-  "version": 8,
+  "version": 9,
   "title": "Release Notes & API Docs",
   "description": "Product and developer teams: release notes, a public changelog and an API reference.",
   "forWho": "Product and developer-experience teams",
@@ -1426,7 +1426,7 @@
         "Larchmont Street"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1641,7 +1641,11 @@
                 "name": "By kind",
                 "icon": "SquareKanban",
                 "groupField": "kind",
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "open_pull_request",
+                  "created"
+                ]
               },
               {
                 "layout": "grid",
@@ -1845,7 +1849,12 @@
                 "name": "By resource",
                 "icon": "SquareKanban",
                 "groupField": "resource",
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "version",
+                  "since_release",
+                  "edited"
+                ]
               },
               {
                 "layout": "grid",
@@ -1867,7 +1876,12 @@
                 "name": "By status",
                 "icon": "SquareKanban",
                 "groupField": "status",
-                "id": "view-3"
+                "id": "view-3",
+                "hiddenFields": [
+                  "version",
+                  "since_release",
+                  "edited"
+                ]
               }
             ],
             "activeViewId": "view-0"

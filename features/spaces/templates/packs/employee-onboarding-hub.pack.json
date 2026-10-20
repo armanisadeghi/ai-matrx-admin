@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0251",
-  "version": 7,
+  "version": 8,
   "title": "Employee Onboarding Hub",
   "description": "HR and managers: a new-hire portal with 30-60-90 goals, tool access and 1:1s.",
   "forWho": "HR teams and managers onboarding new hires",
@@ -1363,7 +1363,7 @@
         "Tidewrack Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1556,7 +1556,12 @@
                 "name": "By phase",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "phase"
+                "groupField": "phase",
+                "hiddenFields": [
+                  "days_left",
+                  "flag",
+                  "created"
+                ]
               },
               {
                 "id": "v-ot",
@@ -1569,7 +1574,13 @@
                 "name": "Due dates",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "progress",
+                  "days_left",
+                  "flag",
+                  "created"
+                ]
               }
             ],
             "activeViewId": "v-ob"

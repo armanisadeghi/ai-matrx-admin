@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0262",
-  "version": 8,
+  "version": 9,
   "title": "Thesis & Research Tracker",
   "description": "Graduate students: chapters, sources, tasks and advisor meetings, from outline to defence.",
   "forWho": "Graduate students and researchers",
@@ -1672,7 +1672,7 @@
         "Quillfeather Place"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1929,14 +1929,21 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "created"
+                ]
               },
               {
                 "id": "v-tc",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "done_btn",
+                  "created"
+                ]
               },
               {
                 "id": "view-u17",
@@ -2001,7 +2008,10 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "held_on"
+                "dateField": "held_on",
+                "hiddenFields": [
+                  "logged"
+                ]
               }
             ],
             "activeViewId": "v-m"

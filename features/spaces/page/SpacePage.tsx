@@ -905,7 +905,7 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
         <PresenceAvatars viewers={room.viewers} me={room.me} />
         {!inTrash ? <AskPageButton page={pageForAi} /> : null}
         <span className="spaces-edited hidden items-center gap-1 sm:inline-flex" data-state={saveState} aria-live="polite">
-          {collab.isHost && saveState === "saving" ? "Saving…" : collab.isHost && saveState === "failed" ? "Not saved — retrying" : collab.isHost && saveState === "refused" ? "Not saved" : editedAgo(doc.updatedAt, now)}
+          {collab.isHost && saveState === "saving" ? "Saving…" : collab.isHost && saveState === "failed" ? "Not saved — retrying" : collab.isHost && saveState === "refused" ? "Not saved" : editedAgo(doc.updatedAt, now, doc.createdAt)}
           {collab.isHost && (saveState === "failed" || saveState === "refused") ? <ErrorAlchemyMenu error={saveError} /> : null}
         </span>
         {/* The content action set (Copy, Plain, Export, Print, Transform): the whole page as markdown. */}
@@ -964,7 +964,7 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
               .then(() => toast.success(on ? "Saved as a template" : "No longer a template"))
               .catch((e: unknown) => toast.error(e instanceof Error ? e.message : "We couldn't change the template label."))
           }
-          updatedLabel={editedAgo(doc.updatedAt, now)}
+          updatedLabel={editedAgo(doc.updatedAt, now, doc.createdAt)}
           counts={pageCounts(doc)}
         />
       </header>

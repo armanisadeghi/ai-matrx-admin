@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0464",
-  "version": 7,
+  "version": 8,
   "title": "Catering Business Desk",
   "description": "For caterers: proposals, event orders, prep and pack lists, food and labor cost per event.",
   "forWho": "Caterers and event food companies",
@@ -2506,7 +2506,7 @@
         "Millrace Drive"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2658,7 +2658,14 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "event_count",
+                  "owner_me",
+                  "add_event",
+                  "btn_mail",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-t",
@@ -2748,7 +2755,33 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "event_on"
+                "dateField": "event_on",
+                "hiddenFields": [
+                  "guests",
+                  "dietary",
+                  "order_sent",
+                  "per_head",
+                  "service_pct",
+                  "total",
+                  "service_charge",
+                  "deposit",
+                  "balance",
+                  "food_cost",
+                  "labor_cost",
+                  "days_to_go",
+                  "prep_total",
+                  "prep_ready",
+                  "prep_pct",
+                  "staff_ok",
+                  "staff_open",
+                  "client",
+                  "captain",
+                  "owner_me",
+                  "btn_close_out",
+                  "add_item",
+                  "add_shift",
+                  "added_at"
+                ]
               },
               {
                 "id": "eve-t",

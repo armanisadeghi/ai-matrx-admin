@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0494",
-  "version": 4,
+  "version": 5,
   "title": "Design system — Soft rounded",
   "description": "Plum, peach and sage pastels, round shapes and gentle, unhurried motion.",
   "forWho": "Lifestyle shops, beauty, gifting and friendly services",
@@ -9,7 +9,7 @@
     "icon": "Palette"
   },
   "cover": {
-    "url": "gallery:hospitality-hotel-room-bed",
+    "url": "gallery:team-office-lounge-sofa",
     "offsetY": 50
   },
   "category": "docs",
@@ -193,6 +193,43 @@
         ],
         "rows": [
           {
+            "key": "col-09",
+            "values": {
+              "name": "primary",
+              "group": "Primary",
+              "value": "{\"light\":\"#a3367f\",\"dark\":\"#f0a3d6\"}",
+              "usage_note": "Plum: the fill of the main action and the selected chip."
+            }
+          },
+          {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#e5f2e8\",\"dark\":\"#1c3022\"}",
+              "usage_note": "Sage: confirmations and 'in stock' moments."
+            }
+          },
+          {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#ffe9dd\",\"dark\":\"#3a2a20\"}",
+              "usage_note": "Peach: second actions and soft highlights."
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#93286f\",\"dark\":\"#f0a3d6\"}",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
+            }
+          },
+          {
             "key": "col-01",
             "values": {
               "name": "background",
@@ -269,15 +306,6 @@
             }
           },
           {
-            "key": "col-09",
-            "values": {
-              "name": "primary",
-              "group": "Primary",
-              "value": "{\"light\":\"#a3367f\",\"dark\":\"#f0a3d6\"}",
-              "usage_note": "Plum: the fill of the main action and the selected chip."
-            }
-          },
-          {
             "key": "col-10",
             "values": {
               "name": "primary-foreground",
@@ -285,15 +313,6 @@
               "value": "{\"light\":\"#ffffff\",\"dark\":\"#3a0e2c\"}",
               "usage_note": "Label on a primary button.",
               "reads_on": "primary"
-            }
-          },
-          {
-            "key": "col-11",
-            "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#ffe9dd\",\"dark\":\"#3a2a20\"}",
-              "usage_note": "Peach: second actions and soft highlights."
             }
           },
           {
@@ -307,15 +326,6 @@
             }
           },
           {
-            "key": "col-13",
-            "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#e5f2e8\",\"dark\":\"#1c3022\"}",
-              "usage_note": "Sage: confirmations and 'in stock' moments."
-            }
-          },
-          {
             "key": "col-14",
             "values": {
               "name": "accent-foreground",
@@ -323,16 +333,6 @@
               "value": "{\"light\":\"#1f5a32\",\"dark\":\"#bfe5c9\"}",
               "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
               "reads_on": "accent"
-            }
-          },
-          {
-            "key": "col-15",
-            "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#93286f\",\"dark\":\"#f0a3d6\"}",
-              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
-              "reads_on": "background"
             }
           },
           {
@@ -1275,7 +1275,7 @@
         "Marigold Court"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [],
   "board": {

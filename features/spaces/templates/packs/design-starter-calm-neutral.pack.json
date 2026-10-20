@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0491",
-  "version": 4,
+  "version": 5,
   "title": "Design system — Calm neutral",
   "description": "Cool grays, an indigo action and soft cards: the modern software look.",
   "forWho": "Software products and SaaS teams",
@@ -187,6 +187,43 @@
         ],
         "rows": [
           {
+            "key": "col-09",
+            "values": {
+              "name": "primary",
+              "group": "Primary",
+              "value": "{\"light\":\"#4f46e5\",\"dark\":\"#8b8cf8\"}",
+              "usage_note": "Indigo: the fill of the one main action per screen."
+            }
+          },
+          {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#eef0ff\",\"dark\":\"#23264a\"}",
+              "usage_note": "A pale indigo wash for selected rows and tips."
+            }
+          },
+          {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#eceff5\",\"dark\":\"#232937\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#4338ca\",\"dark\":\"#a5a8ff\"}",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
+            }
+          },
+          {
             "key": "col-01",
             "values": {
               "name": "background",
@@ -263,15 +300,6 @@
             }
           },
           {
-            "key": "col-09",
-            "values": {
-              "name": "primary",
-              "group": "Primary",
-              "value": "{\"light\":\"#4f46e5\",\"dark\":\"#8b8cf8\"}",
-              "usage_note": "Indigo: the fill of the one main action per screen."
-            }
-          },
-          {
             "key": "col-10",
             "values": {
               "name": "primary-foreground",
@@ -279,15 +307,6 @@
               "value": "{\"light\":\"#ffffff\",\"dark\":\"#12123a\"}",
               "usage_note": "Label on a primary button.",
               "reads_on": "primary"
-            }
-          },
-          {
-            "key": "col-11",
-            "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#eceff5\",\"dark\":\"#232937\"}",
-              "usage_note": "Second actions and quiet selected states."
             }
           },
           {
@@ -301,15 +320,6 @@
             }
           },
           {
-            "key": "col-13",
-            "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#eef0ff\",\"dark\":\"#23264a\"}",
-              "usage_note": "A pale indigo wash for selected rows and tips."
-            }
-          },
-          {
             "key": "col-14",
             "values": {
               "name": "accent-foreground",
@@ -317,16 +327,6 @@
               "value": "{\"light\":\"#3a32b0\",\"dark\":\"#c7caff\"}",
               "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
               "reads_on": "accent"
-            }
-          },
-          {
-            "key": "col-15",
-            "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#4338ca\",\"dark\":\"#a5a8ff\"}",
-              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
-              "reads_on": "background"
             }
           },
           {
@@ -1278,7 +1278,7 @@
         "Brannock Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [],
   "board": {

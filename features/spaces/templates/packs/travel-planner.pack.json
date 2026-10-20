@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0211",
-  "version": 7,
+  "version": 8,
   "title": "Travel Planner",
   "description": "Travelers: plan each trip with an itinerary, bookings, a packing list and places.",
   "forWho": "Travelers planning trips",
@@ -1663,7 +1663,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1733,21 +1733,56 @@
                 "id": "view-1",
                 "name": "Gallery",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "budget",
+                  "booking_total",
+                  "budget_left",
+                  "budget_flag",
+                  "plan_count",
+                  "items_to_pack",
+                  "items_total",
+                  "packed_pct",
+                  "add_itinerary_btn",
+                  "created"
+                ]
               },
               {
                 "id": "view-2",
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "booking_total",
+                  "budget_left",
+                  "budget_flag",
+                  "plan_count",
+                  "items_to_pack",
+                  "items_total",
+                  "packed_pct",
+                  "add_itinerary_btn",
+                  "created"
+                ]
               },
               {
                 "id": "view-3",
                 "name": "Timeline",
                 "layout": "timeline",
                 "icon": "ChartGantt",
-                "dateField": "starts_on"
+                "dateField": "starts_on",
+                "hiddenFields": [
+                  "budget",
+                  "booking_total",
+                  "budget_left",
+                  "budget_flag",
+                  "plan_count",
+                  "items_to_pack",
+                  "items_total",
+                  "packed_pct",
+                  "add_itinerary_btn",
+                  "created"
+                ]
               },
               {
                 "id": "view-4",
@@ -1788,14 +1823,21 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "when"
+                "dateField": "when",
+                "hiddenFields": [
+                  "booked",
+                  "edited"
+                ]
               },
               {
                 "id": "view-6",
                 "name": "By category",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "edited"
+                ]
               },
               {
                 "id": "view-7",

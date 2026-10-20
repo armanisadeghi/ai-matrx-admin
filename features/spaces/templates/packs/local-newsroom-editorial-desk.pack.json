@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0565",
-  "version": 3,
+  "version": 4,
   "title": "Local Newsroom Editorial Desk",
   "description": "Local newsroom: story budget, assignments, sources, publish schedule and corrections.",
   "forWho": "Local newsrooms and community news outlets",
@@ -2785,7 +2785,7 @@
         "Granary Road"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2924,14 +2924,51 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "art",
+                  "pageviews",
+                  "words",
+                  "reporter",
+                  "editor",
+                  "interviews_done",
+                  "requests_out",
+                  "corrections_open",
+                  "sourcing",
+                  "btn_assign",
+                  "btn_edit",
+                  "btn_ready",
+                  "btn_claim",
+                  "add_interview",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "sto-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "fact_check",
+                  "art",
+                  "pageviews",
+                  "words",
+                  "reporter",
+                  "editor",
+                  "interviews_done",
+                  "requests_out",
+                  "corrections_open",
+                  "sourcing",
+                  "btn_assign",
+                  "btn_edit",
+                  "btn_ready",
+                  "btn_claim",
+                  "add_interview",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "sto-t",
@@ -3050,14 +3087,29 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "reporter",
+                  "btn_spoken",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "int-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "speak_on"
+                "dateField": "speak_on",
+                "hiddenFields": [
+                  "attribution",
+                  "reporter",
+                  "btn_spoken",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "int-t",
@@ -3167,14 +3219,25 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cor-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "fix_by"
+                "dateField": "fix_by",
+                "hiddenFields": [
+                  "btn_fixed",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cor-t",
@@ -3275,14 +3338,29 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_assigned",
+                  "btn_covered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cov-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "starts_at"
+                "dateField": "starts_at",
+                "hiddenFields": [
+                  "photographer",
+                  "btn_assigned",
+                  "btn_covered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cov-t",
@@ -3409,7 +3487,11 @@
                 "name": "By beat",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "beat"
+                "groupField": "beat",
+                "hiddenFields": [
+                  "times",
+                  "added_at"
+                ]
               },
               {
                 "id": "so-t",
@@ -4144,7 +4226,26 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "publish_at"
+                "dateField": "publish_at",
+                "hiddenFields": [
+                  "fact_check",
+                  "art",
+                  "pageviews",
+                  "words",
+                  "reporter",
+                  "editor",
+                  "interviews_done",
+                  "requests_out",
+                  "corrections_open",
+                  "sourcing",
+                  "btn_assign",
+                  "btn_edit",
+                  "btn_ready",
+                  "btn_claim",
+                  "add_interview",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "dn-1"

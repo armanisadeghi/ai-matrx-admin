@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0355",
-  "version": 6,
+  "version": 7,
   "title": "Competitor Analysis",
   "description": "Product and marketing teams: profile rivals, compare features and track pricing.",
   "forWho": "Product and marketing teams",
@@ -899,7 +899,7 @@
         "Tansy Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -964,7 +964,15 @@
                 "name": "By threat",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "threat"
+                "groupField": "threat",
+                "hiddenFields": [
+                  "segment",
+                  "days_since",
+                  "review_flag",
+                  "features_count",
+                  "open_website",
+                  "updated_at"
+                ]
               },
               {
                 "id": "v-c",

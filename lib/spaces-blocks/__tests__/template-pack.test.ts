@@ -6,7 +6,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { checkPack, choiceColorFindings } from "../template-pack-check";
+import { cardStampFields, checkPack, choiceColorFindings } from "../template-pack-check";
 import { relativeWindowDays, resolvePackBlocks, type SpaceTemplatePack } from "../template-pack";
 
 const PACK = JSON.parse(readFileSync(join(__dirname, "../../../features/spaces/templates/packs/projects-and-tasks.pack.json"), "utf8")) as SpaceTemplatePack;
@@ -226,5 +226,31 @@ describe("view tab names", () => {
       for (const f of checkPack(pack)) if (/named "/.test(f.says) && /views\[/.test(f.at)) bad.push(`${file} ${f.at} ${f.says}`);
     }
     expect(bad).toEqual([]);
+  });
+});
+
+describe("cards end with no unlabeled stamp date (ADVERSARIAL-5 F9)", () => {
+  const fields = [
+    { key: "name", parityType: "text" },
+    { key: "status", parityType: "select" },
+    { key: "owner", parityType: "text" },
+    { key: "added_at", parityType: "created_time" },
+    { key: "due_on", parityType: "datetime" },
+  ];
+  it("names a created stamp a kanban card would show", () => {
+    expect(cardStampFields(fields, { layout: "kanban", groupField: "status" })).toEqual(["added_at"]);
+    expect(cardStampFields(fields, { layout: "gallery", hiddenFields: ["due_on"] })).toEqual(["added_at"]);
+  });
+  it("accepts a stamp that is hidden, a grid, and a business date", () => {
+    expect(cardStampFields(fields, { layout: "kanban", groupField: "status", hiddenFields: ["added_at"] })).toEqual([]);
+    expect(cardStampFields(fields, { layout: "grid" })).toEqual([]);
+    expect(cardStampFields(fields.filter((f) => f.key !== "added_at"), { layout: "kanban", groupField: "status" })).toEqual([]);
+  });
+  it("the checker reports it at the view's hiddenFields", () => {
+    const p = fresh();
+    const table = p.spec.tables.find((t) => t.token === projectsDb(p).source.table)!;
+    (table.fields as Array<Record<string, unknown>>).splice(1, 0, { key: "added_at", label: "Added", parityType: "created_time" });
+    projectsDb(p).views = [{ id: "view-board", name: "Board", layout: "kanban", groupField: "status" }];
+    expect(checkPack(p).some((f) => f.at.endsWith("views[0].hiddenFields") && f.says.includes("added_at"))).toBe(true);
   });
 });

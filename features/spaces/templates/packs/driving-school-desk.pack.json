@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0560",
-  "version": 5,
+  "version": 6,
   "title": "Driving School Desk",
   "description": "Driving school desk: learners' permits and hours, lessons, cars, classroom and road tests.",
   "forWho": "Driving schools and driver-education programs",
@@ -2907,7 +2907,7 @@
         "Mesquite Plaza"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -3209,14 +3209,33 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "skills",
+                  "hours",
+                  "btn_done",
+                  "btn_noshow",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "dri-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "drive_at"
+                "dateField": "drive_at",
+                "hiddenFields": [
+                  "skills",
+                  "status",
+                  "hours",
+                  "btn_done",
+                  "btn_noshow",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "dri-t",
@@ -3337,7 +3356,8 @@
                   "drives_booked",
                   "hours_driven",
                   "btn_shop",
-                  "btn_back"
+                  "btn_back",
+                  "added_at"
                 ]
               },
               {
@@ -3351,7 +3371,8 @@
                   "drives_booked",
                   "hours_driven",
                   "btn_shop",
-                  "btn_back"
+                  "btn_back",
+                  "added_at"
                 ]
               },
               {
@@ -3597,7 +3618,8 @@
                   "seats",
                   "enrolled",
                   "open_seats",
-                  "btn_claim"
+                  "btn_claim",
+                  "added_at"
                 ]
               },
               {

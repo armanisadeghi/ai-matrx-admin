@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0555",
-  "version": 5,
+  "version": 6,
   "title": "Animal Rescue Operations Desk",
   "description": "For foster-based rescues: animals, fosters, shelter pulls, vet care and adoptions.",
   "forWho": "Animal rescues, humane societies and foster networks",
@@ -3000,7 +3000,7 @@
         "Juniper Hollow"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -3139,14 +3139,59 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "foster",
+                  "age_months",
+                  "weight",
+                  "altered",
+                  "vaccinated",
+                  "chip",
+                  "good_with",
+                  "fee",
+                  "notes",
+                  "vet_cost",
+                  "vet_open",
+                  "applications_open",
+                  "btn_ready",
+                  "btn_pending",
+                  "btn_adopted",
+                  "btn_claim",
+                  "add_vet",
+                  "add_app",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ani-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "next_checkup"
+                "dateField": "next_checkup",
+                "hiddenFields": [
+                  "status",
+                  "foster",
+                  "age_months",
+                  "weight",
+                  "altered",
+                  "vaccinated",
+                  "chip",
+                  "good_with",
+                  "fee",
+                  "notes",
+                  "vet_cost",
+                  "vet_open",
+                  "applications_open",
+                  "btn_ready",
+                  "btn_pending",
+                  "btn_adopted",
+                  "btn_claim",
+                  "add_vet",
+                  "add_app",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ani-t",
@@ -3329,14 +3374,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "vet-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "visit_on"
+                "dateField": "visit_on",
+                "hiddenFields": [
+                  "driver",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "vet-t",
@@ -3437,7 +3495,20 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "reference_checked",
+                  "home_visit",
+                  "landlord_ok",
+                  "contract",
+                  "fee_paid",
+                  "btn_approve",
+                  "btn_decline",
+                  "btn_claim",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "app-t",
@@ -3500,7 +3571,8 @@
                   "dogs",
                   "cats",
                   "btn_picked",
-                  "btn_claim"
+                  "btn_claim",
+                  "added_at"
                 ]
               },
               {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0562",
-  "version": 5,
+  "version": 6,
   "title": "SaaS Startup Operating System",
   "description": "SaaS operating system: MRR by plan, churn by signup cohort, support SLAs and roadmap.",
   "forWho": "Founders running a small subscription software product",
@@ -2885,7 +2885,7 @@
         "Gantry Street"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -3024,14 +3024,51 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "arr",
+                  "seats",
+                  "health",
+                  "churn_reason",
+                  "email",
+                  "owner",
+                  "tickets_open",
+                  "tickets_all",
+                  "revenue_per_seat",
+                  "btn_risk",
+                  "btn_active",
+                  "btn_claim",
+                  "add_ticket",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cus-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "renews_on"
+                "dateField": "renews_on",
+                "hiddenFields": [
+                  "mrr",
+                  "arr",
+                  "seats",
+                  "health",
+                  "churn_reason",
+                  "email",
+                  "owner",
+                  "tickets_open",
+                  "tickets_all",
+                  "revenue_per_seat",
+                  "btn_risk",
+                  "btn_active",
+                  "btn_claim",
+                  "add_ticket",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cus-t",
@@ -3144,14 +3181,35 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "first_reply_hours",
+                  "sla",
+                  "assignee",
+                  "btn_start",
+                  "btn_solved",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "tic-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "reply_by"
+                "dateField": "reply_by",
+                "hiddenFields": [
+                  "priority",
+                  "first_reply_hours",
+                  "sla",
+                  "assignee",
+                  "btn_start",
+                  "btn_solved",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "tic-t",
@@ -3298,7 +3356,17 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "target_on"
+                "dateField": "target_on",
+                "hiddenFields": [
+                  "asks",
+                  "asking_mrr",
+                  "btn_plan",
+                  "btn_build",
+                  "btn_shipped",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "fea-t",
@@ -3411,7 +3479,15 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "trend"
+                "groupField": "trend",
+                "hiddenFields": [
+                  "churn_pct",
+                  "new_accounts",
+                  "lost_accounts",
+                  "spend",
+                  "net_accounts",
+                  "added_at"
+                ]
               },
               {
                 "id": "met-t",

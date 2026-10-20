@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0456",
-  "version": 7,
+  "version": 8,
   "title": "Architecture Firm Studio",
   "description": "For architects: projects by phase, fees and hours, drawing sets, RFIs and submittals.",
   "forWho": "Small and mid-sized architecture practices",
@@ -2935,7 +2935,7 @@
         "Quarry Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3084,7 +3084,8 @@
                 "hiddenFields": [
                   "projects_count",
                   "add_project",
-                  "btn_mail"
+                  "btn_mail",
+                  "added_at"
                 ]
               },
               {
@@ -3134,14 +3135,59 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "construction",
+                  "billed_pct",
+                  "hours_budget",
+                  "hours_logged",
+                  "hours_pct",
+                  "permit_no",
+                  "days_to_permit",
+                  "rfi_waiting",
+                  "rfi_unclosed",
+                  "subs_waiting",
+                  "sets_issued",
+                  "sets_open",
+                  "client",
+                  "lead",
+                  "owner_me",
+                  "btn_close_project",
+                  "add_rfi",
+                  "add_submittal",
+                  "add_drawing_set",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "permit_on"
+                "dateField": "permit_on",
+                "hiddenFields": [
+                  "fee_basis",
+                  "construction",
+                  "billed_pct",
+                  "hours_budget",
+                  "hours_logged",
+                  "hours_pct",
+                  "permit_no",
+                  "days_to_permit",
+                  "rfi_waiting",
+                  "rfi_unclosed",
+                  "subs_waiting",
+                  "sets_issued",
+                  "sets_open",
+                  "client",
+                  "lead",
+                  "owner_me",
+                  "btn_close_project",
+                  "add_rfi",
+                  "add_submittal",
+                  "add_drawing_set",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-t",
@@ -3393,14 +3439,29 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "project",
+                  "owner",
+                  "owner_me",
+                  "btn_close_rfi",
+                  "added_at"
+                ]
               },
               {
                 "id": "rfi-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "answer_due"
+                "dateField": "answer_due",
+                "hiddenFields": [
+                  "days_open",
+                  "project",
+                  "owner",
+                  "owner_me",
+                  "btn_close_rfi",
+                  "added_at"
+                ]
               },
               {
                 "id": "rfi-t",
@@ -3501,14 +3562,25 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "owner_me",
+                  "btn_sign_off",
+                  "added_at"
+                ]
               },
               {
                 "id": "sub-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "review_due"
+                "dateField": "review_due",
+                "hiddenFields": [
+                  "reviewer",
+                  "owner_me",
+                  "btn_sign_off",
+                  "added_at"
+                ]
               },
               {
                 "id": "sub-t",
