@@ -65,11 +65,21 @@ export const templateSignUpHref = (card: Pick<GalleryCard, "slug" | "catalogue_i
 export type PublicRead =
   | { state: "open"; cards: GalleryCard[] }
   /** The door is not on this database, or refuses a caller with no session. */
-  | { state: "closed"; reason: "absent" | "refused" };
+  | { state: "closed"; reason: "absent" | "refused" }
+  /** The database did not answer in time (statement timeout, or the server's REST deadline). The page says so in place; nothing is kept. */
+  | { state: "timed_out" };
 
 interface DoorError {
   code?: string | null;
   message?: string | null;
+  name?: string | null;
+}
+
+/** A call the database cancelled at its statement timeout (57014) or that the server's REST deadline cut off (an AbortError / "did not answer"). */
+export function isTimedOut(error: DoorError): boolean {
+  if (error.code === "57014") return true;
+  if (error.name === "AbortError") return true;
+  return /statement timeout|server deadline|did not answer|timed out/i.test(error.message ?? "");
 }
 
 /**
@@ -99,6 +109,7 @@ export async function readPublicCatalogueWith(rpc: Rpc): Promise<PublicRead> {
   const classify = (error: DoorError): PublicRead => {
     const reason = closedReason(error);
     if (reason) return { state: "closed", reason };
+    if (isTimedOut(error)) return { state: "timed_out" };
     throw new Error(`The template catalog could not be read: ${error.message ?? error.code ?? "unknown error"}`);
   };
   const first = await rpc(0);

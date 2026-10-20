@@ -164,8 +164,15 @@ describe("the public gallery index", () => {
   });
 
   it("does not read a real failure as an empty gallery", async () => {
+    closedWith("XX000", "internal error in the planner");
+    await expect(index()).rejects.toThrow("internal error");
+  });
+
+  it("says a statement timeout in place (AT-FIX-H3): not a crash and not an empty gallery", async () => {
     closedWith("57014", "canceling statement due to statement timeout");
-    await expect(index()).rejects.toThrow("statement timeout");
+    const page = await index();
+    expect(page).toContain('data-public-templates="timed_out"');
+    expect(page).not.toContain("No public templates yet");
   });
 });
 

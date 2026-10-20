@@ -19,11 +19,13 @@
 
 import Link from "next/link";
 
+import { JsonLd } from "@/components/seo/JsonLd";
 import { siteConfig } from "@/config/extras/site";
 import { signUpHref } from "@/utils/auth/auth-destination";
 import { cn } from "@/lib/utils";
 
 import { isSpaceCard, wordFor, type GalleryCard } from "./catalogue";
+import { GalleryTimedOut } from "./GalleryTimedOut";
 import { GallerySearch } from "./GallerySearch";
 import { SpaceTemplateCardGrid, TemplateCardGrid } from "./TemplateCards";
 import {
@@ -102,7 +104,7 @@ export function PublicGalleryPage({
 
   return (
     <div className="bg-textured" data-public-templates={state}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      {state === "timed_out" ? null : <JsonLd data={jsonLd} />}
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 pb-16 pt-8 sm:px-6 lg:gap-8 lg:px-8 lg:pt-12">
         <header className="flex flex-col gap-4">
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -114,7 +116,7 @@ export function PublicGalleryPage({
               )}
               <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{title}</h1>
               <span className="type-body text-muted-foreground tabular-nums" data-public-templates-count="">
-                {q ? `${found.length} of ${cards.length} templates` : `${cards.length.toLocaleString("en-US")} templates`}
+                {state === "timed_out" ? "\u00a0" : q ? `${found.length} of ${cards.length} templates` : `${cards.length.toLocaleString("en-US")} templates`}
               </span>
             </div>
             <Link
@@ -129,10 +131,12 @@ export function PublicGalleryPage({
         </header>
 
         <div className="flex min-w-0 flex-col gap-5 lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:items-start lg:gap-10">
-          <CategoryRail categories={categories} active={hub && !q ? null : (active ?? null)} total={all.length} />
+          <CategoryRail categories={categories} active={hub && !q ? null : (active ?? null)} total={state === "timed_out" ? null : all.length} />
 
           <div className="flex min-w-0 flex-col gap-10" data-public-templates-results={q ? found.length : undefined}>
-            {cards.length === 0 ? (
+            {state === "timed_out" ? (
+              <GalleryTimedOut />
+            ) : cards.length === 0 ? (
               <p className="type-body text-muted-foreground" data-public-templates-empty="">
                 No public templates yet
               </p>
@@ -336,7 +340,7 @@ function Section({
  * THE ONE RAIL: every category with its count. Desktop: a sticky column beside the cards. Phone: one row that
  * scrolls sideways, so the cards start right under it (ADVERSARIAL-2 #7: 25 wrapped chips pushed every card below the fold).
  */
-function CategoryRail({ categories, active, total }: { categories: Array<{ key: string; count: number }>; active: string | null; total: number }) {
+function CategoryRail({ categories, active, total }: { categories: Array<{ key: string; count: number }>; active: string | null; total: number | null }) {
   return (
     <nav
       aria-label="Template categories"
@@ -353,7 +357,7 @@ function CategoryRail({ categories, active, total }: { categories: Array<{ key: 
   );
 }
 
-function RailItem({ href, active, label, count }: { href: string; active: boolean; label: string; count: number }) {
+function RailItem({ href, active, label, count }: { href: string; active: boolean; label: string; count: number | null }) {
   return (
     <li className="shrink-0 lg:shrink">
       <Link
@@ -367,7 +371,7 @@ function RailItem({ href, active, label, count }: { href: string; active: boolea
         )}
       >
         <span className="truncate">{label}</span>
-        <span className="type-meta text-muted-foreground tabular-nums">{count}</span>
+        <span className="type-meta text-muted-foreground tabular-nums">{count ?? "\u2013"}</span>
       </Link>
     </li>
   );

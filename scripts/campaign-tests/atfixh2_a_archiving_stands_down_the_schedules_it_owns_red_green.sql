@@ -7,6 +7,10 @@
 -- still enabled after the automation is archived). GREEN after: S1-S5 pass - an automation, a table and a base each
 -- stand their schedules down, a restore brings back exactly those, and a schedule that was already off stays off.
 
+-- AT-FIX-H3 (20261020010000_atfixh3_b_a_restored_automations_schedule_waits_for_the_switch.sql) extends it: S2 now says the restored
+-- automation (off) keeps its schedule off until the switch is turned on (RED before: S2 fails, the schedule came back on), and S2b says
+-- switching the automation on stands the waiting schedule up (RED before the fix's second half: S2b fails).
+
 \set ON_ERROR_STOP on
 \timing off
 \set suite 'atfixh2_a_archiving_stands_down_the_schedules_it_owns_red_green.sql'
@@ -64,17 +68,34 @@ begin
   end if;
   raise notice 'S1 PASS - archiving the automation switched its schedule and trigger off';
 
-  -- S2 restore: back to its prior state (on); the one that was already off stays off
+  -- S2 restore (AT-FIX-H3): the automation comes back OFF, so its schedule waits (marker kept) until the switch is turned on
   perform set_config('role', 'authenticated', true);
   perform custom.automation_restore(v_org, v_auto);
   perform custom.automation_restore(v_org, v_auto2);
   perform set_config('role', 'postgres', true);
   select enabled into v_en from scheduler.sch_task where id = v_task;
   select enabled into v_en_t from scheduler.sch_trigger where id = v_trg;
-  if not (v_en and v_en_t) then raise exception 'S2: restoring the automation did not bring its schedule back (task %, trigger %)', v_en, v_en_t; end if;
+  if v_en or v_en_t then raise exception 'S2 RED: the automation came back OFF and its schedule came back ON (task %, trigger %)', v_en, v_en_t; end if;
+  if not (select metadata ? 'stood_down_by_archive' from scheduler.sch_task where id = v_task) then raise exception 'S2: the waiting schedule lost its marker'; end if;
   if (select enabled from scheduler.sch_task where id = v_task_off) then raise exception 'S2: a schedule that was already off was switched on by a restore'; end if;
-  if (select metadata ? 'stood_down_by_archive' from scheduler.sch_task where id = v_task) then raise exception 'S2: the stand-down marker was left behind'; end if;
-  raise notice 'S2 PASS - restore brought back exactly the schedule archive had switched off';
+  raise notice 'S2 PASS - restore left the schedule waiting for the switch';
+
+  -- S2b switching the automation on stands its waiting schedule up (and clears the marker); the one that was off stays off
+  perform set_config('role', 'authenticated', true);
+  perform custom.automation_set_enabled(v_org, v_auto, true);
+  perform custom.automation_set_enabled(v_org, v_auto2, true);
+  perform set_config('role', 'postgres', true);
+  select enabled into v_en from scheduler.sch_task where id = v_task;
+  select enabled into v_en_t from scheduler.sch_trigger where id = v_trg;
+  if not (v_en and v_en_t) then raise exception 'S2b RED: the automation was switched on and its schedule is still off (task %, trigger %)', v_en, v_en_t; end if;
+  if (select metadata ? 'stood_down_by_archive' from scheduler.sch_task where id = v_task) then raise exception 'S2b: the stand-down marker was left behind'; end if;
+  if (select enabled from scheduler.sch_task where id = v_task_off) then raise exception 'S2b: a schedule that was already off came on with the switch'; end if;
+  -- switching it off and on again leaves the schedule alone (no marker, nothing waiting)
+  perform set_config('role', 'authenticated', true);
+  perform custom.automation_set_enabled(v_org, v_auto, false);
+  perform custom.automation_set_enabled(v_org, v_auto, true);
+  perform set_config('role', 'postgres', true);
+  raise notice 'S2b PASS - switching the automation on stood up the schedule that was waiting for it';
 
   -- S3 archive the TABLE the automation lives on: its schedule stands down; restoring the table brings it back
   perform set_config('role', 'authenticated', true);
