@@ -63,6 +63,7 @@ export default function QuizArtifact(props: ArtifactRendererProps) {
         messageId={messageId}
         blockIndex={blockIndex}
         controls={controls}
+        isStreamActive={isStreamActive}
       />
     </Suspense>
   );
