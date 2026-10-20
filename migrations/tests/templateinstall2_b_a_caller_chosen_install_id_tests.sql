@@ -5,6 +5,8 @@
 -- The concurrent half (two connections) is migrations/tests/templateinstall2_b_concurrent_install_id_test.py.
 -- ============================================================
 begin;
+-- the whole file is one session; the doors set their own 90 s, the test's loops may run longer than a client call
+set local statement_timeout = '600s';
 select set_config('ti2.tpl', (select t.id::text from custom.template t where t.catalogue_id = 'SP0215' and t.retired_at is null order by t.template_version desc limit 1), true),
        set_config('ti2.id', gen_random_uuid()::text, true),
        set_config('ti2.foreign', (select i.id::text from custom.template_install i where i.organization_id <> '5dc930e9-bd65-44a1-8369-af773f6e1a5b' limit 1), true),
