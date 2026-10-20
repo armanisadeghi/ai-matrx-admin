@@ -24,14 +24,9 @@ function sources(dir: string): string[] {
 }
 
 /** Controls passed into a wrapper's HEADER props, inline or through a variable that holds them. */
-const WRAPPER_PROPS = /(?:controls|extraActions|headerContent)=\{\s*(?:<>\s*)?(?:<BlockControlsButton|headerControls\b)/;
+const WRAPPER_PROPS = /(?:controls|extraActions|headerContent)=\{\s*(?:<>\s*)?(?:<CopySourceButton[^>]*\/>\s*)?(?:<BlockControlsButton|headerControls\b)/;
 /** BlockHeaderWrapper's `controls` is a BODY row under the title; only `extraActions` is the header. */
-const HEADER_WRAPPER_PROPS = /extraActions=\{\s*<>\s*<BlockControlsButton/;
-/** Files whose Controls button lives in a child the owning block tells to stand down (own file checks the owner). */
-const STANDS_DOWN: Record<string, string> = {
-  "tasks/TaskChecklist.tsx": "tasks/TasksBlock.tsx",
-};
-
+const HEADER_WRAPPER_PROPS = /extraActions=\{\s*<>\s*(?:<CopySourceButton[^>]*\/>\s*)?<BlockControlsButton/;
 const withControls = sources(ROOT)
   .map((file) => ({ file, rel: path.relative(ROOT, file), text: fs.readFileSync(file, "utf8") }))
   .filter(({ text }) => text.includes("<BlockControlsButton"));
@@ -44,13 +39,6 @@ describe("every block with Controls draws them in its own header row", () => {
   for (const { rel, text } of withControls) {
     it(`${rel}: exactly one header-actions slot, Controls in the header`, () => {
       const slotUses = (text.match(/\{host\.actions\}|<BlockHostActions\b/g) ?? []).length;
-      if (STANDS_DOWN[rel]) {
-        const owner = fs.readFileSync(path.join(ROOT, STANDS_DOWN[rel]), "utf8");
-        expect(text).toContain("controlsInHeader");
-        expect(owner).toMatch(WRAPPER_PROPS);
-        expect(owner).toContain("controlsInHeader");
-        return;
-      }
       if (/useBlockHostSlot\(/.test(text)) {
         expect(slotUses).toBe(1);
         return;
@@ -61,6 +49,16 @@ describe("every block with Controls draws them in its own header row", () => {
       expect(slotUses).toBe(0);
     });
   }
+});
+
+describe("a checklist inside the collapsible wrapper stands down so there is one header", () => {
+  it("TasksBlock tells the checklist its Controls are in the wrapper's header", () => {
+    const block = fs.readFileSync(path.join(ROOT, "tasks/TasksBlock.tsx"), "utf8");
+    const checklist = fs.readFileSync(path.join(ROOT, "tasks/TaskChecklist.tsx"), "utf8");
+    expect(block).toContain("controlsInHeader");
+    expect(checklist).toMatch(/useBlockHostSlot\(!controlsInHeader\)/);
+    expect(checklist).toMatch(/\{!controlsInHeader && \(\s*<div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b/);
+  });
 });
 
 describe("blocks with a hero card are one framed box with a header row", () => {

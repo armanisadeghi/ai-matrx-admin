@@ -41,12 +41,15 @@ import {
   Save,
   RotateCcw,
   Upload,
+  CheckSquare,
 } from "lucide-react";
 import { parseMarkdownChecklist } from "./tasklist-parser";
 import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { cn } from "@/lib/utils";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
+import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { CopySourceButton } from "../common/CopySourceButton";
 import { BlockControlsButton, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 
 // Define TypeScript types for our components and data structures
@@ -105,6 +108,9 @@ const TaskChecklist = ({
   const narrow = useCanvasFit() === "narrow";
   // Block Controls (text, done, add, remove, reorder): only where this checklist is a saved block.
   const blockControls = useBlockControls("tasks", content, useBlockEdit());
+  // One frame: unless a wrapper owns the header (controlsInHeader), the checklist is its own card with ONE header row
+  // that holds Copy, Controls and the host's tools (the editor's "</>", Remove, drag).
+  const host = useBlockHostSlot(!controlsInHeader);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const initialStateRef = useRef<CheckboxStateType>({});
   // The box each row had in the source at the last parse (to tell a source change from a person's tick).
@@ -592,10 +598,34 @@ const TaskChecklist = ({
       : [];
 
   const progress = calculateProgress();
+  // The header names the list: its one "## Section" heading, else "Tasks".
+  const sections = checklist.filter((item) => item.type === "section");
+  const headerTitle = sections.length === 1 && sections[0].title ? sections[0].title : "Tasks";
 
   return (
     <TooltipProvider>
-      <Card className="w-full bg-transparent border-none p-0">
+      <Card
+        className={cn(
+          "w-full p-0",
+          controlsInHeader
+            ? "bg-transparent border-none"
+            : cn("gap-0 overflow-hidden rounded-lg border bg-card transition-colors", host.selected ? "border-primary" : "border-border"),
+        )}
+        data-block-frame={controlsInHeader ? undefined : "tasks"}
+      >
+        {!controlsInHeader && (
+          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
+            <div className="flex min-w-[9rem] flex-1 items-center gap-2">
+              <CheckSquare className="h-3.5 w-3.5 shrink-0 text-primary" />
+              <span className="truncate text-sm font-medium text-foreground">{headerTitle}</span>
+            </div>
+            <div className="flex shrink-0 items-center gap-0.5">
+              <CopySourceButton source={content} />
+              <BlockControlsButton controls={blockControls} title="Tasks" />
+              {host.actions}
+            </div>
+          </div>
+        )}
         <CardHeader className={cn("pb-2", narrow && "px-2 pt-2")}>
           <div className={cn("mt-2", narrow ? "space-y-2" : "space-y-4")}>
             <div
@@ -619,7 +649,6 @@ const TaskChecklist = ({
                   narrow ? "ml-auto text-xs" : "text-sm",
                 )}
               >
-                {!controlsInHeader && <BlockControlsButton controls={blockControls} title="Tasks" />}
                 <span>Hide completed</span>
                 <Switch
                   checked={hideCompleted}

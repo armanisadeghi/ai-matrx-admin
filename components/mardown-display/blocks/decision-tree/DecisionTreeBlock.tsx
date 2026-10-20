@@ -39,6 +39,7 @@ import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-r
 import { IconButton } from "@ai-matrx/design-system";
 import { useCanvasPresentation } from "@ai-matrx/canvas/react";
 import { decisionBranchesSideBySide } from "@ai-matrx/rich-content/display/blocks/canvas-adaptive";
+import { CopySourceButton } from "../common/CopySourceButton";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
 import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
@@ -563,8 +564,8 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
         >
           {/* The block's one header: title left, actions right (Controls, "</>" and Copy come from the shared slot) */}
           {!isFullScreen && (
-            <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/50 px-3 py-1.5">
-              <div className="flex min-w-0 items-center gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
+              <div className="flex min-w-[9rem] flex-1 items-center gap-2">
                 <GitBranch className="h-3.5 w-3.5 shrink-0 text-primary" />
                 <InlineControlText controls={controls} fieldKey="title" value={decisionTree.title} className="truncate text-sm font-medium text-foreground">
                   {decisionTree.title}
@@ -592,6 +593,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
                   tooltip="Expand to full screen"
                   onClick={() => setIsFullScreen(true)}
                 />
+                <CopySourceButton source={source} />
                 <BlockControlsButton controls={controls} title="Decision tree controls" />
                 {host.actions}
               </div>

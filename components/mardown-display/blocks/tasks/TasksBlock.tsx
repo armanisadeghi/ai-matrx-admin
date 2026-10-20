@@ -10,6 +10,7 @@ import ChatCollapsibleWrapper from "@ai-matrx/rich-content/display/blocks/ChatCo
 import TaskPreviewWindow from "@/features/tasks/components/TaskPreviewWindow";
 import { BlockControlsButton, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
+import { CopySourceButton } from "../common/CopySourceButton";
 import TaskChipRow from "@/features/tasks/widgets/TaskChipRow";
 
 interface TasksBlockProps {
@@ -48,7 +49,12 @@ const TasksBlock: React.FC<TasksBlockProps> = ({
     <ChatCollapsibleWrapper
       icon={<CheckSquare className="h-4 w-4 text-primary" />}
       title="Tasks"
-      controls={<BlockControlsButton controls={controls} title="Tasks" />}
+      controls={
+        <>
+          <CopySourceButton source={content} />
+          <BlockControlsButton controls={controls} title="Tasks" />
+        </>
+      }
     >
       <TaskChecklist
         content={content}

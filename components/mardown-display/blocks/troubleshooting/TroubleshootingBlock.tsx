@@ -49,6 +49,7 @@ import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-r
 import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { convertTroubleshootingToTasks } from "@/features/tasks/utils/importConverters";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { CopySourceButton } from "../common/CopySourceButton";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
 import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
@@ -375,8 +376,8 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
         >
           {/* The block's one header: title left, actions right (Controls, "</>" and Copy come from the shared slot) */}
           {!isFullScreen && (
-            <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/50 px-3 py-1.5">
-              <div className="flex min-w-0 items-center gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
+              <div className="flex min-w-[9rem] flex-1 items-center gap-2">
                 <HelpCircle className="h-3.5 w-3.5 shrink-0 text-primary" />
                 <InlineControlText controls={controls} fieldKey="title" value={troubleshooting.title} className="truncate text-sm font-medium text-foreground">
                   {troubleshooting.title}
@@ -387,6 +388,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
                 <Button variant="quiet" icon={<ArrowUpRight />} aria-label="Canvas" title="Canvas" onClick={handleOpenCanvas} />
                 <Button variant="quiet" icon={<Printer />} aria-label="Print" title="Print" onClick={handlePrint} />
                 <Button variant="quiet" icon={<Maximize2 />} aria-label="Debug mode" title="Debug mode" onClick={() => setIsFullScreen(true)} />
+                <CopySourceButton source={source} />
                 <BlockControlsButton controls={controls} title="Troubleshooting controls" />
                 {host.actions}
               </div>

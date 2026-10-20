@@ -50,6 +50,7 @@ import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artif
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
 import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { convertProgressToTasks } from "@/features/tasks/utils/importConverters";
+import { CopySourceButton } from "../common/CopySourceButton";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
 import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
@@ -388,8 +389,8 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
         >
           {/* The block's one header: title left, actions right (Controls, "</>" and Copy come from the shared slot) */}
           {!isFullScreen && (
-            <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/50 px-3 py-1.5">
-              <div className="flex min-w-0 items-center gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
+              <div className="flex min-w-[9rem] flex-1 items-center gap-2">
                 <BarChart3 className="h-3.5 w-3.5 shrink-0 text-primary" />
                 <InlineControlText controls={controls} fieldKey="title" value={tracker.title} className="truncate text-sm font-medium text-foreground">
                   {tracker.title}
@@ -400,6 +401,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
                 <Button variant="quiet" icon={<ArrowUpRight />} aria-label="Canvas" title="Canvas" onClick={handleOpenCanvas} />
                 <Button variant="quiet" icon={<Printer />} aria-label="Print" title="Print" onClick={handlePrint} />
                 <Button variant="quiet" icon={<Maximize2 />} aria-label="Focus" title="Focus" onClick={() => setIsFullScreen(true)} />
+                <CopySourceButton source={source} />
                 <BlockControlsButton controls={controls} title="Progress controls" />
                 {host.actions}
               </div>
