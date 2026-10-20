@@ -31,6 +31,7 @@ export function QuickActions({
             target={openInNewTab ? "_blank" : undefined}
             rel={openInNewTab ? "noopener noreferrer" : undefined}
             prefetch={openInNewTab ? false : undefined}
+            data-look-surface="card"
             className={cn(
               "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-foreground/20 hover:bg-accent/50",
               layout === "grid" && "min-w-0 px-2.5",

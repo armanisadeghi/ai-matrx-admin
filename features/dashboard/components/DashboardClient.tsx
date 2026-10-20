@@ -88,7 +88,7 @@ export function DashboardClient() {
         getApplicationScope={getScope}
         contentSource={{ type: "raw" }}
       >
-        <div className="h-full overflow-y-auto bg-background pb-8">
+        <div className="h-full overflow-y-auto pb-8">
           <div className="mx-auto w-full max-w-6xl space-y-5 px-4 pb-8 pt-[calc(var(--shell-header-h)+1.5rem)] md:px-6">
             <DashboardGreeting />
             <MetricsStrip />

@@ -27,6 +27,12 @@ jest.mock("@/components/navigation/AppLink", () => ({
 jest.mock("@ai-matrx/kit/outbound-react", () => ({ OutboundLink: (props: Record<string, unknown>) => <a {...props} /> }));
 // eslint-disable-next-line import/first -- the mocks above must register before NavItem loads
 import NavItem from "../../components/sidebar/NavItem";
+// eslint-disable-next-line import/first -- after the mocks
+import { MobileDockItem } from "../../components/dock/MobileDockItems";
+// eslint-disable-next-line import/first -- after the mocks
+import { MeetMatrxWidget } from "@/features/launchpad/widgets/bodies/MeetMatrxWidget";
+// eslint-disable-next-line import/first -- after the mocks
+import type { LaunchpadWidgetBodyProps } from "@/features/launchpad/widgets/types";
 
 const ORG = "00000000-0000-4000-8000-00000000000a";
 const body = (extra: Partial<ShellLayoutBody> = {}): ShellLayoutBody => ({ schemaVersion: SHELL_LAYOUT_SCHEMA_VERSION, basedOnCatalogVersion: 1, ...extra });
@@ -142,10 +148,40 @@ describe("editor helpers", () => {
 });
 
 describe("the Meet Matrx launchpad template", () => {
-  it("is built only from registered widgets, studios first", () => {
+  it("is built only from registered widgets: the welcome's title, then the studios", () => {
     const doc = launchpadTemplate("meet-matrx")!.doc();
-    expect(doc.widgets.map((w) => w.type)).toEqual(["meet_matrx", "meet_matrx", "agents", "recent", "favorites"]);
+    expect(doc.widgets.map((w) => w.type)).toEqual(["meet_matrx", "meet_matrx", "meet_matrx", "agents", "recent", "favorites"]);
     for (const w of doc.widgets) expect(getLaunchpadWidgetSpec(w.type)).toBeDefined();
-    expect(doc.widgets[0]!.config).toEqual({ part: "studios" });
+    expect(doc.widgets[0]!.config).toEqual({ part: "hero" });
+    expect(doc.widgets[1]!.config).toEqual({ part: "studios" });
+  });
+  it("the hero part draws the welcome's own header: the gradient title and its one line", () => {
+    const html = renderToStaticMarkup(<MeetMatrxWidget config={{ part: "hero" }} editing={false} {...({} as Omit<LaunchpadWidgetBodyProps, "config" | "editing">)} />);
+    expect(html).toContain("<h1");
+    expect(html).toContain("Meet");
+    expect(html).toContain("Matrx");
+    expect(html).toContain("Three studios to build with.");
+    expect(html).not.toContain("data-intro-group");
+  });
+});
+
+describe("the dock under a look", () => {
+  const agents = primaryNavItems.find((i) => i.id === "agents")!;
+  it("a dock button IS its domain's tile (the shell hides the dock unless a route shows it; when shown, it wears the look)", () => {
+    const html = renderToStaticMarkup(<MobileDockItem item={agents} look="meet-matrx" />);
+    expect(html).toContain('class="shell-dock-item"');
+    expect(html).toContain('data-look-tile="meet-matrx"');
+    expect(html).toContain("--look-hue:#1E40AF");
+    expect(renderToStaticMarkup(<MobileDockItem item={agents} />)).not.toContain("look");
+  });
+});
+
+describe("utility rows under a look (shell-looks.css)", () => {
+  const css = readFileSync(join(__dirname, "../shell-looks.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\s+/g, " ");
+  it("every glyph row without a domain tile draws the look's utility tile, only under the look", () => {
+    expect(css).toMatch(/\.shell-root\[data-shell-look="meet-matrx"\] :is\(\.shell-nav-item, \.shell-mobile-nav-item\) > \.shell-nav-icon:not\(\[data-look-tile\]\):has\(> svg, > span > svg\) \{[^}]*background: var\(--look-utility-tile, #64748b\)/);
+  });
+  it("the sidebar's bottom fade never washes out the last tile under the look", () => {
+    expect(css).toMatch(/\.shell-root\[data-shell-look="meet-matrx"\] \.shell-sidebar-nav \{[^}]*var\(--shell-scroll-fade\) \/ 2\.5/);
   });
 });

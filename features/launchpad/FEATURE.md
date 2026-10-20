@@ -70,7 +70,8 @@ Two things live here, one feature:
   `LaunchpadPanels.tsx`.
 - Widgets today: counts, count, recent, tasks, today, favorites, pinned agents, data page, table (the Start
   nine), Applet (`AppletInPage`), launchpad link, app page (the Board's Page item body — any app address,
-  which also covers a Space page), Meet Matrx (`meet_matrx`: the welcome stage's studios / building blocks,
+  which also covers a Space page), Meet Matrx (`meet_matrx`: the welcome title (`part: "hero"`, the same
+  IntroStage header as the welcome screen), the welcome stage's studios / building blocks,
   drawn by the same `IntroStage` over `MEET_MATRX_GROUPS`; its frame draws no box of its own).
 
 ## The page bus (widgets talk)
@@ -142,6 +143,10 @@ No existing primitive combined the user navigation hierarchy, start actions,
 and favorites into an always-open launcher.
 
 ## Change log
+
+- `2026-10-20` — Lane M: the Meet Matrx template opens with the welcome's own title (`meet_matrx` part "hero").
+  A note the page bus sends (`/notes?active=<id>`) now opens in an App page: /notes on a narrow frame is the
+  phone view, which ignored `?active=` (NotesView passed only the path id); it now honours it on every width.
 
 - `2026-10-20` — Lane K (custom-experience): the `meet_matrx` widget and the "Meet Matrx" template (studios,
   building blocks, then agents, recent chats, favorites).

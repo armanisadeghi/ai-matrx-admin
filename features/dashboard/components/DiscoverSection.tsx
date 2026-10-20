@@ -20,6 +20,7 @@ function DiscoverCard({ item }: { item: DiscoverItem }) {
   const body = (
     <>
       <span
+        data-look-surface="icon"
         className={cn(
           "flex h-9 w-9 items-center justify-center rounded-xl",
           chip,
@@ -39,7 +40,7 @@ function DiscoverCard({ item }: { item: DiscoverItem }) {
   );
 
   return (
-    <div className="group relative flex flex-col rounded-2xl border border-border bg-card p-4 transition-colors hover:border-foreground/20 hover:bg-accent/40">
+    <div data-look-surface="card" className="group relative flex flex-col rounded-2xl border border-border bg-card p-4 transition-colors hover:border-foreground/20 hover:bg-accent/40">
       {/* Pin sits above the link layer; it has its own stopPropagation. */}
       <div className="absolute right-0 top-0 z-10">
         <PinButton

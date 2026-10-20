@@ -65,7 +65,7 @@ function Counter({ item }: { item: MetricNavigationItem }) {
   }
   if (item.value === undefined) return null;
   return (
-    <span className="min-w-5 max-w-16 shrink-0 truncate rounded-full bg-muted px-1.5 text-center text-xs font-medium tabular-nums leading-5 text-foreground">
+    <span data-look-surface="chip" className="min-w-5 max-w-16 shrink-0 truncate rounded-full bg-muted px-1.5 text-center text-xs font-medium tabular-nums leading-5 text-foreground">
       {formatValue(item.value)}
     </span>
   );

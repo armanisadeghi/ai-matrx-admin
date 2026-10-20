@@ -37,6 +37,46 @@
   height: 0.875rem;
 }
 
+/* ── Utility rows (Side Chat, search, favorites, the admin block, the footer, Settings, route menus): a
+   quieter tile — the look's one slate (`--look-utility-tile`), white glyph, same 24px box as a domain row.
+   Only boxes holding a glyph (an avatar or an organization mark keeps its own face). A switch that is ON
+   keeps its meaning as a success ring around the tile. ── */
+
+.shell-root[data-shell-look="meet-matrx"]
+  :is(.shell-nav-item, .shell-mobile-nav-item)
+  > .shell-nav-icon:not([data-look-tile]):has(> svg, > span > svg) {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: -0.125rem;
+  background: var(--look-utility-tile, #64748b);
+  border-radius: var(--look-tile-radius, 0.4375rem);
+  box-shadow: var(--look-tile-shadow, none);
+}
+
+.shell-root[data-shell-look="meet-matrx"]
+  :is(.shell-nav-item, .shell-mobile-nav-item)
+  > .shell-nav-icon:not([data-look-tile]):has(> svg, > span > svg)
+  svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: #fff !important;
+}
+
+.shell-root[data-shell-look="meet-matrx"] .shell-nav-item > .shell-nav-icon.shell-nav-icon-on:has(> svg, > span > svg) {
+  box-shadow:
+    0 0 0 2px hsl(var(--success)),
+    var(--look-tile-shadow, 0 0 #0000);
+}
+
+/* "More below": under the look the sidebar's bottom fade is a short edge, never a 2rem wash over the last
+   visible tile (it read as a faded, washed-out tile). Same cue, a fifth of the depth. */
+@supports (animation-timeline: scroll()) {
+  .shell-root[data-shell-look="meet-matrx"] .shell-sidebar-nav {
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--shell-scroll-fade) / 2.5), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - var(--shell-scroll-fade) / 2.5), transparent);
+  }
+}
+
 /* ── Dock: the 44px button keeps its slot; the tile is drawn 3px inside it. ── */
 
 .shell-dock-item[data-look-tile="meet-matrx"] {

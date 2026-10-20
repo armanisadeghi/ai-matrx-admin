@@ -125,6 +125,7 @@ export function KpiTile({
     return (
       <Link
         href={href}
+        data-look-surface="card"
         className={cn(
           shell,
           "transition-colors hover:border-primary/50 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -135,7 +136,7 @@ export function KpiTile({
     );
   }
   return (
-    <div className={shell} aria-busy={loading || undefined}>
+    <div className={shell} data-look-surface="card" aria-busy={loading || undefined}>
       {body}
     </div>
   );

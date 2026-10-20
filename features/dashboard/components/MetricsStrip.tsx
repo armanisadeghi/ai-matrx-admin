@@ -37,9 +37,11 @@ function FeaturedCard({
     <Link
       href={cfg.href}
       data-surface-value={`${cfg.key}_count`}
+      data-look-surface="card"
       className="group flex flex-col rounded-2xl border border-border bg-card p-4 transition-colors hover:border-foreground/20 hover:bg-accent/40"
     >
       <span
+        data-look-surface="icon"
         className={cn(
           "flex h-9 w-9 items-center justify-center rounded-xl",
           chipClass(cfg.color),
