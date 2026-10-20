@@ -5,6 +5,7 @@ import {
   MatrxDataTable,
   type MatrxDataTableQueryState,
   type MatrxColumnDef,
+  type ToolbarFacet,
 } from "@ai-matrx/design-system/data-table";
 import {
   ViewTapButton,
@@ -15,6 +16,7 @@ import {
 import {
   Badge,
   Chip,
+  Select,
   type BadgeTone,
   type ChipTone,
 } from "@ai-matrx/design-system/controls";
@@ -398,12 +400,66 @@ export default function AiModelTable(props: AiModelTableProps) {
       ...modelFiltersToColumns(tabState.filters),
     },
   };
-  const applyQuery = (next: MatrxDataTableQueryState) => {
-    console.log("APPLYQ", JSON.stringify(next.columnFilters), new Error().stack?.split("\n").slice(2,12).join("|"));
+  const applyQuery = (next: MatrxDataTableQueryState) =>
     onUpdateTabState({
       ...modelQueryToTab(next),
       tableQuery: modelQueryExtras(next),
     });
+  /** Set or clear ONE column filter, keeping the rest of the query. */
+  const setColumnFilter = (
+    id: string,
+    filter: MatrxDataTableQueryState["columnFilters"][string] | undefined,
+  ) => {
+    const rest = Object.fromEntries(
+      Object.entries(state.columnFilters).filter(([key]) => key !== id),
+    );
+    applyQuery({
+      ...state,
+      page: 1,
+      columnFilters: filter ? { ...rest, [id]: filter } : rest,
+    });
+  };
+  const makerOptions = [
+    ...new Set(models.map((m) => m.maker).filter((v): v is string => !!v)),
+  ].sort();
+  const outputOptions = [
+    ...new Set(
+      models.flatMap(
+        (m) =>
+          parseCapabilities(m.capabilities, { modelId: m.id, modelName: m.name })
+            .output,
+      ),
+    ),
+  ].sort();
+  const selectFacet = (
+    id: string,
+    label: string,
+    allLabel: string,
+    options: string[],
+  ): ToolbarFacet => {
+    const current = state.columnFilters[id];
+    const value = current?.kind === "select" ? current.value : "";
+    return {
+      type: "custom",
+      id,
+      filter: {
+        active: value !== "",
+        onReset: () => setColumnFilter(id, undefined),
+      },
+      render: () => (
+        <Select
+          aria-label={label}
+          value={value}
+          options={[
+            { value: "", label: allLabel },
+            ...options.map((option) => ({ value: option, label: option })),
+          ]}
+          onValueChange={(next) =>
+            setColumnFilter(id, next ? { kind: "select", value: next } : undefined)
+          }
+        />
+      ),
+    };
   };
   const providerMap = Object.fromEntries(
     providers.map((provider) => [provider.id, provider.name ?? provider.id]),
@@ -540,29 +596,22 @@ export default function AiModelTable(props: AiModelTableProps) {
               { value: "deprecated", label: "Deprecated" },
               { value: "all", label: "All" },
             ],
-            onChange: (value) => {
-              console.log("FACETCHANGE", value);
-              const rest = Object.fromEntries(
-                Object.entries(state.columnFilters).filter(
-                  ([id]) => id !== "is_deprecated",
-                ),
-              );
-              applyQuery({
-                ...state,
-                page: 1,
-                columnFilters:
-                  value === "all"
-                    ? rest
-                    : {
-                        ...rest,
-                        is_deprecated: {
-                          kind: "boolean",
-                          value: value === "deprecated",
-                        },
-                      },
-              });
-            },
+            // The package resets the page right after this returns, from the state it had before; a
+            // write made now would be overwritten, so ours lands on the next task.
+            onChange: (value) =>
+              setTimeout(
+                () =>
+                  setColumnFilter(
+                    "is_deprecated",
+                    value === "all"
+                      ? undefined
+                      : { kind: "boolean", value: value === "deprecated" },
+                  ),
+                0,
+              ),
           },
+          selectFacet("output_capability", "Output", "All outputs", outputOptions),
+          selectFacet("maker", "Provider", "All providers", makerOptions),
         ],
         intelligentSearch: {},
         refresh: { onRefresh },
