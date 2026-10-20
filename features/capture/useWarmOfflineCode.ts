@@ -18,6 +18,7 @@ import { useEffect } from "react";
 import { requestDialogHosts } from "@/components/dialogs/host/dialogHostsLatch";
 import { registerBlobCacheServiceWorker } from "@/features/files/cache/register-service-worker";
 import { resolveBaseUrl } from "@/lib/python-client";
+import { useRecordsDataSource, type RecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
 
 /** The `/_next/static/` files this page has loaded so far (they arrived before the worker controlled it). */
 export function loadedStaticAssets(): string[] {
@@ -36,8 +37,25 @@ export function loadedStaticAssets(): string[] {
   return [...out];
 }
 
+/**
+ * The sheet's definition is asked once by the page (before the worker controlled it, on a first visit), so it is
+ * asked ONCE MORE here, through the worker, which keeps the answer. Same two doors the page and `CaptureRun` use.
+ */
+async function askDefinitionAgain(dataSource: Pick<RecordsDataSource, "rpc">, sheetId: string): Promise<void> {
+  const where = (await dataSource.rpc("where_id_opens", { p_id: sheetId }, { schema: "custom" })) as {
+    data: { organization_id?: string } | null;
+  };
+  const organizationId = where.data?.organization_id;
+  if (typeof organizationId !== "string") return;
+  await dataSource.rpc("capture_open", { p_organization_id: organizationId, p_sheet_id: sheetId }, { schema: "custom" });
+}
+
 /** Ask the worker to keep this capture page. Safe to call anywhere: a no-op without a worker. */
-export async function keepCapturePageOffline(userId: string | null): Promise<void> {
+export async function keepCapturePageOffline(
+  userId: string | null,
+  sheetId: string,
+  dataSource: Pick<RecordsDataSource, "rpc">,
+): Promise<void> {
   if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
   let backendUrl = "";
   try {
@@ -52,15 +70,28 @@ export async function keepCapturePageOffline(userId: string | null): Promise<voi
     path: window.location.pathname,
     assets: loadedStaticAssets(),
   });
+  // A page opened before the worker controlled it is controlled once the worker claims it.
+  if (!navigator.serviceWorker.controller) {
+    await new Promise<void>((resolve) => {
+      navigator.serviceWorker.addEventListener("controllerchange", () => resolve(), { once: true });
+      window.setTimeout(resolve, 4000);
+    });
+  }
+  await askDefinitionAgain(dataSource, sheetId);
 }
 
-export function useWarmOfflineCode(userId: string | null = null): void {
+export function useWarmOfflineCode(userId: string | null = null, sheetId: string | null = null): void {
+  const dataSource = useRecordsDataSource();
   useEffect(() => {
     requestDialogHosts();
   }, []);
   useEffect(() => {
+    if (!sheetId) return;
     // After the page has settled, so keeping it never competes with showing it.
-    const id = window.setTimeout(() => void keepCapturePageOffline(userId).catch(() => undefined), 3000);
+    const id = window.setTimeout(
+      () => void keepCapturePageOffline(userId, sheetId, dataSource).catch(() => undefined),
+      3000,
+    );
     return () => window.clearTimeout(id);
-  }, [userId]);
+  }, [userId, sheetId, dataSource]);
 }

@@ -210,10 +210,6 @@ function captureKey(kind: string, id: string): Request {
     return new Request(`${self.location.origin}/__capture/${kind}/${encodeURIComponent(id)}`);
 }
 
-async function hashOf(text: string): Promise<string> {
-    return sha256Hex(text);
-}
-
 /** Fetch and keep every hashed chunk a captured page names, so the shell can boot with no signal. */
 async function keepAssets(urls: string[]): Promise<void> {
     const cache = await caches.open(CAPTURE_CACHE);
@@ -272,32 +268,39 @@ async function handleCaptureNavigation(
     }
 }
 
-/** Whether the page that made this request is a capture page (only those sheets are kept). */
-async function fromCapturePage(event: FetchEvent): Promise<boolean> {
+/** The sheet whose capture page made this request (from that page's own address), or null for any other page. */
+async function captureSheetOf(event: FetchEvent): Promise<string | null> {
     try {
         const id = event.clientId || event.resultingClientId;
-        if (!id) return false;
+        if (!id) return null;
         const client = await self.clients.get(id);
-        return !!client && isCapturePath(new URL(client.url).pathname);
+        if (!client) return null;
+        const pathname = new URL(client.url).pathname;
+        return isCapturePath(pathname) ? decodeURIComponent(pathname.split("/")[2] ?? "") || null : null;
     } catch {
-        return false;
+        return null;
     }
 }
 
-/** A sheet's definition (which organization it lives in; its questions): the store first, the kept copy only when it cannot answer. */
+/**
+ * A sheet's definition (which organization it lives in; its questions): the store first, the kept copy only when
+ * it cannot answer. Kept per door and per sheet, and only for a request that names that sheet, so a table page
+ * asking the same door about some other id never lands here.
+ */
 async function handleCaptureDefinition(event: FetchEvent): Promise<Response> {
     const request = event.request;
+    const door = new URL(request.url).pathname.split("/").pop() ?? "door";
     let key: Request | null = null;
     try {
+        const sheet = await captureSheetOf(event);
         const body = await request.clone().text();
-        const door = new URL(request.url).pathname.split("/").pop() ?? "door";
-        key = captureKey("def", `${door}:${await hashOf(body)}`);
+        if (sheet && body.includes(sheet)) key = captureKey("def", `${door}:${sheet}`);
     } catch {
         key = null;
     }
     try {
         const response = await fetch(request);
-        if (key && response.ok && (await fromCapturePage(event))) {
+        if (key && response.ok) {
             const copy = response.clone();
             event.waitUntil(
                 caches.open(CAPTURE_CACHE).then((cache) => cache.put(key as Request, copy)).catch(() => undefined),
