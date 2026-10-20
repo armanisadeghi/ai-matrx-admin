@@ -1,5 +1,11 @@
 # CHANGELOG — Board (`features/board`)
 
+## 2026-10-19 — Schedule, Knowledge source, Visual map, Report, Sandbox as items
+
+- Five more platform features became board items (`items/platform-items.tsx`): each tile body is the feature's own component with an `embedded` variant instead of page chrome (`ScheduleDetail`, `DataStoreRecord` extracted from `DataStoresPage`, `MapEditor`, `AgentDriftReport`, `SandboxRecord` extracted from `/sandbox/[id]`, which now renders it), with that feature's existing agent surface. Start new: schedule (the schedule form, in place), knowledge source (the store form), map. Bring in lists across every organization (maps through the library read, stores through `fn_list_user_data_stores`, sandboxes the person's own). Report and Sandbox are Bring in only.
+- Closed a page gap: the Agent Drift report had no surface values for its open report; it now emits `report_slug`, `report_title`, `report_row_count`, `report_findings`, `report_totals`, `report_load_status`, `report_selected_agent_id` on `matrx-user/reports`. Brief values were declared on all five surfaces; the surface index was regenerated.
+- Remount ledger rows added: schedule and report pass; knowledge source, visual map and sandbox are known red (their reads repeat on wake and remount). None sleeps.
+
 ## 2026-10-19 — Workbook, Presentation, Transcript, Person or company, Agent as items
 
 - Five platform features became board items (`office-items.tsx`, `crm-items.tsx`, `transcript-items.tsx`, `agent-items.tsx`): the page's own component, its agent surface, Start new (not Agent), Bring in over every organization, Open, the record's own comment thread, the agent doors (`board_add_items` / `board_find_records`) and remount-ledger rows. New surfaces `matrx-user/presentation` and `matrx-user/agent-record` were authored and synced.
