@@ -12,3 +12,11 @@ it("is empty when the body is only its title, and keeps a body whose first line 
   expect(notePreviewText("Solo", "# Solo\n")).toBe("");
   expect(notePreviewText("Named by hand", "First line\nSecond")).toBe("First line Second");
 });
+
+// Review 2 (2026-10-19) #24: the title is the first line cut short — still the title line.
+it("skips a first line the title was cut from", () => {
+  expect(notePreviewText("Line 1: the quick brown fox...", "Line 1: the quick brown fox jumps over the dog\nLine 2: more")).toBe("Line 2: more");
+  expect(notePreviewText("Line 1: the quick brown fox…", "Line 1: the quick brown fox jumps…\nNext")).toBe("Next");
+  // A different first line that merely shares a short start is kept.
+  expect(notePreviewText("Plan...", "Planets are round\nx")).toBe("Planets are round x");
+});
