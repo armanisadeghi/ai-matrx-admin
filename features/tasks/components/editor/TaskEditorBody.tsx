@@ -13,8 +13,10 @@
 // pure content in its body while presenting the name + controls in slots. It
 // renders NO chrome and imports NO WindowPanel (bundle invariant).
 //
-// The JSX is moved verbatim from the original TaskEditor body (zero visual
-// change for the ~9 existing consumers).
+// Three tabs (Arman, 2026-10-20 — a window does everything the page does, and
+// subtasks buried under the description read as missing): Details (the task),
+// Subtasks (its family: project, parent, children — each opens its own window),
+// Links (linked records, attachments, FK-linked resources).
 
 import { useRef, useState } from "react";
 import { toastWriteFailure } from "@/lib/errors/toastWriteFailure";
@@ -32,10 +34,13 @@ import {
   CircleDot,
   Repeat,
   CalendarArrowUp,
+  CornerLeftUp,
+  FolderKanban,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectSubtasksByParent,
+  selectTaskById,
   upsertTaskWithLevel,
 } from "@/features/agent-context/redux/tasksSlice";
 import {
@@ -55,7 +60,10 @@ import { EntityCustomFields } from "@/features/unified-data/components/EntityCus
 import { TaskAssociatedResources } from "../TaskAssociatedResources";
 import { insertAtRichCaret } from "@ai-matrx/rich-content/editor/editor/caretInsert";
 import type { RichEditorController } from "@ai-matrx/rich-content/editor/editor/RichEditor";
-import { TaskDescriptionField, type TaskDescriptionMode } from "./TaskDescriptionField";
+import {
+  TaskDescriptionField,
+  type TaskDescriptionMode,
+} from "./TaskDescriptionField";
 import { ProInput } from "@/components/official/ProInput";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TaskPriorityPicker, TASK_PRIORITY_META } from "../TaskPriorityPicker";
@@ -74,6 +82,7 @@ import { cn } from "@/utils/cn";
 import { useRefocusInputAfterAsync } from "@/features/tasks/hooks/useRefocusInputAfterAsync";
 import { useSubtasksRead } from "@/features/tasks/hooks/useSubtasksRead";
 import { ReadFailure, RecordId } from "@ai-matrx/design-system";
+import { Tabs } from "@ai-matrx/design-system/controls";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
@@ -90,6 +99,9 @@ import { LinkedRecordsSection } from "@/features/scopes/components/linked-record
 import { insertBlockAtLine } from "@/utils/text-insertion";
 
 const TASKS_SURFACE_NAME = "matrx-user/tasks";
+
+/** Body sections: the task itself, its family (project, parent, subtasks), its links. */
+type TaskBodyTab = "details" | "subtasks" | "links";
 
 export function TaskEditorBody({
   compact,
@@ -149,6 +161,10 @@ export function TaskEditorBody({
   // Subtasks live in the global tasks slice — derive them via selector so any
   // component (TaskListPane counts, mobile views, sidebar) stays in sync.
   const subtasks = useAppSelector((s) => selectSubtasksByParent(s, taskId));
+  const [tab, setTab] = useState<TaskBodyTab>("details");
+  const parentTask = useAppSelector((s) =>
+    task?.parent_task_id ? selectTaskById(s, task.parent_task_id) : undefined,
+  );
   const [newSubtask, setNewSubtask] = useState("");
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
   const { inputRef: subtaskInputRef, scheduleRefocus: scheduleSubtaskRefocus } =
@@ -253,7 +269,6 @@ export function TaskEditorBody({
     onDelete: handleDelete,
     completed: !!completed,
   });
-
 
   const handleAddSubtask = async (): Promise<boolean> => {
     if (!newSubtask.trim() || isAddingSubtask) return false;
@@ -443,309 +458,238 @@ export function TaskEditorBody({
                 </span>
               )}
               {subtasks.length > 0 && (
-                <span className="inline-flex items-center gap-1 h-5 px-1.5 rounded-md bg-muted/60 text-[10px] font-medium text-foreground">
+                <button
+                  type="button"
+                  onClick={() => setTab("subtasks")}
+                  title={`Open ${subtasksLabel}`}
+                  className="inline-flex items-center gap-1 h-5 px-1.5 rounded-md bg-muted/60 text-[10px] font-medium text-foreground transition-colors hover:bg-accent"
+                >
                   <CheckSquare className="w-2.5 h-2.5" />
                   {subtasksRead.status === "error"
                     ? "—"
                     : `${completedSubtasks}/${subtasks.length}`}
-                </span>
+                </button>
               )}
             </div>
           }
-          {/* Core properties — compact tiles: thin inline rows; full editor: grouped card */}
-          <section
-            className={cn(
-              compact
-                ? "space-y-0"
-                : "overflow-hidden rounded-xl border border-border/60 bg-card/40",
-            )}
-          >
-            <PropertyRow
-              icon={CircleDot}
-              label="Status"
-              first
-              compact={compact}
-            >
-              <TaskStatusPicker
-                variant={compact ? "pill" : "segmented"}
-                value={effective.status}
-                onChange={(v) => patch("status", v)}
-              />
-            </PropertyRow>
-
-            <PropertyRow icon={UserIcon} label="Assignee" compact={compact}>
-              <TaskAssigneePicker
-                assigneeId={effective.assigneeId ?? null}
-                onChange={(id) => patch("assignee_id", id)}
-                size={compact ? "sm" : "md"}
-                {...(orgId ? { organizationId: orgId } : {})}
-                className={
-                  compact
-                    ? "h-6 border-0 bg-transparent px-1 shadow-none hover:bg-accent/40"
-                    : undefined
-                }
-              />
-            </PropertyRow>
-
-            <PropertyRow icon={Tag} label="Scopes" compact={compact}>
-              <TaskContextPicker
-                taskId={taskId}
-                className={
-                  compact
-                    ? "h-6 border-0 bg-transparent px-1 py-0 shadow-none hover:bg-accent/40"
-                    : undefined
-                }
-              />
-            </PropertyRow>
-
-            <PropertyRow icon={Flag} label="Priority" compact={compact}>
-              <TaskPriorityPicker
-                variant={compact ? "pill" : "segmented"}
-                value={effective.priority ?? null}
-                onChange={(v) => patch("priority", v)}
-                className={
-                  compact
-                    ? "border-0 bg-transparent px-1 shadow-none hover:bg-accent/40"
-                    : undefined
-                }
-              />
-            </PropertyRow>
-
-            <PropertyRow icon={Calendar} label="Due date" compact={compact}>
-              <TaskDueDatePicker
-                variant={compact ? "pill" : "field"}
-                value={effective.dueDate ?? null}
-                onChange={(v) => patch("due_date", v)}
-              />
-            </PropertyRow>
-
-            <PropertyRow
-              icon={CalendarArrowUp}
-              label="Start date"
-              compact={compact}
-            >
-              <TaskDueDatePicker
-                variant="pill"
-                value={effective.startDate ?? null}
-                onChange={(v) => patch("start_date", v)}
-              />
-            </PropertyRow>
-
-            <PropertyRow icon={Repeat} label="Repeat" last compact={compact}>
-              <TaskRecurrencePicker
-                value={effective.recurrenceRule ?? null}
-                onChange={(v) => patch("recurrence_rule", v)}
-              />
-            </PropertyRow>
-          </section>
-
-          {/* Description — the rich editor (Write / Split / Plain) with THE formatting
-            toolbar; the canonical agent context menu (right-click → run a bound agent
-            on the active task with full `matrx-user/tasks` scope) wraps the body. */}
-          <TaskDescriptionField
-            value={effective.description}
-            onChange={(text) => patch("description", text)}
-            mode={descMode}
-            onModeChange={setDescMode}
-            compact={compact}
-            surfaceName={TASKS_CONTEXT_MENU_PROPS.surfaceName}
-            getApplicationScope={getApplicationScope}
-            textareaRef={descriptionRef}
-            richRef={richDescriptionRef}
-            onSelectionChange={syncDescriptionSelection}
-            withMenu={(body) => (
-              <EditableContextMenu
-                {...TASKS_CONTEXT_MENU_PROPS}
-                extraSections={tasksExtras}
-                getTextarea={() => (descMode === "write" ? null : descriptionRef.current)}
-                insertAtCaret={
-                  descMode === "write"
-                    ? (text: string, placement?: "inline" | "block") =>
-                        insertAtRichCaret(richDescriptionRef.current, text, placement)
-                    : undefined
-                }
-                getApplicationScope={getApplicationScope}
-                onTextReplace={(next) => patch("description", next)}
-                // Under / over the selection's LINE, never inside it (Q-06).
-                onTextInsertBefore={(text) => {
-                  const el = descriptionRef.current;
-                  const d = effective.description;
-                  patch("description", insertBlockAtLine(d, el?.selectionStart ?? 0, el?.selectionEnd ?? 0, text, "before"));
-                }}
-                onTextInsertAfter={(text) => {
-                  const el = descriptionRef.current;
-                  const d = effective.description;
-                  patch("description", insertBlockAtLine(d, el?.selectionStart ?? d.length, el?.selectionEnd ?? d.length, text, "after"));
-                }}
-                contextData={contextData}
-                contentSource={{ type: "raw" }}
-                entity={{
-                  type: "task",
-                  id: taskId,
-                  title: effective.title,
-                  resourceType: "task",
-                }}
-              >
-                {body}
-              </EditableContextMenu>
-            )}
+          <Tabs<TaskBodyTab>
+            aria-label="Task sections"
+            value={tab}
+            onValueChange={setTab}
+            data={[
+              { value: "details", label: "Details" },
+              {
+                value: "subtasks",
+                label: subtasksLabel,
+                count: subtasksRead.status === "error" ? null : subtasks.length,
+              },
+              { value: "links", label: "Links" },
+            ]}
           />
-
-          {/* Labels — tight text chips; section icon only (no "Labels" header row) */}
-          <div className="flex flex-wrap items-center gap-1 pl-1.5">
-            <span className="text-[10px] font-medium text-foreground pl-0">
-              Tags:
-            </span>
-            {TASK_LABEL_OPTIONS.map((opt) => {
-              const active = effective.labels.includes(opt.value);
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => toggleLabel(opt.value)}
-                  aria-pressed={active}
-                  className={cn(
-                    "inline-flex items-center rounded-md border  px-1 py-0.5 text-[10px] font-medium transition-colors",
-                    active
-                      ? opt.color + " border-current"
-                      : "border-border bg-muted/40 text-muted-foreground hover:bg-accent hover:text-foreground",
-                  )}
-                >
-                  {opt.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Subtasks */}
-          <section data-surface-value="subtasks">
-            <SectionHeader
-              icon={CheckSquare}
-              label={subtasksLabel}
-              count={subtasksRead.status === "error" ? undefined : subtasks.length}
-              className="mb-1"
-            />
-            <div
-              className={cn(
-                "overflow-hidden bg-card/40",
-                compact
-                  ? "border-y border-border/60"
-                  : "rounded-xl border border-border/60",
-              )}
-            >
-              {subtasks.length === 0 && subtasksRead.status === "error" ? (
-                <ReadFailure
-                  error={subtasksRead.error}
-                  what="this task's subtasks"
-                  onRetry={subtasksRead.retry}
-                  className="m-2"
-                />
-              ) : subtasks.length === 0 && subtasksRead.status === "loading" ? (
-                <p
-                  className={cn(
-                    "py-1.5 text-[11px] italic text-muted-foreground",
-                    compact ? "pl-1.5 pr-2" : "px-4",
-                  )}
-                  role="status"
-                >
-                  Reading subtasks…
-                </p>
-              ) : subtasks.length === 0 ? (
-                <p
-                  className={cn(
-                    "py-1.5 text-[11px] italic text-muted-foreground",
-                    compact ? "pl-1.5 pr-2" : "px-4",
-                  )}
-                >
-                  No subtasks yet.
-                </p>
-              ) : (
-                subtasks.map((st, i) => (
-                  <div
-                    key={st.id}
-                    className={cn(
-                      "group flex h-7 items-center gap-2 transition-colors hover:bg-accent/40",
-                      compact ? "pl-1.5 pr-2" : "px-4",
-                      i !== 0 && "border-t border-border/40",
-                    )}
-                  >
-                    <Checkbox
-                      checked={st.status === "completed"}
-                      onCheckedChange={() => handleToggleSubtask(st.id)}
-                      className="size-3.5"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onOpenLinkedTask
-                          ? onOpenLinkedTask(st.id)
-                          : openTaskEditor({ taskId: st.id })
-                      }
-                      className={cn(
-                        "min-w-0 flex-1 truncate rounded-sm text-left text-xs transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        st.status === "completed" &&
-                          "line-through text-muted-foreground",
-                      )}
-                      title={st.title}
-                    >
-                      {st.title}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteSubtask(st.id)}
-                      className="grid size-5 shrink-0 place-items-center opacity-0 transition-opacity group-hover:opacity-100 text-muted-foreground hover:text-destructive"
-                      aria-label="Delete subtask"
-                    >
-                      <Trash2 className="size-3" />
-                    </button>
-                  </div>
-                ))
-              )}
-              <div
+          {tab === "details" && (
+            <>
+              {/* Core properties — compact tiles: thin inline rows; full editor: grouped card */}
+              <section
                 className={cn(
-                  "border-t border-border/40 bg-muted/20 px-1.5 py-1",
-                  compact ? "pl-1.5 pr-2" : "px-3",
-                  subtasks.length === 0 && "border-t-0",
+                  compact
+                    ? "space-y-0"
+                    : "overflow-hidden rounded-xl border border-border/60 bg-card/40",
                 )}
               >
-                <ProInput
-                  ref={subtaskInputRef}
-                  value={newSubtask}
-                  onChange={(e) => setNewSubtask(e.target.value)}
-                  onSubmit={() => void handleAddSubtask()}
-                  submitOnEnter
-                  submitLabel="Add subtask"
-                  submitDisabled={!newSubtask.trim() || isAddingSubtask}
-                  isSubmitting={isAddingSubtask}
-                  showCopyButton={false}
-                  onBlur={() => {
-                    if (newSubtask.trim()) void handleAddSubtask();
-                  }}
-                  placeholder="Add subtask, press Enter…"
-                  disabled={isAddingSubtask}
-                  aria-label="Add subtask"
-                  className="h-8 border-0 bg-transparent text-xs shadow-none"
-                  wrapperClassName="w-full"
-                />
+                <PropertyRow
+                  icon={CircleDot}
+                  label="Status"
+                  first
+                  compact={compact}
+                >
+                  <TaskStatusPicker
+                    variant={compact ? "pill" : "segmented"}
+                    value={effective.status}
+                    onChange={(v) => patch("status", v)}
+                  />
+                </PropertyRow>
+
+                <PropertyRow icon={UserIcon} label="Assignee" compact={compact}>
+                  <TaskAssigneePicker
+                    assigneeId={effective.assigneeId ?? null}
+                    onChange={(id) => patch("assignee_id", id)}
+                    size={compact ? "sm" : "md"}
+                    {...(orgId ? { organizationId: orgId } : {})}
+                    className={
+                      compact
+                        ? "h-6 border-0 bg-transparent px-1 shadow-none hover:bg-accent/40"
+                        : undefined
+                    }
+                  />
+                </PropertyRow>
+
+                <PropertyRow icon={Tag} label="Scopes" compact={compact}>
+                  <TaskContextPicker
+                    taskId={taskId}
+                    className={
+                      compact
+                        ? "h-6 border-0 bg-transparent px-1 py-0 shadow-none hover:bg-accent/40"
+                        : undefined
+                    }
+                  />
+                </PropertyRow>
+
+                <PropertyRow icon={Flag} label="Priority" compact={compact}>
+                  <TaskPriorityPicker
+                    variant={compact ? "pill" : "segmented"}
+                    value={effective.priority ?? null}
+                    onChange={(v) => patch("priority", v)}
+                    className={
+                      compact
+                        ? "border-0 bg-transparent px-1 shadow-none hover:bg-accent/40"
+                        : undefined
+                    }
+                  />
+                </PropertyRow>
+
+                <PropertyRow icon={Calendar} label="Due date" compact={compact}>
+                  <TaskDueDatePicker
+                    variant={compact ? "pill" : "field"}
+                    value={effective.dueDate ?? null}
+                    onChange={(v) => patch("due_date", v)}
+                  />
+                </PropertyRow>
+
+                <PropertyRow
+                  icon={CalendarArrowUp}
+                  label="Start date"
+                  compact={compact}
+                >
+                  <TaskDueDatePicker
+                    variant="pill"
+                    value={effective.startDate ?? null}
+                    onChange={(v) => patch("start_date", v)}
+                  />
+                </PropertyRow>
+
+                <PropertyRow
+                  icon={Repeat}
+                  label="Repeat"
+                  last
+                  compact={compact}
+                >
+                  <TaskRecurrencePicker
+                    value={effective.recurrenceRule ?? null}
+                    onChange={(v) => patch("recurrence_rule", v)}
+                  />
+                </PropertyRow>
+              </section>
+
+              {/* Description — the rich editor (Write / Split / Plain) with THE formatting
+            toolbar; the canonical agent context menu (right-click → run a bound agent
+            on the active task with full `matrx-user/tasks` scope) wraps the body. */}
+              <TaskDescriptionField
+                value={effective.description}
+                onChange={(text) => patch("description", text)}
+                mode={descMode}
+                onModeChange={setDescMode}
+                compact={compact}
+                surfaceName={TASKS_CONTEXT_MENU_PROPS.surfaceName}
+                getApplicationScope={getApplicationScope}
+                textareaRef={descriptionRef}
+                richRef={richDescriptionRef}
+                onSelectionChange={syncDescriptionSelection}
+                withMenu={(body) => (
+                  <EditableContextMenu
+                    {...TASKS_CONTEXT_MENU_PROPS}
+                    extraSections={tasksExtras}
+                    getTextarea={() =>
+                      descMode === "write" ? null : descriptionRef.current
+                    }
+                    insertAtCaret={
+                      descMode === "write"
+                        ? (text: string, placement?: "inline" | "block") =>
+                            insertAtRichCaret(
+                              richDescriptionRef.current,
+                              text,
+                              placement,
+                            )
+                        : undefined
+                    }
+                    getApplicationScope={getApplicationScope}
+                    onTextReplace={(next) => patch("description", next)}
+                    // Under / over the selection's LINE, never inside it (Q-06).
+                    onTextInsertBefore={(text) => {
+                      const el = descriptionRef.current;
+                      const d = effective.description;
+                      patch(
+                        "description",
+                        insertBlockAtLine(
+                          d,
+                          el?.selectionStart ?? 0,
+                          el?.selectionEnd ?? 0,
+                          text,
+                          "before",
+                        ),
+                      );
+                    }}
+                    onTextInsertAfter={(text) => {
+                      const el = descriptionRef.current;
+                      const d = effective.description;
+                      patch(
+                        "description",
+                        insertBlockAtLine(
+                          d,
+                          el?.selectionStart ?? d.length,
+                          el?.selectionEnd ?? d.length,
+                          text,
+                          "after",
+                        ),
+                      );
+                    }}
+                    contextData={contextData}
+                    contentSource={{ type: "raw" }}
+                    entity={{
+                      type: "task",
+                      id: taskId,
+                      title: effective.title,
+                      resourceType: "task",
+                    }}
+                  >
+                    {body}
+                  </EditableContextMenu>
+                )}
+              />
+
+              {/* Labels — tight text chips; section icon only (no "Labels" header row) */}
+              <div className="flex flex-wrap items-center gap-1 pl-1.5">
+                <span className="text-[10px] font-medium text-foreground pl-0">
+                  Tags:
+                </span>
+                {TASK_LABEL_OPTIONS.map((opt) => {
+                  const active = effective.labels.includes(opt.value);
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => toggleLabel(opt.value)}
+                      aria-pressed={active}
+                      className={cn(
+                        "inline-flex items-center rounded-md border  px-1 py-0.5 text-[10px] font-medium transition-colors",
+                        active
+                          ? opt.color + " border-current"
+                          : "border-border bg-muted/40 text-muted-foreground hover:bg-accent hover:text-foreground",
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
-            </div>
-          </section>
 
-          {/* The organization's own fields on this task (lane 7 W5) — page and window alike. */}
-          <EntityCustomFields entityToken="task" recordId={taskId} organizationId={task?.organization_id ?? null} />
+              {/* The organization's own fields on this task (lane 7 W5) — page and window alike. */}
+              <EntityCustomFields
+                entityToken="task"
+                recordId={taskId}
+                organizationId={task?.organization_id ?? null}
+              />
 
-          {/* Everything linked to this task, both ways (W1.4). */}
-          <LinkedRecordsSection backLinksShownElsewhere token="task" id={taskId} title={task.title ?? ""} />
-
-          {/* Attachments — notes, files, messages, conversations, chat blocks */}
-          <section>
-            <TaskAttachmentsPanel taskId={taskId} />
-          </section>
-
-          {/* Associated resources — anything FK-linked to this task (task_id) */}
-          <TaskAssociatedResources taskId={taskId} />
-
-          {/* Comments — the canonical CommentThread (@ai-matrx/associations,
+              {/* Comments — the canonical CommentThread (@ai-matrx/associations,
               W6 host adoption): threaded replies, composer that keeps text on
               a failed post, edit/delete-own. Wrapped in a presentational
               context-menu region — right-click the thread to run an agent
@@ -755,77 +699,283 @@ export function TaskEditorBody({
               description textarea's content/selection, not the comments).
               Instead the surface scope's `content` is the joined comment
               thread; the menu captures any live DOM text selection itself. */}
-          <section className="pl-1.5">
-            <NonEditableContextMenu
-              {...TASKS_CONTEXT_MENU_PROPS}
-              contextData={{
-                ...contextData,
-                content: comments.map((c) => c.body).join("\n\n"),
-              }}
-              contentSource={{ type: "raw" }}
-              entity={{
-                type: "task",
-                id: taskId,
-                title: effective.title,
-                resourceType: "task",
-              }}
-            >
-              {/* On a page with an agent chat (a task tile on the Board), a comment rides along. */}
-              <RecordCommentThread token="task" id={taskId} title={effective.title || null} />
-            </NonEditableContextMenu>
-          </section>
+              <section className="pl-1.5">
+                <NonEditableContextMenu
+                  {...TASKS_CONTEXT_MENU_PROPS}
+                  contextData={{
+                    ...contextData,
+                    content: comments.map((c) => c.body).join("\n\n"),
+                  }}
+                  contentSource={{ type: "raw" }}
+                  entity={{
+                    type: "task",
+                    id: taskId,
+                    title: effective.title,
+                    resourceType: "task",
+                  }}
+                >
+                  {/* On a page with an agent chat (a task tile on the Board), a comment rides along. */}
+                  <RecordCommentThread
+                    token="task"
+                    id={taskId}
+                    title={effective.title || null}
+                  />
+                </NonEditableContextMenu>
+              </section>
 
-          {/* Advanced */}
-          <section>
-            <button
-              onClick={() => setShowAdvanced((v) => !v)}
-              className="flex items-center gap-1.5 pl-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {showAdvanced ? (
-                <ChevronDown className="w-3 h-3" />
-              ) : (
-                <ChevronRight className="w-3 h-3" />
-              )}
-              <Info className="w-3 h-3" />
-              Advanced
-            </button>
-            {showAdvanced && (
-              <div
-                className={cn(
-                  "mt-3 overflow-hidden bg-card/40",
-                  compact
-                    ? "border-y border-border/60"
-                    : "rounded-xl border border-border/60",
+              {/* Advanced */}
+              <section>
+                <button
+                  onClick={() => setShowAdvanced((v) => !v)}
+                  className="flex items-center gap-1.5 pl-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {showAdvanced ? (
+                    <ChevronDown className="w-3 h-3" />
+                  ) : (
+                    <ChevronRight className="w-3 h-3" />
+                  )}
+                  <Info className="w-3 h-3" />
+                  Advanced
+                </button>
+                {showAdvanced && (
+                  <div
+                    className={cn(
+                      "mt-3 overflow-hidden bg-card/40",
+                      compact
+                        ? "border-y border-border/60"
+                        : "rounded-xl border border-border/60",
+                    )}
+                  >
+                    <PropertyRow label="Task ID" first compact={compact}>
+                      <RecordId
+                        value={taskId}
+                        label="Task"
+                        token="task"
+                        show="full"
+                      />
+                    </PropertyRow>
+                    <PropertyRow label="Created" compact={compact}>
+                      {task.created_at ? (
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(task.created_at).toLocaleString()}
+                        </span>
+                      ) : metadataPending ? (
+                        <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </PropertyRow>
+                    <PropertyRow label="Owner" last compact={compact}>
+                      {task.created_by ? (
+                        <code className="text-[10px] font-mono bg-muted px-2 py-1 rounded">
+                          {task.created_by}
+                        </code>
+                      ) : metadataPending ? (
+                        <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </PropertyRow>
+                  </div>
                 )}
-              >
-                <PropertyRow label="Task ID" first compact={compact}>
-                  <RecordId value={taskId} label="Task" token="task" show="full" />
-                </PropertyRow>
-                <PropertyRow label="Created" compact={compact}>
-                  {task.created_at ? (
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(task.created_at).toLocaleString()}
-                    </span>
-                  ) : metadataPending ? (
-                    <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
-                  ) : (
-                    <span className="text-xs text-muted-foreground">—</span>
+              </section>
+            </>
+          )}
+
+          {tab === "subtasks" && (
+            <>
+              {(project || task.parent_task_id) && (
+                <section
+                  className={cn(
+                    "overflow-hidden bg-card/40",
+                    compact
+                      ? "border-y border-border/60"
+                      : "rounded-xl border border-border/60",
                   )}
-                </PropertyRow>
-                <PropertyRow label="Owner" last compact={compact}>
-                  {task.created_by ? (
-                    <code className="text-[10px] font-mono bg-muted px-2 py-1 rounded">
-                      {task.created_by}
-                    </code>
-                  ) : metadataPending ? (
-                    <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
-                  ) : (
-                    <span className="text-xs text-muted-foreground">—</span>
+                >
+                  {project && (
+                    <PropertyRow
+                      icon={FolderKanban}
+                      label="Project"
+                      first
+                      compact={compact}
+                      last={!task.parent_task_id}
+                    >
+                      <a
+                        href={`/projects/${encodeURIComponent(project.id)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="truncate text-xs font-medium text-foreground transition-colors hover:text-primary"
+                        title={project.name}
+                      >
+                        {project.name}
+                      </a>
+                    </PropertyRow>
                   )}
-                </PropertyRow>
-              </div>
-            )}
-          </section>
+                  {task.parent_task_id && (
+                    <PropertyRow
+                      icon={CornerLeftUp}
+                      label="Parent task"
+                      first={!project}
+                      last
+                      compact={compact}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onOpenLinkedTask
+                            ? onOpenLinkedTask(task.parent_task_id!)
+                            : openTaskEditor({ taskId: task.parent_task_id! })
+                        }
+                        className="truncate text-left text-xs font-medium text-foreground transition-colors hover:text-primary"
+                        title={parentTask?.title ?? "Open parent task"}
+                      >
+                        {parentTask?.title ?? "Open parent task"}
+                      </button>
+                    </PropertyRow>
+                  )}
+                </section>
+              )}
+              {/* Subtasks */}
+              <section data-surface-value="subtasks">
+                <SectionHeader
+                  icon={CheckSquare}
+                  label={subtasksLabel}
+                  count={
+                    subtasksRead.status === "error"
+                      ? undefined
+                      : subtasks.length
+                  }
+                  className="mb-1"
+                />
+                <div
+                  className={cn(
+                    "overflow-hidden bg-card/40",
+                    compact
+                      ? "border-y border-border/60"
+                      : "rounded-xl border border-border/60",
+                  )}
+                >
+                  {subtasks.length === 0 && subtasksRead.status === "error" ? (
+                    <ReadFailure
+                      error={subtasksRead.error}
+                      what="this task's subtasks"
+                      onRetry={subtasksRead.retry}
+                      className="m-2"
+                    />
+                  ) : subtasks.length === 0 &&
+                    subtasksRead.status === "loading" ? (
+                    <p
+                      className={cn(
+                        "py-1.5 text-[11px] italic text-muted-foreground",
+                        compact ? "pl-1.5 pr-2" : "px-4",
+                      )}
+                      role="status"
+                    >
+                      Reading subtasks…
+                    </p>
+                  ) : subtasks.length === 0 ? (
+                    <p
+                      className={cn(
+                        "py-1.5 text-[11px] italic text-muted-foreground",
+                        compact ? "pl-1.5 pr-2" : "px-4",
+                      )}
+                    >
+                      No subtasks yet.
+                    </p>
+                  ) : (
+                    subtasks.map((st, i) => (
+                      <div
+                        key={st.id}
+                        className={cn(
+                          "group flex h-7 items-center gap-2 transition-colors hover:bg-accent/40",
+                          compact ? "pl-1.5 pr-2" : "px-4",
+                          i !== 0 && "border-t border-border/40",
+                        )}
+                      >
+                        <Checkbox
+                          checked={st.status === "completed"}
+                          onCheckedChange={() => handleToggleSubtask(st.id)}
+                          className="size-3.5"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onOpenLinkedTask
+                              ? onOpenLinkedTask(st.id)
+                              : openTaskEditor({ taskId: st.id })
+                          }
+                          className={cn(
+                            "min-w-0 flex-1 truncate rounded-sm text-left text-xs transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            st.status === "completed" &&
+                              "line-through text-muted-foreground",
+                          )}
+                          title={st.title}
+                        >
+                          {st.title}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteSubtask(st.id)}
+                          className="grid size-5 shrink-0 place-items-center opacity-0 transition-opacity group-hover:opacity-100 text-muted-foreground hover:text-destructive"
+                          aria-label="Delete subtask"
+                        >
+                          <Trash2 className="size-3" />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                  <div
+                    className={cn(
+                      "border-t border-border/40 bg-muted/20 px-1.5 py-1",
+                      compact ? "pl-1.5 pr-2" : "px-3",
+                      subtasks.length === 0 && "border-t-0",
+                    )}
+                  >
+                    <ProInput
+                      ref={subtaskInputRef}
+                      value={newSubtask}
+                      onChange={(e) => setNewSubtask(e.target.value)}
+                      onSubmit={() => void handleAddSubtask()}
+                      submitOnEnter
+                      submitLabel="Add subtask"
+                      submitDisabled={!newSubtask.trim() || isAddingSubtask}
+                      isSubmitting={isAddingSubtask}
+                      showCopyButton={false}
+                      onBlur={() => {
+                        if (newSubtask.trim()) void handleAddSubtask();
+                      }}
+                      placeholder="Add subtask, press Enter…"
+                      disabled={isAddingSubtask}
+                      aria-label="Add subtask"
+                      className="h-8 border-0 bg-transparent text-xs shadow-none"
+                      wrapperClassName="w-full"
+                    />
+                  </div>
+                </div>
+              </section>
+            </>
+          )}
+
+          {tab === "links" && (
+            <>
+              {/* Everything linked to this task, both ways (W1.4). */}
+              <LinkedRecordsSection
+                backLinksShownElsewhere
+                token="task"
+                id={taskId}
+                title={task.title ?? ""}
+              />
+
+              {/* Attachments — notes, files, messages, conversations, chat blocks */}
+              <section>
+                <TaskAttachmentsPanel taskId={taskId} />
+              </section>
+
+              {/* Associated resources — anything FK-linked to this task (task_id) */}
+              <TaskAssociatedResources taskId={taskId} />
+            </>
+          )}
         </div>
       </div>
     </SurfaceRuntimeProvider>
