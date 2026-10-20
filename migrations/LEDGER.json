@@ -11755,6 +11755,12 @@
       "filename": "20261022240000_readspeed6_a_a_column_write_holds_only_the_tables_it_feeds.sql",
       "checksum": "0f53280235f9071d301499fadac1fc00fd4e74286b765d0659d29a7357a70be2",
       "applied_at": "2026-10-20 01:30:34.133705+00"
+    },
+    "migrations/campaign/20261022240100_readspeed6_c_a_readers_column_mask_is_kept_while_no_access_changed.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261022240100_readspeed6_c_a_readers_column_mask_is_kept_while_no_access_changed.sql",
+      "checksum": "41b918acfaf148bd3c65846c79d2026fece1061378bdb184ab631c397e61cb65",
+      "applied_at": "2026-10-20 01:35:55.067194+00"
     }
   }
 }
