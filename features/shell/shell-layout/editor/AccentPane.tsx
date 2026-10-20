@@ -7,12 +7,15 @@
 // "Default" removes the layout's own accent: a person then follows the organization's brand color
 // (`inherited`), an organization the built-in blue. Used by the editor's Look tab (person and
 // organization) and by Settings › Layout.
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Check, TriangleAlert } from "lucide-react";
 import { Field } from "@ai-matrx/design-system/controls";
 import { ACCENTS, accentContrastWarning, accentHex, normalizeHex } from "@ai-matrx/design-system/accents";
 import { cn } from "@/lib/utils";
 import type { ShellAccentRef } from "../contract";
+
+/** The no-accent swatch's name. Not "Standard": that is the Look card beside it. */
+export const DEFAULT_SWATCH_LABEL = "Default";
 
 /** The built-in primary (the design system's default accent). */
 const STANDARD_HEX = ACCENTS[0]?.hex ?? "#1773cf";
@@ -63,7 +66,7 @@ export function AccentPane({
   value: ShellAccentRef | null;
   /** What "Default" shows: the organization's brand color for a person; null = the built-in blue. */
   inherited?: ShellAccentRef | null;
-  /** The Default swatch's name ("Organization color" / "Standard"). */
+  /** The Default swatch's name ("Organization color" / "Default" — never "Standard", the Look card's word). */
   inheritedLabel?: string;
   onChange: (next: ShellAccentRef | null) => void;
   disabled?: boolean;
@@ -77,16 +80,21 @@ export function AccentPane({
   const warning = judged ? accentContrastWarning(judged) : null;
   const defaultColor = accentHex(inherited ?? null) ?? STANDARD_HEX;
 
-  // A custom color is used on Enter or when the field is left — never per keystroke (each use may save a version).
+  // A custom color is used on Enter or when the field is left — never per keystroke (each use may save a
+  // version) and never twice for one color: Enter and then the blur that follows (a click elsewhere, the
+  // field going disabled) used to send the same color twice, two writes against one version.
+  const committed = useRef<string | null>(null);
   const commit = () => {
-    if (typedHex && typedHex !== customHex) onChange({ hex: typedHex });
+    if (!typedHex || typedHex === customHex || typedHex === committed.current) return;
+    committed.current = typedHex;
+    onChange({ hex: typedHex });
   };
 
   return (
     <div className="space-y-2 p-3">
       <span className="block text-sm font-medium text-foreground">Accent color</span>
       <div role="radiogroup" aria-label="Accent color" className="flex flex-wrap gap-2">
-        <Swatch color={defaultColor} label={inheritedLabel ?? "Standard"} on={value === null} disabled={disabled} onPick={() => onChange(null)} />
+        <Swatch color={defaultColor} label={inheritedLabel ?? DEFAULT_SWATCH_LABEL} on={value === null} disabled={disabled} onPick={() => onChange(null)} />
         {ACCENTS.map((accent) => (
           <Swatch
             key={accent.id}

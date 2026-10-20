@@ -122,6 +122,13 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
 - **Live preview:** an unsaved draft goes to the slice's `previewBody`; `resolveHeldShellLayout` draws it in place of
   every stored layout, so the real Sidebar/Header/Dock show it. Cleared on save, discard and close. Never persisted.
 - **Saving** refuses a body with `problems`. History lists record versions; "Set active" = `restore` (one new version).
+  Every save goes through ONE lane per tab (`saveLane.ts`): one write at a time, each reading the version the last
+  one left and building its body (`save(target, (now) => body, note)`) when its turn comes, so a person's own quick
+  edits never refuse each other. `{ optimistic: true }` (Settings › Layout's Look and accent) draws the choice at once
+  through `previewBody` and steps aside when the queue settles; a refused write falls back and the caller toasts it.
+- **Accent swatches:** the no-accent swatch is "Default" (`DEFAULT_SWATCH_LABEL`; "Standard" is the Look card). Under
+  an accent the shell's selection tokens (`--shell-pill-*`, `--shell-nav-selected-text`, styles/shell.css) and the
+  glass tint (design-system `accent.css`) derive from `--primary`; with none they keep the literal built-in blue.
 - **Reset:** the section (region back to default), "Use organization's layout" (clear person), "Reset to standard"
   (person with an org layout saves explicit default regions so they win; else clear).
 - **Add to my menu** saves the person's layout at once. The page's record comes from the current-record primitive
@@ -139,6 +146,7 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
 
 ## Change log
 
+- `2026-10-20` — claude (lane R): the save lane (serialized CAS saves; optimistic Look/accent), the custom color used once per Enter+blur, the "Default" swatch, accent-derived selection states. Guards `__tests__/save-lane.test.tsx`, `__tests__/accent-selection-states.test.ts`.
 - `2026-10-20` — claude (lane Q): the accent color and the organization's brand color — `accent` field
   (`{id}` curated or `{hex}`; validate/serialize via `@ai-matrx/design-system/accents` `parseAccentRef`),
   per-field resolution, `heldShellAccent` (agrees with the resolver), the design system's
