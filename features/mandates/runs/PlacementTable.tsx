@@ -37,6 +37,8 @@ const VERDICT_WORDS: Record<string, string> = {
   renamed: "Renamed",
   default_used: "Default used",
   intentionally_blank: "Left blank",
+  unfilled: "Nothing fills it",
+  spilled_to_context: "Sent as context",
   spilled_to_user_input: "Sent as message",
   dropped: "Dropped",
   missing_from_code: "Not in agent",
