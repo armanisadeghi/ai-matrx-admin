@@ -24,7 +24,7 @@ import type { PaintedSize } from "../editor/database-host";
 import { runHostSteps, upgradeCountsText } from "../data/install-host";
 import { registerSampleWorld } from "../data/sources";
 import { saveOnCurrent } from "../store/save-on-current";
-import { copyIsLive, copyRoots, templateDoorSentence } from "./template-copy";
+import { copyIsLive, templateDoorSentence } from "./template-copy";
 
 /**
  * WHERE "USE TEMPLATE" SPENDS ITS TIME: each phase is a `performance.measure` named `spaces:use-template:<phase>`
@@ -401,7 +401,7 @@ export interface InstalledCopy {
   newerVersion: number | null;
   startedAt: string;
   finishedAt: string | null;
-  /** The copy's root page, by the id the run recorded on it (template-copy.ts): never found by title. */
+  /** The copy's root page, as the install recorded it (template_instances.root_page_id): never found by title. */
   root: SpaceId;
   /** True when the copy was removed (Move to Trash on its root): offered as "Restore it", never "Open it". */
   trashed: boolean;
@@ -418,10 +418,17 @@ export async function installedCopies(organizationId: string, catalogueId: strin
   const { ok, instances, error } = await listTemplateInstances(supabaseDataSource(createClient()), organizationId, catalogueId);
   if (!ok) throw new Error(`We couldn't read your copies of this template: ${error?.message ?? "no answer"}`);
   const candidates = instances.filter((i) => i.state !== "refused" && i.finished_at);
-  const roots = await copyRoots(organizationId, candidates.map((i) => i.install_id));
+  // The root each install recorded (template_instances.root_page_id), and whether that page is live or in Trash.
+  const rootIds = candidates.map((i) => i.root_page_id).filter((id): id is string => !!id);
+  const roots = new Map<string, { id: string; trashed: boolean }>();
+  if (rootIds.length) {
+    const { data, error: rootError } = await createClient().schema("content").from("document").select("id, deleted_at").eq("organization_id", organizationId).in("id", rootIds);
+    if (rootError) throw new Error(`We couldn't find your copy's pages: ${rootError.message}`);
+    for (const row of (data ?? []) as Array<{ id: string; deleted_at: string | null }>) roots.set(row.id, { id: row.id, trashed: !!row.deleted_at });
+  }
   const out: InstalledCopy[] = [];
   for (const i of candidates) {
-    const root = roots.get(i.install_id);
+    const root = i.root_page_id ? roots.get(i.root_page_id) : undefined;
     if (!root) continue;
     const live = copyIsLive(i.state);
     if (live === root.trashed) continue;
@@ -714,10 +721,9 @@ export interface UseTemplateRun {
   template: SpaceTemplateFull;
   store: SpacesStore;
   /**
-   * Makes the root page under the id the run chose (idempotent by id: a resume after a lost answer reuses it), stamped
-   * with the copy's install id (ADVERSARIAL-6 F1: the root's Trash and Restore follow the install; template-copy.ts).
+   * Makes the root page under the id the run chose (idempotent by id: a resume after a lost answer reuses it).
    */
-  createRoot: (title: string, id: SpaceId, installId: string) => Promise<SpaceDoc>;
+  createRoot: (title: string, id: SpaceId) => Promise<SpaceDoc>;
   /** Installs the tables (installTemplateTables with the stage, the stop signal and the fresh copy). */
   install: (onStage: (stage: string) => void, signal: AbortSignal, fresh: FreshCopy) => Promise<Record<string, ResolvedTable>>;
   journal: PackRunJournal;
@@ -810,7 +816,7 @@ export async function runUseTemplate(r: UseTemplateRun): Promise<UseTemplateResu
     tables.catch(() => undefined);
     const root = await makeTemplatePages(
       r.store,
-      (title, id) => r.createRoot(title, id, installId),
+      (title, id) => r.createRoot(title, id),
       r.template,
       tables,
       (done) => {

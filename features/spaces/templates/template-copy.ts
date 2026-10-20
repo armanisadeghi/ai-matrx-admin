@@ -1,43 +1,20 @@
 // features/spaces/templates/template-copy.ts — a Space template copy's lifecycle follows its ROOT page (Notion parity,
 // ADVERSARIAL-6 F1/F2/F3).
 //
-// THE LINK: "Use template" chooses the copy's install id before anything is written and stamps it on the root page at
-// creation (`content.document.metadata.from_template = {install_id, catalogue_id}`, the same shape the install stamps on
-// an Applet it copies), and the run records that page on the install (`template_install_note`, kind page). So both sides
-// carry the other's RECORDED id: never a title or a time window. A page duplicated from a root carries no stamp
-// (content.space_duplicate does not copy metadata), so only the page the run made can remove the copy.
+// THE LINK: the install records its pages (`template_install_note`, kind page) and the records family reads that link both
+// ways: `template_instances` answers each copy's `root_page_id` and `pages`, and `template_instance_of_page` answers which
+// install a page is the root of. Nothing is written on the page, and no title or time window is ever used. A page
+// duplicated from a root is not recorded by any install, so only the page the run made can remove the copy.
 //
 // THE DOORS are the records family's own (`runTemplateDoor`): `template_uninstall` archives the tables, fields, views and
 // assistant AND moves the recorded pages to Trash; `template_restore` brings all of it back. Nothing here duplicates them.
 
 import { mapPgError, supabaseDataSource } from "@ai-matrx/records/core";
-import { listTemplateInstances, runTemplateDoor, TEMPLATE_BUSY_MESSAGE, type TemplateDoorAnswer, type TemplateInstanceRow } from "@ai-matrx/records/templates";
+import { listTemplateInstances, runTemplateDoor, templateInstanceOfPage, TEMPLATE_BUSY_MESSAGE, type TemplateDoorAnswer, type TemplateInstanceRow } from "@ai-matrx/records/templates";
 
 import { createClient } from "@/utils/supabase/client";
 
 import type { SpaceId } from "../contract";
-
-/** The metadata key on a template copy's root page (registered in platform.metadata_reserved_keys for `document`). */
-export const FROM_TEMPLATE_KEY = "from_template";
-
-export interface TemplateCopyStamp {
-  installId: string;
-  catalogueId: string;
-}
-
-/** The metadata a copy's root page is created with. */
-export function templateCopyMetadata(stamp: TemplateCopyStamp): Record<string, unknown> {
-  return { [FROM_TEMPLATE_KEY]: { install_id: stamp.installId, catalogue_id: stamp.catalogueId } };
-}
-
-/** The stamp a page's metadata carries, or null (an ordinary page). */
-export function readTemplateCopyStamp(metadata: unknown): TemplateCopyStamp | null {
-  if (!metadata || typeof metadata !== "object") return null;
-  const raw = (metadata as Record<string, unknown>)[FROM_TEMPLATE_KEY];
-  if (!raw || typeof raw !== "object") return null;
-  const { install_id, catalogue_id } = raw as { install_id?: unknown; catalogue_id?: unknown };
-  return typeof install_id === "string" && install_id && typeof catalogue_id === "string" && catalogue_id ? { installId: install_id, catalogueId: catalogue_id } : null;
-}
 
 /** A template copy, seen from its root page. */
 export interface TemplateCopy {
@@ -56,59 +33,32 @@ export interface TemplateCopy {
 export const copyIsLive = (state: TemplateInstanceRow["state"]) => state === "installed" || state === "installing";
 
 /**
- * The template copy `pageId` is the root of, or null for an ordinary page (no stamp, or a stamp whose install this
- * organization no longer lists). Two small reads: the page's stamp, then the copy's install row.
+ * The template copy `pageId` is the root of, or null for an ordinary page (no install recorded it as its root). Reads
+ * the page's organization, asks the records door which install it is the root of, then reads that copy's row.
  */
 export async function templateCopyOfPage(pageId: SpaceId): Promise<TemplateCopy | null> {
-  const { data, error } = await createClient().schema("content").from("document").select("id, organization_id, title, metadata").eq("id", pageId).maybeSingle();
+  const db = createClient();
+  const { data, error } = await db.schema("content").from("document").select("id, organization_id, title").eq("id", pageId).maybeSingle();
   if (error) throw new Error(`We couldn't read this page: ${error.message}`);
-  const stamp = readTemplateCopyStamp(data?.metadata);
-  if (!data || !stamp) return null;
-  const { ok, instances, error: listError } = await listTemplateInstances(supabaseDataSource(createClient()), data.organization_id, stamp.catalogueId);
+  if (!data) return null;
+  const source = supabaseDataSource(db);
+  const of = await templateInstanceOfPage(source, data.organization_id, pageId);
+  if (!of.ok) throw new Error(`We couldn't read this page's template copy: ${of.error?.message ?? "no answer"}`);
+  // Only the copy's root removes the copy (a later recorded page of the same install is an ordinary page).
+  if (!of.instance || of.instance.root_page_id !== pageId) return null;
+  const { ok, instances, error: listError } = await listTemplateInstances(source, data.organization_id, of.instance.catalogue_id);
   if (!ok) throw new Error(`We couldn't read this page's template copy: ${listError?.message ?? "no answer"}`);
-  const row = instances.find((i) => i.install_id === stamp.installId);
+  const row = instances.find((i) => i.install_id === of.instance?.id);
   if (!row) return null;
   return {
     installId: row.install_id,
-    catalogueId: stamp.catalogueId,
+    catalogueId: of.instance.catalogue_id,
     organizationId: data.organization_id,
     rootId: data.id,
     title: data.title || row.title || "this template",
     state: row.state,
     tables: row.tables.length,
   };
-}
-
-/** A copy's root page as its install recorded it: live, in Trash, or gone. */
-export interface CopyRoot {
-  id: SpaceId;
-  trashed: boolean;
-}
-
-/**
- * The root page of each install (by the id the run stamped), live or in Trash. An install with no stamped page is
- * absent from the answer (made before the stamp existed, or its page was deleted for good).
- */
-export async function copyRoots(organizationId: string, installIds: readonly string[]): Promise<Map<string, CopyRoot>> {
-  const out = new Map<string, CopyRoot>();
-  if (!installIds.length) return out;
-  const { data, error } = await createClient()
-    .schema("content")
-    .from("document")
-    .select("id, deleted_at, metadata")
-    .eq("organization_id", organizationId)
-    .eq("format", "spaces")
-    .in(`metadata->${FROM_TEMPLATE_KEY}->>install_id`, [...installIds])
-    .limit(installIds.length * 4);
-  if (error) throw new Error(`We couldn't find your copy's pages: ${error.message}`);
-  for (const row of (data ?? []) as Array<{ id: string; deleted_at: string | null; metadata: unknown }>) {
-    const stamp = readTemplateCopyStamp(row.metadata);
-    if (!stamp) continue;
-    const seen = out.get(stamp.installId);
-    // A live page wins over a trashed one (never expected: one root per install).
-    if (!seen || (seen.trashed && !row.deleted_at)) out.set(stamp.installId, { id: row.id, trashed: !!row.deleted_at });
-  }
-  return out;
 }
 
 /** Codes the store answers when it was busy, not when the template is wrong. */

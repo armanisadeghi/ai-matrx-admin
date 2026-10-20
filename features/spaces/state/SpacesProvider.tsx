@@ -24,7 +24,7 @@ import { listTemplateIds, setTemplate, copyTemplate } from "./templates";
 import { bringTemplateTables } from "./template-tables";
 import { attemptJournal } from "../templates/use-attempt";
 import { noteTemplatePage } from "../data/install-host";
-import { removeCopyQuestion, restorePageOrCopy, runCopyDoor, templateCopyMetadata, templateCopyOfPage, trashPageOrCopy, type TemplateCopy } from "../templates/template-copy";
+import { removeCopyQuestion, restorePageOrCopy, runCopyDoor, templateCopyOfPage, trashPageOrCopy, type TemplateCopy } from "../templates/template-copy";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { installTemplateTables, olderTemplateCopies, packRunJournal, readSpaceTemplate, readStarterTemplate, runUseTemplate, timed, USE_TEMPLATE_OPEN_DEADLINE_MS, withDeadline, type PreviewSizes } from "../templates/use-pack";
 
@@ -545,8 +545,8 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
         runUseTemplate({
           template,
           store,
-          createRoot: async (title, id, installId) => {
-            const doc = await createDatabaseSpacesStore(orgId).create({ id, parentId: null, title, metadata: templateCopyMetadata({ installId, catalogueId: template.catalogue_id }) });
+          createRoot: async (title, id) => {
+            const doc = await createDatabaseSpacesStore(orgId).create({ id, parentId: null, title });
             store.notifyTree();
             return doc;
           },
