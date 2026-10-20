@@ -632,7 +632,9 @@ export function NotesView({
   // Main editor column — shared by the sidebar-shown (resizable panel) and the
   // sidebar-hidden (full-width) layouts. h-full/w-full so it fills either one.
   const mainArea = (
-    <div className="flex h-full w-full min-w-0 min-h-0">
+    // The note's frame, chrome included (tabs, assists, status bar), is the document: the page
+    // assistant's dock never reveals over it (review 3 2026-10-20 R1; guard a-notes-chrome-is-the-document).
+    <div className="flex h-full w-full min-w-0 min-h-0" data-document-surface="">
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         {/* Layer 4: Tab bar (top) */}
         {showTabs && !singleNote && (
