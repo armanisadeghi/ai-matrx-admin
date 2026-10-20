@@ -11,6 +11,8 @@ import {
   setAgentAutoToolsDisabled,
 } from "./auto-tools.thunks";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import { toast } from "@ai-matrx/chat/host/notify";
+import { normalizeLegacySettings } from "@/features/agents/utils/legacy-settings";
 import type { Database } from "@/types/database.types";
 import { pgErrorToError } from "@ai-matrx/data";
 import { tryWriteOne, writeOneRow } from "@ai-matrx/data/db";
@@ -59,6 +61,34 @@ import {
   setAgentField, markAgentSaved, markAgentFieldSaved, rollbackAgentOptimisticUpdate,
 } from "@/features/agents/redux/agent-builder.slice";
 export type { DuplicateAgentOptions };
+
+/**
+ * Legacy settings keys are converted before the write (the Builder writes straight to Supabase,
+ * so the save door's own conversion never sees it). `settings` is replaced with the converted
+ * copy and a schema found under a legacy key fills an empty output_schema column.
+ */
+function prepareSettingsWrite(
+  partial: Partial<AgentDefinition>,
+  existingOutputSchema: unknown,
+): string[] {
+  if (partial.settings === undefined || partial.settings === null) return [];
+  const norm = normalizeLegacySettings(
+    partial.settings as Record<string, unknown>,
+    partial.outputSchema !== undefined ? partial.outputSchema : existingOutputSchema,
+  );
+  if (norm.notes.length === 0) return [];
+  partial.settings = norm.settings as AgentDefinition["settings"];
+  if (norm.outputSchema && partial.outputSchema === undefined) {
+    partial.outputSchema = norm.outputSchema as AgentDefinition["outputSchema"];
+  }
+  return norm.notes;
+}
+
+/** Terse, never blocking: the save already happened. */
+function announceSettingsNotes(notes: string[]): void {
+  if (notes.length === 0) return;
+  toast.warning(notes.join(" "));
+}
 
 type ThunkApi = { dispatch: ChatDispatch; state: ChatRootState };
 
@@ -134,12 +164,15 @@ export const saveAgentField = createAsyncThunk<
 
     dispatch(setAgentField({ id: agentId, field, value }));
 
+    const fieldPartial = { [field]: value } as Partial<AgentDefinition>;
+    const settingsNotes = prepareSettingsWrite(fieldPartial, existing?.outputSchema);
+
     const { data, error } = await writeOneRow(
       supabase
         .schema("agent")
         .from("definition")
         .update(
-          agentDefinitionToUpdate({ [field]: value } as Partial<AgentDefinition>),
+          agentDefinitionToUpdate(fieldPartial),
         )
         .eq("id", agentId)
         .select("version, updated_at, follows_source"),
@@ -164,7 +197,17 @@ export const saveAgentField = createAsyncThunk<
       );
     }
 
+    if (settingsNotes.length > 0) {
+      dispatch(
+        mergePartialAgent({
+          id: agentId,
+          settings: fieldPartial.settings,
+          ...(fieldPartial.outputSchema !== undefined && { outputSchema: fieldPartial.outputSchema }),
+        }),
+      );
+    }
     dispatch(markAgentFieldSaved({ id: agentId, field }));
+    announceSettingsNotes(settingsNotes);
   },
 );
 
@@ -206,6 +249,8 @@ export const saveAgent = createAsyncThunk<void, string, ThunkApi>(
 
     dispatch(setAgentLoading({ id: agentId, loading: true }));
 
+    const settingsNotes = prepareSettingsWrite(dirtyPartial, record.outputSchema);
+
     const { data, error } = await writeOneRow(
       supabase
         .schema("agent")
@@ -236,7 +281,17 @@ export const saveAgent = createAsyncThunk<void, string, ThunkApi>(
       );
     }
 
+    if (settingsNotes.length > 0) {
+      dispatch(
+        mergePartialAgent({
+          id: agentId,
+          settings: dirtyPartial.settings,
+          ...(dirtyPartial.outputSchema !== undefined && { outputSchema: dirtyPartial.outputSchema }),
+        }),
+      );
+    }
     dispatch(markAgentSaved({ id: agentId }));
+    announceSettingsNotes(settingsNotes);
   },
 );
 
