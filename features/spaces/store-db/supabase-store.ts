@@ -495,7 +495,8 @@ export class SupabaseSpacesStore implements SpacesStore {
     return (sibs[i - 1]?.position ?? 0) + POSITION_GAP / 2;
   }
 
-  async create(input: { id?: SpaceId; parentId: SpaceId | null; title?: string; blocks?: SpaceBlock[]; afterId?: SpaceId }): Promise<SpaceDoc> {
+  /** `metadata`: system-owned keys stamped at creation (a template copy's root carries `from_template`, template-copy.ts). */
+  async create(input: { id?: SpaceId; parentId: SpaceId | null; title?: string; blocks?: SpaceBlock[]; afterId?: SpaceId; metadata?: Record<string, unknown> }): Promise<SpaceDoc> {
     // A new top-level Space is Organization (`internal`): defaults lean open. A sub-page inherits its
     // parent's organization and visibility; "Private" is a person choosing `personal` (hidden from lists).
     let organizationId = this.organizationId;
@@ -523,6 +524,7 @@ export class SupabaseSpacesStore implements SpacesStore {
       title: input.title ?? "",
       visibility,
       ...(web ?? {}),
+      ...(input.metadata ? { metadata: input.metadata } : {}),
     };
     const { data, error } = await this.db
       .schema("content")

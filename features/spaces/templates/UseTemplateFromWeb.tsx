@@ -14,6 +14,8 @@
 // deadline that names what it waited on, with Try again; opening the copy is checked and falls back to a full
 // navigation when the router's replace is dropped. F6: a NEW attempt for a template the organization already has
 // offers "Open it" (default) or "Make another copy" instead of silently making a second copy.
+// ADVERSARIAL-6 F2/F3: only copies whose install is live AND whose recorded root page is live are offered "Open it"
+// (opened by that recorded id, so a renamed root still opens); a removed copy (root in Trash) is offered "Restore it".
 
 import { Button, EmptyState } from "@ai-matrx/design-system/controls";
 import { LayoutTemplate } from "lucide-react";
@@ -25,8 +27,8 @@ import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { spaceTemplateMakes } from "@/lib/spaces-blocks/template-pack";
 
 import { useSpaces } from "../state/SpacesProvider";
-import { attemptRootFor, newAttemptId, readAttempt } from "./use-attempt";
-import { findCopyRoot, installedCopies, listSpaceTemplates, USE_TEMPLATE_OPEN_DEADLINE_MS, withDeadline, type InstalledCopy } from "./use-pack";
+import { newAttemptId, readAttempt } from "./use-attempt";
+import { installedCopies, listSpaceTemplates, USE_TEMPLATE_OPEN_DEADLINE_MS, withDeadline, type InstalledCopy } from "./use-pack";
 
 // A page-less pack makes a board (the design-system starters): the Board gallery names and installs it.
 const BoardTemplateGallery = dynamic(
@@ -54,8 +56,15 @@ async function copiesHere(catalogueId: string): Promise<{ orgId: string; copies:
 
 const copiesLine = (copies: InstalledCopy[]) => {
   const newest = copies[0];
+  if (newest.trashed) return copies.length === 1 ? `In Trash · version ${newest.version}` : `${copies.length} copies in Trash`;
   const head = copies.length === 1 ? `Your copy is on version ${newest.version}` : `${copies.length} copies, newest on version ${newest.version}`;
   return newest.newerVersion ? `${head} · version ${newest.newerVersion} is out` : head;
+};
+
+/** The copies to offer: the live ones when there are any ("Open it"), else the ones in Trash ("Restore it"). */
+export const offeredCopies = (copies: InstalledCopy[]) => {
+  const live = copies.filter((c) => !c.trashed);
+  return live.length ? live : copies;
 };
 
 export function UseTemplateFromWeb() {
@@ -63,7 +72,7 @@ export function UseTemplateFromWeb() {
   const catalogueId = params?.get("template") ?? "";
   const attemptId = params?.get("attempt") ?? "";
   const router = useRouter();
-  const { packs, ready, retryLoad } = useSpaces();
+  const { packs, ready, retryLoad, restoreSpace } = useSpaces();
   // The copy this attempt already made (a refresh after it finished, or a run that just answered).
   const [madeRoot, setMadeRoot] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
@@ -140,7 +149,7 @@ export function UseTemplateFromWeb() {
     // An attempt already under way (a refresh, a resume) never asks: it continues its own copy.
     const known = !!readAttempt(attemptId);
     let live = true;
-    (known ? Promise.resolve(null) : copiesHere(catalogueId).then((found) => (found.copies.length ? found : null))).then(
+    (known ? Promise.resolve(null) : copiesHere(catalogueId).then((found) => (found.copies.length ? { ...found, copies: offeredCopies(found.copies) } : null))).then(
       (found) => live && setExisting(found),
       (e: unknown) => {
         if (!live) return;
@@ -171,16 +180,12 @@ export function UseTemplateFromWeb() {
     setOpening(true);
     setError(null);
     try {
+      // The root the copy recorded (template-copy.ts), never a title guess: a renamed root opens the same.
       const newest = found.copies[0];
-      const root =
-        attemptRootFor(found.copies.map((c) => c.installId)) ??
-        (await withDeadline(findCopyRoot(found.orgId, newest), USE_TEMPLATE_OPEN_DEADLINE_MS, "Your copy's pages did not load."));
-      if (!root) {
-        setError("Its pages were not found. Make another copy instead.");
-        return;
-      }
-      setMadeRoot(root);
-      openCopy(root);
+      // A removed copy comes back whole first: its tables, views and assistant, and its pages out of Trash.
+      if (newest.trashed) await restoreSpace(newest.root);
+      setMadeRoot(newest.root);
+      openCopy(newest.root);
     } catch (e) {
       setError(e instanceof Error ? e.message : "We couldn't open your copy.");
     } finally {
@@ -216,12 +221,12 @@ export function UseTemplateFromWeb() {
       <div className="pt-16" data-use-template={catalogueId} data-use-template-existing="">
         <EmptyState
           icon={<LayoutTemplate size={20} />}
-          title={`You already have ${template?.title ?? "this template"}`}
+          title={existing.copies[0]?.trashed ? `${template?.title ?? "This template"} is in your Trash` : `You already have ${template?.title ?? "this template"}`}
           line={error ?? copiesLine(existing.copies)}
           action={
             <div className="flex flex-wrap justify-center gap-2">
               <Button variant="primary" autoFocus disabled={opening} onClick={() => void openExisting(existing)} data-testid="use-template-open-existing">
-                {opening ? "Opening…" : "Open it"}
+                {existing.copies[0]?.trashed ? (opening ? "Restoring…" : "Restore it") : opening ? "Opening…" : "Open it"}
               </Button>
               <Button variant="outline" disabled={opening} onClick={() => setExisting(null)} data-testid="use-template-make-another">
                 Make another copy

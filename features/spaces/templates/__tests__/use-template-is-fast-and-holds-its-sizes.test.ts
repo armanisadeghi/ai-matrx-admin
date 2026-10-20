@@ -93,7 +93,7 @@ describe("Use template is fast and holds its sizes", () => {
     const w = world([]);
     const tables = Promise.reject(new Error("The template's tables were not made: refused"));
     await expect(makeTemplatePages(w.store, w.createRoot, template, tables)).rejects.toThrow(
-      /^The template's tables were not made: refused The pages made so far are in Trash/,
+      /^The template's tables were not made: refused$/,
     );
     expect(w.live()).toEqual([]);
   });
