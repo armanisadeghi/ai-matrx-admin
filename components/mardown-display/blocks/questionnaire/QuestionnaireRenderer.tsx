@@ -39,6 +39,7 @@ import {
 } from "./QuestionnaireContext";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { questionnaireAnswers } from "./questionnaire-answers";
+import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
 import {
   BlockControlsButton,
   type BlockControlsHandle,
@@ -1006,6 +1007,7 @@ const QuestionnaireRendererBody = ({
   onStateChange = undefined,
   controls = null,
 }: QuestionnaireRendererProps) => {
+  const host = useBlockHostSlot();
   // Generate a unique ID for this questionnaire if not provided
   const uniqueId =
     questionnaireId ||
@@ -1157,9 +1159,10 @@ const QuestionnaireRendererBody = ({
             onClick={() => setDebugMode((prev) => !prev)}
           />
         ) : null}
-        {controls ? (
-          <div className="flex justify-end">
+        {controls || host.actions ? (
+          <div className="flex items-center justify-end gap-0.5">
             <BlockControlsButton controls={controls} title="Questionnaire controls" />
+            {host.actions}
           </div>
         ) : null}
         {/* Questionnaire Header with Title and Intro */}

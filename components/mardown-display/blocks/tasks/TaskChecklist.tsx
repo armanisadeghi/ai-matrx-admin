@@ -67,6 +67,8 @@ export type TaskChecklistProps = {
   onStateChange?: (state: CheckboxStateType) => void;
   onSave?: (state: CheckboxStateType) => void;
   hideTitle?: boolean;
+  /** The surrounding block draws Controls in its own header row (one frame), so the checklist toolbar does not. */
+  controlsInHeader?: boolean;
   /**
    * Hide the built-in Reset / Save / "Save as Tasks" action row. Set when the
    * surrounding surface owns the convert/persist actions (e.g. the tasks
@@ -89,6 +91,7 @@ const TaskChecklist = ({
   onStateChange = (state: CheckboxStateType) => {},
   onSave = (state: CheckboxStateType) => {},
   hideTitle = false,
+  controlsInHeader = false,
   hideActions = false,
   makeTasks = false,
 }: TaskChecklistProps) => {
@@ -616,7 +619,7 @@ const TaskChecklist = ({
                   narrow ? "ml-auto text-xs" : "text-sm",
                 )}
               >
-                <BlockControlsButton controls={blockControls} title="Tasks" />
+                {!controlsInHeader && <BlockControlsButton controls={blockControls} title="Tasks" />}
                 <span>Hide completed</span>
                 <Switch
                   checked={hideCompleted}

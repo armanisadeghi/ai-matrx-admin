@@ -8,6 +8,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@ai-matrx/design-system";
 import ChatCollapsibleWrapper from "@ai-matrx/rich-content/display/blocks/ChatCollapsibleWrapper";
 import TaskPreviewWindow from "@/features/tasks/components/TaskPreviewWindow";
+import { BlockControlsButton, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
+import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 import TaskChipRow from "@/features/tasks/widgets/TaskChipRow";
 
 interface TasksBlockProps {
@@ -30,6 +32,7 @@ const TasksBlock: React.FC<TasksBlockProps> = ({
   const [checkboxState, setCheckboxState] = useState({});
   const [previewOpen, setPreviewOpen] = useState(false);
   const { toast } = useToast();
+  const controls = useBlockControls("tasks", content, useBlockEdit());
 
   const parsedItems = useMemo(() => parseMarkdownChecklist(content), [content]);
 
@@ -45,7 +48,7 @@ const TasksBlock: React.FC<TasksBlockProps> = ({
     <ChatCollapsibleWrapper
       icon={<CheckSquare className="h-4 w-4 text-primary" />}
       title="Tasks"
-      controls={null}
+      controls={<BlockControlsButton controls={controls} title="Tasks" />}
     >
       <TaskChecklist
         content={content}
@@ -53,6 +56,7 @@ const TasksBlock: React.FC<TasksBlockProps> = ({
         onStateChange={setCheckboxState}
         onSave={handleSaveState}
         hideTitle={true}
+        controlsInHeader
       />
 
       {/* Existing task links from this message */}

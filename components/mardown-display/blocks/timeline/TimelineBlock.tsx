@@ -280,7 +280,6 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
       </div>
 
       <div className="flex items-center gap-1.5 flex-shrink-0">
-        <BlockControlsButton controls={controls} title={timeline.title} />
         {categories.length > 1 && (
           <Select
             value={selectedCategory}
@@ -327,6 +326,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
         onDataImport={handleDataImport}
         extraActions={
           <>
+            <BlockControlsButton controls={controls} title={timeline.title} />
             <IconButton
               icon={Printer}
               tooltip="Print / Save as PDF"

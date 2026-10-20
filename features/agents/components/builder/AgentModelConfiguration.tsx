@@ -121,16 +121,17 @@ export function AgentModelConfiguration({
   };
 
   return (
-    <div className="flex items-center justify-between gap-3">
+    // Wraps: on a phone the button group drops under the picker instead of squeezing the label to one letter per line.
+    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1" data-testid="agent-model-row">
       <div
         className={cn(
-          "-mx-1.5 flex items-center gap-3 min-w-0 rounded-md px-1.5 py-0.5 transition-colors",
+          "-mx-1.5 flex items-center gap-3 min-w-0 max-w-full rounded-md px-1.5 py-0.5 transition-colors",
           modelMissing && "ring-1 ring-yellow-400 dark:ring-yellow-500",
         )}
       >
         <Label
           className={cn(
-            "text-xs shrink-0",
+            "text-xs shrink-0 whitespace-nowrap",
             modelMissing
               ? "text-yellow-600 dark:text-yellow-400"
               : "text-muted-foreground",
@@ -155,7 +156,7 @@ export function AgentModelConfiguration({
           onOfferingPinChange={handleOfferingPinChange}
         />
       </div>
-      <div className="flex items-center gap-1 shrink-0 pr-2">
+      <div className="flex flex-wrap items-center gap-1 pr-2" data-testid="agent-model-actions">
         <AgentSettingsModal agentId={agentId} />
         <AgentVariablesModal agentId={agentId} />
         <AgentToolsModal agentId={agentId} />

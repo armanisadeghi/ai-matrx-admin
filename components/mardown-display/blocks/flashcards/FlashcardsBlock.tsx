@@ -301,7 +301,7 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
       <ChatCollapsibleWrapper
         className={className}
         icon={<BookOpen className="h-4 w-4 text-primary" />}
-        title={<span>{set.completeCount}</span>}
+        title={<span>{set.completeCount} {set.completeCount === 1 ? "flashcard" : "flashcards"}</span>}
         controls={
           <>
             <BlockControlsButton controls={controls} title="Flashcard controls" />
@@ -340,24 +340,6 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
           </div>
         )}
 
-        {set.flashcards.length > 0 && (
-          <div className="flex items-center justify-center gap-3 pb-4 pt-2">
-            <FlashcardsSetControls
-              layoutMode={set.layoutMode}
-              onLayoutChange={set.setLayoutMode}
-              onMobileView={enterFlashMode}
-              onPrint={set.triggerPrint}
-              deckHref={set.deckHref}
-            onSaveDeck={set.handleSaveDeck}
-            savingDeck={set.savingDeck}
-              onOpenCanvas={set.handleOpenInCanvas}
-              onFullscreen={() => setIsFullscreen(true)}
-              showFullscreen
-              variant="bar"
-              size="xs"
-            />
-          </div>
-        )}
       </ChatCollapsibleWrapper>
 
       <PrintOptionsDialog

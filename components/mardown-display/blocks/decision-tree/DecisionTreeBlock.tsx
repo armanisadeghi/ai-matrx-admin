@@ -555,11 +555,48 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
       )}
 
       <div
-        className={`w-full border transition-colors ${host.selected ? "border-primary" : "border-border"} rounded-xl ${isFullScreen ? "fixed inset-0 z-50 flex items-center justify-center p-2" : "py-2"}`}
+        className={`w-full ${isFullScreen ? "fixed inset-0 z-50 flex items-center justify-center p-2" : `my-3 overflow-hidden rounded-lg border bg-card transition-colors ${host.selected ? "border-primary" : "border-border"}`}`}
       >
         <div
+          data-block-frame="decision_tree"
           className={`max-w-6xl mx-auto ${isFullScreen ? "bg-textured rounded-2xl shadow-2xl h-full max-h-[95dvh] w-full flex flex-col overflow-hidden" : ""}`}
         >
+          {/* The block's one header: title left, actions right (Controls, "</>" and Copy come from the shared slot) */}
+          {!isFullScreen && (
+            <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/50 px-3 py-1.5">
+              <div className="flex min-w-0 items-center gap-2">
+                <GitBranch className="h-3.5 w-3.5 shrink-0 text-primary" />
+                <InlineControlText controls={controls} fieldKey="title" value={decisionTree.title} className="truncate text-sm font-medium text-foreground">
+                  {decisionTree.title}
+                </InlineControlText>
+              </div>
+              <div className="flex shrink-0 items-center gap-1">
+                <IconButton
+                  icon={NotebookPen}
+                  tooltip="Save to notes"
+                  onClick={() => makeReal.saveToNotes(decisionTree.title, decisionTreeToMarkdown(decisionTree))}
+                />
+                <IconButton
+                  icon={Printer}
+                  tooltip={isPrinting ? "Saving…" : "Print / Save as PDF"}
+                  onClick={handlePrint}
+                  disabled={isPrinting}
+                />
+                <IconButton
+                  icon={ExternalLink}
+                  tooltip="Open Canvas"
+                  onClick={handleOpenCanvas}
+                />
+                <IconButton
+                  icon={Maximize2}
+                  tooltip="Expand to full screen"
+                  onClick={() => setIsFullScreen(true)}
+                />
+                <BlockControlsButton controls={controls} title="Decision tree controls" />
+                {host.actions}
+              </div>
+            </div>
+          )}
           {/* Fullscreen Header */}
           {isFullScreen && (
             <div className="flex-shrink-0 px-3 py-2 border-b border-border flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30">
@@ -590,18 +627,22 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
           <div className={isFullScreen ? "flex-1 overflow-y-auto" : ""}>
             <div ref={blockContentRef} className="p-2 space-y-3">
               {/* Header Section */}
-              <div className="bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 dark:from-indigo-950/40 dark:via-purple-950/30 dark:to-pink-950/40 rounded-xl p-2 border border-indigo-200 dark:border-indigo-800/50">
+              <div className="bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 dark:from-indigo-950/40 dark:via-purple-950/30 dark:to-pink-950/40 rounded-xl p-2">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex items-start gap-2 flex-1 min-w-0">
-                    <div className="p-2 bg-indigo-500 dark:bg-indigo-600 rounded-lg flex-shrink-0">
-                      <GitBranch className="h-4 w-4 text-white" />
-                    </div>
+                    {isFullScreen && (
+                      <div className="p-2 bg-indigo-500 dark:bg-indigo-600 rounded-lg flex-shrink-0">
+                        <GitBranch className="h-4 w-4 text-white" />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
-                      <h1 className="text-sm font-bold text-foreground leading-tight line-clamp-2">
-                        <InlineControlText controls={controls} fieldKey="title" value={decisionTree.title}>
-                          {decisionTree.title}
-                        </InlineControlText>
-                      </h1>
+                      {isFullScreen && (
+                        <h1 className="text-sm font-bold text-foreground leading-tight line-clamp-2">
+                          <InlineControlText controls={controls} fieldKey="title" value={decisionTree.title}>
+                            {decisionTree.title}
+                          </InlineControlText>
+                        </h1>
+                      )}
                       {decisionTree.description && (
                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                           {decisionTree.description}
@@ -610,33 +651,6 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
                     </div>
                   </div>
 
-                  {!isFullScreen && (
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <IconButton
-                        icon={NotebookPen}
-                        tooltip="Save to notes"
-                        onClick={() => makeReal.saveToNotes(decisionTree.title, decisionTreeToMarkdown(decisionTree))}
-                      />
-                      <IconButton
-                        icon={Printer}
-                        tooltip={isPrinting ? "Saving…" : "Print / Save as PDF"}
-                        onClick={handlePrint}
-                        disabled={isPrinting}
-                      />
-                      <IconButton
-                        icon={ExternalLink}
-                        tooltip="Open Canvas"
-                        onClick={handleOpenCanvas}
-                      />
-                      <IconButton
-                        icon={Maximize2}
-                        tooltip="Expand to full screen"
-                        onClick={() => setIsFullScreen(true)}
-                      />
-                      <BlockControlsButton controls={controls} title="Decision tree controls" />
-                      {host.actions}
-                    </div>
-                  )}
                 </div>
 
                 {/* Navigation Controls — first row to wrap on narrow widths */}
