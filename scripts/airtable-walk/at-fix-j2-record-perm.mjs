@@ -4,6 +4,7 @@ const who = process.env.WHO ?? "admin";
 const { browser, page, who: email, shot } = await open(who === "member");
 say("who", email);
 await gotoTable(page, process.env.TABLE);
+await page.getByText("Grid", { exact: true }).first().click().catch(() => {}); await page.waitForTimeout(2000);
 const step = process.env.STEP ?? "explore";
 await page.getByText("Bravo", { exact: true }).first().dblclick().catch(() => {});
 await page.waitForTimeout(2500);
@@ -35,11 +36,10 @@ if (step === "probe") {
     await page.keyboard.press("Escape");
     await page.getByText(name, { exact: true }).first().dblclick(); await page.waitForTimeout(2500);
     const info = await page.evaluate(() => {
-      const panel = [...document.querySelectorAll("*")].find((e) => /Shown to|Comments/.test(e.innerText || "") && e.getBoundingClientRect().x > 1100 && e.getBoundingClientRect().width < 450);
       const btns = [...document.querySelectorAll("button")].filter((b) => b.getBoundingClientRect().x > 1150).map((b) => `${(b.innerText || b.title || b.getAttribute("aria-label") || "").trim()}${b.disabled ? "(disabled)" : ""}`).filter(Boolean);
       return btns.slice(0, 30);
     });
-    say(name, "panel buttons", info);
+    say(name, "panel buttons", info, "panel text", (await page.evaluate(() => document.body.innerText)).split("\n").filter((l) => /^(Qty|Name|Withheld|9|5|3)/.test(l) || /Withheld|restricted/.test(l)).slice(0, 8));
     await shot("rp6-" + name);
   }
 }
