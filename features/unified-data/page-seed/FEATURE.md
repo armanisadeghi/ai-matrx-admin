@@ -148,3 +148,20 @@ everyone.
 ## A store timeout is said, never waited out (AT-FIX-G4, 2026-10-19)
 
 If the table's bundle (or the record's, or `table_facts`) answers a statement timeout (57014) during the browser's first reads, `askClientTableSeedHonestly` asks once more by itself; if the store still times out, `TableTimedOut` draws the shared timeout sentence and Try again inside the skeleton's own box (the skeleton stays mounted, still: zero layout shift). Try again re-asks. Guard: `__tests__/a-timed-out-table-page-says-so-in-its-own-box.test.tsx`. Live check: `scripts/airtable-walk/g4-timeout-walk.mjs`.
+
+## The member's seed now lands; still OFF by the rule (SERVER-ROWS, 2026-10-20)
+
+Cause of the member's missing rows, timed door by door as test@test.com (server-seed chain from a node client, Workspace table of 420 rows): `custom.my_levels` of the page's 100 ids took 2.2–4.3 s (admin asks none: an editor needs no per-row answer). It walked `custom.effective_level_many`, the ladder's halving per id. Fix (campaign `serverrows_a_a_pages_levels_are_read_the_way_the_page_reads_them.sql`, matrx-frontend `d08e268273`): records go through `custom.levels_of`, the set path the page read itself uses; same answer (1,397 ids over 150 member/admin pairs, 0 different), ~0.2–0.3 s. Guard: `scripts/campaign-tests/serverrows_a_…sql` (red before, green after). Member chain after: 1.25–1.95 s; admin 0.91–1.40 s.
+
+Live, www.aimatrx.com, Brightline service jobs (420 rows), ON by a temporary per-person override (cleared after), fresh context per pair, rows visible in ms (server HTML rows):
+
+| Who / pair | cold ON | cold OFF | warm ON | warm OFF |
+|---|---|---|---|---|
+| member 1 | 2646 (342) | 3118 | 1711 (342) | 2396 |
+| member 2 | 1756 (342) | 3060 | 1563 (342) | 2431 |
+| member 3 | **3432 (0)** | 2904 | 1503 (342) | 2267 |
+| admin 1 | 1368 (342) | 2909 | **5346 (0)** (first store call 4036) | 2100 |
+| admin 2 | 2347 (342) | 3010 | 1596 (342) | 2132 |
+| admin 3 | 1376 (342) | 2769 | 1073 (342) | 2158 |
+
+The member's seed now carries rows (5 of 6 ON loads), and every landed ON is 0.5–1.5 s faster. Two ON loads missed the cap and broke "every ON ≤ its paired OFF + 300 ms" (member 3 cold +528 ms, admin 1 warm +3246 ms, an app stall). **Platform default stays OFF.** What is left is the miss itself: a seed past the cap costs about the cap. The chain is where → bundle → page → (levels, headers, aggregates) in series, owned by the bundle and read lanes.
