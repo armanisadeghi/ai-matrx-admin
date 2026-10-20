@@ -22,6 +22,7 @@ import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { registerConversationHooks } from "@ai-matrx/chat/host";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
 import { loadConversation } from "@ai-matrx/chat/agents/redux/execution-system/thunks/load-conversation.thunk";
+import { followWhatIsStillInFlight } from "@ai-matrx/chat/agents/runtime-reconnect/follow-what-is-still-in-flight";
 import { selectOrderedMessageIds } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { StudioTurnModel } from "./StudioTurnModel";
@@ -191,6 +192,9 @@ export function StudioRun({
             return;
           }
           rememberLaunchedRun(key, openId);
+          // Every reopen runs the shared second half: a turn still running on the server
+          // (a refresh mid-answer, a question answered elsewhere) is followed, never lost.
+          followWhatIsStillInFlight(dispatch, openId);
           hookUp(openId);
           setShown(openId);
           onConversation?.(openId);
