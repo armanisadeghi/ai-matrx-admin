@@ -2,9 +2,9 @@
 //
 // A table page draws its rows in the server's HTML only when the person's knob `data/server_rows`,
 // carried by the table's own bundle (`serverRowsOf`), says on — decided at no extra read. No
-// organization, a bundle without the knob, a non-true value or a gate slower than the cap are all
-// OFF, and an off page never asks the grid's first page on the server. The cap is the person's
-// `data/server_rows_cap_ms`. RED before: the gate was a separate read (`table_page_server_rows`).
+// organization, a bundle without the knob, a non-true value or a hung store are all OFF, and an off
+// page never asks the grid's first page on the server. Nothing waits out a cap (SERVER-ROWS-2):
+// `a-seed-slower-than-the-cap-never-delays-first-paint.test.tsx`. RED before: the gate was a separate read (`table_page_server_rows`).
 
 jest.mock("server-only", () => ({}), { virtual: true });
 
@@ -116,49 +116,26 @@ it("a development request may force it on", async () => {
   expect(mockRowsAsked).toEqual([true]);
 });
 
-it("A 4 s STORE: the gate and the seed answer off / no seed at the cap (1.2 s), never after it", async () => {
-  jest.useFakeTimers();
-  try {
-    mockKnob = { on: true, cap_ms: 1200 };
-    mockDelayMs = 4000; // where_id_opens answers after 4 s: a cold chain
-    const { readTablePage } = await import("../tablePageSeed.server");
-    const reads = readTablePage(TABLE);
-    let seedAt: number | null = null;
-    let seedValue: unknown = "pending";
-    const t0 = Date.now();
-    void reads.seed.then((v) => {
-      seedAt = Date.now() - t0;
-      seedValue = v;
-    });
-    await jest.advanceTimersByTimeAsync(1199);
-    expect(seedValue).toBe("pending");
-    await jest.advanceTimersByTimeAsync(1);
-    expect(seedValue).toBeNull(); // "no seed": the browser asks for itself at once
-    expect(seedAt).toBe(1200);
-    await expect(reads.gate).resolves.toEqual({ on: false, capMs: 1200 });
-    // the store answering later changes nothing that was streamed
-    await jest.advanceTimersByTimeAsync(4000);
-    await expect(reads.seed).resolves.toBeNull();
-  } finally {
-    jest.useRealTimers();
-  }
-});
-
-it("a store that never answers: off and no seed at the cap — the old 8 s hang guard is gone", async () => {
+it("a store that never answers: off and no seed at the hang guard (8 s), never sooner", async () => {
   jest.useFakeTimers();
   try {
     mockHang = true;
     const { readTablePage } = await import("../tablePageSeed.server");
     const reads = readTablePage(TABLE);
-    await jest.advanceTimersByTimeAsync(1200);
+    let seedValue: unknown = "pending";
+    void reads.seed.then((v) => (seedValue = v));
+    await jest.advanceTimersByTimeAsync(7999);
+    expect(seedValue).toBe("pending");
+    await jest.advanceTimersByTimeAsync(1);
     await expect(reads.gate).resolves.toEqual({ on: false, capMs: 1200 });
     await expect(reads.seed).resolves.toBeNull();
+    await expect(reads.opening).resolves.toBeNull();
   } finally {
     jest.useRealTimers();
   }
 });
 
-it("a warm store inside the cap streams its seed", async () => {
+it("a warm store streams its seed", async () => {
   jest.useFakeTimers();
   try {
     mockKnob = { on: true, cap_ms: 1200 };
@@ -196,16 +173,14 @@ it("PARALLEL START: where the table lives and who is asking begin together, and 
   }
 });
 
-it("THE OPENING IS NEVER CAPPED: a store slower than the cap still streams where + bundle for the browser's reads", async () => {
+it("THE OPENING IS NEVER CAPPED: a slow store still streams where + bundle for the browser's reads", async () => {
   jest.useFakeTimers();
   try {
     mockKnob = { on: true, cap_ms: 1200 };
     mockDelayMs = 4000;
     const { readTablePage } = await import("../tablePageSeed.server");
     const reads = readTablePage(TABLE);
-    await jest.advanceTimersByTimeAsync(1200);
-    await expect(reads.seed).resolves.toBeNull();
-    await jest.advanceTimersByTimeAsync(2800);
+    await jest.advanceTimersByTimeAsync(4000);
     await expect(reads.opening).resolves.toMatchObject({ organizationId: ORG });
   } finally {
     jest.useRealTimers();
