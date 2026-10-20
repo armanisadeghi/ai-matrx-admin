@@ -1,5 +1,7 @@
 # CHANGELOG — Board (`features/board`)
 
+- 2026-10-20 — "New board" made the board but stayed on the list (live). Cause: `/board/<id>` had no `loading.tsx`, so `router.push` did not commit the URL until the server had rendered the page; measured with a 5 s server delay, the URL changed at 5.4 s (red) and at 0.54 s with the boundary (green); a cold server looked the same. Fix: `app/(core)/board/[id]/loading.tsx` (board-shaped placeholders). Guard: `__tests__/board-route-opens-before-server.test.tsx` (fails without the file). The hook, `beginBoardCreate`, and list page were intact (create-board / optimistic-board tests green).
+
 ## 2026-10-19 — Schedule, Knowledge source, Visual map, Report, Sandbox as items
 
 - Five more platform features became board items (`items/platform-items.tsx`): each tile body is the feature's own component with an `embedded` variant instead of page chrome (`ScheduleDetail`, `DataStoreRecord` extracted from `DataStoresPage`, `MapEditor`, `AgentDriftReport`, `SandboxRecord` extracted from `/sandbox/[id]`, which now renders it), with that feature's existing agent surface. Start new: schedule (the schedule form, in place), knowledge source (the store form), map. Bring in lists across every organization (maps through the library read, stores through `fn_list_user_data_stores`, sandboxes the person's own). Report and Sandbox are Bring in only.
