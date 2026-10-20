@@ -1,11 +1,13 @@
 -- READ-SPEED-3 b — A ROLL-UP SORT OVER 5,000 RECORDS ANSWERS IN UNDER 1 SECOND.
 --
--- Customers (Plumbing Company HQ) grown to 5,000 records inside this rolled-back transaction (copies of its first
--- record, links included), the refresh job's work done, then sorted by "Jobs done" (job_count, a filtered roll-up
--- through a back-link) as admin@admin.com through custom.read_records_page. Must answer a full page in under 1 s,
--- not refuse (the old 500-match ceiling), count all 5,000+, and come back in non-increasing job_count order.
--- RED before READ-SPEED-3 (refused: worked out per match, ceiling 500), GREEN after (sorted by kept values).
--- Main database, read-only in effect: every write is rolled back.
+-- READ-SPEED-8: read from a KEPT organization (slug larkspur-garage-doors-readspeed-b), built and topped up by
+-- scripts/campaign-tests/_readspeed3_b_5000_fixture.sql in short transactions — growing 5,000 records inside this
+-- guard's own transaction broke the one-minute rule. Its Customers sort by "Jobs done" (job_count, a roll-up through
+-- the Jobs back-link filtered to status Done) as admin@admin.com through custom.read_records_page: a full page in under
+-- 1 s, counting all 5,000, in non-increasing job_count order. RED when the organization is missing, has fewer than
+-- 5,000 Customers, or has stale kept values or a mark waiting (re-run the fixture), and on the path before kept values:
+-- psql -v read_time=1 forces the read-time path (mx.computed_store = off), which refuses past the 500-match ceiling or
+-- answers over 1 s: RED.
 \set ON_ERROR_STOP on
 \timing off
 \set suite 'readspeed3_b_rollup_sort_5000_under_1s.sql'
@@ -15,58 +17,50 @@
 \endif
 
 begin;
-set local statement_timeout = '58s';  -- READ-SPEED-6: inside the transaction (the pooler drops session settings)
+set local statement_timeout = '58s';
+create temp table rs3b (k text primary key, v uuid) on commit drop;
+grant select on rs3b to authenticated;
 
 do $t$
 declare
-  c_org   constant uuid := '884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f';
-  c_tid   constant uuid := '28e2af9e-ddab-4f02-adea-b3387916c5d4';
-  c_admin constant text := '{"sub":"87a6e699-3622-4869-8843-d0867456c0dd","role":"authenticated"}';
-  v_n integer; v0 timestamptz; v_ms numeric; v_page jsonb; v_prev numeric; v_x numeric; e jsonb;
+  v_org uuid; v_cust uuid; v_jobs uuid; v_n integer; v_stale integer;
 begin
   perform set_config('role', 'postgres', true);
-  select count(*) into v_n from custom.record where organization_id = c_org and table_id = c_tid and deleted_at is null;
-  insert into custom.record (organization_id, table_id, data, data_class, created_by, visibility)
-  select r.organization_id, r.table_id, r.data || jsonb_build_object('customer_name', 'Seed ' || g), r.data_class, r.created_by, r.visibility
-    from custom.record r cross join generate_series(1, greatest(5000 - v_n, 0)) g
-   where r.id = (select id from custom.record where organization_id = c_org and table_id = c_tid
-                  and deleted_at is null order by created_at limit 1);
-    -- THE REFRESH JOB'S WORK, done here (absent before READ-SPEED-3: then nothing is kept and the read works it out).
-    perform set_config('role', 'postgres', true);
-    perform set_config('request.jwt.claims', '', true);
-    if to_regprocedure('custom.computed_refresh_drain(integer)') is not null then
-      -- the new records queued as the write triggers (READ-SPEED-3 b) queue them, then the job's work
-      -- READ-SPEED-6: only these Tables are marked and worked out (a whole-organization drain ran 150-600 s and
-      -- broke the one-minute rule); the refresh door's own reader work (kept judgement and masks) is done too
-      if to_regprocedure('custom._computed_mark_tables(uuid,uuid[])') is not null then
-        perform custom._computed_mark_tables(c_org, array[c_tid]);
-        perform custom._computed_apply_org_mark(c_org);
-        declare v_t uuid; v_ids uuid[]; begin
-          foreach v_t in array array[c_tid] loop
-            loop
-              select coalesce(array_agg(rc.record_id), '{}') into v_ids from (select rc.record_id from custom.record_computed rc
-                where rc.organization_id = c_org and rc.table_id = v_t and rc.stale limit 500) rc;
-              exit when cardinality(v_ids) = 0;
-              perform custom.computed_refresh(c_org, v_t, v_ids);
-            end loop;
-            perform custom._computed_warm('87a6e699-3622-4869-8843-d0867456c0dd'::uuid, c_org, v_t);
-          end loop;
-        end;
-      else
-        perform custom._computed_mark_org(c_org);
-        perform custom.computed_refresh_drain(900000);
-      end if;
-    end if;
-    -- until READ-SPEED-3 b (the write triggers) lands, kept values are served only when forced (proofs only)
-    perform set_config('mx.computed_store', 'force', true);
+  perform set_config('request.jwt.claims', '', true);
+  select o.id into v_org from iam.organizations o where o.slug = 'larkspur-garage-doors-readspeed-b' and o.archived_at is null;
+  if v_org is null then
+    raise exception 'RED — the 5,000-Customer organization (larkspur-garage-doors-readspeed-b) is missing: run scripts/campaign-tests/_readspeed3_b_5000_fixture.sql';
+  end if;
+  select t.id into v_cust from custom.record t where t.organization_id = v_org and t.table_id = '11111111-0000-4000-8000-000000000001'::uuid
+     and t.deleted_at is null and t.data ->> 'slug' = 'customers';
+  select t.id into v_jobs from custom.record t where t.organization_id = v_org and t.table_id = '11111111-0000-4000-8000-000000000001'::uuid
+     and t.deleted_at is null and t.data ->> 'slug' = 'jobs';
+  select count(*) into v_n from custom.record r where r.organization_id = v_org and r.table_id = v_cust and r.deleted_at is null;
+  select count(*) into v_stale from custom.record_computed rc where rc.organization_id = v_org and rc.table_id in (v_cust, v_jobs) and rc.stale;
+  raise notice 'organization %: % Customers, % stale kept values, mark waiting: %', v_org, v_n, v_stale, custom._computed_marked(v_org, v_cust);
+  if v_n < 5000 then
+    raise exception 'RED — % Customers, fewer than 5,000: run scripts/campaign-tests/_readspeed3_b_5000_fixture.sql', v_n;
+  end if;
+  if v_stale > 0 or custom._computed_marked(v_org, v_cust) then
+    raise exception 'RED — % stale kept values / a mark waiting: the refresh has not caught up (run scripts/campaign-tests/_readspeed3_b_5000_fixture.sql)', v_stale;
+  end if;
+  insert into rs3b values ('org', v_org), ('cust', v_cust);
 end
 $t$;
+
+-- the refresh door's reader work, as a page's door call does it (its own statement)
+select custom._computed_warm('87a6e699-3622-4869-8843-d0867456c0dd'::uuid, (select v from rs3b where k = 'org'), (select v from rs3b where k = 'cust')) as warmed;
+
+\if :{?read_time}
+-- THE PATH BEFORE KEPT VALUES: every value worked out at read
+set local mx.computed_store = 'off';
+\endif
 
 -- READ-SPEED-6: the read is its own statement, as a page read is (the setup's statement memo is not its)
 do $t$
 declare
-  c_org   constant uuid := '884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f';
-  c_tid   constant uuid := '28e2af9e-ddab-4f02-adea-b3387916c5d4';
+  c_org   constant uuid := (select v from rs3b where k = 'org');
+  c_tid   constant uuid := (select v from rs3b where k = 'cust');
   c_admin constant text := '{"sub":"87a6e699-3622-4869-8843-d0867456c0dd","role":"authenticated"}';
   v_n integer; v0 timestamptz; v_ms numeric; v_page jsonb; v_prev numeric; v_x numeric; e jsonb;
 begin
