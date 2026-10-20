@@ -41174,7 +41174,24 @@ export type Database = {
       }
     }
     Functions: {
+      _access_orgs_reaching: { Args: { p_orgs: string[] }; Returns: string[] }
+      _access_orgs_touched: {
+        Args: { p_rows: Json; p_table: string }
+        Returns: string[]
+      }
+      _access_owner_org_each: {
+        Args: { p_ids: string[]; p_types: string[] }
+        Returns: {
+          i: string
+          org: string
+          t: string
+        }[]
+      }
       _access_version_bump: { Args: { p_org: string }; Returns: undefined }
+      _access_version_bump_orgs: {
+        Args: { p_orgs: string[] }
+        Returns: undefined
+      }
       _access_version_fold: { Args: { p_org: string }; Returns: undefined }
       _access_versions: { Args: { p_org: string }; Returns: number[] }
       _action_check: {
