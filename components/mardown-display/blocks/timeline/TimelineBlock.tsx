@@ -23,7 +23,6 @@ import {
 import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { convertTimelineToTasks } from "@/features/tasks/utils/importConverters";
 import BlockHeaderWrapper from "@ai-matrx/rich-content/display/blocks/common/BlockHeaderWrapper";
-import { IconButton } from "@ai-matrx/design-system";
 import type { MenuItem } from "@/components/official/AdvancedMenu";
 import { useCanvasPresentation } from "@ai-matrx/canvas/react";
 import { timelineAxis } from "@ai-matrx/rich-content/display/blocks/canvas-adaptive";
@@ -325,25 +324,13 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
           timeline.title.replace(/\s+/g, "-").toLowerCase() || "timeline"
         }
         onDataImport={handleDataImport}
+        // Print, Add to calendar and Import into Task Manager live in the block's "…" menu
+        // (extraMenuItems) — one place per action; the header carries only what is used most
+        // (review 2026-10-19 #12: seven header icons, three of them repeated in the menu).
         extraActions={
           <>
             <CopySourceButton source={source} />
             <BlockControlsButton controls={controls} title={timeline.title} />
-            <IconButton
-              icon={Printer}
-              tooltip="Print / Save as PDF"
-              onClick={handlePrint}
-            />
-            <IconButton
-              icon={Calendar}
-              tooltip="Add to calendar"
-              onClick={handleAddToCalendar}
-            />
-            <IconButton glyphTone="primary"
-              icon={CheckSquare}
-              tooltip="Import into Task Manager"
-              onClick={() => setIsImportModalOpen(true)}
-            />
           </>
         }
         extraMenuItems={[
