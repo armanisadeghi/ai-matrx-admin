@@ -8,8 +8,8 @@ export { marketingAnalysisManifest as s77 } from "../../marketing-analysis.manif
 export { marketingBacklinksManifest as s80 } from "../../marketing-backlinks.manifest";
 export { marketingCoverageManifest as s89 } from "../../marketing-coverage.manifest";
 export { contentPlanEntitiesManifest as s108 } from "../../content-plan-entities.manifest";
-export { educationAudioStudyManifest as s146 } from "../../education-audio-study.manifest";
-export { appletsManifest as s157 } from "../../applets.manifest";
-export { markdownEditorManifest as s186 } from "../../markdown-editor.manifest";
-export { podcastStudioManifest as s203 } from "../../podcast-studio.manifest";
-export { scopesManifest as s205 } from "../../scopes.manifest";
+export { educationAudioStudyManifest as s148 } from "../../education-audio-study.manifest";
+export { appletsManifest as s159 } from "../../applets.manifest";
+export { markdownEditorManifest as s188 } from "../../markdown-editor.manifest";
+export { podcastStudioManifest as s205 } from "../../podcast-studio.manifest";
+export { scopesManifest as s207 } from "../../scopes.manifest";

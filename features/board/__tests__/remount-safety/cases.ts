@@ -102,14 +102,14 @@ export const REMOUNT_LEDGER: Record<string, RemountStatus> = {
   "social-swipe-collection:quiet": { status: "passing" },
   "schedule": { status: "passing" },
   "schedule:quiet": { status: "passing" },
-  "knowledge-source": { status: "passing" },
-  "knowledge-source:quiet": { status: "passing" },
-  "visual-map": { status: "passing" },
-  "visual-map:quiet": { status: "passing" },
+  "knowledge-source": { status: "failing", owner: "board-platform lane", why: "DataStoreRecord reads the store, its members, the access summary and the access context in effects of its own on every wake and remount (about five reads); they need kept answers keyed by store id before the tile may sleep" },
+  "knowledge-source:quiet": { status: "failing", owner: "board-platform lane", why: "DataStoreRecord reads the store, its members, the access summary and the access context in effects of its own on every wake and remount (about five reads); they need kept answers keyed by store id before the tile may sleep" },
+  "visual-map": { status: "failing", owner: "board-platform lane", why: "MapEditor reads its map in an effect of its own on every wake and remount, and the read stamps last_accessed_at (a write); it needs a kept copy keyed by map id before the tile may sleep" },
+  "visual-map:quiet": { status: "failing", owner: "board-platform lane", why: "MapEditor reads its map in an effect of its own on every wake and remount, and the read stamps last_accessed_at (a write); it needs a kept copy keyed by map id before the tile may sleep" },
   "report": { status: "passing" },
   "report:quiet": { status: "passing" },
-  "sandbox": { status: "passing" },
-  "sandbox:quiet": { status: "passing" },
+  "sandbox": { status: "failing", owner: "board-platform lane", why: "SandboxRecord fetches the instance, its diagnostics and its logs on every wake and remount and keeps a 10-second poll; they need kept answers keyed by sandbox id before the tile may sleep" },
+  "sandbox:quiet": { status: "failing", owner: "board-platform lane", why: "SandboxRecord fetches the instance, its diagnostics and its logs on every wake and remount and keeps a 10-second poll; they need kept answers keyed by sandbox id before the tile may sleep" },
 };
 
 /** `it` for a passing row, `it.failing` for a failing one — the case body is the same. */

@@ -13,6 +13,8 @@ jest.mock("@/utils/supabase/client", () => {
   return { createClient: () => client, supabase: client };
 });
 jest.mock("next/navigation", () => jest.requireActual("./remount-safety/next-navigation"));
+// The scheduler schema client: the fake backend answers `.schema()` once, so the helper's first hop is the client itself.
+jest.mock("@/utils/supabase/schedulerDb", () => ({ schedulerDb: (client: unknown) => client }));
 // The diagram canvas (a graph editor) paints on its own surface and cannot boot in jsdom; the strip above it is the tile's.
 jest.mock("@/features/canvas/maps/MapCanvas", () => ({ __esModule: true, default: () => null }));
 
@@ -37,6 +39,7 @@ const STAMP = "2026-09-30T19:00:00.000Z";
 // ─── Schedule ────────────────────────────────────────────────────────────────
 const SCHEDULE_ID = "6b1d3f5a-7c29-4e84-9a0b-2d4f6a8c1e37";
 const SCHEDULE_TITLE = "Monday vacancy digest";
+const SCHEDULE_DESCRIPTION = "Lists every unit that has been empty for more than a week.";
 const scheduleRow = {
   id: SCHEDULE_ID,
   user_id: PERSON.id,
@@ -44,7 +47,7 @@ const scheduleRow = {
   kind: "agent",
   metadata: {},
   title: SCHEDULE_TITLE,
-  description: "Lists every unit that has been empty for more than a week.",
+  description: SCHEDULE_DESCRIPTION,
   queue: "default",
   surfaces: ["any"],
   enabled: false,
@@ -70,9 +73,9 @@ remountType(
         seed("scheduler.sch_task", [scheduleRow]);
       },
       loadMs: 1500,
-      kept: (tile) => ({ title: shows(tile, SCHEDULE_TITLE), loading: skeleton(tile) }),
+      kept: (tile) => ({ description: shows(tile, SCHEDULE_DESCRIPTION), loading: skeleton(tile) }),
     }),
-  (r) => expectRemountSafe(r, { title: true, loading: false }, [/^scheduler\.sch_task$/, /^scheduler\.sch_run$/]),
+  (r) => expectRemountSafe(r, { description: true, loading: false }, [/^scheduler\.sch_task$/, /^scheduler\.sch_run$/]),
 );
 
 // ─── Knowledge source ────────────────────────────────────────────────────────

@@ -7,8 +7,8 @@ export { keywordIntelligenceManifest as s72 } from "../../keyword-intelligence.m
 export { marketingFindingsManifest as s78 } from "../../marketing-findings.manifest";
 export { marketingBrandAudienceManifest as s101 } from "../../marketing-brand-audience.manifest";
 export { masterworkRulebookManifest as s110 } from "../../masterwork-rulebook.manifest";
-export { marketingSiteMediaManifest as s165 } from "../../marketing-site-media.manifest";
-export { workbooksManifest as s201 } from "../../workbooks.manifest";
-export { adminAiModelsManifest as s226 } from "../../admin-ai-models.manifest";
-export { adminSandboxManifest as s243 } from "../../admin-sandbox.manifest";
-export { adminProofRunsManifest as s250 } from "../../admin-proof-runs.manifest";
+export { marketingSiteMediaManifest as s167 } from "../../marketing-site-media.manifest";
+export { workbooksManifest as s203 } from "../../workbooks.manifest";
+export { adminAiModelsManifest as s228 } from "../../admin-ai-models.manifest";
+export { adminSandboxManifest as s245 } from "../../admin-sandbox.manifest";
+export { adminProofRunsManifest as s252 } from "../../admin-proof-runs.manifest";
