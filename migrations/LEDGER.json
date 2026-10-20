@@ -9680,6 +9680,12 @@
       "checksum": "e3d4e866a8f245d1b0ee23f0956d683a5476d41fc9fa04c7ddb6b515476dcefb",
       "applied_at": "2026-09-26 02:36:07.405543+00"
     },
+    "migrations/campaign/tablecreatespeed_a_levels_and_columns_in_one_call.sql": {
+      "source": "matrx-frontend",
+      "filename": "tablecreatespeed_a_levels_and_columns_in_one_call.sql",
+      "checksum": "892ede3720174fce4bebe9ee3f960a876b94a797179da33cc9625cbebcebd5c5",
+      "applied_at": "2026-10-20 02:22:48.414488+00"
+    },
     "migrations/campaign/tablecreatespeed_b_the_outbox_insert_plans_one_partition.sql": {
       "source": "matrx-frontend",
       "filename": "tablecreatespeed_b_the_outbox_insert_plans_one_partition.sql",

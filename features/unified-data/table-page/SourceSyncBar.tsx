@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { postJson } from "@/lib/python-client";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
-import { supabase } from "@/utils/supabase/client";
+import { syncedSourcesOf, forgetSyncedSources } from "./syncedSourcesOf";
 
 import { SYNC_SOURCES, syncSentence, type SyncReport } from "./sourceSync";
 import { sayError } from "@/features/unified-data/base/sayError";
@@ -31,10 +31,9 @@ export function SourceSyncBar({ tableId, organizationId }: { tableId: string; or
 
   useEffect(() => {
     let live = true;
-    void supabase.schema("custom").from("synced_source").select("source_kind,synced_at,last_report")
-      .in("source_kind", Object.keys(SYNC_SOURCES)).eq("target", tableId).is("deleted_at", null)
-      .order("updated_at", { ascending: false }).limit(1)
-      .then(({ data }) => { if (live) setSource((data?.[0] as SourceRow | undefined) ?? null); });
+    void syncedSourcesOf(tableId)
+      .then((rows) => { if (live) setSource((rows.find((r) => r.source_kind in SYNC_SOURCES) as SourceRow | undefined) ?? null); })
+      .catch(() => { if (live) setSource(null); });
     return () => { live = false; };
   }, [tableId]);
 
@@ -50,6 +49,7 @@ export function SourceSyncBar({ tableId, organizationId }: { tableId: string; or
       setSource({ ...source, synced_at: data.finished_at ?? new Date().toISOString(),
                   last_report: { ...data, archive_kept: source.last_report?.archive_kept ?? null } });
       tableShapeChanged(tableId);
+      forgetSyncedSources(tableId);
       // a held archive is asked on the bar, never announced as "synced"
       if (!data.archive_held) toast.success(syncSentence(kind.name, data));
     } catch (err) {

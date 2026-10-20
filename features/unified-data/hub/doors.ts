@@ -18,7 +18,7 @@
 // invents an empty array: "there is nothing" and "the call did not happen" are
 // different sentences, and the hub prints whichever one is true.
 
-import type { RecordsDataSource } from "@ai-matrx/records";
+import type { PermissionLevel, RecordsDataSource } from "@ai-matrx/records";
 
 
 export interface DoorFailure {
@@ -439,6 +439,26 @@ export function customFieldsOn(
     p_organization_id: organizationId,
     p_table_token: tableToken,
   });
+}
+
+/** One table's level as `custom.my_levels_across` answers it; `refused` = its organization refused the ask. */
+export interface LevelAcross {
+  organization_id: string;
+  id: string;
+  level: PermissionLevel | null;
+  refused: string | null;
+}
+
+/**
+ * Every row on a page, in one call, whatever organizations they live in (`custom.my_levels_across`,
+ * lane TABLE-CREATE-SPEED): the Data home asked `custom.my_levels` once per organization on the page.
+ * At most 500 ids per call (the door's own limit).
+ */
+export function myLevelsAcross(
+  dataSource: RecordsDataSource,
+  asks: ReadonlyArray<{ organization_id: string; ids: readonly string[] }>,
+): Promise<DoorAnswer<LevelAcross[]>> {
+  return call<LevelAcross[]>(dataSource, "my_levels_across", { p_asks: asks });
 }
 
 /** Add a custom field to a standard table (`custom.entity_field_declare`; an organization admin's — the store refuses otherwise). */

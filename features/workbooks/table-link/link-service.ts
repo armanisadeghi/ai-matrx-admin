@@ -7,6 +7,7 @@
  */
 "use client";
 
+import { readOnce } from "@/lib/read-once/readOnce";
 import { mergeJsonColumn } from "@ai-matrx/data/db";
 
 import { supabase } from "@/utils/supabase/client";
@@ -142,7 +143,12 @@ export interface LinkedWorkbook {
 }
 
 /** Every workbook this person can open that is linked to the table (the table side's read). */
-export async function workbooksLinkedTo(tableId: string): Promise<LinkResult<LinkedWorkbook[]>> {
+export function workbooksLinkedTo(tableId: string): Promise<LinkResult<LinkedWorkbook[]>> {
+  // One read per table per moment: the table header draws this button more than once (TABLE-CREATE-SPEED).
+  return readOnce(`workbooks-linked-to:${tableId}`, () => readWorkbooksLinkedTo(tableId));
+}
+
+async function readWorkbooksLinkedTo(tableId: string): Promise<LinkResult<LinkedWorkbook[]>> {
   const { data, error } = await supabase
     .schema("workbench")
     .from("udt_workbooks")
