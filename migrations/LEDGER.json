@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-20T00:26:19.662Z",
+  "generated_at": "2026-10-20T00:38:35.241Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -182,6 +182,18 @@
       "checksum": "6d784ef0a7c6f847e5490701b3361a08440716c900e0a2b406f35e05a5c381cc",
       "applied_at": "2026-10-20 00:26:17.771781+00"
     },
+    "migrations/campaign/20261020060000_cfwrite_d_b_the_lock_flag_is_read_from_the_registry.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261020060000_cfwrite_d_b_the_lock_flag_is_read_from_the_registry.sql",
+      "checksum": "cf3544d6935c65a42b25634488ae0eeab82b0a1671ce278e6e52a27c819f2fbb",
+      "applied_at": "2026-10-20 00:31:01.573787+00"
+    },
+    "migrations/campaign/20261020070000_cfwrite_d_c_the_lock_flag_is_asked_through_a_definer.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261020070000_cfwrite_d_c_the_lock_flag_is_asked_through_a_definer.sql",
+      "checksum": "ae842dcc2e18a7f7ee85d6acceb36f6b5d278fb1498d2c2ccb95d8157c8a40a2",
+      "applied_at": "2026-10-20 00:35:28.464544+00"
+    },
     "migrations/campaign/20261020240100_readspeed4_b_writes_mark_stale_views_refresh_reader_check_kept.sql": {
       "source": "matrx-frontend",
       "filename": "20261020240100_readspeed4_b_writes_mark_stale_views_refresh_reader_check_kept.sql",
@@ -199,6 +211,18 @@
       "filename": "20261020240120_readspeed4_d_kept_values_wait_for_a_working_refresh.sql",
       "checksum": "7e0702c369ac6ab5106136737ccced4646ac2cfc39aa1ce9b3747cd5e35fa854",
       "applied_at": "2026-10-19 23:55:03.655223+00"
+    },
+    "migrations/campaign/20261021240000_readspeed5_a_the_refresh_door_works_out_values_in_the_compute_lane.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261021240000_readspeed5_a_the_refresh_door_works_out_values_in_the_compute_lane.sql",
+      "checksum": "38ec4c9973b941b9ca4763ee58a073b2ba8f81915bd27445191236095281a1c7",
+      "applied_at": "2026-10-20 00:34:43.177219+00"
+    },
+    "migrations/campaign/20261021240100_readspeed5_b_a_record_write_finds_its_linked_records_by_index.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261021240100_readspeed5_b_a_record_write_finds_its_linked_records_by_index.sql",
+      "checksum": "f235e1dc86fa446f20c3c45a4bed8a65b87b9f13dce04bc1b0312a645be3eedf",
+      "applied_at": "2026-10-20 00:38:30.078557+00"
     },
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
