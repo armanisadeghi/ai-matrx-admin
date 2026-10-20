@@ -3,6 +3,7 @@
 -- so a write to any table that decides who sees what must move it. For each access table: a statement that writes
 -- (a DELETE matching nothing still fires statement triggers) must raise the platform version; a Field change must raise
 -- the organization's. Run inside a transaction that is rolled back. RED before READ-SPEED-4 b, GREEN after.
+-- Versions are read through custom._access_versions (VERSION-HOTROW a: base row + insert-only events), never the table.
 DO $guard$
 declare
   t text;
@@ -15,9 +16,9 @@ begin
                            'iam.access_setup', 'custom.carrying_rule', 'platform.knob_override', 'platform.entity_relationships',
                            'platform.associations'] loop
     begin
-      select coalesce((select version from custom.access_version where organization_id = '00000000-0000-0000-0000-000000000000'), 1) into v0;
+      select (custom._access_versions(null))[2] into v0;
       execute format('delete from %s where false', t);
-      select coalesce((select version from custom.access_version where organization_id = '00000000-0000-0000-0000-000000000000'), 1) into v1;
+      select (custom._access_versions(null))[2] into v1;
       if t <> 'platform.associations' and v1 <= v0 then
         v_bad := v_bad || t;
       end if;
@@ -30,10 +31,10 @@ begin
   select f.organization_id into v_org from custom.record f
    where f.table_id = custom.field_kernel_id() and f.deleted_at is null limit 1;
   begin
-    select coalesce((select version from custom.access_version where organization_id = v_org), 1) into v0;
+    select (custom._access_versions(v_org))[1] into v0;
     update custom.record f set data = f.data || jsonb_build_object('guard_d_probe', true)
      where f.id = (select id from custom.record where table_id = custom.field_kernel_id() and organization_id = v_org and deleted_at is null limit 1);
-    select coalesce((select version from custom.access_version where organization_id = v_org), 1) into v1;
+    select (custom._access_versions(v_org))[1] into v1;
     if v1 <= v0 then
       v_bad := v_bad || 'custom.record (Field)'::text;
     end if;
