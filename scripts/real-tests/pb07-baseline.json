@@ -483,5 +483,5 @@
     }
   },
   "new_pins_added": "tool_text, segment_counts and staged_counts were added 2026-10-19 by pb07-provenance.py --print-baseline from the same source run; every earlier field is unchanged",
-  "recut_note": "2026-10-20: platform turn_context now precedes the typed text on every provider (aidream 5212affd94). Doors other than chat and together are unchanged from the 1046eaf6 pins; chat and together no longer list the AL-09 surface blocks and nine surface-sourced tools."
+  "recut_note": "2026-10-20: platform turn_context now precedes the typed text on every provider (aidream 5212affd94). Doors other than chat and together are unchanged from the 1046eaf6 pins; chat and together no longer list the AL-09 surface blocks and nine surface-sourced tools: that loss comes from aidream 4a38db6ea2 (rule T0: a chat agent that declares no tools keeps only platform tools, so the canary holds nothing of the page), intended, not from 5212affd94."
 }
