@@ -40,6 +40,7 @@ import type { OrganizationState } from "@/features/organizations/useOrganization
 import { useObjectOrganization } from "@/features/unified-data/objectOrganization";
 import { uploadCaptureFile } from "@/features/capture/uploadCaptureFile";
 import { useWarmOfflineCode } from "@/features/capture/useWarmOfflineCode";
+import { useLatchedSheet } from "@/features/capture/useLatchedSheet";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/recordsUiHost";
 import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
@@ -54,7 +55,8 @@ export default function CrewCaptureRoute({
   useWarmOfflineCode();
   const userId = useAppSelector(selectUserId);
   const dataSource = useRecordsDataSource();
-  const sheet = useObjectOrganization(dataSource, sheetId);
+  // A sheet that opened stays open: losing the signal later never swaps it for an apology.
+  const sheet = useLatchedSheet(useObjectOrganization(dataSource, sheetId));
   const organizationId: string | null = sheet.state === "found" ? sheet.organizationId : null;
   const organizationState: OrganizationState = organizationId ? "ready" : "resolving";
   const recordsConfig = useAppRecordsConfig(organizationId);
