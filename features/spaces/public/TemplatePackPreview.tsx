@@ -53,6 +53,12 @@ interface Live {
   Editor: typeof SpaceEditorType;
 }
 
+/**
+ * The previews a visitor pressed in this tab. The press asks for the full public tier, and the page remounts once at
+ * that switch: the intent must outlive the remount, or the preview would wait for a second press.
+ */
+const pressed = new Set<string>();
+
 const READ_ONLY = () => {
   throw new Error("This is a preview.");
 };
@@ -76,7 +82,7 @@ export function TemplatePackPreview({
 }) {
   const [pageKey, setPageKey] = useState<string | null>(null);
   const current = pages.find((p) => p.key === pageKey) ?? pages[0];
-  const [wanted, setWanted] = useState(false);
+  const [wanted, setWanted] = useState(() => pressed.has(catalogueId));
   const [live, setLive] = useState<Live | null>(null);
   const [failed, setFailed] = useState(false);
   // On a light public page the live screens need the app tree first (store, query client, hosts).
@@ -125,7 +131,10 @@ export function TemplatePackPreview({
     publicSite: true,
     linkTarget: (id) => byId.get(id) ?? null,
   });
-  const want = () => setWanted(true);
+  const want = () => {
+    pressed.add(catalogueId);
+    setWanted(true);
+  };
   if (!current) return null;
   return (
     <div
