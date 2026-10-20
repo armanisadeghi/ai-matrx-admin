@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-20T02:20:28.409Z",
+  "generated_at": "2026-10-20T02:27:27.040Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -319,6 +319,12 @@
       "filename": "20261022240100_readspeed6_c_a_readers_column_mask_is_kept_while_no_access_changed.sql",
       "checksum": "41b918acfaf148bd3c65846c79d2026fece1061378bdb184ab631c397e61cb65",
       "applied_at": "2026-10-20 01:35:55.067194+00"
+    },
+    "migrations/campaign/20261023240000_readspeed7_a_a_partial_reader_is_served_every_column_whose_every_source_she_sees.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261023240000_readspeed7_a_a_partial_reader_is_served_every_column_whose_every_source_she_sees.sql",
+      "checksum": "c9a28afd175586c72000375d837b572a9f6ea4512acdedac343bbe9f36525df5",
+      "applied_at": "2026-10-20 02:27:18.73479+00"
     },
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -10051,6 +10057,12 @@
       "filename": "templateinstall3_b_which_tables_are_in_these_homes_reads_an_index.sql",
       "checksum": "829e8efbab42a0fb50a9b97b94a3788c9b0b6ac82ba7e68b3067fe8d47bb4042",
       "applied_at": "2026-10-20 02:14:42.826018+00"
+    },
+    "migrations/campaign/templateinstall3_c_uninstall_moves_the_workspace_pages_to_trash.sql": {
+      "source": "matrx-frontend",
+      "filename": "templateinstall3_c_uninstall_moves_the_workspace_pages_to_trash.sql",
+      "checksum": "3e7e6a8f4c4894520a364efb355810d1ab21ad5e7bf219087e7cadfcde50a427",
+      "applied_at": "2026-10-20 02:22:51.93381+00"
     },
     "migrations/campaign/templates7_a_anyone_can_browse_the_platform_templates.sql": {
       "source": "matrx-frontend",
