@@ -93,6 +93,7 @@ rail's icon column (x = 12px) — collapsed = icon, expanded = icon + name.
 - A pane inside an app viewport that is a page (the notes editor) marks its root `data-matrx-page-runway` and pads by `var(--matrx-page-runway)`; a `ProTextarea` host passes `--matrx-textarea-end` so the control-row reserve (44px) is a floor, never a ceiling.
 - Nothing may SHRINK it: the assists pill's inset (`features/assists/assistClearance.ts`) only ever adds — it skips a scroller whose own bottom padding already covers the overlap.
 - A page's own bottom bar (a status bar flush with the floor — the notes metadata bar) carries `data-matrx-page-foot`; `FloatingClearanceSync` publishes its height as `--matrx-page-foot-h` and the page assistant dock rests above it, never on it.
+- A page's own PHONE DOCK (a bar it floats over its content below `md`: the notes editor dock, `MobileActionBar`) carries `data-matrx-page-dock` (`PAGE_DOCK_ATTR`, `lib/layout/floating-chrome.ts`) and is the last child of its flex column. In a frame (`<html data-board-embed>`: a launchpad App page widget, a board Page tile — narrow, so the page draws its phone layout on a desktop) `styles/shell.css` §13d lays it in flow as the column's last row: the page ends above it and every control stays reachable. Guard: `lib/layout/framed-page-docks.test.ts` (every `md:hidden fixed|absolute bottom-0` dock carries the attribute).
 - Guards: `lib/layout/page-runway.test.ts` (token, readers, verdicts, foot lift), the dev `[page-runway]` scream (`useFloatingClearanceGuard`: a scrolling page or `[data-matrx-page-runway]` pane ending short; textareas measured by their padding), and the browser walk `node scripts/page-runway-walk.mjs` (RUNWAY_ORIGIN = your preview host; every listed route × 1280/375, notes × Write/Split/Plain/Read; exit 1 on any finding).
 
 ## PAGE RHYTHM — one spacing scale for page structure, the bottom once (owner, 2026-10-05)
@@ -146,6 +147,7 @@ seeded into the store, so the first frame is already theirs and a save re-render
 
 ## Change log
 
+- `2026-10-20` — claude (Lane O): **a framed page's phone docks are its last row.** In a launchpad App page widget /notes drew its phone dock (undo, formatting, Home/Copy/Tags/More) over the note's text behind glass; `data-matrx-page-dock` + shell.css §13d put it in the page's flow inside a frame. Section above.
 - `2026-10-19` — claude (custom-experience lane A): **every nav node has a permanent id** (`ShellNavItem.id` / `ShellNavChild.id`, guard `__tests__/nav-ids.test.ts`) and `shell-layout/` gains the catalog, validator and resolver for custom layouts — read `shell-layout/FEATURE.md`. Renderers unchanged.
 
 - `2026-10-15` — claude: **The chat's door is the rail's first row** (`sidebar/SidebarChatToggle.tsx`, `.shell-nav-chat`, pressed while docked open). The header's `ShellChatToggle` shows only at 768–1023px (no rail there); the header, the dock's top row and the canvas header no longer reserve room for a fixed button — a closed chat's button sat where every page puts its back chevron.

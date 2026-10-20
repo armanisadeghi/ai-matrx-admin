@@ -294,6 +294,8 @@ export function NoteEditorDock({
       {/* The dock steps aside while one of its sheets is open — it used to
           ghost through the sheet's glass. */}
       <nav
+        // A page dock: floats on a phone; in a frame it is the editor's last row (styles/shell.css §13d).
+        data-matrx-page-dock=""
         className={cn(
           "md:hidden absolute bottom-0 left-0 right-0 z-40 pb-safe px-3 pointer-events-none transition-opacity",
           sheetOpen && "opacity-0",

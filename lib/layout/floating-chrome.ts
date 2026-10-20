@@ -51,6 +51,17 @@ export function measurePageFoot(doc: Document = document, viewportHeight: number
   return foot;
 }
 
+/**
+ * A PAGE DOCK (2026-10-20): a phone bar a page lays over the bottom of its own content — the notes
+ * editor's undo/format/Home·Copy·Tags·More dock, the list search bar (MobileActionBar). On a phone
+ * it floats; in a FRAME (`<html data-board-embed>`: a launchpad App page widget, a board Page tile —
+ * narrow, so the page draws its phone layout on a desktop) it is the page's last row instead, so
+ * the page ends above it and nothing reads through it (styles/shell.css §13d). The rule reaches a
+ * dock whose parent is a flex column, so place it as that column's last child.
+ * Guard: lib/layout/framed-page-docks.test.ts (every `md:hidden fixed|absolute bottom-0` carries it).
+ */
+export const PAGE_DOCK_ATTR = "data-matrx-page-dock";
+
 /** Every element that floats over the bottom of the viewport. */
 export const FLOATING_BOTTOM_SELECTOR = [
   "[data-matrx-floating-bottom]",

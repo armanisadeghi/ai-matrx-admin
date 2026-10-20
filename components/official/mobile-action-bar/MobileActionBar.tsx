@@ -148,7 +148,8 @@ export function MobileActionBar({
   // Default state - compact bar
   if (!isSearchActive) {
     return (
-      <div className="md:hidden fixed bottom-0 left-0 right-0 pb-safe z-40" data-matrx-floating-bottom="">
+      // A page dock too: in a frame it is the list's last row, never over it (styles/shell.css §13d).
+      <div className="md:hidden fixed bottom-0 left-0 right-0 pb-safe z-40" data-matrx-floating-bottom="" data-matrx-page-dock="">
         <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 max-w-[1800px]">
           <div data-matrx-pill="off" className="flex items-center gap-2 p-2 rounded-full matrx-glass-core">
             {/* Filter Button */}
