@@ -409,7 +409,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
 
                 {/* Quick Stats */}
                 <div
-                  className={`grid gap-1.5 ${narrowPane ? "grid-cols-2" : "grid-cols-4"}`}
+                  className={`grid gap-1.5 ${narrowPane ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-4"}`}
                   data-testid="recipe-quick-stats"
                 >
                   {STAT_ITEMS.map((item) => {
