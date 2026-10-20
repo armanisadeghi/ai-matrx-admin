@@ -176,7 +176,15 @@ describe("MediaAssetBlock", () => {
       metadata: {},
     });
     expect(mockInlineMediaRef).not.toHaveBeenCalled();
-    expect(container.querySelector("img")).toBeNull();
+    // The link row carries a 14px SiteIcon (favicon of the link's host) since
+    // 2026-10-17. That is chrome, not a guessed render of the asset: any <img>
+    // present must be the site icon, never the asset's own address.
+    for (const img of Array.from(container.querySelectorAll("img"))) {
+      const src = img.getAttribute("src") ?? "";
+      expect(src).toContain("favicons");
+      expect(src).not.toContain(FILE_ID);
+      expect(src).not.toContain("/download");
+    }
     const anchor = container.querySelector("a");
     expect(anchor).not.toBeNull();
     expect(anchor?.getAttribute("href")).toBe(REAL_URL);

@@ -27,3 +27,7 @@ it("the tasks toolbar keeps each count whole", () => {
   const src = read("tasks/TaskChecklist.tsx");
   expect(src).toMatch(/"whitespace-nowrap text-muted-foreground"[^\n]*\n\s*Main:/);
 });
+
+it("the recipe's four tiles stack two by two on a phone so a long time stays whole inside its tile", () => {
+  expect(read("cooking-recipes/cookingRecipeDisplay.tsx")).toContain('"grid-cols-2 sm:grid-cols-4"');
+});
