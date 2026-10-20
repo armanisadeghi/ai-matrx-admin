@@ -373,6 +373,70 @@ export async function olderTemplateCopies(t: Pick<SpaceTemplateCard, "catalogue_
 }
 
 /**
+ * NOTHING WAITS SILENTLY (ADVERSARIAL-5 F4): a read that never answers (the database API restarting) rejects with
+ * `message` after `ms`, so the screen names what it was waiting on and offers Try again.
+ */
+export function withDeadline<T>(work: PromiseLike<T>, ms: number, message: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+    Promise.resolve(work).then(
+      (v) => (clearTimeout(timer), resolve(v)),
+      (e: unknown) => (clearTimeout(timer), reject(e)),
+    );
+  });
+}
+
+/** How long a template link's opening reads (the library, the person's pages, their copies) may take before it is said. */
+export const USE_TEMPLATE_OPEN_DEADLINE_MS = 15_000;
+
+/** One finished copy of a template in an organization (custom.template_instances), as "You already have this" shows it. */
+export interface InstalledCopy {
+  installId: string;
+  title: string | null;
+  /** The template version the copy was made at, and the newest one when it is newer. */
+  version: number;
+  newerVersion: number | null;
+  startedAt: string;
+  finishedAt: string | null;
+}
+
+/** The organization's finished copies of a catalog id, newest first (ADVERSARIAL-5 F6: a second press offers Open). */
+export async function installedCopies(organizationId: string, catalogueId: string): Promise<InstalledCopy[]> {
+  const { ok, instances, error } = await listTemplateInstances(supabaseDataSource(createClient()), organizationId, catalogueId);
+  if (!ok) throw new Error(`We couldn't read your copies of this template: ${error?.message ?? "no answer"}`);
+  return instances
+    .filter((i) => i.state === "installed")
+    .map((i) => ({ installId: i.install_id, title: i.title, version: i.version, newerVersion: i.newer_version, startedAt: i.started_at, finishedAt: i.finished_at }))
+    .sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+}
+
+/**
+ * The root page of a copy made from another device or an older link: the top page a "Use template" run makes is titled
+ * like the copy (FreshCopy.title) and is written while the copy installs. The live one closest to the install's start.
+ */
+export async function findCopyRoot(organizationId: string, copy: InstalledCopy): Promise<SpaceId | null> {
+  if (!copy.title) return null;
+  const slack = 5 * 60 * 1000;
+  const start = Date.parse(copy.startedAt);
+  const end = copy.finishedAt ? Date.parse(copy.finishedAt) : Date.now();
+  const { data, error } = await createClient()
+    .schema("content")
+    .from("document")
+    .select("id, created_at")
+    .eq("organization_id", organizationId)
+    .eq("format", "spaces")
+    .eq("title", copy.title)
+    .is("deleted_at", null)
+    .gte("created_at", new Date(start - slack).toISOString())
+    .lte("created_at", new Date(end + slack).toISOString())
+    .limit(20);
+  if (error) throw new Error(`We couldn't find your copy's pages: ${error.message}`);
+  const rows = (data ?? []) as Array<{ id: string; created_at: string }>;
+  rows.sort((a, b) => Math.abs(Date.parse(a.created_at) - start) - Math.abs(Date.parse(b.created_at) - start));
+  return rows[0]?.id ?? null;
+}
+
+/**
  * The page set of a "Use template" run that has not finished: its root, every page made so far by pack key,
  * whether the failed run moved them to Trash, and the table copy they are made over. TEMPLATE-INSTALL-3 (a cut-off
  * run left three empty pages, and a second press made a full new set beside them) and USE-TEMPLATE-FAILURES (Try
@@ -385,6 +449,13 @@ export interface PackRun {
   trashed: boolean;
   /** The table copy this page set is made over (TEMPLATE-FRESH): Try again continues it, never a new copy. */
   installId?: string | null;
+  /**
+   * ADVERSARIAL-5 F5: page ids chosen and journaled BEFORE their write, whose write has not answered yet. A refresh
+   * between a page's insert and the journal write used to lose the id, and the resume made the page again (a stray
+   * top-level "Insurance notes"). A resume writes a pending page again under the SAME id; the store's create is
+   * idempotent by id (an existing page is reused and put under its parent).
+   */
+  pending?: SpaceId[];
 }
 
 export interface PackRunJournal {
@@ -406,7 +477,7 @@ export function packRunJournal(organizationId: string, templateId: string): Pack
       if (!raw) return null;
       try {
         const run = JSON.parse(raw) as PackRun;
-        if (run && typeof run.root === "string") return { root: run.root, ids: run.ids ?? {}, trashed: !!run.trashed, installId: run.installId ?? null };
+        if (run && typeof run.root === "string") return { root: run.root, ids: run.ids ?? {}, trashed: !!run.trashed, installId: run.installId ?? null, pending: run.pending ?? [] };
       } catch {
         // An older journal held the bare root id of a run that was cut off (never trashed).
       }
@@ -451,7 +522,7 @@ async function resumeRun(store: SpacesStore, run: PackRun): Promise<SpaceDoc | n
  */
 export async function makeTemplatePages(
   store: SpacesStore,
-  createRoot: (title: string) => Promise<SpaceDoc>,
+  createRoot: (title: string, id: SpaceId) => Promise<SpaceDoc>,
   t: SpaceTemplateFull,
   tables: Record<string, ResolvedTable> | Promise<Record<string, ResolvedTable>>,
   onProgress?: (done: number, total: number) => void,
@@ -460,12 +531,30 @@ export async function makeTemplatePages(
 ): Promise<SpaceDoc> {
   const ordered = packPagesInOrder(t.pack.pages);
   const earlier = journal?.read() ?? null;
-  const resumed = earlier ? await resumeRun(store, earlier) : null;
+  // A root whose write never answered (a refresh in the first second) is written again under its journaled id.
+  const rootPending = !!earlier && (earlier.pending ?? []).includes(earlier.root);
+  const resumed = earlier && !rootPending ? await resumeRun(store, earlier) : null;
   options.signal?.throwIfAborted();
-  const root = resumed ?? (await createRoot(ordered[0].title));
-  const run: PackRun = { root: root.id, ids: resumed && earlier ? { ...earlier.ids } : {}, trashed: false, installId: earlier?.installId ?? null };
-  run.ids[ordered[0].key] = root.id;
-  const remember = () => journal?.write({ ...run, installId: journal.read()?.installId ?? run.installId ?? null });
+  const run: PackRun = {
+    root: resumed?.id ?? (rootPending && earlier ? earlier.root : newPageId()),
+    ids: resumed && earlier ? { ...earlier.ids } : {},
+    trashed: false,
+    installId: earlier?.installId ?? null,
+    pending: resumed && earlier ? [...(earlier.pending ?? [])] : [],
+  };
+  run.ids[ordered[0].key] = run.root;
+  const remember = () => journal?.write({ ...run, pending: [...(run.pending ?? [])], installId: journal.read()?.installId ?? run.installId ?? null });
+  let root: SpaceDoc;
+  if (resumed) root = resumed;
+  else {
+    // The id is in the journal BEFORE the write: a refresh at any point finds this root again, never a second one.
+    run.pending = [run.root];
+    remember();
+    root = await createRoot(ordered[0].title, run.root);
+    run.pending = [];
+    run.root = root.id;
+    run.ids[ordered[0].key] = root.id;
+  }
   remember();
   try {
     const made = await fillTemplatePages(store, root, ordered, Promise.resolve(tables), onProgress, options, run, remember);
@@ -486,6 +575,9 @@ export async function makeTemplatePages(
   }
 }
 
+/** A page id chosen by the run before its write (journaled first, so a resume reuses it). */
+export const newPageId = (): SpaceId => crypto.randomUUID();
+
 /** How long a failed run waits for a page create already on the wire before it answers. */
 const TREE_SETTLE_MS = 5_000;
 
@@ -496,6 +588,8 @@ async function makePageTree(
   ids: Record<string, SpaceId>,
   onMade: () => void,
   signal: AbortSignal,
+  pending: SpaceId[] = [],
+  remember: () => void = () => undefined,
 ): Promise<Record<string, SpaceId>> {
   const childrenOf = new Map<string, typeof ordered>();
   for (const p of ordered.slice(1)) {
@@ -507,9 +601,16 @@ async function makePageTree(
     const kids = childrenOf.get(parentKey) ?? [];
     for (const p of kids) {
       signal.throwIfAborted();
-      // A page an earlier run made is reused, never made twice.
-      if (!ids[p.key]) {
-        const made = await store.create({ parentId: ids[parentKey], title: p.title, afterId: after });
+      // A page an earlier run made is reused, never made twice. A page whose id was journaled but whose write never
+      // answered is written again under that SAME id (the store reuses it if the insert landed).
+      const id = ids[p.key];
+      if (!id || pending.includes(id)) {
+        const planned = id ?? newPageId();
+        ids[p.key] = planned;
+        if (!pending.includes(planned)) pending.push(planned);
+        remember();
+        const made = await store.create({ id: planned, parentId: ids[parentKey], title: p.title, afterId: after });
+        pending.splice(pending.indexOf(planned), 1);
         ids[p.key] = made.id;
       }
       after = ids[p.key];
@@ -547,7 +648,8 @@ async function fillTemplatePages(
       stop.abort(err);
       throw err;
     });
-    const tree = timed("page-tree", () => makePageTree(store, ordered, run.ids, () => (remember(), step()), stop.signal));
+    run.pending ??= [];
+    const tree = timed("page-tree", () => makePageTree(store, ordered, run.ids, () => (remember(), step()), stop.signal, run.pending, remember));
     treeSettled = tree.then(
       () => undefined,
       () => undefined,
@@ -606,7 +708,8 @@ export const USE_TEMPLATE_STALL_MS = 20_000;
 export interface UseTemplateRun {
   template: SpaceTemplateFull;
   store: SpacesStore;
-  createRoot: (title: string) => Promise<SpaceDoc>;
+  /** Makes the root page under the id the run chose (idempotent by id: a resume after a lost answer reuses it). */
+  createRoot: (title: string, id: SpaceId) => Promise<SpaceDoc>;
   /** Installs the tables (installTemplateTables with the stage, the stop signal and the fresh copy). */
   install: (onStage: (stage: string) => void, signal: AbortSignal, fresh: FreshCopy) => Promise<Record<string, ResolvedTable>>;
   journal: PackRunJournal;

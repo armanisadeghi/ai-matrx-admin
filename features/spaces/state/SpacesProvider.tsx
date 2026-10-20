@@ -23,7 +23,7 @@ import { hasSignedInSession, isRefusal, onSignedIn, readWhenSignedIn, type LoadA
 import { listTemplateIds, setTemplate, copyTemplate } from "./templates";
 import { bringTemplateTables } from "./template-tables";
 import { attemptJournal } from "../templates/use-attempt";
-import { installTemplateTables, olderTemplateCopies, packRunJournal, readSpaceTemplate, readStarterTemplate, runUseTemplate, timed, type PreviewSizes } from "../templates/use-pack";
+import { installTemplateTables, olderTemplateCopies, packRunJournal, readSpaceTemplate, readStarterTemplate, runUseTemplate, timed, USE_TEMPLATE_OPEN_DEADLINE_MS, withDeadline, type PreviewSizes } from "../templates/use-pack";
 
 const FAVORITES_KEY = "spaces:favorites";
 /** The sidebar's open rows (written by SpacesSidebar): the tree's first read loads their children too. */
@@ -521,7 +521,7 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
       });
     try {
       const [template, orgId] = await Promise.all([
-        timed("read", () => readSpaceTemplate(templateId)),
+        timed("read", () => withDeadline(readSpaceTemplate(templateId), USE_TEMPLATE_OPEN_DEADLINE_MS, "The template library did not answer.")),
         // org-filter: write-target the template's tables and pages are filed in the active organization
         ensureOrgId(orgRef.current),
       ]);
@@ -536,8 +536,8 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
         runUseTemplate({
           template,
           store,
-          createRoot: async (title) => {
-            const doc = await createDatabaseSpacesStore(orgId).create({ parentId: null, title });
+          createRoot: async (title, id) => {
+            const doc = await createDatabaseSpacesStore(orgId).create({ id, parentId: null, title });
             store.notifyTree();
             return doc;
           },

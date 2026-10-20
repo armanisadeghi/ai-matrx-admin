@@ -77,3 +77,17 @@ export function attemptJournal(attemptId: string, templateId: string, storage: S
     noteInstallId: (id) => writeAttempt(attemptId, { ...current(), installId: id }, storage),
   };
 }
+
+/** The made root of a finished attempt on this browser whose table copy is one of `installIds` (newest first). */
+export function attemptRootFor(installIds: readonly string[], storage: (Storage & { length: number; key(i: number): string | null }) | null = typeof window === "undefined" ? null : window.localStorage): SpaceId | null {
+  if (!storage) return null;
+  for (const installId of installIds) {
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i);
+      if (!key?.startsWith("matrx:spaces:use-attempt:")) continue;
+      const a = readAttempt(key.slice("matrx:spaces:use-attempt:".length), storage);
+      if (a?.done && a.root && a.installId === installId) return a.root;
+    }
+  }
+  return null;
+}

@@ -58,7 +58,11 @@ export interface SpacesStore {
   readonly kind: "memory" | "database";
   list(options?: { includeArchived?: boolean }): Promise<SpaceSummary[]>;
   get(id: SpaceId): Promise<SpaceDoc | null>;
-  create(input: { parentId: SpaceId | null; title?: string; blocks?: SpaceBlock[]; afterId?: SpaceId }): Promise<SpaceDoc>;
+  /**
+   * `id`: a caller-chosen id (a template run journals it before the write). Idempotent by id: when a page with that id
+   * already exists it is answered, and put under `parentId` if its link never landed — never a second page.
+   */
+  create(input: { id?: SpaceId; parentId: SpaceId | null; title?: string; blocks?: SpaceBlock[]; afterId?: SpaceId }): Promise<SpaceDoc>;
   /** Whole-document save; refused when the stored `version` is no longer `expectedVersion`. */
   save(doc: SpaceDoc, expectedVersion: number): Promise<SpaceDoc>;
   move(id: SpaceId, parentId: SpaceId | null, position: string): Promise<void>;

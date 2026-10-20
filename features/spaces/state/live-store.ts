@@ -57,7 +57,7 @@ export function createLiveSpacesStore(getOrganizationId: () => string | null): L
     trash: () => base.trash(),
     search: (query, limit) => base.search(query, limit),
     get: (id) => base.get(id),
-    async create(input: { parentId: SpaceId | null; title?: string; blocks?: SpaceBlock[]; afterId?: SpaceId }) {
+    async create(input: { id?: SpaceId; parentId: SpaceId | null; title?: string; blocks?: SpaceBlock[]; afterId?: SpaceId }) {
       let target = base;
       if (!input.parentId) {
         // The one write funnel: with no active organization it asks the person, then continues.
