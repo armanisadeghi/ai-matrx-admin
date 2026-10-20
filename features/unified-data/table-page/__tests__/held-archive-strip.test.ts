@@ -18,6 +18,9 @@ describe("the held-archive question is asked ONCE, in a strip above the grid (B-
     const line = read("../HeldArchiveLine.tsx");
     expect(line.match(/<HeldArchiveLine/g)).toHaveLength(1);
     expect(line).toContain("PromoBanner");
+    // the question wraps through the package's own option, never a class from this side
+    expect(line).toMatch(/<PromoBanner[^>]*\bwrap\b/s);
+    expect(line).not.toContain("matrx-control-promo");
     for (const bar of ["../../../spaces/io/NotionSyncBar.tsx", "../SourceSyncBar.tsx", "../../connect-database/SyncedTableBar.tsx"]) {
       expect(read(bar)).not.toContain("<HeldArchiveLine");
     }

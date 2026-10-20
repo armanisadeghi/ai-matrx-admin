@@ -19,11 +19,11 @@ export function HeldArchiveLine({ source, held, was, busy, onArchive, onKeep }: 
   onArchive: () => void;
   onKeep: () => void;
 }) {
-  // the banner's title is one truncated line; this question is the whole point, so it wraps on a phone
   return (
-    <div data-held-archive="" className="[&_.matrx-control-promo-title]:overflow-visible [&_.matrx-control-promo-title]:whitespace-normal [&_.matrx-control-promo-title]:text-clip">
+    <div data-held-archive="">
       <PromoBanner
         tone="warning"
+        wrap
         icon={<Archive className="h-4 w-4" aria-hidden />}
         title={heldSentence(source, held, was)}
         aria-label="Rows no longer listed"
