@@ -43,6 +43,13 @@ if cmd == 'up':
     json.dump(st, open(STATE, 'w'))
     print(st)
 elif cmd == 'down':
+    # Every live row of the fixture table (a second `up` adds a row), then the table, through the store's own doors.
     st = json.load(open(STATE))
-    print(tx("select custom.record_delete(%s, %s)", (ORG, st['row'])))
-    print(tx("select custom.table_archive(%s, %s)", (ORG, st['table'])) if False else 'table archive: see below')
+    rows = [r[0] for r in c.execute("select id from custom.record where table_id = %s and deleted_at is null", (st['table'],)).fetchall()]
+    for rid in rows:
+        print('row', tx("select custom.record_delete(%s, %s)", (ORG, str(rid)))[0])
+    for _ in range(5):  # the archive carries on in chunks; the table goes last
+        out = tx("select custom.table_archive(%s, %s, 500, true)", (ORG, st['table']))[0]
+        print('table', out.get('message'), '| table_archived =', out.get('table_archived'))
+        if out.get('table_archived'):
+            break
