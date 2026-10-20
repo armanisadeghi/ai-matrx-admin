@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { TranscriptsSidebar } from "./TranscriptsSidebar";
 import { TranscriptViewer } from "./TranscriptViewer";
@@ -9,7 +9,7 @@ import { DeleteTranscriptDialog } from "./DeleteTranscriptDialog";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { TranscriptsProcessorHeader } from "./TranscriptsProcessorHeader";
 import { useTranscripts } from "../hooks/useTranscripts";
-import { fetchTranscriptById } from "../service/transcriptsService";
+import { useFocusTranscript } from "../hooks/useFocusTranscript";
 import { useToastManager } from "@/hooks/useToastManager";
 import { Loader2, Menu } from "lucide-react";
 import { MatrxDynamicPanelHost } from "@/components/matrx/resizable/MatrxDynamicPanelHost";
@@ -28,77 +28,17 @@ export function TranscriptsLayout({ className }: TranscriptsLayoutProps) {
   const {
     isLoading,
     activeTranscript,
-    transcripts,
-    setActiveTranscript,
     initialize,
     copyTranscript,
     refreshTranscripts,
   } = useTranscripts();
   const toast = useToastManager("transcripts");
-  /** The last `?focus=` id we tried to resolve by id — one attempt each. */
-  const attemptedFocusRef = useRef<string | null>(null);
 
   useEffect(() => {
     initialize();
   }, [initialize]);
 
-  // Deep-link: /transcripts/processor?focus=<id> — the canonical route for a
-  // transcript (entity registry `hrefFor`), so it must work for transcripts
-  // that are NOT in the sidebar list. That list is scoped "mine" (VIEW LAW), so
-  // matching against it alone silently no-ops on every shared/org transcript —
-  // the user follows a link and lands on whatever was already open, with no
-  // error. Fall back to reading the one row by id (RLS decides), and say so
-  // out loud when it isn't reachable.
-  useEffect(() => {
-    if (!focusId) return;
-    if (activeTranscript?.id === focusId) return;
-
-    const inList = transcripts.find((t) => t.id === focusId);
-    if (inList) {
-      setActiveTranscript(inList);
-      return;
-    }
-    if (isLoading) return;
-    // One attempt per id. Without this the effect re-runs on every
-    // `transcripts` / `isLoading` change — `activeTranscript` never becomes the
-    // unreachable id, so the failure toast would repeat forever.
-    if (attemptedFocusRef.current === focusId) return;
-    attemptedFocusRef.current = focusId;
-
-    let cancelled = false;
-    (async () => {
-      try {
-        const target = await fetchTranscriptById(focusId);
-        if (cancelled) return;
-        if (target) {
-          setActiveTranscript(target);
-        } else {
-          toast.error(
-            "That transcript isn't available — it may have been deleted, or it isn't shared with you.",
-          );
-        }
-      } catch (err) {
-        if (!cancelled) {
-          // A THROWN error is transient (network, aborted request) — release
-          // the guard so a later render can try again. A clean `null` is a real
-          // answer ("not yours / deleted") and must NOT retry.
-          attemptedFocusRef.current = null;
-          console.error("Failed to open the linked transcript", err);
-          toast.error("Couldn't open that transcript.");
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    focusId,
-    transcripts,
-    activeTranscript?.id,
-    setActiveTranscript,
-    isLoading,
-    toast,
-  ]);
+  useFocusTranscript(focusId);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);

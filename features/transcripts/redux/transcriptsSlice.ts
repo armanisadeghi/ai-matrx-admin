@@ -30,6 +30,12 @@ export interface TranscriptsState {
   /** True once a list read has SUCCEEDED — only then is an empty list an answer. */
   hasLoaded: boolean;
   activeId: string | null;
+  /**
+   * Rows opened by id that the declared list scope does not carry (a `?focus=` deep link, a board
+   * tile). A list read replaces `items`; these ride through it so the opened transcript is not lost
+   * and the selection does not jump to the first row.
+   */
+  linkedIds: string[];
   initialized: boolean;
   /** VIEW LAW: the declared list scope driving fetches. */
   scope: ListScope;
@@ -43,6 +49,7 @@ const initialState: TranscriptsState = {
   loadError: null,
   hasLoaded: false,
   activeId: null,
+  linkedIds: [],
   initialized: false,
   scope: { kind: "mine" },
   orgFilter: null,
@@ -68,13 +75,18 @@ const slice = createSlice({
      * the first item, clear when the list is empty.
      */
     transcriptsFetched(state, action: PayloadAction<Transcript[]>) {
-      state.items = action.payload;
+      const inList = new Set(action.payload.map((t) => t.id));
+      const kept = state.items.filter(
+        (t) => state.linkedIds.includes(t.id) && !inList.has(t.id),
+      );
+      state.linkedIds = kept.map((t) => t.id);
+      state.items = [...action.payload, ...kept];
       state.isLoading = false;
       state.loadError = null;
       state.hasLoaded = true;
       const stillThere =
         state.activeId !== null &&
-        action.payload.some((t) => t.id === state.activeId);
+        state.items.some((t) => t.id === state.activeId);
       if (!stillThere) {
         state.activeId = action.payload.length > 0 ? action.payload[0].id : null;
       }
@@ -98,7 +110,12 @@ const slice = createSlice({
     transcriptUpserted(state, action: PayloadAction<Transcript>) {
       const idx = state.items.findIndex((t) => t.id === action.payload.id);
       if (idx >= 0) state.items[idx] = action.payload;
-      else state.items = [action.payload, ...state.items];
+      else {
+        state.items = [action.payload, ...state.items];
+        if (!state.linkedIds.includes(action.payload.id)) {
+          state.linkedIds.push(action.payload.id);
+        }
+      }
     },
     /** Optimistic partial patch (pre-server-response). */
     transcriptPatched(
