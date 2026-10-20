@@ -89,6 +89,25 @@ describe("searchTemplates over the real library", () => {
     expect(found[0]).toMatch(TRADE_LEADS[q]);
   });
 
+  it("ADVERSARIAL-6 F5: a named collection is the answer — the count is the cards that carry the phrase, not every 'design' mention", () => {
+    // Every published card, page-less design starters included (the galleries list all 183).
+    const ALL = readdirSync(DIR)
+      .filter((f) => f.endsWith(".pack.json"))
+      .flatMap((f) => {
+        try {
+          return [packCardFace(JSON.parse(readFileSync(join(DIR, f), "utf8")) as SpaceTemplatePack)];
+        } catch {
+          return [];
+        }
+      });
+    const found = searchTemplates(ALL, "design system", (f) => f).map((f) => f.title);
+    const named = ALL.filter((f) => /design system/i.test(f.title) || f.tags.some((t) => t.toLowerCase() === "design system")).map((f) => f.title);
+    expect(named.length).toBeGreaterThanOrEqual(11);
+    expect([...found].sort()).toEqual([...named].sort());
+    // One card naming the phrase leads a broad answer instead ("to do list" still finds the todo templates).
+    expect(titles("to do list").length).toBeGreaterThanOrEqual(3);
+  });
+
   it("a short word never matches inside a longer one (law is not lawn), and gym is not a barbershop", () => {
     expect(titles("law").some((t) => /lawn/i.test(t))).toBe(false);
     expect(titles("gym").some((t) => /barber|salon|spa/i.test(t))).toBe(false);
@@ -184,5 +203,14 @@ describe("the adversarial review's queries (ADVERSARIAL-3 D5)", () => {
     const faces = [{ title: "Carrier desk", body: "freight lanes" }, { title: "Vet", body: "boarding kennels" }];
     expect(searchTemplates(faces, "freight", (f) => f).map((f) => f.title)).toEqual(["Carrier desk"]);
     expect(searchTemplates(faces, "board", (f) => f).map((f) => f.title)).toEqual([]);
+  });
+});
+
+describe("templateResultCount (the gallery's count beside a search)", () => {
+  const { templateResultCount } = require("../template-search") as typeof import("../template-search");
+  it("says shown of total while a query is typed, the plain total otherwise", () => {
+    const shown = searchTemplates(FACES, "design system", (f) => f).length;
+    expect(templateResultCount("design system", shown, FACES.length)).toBe(`${shown} of ${FACES.length}`);
+    expect(templateResultCount("   ", FACES.length, FACES.length)).toBe(String(FACES.length));
   });
 });

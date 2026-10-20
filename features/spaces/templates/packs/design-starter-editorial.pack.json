@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0492",
-  "version": 5,
+  "version": 6,
   "title": "Design system — Editorial",
   "description": "Warm paper, ink and an oxblood accent, with serif headings made for reading.",
   "forWho": "Publishers, writers, journals and cultural brands",
@@ -207,31 +207,33 @@
             }
           },
           {
-            "key": "col-13",
+            "key": "col-22",
             "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#f6e7cf\",\"dark\":\"#3a2e1c\"}",
-              "usage_note": "Parchment: a pull quote or an editor's note."
+              "name": "success",
+              "group": "Feedback",
+              "value": "{\"light\":\"#3a662c\",\"dark\":\"#9cc98a\"}",
+              "usage_note": "Done, live, saved. Always paired with a word.",
+              "reads_on": "muted"
             }
           },
           {
-            "key": "col-11",
+            "key": "col-20",
             "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#ebe3d4\",\"dark\":\"#302a21\"}",
-              "usage_note": "Second actions and quiet selected states."
+              "name": "destructive",
+              "group": "Feedback",
+              "value": "{\"light\":\"#a8241c\",\"dark\":\"#f08a7e\"}",
+              "usage_note": "Errors and delete. Also reads on the page and on cards.",
+              "reads_on": "muted"
             }
           },
           {
-            "key": "col-15",
+            "key": "col-23",
             "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#8a2b1f\",\"dark\":\"#e8937f\"}",
-              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
-              "reads_on": "background"
+              "name": "warning",
+              "group": "Feedback",
+              "value": "{\"light\":\"#835400\",\"dark\":\"#e6b45c\"}",
+              "usage_note": "Waiting or at risk. Always paired with a word.",
+              "reads_on": "muted"
             }
           },
           {
@@ -321,6 +323,15 @@
             }
           },
           {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#ebe3d4\",\"dark\":\"#302a21\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
             "key": "col-12",
             "values": {
               "name": "secondary-foreground",
@@ -331,6 +342,15 @@
             }
           },
           {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#f6e7cf\",\"dark\":\"#3a2e1c\"}",
+              "usage_note": "Parchment: a pull quote or an editor's note."
+            }
+          },
+          {
             "key": "col-14",
             "values": {
               "name": "accent-foreground",
@@ -338,6 +358,16 @@
               "value": "{\"light\":\"#5a3a10\",\"dark\":\"#f0d3a6\"}",
               "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
               "reads_on": "accent"
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#8a2b1f\",\"dark\":\"#e8937f\"}",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
             }
           },
           {
@@ -380,16 +410,6 @@
             }
           },
           {
-            "key": "col-20",
-            "values": {
-              "name": "destructive",
-              "group": "Feedback",
-              "value": "{\"light\":\"#a8241c\",\"dark\":\"#f08a7e\"}",
-              "usage_note": "Errors and delete. Also reads on the page and on cards.",
-              "reads_on": "muted"
-            }
-          },
-          {
             "key": "col-21",
             "values": {
               "name": "destructive-foreground",
@@ -397,26 +417,6 @@
               "value": "{\"light\":\"#fffaf3\",\"dark\":\"#2a0905\"}",
               "usage_note": "Label on a delete button.",
               "reads_on": "destructive"
-            }
-          },
-          {
-            "key": "col-22",
-            "values": {
-              "name": "success",
-              "group": "Feedback",
-              "value": "{\"light\":\"#3a662c\",\"dark\":\"#9cc98a\"}",
-              "usage_note": "Done, live, saved. Always paired with a word.",
-              "reads_on": "muted"
-            }
-          },
-          {
-            "key": "col-23",
-            "values": {
-              "name": "warning",
-              "group": "Feedback",
-              "value": "{\"light\":\"#835400\",\"dark\":\"#e6b45c\"}",
-              "usage_note": "Waiting or at risk. Always paired with a word.",
-              "reads_on": "muted"
             }
           }
         ]
@@ -1289,7 +1289,7 @@
         "Ashby Mews"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [],
   "board": {

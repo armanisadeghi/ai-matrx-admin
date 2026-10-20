@@ -5,7 +5,7 @@
 
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button, Switch } from "@ai-matrx/design-system/controls";
-import { Copy, CornerUpRight, FileUp, History, LayoutTemplate, Link, Lock, MoreHorizontal, MoveHorizontal, PenLine, Trash2, Type, Undo2 } from "lucide-react";
+import { Copy, CornerUpRight, FileUp, History, LayoutTemplate, Link, Lock, MoreHorizontal, MoveHorizontal, PackageX, PenLine, Trash2, Type, Undo2 } from "lucide-react";
 import { setSuggesting, useSuggesting } from "../editor/suggest";
 import { useState, type ReactNode } from "react";
 
@@ -53,6 +53,7 @@ export function PageMenu({
   onDuplicate,
   onMove,
   onDelete,
+  onRemoveCopy,
   onUndo,
   onHistory,
   onExport,
@@ -71,6 +72,8 @@ export function PageMenu({
   onDuplicate: () => void;
   onMove: () => void;
   onDelete: () => void;
+  /** ADVERSARIAL-6 F1: the page is the root of a live template copy — "Remove template copy" (absent: not one, or not known yet). */
+  onRemoveCopy?: () => void;
   onUndo: () => void;
   onHistory: () => void;
   /** K1 — opens the Export dialog. */
@@ -137,6 +140,7 @@ export function PageMenu({
         <Row icon={<Copy size={16} />} label="Duplicate" onClick={act(onDuplicate)} />
         {contentOnly ? null : <Row icon={<CornerUpRight size={16} />} label="Move to" onClick={act(onMove)} />}
         {contentOnly ? null : <Row icon={<Trash2 size={16} />} label="Move to Trash" onClick={act(onDelete)} danger />}
+        {contentOnly || !onRemoveCopy ? null : <Row icon={<PackageX size={16} />} label="Remove template copy" onClick={act(onRemoveCopy)} danger />}
         <div className="my-1 border-t border-border" />
         <Row icon={<Undo2 size={16} />} label="Undo" onClick={act(onUndo)} />
         <Row icon={<History size={16} />} label="Page history" onClick={act(onHistory)} />

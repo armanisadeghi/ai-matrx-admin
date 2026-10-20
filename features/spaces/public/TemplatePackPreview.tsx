@@ -145,19 +145,24 @@ export function TemplatePackPreview({
     >
       {live || failed ? null : (
         // ui-exception: the light public tier has no controls barrel in its graph (ADVERSARIAL-5 F1); one native button.
-        <button
-          type="button"
-          onClick={want}
-          disabled={wanted}
-          data-see-it-live=""
-          className="absolute right-3 top-3 z-10 inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-sm font-medium text-foreground shadow-sm"
-        >
-          <Play size={14} aria-hidden="true" />
-          {wanted ? "Loading…" : "See it live"}
-        </button>
+        // The position sits on a wrapper, never on the button: the tap-target pill guard skips the text of an
+        // absolutely positioned element, so it read only the icon and reported the pill off-centre.
+        <div className="z-10 flex shrink-0 justify-end px-2 pt-2 md:absolute md:right-3 md:top-3 md:p-0">
+          <button
+            type="button"
+            onClick={want}
+            disabled={wanted}
+            data-see-it-live=""
+            className="matrx-glyph-trim [--matrx-glyph-size:0.875rem] inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-sm font-medium text-foreground shadow-sm"
+          >
+            <Play size={14} aria-hidden="true" />
+            {wanted ? "Loading…" : "See it live"}
+          </button>
+        </div>
       )}
       <nav
         aria-label="Template pages"
+        // ADVERSARIAL-6 F5/VERIFY: on a phone the "See it live" pill has its own line above this tab row (it is only absolute from md up), so no tab length or count can sit under it.
         className="flex shrink-0 gap-1 overflow-x-auto border-b border-border p-2 md:flex-col md:overflow-y-auto md:border-b-0 md:border-r"
       >
         {pages.map((p) => (

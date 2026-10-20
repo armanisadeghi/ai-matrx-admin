@@ -146,6 +146,11 @@ export interface AddAgentPorts {
   archiveWorkflow?: (workflowId: string) => Promise<void>;
   /** aidream `POST /workflows` in `organizationId`, as the person. Returns the workflow's id. */
   createWorkflow?: (organizationId: string, workflow: { name: string; description: string; definition: unknown }) => Promise<string>;
+  /**
+   * True when the recorded copy's variables carry what the template binds. A copy an earlier run made and recorded, then failed to
+   * connect, is not a finished assistant: it is finished again, never taken as done. Absent: a recorded copy is trusted.
+   */
+  agentFinished?: (agentId: string, bindings: TemplateAgentBinding[]) => Promise<boolean>;
   /** Waits `ms` before a held claim is asked again. Default: a timer. */
   wait?: (ms: number) => Promise<void>;
 }
@@ -233,6 +238,20 @@ export async function addInstalledAgent(
   return run;
 }
 
+/** The template agent's bindings as the copier takes them: each variable with the table this install made for it. */
+function agentBindingsOf(agent: NonNullable<InstallAnswer["agent"]>, resolver: MergeBindingResolver): TemplateAgentBinding[] {
+  return (agent.bindings ?? []).map((b) => {
+    const full = b["binding"] as TemplatePlanBinding | undefined;
+    return {
+      variable: String(b["variable"] ?? ""),
+      tableToken: String(b["tableToken"] ?? ""),
+      tableId: String(b["table_id"] ?? ""),
+      describes: String(b["describes"] ?? ""),
+      ...(full ? { binding: installedBinding(full, resolver) } : {}),
+    };
+  });
+}
+
 async function hostSteps(answer: InstallAnswer, installId: string, organizationId: string, ports: AddAgentPorts): Promise<AddAgentResult> {
   let current = answer;
   try {
@@ -248,22 +267,29 @@ async function hostSteps(answer: InstallAnswer, installId: string, organizationI
         platformAgent: platform.name,
         platformAgentId: platform.id,
         name: agent.name,
-        bindings: (agent.bindings ?? []).map((b) => {
-          const full = b["binding"] as TemplatePlanBinding | undefined;
-          return {
-            variable: String(b["variable"] ?? ""),
-            tableToken: String(b["tableToken"] ?? ""),
-            tableId: String(b["table_id"] ?? ""),
-            describes: String(b["describes"] ?? ""),
-            ...(full ? { binding: installedBinding(full, resolver) } : {}),
-          };
-        }),
+        bindings: agentBindingsOf(agent, resolver),
       });
       current = done.answer;
       agentIds["agent"] = done.agentId;
     } else if (agent) {
       const prior = madeOf(current, "agent").find((m) => m.title === agent.name) ?? madeOf(current, "agent")[0];
-      if (prior?.id) agentIds["agent"] = prior.id;
+      if (prior?.id) {
+        agentIds["agent"] = prior.id;
+        const platform = platformAgentOf(agent);
+        const bindings = agentBindingsOf(agent, resolver);
+        if (platform && ports.agentFinished && !(await ports.agentFinished(prior.id, bindings))) {
+          // Recorded, never connected: connect it now (it is already on the install, so no second claim or note).
+          await ports.copier({
+            organizationId,
+            platformAgent: platform.name,
+            platformAgentId: platform.id,
+            name: agent.name,
+            bindings,
+            existingAgentId: prior.id,
+            onCreated: () => undefined,
+          });
+        }
+      }
     }
 
     // 2 — extra agents, each bound through the same builder.

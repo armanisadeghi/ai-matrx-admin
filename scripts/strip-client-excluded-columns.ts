@@ -57,6 +57,15 @@ const TYPES_PATH = process.argv[2]
  */
 const FROZEN_SCHEMAS = new Set(["hr", "esign"]);
 
+/**
+ * Single tables stripped outside the frozen schemas: SERVER-ONLY value columns (provision leak fix,
+ * 2026-10-19/20). Their columns are revoked from `authenticated` (column grants), so naming one —
+ * or `select("*")` on the table — is refused with 42501. Values reach a browser only through
+ * aidream's AI Watch doors. Owner: the provision audit lane
+ * (common-docs/systems/intelligence/mandates/projects/provision-audit-2026-10-18/07-leak-fix-design.md).
+ */
+const FROZEN_TABLES = new Set(["chat.request_snapshot", "chat.request_values", "mandate.provision_snapshot"]);
+
 interface RegistryRow {
     schema_name: string;
     table_name: string;
@@ -142,7 +151,7 @@ async function main() {
     for (const row of registry) {
         const cols = row.client_excluded_columns ?? [];
         if (cols.length === 0) continue;
-        if (!FROZEN_SCHEMAS.has(row.schema_name)) {
+        if (!FROZEN_SCHEMAS.has(row.schema_name) && !FROZEN_TABLES.has(`${row.schema_name}.${row.table_name}`)) {
             declaredOutOfScope += cols.length;
             continue;
         }
@@ -171,7 +180,7 @@ async function main() {
     console.log(
         `✅ Stripped ${removed.size}/${expected.length} client-excluded columns ` +
             `(${strippedLines} type lines) from types/database.types.ts ` +
-            `across ${targets.size} tables in ${[...FROZEN_SCHEMAS].join(", ")}.`,
+            `across ${targets.size} tables in ${[...FROZEN_SCHEMAS].join(", ")} + ${[...FROZEN_TABLES].join(", ")}.`,
     );
     if (untouched.length) {
         console.log(

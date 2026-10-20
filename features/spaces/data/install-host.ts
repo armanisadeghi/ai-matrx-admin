@@ -7,6 +7,7 @@ import { storeDoors } from "@ai-matrx/records/core";
 import type { TemplateDoorAnswer } from "@ai-matrx/records/templates";
 
 import { addInstalledAgent, hostStepsPending, type Claim } from "@/features/make/gallery/installAgent";
+import { templateVariablesAreBound } from "@/features/templates/agentCopy";
 import { templateAgentArchiver, templateAgentCopier, templateWorkflowCreator } from "@/features/templates/agentCopyHost";
 import { templateKnob } from "@/features/templates/knobs";
 import { setWorkflowFlag } from "@/features/workflow-runtime/browse/service";
@@ -16,7 +17,8 @@ import { createClient } from "@/utils/supabase/client";
 /** The gallery's host steps after template_install (its agent, extra agents, workflows), with the
  *  same ports the gallery's TemplatePreview builds. Throws, by name, when the assistant was not made. */
 export async function runHostSteps(answer: TemplateDoorAnswer, orgId: string, dispatch: AppDispatch, what = "The template's assistant"): Promise<void> {
-  if (!hostStepsPending(answer)) return;
+  // A copy already recorded is still looked at: one an earlier run made and failed to connect is finished, not taken as done.
+  if (!hostStepsPending(answer) && !answer.agent?.copied) return;
   const supabase = createClient();
   const result = await addInstalledAgent(answer, orgId, {
     copier: templateAgentCopier(dispatch),
@@ -24,6 +26,11 @@ export async function runHostSteps(answer: TemplateDoorAnswer, orgId: string, di
     createWorkflow: templateWorkflowCreator(dispatch),
     archiveAgent: templateAgentArchiver(dispatch),
     archiveWorkflow: (workflowId) => setWorkflowFlag(workflowId, { is_archived: true }),
+    agentFinished: async (agentId, bindings) => {
+      const { data, error } = await supabase.schema("agent").from("definition").select("variable_definitions").eq("id", agentId).maybeSingle();
+      if (error) throw new Error(`We couldn't read the template's assistant: ${error.message}`);
+      return templateVariablesAreBound(data?.variable_definitions, bindings);
+    },
     claim: async (installId, kind, label, sourceId) => {
       const lease = await templateKnob("run_lease_seconds");
       const { data, error } = await storeDoors(supabase).templateInstallClaim({ organizationId: orgId, installId, kind, label, sourceId, leaseSeconds: lease });

@@ -164,6 +164,36 @@ export function bindTemplateVariables(
   return defs;
 }
 
+function sameJson(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (Array.isArray(a) || Array.isArray(b)) {
+    return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((x, i) => sameJson(x, b[i]));
+  }
+  if (isRecord(a) && isRecord(b)) {
+    const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+    return [...keys].every((k) => sameJson(a[k], b[k]));
+  }
+  return false;
+}
+
+/**
+ * INSTALL-ORDER: true when the copy's variables already carry what the template binds, so a copy an earlier run made and
+ * recorded before it was connected (the run failed after the fork) is never taken for a finished assistant. The test is
+ * the binding step itself: binding again changes nothing. A binding the install cannot make (a table it never made) is not finished.
+ */
+export function templateVariablesAreBound(
+  definitions: unknown,
+  bindings: TemplateAgentBinding[],
+  limit: number = TEMPLATE_AGENT_COLLECTION_LIMIT,
+): boolean {
+  if (!Array.isArray(definitions)) return false;
+  try {
+    return sameJson(bindTemplateVariables(definitions, bindings, limit), definitions);
+  } catch {
+    return false;
+  }
+}
+
 /** `tools` with `recordsToolId` added once (order kept). */
 export function withTool(tools: string[] | null, toolId: string): string[] {
   const list = tools ?? [];

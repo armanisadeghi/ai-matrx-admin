@@ -21,14 +21,15 @@ jest.mock("@/components/mardown-display/blocks/agent-factory-kinds/AgentFactoryK
 
 import { BuildProgress } from "../components/BuildProgress";
 import { startAgentBuild } from "../service";
+import { KEPT_OUTCOMES, type FactoryOutcome } from "../types";
 
 const flush = () => act(async () => void (await new Promise((r) => setTimeout(r, 0))));
 
-async function mount(): Promise<HTMLElement> {
+async function mount(onEditDescription?: (d: string) => void): Promise<HTMLElement> {
   const host = document.createElement("div");
   document.body.appendChild(host);
   act(() => {
-    createRoot(host).render(<BuildProgress buildId="build-1" />);
+    createRoot(host).render(<BuildProgress buildId="build-1" onEditDescription={onEditDescription} />);
   });
   await flush();
   await flush();
@@ -64,11 +65,69 @@ it("a stopped build offers Try again and a way out", async () => {
     state: { outcome: "failed", error: "The contract step could not run.", steps: {}, request: { spec, door: "studio", mandate_key: null } },
   };
   const host = await mount();
-  expect(button(host, "Build unproven")).toBeDefined();
+  expect(button(host, "Build anyway")).toBeDefined();
   const retry = button(host, "Try again");
   expect(retry).toBeDefined();
   await act(async () => {
     retry?.click();
   });
   expect(startAgentBuild).toHaveBeenCalledWith(expect.objectContaining({ spec, unproven: false, door: "studio" }));
+});
+
+/**
+ * Review 2026-10-20: needs_new_kind (beaaf034), send-backs used up (65a6e39d) and too few cases
+ * (b761efc8) stopped with no Try again. A Record over the whole outcome union: a new outcome fails
+ * to type-check here until its row says what it shows.
+ */
+const EVERY_OUTCOME: Record<FactoryOutcome, { agentId?: string; extra?: string }[]> = {
+  passed: [{ agentId: "agent-1" }],
+  saved_unproven: [{ agentId: "agent-1" }],
+  failed: [{ extra: "Build anyway" }],
+  workflow_sized: [{ extra: "Build anyway" }],
+  send_backs_exhausted: [{ agentId: "agent-1", extra: "Keep it anyway" }, { extra: "Build anyway" }],
+  judge_not_blind: [{ agentId: "agent-1", extra: "Keep it anyway" }, { extra: "Build anyway" }],
+  no_proof_inputs: [{ extra: "Build anyway" }],
+  needs_new_kind: [{ extra: "Build it as text" }],
+  unproven: [{ agentId: "agent-1", extra: "Keep it anyway" }, { extra: "Build anyway" }],
+  worker_lost: [{ extra: "Build anyway" }],
+};
+const CASES = (Object.entries(EVERY_OUTCOME) as [FactoryOutcome, { agentId?: string; extra?: string }[]][]).flatMap(
+  ([outcome, rows]) => rows.map((row) => [outcome, row.agentId ?? null, row.extra ?? null] as const),
+);
+
+it.each(CASES)("outcome %s (agent %s): never a dead end", async (outcome, agentId, extra) => {
+  next = {
+    id: "build-1", spineStatus: "completed", createdAt: "", startedAt: null, endedAt: null, checkpointAt: null,
+    state: { outcome, agent_id: agentId, steps: {}, request: { spec, door: "studio", mandate_key: null } },
+  };
+  const edit = jest.fn();
+  const host = await mount(edit);
+  if (KEPT_OUTCOMES.has(outcome)) {
+    expect(button(host, "Open agent")).toBeDefined();
+    expect(button(host, "Try again")).toBeUndefined();
+    return;
+  }
+  expect(button(host, "Try again")).toBeDefined();
+  if (extra) expect(button(host, extra)).toBeDefined();
+  const editButton = button(host, "Edit description");
+  expect(editButton).toBeDefined();
+  await act(async () => {
+    editButton?.click();
+  });
+  expect(edit).toHaveBeenCalledWith(spec.purpose);
+});
+
+/** Review 2026-10-20 (build 3a3aea1d): Proof and Judge never ran on an unproven build and the screen never said why. */
+it("an unproven build says why Proof and Judge do not run", async () => {
+  next = {
+    id: "build-1", spineStatus: "running", createdAt: "", startedAt: null, endedAt: null, checkpointAt: null,
+    state: { current_step: "instructions", steps: {}, request: { spec, door: "studio", mandate_key: null, unproven: true } },
+  };
+  const host = await mount();
+  expect(host.querySelector('[data-testid="proof-skipped"]')?.textContent).toBe(
+    "No examples to prove it on. Its first 3 runs are judged.",
+  );
+  next = { ...next, state: { ...(next.state as object), request: { spec, door: "studio", mandate_key: null } } };
+  const proven = await mount();
+  expect(proven.querySelector('[data-testid="proof-skipped"]')).toBeNull();
 });

@@ -17517,11 +17517,8 @@ export type Database = {
           pin_reason: string | null
           pinned_at: string | null
           provider: string
-          request_payload: Json
           response_message_id: string | null
-          response_payload: Json | null
           trigger_message_id: string | null
-          unified_payload: Json | null
           updated_at: string
           updated_by: string | null
           user_request_id: string | null
@@ -17544,11 +17541,8 @@ export type Database = {
           pin_reason?: string | null
           pinned_at?: string | null
           provider: string
-          request_payload: Json
           response_message_id?: string | null
-          response_payload?: Json | null
           trigger_message_id?: string | null
-          unified_payload?: Json | null
           updated_at?: string
           updated_by?: string | null
           user_request_id?: string | null
@@ -17571,11 +17565,8 @@ export type Database = {
           pin_reason?: string | null
           pinned_at?: string | null
           provider?: string
-          request_payload?: Json
           response_message_id?: string | null
-          response_payload?: Json | null
           trigger_message_id?: string | null
-          unified_payload?: Json | null
           updated_at?: string
           updated_by?: string | null
           user_request_id?: string | null
@@ -17629,7 +17620,6 @@ export type Database = {
       }
       request_values: {
         Row: {
-          context: Json
           conversation_id: string
           created_at: string
           created_by: string | null
@@ -17638,18 +17628,14 @@ export type Database = {
           mandate_key: string | null
           metadata: Json
           organization_id: string
-          placement_values: Json
           test_expires_at: string | null
           test_run_id: string | null
           updated_at: string
           updated_by: string | null
           user_request_id: string | null
-          variables: Json
           version: number
-          watch_values: Json
         }
         Insert: {
-          context?: Json
           conversation_id: string
           created_at?: string
           created_by?: string | null
@@ -17658,18 +17644,14 @@ export type Database = {
           mandate_key?: string | null
           metadata?: Json
           organization_id: string
-          placement_values?: Json
           test_expires_at?: string | null
           test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           user_request_id?: string | null
-          variables?: Json
           version?: number
-          watch_values?: Json
         }
         Update: {
-          context?: Json
           conversation_id?: string
           created_at?: string
           created_by?: string | null
@@ -17678,15 +17660,12 @@ export type Database = {
           mandate_key?: string | null
           metadata?: Json
           organization_id?: string
-          placement_values?: Json
           test_expires_at?: string | null
           test_run_id?: string | null
           updated_at?: string
           updated_by?: string | null
           user_request_id?: string | null
-          variables?: Json
           version?: number
-          watch_values?: Json
         }
         Relationships: [
           {
@@ -92480,7 +92459,6 @@ export type Database = {
           organization_id: string
           point_key: string
           point_label: string
-          provision_values: Json
           published_to_web: boolean
           published_to_web_at: string | null
           published_to_web_by: string | null
@@ -92508,7 +92486,6 @@ export type Database = {
           organization_id: string
           point_key: string
           point_label: string
-          provision_values?: Json
           published_to_web?: boolean
           published_to_web_at?: string | null
           published_to_web_by?: string | null
@@ -92536,7 +92513,6 @@ export type Database = {
           organization_id?: string
           point_key?: string
           point_label?: string
-          provision_values?: Json
           published_to_web?: boolean
           published_to_web_at?: string | null
           published_to_web_by?: string | null

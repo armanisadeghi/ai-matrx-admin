@@ -57,6 +57,13 @@ const traceConsole: Console = globalThis.console;
 
 const SETTLE_CAP_MS = 15_000;
 const STALL_MS = 100;
+/**
+ * A request repeating at a steady interval (three starts, the last gap within this fraction of the one
+ * before, gaps of at least POLL_MIN_GAP_MS) is a POLL — a react-query `refetchInterval`, the dev-server
+ * freshness check — never a duplicate: one fetch per interval is the design, not waste.
+ */
+const POLL_GAP_TOLERANCE = 0.2;
+const POLL_MIN_GAP_MS = 2_000;
 const SHIFT_MIN = 0.005;
 /** The requests group prints once the network has been quiet this long after settle (or at the cap). */
 const NET_QUIET_MS = 1_500;
@@ -94,6 +101,8 @@ export interface LoadTraceEvent {
   sizeKB?: number;
   dupKey?: string;
   times?: number;
+  /** Requests: the steady interval (ms) of a request recognised as a poll — never counted as a duplicate. */
+  pollEveryMs?: number;
 }
 
 export interface LoadTraceViolation {
@@ -145,6 +154,9 @@ let installed = false;
 const seenOnce = new Set<string>();
 const seenResources = new WeakSet<PerformanceEntry>();
 const dupCounts = new Map<string, number>();
+/** Every start time per duplicate key, and the keys recognised as steady polls (key → interval ms). */
+const startsByKey = new Map<string, number[]>();
+const pollKeys = new Map<string, number>();
 /** Fetch/XHR calls seen by the method recorder: absolute URL, method, call time. */
 let calls: { url: string; method: string; t: number; used: boolean }[] = [];
 const observers: { observer: PerformanceObserver; onEntry: (entry: PerformanceEntry) => void }[] = [];
@@ -259,7 +271,8 @@ function line(e: LoadTraceEvent): { text: string; style: string } {
     case "net": {
       const size = e.sizeKB ? `  ${e.sizeKB} KB` : "";
       const dup = (e.times ?? 1) > 1 ? `  ×${e.times} DUPLICATE` : "";
-      return { text: `${(e.method ?? "GET").padEnd(6)} ${e.name}${ms}${size}${dup}`, style: dup ? STYLE.yellow : STYLE.net };
+      const poll = e.pollEveryMs ? `  poll every ${Math.round(e.pollEveryMs / 1000)}s` : "";
+      return { text: `${(e.method ?? "GET").padEnd(6)} ${e.name}${ms}${size}${dup}${poll}`, style: dup ? STYLE.yellow : STYLE.net };
     }
     case "stall":
       return { text: `STALL ${e.name}${ms}${detail}`, style: STYLE.stall };
@@ -340,6 +353,14 @@ function onResource(entry: PerformanceEntry): void {
   const { group, label, dupKey } = classifyRequest(r.name, method, window.location.origin);
   const times = (dupCounts.get(dupKey) ?? 0) + 1;
   dupCounts.set(dupKey, times);
+  const starts = [...(startsByKey.get(dupKey) ?? []), r.startTime];
+  startsByKey.set(dupKey, starts);
+  if (starts.length >= 3) {
+    const last = starts[starts.length - 1] - starts[starts.length - 2];
+    const before = starts[starts.length - 2] - starts[starts.length - 3];
+    if (before >= POLL_MIN_GAP_MS && Math.abs(last - before) <= before * POLL_GAP_TOLERANCE) pollKeys.set(dupKey, Math.round(last));
+  }
+  const pollEveryMs = pollKeys.get(dupKey);
   const size = r.encodedBodySize || r.transferSize || 0;
   push({
     at: Math.round(r.startTime),
@@ -349,7 +370,8 @@ function onResource(entry: PerformanceEntry): void {
     method,
     group,
     dupKey,
-    times,
+    times: pollEveryMs ? 1 : times,
+    pollEveryMs,
     sizeKB: size ? Math.max(1, kb(size)) : undefined,
   });
 }
@@ -408,7 +430,7 @@ export function loadTraceReport(): LoadTraceReport {
   const requests = events.filter((e) => e.kind === "net");
   const duplicates: LoadTraceDuplicate[] = [];
   for (const [key, times] of dupCounts) {
-    if (times < 2) continue;
+    if (times < 2 || pollKeys.has(key)) continue;
     const sample = requests.find((r) => r.dupKey === key);
     duplicates.push({ key, times, group: sample?.group ?? "other", rsc: sample?.name.startsWith("RSC ") ?? false });
   }
@@ -468,7 +490,11 @@ function printRequests(): void {
     if (!list.length) continue;
     traceConsole.log(`%c[load] ── ${g === "db" ? "DB" : g} (${list.length})`, STYLE.section);
     // The ×N count is final now (a late copy is printed again as an "after settle" line).
-    for (const e of list) print({ ...e, times: dupCounts.get(e.dupKey ?? "") ?? 1 });
+    for (const e of list) {
+      const key = e.dupKey ?? "";
+      const pollEveryMs = pollKeys.get(key);
+      print({ ...e, times: pollEveryMs ? 1 : (dupCounts.get(key) ?? 1), pollEveryMs });
+    }
   }
   for (const d of report.duplicates)
     traceConsole.log(`%c[load] DUPLICATE ×${d.times}${d.rsc ? " (Next RSC fetch of the same route)" : ""}  ${d.key}`, STYLE.yellow);
@@ -596,13 +622,15 @@ export function installLoadTrace(): void {
   });
   observe("long-animation-frame", (entry) => {
     if (entry.duration < STALL_MS) return;
+    const busy = frameBusyMs(entry);
+    if (busy < STALL_MS) return;
     const scripts = (entry as unknown as { scripts?: { sourceURL?: string; sourceFunctionName?: string; duration: number }[] }).scripts ?? [];
     const worst = [...scripts].sort((a, b) => b.duration - a.duration)[0];
     push({
       at: Math.round(entry.startTime),
       kind: "stall",
       name: "long frame",
-      ms: Math.round(entry.duration),
+      ms: Math.round(busy),
       detail: worst ? `${worst.sourceFunctionName || "(anonymous)"} · ${(worst.sourceURL ?? "").split("/").pop()}` : undefined,
     });
   });
@@ -635,6 +663,21 @@ export function installLoadTrace(): void {
   window.setTimeout(settle, SETTLE_CAP_MS);
 }
 
+/**
+ * The main-thread work inside one long animation frame: its scripts plus its rendering phase. A frame's
+ * DURATION also counts time the main thread sat idle waiting for the next rendering opportunity — in a
+ * hidden or occluded tab Chromium renders about once a second, so every frame there lasts ~1000 ms with
+ * ~0 ms of work (live 2026-10-20: "STALL long frame (~1000ms)" every second on the mandate run page with
+ * blockingDuration 0 and 0–7 ms of script). Only work is a stall.
+ */
+function frameBusyMs(entry: PerformanceEntry): number {
+  const loaf = entry as unknown as { renderStart?: number; blockingDuration?: number; scripts?: { duration: number }[] };
+  const scriptMs = (loaf.scripts ?? []).reduce((sum, s) => sum + s.duration, 0);
+  const end = entry.startTime + entry.duration;
+  const renderMs = loaf.renderStart && loaf.renderStart > 0 ? Math.max(0, end - loaf.renderStart) : 0;
+  return Math.max(scriptMs + renderMs, loaf.blockingDuration ?? 0);
+}
+
 /** For tests. */
 export function resetLoadTraceForTests(): void {
   events = [];
@@ -649,10 +692,12 @@ export function resetLoadTraceForTests(): void {
   installed = false;
   seenOnce.clear();
   dupCounts.clear();
+  startsByKey.clear();
+  pollKeys.clear();
   calls = [];
   for (const { observer } of observers.splice(0)) observer.disconnect();
   delete (globalThis as { __matrxLoadTraceOn?: boolean }).__matrxLoadTraceOn;
 }
 
 /** For tests: the request recorder and classifier without a browser's resource timing. */
-export const __loadTraceTesting = { onResource, recordRequestMethods, printTimelineAndSummary, printRequests, push };
+export const __loadTraceTesting = { onResource, recordRequestMethods, printTimelineAndSummary, printRequests, push, frameBusyMs };

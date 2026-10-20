@@ -134,8 +134,9 @@ function inferTypeFromValues(values: unknown[]): ComparisonCriterion['type'] {
     if (values.every(v => v >= 1 && v <= 5)) {
       return 'rating';
     }
-    // Otherwise, could be cost or general numeric
-    return 'cost';
+    // Any other number is shown exactly as written. A currency is only ever
+    // applied when the author declares `type: "cost"` — never inferred.
+    return 'text';
   }
 
   // Check if values look like cost indicators ($ symbols)

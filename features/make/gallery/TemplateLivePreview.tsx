@@ -61,16 +61,20 @@ export function TemplateLivePreview({ spec, today, children }: { spec: TemplateS
     <div className="relative min-h-[36rem] min-w-0" data-template-live={Live ? "on" : wanted ? "loading" : "off"} onPointerDown={want}>
       {Live ? null : (
         // ui-exception: the light public tier has no controls barrel in its graph (ADVERSARIAL-5 F1); one native button.
-        <button
-          type="button"
-          onClick={want}
-          disabled={wanted}
-          data-see-it-live=""
-          className="absolute right-0 top-0 z-10 inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-sm font-medium text-foreground shadow-sm"
-        >
-          <Play size={14} aria-hidden="true" />
-          {wanted ? "Loading…" : "See it live"}
-        </button>
+        // The position sits on a wrapper, never on the button: the tap-target pill guard skips the text of an
+        // absolutely positioned element, so it read only the icon and reported the pill off-centre.
+        <div className="absolute right-0 top-0 z-10">
+          <button
+            type="button"
+            onClick={want}
+            disabled={wanted}
+            data-see-it-live=""
+            className="matrx-glyph-trim [--matrx-glyph-size:0.875rem] inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-sm font-medium text-foreground shadow-sm"
+          >
+            <Play size={14} aria-hidden="true" />
+            {wanted ? "Loading…" : "See it live"}
+          </button>
+        </div>
       )}
       {Live ? <Live.Preview spec={spec} today={today} className="gap-6" booking={Live.booking} /> : children}
     </div>

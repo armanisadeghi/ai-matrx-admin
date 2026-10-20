@@ -6,7 +6,7 @@ platform shows the EXACT values available there and the expected output instead 
 - `data.ts` — `captureProvision(dispatch, pointKey, subjectId, orgId, trigger)` (server door
   `POST /provision-window/{point_key}/capture`), `loadProvisionSnapshot(id)` (server door
   `GET /provision-window/snapshots/{id}?debug_view=1` — values only while watching AI, else each value `withheld` with
-  its size, drawn "Withheld"; the browser never selects `provision_values`), `listProvisionSnapshots(point, subject)`
+  its size, drawn "Withheld"; the browser never selects `provision_values` — client-excluded since stage 5, 2026-10-20, so naming it or `*` is 42501), `listProvisionSnapshots(point, subject)`
   (direct read of ids, times and sizes only), `snapshotJson` / `snapshotMarkdown` (paste-ready samples).
 - `ProvisionWindowBody.tsx` — every value (expand to full, size, source, missing + why, copy), Copy all JSON / Markdown,
   earlier captures picker, and the **Expected output** section (kind schema + example, each copyable).

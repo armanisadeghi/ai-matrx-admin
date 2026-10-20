@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0499",
-  "version": 5,
+  "version": 6,
   "title": "Design system — Premium",
   "description": "Ivory, near-black and muted gold; fine serif type, sharp corners, slow motion.",
   "forWho": "Luxury, hospitality, jewellery, fashion and fine goods",
@@ -211,22 +211,23 @@
             }
           },
           {
-            "key": "col-11",
+            "key": "col-19",
             "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#efebe3\",\"dark\":\"#23211d\"}",
-              "usage_note": "Second actions and quiet selected states."
+              "name": "ring",
+              "group": "Lines",
+              "value": "{\"light\":\"#8f7035\",\"dark\":\"#c9a961\",\"min\":3}",
+              "usage_note": "Keyboard focus. Always visible, never removed.",
+              "reads_on": "background"
             }
           },
           {
-            "key": "col-15",
+            "key": "col-20",
             "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#7a5c22\",\"dark\":\"#d9bf86\"}",
-              "usage_note": "Antique gold, dark enough to read: links and the active tab.",
-              "reads_on": "background"
+              "name": "destructive",
+              "group": "Feedback",
+              "value": "{\"light\":\"#8f1d1d\",\"dark\":\"#e8968c\"}",
+              "usage_note": "Errors and delete. Also reads on the page and on cards.",
+              "reads_on": "muted"
             }
           },
           {
@@ -316,6 +317,15 @@
             }
           },
           {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#efebe3\",\"dark\":\"#23211d\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
             "key": "col-12",
             "values": {
               "name": "secondary-foreground",
@@ -333,6 +343,16 @@
               "value": "{\"light\":\"#141210\",\"dark\":\"#141210\"}",
               "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
               "reads_on": "accent"
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#7a5c22\",\"dark\":\"#d9bf86\"}",
+              "usage_note": "Antique gold, dark enough to read: links and the active tab.",
+              "reads_on": "background"
             }
           },
           {
@@ -362,26 +382,6 @@
               "group": "Lines",
               "value": "{\"light\":\"#e6e0d4\",\"dark\":\"#2a2723\",\"min\":3}",
               "usage_note": "Hairlines between rows and around cards. Decorative only."
-            }
-          },
-          {
-            "key": "col-19",
-            "values": {
-              "name": "ring",
-              "group": "Lines",
-              "value": "{\"light\":\"#8f7035\",\"dark\":\"#c9a961\",\"min\":3}",
-              "usage_note": "Keyboard focus. Always visible, never removed.",
-              "reads_on": "background"
-            }
-          },
-          {
-            "key": "col-20",
-            "values": {
-              "name": "destructive",
-              "group": "Feedback",
-              "value": "{\"light\":\"#8f1d1d\",\"dark\":\"#e8968c\"}",
-              "usage_note": "Errors and delete. Also reads on the page and on cards.",
-              "reads_on": "muted"
             }
           },
           {
@@ -1275,7 +1275,7 @@
         "Rue Orsanne"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [],
   "board": {

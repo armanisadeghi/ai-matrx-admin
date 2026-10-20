@@ -899,11 +899,24 @@ function isBareBrowserFetchFailure(input: CaptureInput): boolean {
   return BROWSER_FETCH_FAILURE.test((input.message ?? "").trim());
 }
 
+/**
+ * The line @ai-matrx/records prints (console.error) when a door call never got
+ * an answer: "[@ai-matrx/records] <where>: unreachable - We could not reach
+ * your data.". On a leaving page it is the same browser-killed fetch as above,
+ * reported a second time by the package that made the call.
+ */
+const RECORDS_UNREACHABLE_LINE = /^\[@ai-matrx\/records\] [^:]+: unreachable\s[-\u2014]/;
+
+function isRecordsUnreachableLine(input: CaptureInput): boolean {
+  return input.source === "console-error" && RECORDS_UNREACHABLE_LINE.test((input.message ?? "").trim());
+}
+
 function isLeavingPageTransportDrop(input: CaptureInput): boolean {
   const named =
     (input.code !== undefined && TRANSPORT_DROP_CODES.has(input.code)) ||
     (input.name !== undefined && TRANSPORT_DROP_CODES.has(input.name)) ||
-    isBareBrowserFetchFailure(input);
+    isBareBrowserFetchFailure(input) ||
+    isRecordsUnreachableLine(input);
   return named && pageIsLeaving();
 }
 

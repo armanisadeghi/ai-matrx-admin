@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { isSpaceCard, wordFor, type GalleryCard } from "./catalogue";
 import { GalleryTimedOut } from "./GalleryTimedOut";
 import { GallerySearch } from "./GallerySearch";
+import { GallerySignUp } from "./GallerySignUp";
 import { SpaceTemplateCardGrid, TemplateCardGrid } from "./TemplateCards";
 import {
   cardCategory,
@@ -119,13 +120,7 @@ export function PublicGalleryPage({
                 {state === "timed_out" ? "\u00a0" : q ? `${found.length} of ${cards.length} templates` : `${cards.length.toLocaleString("en-US")} templates`}
               </span>
             </div>
-            <Link
-              href={signUpHref(path)}
-              className="inline-flex h-9 shrink-0 items-center rounded-md bg-primary px-4 type-title text-primary-foreground hover:bg-primary/90"
-              data-public-templates-signup=""
-            >
-              Sign up free
-            </Link>
+            <GallerySignUp href={signUpHref(path)} />
           </div>
           <GallerySearch key={path} path={path} query={q} placeholder="Search templates: plumber, kanban, budget…" />
         </header>

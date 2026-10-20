@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0490",
-  "version": 5,
+  "version": 6,
   "title": "Design system — Near blank",
   "description": "The floor: grays, graphite actions and one blue accent. Complete, but plain.",
   "forWho": "Anyone starting a design system from almost nothing",
@@ -188,24 +188,6 @@
             }
           },
           {
-            "key": "col-13",
-            "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#eef3ff\",\"dark\":\"#1a2333\"}",
-              "usage_note": "Highlights: a selected row, a tip, something new."
-            }
-          },
-          {
-            "key": "col-11",
-            "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#efefef\",\"dark\":\"#262626\"}",
-              "usage_note": "Second actions and quiet selected states."
-            }
-          },
-          {
             "key": "col-15",
             "values": {
               "name": "link",
@@ -213,6 +195,26 @@
               "value": "{\"light\":\"#2459d6\",\"dark\":\"#7aa2ff\"}",
               "usage_note": "Colored text: links and active tabs. Also reads on cards.",
               "reads_on": "background"
+            }
+          },
+          {
+            "key": "col-20",
+            "values": {
+              "name": "destructive",
+              "group": "Feedback",
+              "value": "{\"light\":\"#c0281b\",\"dark\":\"#ff8a80\"}",
+              "usage_note": "Errors and delete. Also reads on the page and on cards.",
+              "reads_on": "muted"
+            }
+          },
+          {
+            "key": "col-23",
+            "values": {
+              "name": "warning",
+              "group": "Feedback",
+              "value": "{\"light\":\"#8c5a00\",\"dark\":\"#e8b04a\"}",
+              "usage_note": "Waiting or at risk. Always paired with a word.",
+              "reads_on": "muted"
             }
           },
           {
@@ -302,6 +304,15 @@
             }
           },
           {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#efefef\",\"dark\":\"#262626\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
             "key": "col-12",
             "values": {
               "name": "secondary-foreground",
@@ -309,6 +320,15 @@
               "value": "{\"light\":\"#171717\",\"dark\":\"#ededed\"}",
               "usage_note": "Label on a secondary button.",
               "reads_on": "secondary"
+            }
+          },
+          {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#eef3ff\",\"dark\":\"#1a2333\"}",
+              "usage_note": "Highlights: a selected row, a tip, something new."
             }
           },
           {
@@ -361,16 +381,6 @@
             }
           },
           {
-            "key": "col-20",
-            "values": {
-              "name": "destructive",
-              "group": "Feedback",
-              "value": "{\"light\":\"#c0281b\",\"dark\":\"#ff8a80\"}",
-              "usage_note": "Errors and delete. Also reads on the page and on cards.",
-              "reads_on": "muted"
-            }
-          },
-          {
             "key": "col-21",
             "values": {
               "name": "destructive-foreground",
@@ -387,16 +397,6 @@
               "group": "Feedback",
               "value": "{\"light\":\"#1d7438\",\"dark\":\"#5fcf86\"}",
               "usage_note": "Done, live, saved. Always paired with a word.",
-              "reads_on": "muted"
-            }
-          },
-          {
-            "key": "col-23",
-            "values": {
-              "name": "warning",
-              "group": "Feedback",
-              "value": "{\"light\":\"#8c5a00\",\"dark\":\"#e8b04a\"}",
-              "usage_note": "Waiting or at risk. Always paired with a word.",
               "reads_on": "muted"
             }
           }
@@ -1253,7 +1253,7 @@
         "Hollis Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [],
   "board": {

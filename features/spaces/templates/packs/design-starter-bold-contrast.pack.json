@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0493",
-  "version": 5,
+  "version": 6,
   "title": "Design system — Bold high-contrast",
   "description": "Black, white and a hot orange; square corners and hard offset shadows.",
   "forWho": "Brands that want to be loud, direct and unmistakable",
@@ -207,12 +207,13 @@
             }
           },
           {
-            "key": "col-11",
+            "key": "col-19",
             "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#e8e8e8\",\"dark\":\"#262626\"}",
-              "usage_note": "Light gray fill for second actions; foreground reads on it."
+              "name": "ring",
+              "group": "Lines",
+              "value": "{\"light\":\"#0047ff\",\"dark\":\"#5c8aff\",\"min\":3}",
+              "usage_note": "Keyboard focus. Always visible, never removed.",
+              "reads_on": "background"
             }
           },
           {
@@ -312,6 +313,15 @@
             }
           },
           {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#e8e8e8\",\"dark\":\"#262626\"}",
+              "usage_note": "Light gray fill for second actions; foreground reads on it."
+            }
+          },
+          {
             "key": "col-12",
             "values": {
               "name": "secondary-foreground",
@@ -358,16 +368,6 @@
               "group": "Lines",
               "value": "{\"light\":\"#1a1a1a\",\"dark\":\"#e6e6e6\",\"min\":3}",
               "usage_note": "Hairlines between rows and around cards. Decorative only."
-            }
-          },
-          {
-            "key": "col-19",
-            "values": {
-              "name": "ring",
-              "group": "Lines",
-              "value": "{\"light\":\"#0047ff\",\"dark\":\"#5c8aff\",\"min\":3}",
-              "usage_note": "Keyboard focus. Always visible, never removed.",
-              "reads_on": "background"
             }
           },
           {
@@ -1271,7 +1271,7 @@
         "Gantry Way"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [],
   "board": {

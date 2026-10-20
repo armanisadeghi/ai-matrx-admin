@@ -13,6 +13,7 @@ function stubClient(): RecordsClient {
     personKernelId: () => ok("11111111-0000-4000-8000-000000000005"),
     recordWrite: () => ok(HOME_ID),
     tableDeclare: () => ok(TABLE_ID),
+    tableCreate: () => ok({ table_id: TABLE_ID, home_id: HOME_ID, field_ids: ["c1111111-0000-4000-8000-000000000001"] }),
     fieldDeclare: () => ok("c1111111-0000-4000-8000-000000000001"),
     recordDelete: () => ok(true),
   } as unknown as RecordsClient;

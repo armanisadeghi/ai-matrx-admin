@@ -4,7 +4,7 @@
 // in one call, and its views become the database block's own views. Also the other way round: an existing
 // database read back as the markdown the agent's `current_design` input expects ("Redesign with AI").
 
-import { createRecordsClient, declareTable, supabaseDataSource, tokenFor, type RecordsClient } from "@ai-matrx/records/core";
+import { addFields, createRecordsClient, declareTable, supabaseDataSource, tokenFor, type RecordsClient, type Uuid } from "@ai-matrx/records/core";
 
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { createClient } from "@/utils/supabase/client";
@@ -213,19 +213,20 @@ export async function createDesignedDatabase(design: DatabaseDesign, spaceId: st
 }
 
 /** "Redesign with AI": adds the properties the design has and the table lacks (matched by name), each with
- *  its choices; existing properties and rows stay exactly as they are. Answers the design's views. */
+ *  its choices; existing properties and rows stay exactly as they are. Answers the design's views.
+ *  ONE CALL (lane SERVER-ROWS): every new property goes through `addFields` (`custom.field_declare_many`), in
+ *  order and in one transaction, as a new table's columns do - never one `field_declare` round trip per property.
+ *  A property the store refuses leaves none of them added, and the store's own sentence is thrown. */
 export async function applyRedesign(design: DatabaseDesign, tableId: string, existingLabels: string[], client: RecordsClient): Promise<{ added: string[]; views: SpaceDbView[] }> {
   const have = new Set(existingLabels.map((l) => l.trim().toLowerCase()));
-  const added: string[] = [];
-  let sort = 1000;
-  for (const p of design.properties) {
-    if (have.has(p.name.trim().toLowerCase())) continue;
-    const { declaration, ...spec } = fieldSpec({ ...p, key: `${p.key}_${Date.now().toString(36).slice(-4)}` }, (sort += 10));
-    const res = await client.fieldDeclare({ table_id: tableId, spec: { ...spec, ...(declaration ?? {}) } as never });
-    if (!res.ok) throw new Error(`${p.name} could not be added: ${res.error.message}`);
-    added.push(p.name);
+  const suffix = Date.now().toString(36).slice(-4);
+  const fresh = design.properties.filter((p) => !have.has(p.name.trim().toLowerCase()));
+  const specs = fresh.map((p, i) => fieldSpec({ ...p, key: `${p.key}_${suffix}` }, 1000 + (i + 1) * 10));
+  if (specs.length > 0) {
+    const res = await addFields(client, tableId as Uuid, specs);
+    if (!res.ok) throw new Error(`${fresh.map((p) => p.name).join(", ")} could not be added: ${res.error.message}`);
   }
-  return { added, views: blockViews(design) };
+  return { added: fresh.map((p) => p.name), views: blockViews(design) };
 }
 
 /** An existing database as the `current_design` markdown the designer reads. */

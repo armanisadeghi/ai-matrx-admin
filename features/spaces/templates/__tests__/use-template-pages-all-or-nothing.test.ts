@@ -54,7 +54,7 @@ describe("Use template pages are all or nothing", () => {
   it("a failure part-way moves the pages made so far to Trash, names the reason, and Try again finishes the SAME pages", async () => {
     const w = world("Pitch deck outline");
     await expect(makeTemplatePages(w.store, w.createRoot, template, {}, undefined, w.journal)).rejects.toThrow(
-      /^We couldn't create the Space: connection reset The pages made so far are in Trash; Try again brings them back/,
+      /^We couldn't create the Space: connection reset$/,
     );
     expect(w.live()).toEqual([]);
     expect(w.journalValue()).toMatchObject({ trashed: true });

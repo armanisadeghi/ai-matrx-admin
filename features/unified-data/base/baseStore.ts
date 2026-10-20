@@ -111,6 +111,13 @@ export async function saveBase(
   return (data ?? [])[0] as BaseIdentity;
 }
 
+/** Archive a base's name row (never a delete: `deleted_at` is the archive, the trigger stands its schedules down). */
+export async function archiveBaseIdentity(baseId: string): Promise<void> {
+  const { data, error } = await from("base").update({ deleted_at: new Date().toISOString() }).eq("id", baseId).is("deleted_at", null).select("id");
+  if (error) throw storeError(error);
+  if (!data || data.length === 0) throw new Error("The base's name row was not found, or it is already archived.");
+}
+
 /**
  * The "Take a snapshot every week" toggle. ON makes THIS base's own schedule on the platform scheduler (aidream
  * `PUT /base-snapshots/schedule`), OFF removes it; the server also writes `custom.base.snapshot_schedule`. Nothing exists until a

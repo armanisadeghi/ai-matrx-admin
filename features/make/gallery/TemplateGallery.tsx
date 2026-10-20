@@ -26,7 +26,6 @@
 // the missing door goes to the chair (store doors are the chair's).
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check, CircleDashed, ExternalLink, Loader2 } from "lucide-react";
 import { storeDoors, supabaseDataSource } from "@ai-matrx/records/core";
@@ -370,6 +369,8 @@ export function TemplatePreview({
   // An install made from an older version: Upgrade runs custom.template_upgrade over it.
   const [upgrading, setUpgrading] = useState(false);
   const [upgradeWhy, setUpgradeWhy] = useState<string | null>(null);
+  // The door answered "archived": the page says so at once (no Install, no Archive) instead of waiting for a reload.
+  const [archivedHere, setArchivedHere] = useState(false);
 
   const addAgent = async (answer: TemplateDoorAnswer, orgId: string) => {
     if (!hostStepsPending(answer)) return;
@@ -543,7 +544,7 @@ export function TemplatePreview({
                 </Button>
               ) : null}
             </>
-          ) : installedOneOff && !stuck && run.phase !== "running" ? null : (
+          ) : installedOneOff && !stuck && run.phase !== "running" ? null : archivedHere ? null : (
             <Button icon={run.phase === "running" && run.door === "template_install" ? <Loader2 className="animate-spin" /> : null} variant="primary" onClick={install} disabled={run.phase === "running"} data-make-template-install={stuck ? "finish" : ""}>
               {stuck ? "Finish install" : installLabel}
             </Button>
@@ -560,7 +561,13 @@ export function TemplatePreview({
           ) : null}
           <SavesTo />
           {card.scope === "org" && card.ephemeral ? <KeepOneOff templateId={card.id} kept={read.reload} /> : null}
-          {card.scope === "org" && !installedOneOff ? <ArchiveOrgTemplate templateId={card.id} name={card.name} /> : null}
+          {card.scope === "org" && !installedOneOff ? (
+            archivedHere ? (
+              <span className="text-sm text-muted-foreground" data-make-template-archived="">Archived: it left your organization's templates</span>
+            ) : (
+              <ArchiveOrgTemplate templateId={card.id} name={card.name} onArchived={() => setArchivedHere(true)} />
+            )
+          ) : null}
         </div>
 
         {askOrganization && !organizationId ? (
@@ -694,8 +701,7 @@ function KeepOneOff({ templateId, kept }: { templateId: string; kept: () => void
   );
 }
 
-function ArchiveOrgTemplate({ templateId, name }: { templateId: string; name: string }) {
-  const router = useRouter();
+function ArchiveOrgTemplate({ templateId, name, onArchived }: { templateId: string; name: string; onArchived: () => void }) {
   const [confirm, setConfirm] = useState(false);
   const [why, setWhy] = useState<string | null>(null);
   const archive = async () => {
@@ -706,7 +712,8 @@ function ArchiveOrgTemplate({ templateId, name }: { templateId: string; name: st
       return;
     }
     window.dispatchEvent(new Event(TEMPLATES_CHANGED_EVENT));
-    router.push("/templates");
+    // The page follows the door's answer: it stays (an install of it can still be Removed here) and stops offering Install and Archive.
+    onArchived();
   };
   return (
     <>

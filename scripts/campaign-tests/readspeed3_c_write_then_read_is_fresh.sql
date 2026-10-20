@@ -17,6 +17,7 @@
 \endif
 
 begin;
+set local lock_timeout = '20s';  -- READ-SPEED-7: the wait for the apply lock is bounded
 set local statement_timeout = '58s';  -- READ-SPEED-6: inside the transaction (the pooler drops session settings)
 
 do $t$
@@ -69,8 +70,11 @@ begin
   -- READ-SPEED-6: the refresh job's work for this Table, done here (the org-wide drain returns at once while another
   -- session holds its lock, and works other Tables first)
   create or replace function pg_temp._rs3c_refresh(p_org uuid, p_t uuid) returns void language plpgsql as $r$
-  declare v_ids uuid[]; v_t uuid;
+  declare v_ids uuid[]; v_t uuid; v_left integer;
   begin
+    -- READ-SPEED-7: WAIT for the organization's apply lock (another session's drain or applier may hold it; the applier
+    -- then answers at once and applies nothing), so this refresh really applies the marks. Re-entrant for this transaction.
+    perform pg_advisory_xact_lock(hashtext('custom.computed_org_mark:' || p_org::text));
     perform custom._computed_apply_org_mark(p_org);
     foreach v_t in array custom._computed_component(p_org, p_t) loop
     loop
@@ -80,6 +84,15 @@ begin
       perform custom.computed_refresh(p_org, v_t, v_ids);
     end loop;
     end loop;
+    -- READ-SPEED-7: never green on a refresh that did nothing — the marks are gone and nothing these Tables keep is stale
+    if custom._computed_marked(p_org, p_t) then
+      raise exception 'RED — the refresh did not drain: a column mark still waits for this Table';
+    end if;
+    select count(*) into v_left from custom.record_computed rc
+     where rc.organization_id = p_org and rc.table_id = any (custom._computed_component(p_org, p_t)) and rc.stale;
+    if v_left > 0 then
+      raise exception 'RED — the refresh did not drain: % kept rows still stale', v_left;
+    end if;
   end $r$;
 
   perform pg_temp._rs3c_refresh(c_org, c_cust);

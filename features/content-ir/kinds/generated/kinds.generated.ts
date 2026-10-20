@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1619 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1622 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "26abbaa95b2a";
+export const KIND_REGISTRY_FINGERPRINT = "6b20e2852ba2";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -3084,7 +3084,7 @@ export interface DangerousBranch {
 /**
  * One column: what it is called, and — when anyone knows — what it holds.
  *  *
- *  * Shared by 5 kinds (data_table, parsed_table, pdf_table_extraction, sql_query_result, …).
+ *  * Shared by 8 kinds (data_table, parsed_table, pdf_table_extraction, scraped_page, …).
  */
 export interface DataColumn {
   /**
@@ -10973,7 +10973,7 @@ export interface SuggestedTag {
  * every one of the four producers had a different amount of this (the SQL one
  * had NONE: not the table queried, not the filters, not the columns asked for).
  *  *
- *  * Shared by 5 kinds (data_table, parsed_table, pdf_table_extraction, sql_query_result, …).
+ *  * Shared by 8 kinds (data_table, parsed_table, pdf_table_extraction, scraped_page, …).
  */
 export interface TableSource {
   /**
@@ -23335,7 +23335,7 @@ export interface ContentIrComponentTargetOffer {
 }
 
 /**
- * Kind `content_ir.kind_authoring.offer` (registry v14).
+ * Kind `content_ir.kind_authoring.offer` (registry v15).
  */
 export interface ContentIrKindAuthoringOffer {
   /**
@@ -23351,6 +23351,10 @@ export interface ContentIrKindAuthoringOffer {
    */
   kind_label?: string;
   /**
+   * The shape's name, from the New Shape answers.
+   */
+  shape_name?: string;
+  /**
    * The composed instruction naming the part to build/fix and its kind.
    */
   task_brief?: string;
@@ -23362,6 +23366,10 @@ export interface ContentIrKindAuthoringOffer {
    * The existing kind's current definition, when the launch concerns one.
    */
   kind_schema?: string;
+  /**
+   * Assets the shape uses (a list of names, or "none"), from the New Shape answers.
+   */
+  shape_assets?: unknown;
   /**
    * component, skill, example, content block, surface or edit.
    */
@@ -23379,9 +23387,25 @@ export interface ContentIrKindAuthoringOffer {
    */
   render_gap_state?: string;
   /**
+   * Who sees it, from the New Shape answers.
+   */
+  shape_visibility?: string;
+  /**
    * A pasted or live instance payload the new/fixed kind must cover.
    */
   user_data_sample?: string;
+  /**
+   * One item or a list, from the New Shape answers.
+   */
+  shape_cardinality?: string;
+  /**
+   * What the result is (record, prose, proposal...), from the New Shape answers.
+   */
+  shape_disposition?: string;
+  /**
+   * How it should look, from the New Shape answers.
+   */
+  shape_render_style?: string;
   /**
    * The existing kind's context (sent today by one window, undeclared).
    */
@@ -23390,6 +23414,10 @@ export interface ContentIrKindAuthoringOffer {
    * The existing component's source (sent today by one window, undeclared).
    */
   existing_component_source?: string;
+  /**
+   * The existing web output component's context, when the launch concerns one.
+   */
+  existing_component_context?: string;
 }
 
 /**
@@ -26875,7 +26903,7 @@ export interface EducationCardImagePromptOffer {
 }
 
 /**
- * Kind `education.convert_source.offer` (registry v12).
+ * Kind `education.convert_source.offer` (registry v13).
  */
 export interface EducationConvertSourceOffer {
   /**
@@ -26891,9 +26919,9 @@ export interface EducationConvertSourceOffer {
    */
   focus?: string;
   /**
-   * The source's title.
+   * The source's title; may be empty.
    */
-  title: string;
+  title?: string;
   /**
    * The registered kind this payload is an instance of.
    */
@@ -30390,6 +30418,25 @@ export interface GscSiteIntakeProposal {
   business_inference: IntakeBusinessInference_GscSiteIntakeProposal;
   overall_confidence: "high" | "medium" | "low";
   proposed_brand_aliases?: string[];
+}
+
+/**
+ * Kind `gym_waitlist_sms_notice` (registry v1).
+ */
+export interface GymWaitlistSmsNotice {
+  __kind: "gym_waitlist_sms_notice";
+  /**
+   * Two-sentence friendly SMS stating the waitlist position and when to arrive.
+   */
+  sms_message: string;
+  /**
+   * Character length of sms_message.
+   */
+  character_count?: number;
+  /**
+   * The member's position on the class waitlist.
+   */
+  waitlist_position: number;
 }
 
 /**
@@ -37397,6 +37444,46 @@ export interface MeetRecordingTranscriptionResult {
 }
 
 /**
+ * Kind `meeting_action_item` (registry v1).
+ */
+export interface MeetingActionItem {
+  /**
+   * What needs to be done.
+   */
+  task: string;
+  /**
+   * Person or group responsible.
+   */
+  owner: string;
+  __kind: "meeting_action_item";
+}
+
+/**
+ * Kind `meeting_notes_digest` (registry v1).
+ */
+export interface MeetingNotesDigest {
+  __kind: "meeting_notes_digest";
+  /**
+   * Short summary paragraph of the meeting.
+   */
+  summary: string;
+  /**
+   * Action items, each with an owner.
+   */
+  action_items: ({
+    /**
+     * What needs to be done.
+     */
+    task: string;
+    /**
+     * Person or group responsible.
+     */
+    owner: string;
+    __kind: "meeting_action_item";
+  })[];
+}
+
+/**
  * Kind `memory.observer.offer` (registry v11).
  */
 export interface MemoryObserverOffer {
@@ -42621,13 +42708,13 @@ export interface PodcastChapteringOffer {
 }
 
 /**
- * Kind `podcast.feature_image_prompt.offer` (registry v10).
+ * Kind `podcast.feature_image_prompt.offer` (registry v11).
  */
 export interface PodcastFeatureImagePromptOffer {
   /**
-   * Requested visual style.
+   * Requested visual style; blank leaves the choice to the agent.
    */
-  style: string;
+  style?: string;
   /**
    * The registered kind this payload is an instance of.
    */
@@ -42641,9 +42728,9 @@ export interface PodcastFeatureImagePromptOffer {
    */
   visual_style?: string;
   /**
-   * The full episode transcript (or the caller's intent).
+   * The full episode transcript (or the caller's intent); may be empty.
    */
-  intent_or_content: string;
+  intent_or_content?: string;
   /**
    * How many characters of transcript the prompt is written from.
    */
@@ -46577,7 +46664,7 @@ export interface ResearchKeywordFindingsOffer {
 }
 
 /**
- * Kind `research.page_capture.offer` (registry v7).
+ * Kind `research.page_capture.offer` (registry v8).
  */
 export interface ResearchPageCaptureOffer {
   /**
@@ -46591,11 +46678,11 @@ export interface ResearchPageCaptureOffer {
   /**
    * The page's URL (may be empty).
    */
-  page_url: string;
+  page_url?: string;
   /**
    * The page's title (may be empty).
    */
-  page_title: string;
+  page_title?: string;
   /**
    * The scraped page's extracted text content.
    */
@@ -48474,11 +48561,11 @@ export interface ScopeSystemResult {
  * the slug carried at v3. Everything below them is additive and optional, so
  * a consumer written against the old shape keeps working unchanged.
  *  *
- *  * Kind `scraped_page` (registry v7).
+ *  * Kind `scraped_page` (registry v8).
  */
 export interface ScrapedPage {
   /**
-   * Detected CMS, when recognised.
+   * Detected CMS, when recognized.
    */
   cms?: string | null;
   url: string;
@@ -48498,6 +48585,10 @@ export interface ScrapedPage {
   images?: PageImage[];
   tables?: ParsedTable[];
   videos?: PageVideo[];
+  /**
+   * Batch reads only: the page read and has at least the batch's good_min_chars of text. Null outside scraper.scrape_many.
+   */
+  is_good?: boolean | null;
   outline?: PageHeading[];
   /**
    * Whether the fetch+parse succeeded. Null on the single-scrape path, where the NodeResult envelope carries it.
@@ -48512,7 +48603,7 @@ export interface ScrapedPage {
    */
   cleaning?: PageCleaningReport | null;
   /**
-   * Detected WAF/CDN, when recognised.
+   * Detected WAF/CDN, when recognized.
    */
   firewall?: string | null;
   markdown?: string | null;
@@ -48563,7 +48654,12 @@ export interface ScrapedPage {
   /**
    * Every reason the fetch collected, not only the primary one: [{reason_key: human_text}].
    */
-  failure_details?: (Record<string, unknown>)[];
+  failure_details?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
   /**
    * The Content-Type header verbatim, charset included.
    */
@@ -48571,7 +48667,13 @@ export interface ScrapedPage {
   /**
    * Security-relevant response headers only. Null = none recorded; {} = the server sent none.
    */
-  security_headers?: Record<string, string> | null;
+  security_headers?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: string | undefined;
+  } | null;
   /**
    * Characters of the same text rendered WITH structure markers — markup density.
    */
@@ -48765,16 +48867,28 @@ export interface ScraperPageCaptureOffer {
  * the node's projection and is now the real nested ``scraped_page`` kind, so a
  * batch renders with exactly the components a single page renders with.
  *  *
- *  * Kind `scraper_batch_result` (registry v9).
+ *  * Kind `scraper_batch_result` (registry v10).
  */
 export interface ScraperBatchResult {
+  /**
+   * How many good pages are in good_pages.
+   */
+  good?: number;
   pages?: ScrapedPage[];
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "scraper_batch_result";
   failed?: number;
+  /**
+   * The good pages, in link order (capped at stop_after_good when set).
+   */
+  good_pages?: ScrapedPage[];
   successful?: number;
+  /**
+   * Links left unread because enough good pages were in hand.
+   */
+  not_attempted?: number;
 }
 
 /**
@@ -48785,7 +48899,7 @@ export interface ScraperBatchResult {
  * the engine's return type changes — together with the repair of the node,
  * which passes three keyword arguments the engine has never accepted.
  *  *
- *  * Kind `scraper_crawl_result` (registry v9).
+ *  * Kind `scraper_crawl_result` (registry v10).
  */
 export interface ScraperCrawlResult {
   pages?: ScrapedPage[];
@@ -62772,29 +62886,37 @@ export interface WorkbookResult {
 }
 
 /**
- * Kind `workflow.authored_step.offer` (registry v4).
+ * Kind `workflow.authored_step.offer` (registry v5).
  */
 export interface WorkflowAuthoredStepOffer {
+  /**
+   * The model the author picked for the step.
+   */
+  model?: string;
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "workflow.authored_step.offer";
   /**
-   * Which kind of AI step this is (ai.llm, ai.extract, ai.chat, ai.image, ...).
+   * The step's output ceiling, on steps that spell it max_tokens.
    */
-  step_type?: string;
+  max_tokens?: number;
   /**
-   * The step's prompt as the author wrote it, with upstream step outputs already bound in.
+   * The model offering the author picked instead of a bare model, when they did.
    */
-  step_prompt?: string;
+  offering_id?: string;
   /**
-   * The JSON Schema the author declared for a structured step's output.
+   * The step's sampling temperature.
    */
-  step_output_schema?: unknown;
+  temperature?: number;
   /**
-   * The system instruction the author set on the step, when the step type has one.
+   * The step's output ceiling, on config-shaped steps that spell it max_output_tokens.
    */
-  step_system_instruction?: string;
+  max_output_tokens?: number;
+  /**
+   * The step's system instruction, as the author wrote it.
+   */
+  system_instruction?: string;
 }
 
 /**
@@ -63817,6 +63939,7 @@ export type GeneratedKindSlug =
   | "gsc_opportunities"
   | "gsc_site_intake_bundle"
   | "gsc_site_intake_proposal"
+  | "gym_waitlist_sms_notice"
   | "hash_result"
   | "headline_set"
   | "hindsight.crystallizer.offer"
@@ -64029,6 +64152,8 @@ export type GeneratedKindSlug =
   | "meet_intelligence_result"
   | "meet_recording_landing_result"
   | "meet_recording_transcription_result"
+  | "meeting_action_item"
+  | "meeting_notes_digest"
   | "memory.observer.offer"
   | "memory.reflector.offer"
   | "memory_aid"
@@ -65439,6 +65564,7 @@ export interface KindPayloadBySlug {
   "gsc_opportunities": GscOpportunities;
   "gsc_site_intake_bundle": GscSiteIntakeBundle;
   "gsc_site_intake_proposal": GscSiteIntakeProposal;
+  "gym_waitlist_sms_notice": GymWaitlistSmsNotice;
   "hash_result": HashResult;
   "headline_set": HeadlineSet;
   "hindsight.crystallizer.offer": HindsightCrystallizerOffer;
@@ -65651,6 +65777,8 @@ export interface KindPayloadBySlug {
   "meet_intelligence_result": MeetIntelligenceResult;
   "meet_recording_landing_result": MeetRecordingLandingResult;
   "meet_recording_transcription_result": MeetRecordingTranscriptionResult;
+  "meeting_action_item": MeetingActionItem;
+  "meeting_notes_digest": MeetingNotesDigest;
   "memory.observer.offer": MemoryObserverOffer;
   "memory.reflector.offer": MemoryReflectorOffer;
   "memory_aid": MemoryAid;
@@ -67065,6 +67193,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "gsc_opportunities",
   "gsc_site_intake_bundle",
   "gsc_site_intake_proposal",
+  "gym_waitlist_sms_notice",
   "hash_result",
   "headline_set",
   "hindsight.crystallizer.offer",
@@ -67277,6 +67406,8 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "meet_intelligence_result",
   "meet_recording_landing_result",
   "meet_recording_transcription_result",
+  "meeting_action_item",
+  "meeting_notes_digest",
   "memory.observer.offer",
   "memory.reflector.offer",
   "memory_aid",

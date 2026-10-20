@@ -97,6 +97,32 @@ export const STUDIO_MODES: readonly StudioMode[] = [
   },
 ];
 
+/** The ways in whose first step is on the start screen (a box, a picker), not in the workspace. */
+export type StudioStartModeId = "describe" | "improve" | "from-examples";
+const START_STEP_MODES: ReadonlySet<string> = new Set<StudioStartModeId>(["describe", "improve", "from-examples"]);
+
+/**
+ * `?mode=<id>` with nothing started yet (no build, agent, conversation or run): the start step of
+ * that way in, so the link opens the mode it names — `?mode=describe` is the Describe box, never the
+ * workspace's assistant. Null once the mode has started something (the workspace takes over).
+ */
+export function studioStartStep(state: {
+  mode: string | null;
+  buildId: string | null;
+  agentId: string | null;
+  chatId: string | null;
+  runId: string | null;
+}): StudioStartModeId | null {
+  if (!state.mode || !START_STEP_MODES.has(state.mode)) return null;
+  if (state.buildId || state.agentId || state.chatId || state.runId) return null;
+  return state.mode as StudioStartModeId;
+}
+
+/** A way in that is its own page (Import from Claude, Use Claude Code): where `?mode=<id>` goes. */
+export function studioPageHref(id: string | null | undefined): string | null {
+  return STUDIO_MODES.find((m) => m.id === id)?.href ?? null;
+}
+
 export function studioMode(id: string | null | undefined): StudioMode | null {
   const mode = STUDIO_MODES.find((m) => m.id === id);
   return mode && !mode.comingSoonId && !mode.href ? mode : null;

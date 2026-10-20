@@ -289,8 +289,26 @@ export function searchTemplates<T>(items: readonly T[], query: string, faceOf: (
     return { item, i, ...matchConcepts(faceWords(face), face.title, concepts, query) };
   });
   // Only soft words typed ("list"): any card they match. Otherwise any card matching a meaningful word, all-words first.
-  const hits = scored.filter((s) => (hardCount ? s.matched > 0 : s.score > 0));
+  let hits = scored.filter((s) => (hardCount ? s.matched > 0 : s.score > 0));
+  // ADVERSARIAL-6 F5: A NAMED COLLECTION IS THE ANSWER. When two or more cards carry the whole typed phrase in their title
+  // or as one of their tags ("design system": the ten starters, the board and the docs), those cards ARE what was asked:
+  // the count says them, not the 36 that mention "design" somewhere ("36 of 183" while 12 led). One card naming the
+  // phrase ("to do list") leads a broad answer instead, as before.
+  const named = namedBy(query, scored.map((s) => faceOf(s.item)));
+  if (named.size >= 2) hits = hits.filter((s) => named.has(s.i));
   return hits.sort((a, b) => b.matched - a.matched || b.score - a.score || a.i - b.i).map((s) => s.item);
+}
+
+/** The places (indexes) of the faces whose title holds the whole multi-word phrase, or whose tag is exactly it. */
+function namedBy(query: string, faces: readonly TemplateSearchFace[]): Set<number> {
+  const phrase = searchWords(foldPhrases(query)).map(stem).join(" ");
+  const out = new Set<number>();
+  if (!phrase.includes(" ")) return out;
+  faces.forEach((f, i) => {
+    const words = (s: string | null | undefined) => ` ${searchWords(foldPhrases(s)).map(stem).join(" ")} `;
+    if (words(f.title).includes(` ${phrase} `) || (f.tags ?? []).some((t) => words(t).trim() === phrase)) out.add(i);
+  });
+  return out;
 }
 
 // ── What is inside a pack: the `find` words its card carries ───────────────────────────────────────────────
@@ -408,4 +426,12 @@ export function packLayouts(pack: FindPack): string[] {
   };
   for (const p of pack.pages) walk(p.blocks);
   return [...out];
+}
+
+/**
+ * The count a gallery says beside a search: "12 of 183" while a query is typed, the plain total when not. It is built from the
+ * very list `searchTemplates` returned, so the number on screen can never disagree with the cards shown.
+ */
+export function templateResultCount(query: string, shown: number, total: number): string {
+  return query.trim() ? `${shown} of ${total}` : String(total);
 }
