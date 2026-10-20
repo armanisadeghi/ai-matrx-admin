@@ -9,6 +9,8 @@ from db import conn, as_person, ADMIN
 ORG = '23c2ac41-8044-49ed-9af9-35761370e5c0'
 STATE = os.path.join(os.environ.get('TMPDIR', '/tmp'), 'cfw4_link_fixture.json')
 c = conn()
+# Column shape under test: `entity` or `entity_reference` (LINK-PICKER tried both). Env LINK_FIXTURE_SHAPE.
+SHAPE = os.environ.get('LINK_FIXTURE_SHAPE', 'entity_reference')
 
 
 def tx(sql, args=()):
@@ -31,8 +33,8 @@ if cmd == 'up':
             'title_field': 'title', 'ordered': False, 'row_order': 'manual', 'retention_days': 365, 'agent_writable': False,
             'default_sort': [{'field': 'title', 'direction': 'asc'}], 'label_plural': 'CFW4 link tests', 'label_singular': 'CFW4 link test',
             'fields': [{'key': 'title', 'label': 'Title', 'type': 'text'},
-                       {'key': 'pay_period', 'label': 'Pay period', 'type': 'entity', 'allowed_types': ['hr_pay_period']},
-                       {'key': 'run', 'label': 'Workflow run', 'type': 'entity', 'allowed_types': ['workflow_run']}]}
+                       {'key': 'pay_period', 'label': 'Pay period', 'type': SHAPE, 'allowed_types': ['hr_pay_period']},
+                       {'key': 'run', 'label': 'Workflow run', 'type': SHAPE, 'allowed_types': ['workflow_run']}]}
     te = tx("select custom.table_ensure(%s, %s::jsonb)", (ORG, json.dumps(spec)))[0]
     print(te)
     tid = te['table_id'] if isinstance(te, dict) else None

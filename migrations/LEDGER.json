@@ -146,6 +146,12 @@
       "checksum": "8552a265ff7163ce68e2c27b2ba3acb031a267ed816cfdd8ecc1dd891ecb4fca",
       "applied_at": "2026-10-19 18:21:59.444488+00"
     },
+    "migrations/campaign/20261019230000_atfixh2_a_archiving_stands_down_the_schedules_it_owns.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261019230000_atfixh2_a_archiving_stands_down_the_schedules_it_owns.sql",
+      "checksum": "dd274a836f2dd5ad3e13c32c7ce371217698196980150e239bd79a2ae6b4ccbc",
+      "applied_at": "2026-10-20 00:44:32.745516+00"
+    },
     "migrations/campaign/20261019230000_readspeed2_a_page_rollups_lookups_worked_out_set_based.sql": {
       "source": "matrx-frontend",
       "filename": "20261019230000_readspeed2_a_page_rollups_lookups_worked_out_set_based.sql",
@@ -223,6 +229,24 @@
       "filename": "20261021240100_readspeed5_b_a_record_write_finds_its_linked_records_by_index.sql",
       "checksum": "f235e1dc86fa446f20c3c45a4bed8a65b87b9f13dce04bc1b0312a645be3eedf",
       "applied_at": "2026-10-20 00:38:30.078557+00"
+    },
+    "migrations/campaign/20261021250000_linkpicker_a_every_linkable_kind_can_be_searched_or_says_why_not.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261021250000_linkpicker_a_every_linkable_kind_can_be_searched_or_says_why_not.sql",
+      "checksum": "594564ddf595380be15b7b187ded50b550f948afa353b233ea839328a1e9555c",
+      "applied_at": "2026-10-20 00:49:16.289239+00"
+    },
+    "migrations/campaign/20261021250100_linkpicker_b_a_kind_read_elsewhere_or_without_a_uuid_id_says_so.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261021250100_linkpicker_b_a_kind_read_elsewhere_or_without_a_uuid_id_says_so.sql",
+      "checksum": "34bb83d3f57e004abbe9d59f418fe1a7b7a500610fc6d95251d52798c2b93242",
+      "applied_at": "2026-10-20 01:00:44.341699+00"
+    },
+    "migrations/campaign/20261021250200_linkpicker_c_a_row_with_a_blank_title_is_named_not_left_blank.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261021250200_linkpicker_c_a_row_with_a_blank_title_is_named_not_left_blank.sql",
+      "checksum": "f4b2ece9fd94d72fc999439b962888def8259c59e892075567b0e156523947f8",
+      "applied_at": "2026-10-20 01:03:26.958601+00"
     },
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -11701,12 +11725,6 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
-    },
-    "migrations/campaign/20261019230000_atfixh2_a_archiving_stands_down_the_schedules_it_owns.sql": {
-      "source": "matrx-frontend",
-      "filename": "20261019230000_atfixh2_a_archiving_stands_down_the_schedules_it_owns.sql",
-      "checksum": "dd274a836f2dd5ad3e13c32c7ce371217698196980150e239bd79a2ae6b4ccbc",
-      "applied_at": "2026-10-20 00:44:32.745516+00"
     }
   }
 }
