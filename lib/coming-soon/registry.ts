@@ -391,7 +391,9 @@ export const COMING_SOON: Record<string, ComingSoonEntry> = {
     promise:
       "Save this math problem straight into your problem library instead of downloading and importing it by hand.",
     stage: "planned",
-    surfaces: ["Math problem block action bar (chat content)"],
+    // The block's stub button was removed (review 2 2026-10-19 N2: a screen is honest or absent);
+    // the promise stays tracked until a real save ships.
+    surfaces: [],
   },
   "image-studio.smart-crop": {
     id: "image-studio.smart-crop",

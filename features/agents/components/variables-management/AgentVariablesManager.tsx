@@ -9,6 +9,7 @@
  * modal in edit mode on the new variable.
  */
 
+import { BuilderRowAction } from "@/features/agents/components/builder/BuilderRowAction";
 import React, { useEffect, useState } from "react";
 import { Plus, X, AlertCircle, Layers, SlidersHorizontal } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -305,24 +306,12 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
         </div>
 
         <div className="ml-auto flex items-center gap-1 shrink-0">
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
-            onClick={() => handleAddClick()}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Add
-          </button>
-
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
+          <BuilderRowAction kind="add" onClick={() => handleAddClick()} />
+          <BuilderRowAction
+            kind="batch"
             onClick={() => openBatchImport({ agentId })}
             title="Batch add variables and context policies from a scope type"
-          >
-            <Layers className="w-3.5 h-3.5" />
-            Batch
-          </button>
+          />
         </div>
       </div>
 

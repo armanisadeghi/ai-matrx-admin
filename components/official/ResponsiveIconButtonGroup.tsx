@@ -58,6 +58,12 @@ export interface ResponsiveIconButtonGroupProps {
   forceMobile?: boolean;
   /** Custom trigger button for mobile (replaces default "..." button) */
   mobileTrigger?: React.ReactNode;
+  /**
+   * Icon of the default mobile trigger. A toolbar that already has another "…" (the format
+   * toolbar's "More formatting") gives this one its own icon so two identical buttons never sit in
+   * one row (review 2, #22). Default: horizontal dots.
+   */
+  mobileMoreIcon?: LucideIcon;
   /** Tooltip side for all buttons (default: 'top') */
   tooltipSide?: "top" | "right" | "bottom" | "left";
 }
@@ -69,6 +75,7 @@ export function ResponsiveIconButtonGroup({
   size = "sm",
   forceMobile = false,
   mobileTrigger,
+  mobileMoreIcon = MoreHorizontal,
   tooltipSide = "top",
 }: ResponsiveIconButtonGroupProps) {
   const isMobileDetected = useIsMobile();
@@ -139,7 +146,7 @@ export function ResponsiveIconButtonGroup({
     <>
       {mobileTrigger || (
         <IconButton
-          icon={MoreHorizontal}
+          icon={mobileMoreIcon}
           tooltip="More actions"
           variant="ghost"
           onClick={() => setSheetOpen(true)}

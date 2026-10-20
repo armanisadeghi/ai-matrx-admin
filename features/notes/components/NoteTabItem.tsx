@@ -421,16 +421,6 @@ export function NoteTabItem({ noteId, instanceId, standalone = false, showTitle 
       ),
     };
   }
-  // The tab's "…": the Tab rows first (primary), and the whole note menu —
-  // the same rows a right-click on the note shows — under one "Note ▸".
-  // Inside "Note ▸" the note's own rows need no second "Note" heading (a
-  // labeled section folds under its label — it would read Note ▸ Note ▸).
-  const tabButtonSections: ContextMenuExtraSection[] = [
-    ...tabExtraSections
-      .filter((section) => section.id !== "note-tab")
-      .map((section) => (section.id === "note-actions" ? { ...section, label: undefined } : section)),
-    ...(standalone ? [] : [tabSection(true)]),
-  ];
 
   // ONE MENU FOR THE NOTE (R26, ALC-15 round 5). The tab's ⋯ and a right-click
   // on the note's content target the same thing — the note — and measured two
@@ -597,10 +587,10 @@ export function NoteTabItem({ noteId, instanceId, standalone = false, showTitle 
                 resolveContextOnOpen={() => ({
                   [CONTEXT_MENU_HEADING_KEY]: { label: "Note", text: label || "Untitled note" },
                 })}
-                extraSections={tabButtonSections}
-                // Arman 2026-09-28: the tab's "…" is the Tab rows, then ONE
-                // "Note ▸" holding the full note menu.
-                subjectFold="Note"
+                // ONE MENU (Arman 2026-10-17, the unified menu): the tab's "…" carries
+                // exactly the sections a right-click on the note carries, in the same
+                // order — never a Tab-first variant (review 2, finding 3).
+                extraSections={tabExtraSections}
                 onMenuOpenChange={(open) => {
                   setTabMenuOpen(open);
                   if (open) bumpTabInteraction();

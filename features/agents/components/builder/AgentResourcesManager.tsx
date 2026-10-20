@@ -1,5 +1,6 @@
 "use client";
 
+import { BuilderRowAction } from "@/features/agents/components/builder/BuilderRowAction";
 import { isAssociationsRpcErr, type AssociationTargetEdge } from "@ai-matrx/associations";
 import { isSyntheticAgentId } from "@ai-matrx/chat/agents/redux/agent-definition/synthetic-id";
 import { UnsavedAgentAttachmentRow } from "./UnsavedAgentAttachmentRow";
@@ -118,24 +119,15 @@ function AgentResourcePickerAction({
   onSelected: (selection: unknown) => Promise<boolean>;
 }) {
   const [open, setOpen] = useState(false);
-  const Icon = batch ? Layers : Plus;
 
   return (
     <Popover open={open} onOpenChange={setOpen} modal={false}>
       <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        <BuilderRowAction
+          kind={batch ? "batch" : "add"}
           aria-label={batch ? "Batch add resources" : "Add a resource"}
-          title={
-            batch
-              ? "Add several permanent resources"
-              : "Add a permanent resource"
-          }
-        >
-          <Icon className="h-3.5 w-3.5" />
-          <span className="hidden @[22rem]/resource-row:inline">{batch ? "Batch" : "Add"}</span>
-        </button>
+          title={batch ? "Add several permanent resources" : "Add a permanent resource"}
+        />
       </PopoverTrigger>
       <PopoverContent
         sizing="content"

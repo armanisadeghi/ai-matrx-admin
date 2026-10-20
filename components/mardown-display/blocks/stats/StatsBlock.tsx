@@ -112,15 +112,15 @@ export const StatsBlock: React.FC<StatsBlockProps> = ({ content = "", isStreamAc
 
   return (
     <div className={cn("my-3 overflow-hidden rounded-lg border bg-card transition-colors", host.selected ? "border-primary" : "border-border", className)}>
-      <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/50 px-3 py-1.5">
-        <div className="flex min-w-0 items-center gap-2">
+      <div data-block-header className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
+        <div className="flex min-w-[9rem] flex-1 items-center gap-2">
           <BarChart3 className="h-3.5 w-3.5 shrink-0 text-primary" />
           <InlineControlText controls={controls} fieldKey="title" value={spec?.title ?? ""} className="truncate text-sm font-medium text-foreground">
             {spec?.title ?? "Key metrics"}
           </InlineControlText>
           {isStreamActive && <span className="shrink-0 animate-pulse text-xs text-muted-foreground">…</span>}
         </div>
-        <div className="flex shrink-0 items-center gap-0.5">
+        <div className="flex shrink-0 flex-wrap items-center gap-0.5">
           {!isStreamActive && spec && (
             <Button variant="quiet" icon={copied ? <Check /> : <Copy />} aria-label={copied ? "Copied" : "Copy source"} title={copied ? "Copied" : "Copy source"} onClick={handleCopy} />
           )}

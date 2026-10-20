@@ -5,7 +5,8 @@
 
 import { useEffect, useState } from "react";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
 import { fetchStoredRun, type StoredRun } from "./service";
 
 export interface StoredRunState {
@@ -22,6 +23,10 @@ export function useStoredRun(conversationId: string, mandateKey: AnyMandateKey):
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [attempt, setAttempt] = useState(0);
+  // AI WATCH: the read carries `?debug_view=1` only while debug mode is on, and debug mode
+  // hydrates after the first paint — read again whenever it changes, or a watcher keeps a
+  // withheld view (and a non-watcher keeps values after switching it off).
+  const debugMode = Boolean(useAppSelector(selectIsDebugMode));
 
   useEffect(() => {
     let cancelled = false;
@@ -40,7 +45,7 @@ export function useStoredRun(conversationId: string, mandateKey: AnyMandateKey):
     return () => {
       cancelled = true;
     };
-  }, [dispatch, conversationId, mandateKey, attempt]);
+  }, [dispatch, conversationId, mandateKey, attempt, debugMode]);
 
   return { conversationId, run, loading, error, retry: () => setAttempt((n) => n + 1) };
 }
