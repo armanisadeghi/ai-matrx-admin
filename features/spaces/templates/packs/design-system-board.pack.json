@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0363",
-  "version": 9,
+  "version": 10,
   "title": "Design system board",
   "description": "Product teams: colours, type, spacing, corners and shadows as one editable board.",
   "forWho": "Product teams keeping one design system",
@@ -185,31 +185,33 @@
             }
           },
           {
-            "key": "col-13",
+            "key": "col-20",
             "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#eef3ff\",\"dark\":\"#1e2647\"}",
-              "usage_note": "Highlights: a selected row, a tip, something new."
+              "name": "destructive",
+              "group": "Feedback",
+              "value": "{\"light\":\"#c62828\",\"dark\":\"#f47a7a\"}",
+              "usage_note": "Errors and delete. Also reads on the page and on cards.",
+              "reads_on": "muted"
             }
           },
           {
-            "key": "col-11",
+            "key": "col-23",
             "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#eef1f6\",\"dark\":\"#222836\"}",
-              "usage_note": "Second actions and quiet selected states."
+              "name": "warning",
+              "group": "Feedback",
+              "value": "{\"light\":\"#92560a\",\"dark\":\"#f0b24a\"}",
+              "usage_note": "Waiting or at risk. Always paired with a word.",
+              "reads_on": "muted"
             }
           },
           {
-            "key": "col-15",
+            "key": "col-22",
             "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#2547c9\",\"dark\":\"#8aa4ff\"}",
-              "usage_note": "Coloured text: links and active tabs. Also reads on cards.",
-              "reads_on": "background"
+              "name": "success",
+              "group": "Feedback",
+              "value": "{\"light\":\"#18794e\",\"dark\":\"#4ccf8f\"}",
+              "usage_note": "Done, live, saved. Always paired with a word.",
+              "reads_on": "muted"
             }
           },
           {
@@ -299,6 +301,15 @@
             }
           },
           {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#eef1f6\",\"dark\":\"#222836\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
             "key": "col-12",
             "values": {
               "name": "secondary-foreground",
@@ -309,6 +320,15 @@
             }
           },
           {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#eef3ff\",\"dark\":\"#1e2647\"}",
+              "usage_note": "Highlights: a selected row, a tip, something new."
+            }
+          },
+          {
             "key": "col-14",
             "values": {
               "name": "accent-foreground",
@@ -316,6 +336,16 @@
               "value": "{\"light\":\"#2342b8\",\"dark\":\"#c3d0ff\"}",
               "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
               "reads_on": "accent"
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#2547c9\",\"dark\":\"#8aa4ff\"}",
+              "usage_note": "Coloured text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
             }
           },
           {
@@ -358,16 +388,6 @@
             }
           },
           {
-            "key": "col-20",
-            "values": {
-              "name": "destructive",
-              "group": "Feedback",
-              "value": "{\"light\":\"#c62828\",\"dark\":\"#f47a7a\"}",
-              "usage_note": "Errors and delete. Also reads on the page and on cards.",
-              "reads_on": "muted"
-            }
-          },
-          {
             "key": "col-21",
             "values": {
               "name": "destructive-foreground",
@@ -375,26 +395,6 @@
               "value": "{\"light\":\"#ffffff\",\"dark\":\"#2a0808\"}",
               "usage_note": "Label on a delete button.",
               "reads_on": "destructive"
-            }
-          },
-          {
-            "key": "col-22",
-            "values": {
-              "name": "success",
-              "group": "Feedback",
-              "value": "{\"light\":\"#18794e\",\"dark\":\"#4ccf8f\"}",
-              "usage_note": "Done, live, saved. Always paired with a word.",
-              "reads_on": "muted"
-            }
-          },
-          {
-            "key": "col-23",
-            "values": {
-              "name": "warning",
-              "group": "Feedback",
-              "value": "{\"light\":\"#92560a\",\"dark\":\"#f0b24a\"}",
-              "usage_note": "Waiting or at risk. Always paired with a word.",
-              "reads_on": "muted"
             }
           }
         ]
@@ -1268,7 +1268,7 @@
         "Quillan Row"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [],
   "board": {

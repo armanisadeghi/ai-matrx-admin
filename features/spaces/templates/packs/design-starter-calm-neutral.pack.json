@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0491",
-  "version": 5,
+  "version": 6,
   "title": "Design system — Calm neutral",
   "description": "Cool grays, an indigo action and soft cards: the modern software look.",
   "forWho": "Software products and SaaS teams",
@@ -196,31 +196,33 @@
             }
           },
           {
-            "key": "col-13",
+            "key": "col-20",
             "values": {
-              "name": "accent",
-              "group": "Accent",
-              "value": "{\"light\":\"#eef0ff\",\"dark\":\"#23264a\"}",
-              "usage_note": "A pale indigo wash for selected rows and tips."
+              "name": "destructive",
+              "group": "Feedback",
+              "value": "{\"light\":\"#c62f2a\",\"dark\":\"#f2827b\"}",
+              "usage_note": "Errors and delete. Also reads on the page and on cards.",
+              "reads_on": "muted"
             }
           },
           {
-            "key": "col-11",
+            "key": "col-23",
             "values": {
-              "name": "secondary",
-              "group": "Secondary",
-              "value": "{\"light\":\"#eceff5\",\"dark\":\"#232937\"}",
-              "usage_note": "Second actions and quiet selected states."
+              "name": "warning",
+              "group": "Feedback",
+              "value": "{\"light\":\"#8f5500\",\"dark\":\"#f0b24a\"}",
+              "usage_note": "Waiting or at risk. Always paired with a word.",
+              "reads_on": "muted"
             }
           },
           {
-            "key": "col-15",
+            "key": "col-22",
             "values": {
-              "name": "link",
-              "group": "Accent",
-              "value": "{\"light\":\"#4338ca\",\"dark\":\"#a5a8ff\"}",
-              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
-              "reads_on": "background"
+              "name": "success",
+              "group": "Feedback",
+              "value": "{\"light\":\"#17744b\",\"dark\":\"#4fcf91\"}",
+              "usage_note": "Done, live, saved. Always paired with a word.",
+              "reads_on": "muted"
             }
           },
           {
@@ -310,6 +312,15 @@
             }
           },
           {
+            "key": "col-11",
+            "values": {
+              "name": "secondary",
+              "group": "Secondary",
+              "value": "{\"light\":\"#eceff5\",\"dark\":\"#232937\"}",
+              "usage_note": "Second actions and quiet selected states."
+            }
+          },
+          {
             "key": "col-12",
             "values": {
               "name": "secondary-foreground",
@@ -320,6 +331,15 @@
             }
           },
           {
+            "key": "col-13",
+            "values": {
+              "name": "accent",
+              "group": "Accent",
+              "value": "{\"light\":\"#eef0ff\",\"dark\":\"#23264a\"}",
+              "usage_note": "A pale indigo wash for selected rows and tips."
+            }
+          },
+          {
             "key": "col-14",
             "values": {
               "name": "accent-foreground",
@@ -327,6 +347,16 @@
               "value": "{\"light\":\"#3a32b0\",\"dark\":\"#c7caff\"}",
               "usage_note": "Text on an accent fill. Never put plain foreground on accent.",
               "reads_on": "accent"
+            }
+          },
+          {
+            "key": "col-15",
+            "values": {
+              "name": "link",
+              "group": "Accent",
+              "value": "{\"light\":\"#4338ca\",\"dark\":\"#a5a8ff\"}",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
+              "reads_on": "background"
             }
           },
           {
@@ -369,16 +399,6 @@
             }
           },
           {
-            "key": "col-20",
-            "values": {
-              "name": "destructive",
-              "group": "Feedback",
-              "value": "{\"light\":\"#c62f2a\",\"dark\":\"#f2827b\"}",
-              "usage_note": "Errors and delete. Also reads on the page and on cards.",
-              "reads_on": "muted"
-            }
-          },
-          {
             "key": "col-21",
             "values": {
               "name": "destructive-foreground",
@@ -386,26 +406,6 @@
               "value": "{\"light\":\"#ffffff\",\"dark\":\"#2a0807\"}",
               "usage_note": "Label on a delete button.",
               "reads_on": "destructive"
-            }
-          },
-          {
-            "key": "col-22",
-            "values": {
-              "name": "success",
-              "group": "Feedback",
-              "value": "{\"light\":\"#17744b\",\"dark\":\"#4fcf91\"}",
-              "usage_note": "Done, live, saved. Always paired with a word.",
-              "reads_on": "muted"
-            }
-          },
-          {
-            "key": "col-23",
-            "values": {
-              "name": "warning",
-              "group": "Feedback",
-              "value": "{\"light\":\"#8f5500\",\"dark\":\"#f0b24a\"}",
-              "usage_note": "Waiting or at risk. Always paired with a word.",
-              "reads_on": "muted"
             }
           }
         ]
@@ -1278,7 +1278,7 @@
         "Brannock Street"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [],
   "board": {

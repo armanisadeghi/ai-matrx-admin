@@ -590,9 +590,10 @@ export function TemplateThumb({ thumb }: { thumb: GalleryThumb | null | undefine
   );
 }
 
+// ADVERSARIAL-6 F5: the first column takes 2/5 (was 1/2), so a two-chip row's group chip ("Secondary", "Feedback") reads whole.
 const THUMB_FRAME =
   "pointer-events-none overflow-hidden rounded-md border border-border bg-background [&_tr]:border-b [&_tr]:border-border [&_tr:last-child]:border-0 " +
-  "[&_td]:truncate [&_td]:px-2 [&_td]:py-0.5 [&_td]:text-muted-foreground [&_td:first-child]:w-1/2 [&_td:first-child]:text-foreground " +
+  "[&_td]:truncate [&_td]:px-2 [&_td]:py-0.5 [&_td]:text-muted-foreground [&_td:first-child]:w-2/5 [&_td:first-child]:text-foreground " +
   "[&_b]:inline-flex [&_b]:max-w-full [&_b]:truncate [&_b]:rounded [&_b]:px-1.5 [&_b]:py-0.5 [&_b]:font-medium";
 
 /** One thumbnail cell: a chip for a choice, else the value as text (the same words ValueText writes). */
