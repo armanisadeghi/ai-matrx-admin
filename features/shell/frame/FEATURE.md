@@ -41,6 +41,9 @@ together. Linear is the visual reference. It is built beside the old shell and i
 - `FrameModules.tsx`: the heavy-module machinery: `lazyModule` (one `React.lazy` per loader),
   `ModuleSlot` (Suspense with a row skeleton, and an honest failure), the labelled stand-ins,
   the side chat's resize handle and the ask bar.
+- `ProductMark.tsx`: a product's mark, Google's way: the glyph itself in the product's colour
+  (the design system's chip ink for its hue, light and dark values), 40px in the grid's 48px
+  cell (stroke 1.5), 18px beside the sidebar's product name (stroke 1.75). No tinted tile.
 - `products.ts`: THE product list (draft names; change them only there).
 - `frame.css`: the frame's tokens and its few structural rules.
 
@@ -159,6 +162,9 @@ the canvas and the ask bar, the per-page memory and the link, the forms and canv
 ownership attributes, and no `className`/`style` on any exported props type.
 
 ## Change log
+
+- 2026-10-20 (round 6): product marks lose their tinted tile; the glyph carries the colour and
+  fills the cell (grid, favorites, sidebar).
 
 - 2026-10-20 (round 5): no chevrons on right-side icons; switchable crumbs (down chevron,
   siblings) and icon-only top levels; the side chat's door moves to the header; the frame reads

@@ -8,6 +8,7 @@ import type { MouseEvent } from "react";
 import { ExternalLink, PanelLeftClose } from "lucide-react";
 import { Button, Tile } from "@ai-matrx/design-system/controls";
 import { AppGrid } from "./AppGrid";
+import { ProductMark } from "./ProductMark";
 import type { AppGridProps } from "./AppGrid";
 import type { FrameMenuItem, FrameProduct } from "./types";
 
@@ -34,22 +35,11 @@ export function FrameSidebar({
   onHide,
   hideLabel,
 }: FrameSidebarProps) {
-  const ProductIcon = product.icon;
   return (
     <nav aria-label={`${product.name} menu`} className="flex h-full min-h-0 flex-col">
       <div className="flex h-[calc(var(--matrx-frame-header-h)+var(--matrx-frame-inset))] shrink-0 items-center gap-1 px-2 pt-[var(--matrx-frame-inset)]">
         <AppGrid {...grid} currentProductId={product.id} />
-        <span
-          className="mf-glyph flex size-5 shrink-0 items-center justify-center rounded-md"
-          style={
-            {
-              "--mf-hue": `var(--matrx-chip-${product.color})`,
-              "--mf-hue-ink": `var(--matrx-chip-${product.color}-ink)`,
-            } as React.CSSProperties
-          }
-        >
-          <ProductIcon className="size-3.5" aria-hidden />
-        </span>
+        <ProductMark product={product} size="inline" />
         <span className="type-title min-w-0 flex-1 truncate pl-1">{product.name}</span>
         <Button variant="quiet" icon={<PanelLeftClose />} aria-label={hideLabel} onClick={onHide} />
       </div>

@@ -12,6 +12,7 @@ import { Check, Grip, Pencil, Star } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system/cn";
+import { ProductMark } from "./ProductMark";
 import type { FrameProduct, ProductFamily } from "./types";
 
 export interface AppGridProps {
@@ -100,7 +101,6 @@ export function AppGrid({
   const activeKey = rovingKey && navKeys.includes(rovingKey) ? rovingKey : navKeys[0];
 
   function renderTile(product: FrameProduct, group: string) {
-    const Icon = product.icon;
     const isFavorite = favorites.includes(product.id);
     const key = `${group}-${product.id}`;
     const navigable = navKeys.includes(key);
@@ -110,26 +110,14 @@ export function AppGrid({
       tabIndex: key === activeKey ? 0 : -1,
       onFocus: () => navigable && setRovingKey(key),
     };
-    const glyph = (
-      <span
-        className="mf-glyph flex size-10 items-center justify-center rounded-xl"
-        style={
-          {
-            "--mf-hue": `var(--matrx-chip-${product.color})`,
-            "--mf-hue-ink": `var(--matrx-chip-${product.color}-ink)`,
-          } as React.CSSProperties
-        }
-      >
-        <Icon className="size-5" aria-hidden />
-      </span>
-    );
+    const glyph = <ProductMark product={product} size="grid" />;
     const label = (
       <span className="type-secondary line-clamp-2 w-full text-center text-foreground">
         {product.name}
       </span>
     );
     const tileClass = cn(
-      "relative flex min-h-22 flex-col items-center justify-start gap-1.5 rounded-lg px-1 pt-3 pb-2",
+      "relative flex min-h-24 flex-col items-center justify-start gap-1 rounded-xl px-1 pt-2.5 pb-2",
       "outline-none hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
     );
     if (editing) {

@@ -214,9 +214,8 @@
   }
 }
 
-/* App-grid tile glyph: tinted square in the product's hue. */
-[data-matrx-frame] .mf-glyph {
-  background: hsl(var(--mf-hue) / 0.14);
+/* A product's mark: the glyph itself in the product's colour, no tile behind it (ProductMark.tsx). */
+[data-matrx-frame] .mf-mark {
   color: hsl(var(--mf-hue-ink));
 }
 

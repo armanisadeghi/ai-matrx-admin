@@ -474,3 +474,23 @@ describe("zero weight: no chat code before the side chat is engaged", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe("product marks (owner, 2026-10-20: Google's way)", () => {
+  it("the glyph carries the product's colour and fills its cell; nothing tints the tile", async () => {
+    mount(base({ form: "desktop" }));
+    const sidebarMark = q("nav [data-mf-mark]")!;
+    expect(sidebarMark.getAttribute("style")).toContain(`--matrx-chip-${chat.color}-ink`);
+    act(() => q<HTMLButtonElement>('[aria-label="All products"]')!.click());
+    await nextFrame();
+    const marks = [...document.querySelectorAll<HTMLElement>('[role="group"][aria-label="Products"] [data-mf-mark]')];
+    expect(marks.length).toBeGreaterThan(5);
+    for (const m of marks) {
+      expect(m.className).toContain("size-12");
+      expect(m.querySelector("svg")!.getAttribute("class")).toContain("size-10");
+      expect(m.className).not.toMatch(/\bbg-|rounded/);
+    }
+    const css = readFileSync(join(__dirname, "..", "frame.css"), "utf8");
+    expect(css).not.toMatch(/\.mf-mark\s*\{[^}]*background/);
+    expect(css).not.toContain(".mf-glyph");
+  });
+});
