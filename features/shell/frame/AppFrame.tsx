@@ -543,7 +543,7 @@ export function AppFrame(props: AppFrameProps) {
           <section ref={sheet.setEl} className="mf-sheet relative flex h-full min-h-0 overflow-hidden">
             {/* The sheet's content column — inert while the canvas covers it or is full screen. */}
             <div
-              className="flex h-full min-h-0 min-w-0 flex-1 flex-col"
+              className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
               inert={canvasCovers || canvasFullShown}
             >
               <SheetHeader

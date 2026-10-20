@@ -51,7 +51,7 @@ function useLoadedModules() {
 }
 // Stable loaders (module scope): the frame calls each one only when the person first opens it.
 const loadSampleCompanion = () => {
-  markLoaded("Agent");
+  markLoaded("Side chat");
   return import("./SampleCompanion");
 };
 const loadSampleCanvas = () => {

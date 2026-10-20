@@ -15,15 +15,15 @@ import type { FrameModuleLoader } from "./types";
 
 // One lazy component per loader, for the page's lifetime: React.lazy calls the loader the
 // first time the component renders, and never again.
-const LAZY = new WeakMap<object, LazyExoticComponent<ComponentType<never>>>();
+// Keyed by the loader, so the value's type is the loader's own (P is fixed per loader).
+const LAZY = new WeakMap<object, unknown>();
 
 export function lazyModule<P>(loader: FrameModuleLoader<P>): LazyExoticComponent<ComponentType<P>> {
-  let found = LAZY.get(loader);
-  if (!found) {
-    found = lazy(loader) as unknown as LazyExoticComponent<ComponentType<never>>;
-    LAZY.set(loader, found);
-  }
-  return found as unknown as LazyExoticComponent<ComponentType<P>>;
+  const found = LAZY.get(loader) as LazyExoticComponent<ComponentType<P>> | undefined;
+  if (found) return found;
+  const made = lazy(loader);
+  LAZY.set(loader, made);
+  return made;
 }
 
 /**
@@ -57,15 +57,15 @@ export function PanelTitle({ icon, title, onClose, closeLabel, tools, height = "
 }
 
 class ModuleBoundary extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
+  override state = { failed: false };
   static getDerivedStateFromError() {
     return { failed: true };
   }
-  componentDidCatch(error: unknown) {
+  override componentDidCatch(error: unknown) {
     // A module that failed to load says so: the panel shows the failure, the console carries the cause.
     console.error("[app-frame] a frame module failed to load", error);
   }
-  render() {
+  override render() {
     return this.state.failed ? this.props.fallback : this.props.children;
   }
 }
