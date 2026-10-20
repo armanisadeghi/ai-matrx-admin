@@ -56,7 +56,7 @@ async function copiesHere(catalogueId: string): Promise<{ orgId: string; copies:
 
 const copiesLine = (copies: InstalledCopy[]) => {
   const newest = copies[0];
-  if (newest.trashed) return copies.length === 1 ? `In Trash · version ${newest.version}` : `${copies.length} copies in Trash`;
+  if (newest.trashed) return copies.length === 1 ? `Version ${newest.version}` : `${copies.length} copies, newest on version ${newest.version}`;
   const head = copies.length === 1 ? `Your copy is on version ${newest.version}` : `${copies.length} copies, newest on version ${newest.version}`;
   return newest.newerVersion ? `${head} · version ${newest.newerVersion} is out` : head;
 };
