@@ -146,6 +146,10 @@ and favorites into an always-open launcher.
 
 ## Change log
 
+- `2026-10-20` — Lane O: an App page no longer shows the framed page's phone dock over its text (the notes editor's
+  undo/format/Home·Copy·Tags·More dock drew over the note); in a frame a page dock is the page's last row
+  (`features/shell/FEATURE.md` § THE PAGE RUNWAY).
+
 - `2026-10-20` — Lane M: the Meet Matrx template opens with the welcome's own title (`meet_matrx` part "hero").
   A note the page bus sends (`/notes?active=<id>`) now opens in an App page: /notes on a narrow frame is the
   phone view, which ignored `?active=` (NotesView passed only the path id); it now honours it on every width.

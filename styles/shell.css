@@ -2653,7 +2653,8 @@ body:has(.shell-root[data-pathname^="/administration"]) {
    An app page placed on a /board as a tile (features/board/items/
    page-items.tsx) is the page alone: the board around it is the chrome, so the
    shell's sidebar, header, account rail, phone trigger and dock step aside and
-   the main area fills the frame. Stamped before paint by
+   the main area fills the frame, and a page's own phone docks become its
+   last row instead of floating over it. Stamped before paint by
    features/shell/components/BoardEmbedBootScript.tsx, only when the page is
    framed by the app's own origin.
    --------------------------------------------------------------------------- */
@@ -2679,6 +2680,16 @@ html[data-board-embed] .shell-chat-toggle {
 html[data-board-embed] .shell-main {
   margin-top: 0;
   height: 100dvh;
+}
+/* A page dock (`[data-matrx-page-dock]`, lib/layout/floating-chrome.ts PAGE_DOCK_ATTR) is the
+   phone bar a page floats over its own content. A frame is narrow, so the page draws its phone
+   layout on a desktop, and in a 438px frame the dock covered a third of the text behind glass. In a
+   frame the dock is the page's LAST ROW: it leaves the float and joins its flex column, the content
+   above shrinks to end at it, and every control on it stays where it was. */
+html[data-board-embed] .flex-col > [data-matrx-page-dock] {
+  position: relative !important;
+  inset: auto !important;
+  flex-shrink: 0;
 }
 
 /* ---------------------------------------------------------------------------
