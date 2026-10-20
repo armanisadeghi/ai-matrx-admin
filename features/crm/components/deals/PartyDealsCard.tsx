@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useCrmContext } from "../../hooks/useCrmContext";
+import { useCrmCardRead } from "../../hooks/useCrmCardRead";
 import { usePipelines } from "../../deals/usePipelines";
 import { createDeal, fetchDealsForParty } from "../../deals/service";
 import type { DealRow } from "../../deals/types";
@@ -34,10 +35,13 @@ interface Props {
 }
 
 export function PartyDealsCard({ party, onStateChange }: Props) {
-  const [deals, setDeals] = useState<DealRow[] | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  // Kept once per record per tab (the Board's remount law): a wake or remount reads nothing; a new
+  // deal or Retry reads again in place.
+  const dealsRead = useCrmCardRead<DealRow[]>(`crm.party-deals:${party.id}`, () => fetchDealsForParty(party.id));
+  const deals: DealRow[] | null = dealsRead.data ?? null;
+  const loadError: string | null = dealsRead.isError ? (dealsRead.error ?? "The read failed") : null;
   const [createOpen, setCreateOpen] = useState(false);
-  const [generation, setGeneration] = useState(0);
+  const reread = () => void dealsRead.refresh();
   const { pipelines, stageById } = usePipelines();
   const ctx = useCrmContext();
   const reportState = useRef(onStateChange);
@@ -80,7 +84,7 @@ export function PartyDealsCard({ party, onStateChange }: Props) {
         assignedTo: ctx?.userId ?? null,
         source: "agent",
       });
-      setGeneration((g) => g + 1);
+      reread();
       return {
         summary: `Created deal "${deal.name}" in ${pipeline.name} · ${stage.name}.`,
         data: { id: deal.id, name: deal.name, pipeline: pipeline.name, stage: stage.name },
@@ -89,28 +93,11 @@ export function PartyDealsCard({ party, onStateChange }: Props) {
     },
   });
 
+  // The page's agent scope hears the deals (or why there are none) whenever the answer changes.
   useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const rows = await fetchDealsForParty(party.id);
-        if (!cancelled) {
-          setDeals(rows);
-          setLoadError(null);
-          reportState.current?.(rows, null);
-        }
-      } catch (e) {
-        if (!cancelled) {
-          const message = e instanceof Error ? e.message : String(e);
-          setLoadError(message);
-          reportState.current?.(null, message);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [party.id, generation]);
+    if (dealsRead.isError) reportState.current?.(null, dealsRead.error ?? "The read failed");
+    else if (dealsRead.data) reportState.current?.(dealsRead.data, null);
+  }, [dealsRead.data, dealsRead.isError, dealsRead.error]);
 
   return (
     <SectionCard dense bodyClassName="p-2"
@@ -128,7 +115,7 @@ export function PartyDealsCard({ party, onStateChange }: Props) {
           <span>Couldn&apos;t load deals — {loadError} <ErrorAlchemyMenu error={loadError} /></span>
           <Button
             variant="outline"
-            onClick={() => setGeneration((g) => g + 1)}
+            onClick={() => reread()}
           >
             Retry
           </Button>
@@ -172,7 +159,7 @@ export function PartyDealsCard({ party, onStateChange }: Props) {
           display_name: party.display_name,
           party_kind: party.party_kind,
         }}
-        onCreated={() => setGeneration((g) => g + 1)}
+        onCreated={() => reread()}
       />
     </SectionCard>
   );

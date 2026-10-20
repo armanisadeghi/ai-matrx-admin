@@ -21,7 +21,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 import Link from "next/link";
 import { ChevronRight, IdCard } from "lucide-react";
 
@@ -29,6 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { hrEmployeeHref } from "@/features/hr/routes";
 import { fetchHrEmployeeByParty } from "@/features/hr/service";
+import { isHrFailed } from "@/features/hr/types";
 import { formatHrDay as formatDay } from "@/features/hr/people/shared/HrStatusChip";
 
 type PartyEmployee = {
@@ -65,29 +66,22 @@ export function PartyEmployeeCard({
   orgId: string;
   orgSlugOrId?: string | null;
 }) {
-  const [row, setRow] = useState<PartyEmployee | null>(null);
-
-  useEffect(() => {
-    if (!partyId || !orgId) return;
-    let cancelled = false;
-
-    (async () => {
+  // Kept once per person per tab (the Board's remount law): a tile that wakes or remounts reads nothing.
+  // A refusal, a module that is off, a door that is not live, or a party who genuinely is not an
+  // employee all resolve to NOTHING on screen; a read that failed is not kept, so the next mount asks again.
+  const read = useStoreRead<PartyEmployee | null>(
+    partyId && orgId ? `hr.employee-by-party:${orgId}:${partyId}` : null,
+    async () => {
       // The party's own door — NOT a directory search for the uuid, which
       // would match nothing and render "not an employee" for somebody who is.
-      const result = await fetchHrEmployeeByParty({
-        organizationId: orgId,
-        partyId,
-      });
-      if (cancelled) return;
-      // A refusal, a module that is off, a door that is not live, or a party
-      // who genuinely is not an employee — all resolve to NOTHING.
-      setRow(result.ok && result.data.employee_id ? result.data : null);
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [partyId, orgId]);
+      const result = await fetchHrEmployeeByParty({ organizationId: orgId, partyId });
+      // A refusal is an answer (the card is absent); a read that failed is not kept.
+      if (isHrFailed(result)) throw new Error(result.message ?? "The employee record was not read");
+      return result.ok && result.data.employee_id ? result.data : null;
+    },
+    { staleAfterMs: 120_000 },
+  );
+  const row = read.data ?? null;
 
   if (!row?.employee_id) return null;
 

@@ -19,7 +19,7 @@ jest.mock("@/utils/supabase/schedulerDb", () => ({ schedulerDb: (client: unknown
 jest.mock("@/features/canvas/maps/MapCanvas", () => ({ __esModule: true, default: () => null }));
 
 import { BOARD_ITEM_TYPES } from "../items/catalog";
-import { expectRemountSafe, runCycle, type TileHandle } from "./remount-safety/harness";
+import { expectRemountSafe, ledgerMark, mountTile, runCycle, settle, settleQuiet, trafficSince, type TileHandle } from "./remount-safety/harness";
 import { installBrowserGaps } from "./remount-safety/browser-gaps";
 import { ORGANIZATION, PERSON } from "./remount-safety/people";
 import { seed, seedFetch, seedRpc } from "./remount-safety/fake-backend";
@@ -202,6 +202,34 @@ const sandboxInstance = {
   deleted_at: null,
 };
 
+/** What a healthy backend answers for the sandbox record: status, the panel's diagnostics, logs, version health. */
+function seedSandbox(): void {
+    seedFetch(new RegExp(`/api/sandbox/${SANDBOX_ID}$`), () => ({ instance: sandboxInstance }));
+    // The diagnostics and the log tail the sandbox record's panel polls: answered, so they are kept.
+    seedFetch(new RegExp(`/api/sandbox/${SANDBOX_ID}/diagnostics$`), () => ({
+      sandbox_id: sandboxInstance.sandbox_id,
+      overall_ok: true,
+      sandbox: { status: "running", tier: "ec2", template: null, template_version: null, user_id: "u", container_id: null, proxy_url: null, ssh_port: null, expires_at: null, last_heartbeat_at: null, persistence_volume: null, hot_path: "/home/agent", cold_path: "/data" },
+      container: { present: true, running: true },
+      checks: {
+        matrx_agent_8000: { ok: true, status_code: 200, latency_ms: 4 },
+        aidream_health_8001: { ok: true, status_code: 200, latency_ms: 5 },
+        aidream_ready_8001: { ok: true, status_code: 200, latency_ms: 6 },
+      },
+    }));
+    seedFetch(new RegExp(`/api/sandbox/${SANDBOX_ID}/logs`), () => "aidream ready\n");
+    seedFetch(new RegExp(`/api/sandbox/${SANDBOX_ID}/version-health$`), () => ({
+      health: {
+        supported: true, sandbox_id: SANDBOX_ID, template: "default", tier: "hosted", status: "current", reason: "up to date",
+        running_image_id: null, running_version: "new", current_image_id: null, current_version: "new",
+        current_image_available: true, can_migrate: false, manager_version: "test", migration_action_reason: null,
+      },
+    }));
+    seedFetch(new RegExp(`/api/sandbox/${SANDBOX_ID}/migration$`), () => ({
+      sandbox_id: SANDBOX_ID, operation_id: "op-idle", outcome: "idle", execution_state: "done", phase: "cleanup_complete",
+    }));
+}
+
 // Break: the sandbox tile re-reads the instance (and restarts its 10-second poll) on wake / remount
 // instead of keeping it, or drops to its loading cards while it does.
 remountType(
@@ -209,34 +237,35 @@ remountType(
   () =>
     runCycle(type("sandbox"), { kind: "entity", entity: "sandbox", id: SANDBOX_ID }, {
       title: SANDBOX_NAME,
-      prepare: () => {
-        seedFetch(new RegExp(`/api/sandbox/${SANDBOX_ID}$`), () => ({ instance: sandboxInstance }));
-        // The diagnostics and the log tail the sandbox record's panel polls: answered, so they are kept.
-        seedFetch(new RegExp(`/api/sandbox/${SANDBOX_ID}/diagnostics$`), () => ({
-          sandbox_id: sandboxInstance.sandbox_id,
-          overall_ok: true,
-          sandbox: { status: "running", tier: "ec2", template: null, template_version: null, user_id: "u", container_id: null, proxy_url: null, ssh_port: null, expires_at: null, last_heartbeat_at: null, persistence_volume: null, hot_path: "/home/agent", cold_path: "/data" },
-          container: { present: true, running: true },
-          checks: {
-            matrx_agent_8000: { ok: true, status_code: 200, latency_ms: 4 },
-            aidream_health_8001: { ok: true, status_code: 200, latency_ms: 5 },
-            aidream_ready_8001: { ok: true, status_code: 200, latency_ms: 6 },
-          },
-        }));
-        seedFetch(new RegExp(`/api/sandbox/${SANDBOX_ID}/logs`), () => "aidream ready\n");
-        seedFetch(new RegExp(`/api/sandbox/${SANDBOX_ID}/version-health$`), () => ({
-          health: {
-            supported: true, sandbox_id: SANDBOX_ID, template: "default", tier: "hosted", status: "current", reason: "up to date",
-            running_image_id: null, running_version: "new", current_image_id: null, current_version: "new",
-            current_image_available: true, can_migrate: false, manager_version: "test", migration_action_reason: null,
-          },
-        }));
-        seedFetch(new RegExp(`/api/sandbox/${SANDBOX_ID}/migration$`), () => ({
-          sandbox_id: SANDBOX_ID, operation_id: "op-idle", outcome: "idle", execution_state: "done", phase: "cleanup_complete",
-        }));
-      },
+      prepare: seedSandbox,
       loadMs: 1500,
       kept: (tile) => ({ name: shows(tile, SANDBOX_NAME), loading: skeleton(tile) }),
     }),
   (r) => expectRemountSafe(r, { name: true, loading: false }, [new RegExp(`/api/sandbox/${SANDBOX_ID}$`)]),
 );
+
+// Break: a sandbox tile scrolled off-screen keeps polling its status, diagnostics and logs every few
+// seconds (the poll ran for as long as the body was mounted). Off-screen it polls nothing; in view it does.
+describe("sandbox: polls only while the tile is in view", () => {
+  const sandboxCalls = (mark: number) => trafficSince(mark).filter((c) => c.target.includes(`/api/sandbox/${SANDBOX_ID}`));
+  const polledFor = async (tier: "offscreen" | "read") => {
+    const tile = await mountTile(type("sandbox"), { kind: "entity", entity: "sandbox", id: SANDBOX_ID }, {
+      title: SANDBOX_NAME,
+      tier,
+      prepareStore: () => seedSandbox(),
+      loadMs: 1500,
+    });
+    await settleQuiet();
+    const mark = ledgerMark();
+    await settle(11_500);
+    const calls = sandboxCalls(mark).length;
+    tile.unmount();
+    return calls;
+  };
+  it("an off-screen tile makes no status, diagnostics or log request", async () => {
+    expect(await polledFor("offscreen")).toBe(0);
+  }, 90_000);
+  it("the same tile in view does poll (the check can fail)", async () => {
+    expect(await polledFor("read")).toBeGreaterThan(0);
+  }, 90_000);
+});

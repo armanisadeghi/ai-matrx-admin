@@ -16,7 +16,8 @@
  *   number, and NOT MEASURED is rendered as not measured, never as `none`.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
+import { useCrmCardRead } from "../../hooks/useCrmCardRead";
 import { Newspaper, RefreshCw, Radar, ExternalLink } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
@@ -108,36 +109,24 @@ export function JournalistIntelligenceCard({ partyId, organizationId, storedActi
   const [activity, setActivity] = useState<ActivityVerdict | null>(
     storedActivity ?? null,
   );
-  const [beat, setBeat] = useState<BeatProfile | null>(null);
   const [checking, setChecking] = useState(false);
   const [deriving, setDeriving] = useState(false);
-  const [unreachable, setUnreachable] = useState(false);
-  const [orgRequired, setOrgRequired] = useState(false);
+  // The stored beat, kept once per person per tab (the Board's remount law): a wake or remount reads
+  // nothing. A missing beat is a real answer (null); a read that could not ask is not kept. "We could
+  // not ask" must NOT read as "there is nothing to know" — one of them is the person's problem.
+  const beatRead = useCrmCardRead<BeatProfile | null>(`crm.journalist-beat:${partyId}`, () =>
+    fetchJournalistBeat(partyId),
+  );
+  const beat: BeatProfile | null = beatRead.data ?? null;
+  const setBeat = (next: BeatProfile | null) => beatRead.setData(next);
+  const unreachable = beatRead.isError;
+  const orgRequired = beatRead.isError && isOrganizationRequiredError(beatRead.cause);
   // "Check against a pitch": the journalist fit check (matrx-journalist-fit-check)
   // for one pitch the person pastes. Same door the pre-send check uses fresh.
   const [pitchOpen, setPitchOpen] = useState(false);
   const [pitch, setPitch] = useState("");
   const [pitchChecking, setPitchChecking] = useState(false);
   const [pitchFit, setPitchFit] = useState<{ verdict: string | null; note: string | null } | null>(null);
-
-  const loadBeat = useCallback(async () => {
-    try {
-      setBeat(await fetchJournalistBeat(partyId));
-      setUnreachable(false);
-      setOrgRequired(false);
-    } catch (cause) {
-      // A missing beat profile is the normal state and deserves no toast — but
-      // "we could not ask" must NOT read as "there is nothing to know". They
-      // look identical to a user and only one of them is their problem.
-      setBeat(null);
-      setOrgRequired(isOrganizationRequiredError(cause));
-      setUnreachable(true);
-    }
-  }, [partyId]);
-
-  useEffect(() => {
-    void loadBeat();
-  }, [loadBeat]);
 
   const check = async () => {
     setChecking(true);

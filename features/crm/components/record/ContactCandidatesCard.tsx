@@ -23,7 +23,8 @@
  */
 
 import { RefreshCwTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useCrmCardRead } from "../../hooks/useCrmCardRead";
 import {
   BadgeCheck,
   ContactRound,
@@ -103,42 +104,37 @@ export function ContactCandidatesCard({
   onChanged,
   onStateChange,
 }: Props) {
-  const [rows, setRows] = useState<ContactCandidateView[] | null>(null);
-  const [error, setError] = useState<unknown>(null);
-  const [loading, setLoading] = useState(true);
+  // Kept once per record per tab (the Board's remount law): a wake or remount reads nothing.
+  const read = useCrmCardRead<ContactCandidateView[]>(`crm.contact-candidates:${partyId}`, () =>
+    fetchContactCandidates(partyId),
+  );
+  const rows = read.data ?? null;
+  const error = read.cause;
+  const loading = read.isLoading;
   const [busyId, setBusyId] = useState<string | null>(null);
   const [finding, setFinding] = useState(false);
 
-  // Held in a ref so an inline parent callback never re-creates `load` and
-  // re-fires the read on every render.
+  const load = () => read.refresh();
+
+  // Held in a ref so an inline parent callback never re-fires anything.
   const reportState = useRef(onStateChange);
   useEffect(() => {
     reportState.current = onStateChange;
   });
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const next = await fetchContactCandidates(partyId);
-      setRows(next);
-      reportState.current?.(next, null);
-    } catch (cause) {
-      setError(cause);
+  // The page's agent scope hears the rows (or why there are none) whenever the answer changes.
+  useEffect(() => {
+    if (read.isLoading && !read.hasData) return;
+    if (read.isError) {
       reportState.current?.(
         null,
-        isOrganizationRequiredError(cause)
+        isOrganizationRequiredError(error)
           ? "No organization is selected, so contact suggestions were not read."
-          : extractErrorMessage(cause),
+          : extractErrorMessage(error),
       );
-    } finally {
-      setLoading(false);
+      return;
     }
-  }, [partyId]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+    if (read.data) reportState.current?.(read.data, null);
+  }, [read.data, read.isError, read.isLoading, read.hasData, error]);
 
   const find = async () => {
     // AN EXPENSIVE CLICK SAYS WHAT IT COSTS FIRST. The free rung (the

@@ -188,6 +188,8 @@ interface Props {
   /** Callback fired after a successful reset finishes. The detail page uses
    *  this to refresh its row state and re-fire the readiness gate. */
   onReset?: () => void;
+  /** The panel is off-screen (a board tile scrolled away): both polls stop until it is back in view. */
+  paused?: boolean;
   /**
    * Render only a subset of sections — used by the /code bottom panel to
    * give each diagnostic surface its own tab instead of nesting tabs inside
@@ -265,6 +267,7 @@ export const SandboxDiagnosticsPanel = forwardRef<
     onReady,
     showResetButton = true,
     onReset,
+    paused = false,
     view = "all",
     compact = false,
     onStatusChange,
@@ -642,6 +645,7 @@ export const SandboxDiagnosticsPanel = forwardRef<
       await fetchDiagnostics();
     };
     if (!selectStoreRead(store.getState(), diagKey)?.hasData) void tick();
+    if (paused) return undefined;
     const interval = setInterval(
       tick,
       (diag?.overall_ok ? healthyPollSeconds : unhealthyPollSeconds) * 1000,
@@ -658,6 +662,7 @@ export const SandboxDiagnosticsPanel = forwardRef<
     diagKey,
     healthyPollSeconds,
     unhealthyPollSeconds,
+    paused,
   ]);
 
   // Poll logs
@@ -670,12 +675,13 @@ export const SandboxDiagnosticsPanel = forwardRef<
       await fetchLogs();
     };
     if (!selectStoreRead(store.getState(), `sandbox.logs:${sandboxId}:${logSource}:${logTail}`)?.hasData) void tick();
+    if (paused) return undefined;
     const interval = setInterval(tick, 3000);
     return () => {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [sandboxId, showLogs, fetchLogs, logSource, logTail, store]);
+  }, [sandboxId, showLogs, fetchLogs, logSource, logTail, store, paused]);
 
   if (error && !diag) {
     return (

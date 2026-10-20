@@ -5,11 +5,19 @@
 // Loads the full record bundle for one party (identity + contact points +
 // addresses + employment both directions + interactions) and exposes a
 // refresh the record page's mutation flows call after any write.
+//
+// Kept once per party per tab (the Board's remount law, `useStoreRead`): a tile that wakes from sleep or
+// remounts renders the kept bundle and reads nothing, and a refresh re-reads IN PLACE (the old bundle
+// stays on screen, so an open editor is never remounted and never loses focus). A failed read is not kept.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { isRecordUnavailableError } from "@/lib/records/recordUnavailable";
+import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 import { fetchPartyDetail } from "../service";
 import type { PartyDetail } from "../types";
+
+/** A kept answer older than this is read again in the background, the old one staying on screen. */
+export const CRM_PARTY_STALE_MS = 120_000;
 
 export interface UsePartyDetailResult {
   detail: PartyDetail | null;
@@ -19,42 +27,31 @@ export interface UsePartyDetailResult {
 }
 
 export function usePartyDetail(partyId: string): UsePartyDetailResult {
-  const [detail, setDetail] = useState<PartyDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const generationRef = useRef(0);
-
-  const load = useCallback(async () => {
-    const gen = ++generationRef.current;
-    try {
-      const data = await fetchPartyDetail(partyId);
-      if (generationRef.current !== gen) return;
-      setDetail(data);
-      setError(null);
-    } catch (e) {
-      if (generationRef.current !== gen) return;
-      const message = e instanceof Error ? e.message : String(e);
-      // A RecordUnavailableError is an expected access state — already
-      // captured by recordUnavailable() and rendered by the page's AccessGate.
-      if (!isRecordUnavailableError(e)) {
-        console.error("[crm] party detail fetch failed:", message);
+  const read = useStoreRead<PartyDetail>(
+    partyId ? `crm.party-detail:${partyId}` : null,
+    async () => {
+      try {
+        return await fetchPartyDetail(partyId);
+      } catch (e) {
+        // A RecordUnavailableError is an expected access state — already
+        // captured by recordUnavailable() and rendered by the page's AccessGate.
+        if (!isRecordUnavailableError(e)) {
+          console.error("[crm] party detail fetch failed:", e instanceof Error ? e.message : String(e));
+        }
+        throw e;
       }
-      setError(message);
-    } finally {
-      if (generationRef.current === gen) setIsLoading(false);
-    }
-  }, [partyId]);
-
-  useEffect(() => {
-    // Deferred so the effect body never calls setState synchronously
-    // (react-hooks/set-state-in-effect); the timer is the async boundary.
-    const timer = setTimeout(() => {
-      setIsLoading(true);
-      setDetail(null);
-      void load();
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [load]);
-
-  return { detail, isLoading, error, refresh: load };
+    },
+    { staleAfterMs: CRM_PARTY_STALE_MS },
+  );
+  // A stable identity: cards take it as `onChanged` and key effects on it.
+  const refreshRef = useRef(read.refresh);
+  refreshRef.current = read.refresh;
+  const refresh = useCallback(() => refreshRef.current(), []);
+  return {
+    detail: read.data ?? null,
+    // Loading only while there is nothing to show: a refresh keeps the bundle on screen.
+    isLoading: read.isLoading && !read.hasData,
+    error: read.error,
+    refresh,
+  };
 }

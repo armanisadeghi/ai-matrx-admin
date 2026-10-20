@@ -20,7 +20,8 @@
 // priority and pitch angle, and every id becomes a real door.
 
 import { InfoHint } from "@/components/official/InfoHint";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useCrmCardRead } from "../../hooks/useCrmCardRead";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -197,33 +198,18 @@ export function PartyProvenanceCard({
   party: PartyRow;
   onChanged: () => void | Promise<void>;
 }) {
-  const [items, setItems] = useState<ProvenanceItem[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // Kept once per record per tab (the Board's remount law): a wake or remount reads nothing; a failed
+  // read is not kept, and "Try again" reads in place.
+  const read = useCrmCardRead<ProvenanceItem[]>(`crm.provenance:${party.id}`, () => loadProvenance(party.id));
+  const items: ProvenanceItem[] | null = read.data ?? null;
+  const error: string | null = read.isError
+    ? read.cause instanceof Error
+      ? read.cause.message
+      : "Could not read where this record came from."
+    : null;
   const [promoting, setPromoting] = useState(false);
-  const [attempt, setAttempt] = useState(0);
 
   const discovered = party.record_class === "discovered";
-
-  useEffect(() => {
-    let cancelled = false;
-    setError(null);
-    void (async () => {
-      try {
-        const rows = await loadProvenance(party.id);
-        if (!cancelled) setItems(rows);
-      } catch (e) {
-        if (!cancelled)
-          setError(
-            e instanceof Error
-              ? e.message
-              : "Could not read where this record came from.",
-          );
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [party.id, attempt]);
 
   const promoteRecord = async () => {
     if (party.record_class === "contact") return;
@@ -347,7 +333,7 @@ export function PartyProvenanceCard({
             <Button
               icon={<RefreshCw />}
               variant="outline"
-              onClick={() => setAttempt((n) => n + 1)}
+              onClick={() => void read.refresh()}
             > Retry
             </Button>
             <ErrorAlchemyMenu error={error} />

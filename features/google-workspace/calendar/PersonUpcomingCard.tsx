@@ -13,9 +13,8 @@
  * dead.
  */
 
-import { useEffect, useState } from "react";
+import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 
-import { extractErrorMessage } from "@/utils/errors";
 
 import { AgendaPanel } from "./AgendaPanel";
 import { readPartyEmailKeys } from "./service";
@@ -29,32 +28,17 @@ export function PersonUpcomingCard({
   /** Used in the heading, so the card names the person rather than "this person". */
   partyName?: string | null;
 }) {
-  const [emailKeys, setEmailKeys] = useState<string[] | null>(null);
-  const [problem, setProblem] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    setEmailKeys(null);
-    setProblem(null);
-    void (async () => {
-      try {
-        const keys = await readPartyEmailKeys(partyId);
-        if (!cancelled) setEmailKeys(keys);
-      } catch (error: unknown) {
-        // NOTHING FAILS SILENTLY: a failed read is not "no addresses", which
-        // would render as "nothing upcoming" — a confident and wrong claim.
-        if (!cancelled) {
-          setEmailKeys([]);
-          setProblem(
-            `We could not read this record's email addresses, so we cannot say what is upcoming with them: ${extractErrorMessage(error)}`,
-          );
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [partyId]);
+  // Kept once per person per tab (the Board's remount law): a wake or remount reads nothing; a failed
+  // read is not kept.
+  const keysRead = useStoreRead<string[]>(`google.person-email-keys:${partyId}`, () => readPartyEmailKeys(partyId), {
+    staleAfterMs: 120_000,
+  });
+  const emailKeys: string[] | null = keysRead.data ?? null;
+  // NOTHING FAILS SILENTLY: a failed read is not "no addresses", which
+  // would render as "nothing upcoming" — a confident and wrong claim.
+  const problem: string | null = keysRead.isError
+    ? `We could not read this record's email addresses, so we cannot say what is upcoming with them: ${keysRead.error ?? ""}`
+    : null;
 
   if (problem) {
     return (

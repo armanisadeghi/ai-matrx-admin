@@ -94,6 +94,7 @@ const INSTANCE_POLL_MS = 10_000;
 export function SandboxRecord({
   id,
   embedded = false,
+  paused = false,
   onTitle,
 }: {
   id: string;
@@ -102,6 +103,8 @@ export function SandboxRecord({
    * Status, copy and the actions sit in a bar over the page's cards and terminal.
    */
   embedded?: boolean;
+  /** A board tile scrolled off-screen: the status poll stops until it is back in view. */
+  paused?: boolean;
   /** Embedded: the sandbox's display name as it loads and changes, so the tile can carry it. */
   onTitle?: (title: string) => void;
 }) {
@@ -218,12 +221,15 @@ export function SandboxRecord({
     const kept = selectStoreRead(store.getState(), keptKey);
     const fresh = Boolean(kept?.hasData) && Date.now() - (kept?.at ?? 0) < INSTANCE_POLL_MS;
     if (!fresh) void fetchInstance();
+    // A tile scrolled off-screen (or asleep) polls nothing; back in view the effect runs again, reads
+    // only if the kept answer is older than one poll, and the interval resumes.
+    if (paused) return undefined;
     const interval = setInterval(() => {
       if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
       void fetchInstance();
     }, INSTANCE_POLL_MS);
     return () => clearInterval(interval);
-  }, [fetchInstance, keptKey, store]);
+  }, [fetchInstance, keptKey, store, paused]);
 
   /** Enter in the terminal: run the line through the exec API (one command per call). */
   const handleExec = async (line: string) => {
@@ -710,7 +716,7 @@ export function SandboxRecord({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <SandboxDiagnosticsPanel sandboxId={id} onReset={fetchInstance} />
+                <SandboxDiagnosticsPanel sandboxId={id} paused={paused} onReset={fetchInstance} />
               </CardContent>
             </Card>
           )}

@@ -17,7 +17,8 @@
 // research provenance — most parties are not experts and an empty card that
 // says so is noise.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useCrmCardRead } from "../../hooks/useCrmCardRead";
 import Link from "next/link";
 import { toast } from "@/lib/toast";
 import { GraduationCap, ExternalLink } from "lucide-react";
@@ -72,7 +73,6 @@ function isExpertStatus(value: string | null): value is ExpertStatus {
 }
 
 export function ExpertStatusCard({ party, onChanged }: Props) {
-  const [topics, setTopics] = useState<ExpertTopicRef[]>([]);
   const [saving, setSaving] = useState(false);
   const status = isExpertStatus(party.expert_status)
     ? party.expert_status
@@ -80,22 +80,13 @@ export function ExpertStatusCard({ party, onChanged }: Props) {
   const research = readResearchAttrs(party);
   const isPerson = party.party_kind === "person";
 
-  useEffect(() => {
-    let cancelled = false;
-    if (!isPerson) return;
-    void fetchPartyExpertTopics(party.id)
-      .then((rows) => {
-        if (!cancelled) setTopics(rows);
-      })
-      // A provenance read that fails must not break the record page — the
-      // tier controls below still work, and the card says nothing it can't back.
-      .catch(() => {
-        if (!cancelled) setTopics([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [party.id, isPerson]);
+  // Kept once per person per tab (the Board's remount law). A provenance read that fails must not break
+  // the record page — the tier controls below still work, and the card says nothing it can't back — and
+  // is not kept, so the next mount asks again.
+  const topicsRead = useCrmCardRead<ExpertTopicRef[]>(`crm.expert-topics:${party.id}`, () => fetchPartyExpertTopics(party.id), {
+    enabled: isPerson,
+  });
+  const topics: ExpertTopicRef[] = topicsRead.data ?? [];
 
   if (!isPerson) return null;
   if (!status && !research && topics.length === 0) return null;
