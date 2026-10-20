@@ -6,10 +6,10 @@
 // organization's > default; the Standard view switch and guests → default).
 
 import type { StoredShellLayout } from "./contract";
-import { bodyShellLook, resolveShellLayout, type ResolvedShellLayout } from "./resolve";
+import { bodyShellLook, resolveShellLayout, shellAccentOf, type ResolvedShellLayout } from "./resolve";
 import type { ShellLookId } from "./looks";
 import { parseShellLayoutBody } from "./validate";
-import type { ShellLayoutBody } from "./contract";
+import type { ShellAccentRef, ShellLayoutBody } from "./contract";
 
 export interface HeldShellLayouts {
   enabled: boolean;
@@ -82,4 +82,20 @@ export function heldShellLook(held: HeldShellLayouts, viewer: Pick<ShellViewer, 
   if (own) return bodyShellLook(own);
   const organization = held.organizationId ? held.organizations[held.organizationId] : null;
   return organization ? bodyShellLook(parseShellLayoutBody(organization.body).body) : null;
+}
+
+/**
+ * Only the accent of `resolveHeldShellLayout` (same order as `heldShellLook`; the accent alone resolves per
+ * field: the person's, else the organization's brand color). The server stamps it on `.shell-root` without
+ * resolving a menu; __tests__/accent.test.tsx proves the two always agree. Nothing stored = no parse.
+ */
+export function heldShellAccent(held: HeldShellLayouts, viewer: Pick<ShellViewer, "isGuest">): ShellAccentRef | null {
+  const active = held.enabled && !viewer.isGuest;
+  if (!active) return null;
+  if (held.previewBody) return parseShellLayoutBody(held.previewBody).body?.accent ?? null;
+  if (held.standardView) return null;
+  const own = held.personAllowed !== false && held.person ? parseShellLayoutBody(held.person.body).body : null;
+  const stored = held.organizationId ? held.organizations[held.organizationId] : null;
+  const organization = stored ? parseShellLayoutBody(stored.body).body : null;
+  return shellAccentOf(own, organization);
 }

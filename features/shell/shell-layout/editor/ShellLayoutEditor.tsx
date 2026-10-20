@@ -46,7 +46,8 @@ import { AddRecordRow, recordKey, type PickedRecord } from "./AddRecordRow";
 import { ArrangeTree } from "./ArrangeTree";
 import { CatalogChecklist } from "./CatalogChecklist";
 import { HeaderPane } from "./HeaderPane";
-import { dockOf, headerOf, lookOf, sidebarOf, startingBody, withLook, type EditorRegion } from "./regions";
+import { accentOf, dockOf, headerOf, lookOf, sidebarOf, startingBody, withAccent, withLook, type EditorRegion } from "./regions";
+import { AccentPane } from "./AccentPane";
 import { LookPane } from "./LookPane";
 import { addRow, buildCatalogTree, placedRefs, removeNode, sameBody, tickEntry, untickEntry, type TreeRegion } from "./tree";
 
@@ -161,7 +162,8 @@ export function ShellLayoutEditor({ target, initialRegion = "sidebar" }: { targe
 
   const resetSection = () => {
     const { [region]: _drop, ...rest } = body;
-    edit(rest as ShellLayoutBody);
+    // The Look tab holds the look AND the accent color: resetting it resets both.
+    edit(region === "look" ? withAccent(rest as ShellLayoutBody, null) : (rest as ShellLayoutBody));
   };
 
   const resetToOrganization = async () => {
@@ -229,6 +231,12 @@ export function ShellLayoutEditor({ target, initialRegion = "sidebar" }: { targe
       {region === "look" ? (
         <div className="min-h-0 flex-1 overflow-y-auto">
           <LookPane value={lookOf(body)} onChange={(look) => edit(withLook(body, look))} />
+          <AccentPane
+            value={accentOf(body)}
+            inherited={target === "person" ? accentOf(organizationBody) : null}
+            inheritedLabel={target === "person" && accentOf(organizationBody) ? "Organization color" : "Standard"}
+            onChange={(accent) => edit(withAccent(body, accent))}
+          />
         </div>
       ) : region === "header" ? (
         <HeaderPane

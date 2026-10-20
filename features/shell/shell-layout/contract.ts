@@ -60,6 +60,16 @@ export interface ShellLookRef {
   id: string;
 }
 
+/**
+ * The accent color (amendment 2026-10-20, lane Q, REGISTER.md): a curated id from the design system's
+ * set (`@ai-matrx/design-system/accents` `ACCENTS`) or a custom `#rrggbb`. It re-points the brand role
+ * tokens (`--primary` and its foreground and ink, light and dark) and nothing else. On the organization's
+ * layout it is the organization's brand color. Resolution is per field, not whole-body: the person's
+ * accent, else the organization's, else none (Standard view and guests: none). A bad value is dropped
+ * with a problem; a low-contrast custom color is warned about in the editor, never refused.
+ */
+export type ShellAccentRef = { id: string } | { hex: string };
+
 /** The stored body (schemaVersion 1). Each region is optional: absent = that region stays default. */
 export interface ShellLayoutBody {
   schemaVersion: typeof SHELL_LAYOUT_SCHEMA_VERSION;
@@ -71,6 +81,8 @@ export interface ShellLayoutBody {
   landing?: ShellLanding;
   /** The Look; absent = `standard`. An unknown id is dropped with a problem. */
   look?: ShellLookRef;
+  /** The accent color; absent = the built-in primary. Validated by the design system's set. */
+  accent?: ShellAccentRef;
   /** Catalog ids the person dismissed from What's new (never offered again). */
   dismissedNew?: string[];
 }

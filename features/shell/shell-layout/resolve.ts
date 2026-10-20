@@ -4,7 +4,10 @@
 // Order (PLAN.md §5.2): guests → the built-in default, always; the Standard view switch → the
 // default; else the person's body wins WHOLE; else the organization's body; else the default.
 // Inside the winning body a region it does not carry (`sidebar`/`header`/`dock`/`landing` absent)
-// is the default for that region (the `look` region: absent = the standard look). Refs no catalog entry answers are dropped from render and named
+// is the default for that region (the `look` region: absent = the standard look). The ONE per-field
+// exception is the `accent` (amendment 2026-10-20, lane Q): the organization's accent is its brand color,
+// so it shows through a person's layout that names no accent of its own (person > organization > none).
+// Refs no catalog entry answers are dropped from render and named
 // in `problems`. New catalog entries are offered in `whatsNew`, never injected into the tree.
 //
 // The output is the nav-data shape: `sidebar` and `dock` are `ShellNavItem[]` trees (top rows
@@ -23,6 +26,7 @@ import { USER_LAUNCHPAD_PATH } from "@/features/launchpad/constants";
 import type {
   HeaderButton,
   HeaderControlId,
+  ShellAccentRef,
   ShellLanding,
   ShellLayoutBody,
   ShellLayoutSource,
@@ -87,6 +91,12 @@ export interface ResolvedShellLayout {
   landing: ShellLanding | null;
   /** The Look the shell wears; null = standard (no attribute is stamped). Guests and Standard view: null. */
   look: ShellLookId | null;
+  /**
+   * The accent color: the person's, else the organization's brand color, else null (the built-in
+   * primary). Guests and Standard view: null. The shell stamps it with the design system's
+   * `accentAttributes` (no attribute for null).
+   */
+  accent: ShellAccentRef | null;
   /** Catalog entries newer than the body's `basedOnCatalogVersion`, not dismissed, not placed. */
   whatsNew: ShellCatalogEntry[];
   /** Everything dropped while resolving, by path. Empty for the default. */
@@ -360,6 +370,7 @@ function defaultLayout(source: ShellLayoutSource): ResolvedShellLayout {
     header: defaultHeader(),
     landing: null,
     look: null,
+    accent: null,
     whatsNew: [],
     problems: [],
   };
@@ -369,6 +380,11 @@ function defaultLayout(source: ShellLayoutSource): ResolvedShellLayout {
 export function bodyShellLook(body: ShellLayoutBody | null): ShellLookId | null {
   const id = body?.look?.id;
   return isShellLookId(id) && id !== STANDARD_SHELL_LOOK ? id : null;
+}
+
+/** The accent: the person's own (when allowed), else the organization's brand color, else null. */
+export function shellAccentOf(own: ShellLayoutBody | null, organization: ShellLayoutBody | null): ShellAccentRef | null {
+  return own?.accent ?? organization?.accent ?? null;
 }
 
 /** The layout this viewer sees. See the header of this file for the order. */
@@ -394,6 +410,7 @@ export function resolveShellLayout({
     header: body.header ? resolveHeader(body.header, walk) : defaultHeader(),
     landing: body.landing ?? null,
     look: bodyShellLook(body),
+    accent: shellAccentOf(own, organization),
     whatsNew: whatsNewFor(body, isAdmin),
     problems: walk.problems,
   };

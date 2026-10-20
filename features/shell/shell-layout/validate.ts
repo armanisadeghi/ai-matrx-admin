@@ -12,6 +12,8 @@
 //   - a missing reserved header control → re-added at its default place and reported;
 //   - a Dock longer than SHELL_DOCK_MAX_ITEMS → cut to the limit and reported;
 //   - a `look` naming no registered look (./looks.ts) → dropped (standard applies) and reported.
+//   - an `accent` that is neither a curated id (@ai-matrx/design-system/accents) nor a `#rgb`/`#rrggbb`
+//     hex → dropped (the built-in primary applies) and reported; a hex is stored normalized.
 // An editor refuses to save while `problems` is non-empty; the boot path renders the repaired body.
 
 import { isShellIconName, type ShellIconName } from "@/features/shell/shellIconMap";
@@ -21,6 +23,7 @@ import {
   SHELL_LAYOUT_SCHEMA_VERSION,
   type HeaderButton,
   type HeaderControlId,
+  type ShellAccentRef,
   type ShellLanding,
   type ShellLayoutBody,
   type ShellNode,
@@ -28,6 +31,7 @@ import {
 import { DEFAULT_HEADER_CONTROLS, isKnownCatalogId } from "./catalog";
 import { resolveRetiredNavId } from "./retired-nav-ids";
 import { isShellLookId } from "./looks";
+import { parseAccentRef } from "@ai-matrx/design-system/accents";
 
 /** The most rows a phone Dock holds. */
 export const SHELL_DOCK_MAX_ITEMS = 8;
@@ -38,7 +42,7 @@ export interface ParsedShellLayout {
 }
 
 const HEADER_CONTROL_IDS: readonly HeaderControlId[] = DEFAULT_HEADER_CONTROLS;
-const BODY_KEYS = new Set(["schemaVersion", "basedOnCatalogVersion", "sidebar", "header", "dock", "landing", "look", "dismissedNew"]);
+const BODY_KEYS = new Set(["schemaVersion", "basedOnCatalogVersion", "sidebar", "header", "dock", "landing", "look", "accent", "dismissedNew"]);
 
 type Raw = Record<string, unknown>;
 
@@ -333,6 +337,14 @@ function parseLook(raw: unknown, ctx: Ctx): { id: string } | undefined {
   return undefined;
 }
 
+/** An accent: a curated id or a hex (normalized), else dropped (the built-in primary applies) and reported. */
+function parseAccent(raw: unknown, ctx: Ctx): ShellAccentRef | undefined {
+  const accent = parseAccentRef(raw);
+  if (accent) return accent;
+  ctx.problems.push(`accent: ${JSON.stringify(raw)} is not a known accent or a #rrggbb color; the built-in color is used`);
+  return undefined;
+}
+
 /** Validates an already-decoded value as a layout body (same rules as `parseShellLayoutBody`). */
 export function validateShellLayoutBody(value: unknown): ParsedShellLayout {
   const ctx: Ctx = { problems: [], seenIds: new Set() };
@@ -375,6 +387,10 @@ export function validateShellLayoutBody(value: unknown): ParsedShellLayout {
     const look = parseLook(value.look, ctx);
     if (look) body.look = look;
   }
+  if (value.accent !== undefined) {
+    const accent = parseAccent(value.accent, ctx);
+    if (accent) body.accent = accent;
+  }
   if (value.dismissedNew !== undefined) {
     if (Array.isArray(value.dismissedNew)) {
       body.dismissedNew = value.dismissedNew.filter((id): id is string => typeof id === "string");
@@ -408,6 +424,7 @@ export function serializeShellLayoutBody(body: ShellLayoutBody): string {
     ...(body.dock !== undefined ? { dock: body.dock } : {}),
     ...(body.landing !== undefined ? { landing: body.landing } : {}),
     ...(body.look !== undefined ? { look: { id: body.look.id } } : {}),
+    ...(body.accent !== undefined ? { accent: "id" in body.accent ? { id: body.accent.id } : { hex: body.accent.hex } } : {}),
     ...(body.dismissedNew !== undefined ? { dismissedNew: body.dismissedNew } : {}),
   };
   return JSON.stringify(ordered);

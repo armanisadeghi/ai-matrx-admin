@@ -13,6 +13,7 @@ database here.
 | `looks.ts` | THE LOOK REGISTRY (amendment 2026-10-20): `SHELL_LOOKS` (`standard`, `meet-matrx`), `isShellLookId`, `shellLookAttributes` (no attribute for standard), the domain tile hues `SHELL_LOOK_DOMAIN_HUES` + `shellLookHue`, and `shellLookRowProps` (row + tile attributes; empty without a look). |
 | `shell-looks.css` | Which shell boxes wear a look's tokens (sidebar/dock tiles, active row tint, utility rows — Side Chat, search, admin block, footer, Settings, route menus — as the quieter slate `--look-utility-tile`, a short sidebar bottom fade, canvas glow under the header band, launchpad widget cards). The look's own CSS is `@ai-matrx/design-system` `look-meet-matrx.css`, which also dresses page surfaces by itself (DS Card, outline Tile, neutral Chip/Badge) and host surfaces that opt in with `data-look-surface="card" \| "icon" \| "chip"` (dashboard cards, `KpiTile`, metric counts). Every rule is scoped to a look attribute. |
 | `editor/LookPane.tsx` | The Look cards (preview drawn by the look's own rules) — the editor's Look tab and Settings › Layout › Look. |
+| `editor/AccentPane.tsx` | The accent color (amendment 2026-10-20, lane Q): the design system's curated swatches (`@ai-matrx/design-system/accents` `ACCENTS`), "Default" (a person follows the organization's brand color), a custom hex used on Enter/blur, and a one-line WCAG AA warning for light or dark that never blocks. Under the Look panes in the editor (person and organization) and Settings › Layout › Look. |
 | `retired-nav-ids.ts` | Every nav id that left the menu → its successor id (or `null`). `resolveRetiredNavId` follows the chain. |
 | `catalog.ts` | THE placeable-destination catalog: `buildShellCatalog({ isAdmin })`, `getCatalogEntry`, `defaultSidebarTree`, `defaultDockTree`, `defaultHeaderButtons`, `SHELL_CATALOG_VERSION`, `CATALOG_ADDED_IN`. |
 | `validate.ts` | `parseShellLayoutBody(text)` (never throws) and `serializeShellLayoutBody(body)`. |
@@ -72,6 +73,9 @@ viewer's catalog cannot answer (unknown, or admin-only for a non-admin) are drop
 named in `problems`. Catalog entries newer than the body's `basedOnCatalogVersion` that are neither
 dismissed nor placed come back in `whatsNew` — never injected into the tree. An empty group still renders (its
 label, and one "Add pages…" row that runs the `edit-sidebar` nav action).
+The ONE per-field exception is the `accent`: the person's own (unless locked), else the organization's
+brand color, else none (`shellAccentOf`). An editor's first copy of the organization's body never takes its
+accent, so the brand color keeps reaching her until she picks her own.
 
 ## The resolved shape (for the renderers)
 
@@ -135,6 +139,12 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
 
 ## Change log
 
+- `2026-10-20` — claude (lane Q): the accent color and the organization's brand color — `accent` field
+  (`{id}` curated or `{hex}`; validate/serialize via `@ai-matrx/design-system/accents` `parseAccentRef`),
+  per-field resolution, `heldShellAccent` (agrees with the resolver), the design system's
+  `accentAttributes` stamped on `.shell-root` in the first frame (attribute + both themes' tokens; nothing
+  when none), `ShellLayoutSync` keeping `.shell-root` and `<html>` (portals) in step, `AccentPane`, the
+  organization's "Look and brand color…" door. Guard: `__tests__/accent.test.tsx`.
 - `2026-10-20` — claude (lane K): the Look — `look` region (validate/resolve/serialize), the look registry, the
   `data-shell-look` stamp on `.shell-root` from the seeded slice (`heldShellLook`, agrees with the resolver;
   live-updated by `ShellLayoutSync`), gradient tiles on sidebar/dock rows only under a look, the editor's Look

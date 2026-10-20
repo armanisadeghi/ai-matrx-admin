@@ -17,7 +17,10 @@ import { setShellStandardViewCookie } from "@/features/shell/shell-layout/ShellL
 import { ShellLayoutMount } from "@/features/shell/shell-layout/editor/ShellLayoutMount";
 import { useShellLayoutStore } from "@/features/shell/shell-layout/useShellLayoutStore";
 import { parseShellLayoutBody } from "@/features/shell/shell-layout/validate";
-import { lookOf, startingBody, withLook } from "@/features/shell/shell-layout/editor/regions";
+import { accentOf, lookOf, startingBody, withAccent, withLook } from "@/features/shell/shell-layout/editor/regions";
+import { AccentPane } from "@/features/shell/shell-layout/editor/AccentPane";
+import { accentDef } from "@ai-matrx/design-system/accents";
+import type { ShellAccentRef } from "@/features/shell/shell-layout/contract";
 import { LookPane } from "@/features/shell/shell-layout/editor/LookPane";
 import { shellLookDef } from "@/features/shell/shell-layout/looks";
 import { useLaunchpads } from "@/features/launchpad/useLaunchpads";
@@ -54,7 +57,7 @@ export default function LayoutTab() {
   );
 }
 
-/** The Look the shell wears (the layout's `look`), saved on choosing — the same cards as the editor's Look tab. */
+/** The Look the shell wears (the layout's `look`) and its accent color, saved on choosing — the same panes as the editor's Look tab. */
 function LookSection() {
   const store = useShellLayoutStore();
   if (store.loading) return null;
@@ -67,9 +70,24 @@ function LookSection() {
     const answer = await store.save("person", body, `Look: ${shellLookDef(look).label}`);
     if (!answer.ok) toast.error(answer.error);
   };
+  const accent = accentOf(own);
+  const orgAccent = accentOf(org);
+  const chooseAccent = async (next: ShellAccentRef | null) => {
+    const body = withAccent(startingBody(own, org, "person"), next);
+    const note = next === null ? "Accent: default" : "id" in next ? `Accent: ${accentDef(next.id)?.label ?? next.id}` : `Accent: ${next.hex}`;
+    const answer = await store.save("person", body, note);
+    if (!answer.ok) toast.error(answer.error);
+  };
   return (
     <SettingsSection title="Look">
       <LookPane value={current} disabled={store.saving} onChange={(look) => void choose(look)} />
+      <AccentPane
+        value={accent}
+        inherited={orgAccent}
+        inheritedLabel={orgAccent ? "Organization color" : "Standard"}
+        disabled={store.saving}
+        onChange={(next) => void chooseAccent(next)}
+      />
     </SettingsSection>
   );
 }

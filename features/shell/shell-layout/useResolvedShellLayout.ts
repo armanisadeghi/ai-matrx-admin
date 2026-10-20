@@ -39,6 +39,9 @@ export function useShellLook() {
   return useAppSelector(selectShellLook);
 }
 
+/** The accent color (null = the built-in primary): the stamp on `.shell-root` and on <html> for portals. */
+export const selectShellAccent = createSelector([selectResolvedShellLayout], (layout) => layout.accent);
+
 export const selectShellStandardView = createSelector([selectShellLayoutSlice], (held) => held.standardView);
 
 export function useResolvedShellLayout(): ResolvedShellLayout {

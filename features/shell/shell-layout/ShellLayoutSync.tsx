@@ -9,6 +9,10 @@
 //      predict it).
 //   5. The Look: the server stamped `data-shell-look` on `.shell-root` for the first frame; a save, the
 //      editor's live preview or the Standard view switch changes it here, in place (no reload).
+//   6. The accent: the server stamped the design system's `data-matrx-accent` + tokens on `.shell-root`;
+//      changes land here in place, and the same stamp is mirrored onto <html> so portaled menus,
+//      dialogs and toasts (outside `.shell-root`) wear it too. Portals only open after hydration, so the
+//      mirror never races the first frame.
 //   3. The `matrx_shell` cookie mirrors "a custom layout is held" so the next server render can reserve
 //      the nav column if its seed is late; cleared when nothing is held.
 // Only where the (core) layout seeded the slice (`enabled`); everywhere else it does nothing.
@@ -23,7 +27,24 @@ import { holdsShellLayout, initialShellLayoutState, shellLayoutOrganizationChang
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { SHELL_MEMBERS_MAY_CUSTOMIZE_KNOB } from "./knob";
-import { selectShellLook } from "./useResolvedShellLayout";
+import { selectShellAccent, selectShellLook } from "./useResolvedShellLayout";
+import { ACCENT_ATTRIBUTE, ACCENT_PROPERTIES, accentAttributes } from "@ai-matrx/design-system/accents";
+import type { ShellAccentRef } from "./contract";
+
+const ACCENT_PROPERTY_NAMES = [...Object.values(ACCENT_PROPERTIES.light), ...Object.values(ACCENT_PROPERTIES.dark)];
+
+/** Puts one accent's stamp on an element (or takes it off), touching only the accent's own attribute and properties. */
+export function applyShellAccent(element: HTMLElement, accent: ShellAccentRef | null): void {
+  const { style, ...attrs } = accentAttributes(accent);
+  const value = attrs[ACCENT_ATTRIBUTE];
+  if (!value || !style) {
+    element.removeAttribute(ACCENT_ATTRIBUTE);
+    for (const name of ACCENT_PROPERTY_NAMES) element.style.removeProperty(name);
+    return;
+  }
+  for (const [name, v] of Object.entries(style)) if (element.style.getPropertyValue(name) !== v) element.style.setProperty(name, v);
+  if (element.getAttribute(ACCENT_ATTRIBUTE) !== value) element.setAttribute(ACCENT_ATTRIBUTE, value);
+}
 
 /** The streamed seed's own deadline (`CORE_SEED_STREAM_DEADLINE_MS`) plus a margin. */
 const STREAMED_SEED_WAIT_MS = 5_000;
@@ -91,6 +112,15 @@ export default function ShellLayoutSync() {
     if (look && root.dataset.shellLook !== look) root.dataset.shellLook = look;
     if (!look && root.dataset.shellLook !== undefined) delete root.dataset.shellLook;
   }, [enabled, look]);
+
+  const accent = useAppSelector(selectShellAccent);
+  useEffect(() => {
+    if (!enabled) return;
+    const root = document.querySelector<HTMLElement>(".shell-root");
+    if (root) applyShellAccent(root, accent);
+    applyShellAccent(document.documentElement, accent);
+    return () => applyShellAccent(document.documentElement, null);
+  }, [enabled, accent]);
 
   return null;
 }

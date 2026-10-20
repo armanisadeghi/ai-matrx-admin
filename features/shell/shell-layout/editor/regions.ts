@@ -7,6 +7,7 @@
 import {
   SHELL_LAYOUT_SCHEMA_VERSION,
   type HeaderButton,
+  type ShellAccentRef,
   type ShellLayoutBody,
   type ShellNode,
 } from "../contract";
@@ -46,11 +47,25 @@ export function withLook(body: ShellLayoutBody, look: ShellLookId): ShellLayoutB
   return look === STANDARD_SHELL_LOOK ? rest : { ...rest, look: { id: look } };
 }
 
-/** The body an editor starts from: the target's own, else (a person) the organization's copy, else a fresh one. */
+/** The body's own accent (null = none of its own: a person follows the organization's brand color). */
+export function accentOf(body: ShellLayoutBody | null): ShellAccentRef | null {
+  return body?.accent ?? null;
+}
+/** The body with `accent` chosen; null removes it (what you see is what is stored). */
+export function withAccent(body: ShellLayoutBody, accent: ShellAccentRef | null): ShellLayoutBody {
+  const { accent: _old, ...rest } = body;
+  return accent ? { ...rest, accent } : rest;
+}
+
+/**
+ * The body an editor starts from: the target's own, else (a person) the organization's copy, else a fresh
+ * one. The copy never takes the organization's accent: that is its brand color, which a person's layout
+ * follows by NOT naming one (resolved per field), so a later brand change still reaches her.
+ */
 export function startingBody(own: ShellLayoutBody | null, organization: ShellLayoutBody | null, target: "person" | "organization"): ShellLayoutBody {
   if (own) return own;
   if (target === "person" && organization) {
-    const { dismissedNew: _d, landing: _l, ...regions } = organization;
+    const { dismissedNew: _d, landing: _l, accent: _a, ...regions } = organization;
     return { ...regions, schemaVersion: SHELL_LAYOUT_SCHEMA_VERSION };
   }
   return { schemaVersion: SHELL_LAYOUT_SCHEMA_VERSION, basedOnCatalogVersion: SHELL_CATALOG_VERSION };
