@@ -191,3 +191,47 @@ test("a page that opens after the job finished shows its snapshot, and a stopped
   expect(failed.querySelector("[data-snapshot-restore]")).toBeNull();
   expect(buttonNamed(failed as HTMLElement, "Remove")).toBeDefined();
 });
+
+// FIX-RESTORE: the restore job names the new base and marks the snapshot itself; the screen only re-reads.
+test("a restore job that answers its own base_id is never named again by the page", async () => {
+  listSnapshots.mockResolvedValue([{ id: "snap-1", label: "Before", origin: "manual", tables: SNAP_TABLES, created_at: "2026-10-19T18:00:00Z" }]);
+  postJson.mockResolvedValueOnce({ data: { job_id: "job-r" } });
+  getJson.mockResolvedValueOnce({ data: { state: "done", kind: "restore", result: { home_id: "home-new", base_id: "base-new", tables: [{}] } } });
+  const host = mount(dialog());
+  await settle();
+  await act(async () => { (host.querySelector("[data-snapshot-restore]") as HTMLButtonElement).click(); });
+  await settle();
+  expect(saveBase).not.toHaveBeenCalled();
+  expect(push).toHaveBeenCalledWith("/data/bases/home-new");
+});
+
+test("a small snapshot restores through the same job too (never the browser loop that can leave copies behind)", async () => {
+  const small = [{ table_id: "t1", snapshot_table_id: "s1", name: "Tasks", records: 3 }];
+  listSnapshots.mockResolvedValue([{ id: "snap-2", label: "Tiny", origin: "manual", tables: small, created_at: "2026-10-19T18:00:00Z" }]);
+  postJson.mockResolvedValueOnce({ data: { job_id: "job-r2" } });
+  getJson.mockResolvedValueOnce({ data: { state: "done", kind: "restore", result: { home_id: "home-2", base_id: "base-2", tables: [{}] } } });
+  const host = mount(dialog());
+  await settle();
+  await act(async () => { (host.querySelector("[data-snapshot-restore]") as HTMLButtonElement).click(); });
+  await settle();
+  expect(restoreSnapshot).not.toHaveBeenCalled();
+  expect(postJson.mock.calls[0]![0]).toBe("/base-move/restore-jobs");
+});
+
+test("a stopped restore is read back from the snapshot row and shown with its sentence, Restore still offered", async () => {
+  const sentence = "The restore stopped before it finished. Nothing new was made and the snapshot is untouched; try again.";
+  listSnapshots
+    .mockResolvedValueOnce([{ id: "snap-1", label: "Before", origin: "manual", tables: SNAP_TABLES, created_at: "2026-10-19T18:00:00Z" }])
+    .mockResolvedValue([{ id: "snap-1", label: "Before", origin: "manual", tables: SNAP_TABLES, created_at: "2026-10-19T18:00:00Z",
+      last_restore: { job_id: "job-r", state: "failed", failure: sentence } }]);
+  postJson.mockResolvedValueOnce({ data: { job_id: "job-r" } });
+  getJson.mockResolvedValueOnce({ data: { state: "refused", kind: "restore", code: "stopped", message: sentence } });
+  const host = mount(dialog());
+  await settle();
+  await act(async () => { (host.querySelector("[data-snapshot-restore]") as HTMLButtonElement).click(); });
+  await settle();
+  const row = host.querySelector("[data-snapshot='snap-1']")!;
+  expect(row.querySelector("[data-snapshot-restore-failed]")?.textContent).toContain("The restore stopped before it finished.");
+  expect(row.querySelector("[data-snapshot-restore]")).not.toBeNull();
+  expect(saveBase).not.toHaveBeenCalled();
+});

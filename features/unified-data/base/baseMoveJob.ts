@@ -107,9 +107,3 @@ export async function followBaseSnapshotJob(organizationId: string, jobId: strin
   }
 }
 
-/** A restore's size is the snapshot's own record counts (its copies are put away, so a live count reads them as empty). */
-export async function planSnapshotRestore(tables: ReadonlyArray<{ records?: number | null }>): Promise<{ rows: number; job: boolean }> {
-  const max = await knobInt("records", "base_move_direct_max_rows");
-  const rows = tables.reduce((n, t) => n + (Number(t.records) || 0), 0);
-  return { rows, job: rows > max };
-}

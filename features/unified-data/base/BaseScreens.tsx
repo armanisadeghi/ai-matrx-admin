@@ -4,11 +4,11 @@
 //
 // A Base is a Home's group of tables. Its page lists the tables, the pages (interfaces) and the automations that belong to them,
 // with a name, icon, color and description a person can change. Duplicate base, snapshots and the two importers start here. The
-// whole-base verbs are @ai-matrx/records `duplicateBase` / `snapshotBase` / `restoreSnapshot` over the records client.
+// whole-base verbs are @ai-matrx/records `duplicateBase` / `snapshotBase` over the records client; a restore is the server job.
 
 import { ActivityFeedButton } from "@/features/unified-data/table-page/TableAccessBar";
 import { ensureTable } from "@ai-matrx/records/core";
-import { duplicateBase, restoredBaseName, restoreSnapshot, snapshotBase, type BaseCopyProgress, type BaseTable } from "@ai-matrx/records";
+import { duplicateBase, restoredBaseName, snapshotBase, type BaseCopyProgress, type BaseTable } from "@ai-matrx/records";
 import { useRecordsClient } from "@ai-matrx/records/react";
 import { Button, Field } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
@@ -31,7 +31,7 @@ import { OrganizationChooser } from "@/features/organizations/components/Organiz
 import { AirtableImportDialog } from "./AirtableImportDialog";
 import { makeEmptyBase } from "./makeEmptyBase";
 import {
-  followBaseSnapshotJob, planBaseMove, planSnapshotRestore, readBaseMoveJob, snapshotProgressLine, startBaseMoveJob, startBaseSnapshotJob, startSnapshotRestoreJob,
+  followBaseSnapshotJob, planBaseMove, readBaseMoveJob, snapshotProgressLine, startBaseMoveJob, startBaseSnapshotJob, startSnapshotRestoreJob,
   type BaseSnapshotJobView,
 } from "./baseMoveJob";
 import { GithubImportDialog } from "./GithubImportDialog";
@@ -599,30 +599,22 @@ export function SnapshotsDialog({ open, onClose, homeId, organizationId, name, t
       setLabel(""); await load(b);
     } catch (e) { setNote(sayError(e, "The snapshot failed.")); } finally { setBusy(null); }
   };
+  // Every restore is the server job (FIX-RESTORE): one transaction, so a restore that stops leaves no "(restored)" table in any
+  // list, and the job names the new base and marks the snapshot itself (kept, or said stopped, whether or not this page stays
+  // open). The screen only re-reads. A server from before that change answers no base_id, so the base is named here as before.
   const restore = async (s: BaseSnapshotRow) => {
     setBusy("Restoring as a new base…"); setNote(null);
     const restoredOn = new Date().toLocaleDateString();
-    const plan = await planSnapshotRestore(s.tables).catch(() => ({ rows: 0, job: false }));
-    if (plan.job) {
-      try {
-        const jobId = await startSnapshotRestoreJob(organizationId, { snapshotId: s.id, tables: s.tables, baseName: restoredBaseName(name, restoredOn) });
-        const view: BaseSnapshotJobView = await followBaseSnapshotJob(organizationId, jobId, (v) => setBusy(snapshotProgressLine(v, "restore")));
-        if (view.state !== "done") { setNote(view.state === "refused" ? view.message : "The restore stopped before it finished. The snapshot itself is untouched."); return; }
-        const done = view.result as { home_id?: string; tables?: unknown[] };
-        const jobHome = done.home_id ?? null;
-        if (jobHome) await saveBase(organizationId, jobHome, { name: restoredBaseName(name, restoredOn), icon: identity?.icon ?? null, color: identity?.color ?? null, description: identity?.description ?? null, template: "restore" });
-        setNote(`Restored as a new base: ${(done.tables ?? []).length} tables.`);
-        if (jobHome) router.push(`/data/bases/${jobHome}`);
-      } catch (e) { setNote(sayError(e, "The restore failed.")); } finally { setBusy(null); }
-      return;
-    }
-    const res = await restoreSnapshot(port, { organizationId, baseName: name, restoredOn, snapshot: { label: s.label, origin: s.origin, tables: s.tables }, onProgress: (p) => setBusy(`Copying ${p.tableName} (${p.at} of ${p.of})…`) });
-    setBusy(null);
-    if (!res.ok) { setNote(`The restore stopped at ${res.stoppedAt.name}. The snapshot itself is untouched.`); return; }
-    const home = res.data.homeId;
-    if (home) await saveBase(organizationId, home, { name: restoredBaseName(name, restoredOn), icon: identity?.icon ?? null, color: identity?.color ?? null, description: identity?.description ?? null, template: "restore" });
-    setNote(`Restored as a new base: ${res.data.tables.length} tables${res.data.extrasRefused.length ? `. ${res.data.extrasRefused.join(" ")}` : ""}.`);
-    if (home) router.push(`/data/bases/${home}`);
+    try {
+      const jobId = await startSnapshotRestoreJob(organizationId, { snapshotId: s.id, tables: s.tables, baseName: restoredBaseName(name, restoredOn) });
+      const view: BaseSnapshotJobView = await followBaseSnapshotJob(organizationId, jobId, (v) => setBusy(snapshotProgressLine(v, "restore")));
+      if (view.state !== "done") { setNote(view.state === "refused" ? view.message : "The restore stopped before it finished. The snapshot itself is untouched."); await load(base); return; }
+      const done = view.result as { home_id?: string; base_id?: string; tables?: unknown[] };
+      const jobHome = done.home_id ?? null;
+      if (jobHome && !done.base_id) await saveBase(organizationId, jobHome, { name: restoredBaseName(name, restoredOn), icon: identity?.icon ?? null, color: identity?.color ?? null, description: identity?.description ?? null, template: "restore" });
+      setNote(`Restored as a new base: ${(done.tables ?? []).length} tables.`);
+      if (jobHome) router.push(`/data/bases/${jobHome}`);
+    } catch (e) { setNote(sayError(e, "The restore failed.")); await load(base).catch(() => undefined); } finally { setBusy(null); }
   };
   const scheduleOn = base?.snapshot_schedule?.enabled === true;
   return (
@@ -644,7 +636,10 @@ export function SnapshotsDialog({ open, onClose, homeId, organizationId, name, t
                   <ErrorNotice message={s.failure || "The snapshot stopped before it finished."} operation="Take snapshot" size="inline" />
                 </span>
               ) : (
-                <span className="min-w-0 truncate">{s.label}<span className="ml-2 text-xs text-muted-foreground">{s.tables.length} tables · {new Date(s.created_at).toLocaleDateString()}</span></span>
+                <span className="min-w-0 flex-1">
+                  <span className="truncate">{s.label}<span className="ml-2 text-xs text-muted-foreground">{s.tables.length} tables · {new Date(s.created_at).toLocaleDateString()}</span></span>
+                  {s.last_restore?.state === "failed" ? <span data-snapshot-restore-failed=""><ErrorNotice message={s.last_restore.failure || "The restore stopped before it finished. The snapshot itself is untouched."} operation="Restore as new base" size="inline" /></span> : null}
+                </span>
               )}
               <span className="flex gap-1">
                 {s.state === "failed" ? null : <Button variant="quiet" disabled={!!busy} onClick={() => void restore(s)} data-snapshot-restore="">Restore as new base</Button>}
