@@ -79,7 +79,7 @@ function prepareSettingsWrite(
   if (norm.notes.length === 0) return [];
   partial.settings = norm.settings as AgentDefinition["settings"];
   if (norm.outputSchema && partial.outputSchema === undefined) {
-    partial.outputSchema = norm.outputSchema as AgentDefinition["outputSchema"];
+    partial.outputSchema = norm.outputSchema as unknown as AgentDefinition["outputSchema"];
   }
   return norm.notes;
 }
