@@ -42,7 +42,7 @@ const SALES = SPACES.find((c) => c.catalogue_id === "SP0150")!;
 jest.mock("../gallery/publicCatalogue.server", () => {
   const { readPublicCatalogueWith } = jest.requireActual("../gallery/publicGallery") as typeof import("../gallery/publicGallery");
   const read = () => readPublicCatalogueWith(async (offset: number) => ({ data: { total: CARDS.length, limit: 200, offset, cards: offset ? [] : CARDS }, error: null }));
-  return {
+  const api = {
     readPublicCatalogue: read,
     readPublicCatalogueFresh: read,
     readTemplatePage: async (key: string) => {
@@ -54,6 +54,14 @@ jest.mock("../gallery/publicCatalogue.server", () => {
         return { card, spec, pack: rest, updatedAt: null };
       }
       return { card, spec: { id: card.catalogue_id, tables: [], views: [], forms: [], extras: [] }, pack: null, updatedAt: null };
+    },
+  };
+  // ADVERSARIAL-5 F3: the page reads its state (open / missing / unavailable); answered from the same fake.
+  return {
+    ...api,
+    readTemplatePageState: async (key: string) => {
+      const page = await api.readTemplatePage(key);
+      return page ? { state: "open", page } : { state: "missing" };
     },
   };
 });

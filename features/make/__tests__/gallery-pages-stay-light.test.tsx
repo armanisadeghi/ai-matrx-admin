@@ -70,7 +70,7 @@ jest.mock("../gallery/publicCatalogue.server", () => {
   const { readPublicCatalogueWith } = jest.requireActual("../gallery/publicGallery") as typeof import("../gallery/publicGallery");
   const read = () =>
     readPublicCatalogueWith(async (offset: number) => ({ data: { total: CARDS.length, limit: 200, offset, cards: CARDS.slice(offset, offset + 200) }, error: null }));
-  return {
+  const api = {
     readPublicCatalogue: read,
     readPublicCatalogueFresh: read,
     readTemplatePage: async (key: string) => {
@@ -78,6 +78,14 @@ jest.mock("../gallery/publicCatalogue.server", () => {
       if (!card) return null;
       const { spec, ...pack } = PLUMBING;
       return { card, spec, pack, updatedAt: null };
+    },
+  };
+  // ADVERSARIAL-5 F3: the page reads its state (open / missing / unavailable); answered from the same fake.
+  return {
+    ...api,
+    readTemplatePageState: async (key: string) => {
+      const page = await api.readTemplatePage(key);
+      return page ? { state: "open", page } : { state: "missing" };
     },
   };
 });
