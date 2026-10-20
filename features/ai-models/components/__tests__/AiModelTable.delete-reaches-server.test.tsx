@@ -11,15 +11,15 @@
  * `deleted_at` — delete means archive, 2026-09-27) and only then calls
  * `onDelete`, with a pending state and `toastWriteFailure` on error.
  *
- * This test renders the exported `RowActions` row-menu component directly
- * (raw `react-dom/client`, matching this feature's existing
- * `AiModelFilterBar.test.tsx` pattern — no `@testing-library/react` in this
+ * This test renders the exported `ModelRowActions` row-menu component directly
+ * (raw `react-dom/client` — no `@testing-library/react` in this
  * repo), clicks Delete then confirms, and asserts the server call happened
  * before `onDelete` fired.
  */
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { RowActions } from "../AiModelTable";
+import { ModelRowActions } from "../AiModelTable";
+import { TooltipProvider } from "@ai-matrx/design-system";
 import type { AiModel } from "../../types";
 
 (
@@ -76,18 +76,20 @@ describe("AiModelTable row delete reaches the server", () => {
 
     act(() => {
       root.render(
-        <RowActions
-          item={model}
-          onView={() => undefined}
-          onEdit={() => undefined}
-          onDuplicate={() => undefined}
-          onDelete={onDelete}
-        />,
+        <TooltipProvider>
+          <ModelRowActions
+            model={model}
+            onSelect={() => undefined}
+            onEdit={() => undefined}
+            onDuplicate={() => undefined}
+            onDelete={onDelete}
+          />
+        </TooltipProvider>,
       );
     });
 
     const deleteButton = container.querySelector<HTMLButtonElement>(
-      'button[title="Move to Trash"]',
+      'button[aria-label="Move model to Trash"]',
     );
     expect(deleteButton).not.toBeNull();
     act(() => {

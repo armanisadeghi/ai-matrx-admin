@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import React from "react";
 import {
   MatrxDataTable,
   type MatrxDataTableQueryState,
@@ -13,24 +12,13 @@ import {
   CopyTapButton,
   TrashTapButton,
 } from "@ai-matrx/design-system/tap-target/buttons";
-import { Button } from "@/components/ui/button";
 import {
   Badge,
   Chip,
-  EmptyState,
-  Input,
-  Select,
   type BadgeTone,
   type ChipTone,
 } from "@ai-matrx/design-system/controls";
-import { Skeleton } from "@ai-matrx/design-system";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@ai-matrx/design-system";
 import { AI_MODEL_DRILL } from "./aiModelDrill";
-import GenericTablePagination from "@ai-matrx/design-system/data-table/pagination";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,36 +29,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Eye,
-  Pencil,
-  Trash2,
-  Copy,
-  Cpu,
-  ArrowUp,
-  ArrowDown,
-  ArrowUpDown,
-  ListFilter,
-  MoveHorizontal,
-} from "lucide-react";
 import type { AiModel, AiProvider } from "../types";
-import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { AiModelRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
 import { aiModelSummary, AI_MODELS_LOCATION } from "../format";
 import { CostRatingCell } from "./CostRatingCell";
 import { matchesTierView } from "../maxTier";
-import {
-  DEFAULT_AI_MODEL_FILTERS,
-  isDeprecatedFilterNonDefault,
-  type TabState,
-  type AiModelFilters,
-} from "../hooks/useTabUrlState";
-import AiModelFilterBar from "./AiModelFilterBar";
-import { cn } from "@/lib/utils";
-import { MOBILE_TABLE_FROZEN_SECOND } from "@/components/official/mobile-table/mobileTable";
+import type { TabState } from "../hooks/useTabUrlState";
 import { parseCapabilities } from "@ai-matrx/agents/models";
-import { isContentType, type ContentType } from "@ai-matrx/agents/models";
-import { applyAiModelFilters, sortAiModels } from "../utils/filterUtils";
+import { type ContentType } from "@ai-matrx/agents/models";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { aiModelHref, aiProviderHref } from "../doors";
 import { aiModelService } from "../service";
@@ -166,7 +132,7 @@ interface ColDef {
   header: string;
   width: string;
   sortable: boolean;
-  filterType?: FilterType;
+  filter?: "select" | "boolean" | "number";
   className?: string;
   render: (
     item: AiModel,
@@ -246,7 +212,7 @@ const COLUMNS: ColDef[] = [
     header: "Provider",
     width: "w-[120px] min-w-[100px]",
     sortable: true,
-    filterType: "provider",
+    filter: "select",
     render: (item) => (
       <Chip tone={providerTone(item.maker)} label={item.maker ?? "—"} />
     ),
@@ -273,7 +239,7 @@ const COLUMNS: ColDef[] = [
     header: "Input",
     width: "w-[150px] min-w-[130px]",
     sortable: false,
-    filterType: "input_capability",
+    filter: "select",
     render: (item) => (
       <ModalityBadges
         values={
@@ -290,7 +256,7 @@ const COLUMNS: ColDef[] = [
     header: "Output",
     width: "w-[140px] min-w-[120px]",
     sortable: false,
-    filterType: "output_capability",
+    filter: "select",
     render: (item) => (
       <ModalityBadges
         values={
@@ -307,7 +273,7 @@ const COLUMNS: ColDef[] = [
     header: "Context",
     width: "w-[80px] min-w-[70px]",
     sortable: true,
-    filterType: "context_window",
+    filter: "number",
     className: "text-right",
     render: (item) => (
       <span className="type-meta tabular-nums">
@@ -320,7 +286,7 @@ const COLUMNS: ColDef[] = [
     header: "Max Tokens",
     width: "w-[90px] min-w-[80px]",
     sortable: true,
-    filterType: "max_tokens",
+    filter: "number",
     className: "text-right",
     render: (item) => (
       <span className="type-meta tabular-nums">
@@ -335,7 +301,7 @@ const COLUMNS: ColDef[] = [
     header: "Deprecated",
     width: "w-[90px] min-w-[80px]",
     sortable: true,
-    filterType: "is_deprecated",
+    filter: "boolean",
     render: (item) => (
       <BoolBadge
         value={item.is_deprecated}
@@ -349,7 +315,7 @@ const COLUMNS: ColDef[] = [
     header: "Primary",
     width: "w-[75px] min-w-[70px]",
     sortable: true,
-    filterType: "is_primary",
+    filter: "boolean",
     render: (item) => (
       <BoolBadge
         value={item.is_primary}
@@ -363,7 +329,7 @@ const COLUMNS: ColDef[] = [
     header: "Premium",
     width: "w-[75px] min-w-[70px]",
     sortable: true,
-    filterType: "is_premium",
+    filter: "boolean",
     render: (item) => (
       <BoolBadge
         value={item.is_premium}
@@ -382,514 +348,6 @@ const COLUMNS: ColDef[] = [
   // Pricing remains read-only here; editing still lives only on ai.offering.
 ];
 
-// ─── Row Actions ─────────────────────────────────────────────────────────────
-
-interface RowActionsProps {
-  item: AiModel;
-  onView: (item: AiModel) => void;
-  onEdit: (item: AiModel) => void;
-  onDuplicate: (item: AiModel) => void;
-  onDelete: (item: AiModel) => void;
-}
-
-export function RowActions({
-  item,
-  onView,
-  onEdit,
-  onDuplicate,
-  onDelete,
-}: RowActionsProps) {
-  const [pendingDelete, setPendingDelete] = React.useState(false);
-  const [deleting, setDeleting] = React.useState(false);
-
-  const handleConfirmDelete = async () => {
-    setDeleting(true);
-    try {
-      await aiModelService.remove(item.id);
-      setPendingDelete(false);
-      onDelete(item);
-    } catch (err) {
-      toastWriteFailure(err, { action: "move this model to Trash", remedy: "Try again." });
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  return (
-    <>
-      <div className="flex items-center gap-0.5 opacity-100 transition-opacity xl:opacity-0 xl:group-hover:opacity-100">
-        <Button
-          icon={<Eye />} aria-label="View"
-          variant="quiet"
-          title="View"
-          onClick={(e) => {
-            e.stopPropagation();
-            onView(item);
-          }}
-        />
-        <Button
-          icon={<Pencil />} aria-label="Edit"
-          variant="quiet"
-          title="Edit"
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit(item);
-          }}
-        />
-        <Button
-          icon={<Copy />} aria-label="Duplicate"
-          variant="quiet"
-          title="Duplicate"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDuplicate(item);
-          }}
-        />
-        <span onClick={(e) => e.stopPropagation()} className="contents">
-          <CopyButtons
-            size="icon"
-            label={item.common_name || item.name}
-            human={() => aiModelSummary(item)}
-            agent={() => ({
-              kind: "ai-model",
-              location: AI_MODELS_LOCATION,
-              description: "A single AI model registry row.",
-              data: item,
-              summary: aiModelSummary(item),
-              attributes: {
-                id: item.id,
-                provider: item.maker ?? item.provider_id ?? "",
-              },
-            })}
-          />
-        </span>
-        <Button
-          icon={<Trash2 />} aria-label="Move to Trash"
-          variant="quiet"
-          title="Move to Trash"
-          onClick={(e) => {
-            e.stopPropagation();
-            setPendingDelete(true);
-          }}
-        />
-      </div>
-
-      <AlertDialog open={pendingDelete} onOpenChange={setPendingDelete}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Move &quot;{item.common_name || item.name}&quot; to Trash?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              The model &quot;{item.common_name || item.name}&quot; ({item.name})
-              leaves the model list, and agents set to it cannot run on it while
-              it is in Trash. Restore it from Trash to bring it back.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={deleting}
-              onClick={() => void handleConfirmDelete()}
-            >
-              {deleting ? "Moving…" : "Move to Trash"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
-}
-
-// ─── Sort Icon ────────────────────────────────────────────────────────────────
-
-function SortIcon({
-  field,
-  sortBy,
-  dir,
-}: {
-  field: string;
-  sortBy: string;
-  dir: "asc" | "desc";
-}) {
-  if (field !== sortBy) return <ArrowUpDown className="h-3 w-3 opacity-30" />;
-  return dir === "asc" ? (
-    <ArrowUp className="h-3 w-3 text-primary" />
-  ) : (
-    <ArrowDown className="h-3 w-3 text-primary" />
-  );
-}
-
-// ─── Column Filter ────────────────────────────────────────────────────────────
-
-type FilterType =
-  | "provider"
-  | "input_capability"
-  | "output_capability"
-  | "is_deprecated"
-  | "is_primary"
-  | "is_premium"
-  | "context_window"
-  | "max_tokens";
-
-interface FilterOptions {
-  providers: string[];
-  inputCapabilities: ContentType[];
-  outputCapabilities: ContentType[];
-}
-
-function isFilterActive(
-  filterType: FilterType,
-  filters: AiModelFilters,
-): boolean {
-  switch (filterType) {
-    case "provider":
-      return !!filters.provider;
-    case "input_capability":
-      return !!filters.input_capability;
-    case "output_capability":
-      return !!filters.output_capability;
-    case "is_deprecated":
-      return isDeprecatedFilterNonDefault(filters);
-    case "is_primary":
-      return filters.is_primary !== undefined;
-    case "is_premium":
-      return filters.is_premium !== undefined;
-    case "context_window":
-      return (
-        filters.context_window_min !== undefined ||
-        filters.context_window_max !== undefined
-      );
-    case "max_tokens":
-      return (
-        filters.max_tokens_min !== undefined ||
-        filters.max_tokens_max !== undefined
-      );
-  }
-}
-
-function SelectFilterContent({
-  label,
-  value,
-  options,
-  onChange,
-  onClear,
-}: {
-  label: string;
-  value: string | undefined;
-  options: { value: string; label: string }[];
-  onChange: (v: string) => void;
-  onClear: () => void;
-}) {
-  return (
-    <div className="flex flex-col gap-2 w-[160px]">
-      <p className="type-label">
-        Filter: {label}
-      </p>
-      <Select
-        aria-label={`Filter: ${label}`}
-        value={value ?? "__all__"}
-        options={[{ value: "__all__", label: "All" }, ...options]}
-        onValueChange={(v) => (v === "__all__" ? onClear() : onChange(v))}
-      />
-      {value !== undefined && (
-        <Button
-          variant="quiet"
-          onClick={onClear}
-        >
-          Clear filter
-        </Button>
-      )}
-    </div>
-  );
-}
-
-function BoolFilterContent({
-  label,
-  value,
-  trueLabel,
-  falseLabel,
-  onChange,
-  onClear,
-}: {
-  label: string;
-  value: boolean | undefined;
-  trueLabel: string;
-  falseLabel: string;
-  onChange: (v: boolean) => void;
-  onClear: () => void;
-}) {
-  return (
-    <div className="flex flex-col gap-2 w-[150px]">
-      <p className="type-label">
-        Filter: {label}
-      </p>
-      <Select
-        aria-label={`Filter: ${label}`}
-        value={value === true ? "true" : value === false ? "false" : "__all__"}
-        options={[
-          { value: "__all__", label: "All" },
-          { value: "true", label: trueLabel },
-          { value: "false", label: falseLabel },
-        ]}
-        onValueChange={(v) =>
-          v === "__all__" ? onClear() : onChange(v === "true")
-        }
-      />
-      {value !== undefined && (
-        <Button
-          variant="quiet"
-          onClick={onClear}
-        >
-          Clear filter
-        </Button>
-      )}
-    </div>
-  );
-}
-
-function RangeFilterContent({
-  label,
-  minKey,
-  maxKey,
-  minValue,
-  maxValue,
-  onUpdateFilters,
-}: {
-  label: string;
-  minKey: "context_window_min" | "max_tokens_min";
-  maxKey: "context_window_max" | "max_tokens_max";
-  minValue: number | undefined;
-  maxValue: number | undefined;
-  onUpdateFilters: (patch: Partial<AiModelFilters>) => void;
-}) {
-  const [min, setMin] = React.useState(
-    minValue !== undefined ? String(minValue) : "",
-  );
-  const [max, setMax] = React.useState(
-    maxValue !== undefined ? String(maxValue) : "",
-  );
-
-  const commitMin = (raw: string) => {
-    if (raw === "") {
-      onUpdateFilters({ [minKey]: undefined });
-      return;
-    }
-    const n = parseInt(raw.replace(/[^0-9]/g, ""), 10);
-    if (!isNaN(n)) onUpdateFilters({ [minKey]: n });
-  };
-  const commitMax = (raw: string) => {
-    if (raw === "") {
-      onUpdateFilters({ [maxKey]: undefined });
-      return;
-    }
-    const n = parseInt(raw.replace(/[^0-9]/g, ""), 10);
-    if (!isNaN(n)) onUpdateFilters({ [maxKey]: n });
-  };
-
-  const hasFilter = minValue !== undefined || maxValue !== undefined;
-
-  return (
-    <div className="flex flex-col gap-2 w-[190px]">
-      <div className="flex items-center justify-between">
-        <p className="type-label">
-          Filter: {label}
-        </p>
-        {hasFilter && (
-          <Button
-            variant="quiet"
-            onClick={() => {
-              setMin("");
-              setMax("");
-              onUpdateFilters({ [minKey]: undefined, [maxKey]: undefined });
-            }}
-          >
-            Clear
-          </Button>
-        )}
-      </div>
-      <div className="flex items-center gap-1.5">
-        <Input mono
-          value={min}
-          onChange={(e) => setMin(e.target.value)}
-          onBlur={(e) => commitMin(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") e.currentTarget.blur();
-          }}
-          placeholder="min"
-          className="w-[80px]"
-        />
-        <span className="type-meta text-muted-foreground">–</span>
-        <Input mono
-          value={max}
-          onChange={(e) => setMax(e.target.value)}
-          onBlur={(e) => commitMax(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") e.currentTarget.blur();
-          }}
-          placeholder="max"
-          className="w-[80px]"
-        />
-      </div>
-    </div>
-  );
-}
-
-function ColumnHeaderFilter({
-  filterType,
-  filters,
-  onUpdateFilters,
-  filterOptions,
-}: {
-  filterType: FilterType;
-  filters: AiModelFilters;
-  onUpdateFilters: (patch: Partial<AiModelFilters>) => void;
-  filterOptions: FilterOptions;
-}) {
-  const active = isFilterActive(filterType, filters);
-
-  const renderContent = () => {
-    switch (filterType) {
-      case "provider":
-        return (
-          <SelectFilterContent
-            label="Provider"
-            value={filters.provider}
-            options={filterOptions.providers.map((p) => ({
-              value: p,
-              label: p,
-            }))}
-            onChange={(v) => onUpdateFilters({ provider: v })}
-            onClear={() => onUpdateFilters({ provider: undefined })}
-          />
-        );
-      case "input_capability":
-        return (
-          <SelectFilterContent
-            label="Input"
-            value={filters.input_capability}
-            options={filterOptions.inputCapabilities.map((value) => ({
-              value,
-              label: value,
-            }))}
-            onChange={(value) => {
-              if (isContentType(value)) {
-                onUpdateFilters({ input_capability: value });
-              }
-            }}
-            onClear={() => onUpdateFilters({ input_capability: undefined })}
-          />
-        );
-      case "output_capability":
-        return (
-          <SelectFilterContent
-            label="Output"
-            value={filters.output_capability}
-            options={filterOptions.outputCapabilities.map((value) => ({
-              value,
-              label: value,
-            }))}
-            onChange={(value) => {
-              if (isContentType(value)) {
-                onUpdateFilters({ output_capability: value });
-              }
-            }}
-            onClear={() => onUpdateFilters({ output_capability: undefined })}
-          />
-        );
-      case "is_deprecated":
-        return (
-          <BoolFilterContent
-            label="Deprecated"
-            value={filters.is_deprecated}
-            trueLabel="Deprecated"
-            falseLabel="Active"
-            onChange={(v) => onUpdateFilters({ is_deprecated: v })}
-            onClear={() => onUpdateFilters({ is_deprecated: undefined })}
-          />
-        );
-      case "is_primary":
-        return (
-          <BoolFilterContent
-            label="Primary"
-            value={filters.is_primary}
-            trueLabel="Primary only"
-            falseLabel="Non-primary"
-            onChange={(v) => onUpdateFilters({ is_primary: v })}
-            onClear={() => onUpdateFilters({ is_primary: undefined })}
-          />
-        );
-      case "is_premium":
-        return (
-          <BoolFilterContent
-            label="Premium"
-            value={filters.is_premium}
-            trueLabel="Premium only"
-            falseLabel="Non-premium"
-            onChange={(v) => onUpdateFilters({ is_premium: v })}
-            onClear={() => onUpdateFilters({ is_premium: undefined })}
-          />
-        );
-      case "context_window":
-        return (
-          <RangeFilterContent
-            key={`context-${filters.context_window_min ?? ""}-${filters.context_window_max ?? ""}`}
-            label="Context Window"
-            minKey="context_window_min"
-            maxKey="context_window_max"
-            minValue={filters.context_window_min}
-            maxValue={filters.context_window_max}
-            onUpdateFilters={onUpdateFilters}
-          />
-        );
-      case "max_tokens":
-        return (
-          <RangeFilterContent
-            key={`tokens-${filters.max_tokens_min ?? ""}-${filters.max_tokens_max ?? ""}`}
-            label="Max Tokens"
-            minKey="max_tokens_min"
-            maxKey="max_tokens_max"
-            minValue={filters.max_tokens_min}
-            maxValue={filters.max_tokens_max}
-            onUpdateFilters={onUpdateFilters}
-          />
-        );
-    }
-  };
-
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          onClick={(e) => e.stopPropagation()}
-          title={`Filter by ${filterType.replace(/_/g, " ")}`}
-          aria-label={`Filter by ${filterType.replace(/_/g, " ")}`}
-          className={`rounded p-0.5 transition-colors ${
-            active ? "text-primary" : "text-muted-foreground"
-          }`}
-        >
-          <ListFilter
-            className={`h-3 w-3 ${active ? "fill-primary/20" : ""}`}
-          />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent
-        /* sizing: fixed — content already decides its own width; no fixed box to remove */
-        align="start"
-        side="bottom"
-        className="w-auto p-3"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {renderContent()}
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-// ─── Main Component ───────────────────────────────────────────────────────────
-
 export interface AiModelTableProps {
   models: AiModel[];
   providers: AiProvider[];
@@ -907,275 +365,8 @@ export interface AiModelTableProps {
   onRefresh: () => void;
 }
 
+/** The ONE AI models table: the package table over the complete catalog, domain cells here. */
 export default function AiModelTable(props: AiModelTableProps) {
-  const searchParams = useSearchParams();
-  return searchParams.get("tablePreview") === "canonical" ? (
-    <CanonicalAiModelTable key={props.tabState.id} {...props} />
-  ) : (
-    <CurrentAiModelTable {...props} />
-  );
-}
-
-function CurrentAiModelTable({
-  models,
-  providers,
-  isLoading,
-  loadError,
-  selectedId,
-  tabState,
-  onUpdateTabState,
-  onSelect,
-  onEdit,
-  onDelete,
-  onDuplicate,
-  onCreate,
-  onRefresh,
-}: AiModelTableProps) {
-  const { q, sort, dir, page, perPage, filters } = tabState;
-
-  const providerMap = useMemo(
-    () => Object.fromEntries(providers.map((p) => [p.id, p.name ?? p.id])),
-    [providers],
-  );
-
-  const filterOptions = useMemo<FilterOptions>(() => {
-    const capabilities = models.map((model) =>
-      parseCapabilities(model.capabilities, {
-        modelId: model.id,
-        modelName: model.name,
-      }),
-    );
-    return {
-      providers: [
-        ...new Set(
-          models
-            .map((model) => model.maker)
-            .filter((maker): maker is string => Boolean(maker)),
-        ),
-      ].sort(),
-      inputCapabilities: [
-        ...new Set(capabilities.flatMap((c) => c.input)),
-      ].sort(),
-      outputCapabilities: [
-        ...new Set(capabilities.flatMap((c) => c.output)),
-      ].sort(),
-    };
-  }, [models]);
-
-  const filteredModels = useMemo(
-    () => applyAiModelFilters(models, q, filters),
-    [models, q, filters],
-  );
-
-  const sortedModels = useMemo(
-    () => sortAiModels(filteredModels, sort, dir),
-    [filteredModels, sort, dir],
-  );
-
-  const paginatedModels = useMemo(() => {
-    const start = (page - 1) * perPage;
-    return sortedModels.slice(start, start + perPage);
-  }, [sortedModels, page, perPage]);
-
-  const handleSortClick = (field: string) => {
-    if (field === sort) {
-      onUpdateTabState({ dir: dir === "asc" ? "desc" : "asc", page: 1 });
-    } else {
-      onUpdateTabState({ sort: field, dir: "asc", page: 1 });
-    }
-  };
-
-  const handleUpdateQ = (newQ: string) => {
-    onUpdateTabState({ q: newQ, page: 1 });
-  };
-
-  const handleUpdateFilters = (patch: Partial<AiModelFilters>) => {
-    onUpdateTabState({ filters: { ...filters, ...patch }, page: 1 });
-  };
-
-  const handleClearAll = () => {
-    onUpdateTabState({
-      q: "",
-      filters: { ...DEFAULT_AI_MODEL_FILTERS },
-      page: 1,
-    });
-  };
-
-  return (
-    <div className="flex flex-col h-full min-h-0">
-      {/* Combined title + filters + actions — single sticky row */}
-      <AiModelFilterBar
-        tabState={tabState}
-        totalCount={models.length}
-        filteredCount={filteredModels.length}
-        models={models}
-        onUpdateQ={handleUpdateQ}
-        onUpdateFilters={handleUpdateFilters}
-        onClearAll={handleClearAll}
-        onCreate={onCreate}
-        onRefresh={onRefresh}
-      />
-
-      <div className="type-secondary flex shrink-0 items-center gap-1.5 border-b px-2 py-1 text-muted-foreground xl:hidden">
-        <MoveHorizontal className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-        <span>
-          Swipe horizontally for model details; name and actions stay visible.
-        </span>
-      </div>
-
-      {/* Scrollable table — single scroll container, thead is sticky within it */}
-      <div className="relative min-h-0 flex-1 overflow-auto">
-        <table
-          className={cn(
-            "table type-secondary overflow-visible caption-bottom border-collapse",
-            MOBILE_TABLE_FROZEN_SECOND,
-          )}
-        >
-          <thead className="sticky top-0 z-10 bg-card border-b border-border">
-            <tr className="h-8">
-              {COLUMNS.map((col) => (
-                <th
-                  key={col.key}
-                  className={`${col.width} ${col.className ?? ""} px-2 py-1.5 type-meta font-medium text-muted-foreground text-left align-middle whitespace-nowrap ${
-                    col.key === "common_name"
-                      ? "max-xl:sticky max-xl:left-0 max-xl:z-30 max-xl:bg-card max-xl:shadow-[2px_0_0_hsl(var(--border))]"
-                      : ""
-                  } ${
-                    col.sortable
-                      ? "select-none hover:text-foreground"
-                      : ""
-                  }`}
-                  data-clickable={col.sortable || undefined}
-                  onClick={() => col.sortable && handleSortClick(col.key)}
-                >
-                  <span className="flex items-center gap-0.5">
-                    {col.header}
-                    {col.sortable && (
-                      <SortIcon field={col.key} sortBy={sort} dir={dir} />
-                    )}
-                    {col.filterType && (
-                      <ColumnHeaderFilter
-                        filterType={col.filterType}
-                        filters={filters}
-                        onUpdateFilters={handleUpdateFilters}
-                        filterOptions={filterOptions}
-                      />
-                    )}
-                  </span>
-                </th>
-              ))}
-              <th className="w-[210px] min-w-[210px] px-2 py-1.5 type-meta font-medium text-muted-foreground text-right align-middle pr-3 max-xl:sticky max-xl:right-0 max-xl:z-30 max-xl:bg-card max-xl:shadow-[-2px_0_0_hsl(var(--border))]">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="[&_tr:last-child]:border-0">
-            {isLoading ? (
-              Array.from({ length: 8 }).map((_, i) => (
-                <tr key={i} className="h-9 border-b border-border">
-                  {COLUMNS.map((col) => (
-                    <td key={col.key} className="px-2 py-1.5">
-                      <Skeleton className="h-4 w-full" />
-                    </td>
-                  ))}
-                  <td className="px-2 py-1.5">
-                    <Skeleton className="h-4 w-20" />
-                  </td>
-                </tr>
-              ))
-            ) : loadError && models.length === 0 ? (
-              <tr>
-                <td colSpan={COLUMNS.length + 1} className="p-2">
-                  <ReadFailure
-                    error={loadError}
-                    what="the model catalog"
-                    className="m-0"
-                    onRetry={onRefresh}
-                  />
-                </td>
-              </tr>
-            ) : paginatedModels.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={COLUMNS.length + 1}
-                  className="h-32 text-center p-2"
-                >
-                  <EmptyState
-                    icon={<Cpu />}
-                    title="No AI models found"
-                    action={
-                      q || Object.keys(filters).length > 0 ? (
-                        <Button variant="quiet" onClick={handleClearAll}>
-                          Clear filters
-                        </Button>
-                      ) : undefined
-                    }
-                  />
-                </td>
-              </tr>
-            ) : (
-              paginatedModels.map((item, idx) => (
-                <tr
-                  key={item.id}
-                  data-clickable
-                  className={`group h-9 border-b border-border transition-colors ${
-                    selectedId === item.id
-                      ? "bg-primary/10 hover:bg-primary/15"
-                      : idx % 2 === 0
-                        ? "hover:bg-muted/50"
-                        : "bg-muted/20 hover:bg-muted/50"
-                  }`}
-                  onClick={() => onSelect(item)}
-                >
-                  {COLUMNS.map((col) => (
-                    <td
-                      key={col.key}
-                      className={`py-1 px-2 align-middle ${col.className ?? ""} ${
-                        col.key === "common_name"
-                          ? "max-xl:sticky max-xl:left-0 max-xl:z-20 max-xl:bg-card max-xl:shadow-[2px_0_0_hsl(var(--border))]"
-                          : ""
-                      }`}
-                    >
-                      {col.render(item, providerMap)}
-                    </td>
-                  ))}
-                  <td className="min-w-[210px] py-1 px-2 align-middle text-right max-xl:sticky max-xl:right-0 max-xl:z-20 max-xl:bg-card max-xl:shadow-[-2px_0_0_hsl(var(--border))]">
-                    <RowActions
-                      item={item}
-                      onView={onSelect}
-                      onEdit={onEdit}
-                      onDuplicate={onDuplicate}
-                      onDelete={onDelete}
-                    />
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pinned pagination footer */}
-      <div className="flex-shrink-0 border-t bg-card p-0">
-        <GenericTablePagination
-          totalItems={filteredModels.length}
-          itemsPerPage={perPage}
-          currentPage={page}
-          onPageChange={(p) => onUpdateTabState({ page: p })}
-          onItemsPerPageChange={(n) =>
-            onUpdateTabState({ perPage: n, page: 1 })
-          }
-          compact
-          layoutType="flex"
-          containerClassName="border-t-0 pt-0"
-        />
-      </div>
-    </div>
-  );
-}
-
-/** Comparison surface: same complete source and domain cells, package-owned table. */
-function CanonicalAiModelTable(props: AiModelTableProps) {
   const {
     models,
     providers,
@@ -1207,6 +398,11 @@ function CanonicalAiModelTable(props: AiModelTableProps) {
       ...modelFiltersToColumns(tabState.filters),
     },
   };
+  const applyQuery = (next: MatrxDataTableQueryState) =>
+    onUpdateTabState({
+      ...modelQueryToTab(next),
+      tableQuery: modelQueryExtras(next),
+    });
   const providerMap = Object.fromEntries(
     providers.map((provider) => [provider.id, provider.name ?? provider.id]),
   );
@@ -1219,10 +415,11 @@ function CanonicalAiModelTable(props: AiModelTableProps) {
     header: column.header,
     width: Number(column.width.match(/w-\[(\d+)px\]/)?.[1] ?? 140),
     sortable: column.sortable,
-    ...(column.key === "maker" ||
-    column.key === "input_capability" ||
-    column.key === "output_capability"
-      ? { filter: "select" as const, filterSingle: true }
+    ...(column.filter
+      ? {
+          filter: column.filter,
+          ...(column.filter === "select" ? { filterSingle: true } : {}),
+        }
       : {}),
     accessorFn: (model) => {
       if (
@@ -1284,12 +481,12 @@ function CanonicalAiModelTable(props: AiModelTableProps) {
   return (
     <MatrxDataTable<AiModel>
       look="mac"
-      tableId="ai/models-canonical"
+      tableId="ai/models"
       viewTabs={false}
       data={tierModels}
       drill={AI_MODEL_DRILL}
       columns={[...(columns), ...drillColumns, { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (model) => (
-        <CanonicalModelActions
+        <ModelRowActions
           model={model}
           onSelect={onSelect}
           onEdit={onEdit}
@@ -1301,20 +498,30 @@ function CanonicalAiModelTable(props: AiModelTableProps) {
       query={{
         mode: "controlled-local",
         state,
-        onStateChange: (next) => {
-          onUpdateTabState({
-            ...modelQueryToTab(next),
-            tableQuery: modelQueryExtras(next),
-          });
-        },
+        onStateChange: applyQuery,
       }}
       isLoading={isLoading && models.length === 0}
       isFetching={isLoading && models.length > 0}
       selectedId={selectedId}
       onRowOpen={onSelect}
       detail={{ enabled: false }}
+      copy={{
+        label: "AI model",
+        listLabel: "AI models",
+        location: AI_MODELS_LOCATION,
+        rowKind: "ai-model",
+        listKind: "ai-models",
+        rowDescription: "A single AI model registry row.",
+        listDescription: "The AI model registry, as filtered and sorted.",
+        humanRow: aiModelSummary,
+        rowAttributes: (model) => ({
+          id: model.id,
+          provider: model.maker ?? model.provider_id ?? "",
+        }),
+      }}
       toolbar={{
         title: "AI Models",
+        titleCount: { value: models.length, label: "models" },
         intelligentSearch: {},
         refresh: { onRefresh },
         add: { onAdd: onCreate },
@@ -1324,7 +531,7 @@ function CanonicalAiModelTable(props: AiModelTableProps) {
   );
 }
 
-function CanonicalModelActions({
+export function ModelRowActions({
   model,
   onSelect,
   onEdit,
