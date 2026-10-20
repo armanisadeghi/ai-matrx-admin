@@ -813,8 +813,15 @@ export async function runUseTemplate(r: UseTemplateRun): Promise<UseTemplateResu
       (title, id) => r.createRoot(title, id, installId),
       r.template,
       tables,
-      (done, total) => {
-        pageStage = `Pages ${done}/${total}`;
+      (done) => {
+        // ADVERSARIAL-6 F5: the counter counts PAGES (never writes), and never sits frozen beside the table step. The tree
+        // makes the n-1 sub-pages (the root already exists); then, while the tables still install, only the table step's own
+        // progress shows; once they are in, each page's content fills.
+        const n = ordered.length;
+        const made = n - 1;
+        if (done < made) pageStage = `Pages ${done + 1}/${n}`;
+        else if (done === made) pageStage = tableStage ? "" : `Filling pages 0/${n}`;
+        else pageStage = `Filling pages ${done - made}/${n}`;
         moved();
       },
       journal,

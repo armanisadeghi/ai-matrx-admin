@@ -48,7 +48,8 @@ jest.mock("@/lib/toast", () => ({ toast: { warning: jest.fn(), success: jest.fn(
 
 import { TEMPLATE_BUSY_MESSAGE } from "@ai-matrx/records/templates";
 
-import { installedCopies, refusalSentence } from "../use-pack";
+import type { SpaceDoc, SpacesStore } from "../../contract";
+import { installedCopies, refusalSentence, runUseTemplate, type PackRun, type SpaceTemplateFull } from "../use-pack";
 import { removeCopyQuestion, restorePageOrCopy, templateCopyMetadata, templateCopyOfPage, templateDoorSentence, trashPageOrCopy, type CopyLifecyclePorts, type TemplateCopy } from "../template-copy";
 
 const ORG = "org-1";
@@ -201,5 +202,58 @@ describe("F4: a failed install says ONE plain sentence, with no 'Try again' in i
     const s = refusalSentence({ code: "22023", message: "That table name is taken. Pick another one. Then retry." });
     expect(s).toBe("That table name is taken.");
     oneSentence(s);
+  });
+});
+
+describe("F5: the progress counter counts pages and never freezes beside the table step", () => {
+  it("while the tables install after the pages are made, only the table step's own progress shows", async () => {
+    const PAGES = ["Goals", "Habits", "Reviews"];
+    const template = {
+      id: "tpl",
+      catalogue_id: "SP0203",
+      spec: { tables: [], views: [] },
+      pack: { pages: PAGES.map((title, i) => ({ key: `p${i}`, title, parent: i ? "p0" : null, blocks: [] })) },
+    } as unknown as SpaceTemplateFull;
+    const docs = new Map<string, SpaceDoc>();
+    const make = (id: string, title: string) => {
+      const d = { id, title, blocks: [], version: 1 } as unknown as SpaceDoc;
+      docs.set(id, d);
+      return d;
+    };
+    const store = {
+      create: async (input: { id?: string; title?: string }) => make(input.id ?? `doc-${docs.size}`, input.title ?? ""),
+      get: async (id: string) => docs.get(id) ?? null,
+      save: async (doc: SpaceDoc) => make(doc.id, doc.title),
+      archive: async () => undefined,
+      restore: async () => undefined,
+    } as unknown as SpacesStore;
+    let saved: PackRun | null = null;
+    let treeDone: () => void = () => undefined;
+    const treeMade = new Promise<void>((r) => (treeDone = r));
+    const stages: string[] = [];
+    const result = await runUseTemplate({
+      template,
+      store,
+      createRoot: async (title, id) => make(id, title),
+      journal: { read: () => saved, write: (run) => void (saved = run) },
+      onStage: (st) => {
+        if (st) stages.push(st);
+        // The last sub-page is being made: let the tree finish, then the tables report their late step.
+        if (st?.includes(`Pages ${PAGES.length - 1}/${PAGES.length}`)) setTimeout(treeDone, 30);
+      },
+      install: async (onStage) => {
+        onStage("Making tables 1/40…");
+        await treeMade;
+        await new Promise((r) => setTimeout(r, 10));
+        onStage("Making tables 39/40…");
+        return {};
+      },
+    });
+    expect(result.ok).toBe(true);
+    // Every page count is out of the number of PAGES (3), never the number of writes (5).
+    for (const st of stages) for (const m of st.matchAll(/(\d+)\/(\d+)/g)) if (!st.startsWith("Making tables")) expect(m[2]).toBe(String(PAGES.length));
+    // The table step's late progress is shown on its own, never beside a frozen "Pages x/y".
+    const late = stages.find((st) => st.includes("Making tables 39/40"));
+    expect(late).toBe("Making tables 39/40…");
   });
 });
