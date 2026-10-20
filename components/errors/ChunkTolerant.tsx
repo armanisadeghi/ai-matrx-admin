@@ -26,13 +26,13 @@ interface State {
 }
 
 export class ChunkTolerant extends Component<Props, State> {
-  state: State = { failed: null };
+  override state: State = { failed: null };
 
   static getDerivedStateFromError(error: unknown): State {
     return { failed: error };
   }
 
-  componentDidCatch(error: unknown, info: ErrorInfo): void {
+  override componentDidCatch(error: unknown, info: ErrorInfo): void {
     if (!isChunkLoadError(error)) return;
     console.warn(
       `[chunk-tolerant] ${this.props.what} could not load its code (offline or the chunk is gone); the page carries on without it.`,
@@ -41,7 +41,7 @@ export class ChunkTolerant extends Component<Props, State> {
     );
   }
 
-  render(): ReactNode {
+  override render(): ReactNode {
     if (this.state.failed === null) return this.props.children;
     // Not a chunk failure: hand it to the boundary above, exactly as if this one were not here.
     if (!isChunkLoadError(this.state.failed)) throw this.state.failed;

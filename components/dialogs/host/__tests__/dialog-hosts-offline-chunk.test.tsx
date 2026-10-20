@@ -21,11 +21,11 @@ jest.mock("next/dynamic", () => () => {
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 class PageBoundary extends React.Component<{ children: React.ReactNode }, { hit: boolean }> {
-  state = { hit: false };
+  override state = { hit: false };
   static getDerivedStateFromError() {
     return { hit: true };
   }
-  render() {
+  override render() {
     return this.state.hit ? <h1 data-testid="page-error">This is taking longer than it should</h1> : this.props.children;
   }
 }

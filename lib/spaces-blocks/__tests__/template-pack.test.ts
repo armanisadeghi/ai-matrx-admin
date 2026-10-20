@@ -249,7 +249,7 @@ describe("cards end with no unlabeled stamp date (ADVERSARIAL-5 F9)", () => {
   it("the checker reports it at the view's hiddenFields", () => {
     const p = fresh();
     const table = p.spec.tables.find((t) => t.token === projectsDb(p).source.table)!;
-    (table.fields as Array<Record<string, unknown>>).splice(1, 0, { key: "added_at", label: "Added", parityType: "created_time" });
+    (table.fields as unknown as Array<Record<string, unknown>>).splice(1, 0, { key: "added_at", label: "Added", parityType: "created_time" });
     projectsDb(p).views = [{ id: "view-board", name: "Board", layout: "kanban", groupField: "status" }];
     expect(checkPack(p).some((f) => f.at.endsWith("views[0].hiddenFields") && f.says.includes("added_at"))).toBe(true);
   });
