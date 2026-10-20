@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-20T02:01:01.416Z",
+  "generated_at": "2026-10-20T02:20:28.409Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -200,6 +200,12 @@
       "checksum": "148341dd109509584098a13c28bf51be756d8d58cfbe2ae743dc5b4ecfea2aeb",
       "applied_at": "2026-10-20 01:23:51.192378+00"
     },
+    "migrations/campaign/20261020020000_basesmember_a_a_retired_template_with_an_install_can_be_removed.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261020020000_basesmember_a_a_retired_template_with_an_install_can_be_removed.sql",
+      "checksum": "c9f5b37a45445382da0fab0ec962307325b059842d6ab8c88f0941570643a8e1",
+      "applied_at": "2026-10-20 02:20:27.129961+00"
+    },
     "migrations/campaign/20261020030000_atfixj_a_the_people_list_reads_the_row_level.sql": {
       "source": "matrx-frontend",
       "filename": "20261020030000_atfixj_a_the_people_list_reads_the_row_level.sql",
@@ -289,6 +295,18 @@
       "filename": "20261021260100_linkpicker2_b_the_by_id_way_walks_the_kinds_own_table.sql",
       "checksum": "0001a640257f0adf73c83a21fc237fa1a7a265e5a4945563fd529f6e546b432e",
       "applied_at": "2026-10-20 01:52:17.615731+00"
+    },
+    "migrations/campaign/20261021260200_linkpicker2_c_a_granted_kind_is_listed_after_the_first_screenful_passes.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261021260200_linkpicker2_c_a_granted_kind_is_listed_after_the_first_screenful_passes.sql",
+      "checksum": "63676f2053d87b2f34bc06ea81cf446995541a637d6e2cb81a6ddcfd6628b5a8",
+      "applied_at": "2026-10-20 02:05:08.873699+00"
+    },
+    "migrations/campaign/20261021260300_linkpicker2_d_a_kind_whose_id_is_not_a_uuid_is_not_offered_as_a_link_target.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261021260300_linkpicker2_d_a_kind_whose_id_is_not_a_uuid_is_not_offered_as_a_link_target.sql",
+      "checksum": "0cf383b1e0e520871a51f78d1daed4470a618ba88e41bd06a9e514be5a8794ad",
+      "applied_at": "2026-10-20 02:05:29.834702+00"
     },
     "migrations/campaign/20261022240000_readspeed6_a_a_column_write_holds_only_the_tables_it_feeds.sql": {
       "source": "matrx-frontend",
@@ -10015,6 +10033,18 @@
       "filename": "template_upgrade_f_removed_tables_stay_removed.sql",
       "checksum": "3344d7dd3c1f0e550005bfd866427425c31609d4f4d04286767ffe991040e196",
       "applied_at": "2026-10-18 01:40:44.518192+00"
+    },
+    "migrations/campaign/templateinstall3_a_the_uninstall_stops_scanning_every_organization.sql": {
+      "source": "matrx-frontend",
+      "filename": "templateinstall3_a_the_uninstall_stops_scanning_every_organization.sql",
+      "checksum": "596a29c41a5b043d28b1ab106633099549df0742e6edc5042f7a44baf6aab4b4",
+      "applied_at": "2026-10-20 02:10:54.888183+00"
+    },
+    "migrations/campaign/templateinstall3_b_which_tables_are_in_these_homes_reads_an_index.sql": {
+      "source": "matrx-frontend",
+      "filename": "templateinstall3_b_which_tables_are_in_these_homes_reads_an_index.sql",
+      "checksum": "829e8efbab42a0fb50a9b97b94a3788c9b0b6ac82ba7e68b3067fe8d47bb4042",
+      "applied_at": "2026-10-20 02:14:42.826018+00"
     },
     "migrations/campaign/templates7_a_anyone_can_browse_the_platform_templates.sql": {
       "source": "matrx-frontend",
