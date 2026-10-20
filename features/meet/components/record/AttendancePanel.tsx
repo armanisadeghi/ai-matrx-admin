@@ -214,7 +214,7 @@ export function AttendancePanel({
           detail={{ enabled: false }}
           copy={ATTENDANCE_COPY}
           rowClassName={(row) =>
-            row.joinedAt === null ? "text-muted-foreground" : undefined
+            row.joinedAt === null ? "opacity-60" : undefined
           }
         />
       </div>

@@ -73,6 +73,7 @@ import {
 } from "./cloudFilesBrowserUtils";
 import { downloadUrl } from "@ai-matrx/kit/download";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
+import { rowTintsWhere } from "@/components/official/table-row-tints";
 
 const MAX_PARALLEL = 4;
 const CLOUD_BROWSER_LOCATION = "AI Matrx — Cloud files browser";
@@ -466,12 +467,11 @@ export function CloudFilesBrowserTable({
             rowClassName={(row) =>
               row.kind === "file"
                 ? cn(
-                    selectedImageIds.has(`cloud:${row.file.id}`) &&
-                      "border-l-2 border-l-primary bg-primary/10",
                     disabledFileIds?.has(row.file.id) && "opacity-70",
                   )
                 : undefined
             }
+            tableStyle={rowTintsWhere(rows, cloudRowId, (row) => row.kind === "file" && selectedImageIds.has(`cloud:${row.file.id}`) && "blue")}
             rowVersion={(row) =>
               row.kind === "file"
                 ? [

@@ -17,7 +17,6 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Button } from "@/components/ui/button";
 import { JsonTreeViewer } from "@/components/official/json-explorer/JsonTreeViewer";
-import { cn } from "@/lib/utils";
 import { num, type ProviderBatch } from "../service/batchAdminService";
 import {
   StatusBadge,
@@ -26,6 +25,7 @@ import {
   fmtStamp,
 } from "./presentation";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { rowTintsWhere } from "@/components/official/table-row-tints";
 
 /** `escalation_state` is NULL on every batch that never needed rescuing. */
 function escalationLabel(row: ProviderBatch): string {
@@ -133,7 +133,7 @@ export function ProviderBatchesPanel({
       pageSize={25}
       emptyState={{ title: "No provider batch has been submitted" }}
       toolbar={{ search: true, searchPlaceholder: "Search provider batches…" }}
-      rowClassName={(row) => cn((row.status === "failed" || row.status === "expired") && "bg-destructive/5")}
+      tableStyle={rowTintsWhere(batches, (row) => row.id, (row) => (row.status === "failed" || row.status === "expired") && "red")}
       detail={{ title: (row) => row.purpose, description: (row) => `Submitted ${fmtStamp(row.submitted_at)}`, render: (row) => <ProviderBatchDetail row={row} onShowItems={onShowItems} /> }}
     />
   );

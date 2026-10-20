@@ -23,6 +23,7 @@ import {
   type Verdict,
 } from "../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { rowTintsWhere } from "@/components/official/table-row-tints";
 
 export interface AskTableProps {
   interviewId: string;
@@ -262,11 +263,7 @@ export function AskTable({
         title: "No open questions",
         description: "Questions appear here when the desk needs your decision.",
       }}
-      rowClassName={(question) =>
-        question.answered_at !== null && question.verdict !== null
-          ? "bg-success/5"
-          : undefined
-      }
+      tableStyle={rowTintsWhere(questions, (question) => question.id, (question) => question.answered_at !== null && question.verdict !== null && "green")}
 
     />
   );

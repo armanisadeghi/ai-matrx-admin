@@ -39,6 +39,7 @@ import { errorRowsHref, fetchMandateReferenceBoard, formatRepoList, formatSecond
 import { formatFileSize } from "@ai-matrx/kit/format";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { rowTintsWhere } from "@/components/official/table-row-tints";
 
 function ScanLine({
   label,
@@ -503,7 +504,7 @@ export function PatrolRunsTable({ patrol }: { patrol: MandatePatrolSection }) {
         data={patrol.runs}
         columns={runColumns}
         getRowId={(run) => run.run_id}
-        rowClassName={(run) => (run.failed_legs.length > 0 ? "bg-destructive/5" : undefined)}
+        tableStyle={rowTintsWhere(patrol.runs, (run) => run.run_id, (run) => run.failed_legs.length > 0 && "red")}
         emptyState={{
           title: patrol.read_error
             ? "The runs could not be read — see the message above."

@@ -32,6 +32,7 @@ import { Lock, SlidersHorizontal } from "lucide-react";
 import type { AiSetting } from "../../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readOf } from "@ai-matrx/design-system";
+import { oneRowTint } from "@/components/official/table-row-tints";
 
 function CompactRange({
   min,
@@ -256,11 +257,7 @@ export default function SettingTable({
         defaultSort={null}
         onRowOpen={onSelect}
         detail={{ enabled: false }}
-        rowClassName={(item) =>
-          item.id === selectedId
-            ? "bg-primary/10 hover:bg-primary/15"
-            : undefined
-        }
+        tableStyle={oneRowTint(selectedId)}
         // The read's failure is the table's to say, once: the failure with no
         // rows, a stale notice above rows kept from an earlier read.
         read={readOf({ loading: isLoading, error }, { what: "settings", onRetry })}

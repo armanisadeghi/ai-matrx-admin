@@ -57,6 +57,7 @@ import type {
 } from "../api/types";
 import { LeaveBalanceBlock, formatHours } from "./LeaveBalanceBlock";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { oneRowTint } from "@/components/official/table-row-tints";
 
 /**
  * The filters a figure's door can ask for. §5: *"Every figure is a door to the ledger rows
@@ -567,11 +568,7 @@ export function LeaveLedgerView({
         toolbar={{ searchPlaceholder: "Search this ledger" }}
         detail={{ enabled: false }}
         copy={LEDGER_COPY}
-        rowClassName={(entry) =>
-          ledger.divergenceAtEntryId === entry.id
-            ? "bg-destructive/10"
-            : undefined
-        }
+        tableStyle={oneRowTint(ledger.divergenceAtEntryId, "red")}
         emptyState={{
           title:
             ledger.entryCount === 0

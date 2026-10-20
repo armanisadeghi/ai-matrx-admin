@@ -46,6 +46,7 @@ import { readOf } from "@ai-matrx/design-system";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { runPerRow } from "@/lib/entity-list/standardBulkActions";
 import { bulkCountLabel, type EntityBulkAction } from "@/lib/entity-list/selection";
+import { oneRowTint } from "@/components/official/table-row-tints";
 
 const KNOWLEDGE_REPOSITORIES_SURFACE = "matrx-user/knowledge-repositories";
 
@@ -460,11 +461,7 @@ export function RepositoriesPage() {
               density="condensed"
               pageSize={0}
               isFetching={loading && repos.length > 0}
-              rowClassName={(repo) =>
-                repo.repository_id === focusRepoId
-                  ? "bg-accent ring-1 ring-inset ring-primary/40"
-                  : undefined
-              }
+              tableStyle={oneRowTint(focusRepoId)}
 
               toolbar={{
                 title: "Repositories",

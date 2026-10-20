@@ -20,6 +20,7 @@ import type { ReportSortKey } from "@/features/agents/redux/usages/usages.select
 import {
   MOBILE_TABLE_FROZEN,
 } from "@/components/official/mobile-table/mobileTable";
+import { oneRowTint } from "@/components/official/table-row-tints";
 
 interface RollupSummary {
   agents: number;
@@ -86,7 +87,7 @@ export function RollupTable({
           className="px-3 py-1.5"
         />
       ) : null}
-      <MatrxDataTable urlState={{ id: `agent-drift-${mode}`, defaultSort: { id: sort.key === 'agentName' ? 'agent' : sort.key === 'totalUsages' ? 'usages' : sort.key === 'stalePins' ? 'stale' : sort.key, direction: sort.desc ? 'desc' : 'asc' } }} data={canonicalRows} columns={columns} getRowId={(row) => row.agentId} pageSize={50} onRowOpen={(row) => onSelect(row.agentId)} rowClassName={(row) => row.agentId === selectedAgentId ? 'bg-accent' : undefined} toolbar={{ search: true, searchPlaceholder: 'Search agents…' }} detail={{ enabled: false }} />
+      <MatrxDataTable urlState={{ id: `agent-drift-${mode}`, defaultSort: { id: sort.key === 'agentName' ? 'agent' : sort.key === 'totalUsages' ? 'usages' : sort.key === 'stalePins' ? 'stale' : sort.key, direction: sort.desc ? 'desc' : 'asc' } }} data={canonicalRows} columns={columns} getRowId={(row) => row.agentId} pageSize={50} onRowOpen={(row) => onSelect(row.agentId)} tableStyle={oneRowTint(selectedAgentId)} toolbar={{ search: true, searchPlaceholder: 'Search agents…' }} detail={{ enabled: false }} />
     </>
   );
 }

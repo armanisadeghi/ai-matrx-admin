@@ -44,6 +44,7 @@ import { RowWordsFields, rowWordsWrite } from "../RowWordsFields";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readOf } from "@ai-matrx/design-system";
 import { ListDetailSplit } from "@/components/official/side-panel/ListDetailSplit";
+import { oneRowTint } from "@/components/official/table-row-tints";
 
 // ─── Shared bits ─────────────────────────────────────────────────────────────
 
@@ -486,11 +487,7 @@ function EndpointApiTable<T extends EndpointApiRow>({
         reorderableColumns
         onRowOpen={onSelect}
         detail={{ enabled: false }}
-        rowClassName={(row) =>
-          row.id === selectedId
-            ? "bg-primary/10 hover:bg-primary/15"
-            : undefined
-        }
+        tableStyle={oneRowTint(selectedId)}
         read={readOf({ loading, error: loadError }, { what: title.toLowerCase(), onRetry })}
         emptyState={{
           title: "Nothing here yet",

@@ -64,6 +64,7 @@ import type {
   OrgNode,
 } from "@/features/scopes/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { rowTintsWhere } from "@/components/official/table-row-tints";
 
 /** Reasonable cap on context-item columns so wide catalogs don't explode
  *  the table; overflow is announced in the header ("+N more"). */
@@ -486,9 +487,9 @@ function ScopeTypeTable({
           rowClassName={(scope) =>
             cn(
               isPending && "pointer-events-none opacity-60",
-              activeScopeIds.has(scope.id) && "bg-primary/5",
             )
           }
+          tableStyle={rowTintsWhere(type.scopes, (scope) => scope.id, (scope) => activeScopeIds.has(scope.id) && "blue")}
         />
       )}
     </section>

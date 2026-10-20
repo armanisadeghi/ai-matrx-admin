@@ -28,6 +28,7 @@ import {
 } from "../../costs";
 import type { NormalizedUsageModel } from "@/lib/token-usage/normalize";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { rowTintsWhere } from "@/components/official/table-row-tints";
 
 const PHASE_ICON: Record<CostPhase, typeof Brain> = {
   page_analyses: Brain,
@@ -615,9 +616,7 @@ export default function CostDashboard() {
           total: ledgerRows.length,
           answeredBy: "client",
         }}
-        rowClassName={(entry) =>
-          entry.succeeded ? undefined : "bg-destructive/5"
-        }
+        tableStyle={rowTintsWhere(ledgerRows, (entry) => entry.id, (entry) => !entry.succeeded && "red")}
         emptyState={{
           title: "No calls match the current filters",
           description: "Clear a filter or run another AI task for this topic.",
