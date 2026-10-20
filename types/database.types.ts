@@ -37574,8 +37574,11 @@ export type Database = {
           created_by: string | null
           deleted_at: string | null
           expires_at: string | null
+          failure: string | null
           id: string
+          job_id: string | null
           label: string
+          last_restore: Json | null
           metadata: Json
           organization_id: string
           origin: string
@@ -37583,6 +37586,7 @@ export type Database = {
           published_to_web_at: string | null
           published_to_web_by: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          state: string
           tables: Json
           test_expires_at: string | null
           test_run_id: string | null
@@ -37597,8 +37601,11 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           expires_at?: string | null
+          failure?: string | null
           id?: string
+          job_id?: string | null
           label: string
+          last_restore?: Json | null
           metadata?: Json
           organization_id: string
           origin?: string
@@ -37606,6 +37613,7 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          state?: string
           tables?: Json
           test_expires_at?: string | null
           test_run_id?: string | null
@@ -37620,8 +37628,11 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           expires_at?: string | null
+          failure?: string | null
           id?: string
+          job_id?: string | null
           label?: string
+          last_restore?: Json | null
           metadata?: Json
           organization_id?: string
           origin?: string
@@ -37629,6 +37640,7 @@ export type Database = {
           published_to_web_at?: string | null
           published_to_web_by?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          state?: string
           tables?: Json
           test_expires_at?: string | null
           test_run_id?: string | null
@@ -37671,6 +37683,54 @@ export type Database = {
           kind?: string
           note?: string | null
           role?: string
+        }
+        Relationships: []
+      }
+      computed_org_mark: {
+        Row: {
+          id: string
+          marked_at: string
+          organization_id: string
+          table_id: string | null
+        }
+        Insert: {
+          id?: string
+          marked_at?: string
+          organization_id: string
+          table_id?: string | null
+        }
+        Update: {
+          id?: string
+          marked_at?: string
+          organization_id?: string
+          table_id?: string | null
+        }
+        Relationships: []
+      }
+      computed_reader_cols: {
+        Row: {
+          cols: string[]
+          judged_at: string
+          organization_id: string
+          reader_id: string
+          table_id: string
+          versions: number[]
+        }
+        Insert: {
+          cols: string[]
+          judged_at?: string
+          organization_id: string
+          reader_id: string
+          table_id: string
+          versions: number[]
+        }
+        Update: {
+          cols?: string[]
+          judged_at?: string
+          organization_id?: string
+          reader_id?: string
+          table_id?: string
+          versions?: number[]
         }
         Relationships: []
       }
@@ -38777,6 +38837,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      read_mask_kept: {
+        Row: {
+          kept_at: string
+          level: string
+          mask: Json
+          organization_id: string
+          reader_id: string
+          table_id: string
+          versions: number[]
+        }
+        Insert: {
+          kept_at?: string
+          level: string
+          mask: Json
+          organization_id: string
+          reader_id: string
+          table_id: string
+          versions: number[]
+        }
+        Update: {
+          kept_at?: string
+          level?: string
+          mask?: Json
+          organization_id?: string
+          reader_id?: string
+          table_id?: string
+          versions?: number[]
+        }
+        Relationships: []
       }
       record: {
         Row: {
@@ -41202,6 +41292,10 @@ export type Database = {
         Args: { p_field_id: string; p_value: Json }
         Returns: Json
       }
+      _automation_is_on: {
+        Args: { p_automation_id: string; p_organization_id: string }
+        Returns: boolean
+      }
       _automation_now: { Args: never; Returns: string }
       _automation_number: {
         Args: { p_acts: Json; p_start: number }
@@ -41416,20 +41510,55 @@ export type Database = {
         Args: { p_doc: Json; p_table_id: string; p_what: string }
         Returns: undefined
       }
+      _computed_apply_org_mark: { Args: { p_org: string }; Returns: boolean }
+      _computed_col_sources: {
+        Args: { p_field_id: string; p_org: string }
+        Returns: Record<string, unknown>
+      }
       _computed_component: {
         Args: { p_org: string; p_table: string }
         Returns: string[]
+      }
+      _computed_compute: {
+        Args: { p_ids: string[]; p_org: string; p_table: string }
+        Returns: number
       }
       _computed_door_org: { Args: { p_table: string }; Returns: string }
       _computed_eligible: {
         Args: { p_org: string; p_table: string }
         Returns: boolean
       }
+      _computed_keep_reader_cols: {
+        Args: {
+          p_me: string
+          p_ok: boolean
+          p_org: string
+          p_table: string
+          p_ver: number[]
+        }
+        Returns: undefined
+      }
       _computed_mark: {
         Args: { p_hard_deleted?: string[]; p_ids: string[]; p_org: string }
         Returns: number
       }
       _computed_mark_org: { Args: { p_org: string }; Returns: undefined }
+      _computed_mark_tables: {
+        Args: { p_org: string; p_tables: string[] }
+        Returns: undefined
+      }
+      _computed_marked: {
+        Args: { p_org: string; p_table: string }
+        Returns: boolean
+      }
+      _computed_reader_cols: {
+        Args: { p_me: string; p_org: string; p_table: string }
+        Returns: string[]
+      }
+      _computed_reader_cols_ok: {
+        Args: { p_me: string; p_org: string; p_table: string }
+        Returns: string[]
+      }
       _computed_reader_judge: {
         Args: { p_me: string; p_org: string; p_table: string }
         Returns: boolean
@@ -41737,6 +41866,27 @@ export type Database = {
         Returns: Json
       }
       _entity_decoded: { Args: { p_text: string }; Returns: string }
+      _entity_reference_fallback_label: {
+        Args: { p_created: string; p_id: string; p_kind_label: string }
+        Returns: string
+      }
+      _entity_reference_granted_ids: {
+        Args: { p_type: string }
+        Returns: string[]
+      }
+      _entity_reference_lane: {
+        Args: {
+          p_ids: string[]
+          p_organization_id: string
+          p_search: string
+          p_token: string
+          p_want: number
+        }
+        Returns: {
+          id: string
+          title: string
+        }[]
+      }
       _entity_reference_target_ok: {
         Args: { p_id: string; p_organization_id: string; p_token: string }
         Returns: boolean
@@ -41968,6 +42118,7 @@ export type Database = {
         Returns: Json
       }
       _html_element_names: { Args: never; Returns: string[] }
+      _in_compute_lane: { Args: never; Returns: boolean }
       _inbox_items: {
         Args: {
           p_include_decided?: boolean
@@ -42343,6 +42494,16 @@ export type Database = {
         Returns: Json
       }
       _public_pictures: { Args: { p_organization_id: string }; Returns: Json }
+      _read_mask_compute: {
+        Args: {
+          p_action?: string
+          p_level: Database["public"]["Enums"]["permission_level"]
+          p_organization_id: string
+          p_table_id: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       _read_record_with: {
         Args: {
           p_by_id: boolean
@@ -42484,6 +42645,23 @@ export type Database = {
           p_view_id: string
         }
         Returns: Json
+      }
+      _schedules_stand_down: {
+        Args: {
+          p_at?: string
+          p_by: string
+          p_id: string
+          p_organization_id: string
+        }
+        Returns: number
+      }
+      _schedules_stand_up: {
+        Args: { p_by: string; p_id: string; p_organization_id: string }
+        Returns: number
+      }
+      _schedules_stand_up_for_automation: {
+        Args: { p_automation_id: string; p_organization_id: string }
+        Returns: number
       }
       _seen_one: { Args: { p_id: string; p_user_id: string }; Returns: boolean }
       _share_write_person: {
@@ -44852,6 +45030,13 @@ export type Database = {
         }
         Returns: number
       }
+      entity_custom_values_lock: {
+        Args: { p_token: string }
+        Returns: {
+          locked: boolean
+          reason: string
+        }[]
+      }
       entity_field_declare: {
         Args: { p_organization_id: string; p_spec: Json; p_token: string }
         Returns: string
@@ -45159,6 +45344,10 @@ export type Database = {
       field_declare: {
         Args: { p_organization_id: string; p_spec: Json; p_table_id: string }
         Returns: string
+      }
+      field_declare_many: {
+        Args: { p_organization_id: string; p_specs: Json; p_table_id: string }
+        Returns: string[]
       }
       field_dependants: {
         Args: { p_field_id: string; p_organization_id: string }
@@ -46490,6 +46679,15 @@ export type Database = {
         Returns: {
           id: string
           level: Database["public"]["Enums"]["permission_level"]
+        }[]
+      }
+      my_levels_across: {
+        Args: { p_asks: Json }
+        Returns: {
+          id: string
+          level: Database["public"]["Enums"]["permission_level"]
+          organization_id: string
+          refused: string
         }[]
       }
       opening_view_shape: {
@@ -101827,6 +102025,8 @@ export type Database = {
           content_role: string | null
           copy_mode: string | null
           custom_fields_enabled: boolean
+          custom_values_locked: boolean
+          custom_values_locked_reason: string | null
           data_class: Database["platform"]["Enums"]["data_class"] | null
           data_class_reason: string | null
           default_auto_ingest: boolean
@@ -101898,6 +102098,8 @@ export type Database = {
           content_role?: string | null
           copy_mode?: string | null
           custom_fields_enabled?: boolean
+          custom_values_locked?: boolean
+          custom_values_locked_reason?: string | null
           data_class?: Database["platform"]["Enums"]["data_class"] | null
           data_class_reason?: string | null
           default_auto_ingest?: boolean
@@ -101973,6 +102175,8 @@ export type Database = {
           content_role?: string | null
           copy_mode?: string | null
           custom_fields_enabled?: boolean
+          custom_values_locked?: boolean
+          custom_values_locked_reason?: string | null
           data_class?: Database["platform"]["Enums"]["data_class"] | null
           data_class_reason?: string | null
           default_auto_ingest?: boolean
