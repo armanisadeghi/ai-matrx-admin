@@ -129,6 +129,9 @@ export function NoteWorkspace({ instanceId, noteId, title = "inline", titleSlot,
     <NotesInstanceProvider value={instanceId}>
       <div
         ref={rootRef}
+      // The note's frame, chrome included (tabs, toolbar, status bar), is the document: the page
+      // assistant's dock never reveals over it (review 3 2026-10-20 R1; guard a-notes-chrome-is-the-document).
+        data-document-surface=""
         className={cn("@container flex h-full min-h-0 w-full min-w-0 flex-col bg-card", className)}
         onKeyDown={onKeyDown}
       >

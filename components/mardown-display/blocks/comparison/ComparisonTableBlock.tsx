@@ -1,5 +1,6 @@
 "use client";
 
+import { hasMeaningfulScores } from "./comparisonSummary";
 import { FullScreenPortal } from "../FullScreenPortal";
 import { useBlockMakeReal } from "@/features/rich-content-host/block-make-real";
 import { NotebookPen } from "lucide-react";
@@ -522,6 +523,9 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
     [comparison.items.length, comparison.criteria.length, itemScores],
   );
 
+  // The average is drawn only when the scores behind it mean something (R14).
+  const showAvg = hasMeaningfulScores(comparison.criteria);
+
   const getStickyItemCellClass = (
     highlighted: boolean,
     isWinner: boolean,
@@ -629,8 +633,8 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
                   <p className="mb-2 text-xs text-muted-foreground line-clamp-2">{comparison.description}</p>
                 )}
 
-                <div className="grid grid-cols-3 gap-1.5 mb-2">
-                  {STAT_ITEMS.map((item) => {
+                <div className={`grid gap-1.5 mb-2 ${showAvg ? "grid-cols-3" : "grid-cols-2"}`} data-comparison-summary="">
+                  {STAT_ITEMS.filter((item) => item.key !== "avgScore" || showAvg).map((item) => {
                     const { key, label, icon: StatIcon } = item;
                     const suffix = "suffix" in item ? item.suffix : "";
                     return (

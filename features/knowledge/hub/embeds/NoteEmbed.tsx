@@ -28,7 +28,8 @@ export function NoteEmbed({ noteId }: { noteId: string }) {
   const [editing, setEditing] = useState(false);
   const canEdit = !access.loading && !access.readOnly;
   return (
-    <div className="flex h-full min-h-0 flex-col" data-testid="hub-embed-note">
+    // The note's frame, its Edit row included, is the document (review 3 R1): the dock never covers it.
+    <div className="flex h-full min-h-0 flex-col" data-testid="hub-embed-note" data-document-surface="">
       <div className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-1.5 text-xs">
         <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
         <label htmlFor={`${instanceId}-edit`} className="font-medium">

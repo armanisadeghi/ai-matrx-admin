@@ -104,7 +104,8 @@ export function NoteBody({ item, setTitle }: ContextItemBodyProps) {
 
   return (
     <NotesInstanceProvider value={instanceId}>
-      <div className="flex h-full min-h-0 flex-col">
+      {/* The note's frame is the document (review 3 R1): the page assistant's dock never covers it. */}
+      <div className="flex h-full min-h-0 flex-col" data-document-surface="">
         <NoteContentEditor noteId={noteId} embedded />
       </div>
     </NotesInstanceProvider>

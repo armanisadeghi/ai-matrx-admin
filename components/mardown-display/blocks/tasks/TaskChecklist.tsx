@@ -630,16 +630,15 @@ const TaskChecklist = ({
           <div className={cn("mt-2", narrow ? "space-y-2" : "space-y-4")}>
             <div
               className={cn(
-                "flex items-center justify-between",
-                narrow && "flex-wrap gap-x-3 gap-y-1",
+                "flex flex-wrap items-center justify-between gap-x-3 gap-y-1",
               )}
               data-testid="task-checklist-toolbar"
               data-canvas-fit={narrow ? "narrow" : undefined}
             >
-              <div className={cn("text-muted-foreground", narrow ? "text-xs" : "text-sm")}>
+              <div className={cn("whitespace-nowrap text-muted-foreground", narrow ? "text-xs" : "text-sm")}>
                 Main: {progress.completedTasks} of {progress.totalTasks}
               </div>
-              <div className={cn("text-muted-foreground", narrow ? "text-xs" : "text-sm")}>
+              <div className={cn("whitespace-nowrap text-muted-foreground", narrow ? "text-xs" : "text-sm")}>
                 All: {progress.completedItems} of {progress.totalItems} (
                 {progress.totalPercentage}%)
               </div>

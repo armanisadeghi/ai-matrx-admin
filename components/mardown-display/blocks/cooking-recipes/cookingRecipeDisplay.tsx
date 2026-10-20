@@ -431,7 +431,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
                             {label}
                           </span>
                         </div>
-                        <div className="text-sm font-semibold text-foreground tabular-nums truncate">
+                        <div className="whitespace-nowrap text-sm font-semibold text-foreground tabular-nums" data-recipe-stat-value="">
                           {displayValue}
                           {suffix}
                         </div>

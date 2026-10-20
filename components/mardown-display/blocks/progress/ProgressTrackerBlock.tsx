@@ -455,15 +455,15 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
 
                 {/* Overall Progress */}
                 <div className="mb-6">
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-3">
                     <div className="flex items-center gap-3">
                       <Trophy className="h-6 w-6 text-yellow-500 dark:text-yellow-400" />
-                      <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      <span className="whitespace-nowrap text-lg font-semibold text-gray-900 dark:text-gray-100">
                         Overall Progress
                       </span>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      <span className="whitespace-nowrap text-2xl font-bold text-blue-600 dark:text-blue-400" data-progress-value="">
                         {progressStats.overallPercentage}%
                       </span>
                       <span className="text-sm text-gray-600 dark:text-gray-400">
