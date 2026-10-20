@@ -19,21 +19,24 @@ import { navItemsForViewer, navToneIconClass, settingsItem, type ShellNavItem } 
 import { useRunNavTile } from "../../navigation/navPanelActions";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectShellNavReserved, useResolvedShellLayout } from "@/features/shell/shell-layout/useResolvedShellLayout";
+import { shellLookRowProps, type ShellLookId } from "@/features/shell/shell-layout/looks";
 import { cn } from "@/lib/utils";
 
 /** Rows the reserve holds while a customized layout is on its way (matches a typical custom menu). */
 const RESERVED_ROWS = 12;
 
-function TileNavItem({ item }: { item: ShellNavItem & { tileId: string } }) {
+function TileNavItem({ item, look }: { item: ShellNavItem & { tileId: string }; look: ShellLookId | null }) {
   const runTile = useRunNavTile();
+  const lookProps = shellLookRowProps(look, item);
   return (
     <button
       type="button"
       title={item.label}
       className="shell-nav-item shell-tactile-subtle"
       onClick={() => runTile(item.tileId)}
+      {...lookProps.row}
     >
-      <span className={cn("shell-nav-icon", navToneIconClass(item.tone))}>
+      <span className={cn("shell-nav-icon", navToneIconClass(item.tone))} {...lookProps.tile}>
         <ShellIcon name={item.iconName} size={18} strokeWidth={1.75} />
       </span>
       <span className="shell-nav-label">{item.label}</span>
@@ -59,11 +62,11 @@ export default function ShellSidebarNav({ isAuthenticated }: { isAuthenticated: 
     <>
       {visible.map((item) =>
         item.children ? (
-          <NavFlyoutGroup key={item.id} item={item} candidates={candidates} />
+          <NavFlyoutGroup key={item.id} item={item} candidates={candidates} look={layout.look} />
         ) : item.tileId ? (
-          <TileNavItem key={item.id} item={{ ...item, tileId: item.tileId }} />
+          <TileNavItem key={item.id} item={{ ...item, tileId: item.tileId }} look={layout.look} />
         ) : (
-          <NavItem key={item.id} item={item} />
+          <NavItem key={item.id} item={item} look={layout.look} />
         ),
       )}
     </>

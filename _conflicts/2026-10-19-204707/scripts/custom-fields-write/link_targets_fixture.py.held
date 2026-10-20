@@ -1,0 +1,110 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      scripts/custom-fields-write/link_targets_fixture.py
+Why held:  both sides changed the same code
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at scripts/custom-fields-write/link_targets_fixture.py
+  Both grew from the same COMMON version: commit 789365164c, 2026-10-19 17:30.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-19 19:28  (uncommitted edit; the time the file was last saved on this Mac)
+    2026-10-19 20:48  a5ffa1395a  collected by the sync; the edit itself happened at or before this time
+  GITHUB:
+    2026-10-19 18:38  d7cb6d2afa  "fix(link-picker): fixture down deletes every row and archives the table"
+    2026-10-19 18:09  d4a7aba87b  "fix(link-picker): every link-target kind can be searched from a column's Pick, or the picker says why"
+  LOCAL's latest change is 49m AFTER GITHUB's latest change.
+
+SIZE: common version 46 lines, LOCAL 57 lines, GITHUB 55 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 15 lines and removed 5 lines.
+  GITHUB added 12 lines and removed 4 lines.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+  LOCAL has 11 of the 12 lines GITHUB added.
+    Lines GITHUB added that LOCAL does NOT have:
+      | {'key': 'run', 'label': 'Workflow run', 'type': SHAPE, 'allowed_types': ['workflow_run']}]}
+  GITHUB has 11 of the 15 lines LOCAL added.
+    Lines LOCAL added that GITHUB does NOT have:
+      | (to a pay period, a workflow run, an agent and a file; LINK-PICKER-2 added the last two), one row. The link itself is made through the UI. d
+      | {'key': 'run', 'label': 'Workflow run', 'type': SHAPE, 'allowed_types': ['workflow_run']},
+      | {'key': 'agent', 'label': 'Agent', 'type': SHAPE, 'allowed_types': ['agent']},
+      | {'key': 'file', 'label': 'File', 'type': SHAPE, 'allowed_types': ['file']}]}
+    Lines LOCAL deliberately REMOVED that GITHUB still has: 1
+      | (to a pay period and to a workflow run), one row. The link itself is made through the UI. down: the row and the table are
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show bf0d90450cad:'scripts/custom-fields-write/link_targets_fixture.py') <(git show a5ffa1395a16:'scripts/custom-fields-write/link_targets_fixture.py')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show a5ffa1395a16:'scripts/custom-fields-write/link_targets_fixture.py'
+  GITHUB: git show bf0d90450cad:'scripts/custom-fields-write/link_targets_fixture.py'
+
+---------------- LOCAL VERSION BELOW ----------------
+"""CF-WRITE-4 link-target fixture. From aidream: uv run python ../matrx-frontend/scripts/custom-fields-write/link_targets_fixture.py up|down
+Org: Cedar Ridge Dental (admin@admin.com is its owner). up: one disposable custom table with a title and two link columns
+(to a pay period, a workflow run, an agent and a file; LINK-PICKER-2 added the last two), one row. The link itself is made through the UI. down: the row and the table are
+archived through the store's own doors. State: $TMPDIR/cfw4_link_fixture.json."""
+import sys, os, json
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from db import conn, as_person, ADMIN
+
+ORG = '23c2ac41-8044-49ed-9af9-35761370e5c0'
+STATE = os.path.join(os.environ.get('TMPDIR', '/tmp'), 'cfw4_link_fixture.json')
+c = conn()
+# Column shape under test: `entity` or `entity_reference` (LINK-PICKER tried both). Env LINK_FIXTURE_SHAPE.
+SHAPE = os.environ.get('LINK_FIXTURE_SHAPE', 'entity_reference')
+
+
+def tx(sql, args=()):
+    c.autocommit = False
+    try:
+        as_person(c)
+        out = c.execute(sql, args).fetchone()
+        c.commit()
+        return out
+    except Exception:
+        c.rollback()
+        raise
+    finally:
+        c.autocommit = True
+
+
+cmd = sys.argv[1]
+if cmd == 'up':
+    spec = {'name': 'CFW4 link test (disposable)', 'slug': 'cfw4_link_test', 'type': 'entity', 'weight': 'light', 'display': 'list',
+            'title_field': 'title', 'ordered': False, 'row_order': 'manual', 'retention_days': 365, 'agent_writable': False,
+            'default_sort': [{'field': 'title', 'direction': 'asc'}], 'label_plural': 'CFW4 link tests', 'label_singular': 'CFW4 link test',
+            'fields': [{'key': 'title', 'label': 'Title', 'type': 'text'},
+                       {'key': 'pay_period', 'label': 'Pay period', 'type': SHAPE, 'allowed_types': ['hr_pay_period']},
+                       {'key': 'run', 'label': 'Workflow run', 'type': SHAPE, 'allowed_types': ['workflow_run']},
+                       {'key': 'agent', 'label': 'Agent', 'type': SHAPE, 'allowed_types': ['agent']},
+                       {'key': 'file', 'label': 'File', 'type': SHAPE, 'allowed_types': ['file']}]}
+    te = tx("select custom.table_ensure(%s, %s::jsonb)", (ORG, json.dumps(spec)))[0]
+    print(te)
+    tid = te['table_id'] if isinstance(te, dict) else None
+    rid = tx("select custom.record_write(%s, %s, %s::jsonb)", (ORG, tid, json.dumps({'title': 'CFW4 row'})))[0]
+    st = {'table': str(tid), 'row': str(rid)}
+    json.dump(st, open(STATE, 'w'))
+    print(st)
+elif cmd == 'down':
+    # Every live row of the fixture table (a second `up` adds a row), then the table, through the store's own doors.
+    st = json.load(open(STATE))
+    rows = [r[0] for r in c.execute("select id from custom.record where table_id = %s and deleted_at is null", (st['table'],)).fetchall()]
+    for rid in rows:
+        print('row', tx("select custom.record_delete(%s, %s)", (ORG, str(rid)))[0])
+    for _ in range(5):  # the archive carries on in chunks; the table goes last
+        out = tx("select custom.table_archive(%s, %s, 500, true)", (ORG, st['table']))[0]
+        print('table', out.get('message'), '| table_archived =', out.get('table_archived'))
+        if out.get('table_archived'):
+            break

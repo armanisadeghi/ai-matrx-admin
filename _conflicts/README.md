@@ -37,6 +37,7 @@ Its files stay as they are.
 - _conflicts/2026-10-19-171655/features/capture/useWarmOfflineCode.ts.held — LOCAL latest 2026-10-19 17:13; GITHUB latest 2026-10-19 16:56; LOCAL lacks 1 of GITHUB's 13 new lines; GITHUB lacks 33 of LOCAL's 46 new lines; recover: git show e7677bbcf8:'features/capture/useWarmOfflineCode.ts' / 51ebaf12a6:'features/capture/useWarmOfflineCode.ts'
 - _conflicts/2026-10-19-204707-old-path-refused/features/agents/utils/__tests__/settings-changed-on-save.test.ts.held — recreated moved path features/agents/utils/__tests__/settings-changed-on-save.test.ts; belongs at ../aidream/apps/shared/chat/src/agents/utils/__tests__/settings-changed-on-save.test.ts
 - _conflicts/2026-10-19-204707-old-path-refused/features/agents/utils/settings-changed-on-save.ts.held — recreated moved path features/agents/utils/settings-changed-on-save.ts; belongs at ../aidream/apps/shared/chat/src/agents/utils/settings-changed-on-save.ts
+- _conflicts/2026-10-19-204707/scripts/custom-fields-write/link_targets_fixture.py.held — LOCAL latest 2026-10-19 19:28; GITHUB latest 2026-10-19 18:38; LOCAL lacks 1 of GITHUB's 12 new lines; GITHUB lacks 4 of LOCAL's 15 new lines; recover: git show a5ffa1395a:'scripts/custom-fields-write/link_targets_fixture.py' / bf0d90450c:'scripts/custom-fields-write/link_targets_fixture.py'
 
 ## Resolution log
 

@@ -51,6 +51,15 @@ export type HeaderButton =
 /** Where sign-in lands. Absent = the platform default destination. */
 export type ShellLanding = { kind: "launchpad"; key: string } | { kind: "href"; href: string };
 
+/**
+ * The visual half of a Layout: which Look the shell wears (amendment 2026-10-20, REGISTER.md). A Look is
+ * design tokens + data attributes over the same components (never a forked component): `standard` = today,
+ * `meet-matrx` = the Meet Matrx welcome's gradient tiles, glows and airy cards. Ids are in `./looks.ts`.
+ */
+export interface ShellLookRef {
+  id: string;
+}
+
 /** The stored body (schemaVersion 1). Each region is optional: absent = that region stays default. */
 export interface ShellLayoutBody {
   schemaVersion: typeof SHELL_LAYOUT_SCHEMA_VERSION;
@@ -60,6 +69,8 @@ export interface ShellLayoutBody {
   header?: HeaderButton[];
   dock?: ShellNode[];
   landing?: ShellLanding;
+  /** The Look; absent = `standard`. An unknown id is dropped with a problem. */
+  look?: ShellLookRef;
   /** Catalog ids the person dismissed from What's new (never offered again). */
   dismissedNew?: string[];
 }
@@ -130,9 +141,27 @@ export interface LaunchpadWidget {
   layout: { lg: GridPlacement; sm?: GridPlacement };
 }
 
+/** One end of a page-bus connection: a widget on this launchpad and one of its declared value keys. */
+export interface LaunchpadBindingEnd {
+  widgetId: string;
+  key: string;
+}
+
+/**
+ * THE PAGE BUS (amendment 2026-10-20, lane L): `from` is a value a widget publishes (its type's
+ * `publishes`), `to` an input another widget accepts (`accepts`). Values live for the browser
+ * session only; only the connection is saved. One input takes at most one connection.
+ */
+export interface LaunchpadBinding {
+  from: LaunchpadBindingEnd;
+  to: LaunchpadBindingEnd;
+}
+
 export interface LaunchpadDoc {
   schemaVersion: typeof LAUNCHPAD_DOC_SCHEMA_VERSION;
   widgets: LaunchpadWidget[];
+  /** Page-bus connections (amendment 2026-10-20). Absent = none; schema stays v1. */
+  bindings?: LaunchpadBinding[];
 }
 
 /** `slot` of a launchpad row: unique per organization copy of the table. */

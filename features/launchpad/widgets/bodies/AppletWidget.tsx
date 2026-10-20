@@ -8,9 +8,13 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { AppletInPageLazy } from "@/features/applets/embed/appletsPort";
 import { configText, type LaunchpadWidgetBodyProps } from "../types";
 import { WidgetNotice } from "../frame";
+import { useAppletPageValues } from "../../bus/react";
 
 export function AppletWidget({ config, editing }: LaunchpadWidgetBodyProps) {
   const appId = configText(config, "appId");
+  // Page bus: connected inputs reach the Applet as `useValue("in_record" | "in_file" | "in_text")`; what it
+  // sets with `useValue("out_record" | "out_text")` reaches the widgets connected to this one.
+  const pageValues = useAppletPageValues();
   if (!appId) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2 px-3 text-center">
@@ -25,7 +29,7 @@ export function AppletWidget({ config, editing }: LaunchpadWidgetBodyProps) {
   }
   return (
     <div className="h-full overflow-y-auto">
-      <AppletInPageLazy appId={appId} />
+      <AppletInPageLazy appId={appId} pageValues={pageValues} />
     </div>
   );
 }

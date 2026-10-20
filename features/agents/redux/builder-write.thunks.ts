@@ -11,6 +11,7 @@ import {
   setAgentAutoToolsDisabled,
 } from "./auto-tools.thunks";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import { announceSettingsChangedOnSave } from "@/features/agents/utils/settings-changed-on-save";
 import type { Database } from "@/types/database.types";
 import { pgErrorToError } from "@ai-matrx/data";
 import { tryWriteOne, writeOneRow } from "@ai-matrx/data/db";
@@ -59,6 +60,37 @@ import {
   setAgentField, markAgentSaved, markAgentFieldSaved, rollbackAgentOptimisticUpdate,
 } from "@/features/agents/redux/agent-builder.slice";
 export type { DuplicateAgentOptions };
+
+/**
+ * Legacy settings keys are converted by the database on the way in (trigger
+ * agent.normalize_definition_settings, the one home of the alias table). The write asks for the
+ * settings and output schema back; when the saved keys differ from the ones sent we say so.
+ */
+const SAVED_COLUMNS = "version, updated_at, follows_source, settings, output_schema";
+
+type SavedRow = {
+  settings?: unknown;
+  output_schema?: unknown;
+};
+
+/** Merge the converted row back into the store and tell the person. Returns nothing. */
+function reconcileSavedSettings(
+  dispatch: ChatDispatch,
+  agentId: string,
+  sent: Partial<AgentDefinition>,
+  row: SavedRow | null,
+): void {
+  if (!row || sent.settings === undefined) return;
+  const wire = agentDefinitionToUpdate({ settings: sent.settings });
+  if (!announceSettingsChangedOnSave(wire.settings, row.settings)) return;
+  dispatch(
+    mergePartialAgent({
+      id: agentId,
+      settings: row.settings as AgentDefinition["settings"],
+      outputSchema: row.output_schema as unknown as AgentDefinition["outputSchema"],
+    }),
+  );
+}
 
 type ThunkApi = { dispatch: ChatDispatch; state: ChatRootState };
 
@@ -134,15 +166,17 @@ export const saveAgentField = createAsyncThunk<
 
     dispatch(setAgentField({ id: agentId, field, value }));
 
+    const fieldPartial = { [field]: value } as Partial<AgentDefinition>;
+
     const { data, error } = await writeOneRow(
       supabase
         .schema("agent")
         .from("definition")
         .update(
-          agentDefinitionToUpdate({ [field]: value } as Partial<AgentDefinition>),
+          agentDefinitionToUpdate(fieldPartial),
         )
         .eq("id", agentId)
-        .select("version, updated_at, follows_source"),
+        .select(SAVED_COLUMNS),
       { action: "update", noun: "definition" },
     );
 
@@ -165,6 +199,7 @@ export const saveAgentField = createAsyncThunk<
     }
 
     dispatch(markAgentFieldSaved({ id: agentId, field }));
+    reconcileSavedSettings(dispatch, agentId, fieldPartial, data as SavedRow | null);
   },
 );
 
@@ -212,7 +247,7 @@ export const saveAgent = createAsyncThunk<void, string, ThunkApi>(
         .from("definition")
         .update(agentDefinitionToUpdate(dirtyPartial))
         .eq("id", agentId)
-        .select("version, updated_at, follows_source"),
+        .select(SAVED_COLUMNS),
       { action: "update", noun: "definition" },
     );
 
@@ -237,6 +272,7 @@ export const saveAgent = createAsyncThunk<void, string, ThunkApi>(
     }
 
     dispatch(markAgentSaved({ id: agentId }));
+    reconcileSavedSettings(dispatch, agentId, dirtyPartial, data as SavedRow | null);
   },
 );
 

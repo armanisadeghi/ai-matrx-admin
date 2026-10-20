@@ -1,0 +1,101 @@
+/* features/shell/shell-layout/shell-looks.css — where the shell's own chrome reads a Look's tokens
+   (custom-experience, 2026-10-20; registry: ./looks.ts).
+
+   The Look itself — its tile recipe, glows, card and accent tokens — is the shared UI system's
+   (`@ai-matrx/design-system` look-meet-matrx.css). This file only says WHICH shell boxes wear them:
+   the sidebar and dock rows, the canvas, the header band and the launchpad widget cards. Every rule is
+   scoped to a look attribute the server stamps only when a non-standard look is chosen, so an
+   uncustomized shell renders exactly as before (no attribute, no rule applies).
+
+   No layout moves: a tile is 24px drawn in the row's 20px icon slot (negative margin), so rows keep
+   their height, labels keep their x, and the dock keeps its 44px slots. Nothing animates but colors. */
+
+/* ── Sidebar rows: each top-level row's icon is its domain's gradient tile; the row tints in its hue. ── */
+
+[data-look-row="meet-matrx"] {
+  --shell-pill-bg: color-mix(in oklab, var(--look-hue) 12%, transparent);
+  --shell-pill-border: color-mix(in oklab, var(--look-hue) 28%, transparent);
+  --matrx-glass-bg-hover: color-mix(in oklab, var(--look-hue) 8%, transparent);
+  --matrx-glass-bg-active: color-mix(in oklab, var(--look-hue) 14%, transparent);
+}
+
+[data-look-row="meet-matrx"] > .shell-nav-icon[data-look-tile="meet-matrx"] {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: -0.125rem;
+}
+
+[data-look-row="meet-matrx"] > .shell-nav-icon[data-look-tile="meet-matrx"],
+[data-look-row="meet-matrx"]:hover > .shell-nav-icon[data-look-tile="meet-matrx"],
+.shell-active-pill[data-look-row="meet-matrx"] > .shell-nav-icon[data-look-tile="meet-matrx"],
+[data-look-row="meet-matrx"] > .shell-nav-icon[data-look-tile="meet-matrx"] svg {
+  color: #fff;
+}
+
+[data-look-row="meet-matrx"] > .shell-nav-icon[data-look-tile="meet-matrx"] svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* ── Dock: the 44px button keeps its slot; the tile is drawn 3px inside it. ── */
+
+.shell-dock-item[data-look-tile="meet-matrx"] {
+  padding: 0.1875rem;
+  background-clip: content-box;
+  border-radius: 0.875rem;
+  box-shadow: none;
+  color: #fff;
+}
+
+.shell-dock-item[data-look-tile="meet-matrx"] svg {
+  color: #fff;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* ── The canvas: the stage light behind every page, continuous under the header band and its fade. ── */
+
+.shell-root[data-shell-look="meet-matrx"] .shell-main {
+  background-image: var(--look-canvas-glow);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+.shell-root[data-shell-look="meet-matrx"] .shell-header::before {
+  background:
+    var(--look-header-wash),
+    var(--look-canvas-glow) fixed no-repeat,
+    hsl(var(--background));
+}
+
+.shell-root[data-shell-look="meet-matrx"] .shell-header > .shell-header-fade {
+  background:
+    var(--look-canvas-glow) fixed no-repeat,
+    hsl(var(--background));
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+  mask-image: linear-gradient(to bottom, #000, transparent);
+}
+
+/* ── Launchpad widget cards: the stage's airy card (radius, soft shadow, hover lift in shadow only). ── */
+
+.shell-root[data-shell-look="meet-matrx"] [data-launchpad-widget] {
+  border-radius: var(--look-card-radius);
+  box-shadow: var(--look-card-shadow);
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.shell-root[data-shell-look="meet-matrx"] [data-launchpad-widget]:hover {
+  border-color: color-mix(in oklab, hsl(var(--primary)) 30%, hsl(var(--border)));
+  box-shadow: var(--look-card-shadow-hover);
+}
+
+/* The Meet Matrx widget's own cards ARE its chrome: its frame draws no second box around them (any look). */
+[data-launchpad-widget="meet_matrx"],
+.shell-root[data-shell-look="meet-matrx"] [data-launchpad-widget="meet_matrx"],
+.shell-root[data-shell-look="meet-matrx"] [data-launchpad-widget="meet_matrx"]:hover {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}

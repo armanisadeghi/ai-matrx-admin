@@ -12,7 +12,7 @@
  * scrapes, code, tasks — not just files) that every agent can reach and never forgets (Arman, 2026-10-18). The card is the stage's `featured` hero (a picture of what flows in). The stage itself is `@ai-matrx/design-system/intro-stage` (one UI system).
  */
 import type { ReactNode } from "react";
-import { IntroStage, type IntroGroup } from "@ai-matrx/design-system/intro-stage";
+import { IntroStage, type IntroGroup, type IntroLinkProps } from "@ai-matrx/design-system/intro-stage";
 import { PLATFORM_IDENTITIES as P, PRIMITIVE_IDENTITIES } from "@ai-matrx/icons/domain";
 import AppLink from "@/components/navigation/AppLink";
 import { WORKFLOWS_APP_URL } from "@/features/shell/constants/nav-data";
@@ -63,6 +63,19 @@ export const MEET_MATRX_GROUPS: IntroGroup[] = [
   },
 ];
 
+/** The stage's link: the app's router link in place, a new tab for another app. Shared with the launchpad widget. */
+export function meetMatrxLink({ item, href, className, style, children: body, ...rest }: IntroLinkProps) {
+  return item.external ? (
+    <a href={href} className={className} style={style} target="_blank" rel="noopener noreferrer" data-intro-item={rest["data-intro-item"]}>
+      {body}
+    </a>
+  ) : (
+    <AppLink href={href} className={className} style={style} data-intro-item={rest["data-intro-item"]}>
+      {body}
+    </AppLink>
+  );
+}
+
 /** The Meet Matrx stage, with the app's router link. `children` = what follows it on the page. */
 export function MeetMatrx({ eyebrow, children }: { eyebrow?: ReactNode; children?: ReactNode }) {
   return (
@@ -72,17 +85,7 @@ export function MeetMatrx({ eyebrow, children }: { eyebrow?: ReactNode; children
       accent="Matrx"
       lead={MEET_MATRX_LEAD}
       groups={MEET_MATRX_GROUPS}
-      renderLink={({ item, href, className, style, children: body, ...rest }) =>
-        item.external ? (
-          <a href={href} className={className} style={style} target="_blank" rel="noopener noreferrer" data-intro-item={rest["data-intro-item"]}>
-            {body}
-          </a>
-        ) : (
-          <AppLink href={href} className={className} style={style} data-intro-item={rest["data-intro-item"]}>
-            {body}
-          </AppLink>
-        )
-      }
+      renderLink={meetMatrxLink}
     >
       {children}
     </IntroStage>

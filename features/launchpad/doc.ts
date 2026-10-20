@@ -9,9 +9,12 @@
 import { GRID_CANVAS_COLUMNS, boxesCollide, clampBox, placeBox, placementOf, resolveGrid, type GridBox, type GridPlacement } from "@ai-matrx/design-system";
 import {
   LAUNCHPAD_DOC_SCHEMA_VERSION,
+  type LaunchpadBinding,
+  type LaunchpadBindingEnd,
   type LaunchpadDoc,
   type LaunchpadWidget,
 } from "@/features/shell/shell-layout/contract";
+import { canFeed, parseBindings } from "./bus/ports";
 import { START_SIZE_WIDTH, describeLaunchpadWidget, getLaunchpadWidgetSpec, type StartSize } from "./widgets/catalog";
 
 const COLS = GRID_CANVAS_COLUMNS.lg;
@@ -66,7 +69,7 @@ export function parseLaunchpadDoc(raw: unknown): LaunchpadDocParse {
     }
   }
   if (typeof value !== "object" || value === null) return { ok: false, error: "The saved launchpad is empty." };
-  const o = value as { schemaVersion?: unknown; widgets?: unknown };
+  const o = value as { schemaVersion?: unknown; widgets?: unknown; bindings?: unknown };
   if (o.schemaVersion !== LAUNCHPAD_DOC_SCHEMA_VERSION) {
     return { ok: false, error: `The saved launchpad is schema ${String(o.schemaVersion)}, not ${LAUNCHPAD_DOC_SCHEMA_VERSION}.` };
   }
@@ -89,11 +92,14 @@ export function parseLaunchpadDoc(raw: unknown): LaunchpadDocParse {
   }
   let doc: LaunchpadDoc = { schemaVersion: LAUNCHPAD_DOC_SCHEMA_VERSION, widgets: settle(widgets) };
   for (const u of unplaced) doc = addWidget(doc, { type: u.type, config: u.config, id: u.id });
-  return { ok: true, doc };
+  const bindings = parseBindings(o.bindings, new Set(doc.widgets.map((w) => w.id)));
+  return { ok: true, doc: bindings.length ? { ...doc, bindings } : doc };
 }
 
+/** Bindings are written only when there are some, so a launchpad without connections stores exactly what it did. */
 export function serializeLaunchpadDoc(doc: LaunchpadDoc): string {
-  return JSON.stringify({ schemaVersion: doc.schemaVersion, widgets: doc.widgets });
+  const bindings = doc.bindings?.length ? { bindings: doc.bindings } : {};
+  return JSON.stringify({ schemaVersion: doc.schemaVersion, widgets: doc.widgets, ...bindings });
 }
 
 export function sameLaunchpadDoc(a: LaunchpadDoc, b: LaunchpadDoc): boolean {
@@ -178,7 +184,45 @@ export function addWidget(
 
 export function removeWidget(doc: LaunchpadDoc, id: string): LaunchpadDoc {
   if (!doc.widgets.some((w) => w.id === id)) return doc;
-  return { ...doc, widgets: settle(doc.widgets.filter((w) => w.id !== id)) };
+  const next: LaunchpadDoc = { ...doc, widgets: settle(doc.widgets.filter((w) => w.id !== id)) };
+  return withBindings(next, (doc.bindings ?? []).filter((b) => b.from.widgetId !== id && b.to.widgetId !== id));
+}
+
+function withBindings(doc: LaunchpadDoc, bindings: LaunchpadBinding[]): LaunchpadDoc {
+  const rest: LaunchpadDoc = { ...doc };
+  delete rest.bindings;
+  return bindings.length ? { ...rest, bindings } : rest;
+}
+
+const portOf = (doc: LaunchpadDoc, end: LaunchpadBindingEnd, side: "publishes" | "accepts") => {
+  const w = doc.widgets.find((x) => x.id === end.widgetId);
+  return w ? getLaunchpadWidgetSpec(w.type)?.[side]?.find((p) => p.key === end.key) : undefined;
+};
+
+/** The published values on this page that can feed widget `to`'s input (other widgets only, kind-compatible). */
+export function compatibleSources(doc: LaunchpadDoc, to: LaunchpadBindingEnd): { from: LaunchpadBindingEnd; label: string }[] {
+  const accept = portOf(doc, to, "accepts");
+  if (!accept) return [];
+  return readingOrder(doc).flatMap((w) => {
+    if (w.id === to.widgetId) return [];
+    return (getLaunchpadWidgetSpec(w.type)?.publishes ?? [])
+      .filter((p) => canFeed(p.kind, accept.kind))
+      .map((p) => ({ from: { widgetId: w.id, key: p.key }, label: `${describeLaunchpadWidget(w)} · ${p.label}` }));
+  });
+}
+
+/**
+ * Connect widget `to`'s input to `from`'s published value (`from: null` disconnects). One connection per
+ * input; a connection the two ports cannot make (unknown port, incompatible kinds, a widget to itself)
+ * returns the doc unchanged.
+ */
+export function setBinding(doc: LaunchpadDoc, to: LaunchpadBindingEnd, from: LaunchpadBindingEnd | null): LaunchpadDoc {
+  const others = (doc.bindings ?? []).filter((b) => !(b.to.widgetId === to.widgetId && b.to.key === to.key));
+  if (!from) return others.length === (doc.bindings ?? []).length ? doc : withBindings(doc, others);
+  const accept = portOf(doc, to, "accepts");
+  const publish = portOf(doc, from, "publishes");
+  if (!accept || !publish || from.widgetId === to.widgetId || !canFeed(publish.kind, accept.kind)) return doc;
+  return withBindings(doc, [...others, { from: { ...from }, to: { ...to } }]);
 }
 
 /** Move a widget to `toIndex` in reading order (clamped); the grid re-packs in the new order. */
@@ -251,6 +295,7 @@ export function summarizeEdit(before: LaunchpadDoc, after: LaunchpadDoc): string
   }
   if (placed && !added.length && !removed.length) parts.push("Moved or resized");
   if (configured) parts.push("Set up widgets");
+  if (JSON.stringify(before.bindings ?? []) !== JSON.stringify(after.bindings ?? [])) parts.push("Connected widgets");
   const note = parts.join(" · ") || "Saved launchpad";
   return note.length > 120 ? `${note.slice(0, 117)}…` : note;
 }

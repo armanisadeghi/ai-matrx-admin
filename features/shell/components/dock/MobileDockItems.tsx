@@ -9,15 +9,22 @@ import NavLink from "@/components/navigation/NavLink";
 import ShellIcon from "../ShellIcon";
 import type { ShellNavItem } from "../../constants/nav-data";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { shellLookRowProps, type ShellLookId } from "@/features/shell/shell-layout/looks";
 
-/** Single dock link — reusable by custom route docks. */
-export function MobileDockItem({ item }: { item: ShellNavItem }) {
+/**
+ * Single dock link — reusable by custom route docks. Under a Look (`look` set) the button itself is the
+ * tile; without one its HTML is unchanged.
+ */
+export function MobileDockItem({ item, look = null }: { item: ShellNavItem; look?: ShellLookId | null }) {
+  const lookProps = shellLookRowProps(look, item);
   if (item.external) {
     return (
       <OutboundLink
         href={item.href}
         className="shell-dock-item"
         aria-label={item.label}
+        {...lookProps.row}
+        {...lookProps.tile}
       >
         <ShellIcon name={item.iconName} size={22} strokeWidth={1.75} />
       </OutboundLink>
@@ -30,6 +37,8 @@ export function MobileDockItem({ item }: { item: ShellNavItem }) {
       data-nav-href={item.href}
       className="shell-dock-item"
       aria-label={item.label}
+      {...lookProps.row}
+      {...lookProps.tile}
     >
       <ShellIcon name={item.iconName} size={22} strokeWidth={1.75} />
     </NavLink>

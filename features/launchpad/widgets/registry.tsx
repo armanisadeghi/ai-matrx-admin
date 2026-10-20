@@ -17,6 +17,7 @@ import { TableWidget } from "./bodies/TableWidget";
 import { AppletWidget } from "./bodies/AppletWidget";
 import { LaunchpadLinkWidget } from "./bodies/LaunchpadLinkWidget";
 import { AppPageWidget } from "./bodies/AppPageWidget";
+import { MeetMatrxWidget } from "./bodies/MeetMatrxWidget";
 
 const BODIES: Record<string, ComponentType<LaunchpadWidgetBodyProps>> = {
   kpis: KpisWidget,
@@ -31,6 +32,7 @@ const BODIES: Record<string, ComponentType<LaunchpadWidgetBodyProps>> = {
   applet: AppletWidget,
   launchpad_link: LaunchpadLinkWidget,
   app_page: AppPageWidget,
+  meet_matrx: MeetMatrxWidget,
 };
 
 export const LAUNCHPAD_WIDGETS: readonly LaunchpadWidgetType[] = LAUNCHPAD_WIDGET_CATALOG.flatMap((spec) => {

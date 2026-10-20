@@ -13,7 +13,7 @@ interface ShellLayoutEditorWindowProps {
   organizationId: string | null;
 }
 
-const TITLE: Record<EditorRegion, string> = { sidebar: "Edit sidebar", header: "Customize header", dock: "Customize dock" };
+const TITLE: Record<EditorRegion, string> = { sidebar: "Edit sidebar", header: "Customize header", dock: "Customize dock", look: "Choose a look" };
 
 /** "Edit sidebar…" / "Customize header…" / "Customize dock…" — the layout editor in a window (phone: full height). */
 export default function ShellLayoutEditorWindow({ onClose, target, region, organizationId }: ShellLayoutEditorWindowProps) {

@@ -10,6 +10,9 @@ database here.
 | File | What it is |
 |---|---|
 | `contract.ts` | THE FROZEN CONTRACT — stored shapes (`ShellLayoutBody`, `ShellNode`, `HeaderButton`), limits, reserved controls, slots, cookies. Changed only by amendment. |
+| `looks.ts` | THE LOOK REGISTRY (amendment 2026-10-20): `SHELL_LOOKS` (`standard`, `meet-matrx`), `isShellLookId`, `shellLookAttributes` (no attribute for standard), the domain tile hues `SHELL_LOOK_DOMAIN_HUES` + `shellLookHue`, and `shellLookRowProps` (row + tile attributes; empty without a look). |
+| `shell-looks.css` | Which shell boxes wear a look's tokens (sidebar/dock tiles, active row tint, canvas glow under the header band, launchpad widget cards). The look's own CSS is `@ai-matrx/design-system` `look-meet-matrx.css`. Every rule is scoped to a look attribute. |
+| `editor/LookPane.tsx` | The Look cards (preview drawn by the look's own rules) — the editor's Look tab and Settings › Layout › Look. |
 | `retired-nav-ids.ts` | Every nav id that left the menu → its successor id (or `null`). `resolveRetiredNavId` follows the chain. |
 | `catalog.ts` | THE placeable-destination catalog: `buildShellCatalog({ isAdmin })`, `getCatalogEntry`, `defaultSidebarTree`, `defaultDockTree`, `defaultHeaderButtons`, `SHELL_CATALOG_VERSION`, `CATALOG_ADDED_IN`. |
 | `validate.ts` | `parseShellLayoutBody(text)` (never throws) and `serializeShellLayoutBody(body)`. |
@@ -132,6 +135,10 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
 
 ## Change log
 
+- `2026-10-20` — claude (lane K): the Look — `look` region (validate/resolve/serialize), the look registry, the
+  `data-shell-look` stamp on `.shell-root` from the seeded slice (`heldShellLook`, agrees with the resolver;
+  live-updated by `ShellLayoutSync`), gradient tiles on sidebar/dock rows only under a look, the editor's Look
+  tab + Settings › Layout › Look. Guard: `__tests__/look.test.tsx`.
 - `2026-10-19` — claude (lane A): catalog, validator, resolver, permanent nav ids + guard.
 - `2026-10-19` — claude (lane B): storage, boot seed `shell`, server pick, live renderers, sync policy,
   cookies + reserve, Standard view, landing, editor door.

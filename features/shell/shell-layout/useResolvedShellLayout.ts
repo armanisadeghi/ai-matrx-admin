@@ -32,6 +32,13 @@ export const selectShellNavReserved = createSelector(
 /** The person (or her organization) has a stored layout — the Standard view switch shows only then. */
 export const selectHoldsShellLayout = createSelector([selectShellLayoutSlice], (held) => held.enabled && holdsShellLayout(held));
 
+/** The Look the shell wears (null = standard): the stamp on `.shell-root` and the tile attributes on rows. */
+export const selectShellLook = createSelector([selectResolvedShellLayout], (layout) => layout.look);
+
+export function useShellLook() {
+  return useAppSelector(selectShellLook);
+}
+
 export const selectShellStandardView = createSelector([selectShellLayoutSlice], (held) => held.standardView);
 
 export function useResolvedShellLayout(): ResolvedShellLayout {

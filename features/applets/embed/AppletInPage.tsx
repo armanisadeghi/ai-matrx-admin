@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { AppletHostMount } from "@/features/applets-host/AppletHostMount";
 import { appletManageHref, readAppletCards, type AppletCardInfo } from "./appletsPort";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import type { AppletPageValues } from "@ai-matrx/applets/platform";
 
 export interface AppletInPageProps {
   appId: string;
@@ -24,10 +25,12 @@ export interface AppletInPageProps {
   pagePublished?: boolean;
   /** The Applet as read (name, slug, on the web), once — so the host's menu needs no second read. */
   onInfo?: (app: AppletCardInfo) => void;
+  /** A launchpad's page bus for this Applet (`AppletHostMount` `pageValues`); absent = it stands alone. */
+  pageValues?: AppletPageValues | null;
 }
 
 /** One Applet, in place: read by id under the viewer's session (row security decides). */
-export default function AppletInPage({ appId, height, pagePublished = false, onInfo }: AppletInPageProps) {
+export default function AppletInPage({ appId, height, pagePublished = false, onInfo, pageValues }: AppletInPageProps) {
   const [app, setApp] = useState<AppletCardInfo | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   useEffect(() => {
@@ -74,7 +77,7 @@ export default function AppletInPage({ appId, height, pagePublished = false, onI
         </p>
       ) : null}
       <div className={height ? "min-h-0 overflow-auto" : "min-h-24"} style={frame}>
-        <AppletHostMount appletId={appId} slug={app.slug} embedded />
+        <AppletHostMount appletId={appId} slug={app.slug} embedded pageValues={pageValues ?? null} />
       </div>
     </div>
   );

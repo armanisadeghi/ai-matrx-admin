@@ -6,7 +6,8 @@
 // organization's > default; the Standard view switch and guests → default).
 
 import type { StoredShellLayout } from "./contract";
-import { resolveShellLayout, type ResolvedShellLayout } from "./resolve";
+import { bodyShellLook, resolveShellLayout, type ResolvedShellLayout } from "./resolve";
+import type { ShellLookId } from "./looks";
 import { parseShellLayoutBody } from "./validate";
 import type { ShellLayoutBody } from "./contract";
 
@@ -64,4 +65,21 @@ export function resolveHeldShellLayout(held: HeldShellLayouts, viewer: ShellView
     isGuest: viewer.isGuest || !held.enabled,
     personAllowed: held.personAllowed !== false,
   });
+}
+
+/**
+ * Only the Look of `resolveHeldShellLayout` (same order: the editor's preview, then guests / other route
+ * groups / Standard view → none, then the person's body if allowed, else the organization's). The server
+ * stamps it on `.shell-root` without resolving a menu; held/look.test.ts proves the two always agree.
+ * Nothing stored = no parse at all.
+ */
+export function heldShellLook(held: HeldShellLayouts, viewer: Pick<ShellViewer, "isGuest">): ShellLookId | null {
+  const active = held.enabled && !viewer.isGuest;
+  if (!active) return null;
+  if (held.previewBody) return bodyShellLook(parseShellLayoutBody(held.previewBody).body);
+  if (held.standardView) return null;
+  const own = held.personAllowed !== false && held.person ? parseShellLayoutBody(held.person.body).body : null;
+  if (own) return bodyShellLook(own);
+  const organization = held.organizationId ? held.organizations[held.organizationId] : null;
+  return organization ? bodyShellLook(parseShellLayoutBody(organization.body).body) : null;
 }

@@ -13,6 +13,8 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { configText, type LaunchpadWidgetBodyProps } from "../types";
 import { WidgetList } from "../frame";
+import { usePageInput, usePageOutput } from "../../bus/react";
+import type { PageRecordValue } from "../../bus/ports";
 
 type TaskLike = Pick<DatabaseTask, "id" | "title" | "status" | "due_date" | "assignee_id" | "created_by">;
 
@@ -29,6 +31,16 @@ export function pickStartTasks<T extends TaskLike>(tasks: readonly T[], userId: 
       if (b.due_date) return 1;
       return 0;
     });
+}
+
+/** Tasks whose title holds every word of `filter` (case-insensitive); an empty filter keeps all. */
+export function filterTasksByText<T extends { title: string | null }>(tasks: readonly T[], filter: string): T[] {
+  const words = filter.toLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) return [...tasks];
+  return tasks.filter((t) => {
+    const title = (t.title ?? "").toLowerCase();
+    return words.every((w) => title.includes(w));
+  });
 }
 
 function localDay(d = new Date()): string {
@@ -52,21 +64,32 @@ export function TasksWidget({ capacity }: LaunchpadWidgetBodyProps) {
     queryFn: () => getUserTasks("all"),
   });
   const info = tryGetEntityInfo("task");
-  const rows = userId ? pickStartTasks(query.data ?? [], userId, localDay()) : [];
+  // Page bus: a connected "Filter" narrows by title; a connected "Selected task" makes rows pick.
+  const filter = usePageInput("filter", "text")?.trim() ?? "";
+  const selected = usePageOutput<PageRecordValue>("selected");
+  const rows = userId ? filterTasksByText(pickStartTasks(query.data ?? [], userId, localDay()), filter) : [];
   return (
     <WidgetList
       capacity={capacity}
       loading={query.isLoading || !userId}
       error={query.error ? query.error.message : null}
-      empty="No open tasks"
-      rows={rows.map((t) => ({
-        key: t.id,
-        title: t.title || "Untitled task",
-        href: info?.hrefFor?.(t.id) ?? null,
-        meta: dueLabel(t.due_date, t.overdue),
-        icon: t.overdue ? CircleAlert : Circle,
-        tone: t.overdue ? "warning" : "default",
-      }))}
+      empty={filter ? `No open tasks match "${filter}"` : "No open tasks"}
+      rows={rows.map((t) => {
+        const title = t.title || "Untitled task";
+        const href = info?.hrefFor?.(t.id) ?? null;
+        const picked = selected.value?.id === t.id;
+        return {
+          key: t.id,
+          title,
+          href,
+          meta: dueLabel(t.due_date, t.overdue),
+          icon: t.overdue ? CircleAlert : Circle,
+          tone: t.overdue ? ("warning" as const) : ("default" as const),
+          ...(selected.connected
+            ? { selected: picked, onSelect: () => selected.publish(picked ? null : { token: "task", id: t.id, label: title, ...(href ? { href } : {}) }) }
+            : {}),
+        };
+      })}
     />
   );
 }

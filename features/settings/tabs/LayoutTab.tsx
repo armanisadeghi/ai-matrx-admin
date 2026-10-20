@@ -17,7 +17,9 @@ import { setShellStandardViewCookie } from "@/features/shell/shell-layout/ShellL
 import { ShellLayoutMount } from "@/features/shell/shell-layout/editor/ShellLayoutMount";
 import { useShellLayoutStore } from "@/features/shell/shell-layout/useShellLayoutStore";
 import { parseShellLayoutBody } from "@/features/shell/shell-layout/validate";
-import { startingBody } from "@/features/shell/shell-layout/editor/regions";
+import { lookOf, startingBody, withLook } from "@/features/shell/shell-layout/editor/regions";
+import { LookPane } from "@/features/shell/shell-layout/editor/LookPane";
+import { shellLookDef } from "@/features/shell/shell-layout/looks";
 import { useLaunchpads } from "@/features/launchpad/useLaunchpads";
 
 export default function LayoutTab() {
@@ -27,7 +29,7 @@ export default function LayoutTab() {
   const standard = useAppSelector(selectShellStandardView);
   return (
     <>
-      <SettingsSubHeader title="Layout" description="Your own sidebar, header, dock and start page." icon={LayoutTemplate} />
+      <SettingsSubHeader title="Layout" description="Your own sidebar, header, dock, look and start page." icon={LayoutTemplate} />
       <SettingsSection title="Customize">
         <SettingsButton label="Sidebar" description="Choose, order and group your menu." actionLabel="Edit sidebar…" actionIcon={PanelLeft} kind="outline" onClick={() => open({ region: "sidebar" })} />
         <SettingsButton label="Header" description="Buttons along the top." actionLabel="Customize header…" actionIcon={PanelTop} kind="outline" onClick={() => open({ region: "header" })} />
@@ -45,9 +47,30 @@ export default function LayoutTab() {
         />
       </SettingsSection>
       <ShellLayoutMount>
+        <LookSection />
         <LandingSection />
       </ShellLayoutMount>
     </>
+  );
+}
+
+/** The Look the shell wears (the layout's `look`), saved on choosing — the same cards as the editor's Look tab. */
+function LookSection() {
+  const store = useShellLayoutStore();
+  if (store.loading) return null;
+  const own = store.person ? parseShellLayoutBody(store.person.body).body : null;
+  const org = store.organization ? parseShellLayoutBody(store.organization.body).body : null;
+  const current = lookOf(own ?? org);
+  const choose = async (look: ReturnType<typeof lookOf>) => {
+    if (look === current) return;
+    const body = withLook(startingBody(own, org, "person"), look);
+    const answer = await store.save("person", body, `Look: ${shellLookDef(look).label}`);
+    if (!answer.ok) toast.error(answer.error);
+  };
+  return (
+    <SettingsSection title="Look">
+      <LookPane value={current} disabled={store.saving} onChange={(look) => void choose(look)} />
+    </SettingsSection>
   );
 }
 

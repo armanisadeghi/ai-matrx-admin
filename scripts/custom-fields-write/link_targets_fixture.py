@@ -1,6 +1,6 @@
 """CF-WRITE-4 link-target fixture. From aidream: uv run python ../matrx-frontend/scripts/custom-fields-write/link_targets_fixture.py up|down
 Org: Cedar Ridge Dental (admin@admin.com is its owner). up: one disposable custom table with a title and two link columns
-(to a pay period, a workflow run, an agent and a file; LINK-PICKER-2 added the last two), one row. The link itself is made through the UI. down: the row and the table are
+(to a pay period and to a workflow run), one row. The link itself is made through the UI. down: the row and the table are
 archived through the store's own doors. State: $TMPDIR/cfw4_link_fixture.json."""
 import sys, os, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -34,9 +34,7 @@ if cmd == 'up':
             'default_sort': [{'field': 'title', 'direction': 'asc'}], 'label_plural': 'CFW4 link tests', 'label_singular': 'CFW4 link test',
             'fields': [{'key': 'title', 'label': 'Title', 'type': 'text'},
                        {'key': 'pay_period', 'label': 'Pay period', 'type': SHAPE, 'allowed_types': ['hr_pay_period']},
-                       {'key': 'run', 'label': 'Workflow run', 'type': SHAPE, 'allowed_types': ['workflow_run']},
-                       {'key': 'agent', 'label': 'Agent', 'type': SHAPE, 'allowed_types': ['agent']},
-                       {'key': 'file', 'label': 'File', 'type': SHAPE, 'allowed_types': ['file']}]}
+                       {'key': 'run', 'label': 'Workflow run', 'type': SHAPE, 'allowed_types': ['workflow_run']}]}
     te = tx("select custom.table_ensure(%s, %s::jsonb)", (ORG, json.dumps(spec)))[0]
     print(te)
     tid = te['table_id'] if isinstance(te, dict) else None

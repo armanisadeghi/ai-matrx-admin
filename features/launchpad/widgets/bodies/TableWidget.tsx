@@ -9,6 +9,9 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { getTableMetadata, getTablePage } from "@/features/data-tables/service";
 import { configText, type LaunchpadWidgetBodyProps } from "../types";
 import { WidgetList } from "../frame";
+import { usePageOutput } from "../../bus/react";
+import type { PageRecordValue, PageRowsValue } from "../../bus/ports";
+import { useEffect } from "react";
 
 const SHOWN_ROWS = 8;
 
@@ -35,6 +38,9 @@ export function tableWidgetRows(
 
 export function TableWidget({ config, capacity }: LaunchpadWidgetBodyProps) {
   const tableId = configText(config, "tableId");
+  // Page bus: "Selected row" (rows pick while it is connected) and "Shown rows" (what the widget draws).
+  const selected = usePageOutput<PageRecordValue>("selected");
+  const shown = usePageOutput<PageRowsValue>("rows");
   const query = useQuery({
     queryKey: ["start-table", tableId],
     enabled: Boolean(tableId),
@@ -47,6 +53,12 @@ export function TableWidget({ config, capacity }: LaunchpadWidgetBodyProps) {
       return { name: meta.data.table.table_name, rows: tableWidgetRows(meta.data.columns, page.data.rows), total: meta.data.row_count };
     },
   });
+  const rowsWord = JSON.stringify((query.data?.rows ?? []).map((r) => ({ id: r.id, label: r.title })));
+  const publishRows = shown.publish;
+  const rowsConnected = shown.connected;
+  useEffect(() => {
+    if (rowsConnected) publishRows({ token: "record", rows: JSON.parse(rowsWord) as PageRowsValue["rows"] });
+  }, [rowsConnected, rowsWord, publishRows]);
   if (!tableId) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2 px-3 text-center">
@@ -68,7 +80,18 @@ export function TableWidget({ config, capacity }: LaunchpadWidgetBodyProps) {
           No rows yet. Open the table
         </Link>
       }
-      rows={(query.data?.rows ?? []).map((r) => ({ key: r.id, title: r.title, href, meta: r.meta || null }))}
+      rows={(query.data?.rows ?? []).map((r) => {
+        const picked = selected.value?.id === r.id;
+        return {
+          key: r.id,
+          title: r.title,
+          href,
+          meta: r.meta || null,
+          ...(selected.connected
+            ? { selected: picked, onSelect: () => selected.publish(picked ? null : { token: "record", id: r.id, label: r.title, href }) }
+            : {}),
+        };
+      })}
     />
   );
 }
