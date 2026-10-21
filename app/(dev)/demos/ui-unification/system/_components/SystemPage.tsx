@@ -35,12 +35,19 @@ type SectionId = (typeof SECTIONS)[number]["value"];
 export function SystemPage() {
   const [active, setActive] = useState<SectionId>("foundations");
   const scroller = useRef<HTMLDivElement>(null);
+  // A tab click scrolls smoothly past the sections in between; tracking waits until it lands.
+  const jumping = useRef<number | null>(null);
   // The tabs follow the reading position: the section whose top last passed under the sticky
   // header is the active one (they stayed on Foundations for the whole page before).
   useEffect(() => {
     const root = scroller.current;
     if (!root) return;
     const onScroll = () => {
+      if (jumping.current !== null) {
+        window.clearTimeout(jumping.current);
+        jumping.current = window.setTimeout(() => (jumping.current = null), 150);
+        return;
+      }
       const header = root.querySelector("header")?.getBoundingClientRect().bottom ?? 0;
       let current: SectionId = SECTIONS[0].value;
       for (const s of SECTIONS) {
@@ -56,6 +63,7 @@ export function SystemPage() {
   }, []);
   const jump = (id: SectionId) => {
     setActive(id);
+    jumping.current = window.setTimeout(() => (jumping.current = null), 150);
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
   return (
