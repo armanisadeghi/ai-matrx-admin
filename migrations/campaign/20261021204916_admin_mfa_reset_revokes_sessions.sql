@@ -1,4 +1,3 @@
--- draft: CASA owner; owned provider and inverse rehearsal pending
 -- chair-step: Unify existing session termination and end compromised-factor sessions inside the same audited admin transaction.
 -- based-on: iam.sign_out_everywhere(uuid,text) 33302178a2bede92b270b8b816dcd8f242c370764701e0692b8066e6f6bcdce2
 -- based-on: iam.close_account(uuid,text) 66b4b4b76ee3916104379c0976e24bb11fe7e5bc8b82dde4e7bd5f725f3612bb
