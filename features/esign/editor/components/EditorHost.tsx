@@ -152,6 +152,7 @@ export function EditorHost({ source }: { source: Source }) {
         initial={{ draft: loaded.draft, revision: loaded.revision, confirmed: loaded.confirmed }}
         template={loaded.template}
         organizationId={loaded.organizationId}
+        peopleOrganizationId={loaded.organizationId ?? activeOrg}
         resolveOrganizationId={() => ensureOrgId(null)}
         me={me}
         uploader={uploader}
