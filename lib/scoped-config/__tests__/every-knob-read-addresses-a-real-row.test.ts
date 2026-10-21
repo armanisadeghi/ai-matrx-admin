@@ -213,6 +213,18 @@ const COMPUTED_REFS: Record<string, string> = {
     "reads the default-model knob each of its three callers passes as its own declared " +
     "*_MODEL_KNOB constant, and that knob's class companion from the declared map in " +
     "lib/scoped-config/modelClassCompanion.ts (rows created live 2026-10-01 via the MCP)",
+  "features/admin/users/support-sessions/StartSupportSessionDialog.tsx":
+    "reads `SUPPORT_SESSION_KNOBS.lengthChoices` / `.defaultMinutes`, literal pairs declared in " +
+    "support-sessions/service.ts (`support_sessions` / `length_choices`, `default_minutes`; live rows)",
+  "features/admin/users/support-sessions/SupportSessionPill.tsx":
+    "reads `SUPPORT_SESSION_KNOBS.extendMinutes`, the literal pair `support_sessions` / `extend_minutes` " +
+    "declared in support-sessions/service.ts (live row)",
+  "features/agents/agent-creators/services/agentBuilderService.ts":
+    "hands `ensureEffectiveKnob` to `@ai-matrx/agents/models` resolveNewAgentModelId, which asks exactly " +
+    "AGENT_AUTHORING_DEFAULT_MODEL_KNOB (`agents.model_prefs` / `agent_authoring_default_model`; live row)",
+  "../aidream/apps/shared/chat/src/agents/identity/new-agent-model.ts":
+    "the chat package's twin of the agentBuilderService read: resolveNewAgentModelId asks exactly " +
+    "AGENT_AUTHORING_DEFAULT_MODEL_KNOB (`agents.model_prefs` / `agent_authoring_default_model`; live row)",
   "components/rich-content/prose/remote-image-policy.tsx":
     "one read per authorship at `rich_content.remote_images` / `autoload_${authorship}`; every " +
     "authorship in REMOTE_IMAGE_DEFAULTS is proven seeded by the 'remote images' case below",
