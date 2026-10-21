@@ -1350,7 +1350,13 @@ export const ProTextarea = React.forwardRef<
     // A `hero` composer is the page's one box: its mic and "…" are always shown, so a keyboard
     // user never tabs onto an invisible control (critique 2026-10-17: Tab landed on a 0-opacity mic).
     const showControls =
-      (appearance === "hero" || controlsHost instanceof HTMLElement || isHovered || isFocused || isRecording || isTranscribing) && !disabled;
+      (appearance === "hero" ||
+        (typeof HTMLElement !== "undefined" && controlsHost instanceof HTMLElement) ||
+        isHovered ||
+        isFocused ||
+        isRecording ||
+        isTranscribing) &&
+      !disabled;
     const isVoiceDisabled =
       !isAudioAvailable || disabled || (isTranscribing && !isRecording);
 

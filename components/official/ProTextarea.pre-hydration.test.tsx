@@ -153,6 +153,16 @@ function Host() {
   );
 }
 
+test("server rendering works without the browser's HTMLElement constructor", () => {
+  const browserHTMLElement = globalThis.HTMLElement;
+  try {
+    Object.defineProperty(globalThis, "HTMLElement", { configurable: true, value: undefined });
+    expect(() => renderToString(<Host />)).not.toThrow();
+  } finally {
+    Object.defineProperty(globalThis, "HTMLElement", { configurable: true, value: browserHTMLElement });
+  }
+});
+
 /** What a person (or Playwright's fill, or dictation) does to a plain HTML box: set its value. */
 function typeBeforeHydration(box: HTMLTextAreaElement, text: string) {
   Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")?.set?.call(box, text);
