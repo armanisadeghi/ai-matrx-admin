@@ -39,8 +39,10 @@
 // Cache busting is event-driven, exactly as Arman described ("just like we have
 // with editing agents"): every write through `setKnobOverride` (same tab) and
 // the platform directive channel's `settings_changed` (other tabs, the server)
-// drops the snapshots, and the next read re-fetches one. The 60s TTL below is a
-// backstop for a missed directive, not the mechanism. A React face is
+// drops the snapshots, and the next read re-fetches one. The TTL below is a
+// backstop for a missed directive, not the mechanism; a tab coming back into
+// view also re-checks its held snapshots (`catchUpKnobsSinceBoot`, one etag
+// call each, answered "unchanged" for ~2 ms server-side). A React face is
 // `useEffectiveKnob` (useSyncExternalStore), so a control showing the value
 // re-renders the moment a write lands.
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
@@ -51,7 +53,13 @@ import { defineClientKey } from "@/lib/sync/client-storage";
 import { noteKnobReadOnce } from "@/lib/config-attestation/readLedger";
 import { drainBootSeeds, STREAMED_KNOB_SEED_GLOBAL } from "@/lib/boot/bootSeedSlot";
 
-const TTL_MS = 60_000;
+// DB lane A (2026-10-21): was 60 s, and every tab re-asked every address once a minute — the
+// biggest browser cost on the database (41k calls / 5.7 h). Writes and directives invalidate; the
+// focus re-check below covers a tab that slept through one.
+export const KNOB_SNAPSHOT_TTL_MS = 10 * 60_000;
+/** A tab hidden at least this long re-checks its held snapshots when it becomes visible again. */
+export const KNOB_FOCUS_RECHECK_AFTER_MS = 60_000;
+const TTL_MS = KNOB_SNAPSHOT_TTL_MS;
 
 /**
  * Every registered knob, resolved for one (organization, user, scope address).
@@ -590,6 +598,29 @@ if (typeof window !== "undefined") {
   registerDirectiveHandler("settings_changed", (payload) => {
     invalidateEffectiveKnob(`${payload.feature}.${payload.key}`);
   });
+  installFocusRecheck();
+}
+
+/**
+ * Refetch on focus, never a blind poll: a tab that was hidden for at least
+ * KNOB_FOCUS_RECHECK_AFTER_MS asks each held snapshot "unchanged?" once when it
+ * is shown again, and drops the caches only if one moved.
+ */
+function installFocusRecheck(): void {
+  let hiddenAt: number | null = document.visibilityState === "hidden" ? Date.now() : null;
+  const onVisibility = () => {
+    if (document.visibilityState === "hidden") {
+      hiddenAt = Date.now();
+      return;
+    }
+    const away = hiddenAt === null ? 0 : Date.now() - hiddenAt;
+    hiddenAt = null;
+    if (away < KNOB_FOCUS_RECHECK_AFTER_MS || isSignedOutVisitor()) return;
+    void catchUpKnobsSinceBoot().catch((error: unknown) => {
+      console.warn("[knob] re-check on return to the tab could not ask:", error);
+    });
+  };
+  document.addEventListener("visibilitychange", onVisibility);
 }
 
 /**
@@ -605,7 +636,11 @@ export async function catchUpKnobsSinceBoot(): Promise<boolean> {
   if (!defaults && heldAsks.size === 0) return false;
   const rpc = platformRpc(createClient());
   let moved = false;
-  if (defaults?.version) {
+  // A held snapshot's etag carries the platform defaults' version (`k3.<inputs>.<defaults version>`,
+  // migration dblanea_knob_delta_unchanged_is_cheap): "unchanged" there means the defaults did not move
+  // either, so the full defaults read (~80 ms server-side) is asked only when no snapshot is held.
+  const holdsSnapshot = [...heldAsks.keys()].some((addr) => lastAnswers.has(addr));
+  if (defaults?.version && !holdsSnapshot) {
     const { data, error } = await rpc("knob_defaults", { p_known_version: defaults.version });
     if (!error && (data as { unchanged?: boolean } | null)?.unchanged !== true) moved = true;
   }
