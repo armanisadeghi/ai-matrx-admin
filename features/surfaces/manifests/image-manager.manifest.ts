@@ -100,16 +100,16 @@ export const imageManagerManifest: SurfaceManifest = {
     "The image hub and its tabs (tools, branded, profile photo, public search, studio library).",
   readiness: "partial",
   readinessNote:
-    "The /images landing emits its complete navigation catalog. Other shared hub routes and outside-helper attribution/binding proof remain to be completed; this is not fleet certification.",
+    "Shared image hub tabs remain partial pending their own runtime audits. The /images navigation landing is the images-home child, which preserves this family vocabulary and inherited bindings.",
   label: "Image Manager",
-  urlPattern: "/images",
+  urlPattern: "/images/manager",
   intro: `<surface_intro>
 You are in the Image Manager: the hub the user moves through to find, upload, brand, and organize images. image_hub_tab tells you which tab they are on; the selection group tells you which images they have picked.
 Images are always identified here by a durable file_id, never by a URL — a URL you were given may already have expired, so resolve bytes from the id.
-The dedicated image workspaces (library, studio, generate, edit, annotate) are separate surfaces with their own richer vocabulary; do not assume their values are available here. On the navigation landing use open_image_workspace with a displayed route to open its tool. This hub cannot create, edit or delete images.
+The dedicated image workspaces (library, studio, generate, edit, annotate) are separate surfaces with their own richer vocabulary; do not assume their values are available here. The /images navigation landing is the images-home child. This family identity does not claim runtime completeness for every tab.
 </surface_intro>`,
   groups,
-  writeTargets: [{ name: "open_image_workspace", label: "Open image workspace", description: "Navigates from the Images landing to one of its displayed tools or section homes. Value is a route string from image_hub_links or image_hub_sections, for example /images/upload. Refuses unknown/external destinations. It neither creates nor edits images; available only on the navigation landing.", valueType: "string", mode: "ui", applyPolicy: "auto", group: "hub_location", sortOrder: 100 }],
+
   values: mergeBaselineValues(pickBaseline("selection", "context"), surfaceSpecific),
 };
 

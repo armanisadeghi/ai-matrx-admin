@@ -31,6 +31,7 @@ import { aiWorkManifest } from "./ai-work.manifest";
 import { aiWorkComposerManifest } from "./ai-work-composer.manifest";
 import { aiWorkConversationsManifest } from "./ai-work-conversations.manifest";
 import { imageManagerManifest } from "./image-manager.manifest";
+import { imagesHomeManifest } from "./images-home.manifest";
 import { visionInterviewManifest } from "./vision-interview.manifest";
 import { artifactsManifest } from "./artifacts.manifest";
 import { assistsManifest } from "./assists.manifest";
@@ -324,6 +325,7 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   aiWorkComposerManifest,
   aiWorkConversationsManifest,
   imageManagerManifest,
+  imagesHomeManifest,
   visionInterviewManifest,
   artifactsManifest,
   assistsManifest,

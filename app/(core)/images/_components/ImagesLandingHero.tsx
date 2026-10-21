@@ -24,7 +24,7 @@ import {
 
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
-import { createImageManagerScope } from "@/features/surfaces/manifests/image-manager.manifest";
+import { createImagesHomeScope } from "@/features/surfaces/manifests/images-home.manifest";
 
 interface Tile {
   href: string;
@@ -166,7 +166,7 @@ export function ImagesLandingHero() {
     { title: "Studio", landing: "/images/studio", links: STUDIO_TILES.map(({ href, label, description }) => ({ href, label, description })) },
   ];
   const links = sections.flatMap((section) => section.links);
-  const getScope = () => createImageManagerScope({
+  const getScope = () => createImagesHomeScope({
     image_hub_tab: "home",
     image_hub_sections: sections,
     image_hub_overview: xmlElement("images", { tab: "home" }, sections.map((section) => xmlElement("section", { title: section.title, href: section.landing }, xmlList("tools", section.links, (link) => xmlElement("tool", { name: link.label, href: link.href }, xmlText("description", link.description, { max: 120 })))))) ,
@@ -175,13 +175,13 @@ export function ImagesLandingHero() {
     content: sections.map((section) => `${section.title}\n${section.links.map((link) => `${link.label}: ${link.description} (${link.href})`).join("\n")}`).join("\n\n"),
   });
   return (
-    <SurfaceRuntimeProvider surfaceName="matrx-user/image-manager" getScope={getScope} getWriteHandlers={() => ({
+    <SurfaceRuntimeProvider surfaceName="matrx-user/images-home" getScope={getScope} getWriteHandlers={() => ({
       open_image_workspace: {
         validate: (value) => { parseImageHubDestination(value, sections); },
         apply: (value) => { const href = parseImageHubDestination(value, sections); router.push(href); return { summary: `Opened ${href}.`, data: { href } }; },
       },
     })}>
-    <NonEditableContextMenu sourceFeature="image-studio" surfaceName="matrx-user/image-manager" menuVersion={2} extraSections={[{ id: "image-workspaces", label: "Image workspaces", anchor: "after-clipboard", items: sections.map((section) => ({ kind: "submenu", id: section.title, label: section.title, icon: FolderTree, children: [{ kind: "item", id: section.landing, label: "Open home", icon: ArrowRight, onSelect: () => router.push(section.landing) }, ...section.links.map((link) => ({ kind: "item" as const, id: link.href, label: `Open ${link.label}`, icon: ArrowRight, onSelect: () => router.push(link.href) }))] })) }]} getApplicationScope={getScope} contentSource={{ type: "raw" }}>
+    <NonEditableContextMenu sourceFeature="image-studio" surfaceName="matrx-user/images-home" menuVersion={2} extraSections={[{ id: "image-workspaces", label: "Image workspaces", anchor: "after-clipboard", items: sections.map((section) => ({ kind: "submenu", id: section.title, label: section.title, icon: FolderTree, children: [{ kind: "item", id: section.landing, label: "Open home", icon: ArrowRight, onSelect: () => router.push(section.landing) }, ...section.links.map((link) => ({ kind: "item" as const, id: link.href, label: `Open ${link.label}`, icon: ArrowRight, onSelect: () => router.push(link.href) }))] })) }]} getApplicationScope={getScope} contentSource={{ type: "raw" }}>
     <div data-surface-value="image_hub_sections" className="h-full overflow-y-auto overscroll-contain pb-20">
       <div className="space-y-3 px-3 pb-3 pt-3 md:hidden">
         <MobileTileSection
