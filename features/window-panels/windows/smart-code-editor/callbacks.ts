@@ -15,7 +15,20 @@
  * NEVER put into Redux. The callback group is the live channel back to the
  * caller.
  */
-import { callbackManager } from "@ai-matrx/summon/handles";
+// Registration is summon's light path on `./open`: this module is reached from the boot graph, so the
+// full handles registry must not ride it into first load. Creating a group starts loading the
+// registry; the emit side runs long after, through the loaded registry (same pattern as the
+// projects window callbacks).
+import {
+  newHandleId,
+  registerHandleEntry,
+  removeHandleGroup,
+} from "@ai-matrx/summon/open";
+
+type Handles = typeof import("@ai-matrx/summon/handles");
+let handles: Handles | null = null;
+const loadHandles = (): Promise<Handles> =>
+  import("@ai-matrx/summon/handles").then((m) => (handles = m));
 
 // ─── Event surface ───────────────────────────────────────────────────────────
 
@@ -89,7 +102,8 @@ export interface SmartCodeEditorWindowHandlers {
 export function createSmartCodeEditorCallbackGroup(
   handlers: SmartCodeEditorWindowHandlers,
 ): { callbackGroupId: string; dispose: () => void } {
-  const callbackGroupId = callbackManager.createGroup();
+  const callbackGroupId = newHandleId();
+  void loadHandles();
 
   const fanOut = (event: SmartCodeEditorWindowEvent) => {
     switch (event.type) {
@@ -115,14 +129,13 @@ export function createSmartCodeEditorCallbackGroup(
     handlers.onEvent?.(event);
   };
 
-  callbackManager.registerWithContext<SmartCodeEditorWindowEvent>(
-    (event) => fanOut(event),
-    { groupId: callbackGroupId },
-  );
+  registerHandleEntry((event: SmartCodeEditorWindowEvent) => fanOut(event), {
+    groupId: callbackGroupId,
+  });
 
   return {
     callbackGroupId,
-    dispose: () => callbackManager.removeGroup(callbackGroupId),
+    dispose: () => removeHandleGroup(callbackGroupId),
   };
 }
 
@@ -135,9 +148,12 @@ export function emitSmartCodeEditorEvent(
   event: SmartCodeEditorWindowEvent,
 ): void {
   if (!callbackGroupId) return;
-  callbackManager.triggerGroup<SmartCodeEditorWindowEvent>(
-    callbackGroupId,
-    event,
-    { removeAfterTrigger: false },
-  );
+  const trigger = (m: Handles) =>
+    m.callbackManager.triggerGroup<SmartCodeEditorWindowEvent>(
+      callbackGroupId,
+      event,
+      { removeAfterTrigger: false },
+    );
+  if (handles) trigger(handles);
+  else void loadHandles().then(trigger);
 }

@@ -1,5 +1,18 @@
-import { callbackManager } from "@ai-matrx/summon/handles";
+// Registration is summon's light path on `./open` (same pattern as the projects window callbacks):
+// the open hook and the field import this module, so the full handles registry must not ride it
+// into first load. Creating a group starts loading the registry; the window emits long after,
+// through the loaded registry (synchronously), so event order is unchanged.
+import {
+  newHandleId,
+  registerHandleEntry,
+  removeHandleGroup,
+} from "@ai-matrx/summon/open";
 import type { UserSearchCandidate } from "./types";
+
+type Handles = typeof import("@ai-matrx/summon/handles");
+let handles: Handles | null = null;
+const loadHandles = (): Promise<Handles> =>
+  import("@ai-matrx/summon/handles").then((m) => (handles = m));
 
 export interface UserSearchSelectedEvent {
   type: "selected";
@@ -23,20 +36,21 @@ export function createUserSearchCallbackGroup(handlers: UserSearchHandlers): {
   callbackGroupId: string;
   dispose: () => void;
 } {
-  const callbackGroupId = callbackManager.createGroup();
-  callbackManager.registerWithContext<UserSearchEvent>(
-    (event) => {
+  const callbackGroupId = newHandleId();
+  void loadHandles();
+  registerHandleEntry(
+    (event: UserSearchEvent) => {
       if (event.type === "selected") handlers.onSelected?.(event);
       else {
         handlers.onWindowClose?.(event);
-        callbackManager.removeGroup(callbackGroupId);
+        removeHandleGroup(callbackGroupId);
       }
     },
     { groupId: callbackGroupId },
   );
   return {
     callbackGroupId,
-    dispose: () => callbackManager.removeGroup(callbackGroupId),
+    dispose: () => removeHandleGroup(callbackGroupId),
   };
 }
 
@@ -45,7 +59,10 @@ export function emitUserSearchEvent(
   event: UserSearchEvent,
 ): void {
   if (!callbackGroupId) return;
-  callbackManager.triggerGroup<UserSearchEvent>(callbackGroupId, event, {
-    removeAfterTrigger: false,
-  });
+  const trigger = (m: Handles) =>
+    m.callbackManager.triggerGroup<UserSearchEvent>(callbackGroupId, event, {
+      removeAfterTrigger: false,
+    });
+  if (handles) trigger(handles);
+  else void loadHandles().then(trigger);
 }
