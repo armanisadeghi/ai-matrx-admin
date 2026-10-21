@@ -174,7 +174,6 @@ import { linkInBioService } from "@/features/marketing/lib/link-in-bio";
 import { SmartAddWebRow } from "./SmartAddWebRow";
 import { withPageKind, type BacklinkCheck } from "./backlinks";
 import { captureProvision } from "@/features/provision-window/data";
-import { autoOpenHasRoom, markAutoOpened } from "@ai-matrx/summon/window";
 import { DEFAULT_INSTANCE_ID } from "@ai-matrx/summon/open";
 import { useOpenProvisionWindow } from "@/features/overlays/definitions/provisionWindow.overlay";
 import { ProvisionCaptures } from "@/features/provision-window/ProvisionCaptures";
@@ -1395,7 +1394,7 @@ export function SmartAddBrand({
         }
       }
       // Every site is crawled by the setup run on the server (brand.setup.crawl_sites): it survives a
-      // closed tab and shows on the run page with each crawl.
+      // closed tab and shows on the run page with each crawl session.
       // Nothing is lost: every finding the person did not answer is kept as a candidate in the
       // brand's discovery inbox (web.discovered_item); only "Not us" is left out.
       // Related items keep their relationship (and land in their home: people, competitors).
@@ -1519,10 +1518,14 @@ export function SmartAddBrand({
         // over the cards. A person's own press on "Brand analysis inputs" ("manual") always opens it.
         if (trigger === "manual") {
           openProvision(snapshot.id, `Brand analysis inputs: ${brand.name}`);
-        } else if (!provisionAutoOpened.current && autoOpenHasRoom()) {
-          provisionAutoOpened.current = true;
-          markAutoOpened("provisionWindow", DEFAULT_INSTANCE_ID);
-          openProvision(snapshot.id, `Brand analysis inputs: ${brand.name}`);
+        } else if (!provisionAutoOpened.current) {
+          // the window section loads on use (heavy summon entry, kept out of first load)
+          const win = await import("@ai-matrx/summon/window");
+          if (!provisionAutoOpened.current && win.autoOpenHasRoom()) {
+            provisionAutoOpened.current = true;
+            win.markAutoOpened("provisionWindow", DEFAULT_INSTANCE_ID);
+            openProvision(snapshot.id, `Brand analysis inputs: ${brand.name}`);
+          }
         }
       }
     } catch (error) {
