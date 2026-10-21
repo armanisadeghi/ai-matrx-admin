@@ -20,16 +20,25 @@ import { useCallback, useEffect, useState } from "react";
 
 /**
  * The held order for `sorted` (already in its live order): rows in `held`
- * keep their relative order; new rows go in at their live index.
+ * keep their relative order; new rows go in at their live index — but never
+ * past `visibleRows` (the rows a list shows before its "Show more"): a new row
+ * whose live place is below the cut lands at the window's last visible slot,
+ * so an arrival is never hidden. `visibleRows` 0 or Infinity = no cut.
  */
-export function holdOrder<T>(held: readonly string[], sorted: readonly T[], keyOf: (item: T) => string): T[] {
+export function holdOrder<T>(
+  held: readonly string[],
+  sorted: readonly T[],
+  keyOf: (item: T) => string,
+  visibleRows = Number.POSITIVE_INFINITY,
+): T[] {
   const byKey = new Map(sorted.map((item) => [keyOf(item), item] as const));
   const kept = held.filter((key) => byKey.has(key));
   const keptSet = new Set(kept);
   const out: T[] = kept.map((key) => byKey.get(key) as T);
   sorted.forEach((item, index) => {
     if (keptSet.has(keyOf(item))) return;
-    out.splice(Math.min(index, out.length), 0, item);
+    const cut = visibleRows > 0 ? visibleRows - 1 : Number.POSITIVE_INFINITY;
+    out.splice(Math.min(index, cut, out.length), 0, item);
   });
   return out;
 }
@@ -47,6 +56,8 @@ export function useStableOrder<T>(
   sorted: readonly T[],
   keyOf: (item: T) => string,
   resetKey: unknown = null,
+  /** Rows shown before "Show more": a new row is never inserted below it (see `holdOrder`). */
+  visibleRows = Number.POSITIVE_INFINITY,
 ): StableOrder<T> {
   const [epoch, setEpoch] = useState(0);
   const resort = useCallback(() => setEpoch((n) => n + 1), []);
@@ -68,7 +79,7 @@ export function useStableOrder<T>(
   }, [resort]);
 
   const fresh = held.keys === null || held.epoch !== epoch || !Object.is(held.resetKey, resetKey);
-  const items = fresh ? [...sorted] : holdOrder(held.keys ?? [], sorted, keyOf);
+  const items = fresh ? [...sorted] : holdOrder(held.keys ?? [], sorted, keyOf, visibleRows);
   const keys = items.map(keyOf);
   if (fresh || !sameKeys(keys, held.keys)) setHeld({ keys, epoch, resetKey });
 

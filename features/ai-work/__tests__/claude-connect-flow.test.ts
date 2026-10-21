@@ -7,9 +7,12 @@
  */
 
 import {
+  coldStartWords,
+  NO_TIMING_MESSAGE,
   OFFLINE_MESSAGE,
+  phaseWords,
   runClaudeConnect,
-  SANDBOX_TIMEOUT_MESSAGE,
+  sandboxTimeoutMessage,
   type ConnectDeps,
   type ConnectReadiness,
 } from "@/features/ai-work/lib/claudeConnectFlow";
@@ -20,8 +23,13 @@ const starting = {
   provider: "claude_code",
   state: "starting",
   signed_in: false,
-  detail: "Starting your coding sandbox. This usually takes about a minute.",
+  detail: "Starting your coding sandbox. A cold start takes up to about 4 minutes.",
+  cold_start_expected_seconds: 240,
+  ready_wait_seconds: 360,
 } as unknown as OwnPlanStatus;
+/** The same answer with another ready-wait knob (seconds). */
+const startingWithWait = (wait: number, expected = 240) =>
+  ({ ...starting, cold_start_expected_seconds: expected, ready_wait_seconds: wait }) as unknown as OwnPlanStatus;
 const link: OwnPlanStatus = {
   provider: "claude_code",
   state: "awaiting_code",
@@ -36,7 +44,6 @@ type Step<T> = T | Error | typeof NEVER;
 function harness(opts: {
   starts: Array<Step<OwnPlanStatus>>;
   readiness?: Array<Step<ConnectReadiness>>;
-  timeoutMs?: number;
 }) {
   const controller = new AbortController();
   let clock = 0;
@@ -62,7 +69,6 @@ function harness(opts: {
     }),
     now: () => clock,
     signal: controller.signal,
-    timeoutMs: opts.timeoutMs,
     callTimeoutMs: 30,
   };
   return { deps, controller };
@@ -122,10 +128,10 @@ describe("runClaudeConnect", () => {
   });
 
   it("a sandbox that never comes up ends in an honest timeout", async () => {
-    const h = harness({ starts: [starting], timeoutMs: 20_000 });
+    const h = harness({ starts: [startingWithWait(20)] });
     expect(await runClaudeConnect(h.deps)).toEqual({
       kind: "timeout",
-      message: SANDBOX_TIMEOUT_MESSAGE,
+      message: sandboxTimeoutMessage({ expectedSeconds: 240, waitSeconds: 20 }),
     });
   });
 
@@ -188,8 +194,52 @@ describe("runClaudeConnect", () => {
     );
     const phases: string[] = [];
     h.deps.onPhase = (phase) => phases.push(phase);
-    h.deps.timeoutMs = undefined;
     expect(await runClaudeConnect(h.deps)).toEqual({ kind: "awaiting", status: link });
     expect(phases).toEqual(["sandbox", "app", "link"]);
+  });
+
+  /**
+   * FORCING GUARD — 2026-10-21 review: the 4-minute expectation and 6-minute deadline were typed
+   * in both repos. The deadline and every "how long" sentence now come from the server's knobs
+   * (coding_session_bridge.hosted_box_cold_start_expected_seconds / .hosted_box_ready_wait_seconds),
+   * sent with the starting and readiness answers; changing the row changes the screen.
+   */
+  it("the deadline is the server's ready-wait knob, not a client constant", async () => {
+    const run = async (wait: number) => {
+      const h = harness({ starts: [startingWithWait(wait), link] });
+      let clock = 0;
+      h.deps.now = () => clock;
+      h.deps.sleep = jest.fn(async (ms: number) => {
+        clock += ms;
+      });
+      h.deps.readiness = jest.fn(async () => (clock < 400_000 ? { state: "provisionable" as const, box_status: "creating" } : { state: "ready" as const, box_status: "ready" }));
+      return runClaudeConnect(h.deps);
+    };
+    // A 400 s cold start: within a 7-minute knob it links; under a 5-minute knob it times out, saying 5.
+    expect(await run(420)).toEqual({ kind: "awaiting", status: link });
+    const short = await run(300);
+    expect(short).toEqual({ kind: "timeout", message: sandboxTimeoutMessage({ expectedSeconds: 240, waitSeconds: 300 }) });
+    expect(short.kind === "timeout" && short.message).toContain("within 5 minutes");
+  });
+
+  it("the screen is told the server's timing once, and builds its words from it", async () => {
+    const h = harness({ starts: [startingWithWait(360, 300), link], readiness: [{ state: "ready" }] });
+    const seen: unknown[] = [];
+    h.deps.onTiming = (t) => seen.push(t);
+    await runClaudeConnect(h.deps);
+    expect(seen).toEqual([{ expectedSeconds: 300, waitSeconds: 360 }]);
+    expect(coldStartWords({ expectedSeconds: 300, waitSeconds: 360 })).toBe("A cold start takes up to about 5 minutes.");
+  });
+
+  it("a server that never says its timing is told plainly, never waited on blind", async () => {
+    const bare = { ...starting, cold_start_expected_seconds: undefined, ready_wait_seconds: undefined } as unknown as OwnPlanStatus;
+    const h = harness({ starts: [bare], readiness: [{ state: "provisionable" }] });
+    expect(await runClaudeConnect(h.deps)).toEqual({ kind: "failed", message: NO_TIMING_MESSAGE });
+  });
+
+  /** 2026-10-21 review: "Step 1 of 3" was a guess; box_status only tells creating from up. */
+  it("phase words say only what the server reports, with no invented step count", () => {
+    for (const phase of ["sandbox", "app", "link"] as const) expect(phaseWords(phase)).not.toMatch(/step \d/i);
+    expect(phaseWords("app")).toBe("Sandbox is up; its app is starting");
   });
 });

@@ -30,13 +30,14 @@ import { isJsonObject } from "@/types/json";
 import { abortableSleep, connectClaudeAccount, redeemClaudeCode } from "@/features/ai-work/lib/connectClaudeAccount";
 import {
   claudeAnswerAt,
-  COLD_START_EXPECTATION,
+  coldStartWords,
   parsePendingConnect,
   PENDING_CONNECT_KEY,
   phaseWords,
   resumeStep,
   type ConnectPhase,
   type PendingConnect,
+  type StartTiming,
 } from "@/features/ai-work/lib/claudeConnectFlow";
 import {
   cancelOwnPlanSignIn,
@@ -151,6 +152,8 @@ interface Running {
   phase: ConnectPhase;
   phaseDetail: string | null;
   link: OwnPlanStatus | null;
+  /** The server's start timing once it has said it (absent until the first starting answer). */
+  timing?: StartTiming | null;
 }
 
 export interface ClaudeCloudDelivery {
@@ -243,8 +246,14 @@ export function useClaudeCloudDelivery(): ClaudeCloudDelivery {
     try {
       if (opts.afterStop) await waitForFreeSlot(controller.signal);
       if (controller.signal.aborted) return;
-      const outcome = await connectClaudeAccount(slot, controller.signal, (phase, detail) =>
-        setRunning((r) => (r && r.slot === slot ? { ...r, phase, phaseDetail: detail } : r)),
+      const outcome = await connectClaudeAccount(
+        slot,
+        controller.signal,
+        (phase, detail) => setRunning((r) => (r && r.slot === slot ? { ...r, phase, phaseDetail: detail } : r)),
+        (timing) => {
+          remember({ slot, startedAt, forEmail, waitMs: timing.waitSeconds * 1000 });
+          setRunning((r) => (r && r.slot === slot ? { ...r, timing } : r));
+        },
       );
       if (abort.current !== controller) return;
       if (outcome.kind === "signed_in") signedIn(forEmail, outcome.status);
@@ -419,7 +428,8 @@ export function ClaudeCloudSignIn({ cloud }: { cloud: ClaudeCloudDelivery }) {
                   {elapsed ? ` · ${elapsed}` : ""}
                 </span>
                 <span className="block text-muted-foreground">
-                  Claude&apos;s own sign-in runs in your cloud sandbox, so delivery works while your computer is off. {COLD_START_EXPECTATION}
+                  Claude&apos;s own sign-in runs in your cloud sandbox, so delivery works while your computer is off.
+                  {r.timing ? ` ${coldStartWords(r.timing)}` : ""}
                 </span>
               </>
             ) : null}

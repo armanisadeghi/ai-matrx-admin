@@ -13,6 +13,7 @@ import {
   runClaudeConnect,
   type ConnectOutcome,
   type ConnectPhase,
+  type StartTiming,
   type RedeemOutcome,
 } from "@/features/ai-work/lib/claudeConnectFlow";
 import {
@@ -54,9 +55,11 @@ export function connectClaudeAccount(
   account: OwnPlanAccount,
   signal: AbortSignal,
   onPhase?: (phase: ConnectPhase, detail: string | null) => void,
+  onTiming?: (timing: StartTiming) => void,
 ): Promise<ConnectOutcome> {
   return runClaudeConnect({
     onPhase,
+    onTiming,
     start: () => startOwnPlanSignIn("claude_code", account),
     readiness: async () => await hostedRuntimeStatus(serverApi, {}),
     isFatal: (cause) => capacityRefusalOf(cause) !== null,
