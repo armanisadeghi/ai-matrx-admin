@@ -133,7 +133,8 @@ export default function WebSearchResultsBlock({
         </div>
       )}
 
-      {places.length > 0 && <LocalPack places={places} />}
+      {places.length > 0 &&
+        (vertical === "places" ? <PlacesList places={places} /> : <LocalPack places={places} />)}
 
       {newsFirst && topStories}
 
@@ -256,6 +257,34 @@ export default function WebSearchResultsBlock({
   );
 }
 
+function placeMarkers(places: Record<string, unknown>[]) {
+  return places.flatMap((place) => {
+    const coords = isRecord(place.coordinates) ? place.coordinates : null;
+    const lat = coords ? num(coords.latitude) : null;
+    const lng = coords ? num(coords.longitude) : null;
+    return lat !== null && lng !== null ? [{ lat, lng, label: text(place.name) ?? undefined }] : [];
+  });
+}
+
+/** The Places tab, Google Maps' way: every place in a list, the map beside it (above it on a phone). */
+function PlacesList({ places }: { places: Record<string, unknown>[] }) {
+  const markers = placeMarkers(places);
+  return (
+    <div className="grid gap-4 @3xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      {markers.length > 0 && (
+        <div className="relative z-0 h-56 overflow-hidden rounded-xl border border-border @3xl:sticky @3xl:top-2 @3xl:order-2 @3xl:h-[70vh]">
+          <MapCanvas markers={markers} />
+        </div>
+      )}
+      <div className="divide-y divide-border @3xl:order-1">
+        {places.map((place, i) => (
+          <SearchKindNested key={i} value={place} className="rounded-none border-0 bg-transparent px-0" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /**
  * Google's local pack: a map with the places pinned, three places under it in one bordered list,
  * and "More places" opening the rest in place. Every place draws through its ONE component.
@@ -264,12 +293,7 @@ function LocalPack({ places }: { places: Record<string, unknown>[] }) {
   const [all, setAll] = useState(false);
   const shown = all ? places : places.slice(0, LOCAL_PACK_SIZE);
   // The map pins the places on show, Google's way: "More places" adds theirs.
-  const markers = shown.flatMap((place) => {
-    const coords = isRecord(place.coordinates) ? place.coordinates : null;
-    const lat = coords ? num(coords.latitude) : null;
-    const lng = coords ? num(coords.longitude) : null;
-    return lat !== null && lng !== null ? [{ lat, lng, label: text(place.name) ?? undefined }] : [];
-  });
+  const markers = placeMarkers(shown);
   return (
     <section>
       <SectionHeading label="Places" />
