@@ -5,7 +5,8 @@ import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/types/database.types";
 import type { VariableDefinition } from "@ai-matrx/chat/agents/types/agent-definition.types";
-import { DEFAULT_AGENT_MODEL_ID } from "@ai-matrx/chat/agents/constants/blank-agent";
+import { resolveNewAgentModelId } from "@ai-matrx/agents/models";
+import { ensureEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs";
 import { stripNullish } from "@/utils/supabase/payload";
 // The ONE write-organization resolver (explicit value → the org the user
 // SELECTED → refuse). `agent.definition` is org-scoped and its sibling write
@@ -52,9 +53,9 @@ export interface AgentBuilderResult {
   error?: string;
 }
 
-// One constant for every creation path — see blank-agent.ts for why the old
-// pin (a deprecated small flash model) was the wrong seat for a tool-loop agent.
-const DEFAULT_MODEL_ID = DEFAULT_AGENT_MODEL_ID;
+// The model a new agent starts on is the `agents.model_prefs.agent_authoring_default_model`
+// knob (organization → person → device), resolved by the package's `resolveNewAgentModelId` —
+// never a constant here. See @ai-matrx/agents/models default-model.ts.
 
 /**
  * Builds a minimal INSERT payload for agent.definition.
@@ -66,6 +67,7 @@ const DEFAULT_MODEL_ID = DEFAULT_AGENT_MODEL_ID;
  */
 function configToInsertPayload(
   config: AgentBuilderConfig,
+  modelId: string,
 ): Omit<
   AgentInsert,
   "id" | "created_at" | "updated_at" | "source_agent_id" | "source_snapshot_at"
@@ -97,7 +99,7 @@ function configToInsertPayload(
 
   const raw: Partial<AgentInsert> = {
     name: config.name.trim(),
-    model_id: DEFAULT_MODEL_ID,
+    model_id: modelId,
     messages: messages as unknown as AgentInsert["messages"],
     ...(description ? { description } : {}),
     ...(variableDefinitions.length
@@ -171,8 +173,12 @@ export async function createAgentFromBuilder(
           ? owner.organizationId
           : await ensureOrgId(undefined);
 
+    const { modelId } = await resolveNewAgentModelId((fullKey) =>
+      ensureEffectiveKnob(organizationId, authData.user.id, fullKey),
+    );
+
     const payload = {
-      ...configToInsertPayload(config),
+      ...configToInsertPayload(config, modelId),
       ...(owner.kind === "system" ? { agent_type: "builtin" } : {}),
       created_by: authData.user.id,
       organization_id: organizationId,

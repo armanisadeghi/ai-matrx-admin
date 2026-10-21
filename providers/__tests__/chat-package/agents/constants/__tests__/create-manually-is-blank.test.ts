@@ -12,10 +12,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import {
-  BLANK_AGENT_SEED,
-  DEFAULT_AGENT_MODEL_ID,
-} from "@ai-matrx/chat/agents/constants/blank-agent";
+import { BLANK_AGENT_SEED } from "@ai-matrx/chat/agents/constants/blank-agent";
 
 const REPO_ROOT = process.cwd();
 
@@ -52,9 +49,12 @@ describe("the manual path gives a person a blank agent", () => {
     expect(BLANK_AGENT_SEED.tools).toEqual([]);
   });
 
-  it("starts on a capable model, not the deprecated demo pin", () => {
-    expect(DEFAULT_AGENT_MODEL_ID).not.toBe(RETIRED_DEMO_MODEL_ID);
-    expect(BLANK_AGENT_SEED.modelId).toBe(DEFAULT_AGENT_MODEL_ID);
+  it("pins no model: the new-agent model comes from the knob resolver, never a literal", () => {
+    // `agents.model_prefs.agent_authoring_default_model` via resolveNewAgentModelId decides it
+    // where the agent is created; a seed that pinned an id here is how every path once sat on a
+    // deprecated model.
+    expect(BLANK_AGENT_SEED.modelId ?? null).toBeNull();
+    expect(BLANK_AGENT_SEED.modelId).not.toBe(RETIRED_DEMO_MODEL_ID);
   });
 
   it.each(MANUAL_ENTRY_POINTS)("%s creates the blank seed", (relative) => {
