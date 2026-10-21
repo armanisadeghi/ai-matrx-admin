@@ -467,7 +467,7 @@ export default function KeywordManager() {
       )}
 
       {/* Add keyword toolbar (renders instantly) */}
-      <div className="rounded-lg border border-border bg-card">
+      <div>
         <ControlRow nowrap>
           <Field
             className="flex-1 min-w-0"

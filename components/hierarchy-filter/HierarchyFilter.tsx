@@ -49,7 +49,7 @@ export function HierarchyFilter({
 
   if (isLoading && !filter.data) {
     return (
-      <div className={cn('rounded-lg border border-border bg-card', className)}>
+      <div className={className /* no frame: the controls draw their own borders (Arman 2026-10-21) */}>
         <ControlRow nowrap>
           <Skeleton className="h-6 w-[100px] rounded-full" />
           <Skeleton className="h-6 w-[90px] rounded-full" />
@@ -72,7 +72,7 @@ export function HierarchyFilter({
   }));
 
   return (
-    <div className={cn('rounded-lg border border-border bg-card', className)}>
+    <div className={className /* no frame: the controls draw their own borders (Arman 2026-10-21) */}>
     <ControlRow nowrap>
       <HierarchyFilterPill
         label="Org"
