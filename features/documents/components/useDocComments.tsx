@@ -14,7 +14,7 @@
 import type { Univer } from "@univerjs/core";
 import { DocSelectionManagerService } from "@univerjs/docs";
 import { calcDocRangePositions } from "@univerjs/docs-ui";
-import { CommandType, ICommandService, IUniverInstanceService } from "@univerjs/core";
+import { CommandType, ICommandService, IPermissionService, IUniverInstanceService } from "@univerjs/core";
 import { IRenderManagerService } from "@univerjs/engine-render";
 import { MessageSquarePlus } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
@@ -24,6 +24,7 @@ import { addCommentAnchorActions, commentAnchorsOf, newCommentAnchorId, removeCo
 import { AnchoredCommentRail, type AnchoredCommentDraft } from "@/features/rich-document/annotations/AnchoredCommentRail";
 import { useCommentAccess } from "@/features/rich-document/annotations/useCommentAccess";
 import { useAnchoredComments } from "@/features/rich-document/annotations/useAnchoredComments";
+import { withEditLiftedForAnchor } from "@/features/documents/components/commentAnchorWrite";
 import { toast } from "@/lib/toast";
 
 const POLL_MS = 120;
@@ -148,7 +149,9 @@ export function useDocComments({
     const injector = injectorOf(univer);
     if (!injector || !unitId || !actions) return false;
     try {
-      return injector.get<{ syncExecuteCommand(id: string, p: unknown): boolean }>(ICommandService).syncExecuteCommand(RICH_TEXT_EDITING, { unitId, actions, textRanges: undefined }) !== false;
+      const commands = injector.get<{ syncExecuteCommand(id: string, p: unknown): boolean }>(ICommandService);
+      // A seat that cannot edit has Univer's Edit permission off; the anchor write alone runs with it lifted.
+      return withEditLiftedForAnchor(injector.get<Parameters<typeof withEditLiftedForAnchor>[0]>(IPermissionService), unitId, mayComment, () => commands.syncExecuteCommand(RICH_TEXT_EDITING, { unitId, actions, textRanges: undefined }) !== false);
     } catch (err) {
       console.warn("[comments] the anchor could not be written into the document", err);
       return false;
