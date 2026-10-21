@@ -109,8 +109,7 @@ export default function SavedResearchLibrary({
               Saved keyword research
             </p>
             <p className="text-[11px] text-muted-foreground">
-              Every run saved for this site. Open the report or share it with a
-              client.
+              Every run saved for this site. Open the report or share it.
             </p>
           </div>
           <div className="flex items-center gap-1.5">

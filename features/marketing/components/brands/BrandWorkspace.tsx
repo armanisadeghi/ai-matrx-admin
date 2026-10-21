@@ -91,8 +91,9 @@ import {
   BrandOverviewAbout,
   BrandOverviewContact,
   BrandOverviewFacts,
-  BrandOverviewWebsites,
 } from "@/features/marketing/components/brands/BrandOverview";
+import { BrandOverviewSites } from "@/features/marketing/components/brands/BrandOverviewSites";
+import { BrandPalette } from "@/features/marketing/components/brands/BrandPalette";
 import {
   BrandOverviewAccounts,
   BrandOverviewActions,
@@ -743,9 +744,12 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   const brandColors = sortedAssets
     .map((asset) => ({ id: asset.id, value: assetColorValue(asset), name: asset.title }))
     .filter((c): c is { id: string; value: string; name: string | null } => Boolean(c.value));
-  const brandFonts = sortedAssets
-    .filter((asset) => asset.kind === "font" && (asset.title || asset.source_url))
-    .map((asset) => ({ id: asset.id, name: asset.title || (asset.source_url ?? "") }));
+  // The Brand palette: every color with a value (primary first) and every font, confirmed or waiting for a Yes.
+  const paletteColors = sortedAssets.flatMap((asset) => {
+    const value = assetColorValue(asset);
+    return value ? [{ asset, value }] : [];
+  });
+  const paletteFonts = sortedAssets.filter((asset) => asset.kind === "font");
   const toOverviewAsset = (asset: BrandAsset) => ({
     id: asset.id,
     preview: assetPreviewUrl(asset),
@@ -938,7 +942,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
           writeTargets declare. Renders nothing. */}
       <MarketingBrandWriteTargets brand={current} />
       {/* No RouteHeader here — the [brandId] layout's breadcrumb trail is the
-          header for the whole client tree (Arman, 2026-08-30). The old header's
+          header for the whole brand tree (Arman, 2026-08-30). The old header's
           "Value settings" door is the sidebar's Settings row. */}
       <main className="h-full overflow-y-auto bg-textured p-3 pt-[calc(var(--shell-header-h)+0.5rem)] sm:p-4 sm:pt-[calc(var(--shell-header-h)+0.75rem)]">
         <div className="grid w-full gap-3">
@@ -1122,9 +1126,6 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
             />
           ) : null}
 
-          {/* Brand assists: at most three 30-second enrichments across all brands; a "no" is final. */}
-          {canEdit ? <BrandAssists brandId={current.id} organizationId={current.organization_id} /> : null}
-
           {/* Tabs: the home is a summary; each area has its own tab, and only the open tab loads.
               Sticky offsets cancel <main>'s top padding (header + 0.5rem / 0.75rem), so the bar sits
               flush under the shell header with no strip of scrolling content above it. */}
@@ -1160,7 +1161,25 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
           </nav>
 
           {tab === "overview" ? (
+            // Order (Arman, 2026-10-21): the sure, beautiful things first; discoveries low, compact and foldable.
             <div className="grid gap-3">
+              <BrandOverviewKpis
+                brandId={current.id}
+                brandSeg={brandSeg}
+                siteIds={websiteSites.map((site) => site.id)}
+                accounts={socialAccounts.data ?? []}
+                accountsLoading={socialAccounts.isLoading}
+                tabHref={tabHref}
+              />
+              <BrandOverviewSites
+                brandSeg={brandSeg}
+                sites={websiteSites}
+                loading={sites.isLoading}
+                error={sites.isError ? sites.error : undefined}
+                onRetry={() => void sites.refetch()}
+                publicWebsiteUrl={publicWebsiteUrl}
+                allHref={tabHref("web")}
+              />
               <BrandOverviewNext
                 brandId={current.id}
                 brandSeg={brandSeg}
@@ -1172,16 +1191,8 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                 canEdit={canEdit}
                 tabHref={tabHref}
               />
-              <BrandOverviewKpis
-                brandId={current.id}
-                brandSeg={brandSeg}
-                siteIds={websiteSites.map((site) => site.id)}
-                accounts={socialAccounts.data ?? []}
-                accountsLoading={socialAccounts.isLoading}
-                tabHref={tabHref}
-              />
               <div className="grid items-start gap-3 lg:grid-cols-3">
-                <div className="grid min-w-0 gap-3 lg:col-span-2">
+                <div className="min-w-0 lg:col-span-2">
                   <BrandOverviewAccounts
                     brandId={current.id}
                     brandSeg={brandSeg}
@@ -1200,6 +1211,22 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                     allHref={tabHref("social")}
                     onAdd={() => setPropertyEditor({ open: true, property: null })}
                   />
+                </div>
+                <div className="min-w-0">
+                  <BrandOverviewActions
+                    brandId={current.id}
+                    brandSeg={brandSeg}
+                    organizationId={current.organization_id}
+                    canEdit={canEdit}
+                    pending={pending.isLoading ? null : (pending.data ?? 0)}
+                    onAddFact={() => setFactEditor({ open: true, fact: null })}
+                    onAddAccount={() => setPropertyEditor({ open: true, property: null })}
+                    onOpenActivity={() => setTab("activity")}
+                  />
+                </div>
+              </div>
+              <div className="grid items-start gap-3 lg:grid-cols-3">
+                <div className="min-w-0 lg:col-span-2">
                   <BrandOverviewKnown
                     brandId={current.id}
                     brandSeg={brandSeg}
@@ -1209,6 +1236,17 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                     personas={personas.data ?? []}
                     tabHref={tabHref}
                   />
+                </div>
+                <div className="grid min-w-0 gap-3">
+                  <BrandOverviewLook logos={logoAssets} total={assetRows.length} onOpen={() => setTab("assets")} />
+                  <BrandOverviewContact facts={factRows} websiteUrl={publicWebsiteUrl} onOpen={() => setTab("facts")} />
+                </div>
+              </div>
+              <BrandPalette colors={paletteColors} fonts={paletteFonts} canEdit={canEdit} onOpen={() => setTab("assets")} />
+              {/* Brand assists: at most three 30-second enrichments across all brands; a "no" is final. */}
+              {canEdit ? <BrandAssists brandId={current.id} organizationId={current.organization_id} /> : null}
+              <div className="grid items-start gap-3 lg:grid-cols-3">
+                <div className="grid min-w-0 gap-3 lg:col-span-2">
                   <BrandOverviewAbout
                     facts={factRows}
                     industry={current.industry}
@@ -1228,31 +1266,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                     onOpen={() => setTab("facts")}
                   />
                 </div>
-                <div className="grid min-w-0 gap-3">
-                  <BrandOverviewActions
-                    brandId={current.id}
-                    brandSeg={brandSeg}
-                    organizationId={current.organization_id}
-                    canEdit={canEdit}
-                    pending={pending.isLoading ? null : (pending.data ?? 0)}
-                    onAddFact={() => setFactEditor({ open: true, fact: null })}
-                    onAddAccount={() => setPropertyEditor({ open: true, property: null })}
-                    onOpenActivity={() => setTab("activity")}
-                  />
-                  <BrandOverviewLook
-                    logos={logoAssets}
-                    colors={brandColors}
-                    fonts={brandFonts}
-                    total={assetRows.length}
-                    onOpen={() => setTab("assets")}
-                  />
-                  <BrandOverviewContact facts={factRows} websiteUrl={publicWebsiteUrl} onOpen={() => setTab("facts")} />
-                  <BrandOverviewWebsites
-                    brandId={brandSeg}
-                    sites={websiteSites}
-                    publicWebsiteUrl={publicWebsiteUrl}
-                    onOpen={() => setTab("web")}
-                  />
+                <div className="min-w-0">
                   <BrandOverviewActivity
                     brandId={current.id}
                     brandSeg={brandSeg}
@@ -1448,7 +1462,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
             )}
           </SectionCard>
 
-          {/* The brand's topical map — which pages this client should have and
+          {/* The brand's topical map — which pages this brand should have and
               where they live. A map belongs to the BRAND, so it is a card here
               rather than another row action on one site. */}
           <BrandTopicalMapCard

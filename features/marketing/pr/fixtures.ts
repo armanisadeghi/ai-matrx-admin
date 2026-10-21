@@ -350,7 +350,7 @@ const ANGLE_SEEDS: readonly AngleSeed[] = [
         "policy-language",
         "Client policy language that mandates destruction",
         "Ask two enterprise clients for permission to quote their disposal policy anonymously.",
-        "client",
+        "brand",
         "heavy",
       ],
       [

@@ -38,6 +38,7 @@ import { cn } from "@/lib/utils";
 import { formatDurationMs } from "@ai-matrx/kit/format";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { copyToClipboard } from "@/lib/clipboard/copy";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 interface RunTruthInspectorProps {
   /** The durable agent_run id (source of truth). */
@@ -391,14 +392,8 @@ export function RunTruthInspector({
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 {error}
               </span>
-              <button
-                type="button"
-                onClick={() => void load()}
-                className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 font-medium hover:bg-red-500/10"
-              >
-                <RefreshCw className="h-3.5 w-3.5" />
-                Retry
-              </button>
+              <ControlButton variant="quiet" type="button"
+                onClick={() => void load()} className="shrink-0" icon={<RefreshCw />}>Retry</ControlButton>
               <ErrorAlchemyMenu error={error} />
             </div>
           ) : null}

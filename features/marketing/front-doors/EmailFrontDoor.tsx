@@ -42,29 +42,29 @@ export function EmailFrontDoor({
 }: {
   /**
    * 🚨 ORG SCOPE (2026-08-30). `listSendingIdentities` accepts an org and the
-   * caller never passed one, so the mailbox count on a client's Email page
+   * caller never passed one, so the mailbox count on a brand's Email page
    * counted sending identities across EVERY org the signed-in user belongs
    * to — an agency operator saw one number that silently spanned all of their
-   * clients. The brand route passes the brand's own organization.
+   * brands. The brand route passes the brand's own organization.
    */
   organizationId?: string | null;
   /**
    * 🚨 SCOPE HONESTY (2026-08-30). The rest of this page is genuinely NOT
    * brand-scopable: templates and campaigns are CRM/chat records with no brand
    * link in the data model, and the organization template libraries are every
-   * org the signed-in user belongs to. Inside a client workspace the brand is
+   * org the signed-in user belongs to. Inside a brand workspace the brand is
    * the tenant, so each of those says out loud that it reaches past this
-   * client rather than pretending to be filtered. Never fake a filter we
+   * brand rather than pretending to be filtered. Never fake a filter we
    * cannot apply — and never delete a working door to look tidy.
    */
   brandName?: string | null;
 } = {}) {
   const ctx = useCrmContext();
   const promise = getComingSoon(LANE_A_PROMISE_ID);
-  const inClient = Boolean(brandName);
-  const client = brandName?.trim() || "this client";
-  const crossClient = inClient
-    ? ` Shared across your clients, not only ${client}.`
+  const inBrand = Boolean(brandName);
+  const brand = brandName?.trim() || "this brand";
+  const crossBrand = inBrand
+    ? ` Shared across your brands, not only ${brand}.`
     : "";
   const [mailboxes, setMailboxes] = useState<number | null>(null);
 
@@ -89,7 +89,7 @@ export function EmailFrontDoor({
       label: "Sending mailboxes",
       href: "/crm/sending-identities",
       description: `Every email leaves from your own mailbox on your own verified domain — connect it, prove the domain, warm it up, and watch its delivery health here.${
-        organizationId ? ` Counted in ${client}'s organization.` : ""
+        organizationId ? ` Counted in ${brand}'s organization.` : ""
       }`,
       Icon: MailCheck,
       count: mailboxes === null ? null : mailboxes < 0 ? undefined : mailboxes,
@@ -98,13 +98,13 @@ export function EmailFrontDoor({
     {
       label: "Message templates",
       href: "/chat/message-templates",
-      description: `The messages themselves, with merge fields that refuse to send when a value is missing. Your own templates and the shared public ones.${crossClient}`,
+      description: `The messages themselves, with merge fields that refuse to send when a value is missing. Your own templates and the shared public ones.${crossBrand}`,
       Icon: FileText,
     },
     {
       label: "Campaigns & sequences",
       href: "/crm/outreach-lists",
-      description: `Where email actually goes out: who is enrolled, which step is next, and the sequence that stops the moment somebody replies.${crossClient}`,
+      description: `Where email actually goes out: who is enrolled, which step is next, and the sequence that stops the moment somebody replies.${crossBrand}`,
       Icon: Send,
     },
   ];
@@ -113,10 +113,10 @@ export function EmailFrontDoor({
   // templates, and every org the user belongs to has its own library. Naming
   // the org without opening it would be the dead end.
   //
-  // Inside a client workspace we do NOT drop the other organizations — a
+  // Inside a brand workspace we do NOT drop the other organizations — a
   // campaign that sends from one of them would then have no door at all. We
-  // put this client's own organization first and say which one it is, so the
-  // list stops reading as if it were all this client's.
+  // put this brand's own organization first and say which one it is, so the
+  // list stops reading as if it were all this brand's.
   const orgDoors: MarketingDoor[] = (ctx?.orgIds ?? [])
     .slice()
     .sort((a, b) =>
@@ -126,8 +126,8 @@ export function EmailFrontDoor({
       label: ctx?.orgNames[orgId] ?? "Organization",
       href: `/organizations/${orgId}/templates`,
       description:
-        orgId === organizationId && inClient
-          ? `This organization's shared template library — the one ${client}'s campaigns send from.`
+        orgId === organizationId && inBrand
+          ? `This organization's shared template library — the one ${brand}'s campaigns send from.`
           : "This organization's shared template library — the one campaigns for this org send from.",
       Icon: Building2,
     }));
@@ -140,8 +140,8 @@ export function EmailFrontDoor({
       <MarketingDoorBoard
         title="Sending email"
         description={
-          inClient
-            ? `Cold outreach never touches AI Matrx infrastructure — it leaves from your own domain, which is what keeps your deliverability yours. Mailboxes are counted in ${client}'s organization; templates and campaigns are shared across your clients.`
+          inBrand
+            ? `Cold outreach never touches AI Matrx infrastructure — it leaves from your own domain, which is what keeps your deliverability yours. Mailboxes are counted in ${brand}'s organization; templates and campaigns are shared across your brands.`
             : "Cold outreach never touches AI Matrx infrastructure — it leaves from your own domain, which is what keeps your deliverability yours."
         }
         doors={doors}
@@ -151,8 +151,8 @@ export function EmailFrontDoor({
         <MarketingDoorBoard
           title="Organization template libraries"
           description={
-            inClient
-              ? `A campaign sends from its organization's templates. Every organization you belong to is listed, not only ${client}'s.`
+            inBrand
+              ? `A campaign sends from its organization's templates. Every organization you belong to is listed, not only ${brand}'s.`
               : "A campaign sends from its organization's templates."
           }
           doors={orgDoors}

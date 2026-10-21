@@ -63,7 +63,7 @@ describe("the four TOOLS are routes, the dimension pivots stay ?tab=", () => {
   it("keeps the workspace on the host it is mounted on", () => {
     // It used to write the flat pillar's path unconditionally, so the first
     // click on the per-site dashboard teleported the user to a permanent
-    // redirect and came back as the cross-client roster.
+    // redirect and came back as the cross-brands list.
     expect(searchConsoleBasePath(SITE)).toBe(SITE);
     expect(searchConsoleBasePath(`${SITE}/digs`)).toBe(SITE);
     expect(searchConsoleBasePath("/marketing/reports/search-console/insights"))

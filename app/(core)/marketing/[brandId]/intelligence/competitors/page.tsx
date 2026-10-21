@@ -1,7 +1,7 @@
 // record-view: none — a sub-view (competitors) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/marketing/[brandId]/intelligence/competitors/page.tsx
 //
-// One client's tracked rivals; the default view is the brand-level competitor
+// One brand's tracked rivals; the default view is the brand-level competitor
 // list with social accounts ("All"), the SEO autopsy screens are its other
 // modes. `CompetitorAutopsyWorkspace` is the canonical
 // component the flat `/marketing/competitors` route uses, mounted here with

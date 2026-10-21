@@ -93,6 +93,7 @@ import { SubjectFields } from "./SubjectFields";
 // MenuContent lazy-loads on first open.
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 // context-menu-exempt: entity — the form that runs BEFORE the research exists — no row has been created yet, so there is no record to name
 
@@ -755,14 +756,8 @@ function SortableKeywordRow({
         <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground/60 shrink-0" />
       )}
 
-      <button
-        type="button"
-        onClick={onRemove}
-        className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground/50 opacity-0 group-hover:opacity-100 focus:opacity-100 hover:bg-destructive/10 hover:text-destructive-ink transition-all shrink-0"
-        aria-label="Remove keyword"
-      >
-        <X className="h-3.5 w-3.5" />
-      </button>
+      <ControlButton variant="quiet" removes type="button"
+        onClick={onRemove} className="opacity-0 group-hover:opacity-100 focus:opacity-100 shrink-0" aria-label="Remove keyword" icon={<X />} />
     </li>
   );
 }

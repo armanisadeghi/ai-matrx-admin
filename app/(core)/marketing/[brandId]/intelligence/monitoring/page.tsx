@@ -10,7 +10,7 @@
 // scope. Mounted without it (as it was until today) the picker was org-wide and
 // defaulted to the first site on the platform: All Green Recycling's Monitoring
 // page opened on AI Matrx's website, every door beneath it linked into that
-// other client's workspace, and choosing the right site appeared to do nothing.
+// other brand's workspace, and choosing the right site appeared to do nothing.
 
 import { Suspense } from "react";
 

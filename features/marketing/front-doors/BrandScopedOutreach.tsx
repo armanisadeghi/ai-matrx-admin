@@ -6,8 +6,8 @@
  * route rather than the flat one.
  *
  * Without this the door picked `options[0]` — the first website on the
- * PLATFORM — so one client's Outreach page sent the operator prospecting on
- * another client's website, and the mailbox count spanned every organization
+ * PLATFORM — so one brand's Outreach page sent the operator prospecting on
+ * another brand's website, and the mailbox count spanned every organization
  * the signed-in user belongs to.
  *
  * What stays org-wide (campaigns, Chasebox queues, replies, wins) stays and

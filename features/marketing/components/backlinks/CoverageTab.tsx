@@ -158,7 +158,7 @@ function MentionDetail({
           siteId={row.site_id}
           organizationId={row.organization_id}
           defaultUrl={row.url}
-          defaultClientName={clientName}
+          defaultBrandName={clientName}
           coverageMentionId={row.id}
         />
         {row.outcome_event_id ? (

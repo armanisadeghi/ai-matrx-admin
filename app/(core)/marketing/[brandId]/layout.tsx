@@ -1,5 +1,5 @@
 import { MarketingAddressUnavailable } from "@/features/marketing/components/shared/MarketingAddressUnavailable";
-// The CLIENT workspace shell — everything under /marketing/[brandId].
+// The Brand workspace shell — everything under /marketing/[brandId].
 //
 // The segment is an ADDRESS (brand key or UUID), never an identifier: this
 // layout resolves it ONCE per request (React-cached, so every page below hits

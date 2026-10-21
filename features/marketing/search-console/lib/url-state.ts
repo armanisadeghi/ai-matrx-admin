@@ -199,7 +199,7 @@ export const SEARCH_CONSOLE_DEFAULT_BASE = "/marketing/search-console";
  * the URL. It used to write the flat pillar's path unconditionally, so the
  * first click on ANY other host teleported the user out of it — and the flat
  * pillar is a permanent redirect, so a per-site dashboard came back as the
- * cross-client roster.
+ * cross-brands list.
  */
 export function searchConsoleBasePath(pathname: string | null): string {
   if (!pathname) return SEARCH_CONSOLE_DEFAULT_BASE;

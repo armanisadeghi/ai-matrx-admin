@@ -19,9 +19,9 @@
  * see after the click. A different default would make this page lie by
  * arithmetic.
  *
- * 🚨 BRAND SCOPE (2026-08-30). This door is also mounted inside one client's
+ * 🚨 BRAND SCOPE (2026-08-30). This door is also mounted inside one brand's
  * workspace at `/marketing/<brand>/pr/outreach`, where the brand is the tenant
- * and one client must never be shown another client's rows. Two kinds of
+ * and one brand must never be shown another brand's rows. Two kinds of
  * number live on this page and they get two different treatments:
  *
  *   - SCOPABLE — prospecting is per-WEBSITE, and websites carry `brand_id`, so
@@ -33,7 +33,7 @@
  *     and earned-placement wins are CRM records with NO brand link in the data
  *     model. They are kept (deleting a working door to look tidy is the worse
  *     bug) and LABELED: inside a brand every one of them says out loud that
- *     it counts across every client. Never fake a filter we cannot apply.
+ *     it counts across every brand. Never fake a filter we cannot apply.
  */
 
 import { useEffect, useState } from "react";
@@ -95,9 +95,9 @@ export function OutreachFrontDoor({
   organizationId,
   basePath,
 }: {
-  /** The client in scope. Absent = the flat, org-wide door. */
+  /** The brand in scope. Absent = the flat, org-wide door. */
   brandId?: string | null;
-  /** Named in the honest scope labels so "across your clients" has a subject. */
+  /** Named in the honest scope labels so "across your brands" has a subject. */
   brandName?: string | null;
   /** The brand's own organization — narrows the mailbox count only. */
   organizationId?: string | null;
@@ -151,10 +151,10 @@ export function OutreachFrontDoor({
   const loading = summary === null;
 
   // The honest label for every number that has no brand link in the data
-  // model. Empty outside a brand, where "across your clients" would be noise.
-  const client = brandName?.trim() || "this client";
-  const crossClient = brandId
-    ? ` Counted across your clients, not only ${client} — outreach records live in your CRM and carry no client link.`
+  // model. Empty outside a brand, where "across your brands" would be noise.
+  const brand = brandName?.trim() || "this brand";
+  const crossBrand = brandId
+    ? ` Counted across your brands, not only ${brand} — outreach records live in your CRM and carry no brand link.`
     : "";
 
   const doors: MarketingDoor[] = [
@@ -163,7 +163,7 @@ export function OutreachFrontDoor({
       // Both words are on the door so neither has to guess (acceptance 2026-09-29).
       label: "Media lists & campaigns",
       href: "/crm/outreach-lists",
-      description: `Every media list and outreach campaign: the journalists and contacts on it, which step each is on, and what the sequence sends next.${crossClient}`,
+      description: `Every media list and outreach campaign: the journalists and contacts on it, which step each is on, and what the sequence sends next.${crossBrand}`,
       Icon: Send,
       count: loading ? null : summary.campaigns,
       countLabel: summary?.campaigns === 1 ? "campaign" : "campaigns",
@@ -171,7 +171,7 @@ export function OutreachFrontDoor({
     {
       label: "Needs you now",
       href: "/crm/chasebox",
-      description: `The Chasebox: fresh replies, drafts awaiting approval, stalled sequences, blocked members and people worth escalating.${crossClient}`,
+      description: `The Chasebox: fresh replies, drafts awaiting approval, stalled sequences, blocked members and people worth escalating.${crossBrand}`,
       Icon: ListChecks,
       count: loading ? null : needsYou,
       countLabel: needsYou === 1 ? "item waiting" : "items waiting",
@@ -180,14 +180,14 @@ export function OutreachFrontDoor({
     {
       label: "Replies",
       href: "/crm/inbox",
-      description: `Every reply to your outreach in one inbox, with the campaign, the step it answers and the record that motivated the message.${crossClient}`,
+      description: `Every reply to your outreach in one inbox, with the campaign, the step it answers and the record that motivated the message.${crossBrand}`,
       Icon: Inbox,
     },
     {
       label: "Sending mailboxes",
       href: "/crm/sending-identities",
       description: `The right to send: your own verified mailboxes, their domain proof, warmup and delivery health — plus the bring-up checklist.${
-        organizationId ? ` Counted in ${client}'s organization.` : ""
+        organizationId ? ` Counted in ${brand}'s organization.` : ""
       }`,
       Icon: MailCheck,
       count: loading || summary.mailboxes === null ? undefined : summary.mailboxes,
@@ -209,7 +209,7 @@ export function OutreachFrontDoor({
       title="Outreach"
       lede={
         brandId
-          ? `Link and PR prospecting for ${client}, plus the sequenced contact and earned placements that live beside the records in your CRM. Prospecting is per website; the CRM pipeline below is shared across your clients.`
+          ? `Link and PR prospecting for ${brand}, plus the sequenced contact and earned placements that live beside the records in your CRM. Prospecting is per website; the CRM pipeline below is shared across your brands.`
           : "Link and PR prospecting, sequenced contact, and earned placements — the pipeline lives beside the records in your CRM. This is the way in."
       }
       toolbar={
@@ -226,7 +226,7 @@ export function OutreachFrontDoor({
         <NoWebsiteState
           compact
           brandId={brandId}
-          brandName={client}
+          brandName={brand}
           needs="finding prospects (competitor link gaps and SERP prospects)"
           alternatives={[{ label: "Open Socials", href: marketingRoutes.brandSocials(brandId) }]}
         >
@@ -248,7 +248,7 @@ export function OutreachFrontDoor({
         title="The pipeline"
         description={
           brandId
-            ? `Counts are live and scoped to what you own — the same scope each surface opens on. Prospecting is scoped to ${client}'s websites; the CRM doors count across your clients, because outreach records carry no client link.`
+            ? `Counts are live and scoped to what you own — the same scope each surface opens on. Prospecting is scoped to ${brand}'s websites; the CRM doors count across your brands, because outreach records carry no brand link.`
             : "Counts are live and scoped to what you own — the same scope each surface opens on."
         }
         doors={doors}
@@ -261,7 +261,7 @@ export function OutreachFrontDoor({
           </h2>
           <p className="text-xs leading-snug text-muted-foreground">
             Each count opens that queue in the Chasebox.
-            {brandId ? " Counted across your clients." : ""}
+            {brandId ? " Counted across your brands." : ""}
           </p>
         </header>
         <div className="flex flex-wrap gap-2">
@@ -302,7 +302,7 @@ export function OutreachFrontDoor({
           <p className="text-xs leading-snug text-muted-foreground">
             Placements our own crawl found after a pitch and credited to the
             campaign that earned them.
-            {brandId ? " Across your clients' campaigns." : ""}
+            {brandId ? " Across your brands' campaigns." : ""}
           </p>
         </header>
         {loading ? (

@@ -36,6 +36,7 @@ import {
   settledStepCount,
   type DeliverableChipState,
 } from "./sharp-model";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 const CHIP_DOT: Record<DeliverableChipState, string> = {
   coming: "bg-muted-foreground/40",
@@ -143,8 +144,7 @@ export function SharpStatusBand({
           ) : (
             <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
           )}
-          <button
-            type="button"
+          <ControlButton variant="quiet" removes type="button"
             onClick={() => {
               void confirm({
                 title: "Stop this run?",
@@ -154,12 +154,7 @@ export function SharpStatusBand({
               }).then((ok) => {
                 if (ok) void cancel(runId, "graceful");
               });
-            }}
-            aria-label="Stop the run"
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-ink"
-          >
-            <Square className="h-3.5 w-3.5" />
-          </button>
+            }} aria-label="Stop the run" icon={<Square />} />
         </div>
       ) : null}
     </div>

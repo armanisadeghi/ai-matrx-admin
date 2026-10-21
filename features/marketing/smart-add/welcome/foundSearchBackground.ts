@@ -37,7 +37,8 @@ import { finishedRound } from "../roundOutput";
 import { mergeFacts, type BrandFact } from "../validate/queue";
 import { visibleEvidence } from "../visibleEvidence";
 import type { WeThinkSuggestion } from "../weThink";
-import { loginSeed, provenProfileName, type LoginSeed } from "./loginSeed";
+import { loginSeed, type LoginSeed } from "./loginSeed";
+import { welcomeNameOf } from "./welcomeName";
 import { IDENTIFY_WORKFLOW_KEY, welcomeFirstRound } from "./welcomeRound";
 import { roundSubject, welcomeSubject } from "./welcomeSession";
 import { welcomeFoundSomething, welcomeVerdict } from "./welcomeVerdict";
@@ -115,7 +116,7 @@ async function verdictFor(dispatch: AppDispatch, user: User, rounds: number, org
   }
   const decisions = first?.decisions ?? {};
   const visible = visibleEvidence(items.values(), decisions, true, suggestions);
-  const name = seed.name ?? provenProfileName(visible) ?? "";
+  const { name } = welcomeNameOf({ seed, visible });
   const verdict = welcomeVerdict({ items: visible, witnesses, facts, decisions, seed, name });
   return { verdict, seed };
 }

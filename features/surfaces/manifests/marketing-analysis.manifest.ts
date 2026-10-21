@@ -175,7 +175,7 @@ export const marketingAnalysisManifest: SurfaceManifest = {
   inheritsFrom: "matrx-user/marketing-site",
   groups,
   intro: `<surface_intro>
-You are on the analysis priority queue of a managed website: open, non-suppressed findings ranked by weight × severity × confidence, each row naming the analysis item, its category, severity, and the affected page. Read the inherited brand_context and site_context first for the client and site framing; top_queue_items carries the loaded rows when bound.
+You are on the analysis priority queue of a managed website: open, non-suppressed findings ranked by weight × severity × confidence, each row naming the analysis item, its category, severity, and the affected page. Read the inherited brand_context and site_context first for the brand and site framing; top_queue_items carries the loaded rows when bound.
 The user comes here to triage: decide which detected problems deserve attention first and route them into the findings register for lifecycle work. Priority scores and severities are computed by the analysis pipeline and stored — trust them as given rather than re-scoring items yourself.
 Queue rows are projections of findings, not findings themselves — a row has no finding id and site-level items have no page. When recommending next steps, point at the item/page combination (which filters the findings register), never invent a finding id or a result.
 Suppressed and resolved findings are deliberately absent here; an empty queue means analysis found nothing open, not that the site is perfect in every dimension.

@@ -350,11 +350,11 @@ export async function listSites(
     .is("deleted_at", null);
 
   // 🚨 BRAND SCOPE (2026-08-30). `/marketing/<brand>/websites` mounted this
-  // portfolio unscoped, so a client's own workspace listed EVERY client's
+  // portfolio unscoped, so a brand's own workspace listed EVERY brand's
   // websites — 15 sites across 14 brands inside All Green Recycling's shell.
   // The page carried a comment acknowledging the gap ("no brand-scoped list
   // component exists") and deferring it; deferring it is what shipped one
-  // client's roster into another's workspace.
+  // brand's roster into another's workspace.
   if (brandId) query = query.eq("brand_id", brandId);
 
   const search = cleanSearch(state.search);
@@ -827,6 +827,94 @@ export async function getSiteOverview(
   };
 }
 
+/**
+ * A site at a glance for the brand home: pages, open issues, sitemaps and the last crawl — four small indexed
+ * reads. The full `getSiteOverview` (site score + coverage rollup) takes 10-17 s on a large site, too slow for a
+ * summary card; the site page keeps it.
+ */
+export interface SiteGlance {
+  pages: number;
+  openFindings: number;
+  sitemaps: number;
+  lastCrawlAt: string | null;
+}
+
+export async function getSiteGlance(siteId: string, signal?: AbortSignal): Promise<SiteGlance> {
+  const db = await authenticatedWebDb(supabase);
+  const abortSignal = signal ?? new AbortController().signal;
+  const [pages, findings, sitemaps, crawl] = await Promise.all([
+    db
+      .from("v_page_list")
+      .select("page_id", { count: "exact", head: true })
+      .eq("site_id", siteId)
+      .eq("is_resource", false)
+      .eq("is_canonical", true)
+      .eq("has_page_evidence", true)
+      .abortSignal(abortSignal),
+    db
+      .from("finding")
+      .select("id", { count: "exact", head: true })
+      .eq("site_id", siteId)
+      .in("status", ["open", "reopened"])
+      .eq("suppressed", false)
+      .is("deleted_at", null)
+      .abortSignal(abortSignal),
+    db
+      .from("sitemap")
+      .select("id", { count: "exact", head: true })
+      .eq("site_id", siteId)
+      .is("deleted_at", null)
+      .abortSignal(abortSignal),
+    db
+      .from("crawl_session")
+      .select("started_at, finished_at")
+      .eq("site_id", siteId)
+      .is("deleted_at", null)
+      .order("started_at", { ascending: false, nullsFirst: false })
+      .limit(1)
+      .abortSignal(abortSignal)
+      .maybeSingle(),
+  ]);
+  for (const response of [pages, findings, sitemaps, crawl]) {
+    if (response.error) throw operationFailed("load this site's summary", response.error);
+  }
+  return {
+    pages: pages.count ?? 0,
+    openFindings: findings.count ?? 0,
+    sitemaps: sitemaps.count ?? 0,
+    lastCrawlAt: crawl.data ? (crawl.data.finished_at ?? crawl.data.started_at) : null,
+  };
+}
+
+export interface SiteTopPage {
+  pageId: string;
+  path: string;
+  clicks: number;
+}
+
+/** A site's pages with the most Search Console clicks in the last 28 days (canonical HTML pages only). */
+export async function listSiteTopPages(
+  siteId: string,
+  limit = 3,
+  signal?: AbortSignal,
+): Promise<SiteTopPage[]> {
+  const db = await authenticatedWebDb(supabase);
+  const response = await db
+    .from("v_page_list")
+    .select("page_id, path, url, gsc_clicks_28d")
+    .eq("site_id", siteId)
+    .eq("is_resource", false)
+    .gt("gsc_clicks_28d", 0)
+    .order("gsc_clicks_28d", { ascending: false })
+    .limit(limit)
+    .abortSignal(signal ?? new AbortController().signal);
+  return assertData(response.data, response.error).flatMap((row) =>
+    row.page_id
+      ? [{ pageId: row.page_id, path: row.path || row.url || "/", clicks: Number(row.gsc_clicks_28d ?? 0) }]
+      : [],
+  );
+}
+
 /** Read observed homepage `<title>` and meta description from the latest snapshot. */
 export async function getHomepageObservedMeta(
   siteId: string,
@@ -917,9 +1005,9 @@ export async function moveSiteBrand(
 }
 
 /**
- * EVERY readable brand, across every organization — the client switcher's
+ * EVERY readable brand, across every organization — the brand switcher's
  * list. RLS is the scope; an agency's brands span orgs, and a switcher that
- * silently trims to one org reads as missing clients (Arman, 2026-08-30).
+ * silently trims to one org reads as missing brands (Arman, 2026-08-30).
  * Complete-list law: readAllRows, never a bare select.
  */
 export async function listAllBrandOptions(

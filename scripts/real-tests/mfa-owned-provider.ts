@@ -4,7 +4,8 @@
  * is deliberately substituted; this is not proof of hosted enforcement or recovery policy.
  */
 import assert from "node:assert/strict";
-import { createHmac, randomBytes } from "node:crypto";
+import { totp } from "../lib/totp";
+import { randomBytes } from "node:crypto";
 import { createServer, request as httpRequest } from "node:http";
 import { AuthClient } from "@supabase/supabase-js";
 
@@ -17,14 +18,7 @@ process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "owned-loopback-publishable";
 
 let checks = 0;
 const check = (value: unknown, message: string) => { assert.ok(value, message); checks++; console.log(`PASS ${message}`); };
-const totp = (secret: string) => {
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-  const bits = [...secret].map(char => alphabet.indexOf(char).toString(2).padStart(5, "0")).join("");
-  const bytes = Buffer.from((bits.match(/.{8}/g) ?? []).map(byte => parseInt(byte, 2)));
-  const counter = Buffer.alloc(8); counter.writeBigUInt64BE(BigInt(Math.floor(Date.now() / 30000)));
-  const hash = createHmac("sha1", bytes).update(counter).digest();
-  return ((hash.readUInt32BE(hash[19] & 15) & 0x7fffffff) % 1000000).toString().padStart(6, "0");
-};
+
 
 async function main() {
   const { readAuthenticators, enrollAuthenticator, verifyAuthenticator, removeAuthenticator, generateRecoveryCodes, verifyRecoveryCode } = await import("../../features/user-profile/account-access/mfa");

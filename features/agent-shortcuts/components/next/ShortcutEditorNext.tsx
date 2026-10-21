@@ -489,12 +489,10 @@ export function ShortcutEditorNext({
             }
             disabled={busy}
             overridesInstanceKey={`shortcut-${shortcutId}`}
-            // A shortcut's overrides are STORED, so the panel's default
-            // per-conversation sentence would be false here too.
+            // A shortcut's overrides are STORED: the field's own title says
+            // where they land (the panel draws no header of its own).
+            overridesTitle="Model settings for this shortcut"
             overridesWords={{
-              heading: "Model settings for this shortcut",
-              scopeNote:
-                "These are stored on this shortcut and apply every time it runs. Resetting a value hands it back to the agent's own default.",
               noModelNote:
                 "No model chosen — this shortcut runs on the agent's own model.",
             }}

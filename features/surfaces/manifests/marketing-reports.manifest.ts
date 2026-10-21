@@ -63,7 +63,7 @@ const values: SurfaceValue[] = [
     name: "selected_site",
     label: "Selected site",
     description:
-      "The identity, domain, and brand id of the site whose client report is open.",
+      "The identity, domain, and brand id of the site whose brand report is open.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 180,
@@ -164,7 +164,7 @@ const values: SurfaceValue[] = [
   },
   {
     name: "client_report",
-    label: "Client report",
+    label: "Brand report",
     description:
       "The complete printable report composite: scope, findings, summary, traffic classes, queries, and pages.",
     valueType: "object",
@@ -193,13 +193,13 @@ export const marketingReportsManifest: SurfaceManifest = {
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description:
-    "Client-ready Search Console reports with plain-language findings and canonical traffic-class evidence.",
+    "Shareable Search Console reports with plain-language findings and canonical traffic-class evidence.",
   readiness: "partial",
   readinessNote:
     "Manifest, route mapping, canonical GSC emitters, traffic-class evidence, and printable report are wired; live agent binding verification remains.",
   label: MARKETING_REPORTS_LABEL,
   urlPattern: "/marketing/reports*",
-  intro: `<surface_intro>You are reading a client-ready Search Console report. Lead with its plain-language findings, then cite the exact report period and evidence. Traffic classes are canonical business-value rulings: never reclassify a keyword from its text, never hide mismatch or unclassified traffic, and never invent conversion or GA4 data this report does not load.</surface_intro>`,
+  intro: `<surface_intro>You are reading a shareable Search Console report. Lead with its plain-language findings, then cite the exact report period and evidence. Traffic classes are canonical business-value rulings: never reclassify a keyword from its text, never hide mismatch or unclassified traffic, and never invent conversion or GA4 data this report does not load.</surface_intro>`,
   groups,
   values,
   skipBaselineValues: true,

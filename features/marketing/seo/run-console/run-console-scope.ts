@@ -284,7 +284,7 @@ export function buildRunConsoleScope(
 
 /**
  * Which surface a mount emits. The permission tier is a prop (KI-049), and the
- * tier decides the CLIENT: the platform-wide console is admin chrome, the
+ * tier decides the audience: the platform-wide console is admin chrome, the
  * organization/brand mounts are the customer's own screen.
  */
 export function runConsoleSurfaceName(scope: RunConsoleScope): string {

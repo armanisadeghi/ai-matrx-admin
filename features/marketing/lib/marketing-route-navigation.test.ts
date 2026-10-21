@@ -66,7 +66,7 @@ describe("Marketing top-level navigation inventory", () => {
       .filter(
         (route) => !LEGACY_SHIM_TOP_LEVEL.has(route.slice("/marketing/".length)),
       )
-      // The client workspace's dynamic segment is not a nav destination.
+      // The brand workspace's dynamic segment is not a nav destination.
       .filter((route) => !route.includes("["))
       .filter((route) => !registered.has(route));
 

@@ -13,7 +13,7 @@
 // 1. The caller can read the map AND its brand → redirect into the nested
 //    workspace, which needs the brand segment in the path.
 // 2. The caller can read the map but NOT the brand (a record-only grant, which
-//    is exactly what sharing a map with a client produces) → render the map
+//    is exactly what sharing a map with a brand produces) → render the map
 //    standalone here. Sending them into the nested route would hand them an
 //    AccessGate for a BRAND they were never given, defeating the share.
 

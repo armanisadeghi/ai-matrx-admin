@@ -14,8 +14,10 @@ it("a seat without edit access is read-only, not only the 'Viewing' mode", () =>
 });
 
 it("the refusal says what the person can do instead", () => {
-  expect(src).toContain("You can comment on this document, but changing it needs edit access");
-  expect(src).toContain("You have view access only");
+  const words = readFileSync(join(__dirname, "../../../lib/collab/seat-notices.ts"), "utf8");
+  expect(words).toContain("You can comment on this document, but changing it needs edit access");
+  expect(words).toContain("You have view access only");
+  expect(src).toContain("seatRefusal(commentOnly)");
   expect(src).toMatch(/\.onEditDenied\(\(\) => notice\.info\(refusal,/);
 });
 

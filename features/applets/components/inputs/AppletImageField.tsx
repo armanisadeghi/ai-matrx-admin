@@ -18,6 +18,7 @@ import { InlineMediaRef } from "@ai-matrx/media/react";
 import { useFileUpload } from "@/features/files/handler/hooks/useFileUpload";
 import { toast } from "@/lib/toast-service";
 import { cn } from "@/lib/utils";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 interface AppletImageFieldProps {
   value: string | null;
@@ -137,14 +138,8 @@ export function AppletImageField({
             <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-background text-foreground text-xs font-medium">
               <RotateCcw className="w-3 h-3" /> Replace
             </span>
-            <button
-              type="button"
-              onClick={handleClear}
-              className="inline-flex items-center justify-center w-6 h-6 rounded bg-background text-destructive hover:bg-destructive hover:text-destructive-foreground"
-              aria-label="Remove image"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
+            <ControlButton variant="quiet" removes type="button"
+              onClick={handleClear} aria-label="Remove image" icon={<X />} />
           </div>
         </>
       ) : (

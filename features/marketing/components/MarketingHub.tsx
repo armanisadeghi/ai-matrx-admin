@@ -22,7 +22,7 @@ function destinationsFromPillars(
 
 /**
  * The agency-plane working home. The compact strip preserves the complete
- * registry map, while the portfolio below is the real client roster rather
+ * registry map, while the portfolio below is the real brands list rather
  * than another navigation-card grid.
  */
 export function MarketingHub({

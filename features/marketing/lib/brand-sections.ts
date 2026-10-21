@@ -1,16 +1,16 @@
 import type { ShellIconName } from "@/features/shell/shellIconMap";
 
 /**
- * The CLIENT WORKSPACE's sections — everything under `/marketing/[brandId]`.
+ * The Brand WORKSPACE's sections — everything under `/marketing/[brandId]`.
  *
- * The user is an agency; the brand is one of their clients. Every section here
- * is about ONE client, grouped the way the design was ratified (2026-08-28):
+ * A person or team works on one or more brands - usually their own. Every section here
+ * is about ONE brand, grouped the way the design was ratified (2026-08-28):
  * Identity (what the brand IS), Properties (what it OWNS), Marketing (the
  * work), Insight (what's true around it), plus Inbox and Settings.
  *
  * Coming-soon sections are REAL reserved routes rendering
  * `<MarketingComingSoon>` and stay VISIBLE in the brand sidebar with their tag
- * (Arman's ruling for the client workspace — a promised section is part of the
+ * (Arman's ruling for the brand workspace — a promised section is part of the
  * map, never hidden). Each carries a `marketing.*` row in
  * `lib/coming-soon/registry.ts`.
  *
@@ -62,7 +62,7 @@ export const MARKETING_BRAND_SECTIONS = [
     slug: "",
     name: "Overview",
     titlePrefix: "Brand Overview",
-    description: "This client at a glance — properties, health, activity.",
+    description: "This brand at a glance — properties, health, activity.",
     letter: "Bo",
     iconName: "Landmark",
     group: "Start",
@@ -239,7 +239,7 @@ export const MARKETING_BRAND_SECTIONS = [
     name: "Press & PR",
     titlePrefix: "Press Room",
     description:
-      "What is genuinely newsworthy about this client, the proof, and the journalists to pitch.",
+      "What is genuinely newsworthy about this brand, the proof, and the journalists to pitch.",
     letter: "Pr",
     iconName: "Newspaper",
     group: "Marketing",
@@ -294,7 +294,7 @@ export const MARKETING_BRAND_SECTIONS = [
     name: "Monitoring",
     titlePrefix: "Monitoring",
     description:
-      "Who wrote about this client, what happened to its links, and whether the answer engines cite it.",
+      "Who wrote about this brand, what happened to its links, and whether the answer engines cite it.",
     letter: "Mo",
     iconName: "Radar",
     group: "Insight",

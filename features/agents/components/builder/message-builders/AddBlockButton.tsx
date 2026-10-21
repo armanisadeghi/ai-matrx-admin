@@ -75,6 +75,7 @@ import {
 } from "@ai-matrx/agents";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -644,13 +645,7 @@ export function BlockRow({
               >
                 <Eye className="w-3 h-3" />
               </button>
-              <button
-                onClick={onRemove}
-                className="p-1 rounded hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
-                title="Remove"
-              >
-                <X className="w-3 h-3" />
-              </button>
+              <ControlButton variant="quiet" removes onClick={onRemove} aria-label="Remove" icon={<X />} />
             </div>
           </div>
         </div>
@@ -760,13 +755,7 @@ export function BlockRow({
           >
             <Pencil className="w-3 h-3" />
           </button>
-          <button
-            onClick={onRemove}
-            className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-            title="Remove"
-          >
-            <X className="w-3 h-3" />
-          </button>
+          <ControlButton variant="quiet" removes onClick={onRemove} aria-label="Remove" icon={<X />} />
         </div>
       </div>
 

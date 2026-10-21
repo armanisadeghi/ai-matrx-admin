@@ -1,4 +1,8 @@
-import type { IntegrationDirectoryItem } from "./integration-directory";
+import {
+  compactAccounts,
+  personAccounts,
+  type IntegrationDirectoryItem,
+} from "./integration-directory";
 
 /**
  * ONE CARD PER PROVIDER (Arman, 2026-10-19). When the MCP server catalog lists
@@ -80,11 +84,13 @@ export function foldAbilities(
     if (!item.id.startsWith("native:") || !abilities?.length) return item;
     const all = [item, ...abilities.map((ability) => ability.item)];
     const lead = item.saved ? item : (all.find((entry) => entry.saved) ?? item);
-    const summary = [
-      ...new Set(
-        all.map((entry) => entry.accountSummary).filter((v): v is string => !!v),
-      ),
-    ].join(", ");
+    const { accounts } = personAccounts(
+      all.flatMap((entry) => [...(entry.accounts ?? [])]),
+    );
+    const { serviceAccounts } = personAccounts(
+      all.flatMap((entry) => [...(entry.serviceAccounts ?? [])]),
+    );
+    const summary = compactAccounts(accounts);
     return {
       ...item,
       abilities,
@@ -103,7 +109,9 @@ export function foldAbilities(
       attention: all.some((entry) => entry.attention),
       available: all.some((entry) => entry.available),
       status: lead.status,
-      accountSummary: summary || undefined,
+      accounts,
+      serviceAccounts,
+      accountSummary: summary || (accounts.length ? undefined : item.accountSummary) || undefined,
     };
   });
 }

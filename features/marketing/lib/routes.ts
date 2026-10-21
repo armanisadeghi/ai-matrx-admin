@@ -1,12 +1,12 @@
 /**
- * Canonical Marketing route builders — the AGENCY-MODEL tree (2026-08-28).
+ * Canonical Marketing route builders — the brand-first tree (2026-08-28).
  *
  * Two planes (design: docs/handoffs/marketing-agency-restructure.md):
  *
- *   AGENCY (small by design — only what concerns no single client)
- *     /marketing                       — agency home / hub
- *     /marketing/brands                — client roster (+ /brands/new-website)
- *     /marketing/reports               — cross-client roll-ups (+ /cost, /ranks)
+ *   CROSS-BRAND (small by design — only what concerns no single brand)
+ *     /marketing                       — Marketing home / hub
+ *     /marketing/brands                — brands list (+ /brands/new-website)
+ *     /marketing/reports               — cross-brand roll-ups (+ /cost, /ranks)
  *     /marketing/operations/…          — connections, automations, approvals, data-quality
  *     /marketing/tools/…               — public analyzers index, YouTube research
  *
@@ -165,15 +165,15 @@ export const marketingRoutes = {
       ? `/marketing/brands/new-website?brand=${brandId}`
       : "/marketing/brands/new-website",
   reports: () => "/marketing/reports",
-  /** Cross-client cost roll-up (was /marketing/cost). */
+  /** Cross-brand cost roll-up (was /marketing/cost). */
   cost: () => "/marketing/reports/cost",
-  /** The agency-plane social roll-up (every client's tracked accounts and outliers). */
+  /** The agency-plane social roll-up (every brand's tracked accounts and outliers). */
   social: () => "/marketing/social",
-  /** Cross-client rank roll-up (was /marketing/ranks). */
+  /** Cross-brand rank roll-up (was /marketing/ranks). */
   ranksRollup: () => "/marketing/reports/ranks",
-  /** Cross-client Search Console landing (site picker inside). */
+  /** Cross-brand Search Console landing (site picker inside). */
   searchConsoleRollup: () => "/marketing/reports/search-console",
-  /** Cross-client SEO capabilities catalog (website selector inside). */
+  /** Cross-brand SEO capabilities catalog (website selector inside). */
   capabilitiesCatalog: () => "/marketing/operations/capabilities",
   connections: () => "/marketing/operations/connections",
   connectionsGoogle: () => "/marketing/operations/connections/google",
@@ -196,7 +196,7 @@ export const marketingRoutes = {
     return `/marketing/tools/domain${query ? `?${query}` : ""}`;
   },
 
-  // ── The client workspace ──────────────────────────────────────────────
+  // ── The brand workspace ──────────────────────────────────────────────
   brand: (brandId: string) => `/marketing/${brandId}`,
   /** The brand's products and services (the offering tree, filling live while its run goes). */
   brandOfferings: (brandId: string) => `/marketing/${brandId}/offerings`,
@@ -237,7 +237,7 @@ export const marketingRoutes = {
   brandContentPlan: (brandId: string) => `/marketing/${brandId}/content/plan`,
   brandEmail: (brandId: string) => `/marketing/${brandId}/email`,
   brandPress: (brandId: string) => `/marketing/${brandId}/pr`,
-  /** One client's outreach front door, inside the Press & PR section. */
+  /** One brand's outreach front door, inside the Press & PR section. */
   brandOutreach: (brandId: string) => `/marketing/${brandId}/pr/outreach`,
   brandAds: (brandId: string) => `/marketing/${brandId}/ads`,
   brandSocials: (brandId: string) => `/marketing/${brandId}/socials`,

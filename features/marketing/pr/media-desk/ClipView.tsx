@@ -40,7 +40,7 @@ export function ClipView({ result, compact = false }: { result: MakeClipResult; 
     return (
       <div
         className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs"
-        data-testid="clip-client-absent"
+        data-testid="clip-brand-absent"
       >
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-hidden />
         <div>

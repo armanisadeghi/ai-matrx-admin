@@ -263,7 +263,7 @@ export const marketingCoverageManifest: SurfaceManifest = {
   urlPattern: "/marketing/[brandId]/seo/[siteId]/coverage",
   inheritsFrom: "matrx-user/marketing-site",
   intro: `<surface_intro>
-You are on the coverage matrix of a managed website: where the evidence sources — sitemaps, crawls, first-source provenance, and Google Search Console — agree and disagree about the canonical page registry. The brand_context and site_context values give you the client and website framing; read them first.
+You are on the coverage matrix of a managed website: where the evidence sources — sitemaps, crawls, first-source provenance, and Google Search Console — agree and disagree about the canonical page registry. The brand_context and site_context values give you the brand and website framing; read them first.
 The disagreement cells are the intelligence: pages advertised in sitemaps but never crawled, pages crawled that no sitemap advertises, pages Google serves traffic to that no sitemap mentions, and advertised pages Google never reports. Every count in coverage_matrix is derived from stored registry evidence — trust the numbers, never re-derive or estimate them.
 Check gsc_synced before reasoning about the Google cells: when it is false, Search Console evidence has never been collected and those cells mean nothing yet — the right recommendation is to connect and sync GSC, not to interpret absent data.
 The user triages indexation health here; each cell corresponds to a filtered page list, so recommendations should name the specific coverage cell (and its pages filter) the user should work through — coverage_filters carries every cell's filter key, count, and destination URL.

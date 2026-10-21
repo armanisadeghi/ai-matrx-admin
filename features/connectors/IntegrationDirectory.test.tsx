@@ -72,3 +72,11 @@ test("a featured tile's status pill carries the glyph trim, so its ink balances 
   expect(pill).toBeDefined();
   expect(pill?.classList.contains("matrx-glyph-trim")).toBe(true);
 });
+
+test("one card per provider: no provider repeats across the page's sections", async () => {
+  await render();
+  const ids = Array.from(container.querySelectorAll("button[data-integration-id]")).map((node) => node.getAttribute("data-integration-id"));
+  expect(ids.length).toBeGreaterThan(0);
+  expect(new Set(ids).size).toBe(ids.length);
+  expect(container.querySelector('[aria-label="Your connections"]')).toBeNull();
+});

@@ -8,7 +8,7 @@
  * Contract (CMS owner agent, 2026-07-29):
  *  - ONE write path: `CmsPageService` riding the existing `/api/cms/*` seam
  *    with the human's auth. Never the aidream bridge endpoints, never a
- *    second client. Never auto-publish — content lands ONLY in `_draft`
+ *    second brand. Never auto-publish — content lands ONLY in `_draft`
  *    twins on an unpublished-or-published page; `publishDraft` stays a
  *    separate explicit act elsewhere.
  *  - Page mapping is by DURABLE ID: `client_pages.web_page_id` holds the

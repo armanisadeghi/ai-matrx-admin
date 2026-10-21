@@ -6,8 +6,7 @@
  */
 import { useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
-import { ArrowRight, Globe2, ImageOff, ListChecks, Plus, RefreshCw } from "lucide-react";
+import { ArrowRight, ImageOff, ListChecks, Plus, RefreshCw } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { rehostBrandAsset } from "@/features/marketing/lib/asset-rehost";
 import { marketingKeys } from "@/features/marketing/data/hooks";
@@ -22,11 +21,8 @@ import type { ChipTone } from "@ai-matrx/design-system/controls";
 import { contactFactValue } from "@/features/marketing/lib/ContactFactValue";
 import { businessFactValueText } from "@/features/marketing/lib/business-fact-value";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
-import { SiteIdentityMark } from "@/features/marketing/components/shared/SiteConnectionChips";
-import { marketingRoutes } from "@/features/marketing/lib/routes";
-import { marketingSeg } from "@/features/marketing/lib/keys";
 import { BUSINESS_FACT_KIND_LABELS } from "@/features/marketing/types";
-import type { BrandProperty, BusinessFact, BusinessFactKind, MarketingSite } from "@/features/marketing/types";
+import type { BrandProperty, BusinessFact, BusinessFactKind } from "@/features/marketing/types";
 
 /** Contact kinds the Overview's Contact card shows, one row each, in this order. */
 const CONTACT_KINDS: ReadonlyArray<{ kind: BusinessFactKind; label: string }> = [
@@ -35,8 +31,6 @@ const CONTACT_KINDS: ReadonlyArray<{ kind: BusinessFactKind; label: string }> = 
   { kind: "address", label: "Address" },
   { kind: "website", label: "Website" },
 ];
-
-const PREVIEW_SITES = 4;
 
 export interface OverviewFactGroup {
   kind: BusinessFactKind;
@@ -177,54 +171,6 @@ export function BrandOverviewContact({
   );
 }
 
-export function BrandOverviewWebsites({
-  brandId,
-  sites,
-  publicWebsiteUrl,
-  onOpen,
-}: {
-  /** The brand's address segment (its slug when it has one): doors read as names, never ids. */
-  brandId: string;
-  sites: MarketingSite[];
-  /** A viewer who cannot read the managed site still sees the brand's public website. */
-  publicWebsiteUrl: string | null;
-  onOpen: () => void;
-}) {
-  return (
-    <SectionCard
-      title="Websites"
-      anchor="overview-websites"
-      headerExtra={<OpenLink label={sites.length > PREVIEW_SITES ? `All ${sites.length}` : "Open"} onClick={onOpen} />}
-    >
-      {sites.length === 0 && publicWebsiteUrl ? (
-        <div className="flex min-h-11 items-center px-3">
-          {contactFactValue({ kind: "website", value: publicWebsiteUrl })}
-        </div>
-      ) : sites.length === 0 ? (
-        <EmptyState icon={<Globe2 />} title="No websites yet" />
-      ) : (
-        <ul className="divide-y divide-border">
-          {sites.slice(0, PREVIEW_SITES).map((site) => (
-            <li key={site.id}>
-              <Link
-                prefetch={false}
-                href={marketingRoutes.site(brandId, marketingSeg(site))}
-                className="flex min-h-11 items-center gap-3 px-3 py-1.5 hover:bg-accent/40"
-              >
-                <SiteIdentityMark site={site} size={24} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate type-title text-foreground">{site.name}</span>
-                  <span className="block truncate type-meta text-muted-foreground">{site.domain}</span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </SectionCard>
-  );
-}
-
 export function BrandOverviewFacts({
   groups,
   total,
@@ -359,13 +305,14 @@ export function BrandHomeSkeleton() {
           </div>
         </div>
         <div className="h-[33px] rounded-lg border border-border bg-card" />
-        <div className="h-11 rounded-lg border border-border bg-card" />
-        {/* The Overview's KPI band (KpiGrid: 2 / 3 / 6 across), each tile its loaded height. */}
+        {/* The Overview's KPI band (KpiGrid: 2 / 3 / 6 across), each tile its loaded height; then Websites and Next. */}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           {Array.from({ length: 6 }, (_, i) => (
             <div key={i} className="h-[76px] rounded-md border border-border bg-card" />
           ))}
         </div>
+        <div className="h-48 rounded-lg border border-border bg-card" />
+        <div className="h-11 rounded-lg border border-border bg-card" />
         <div className="grid items-start gap-3 lg:grid-cols-3">
           <div className="grid min-w-0 gap-3 lg:col-span-2">
             <div className="h-64 rounded-lg border border-border bg-card" />

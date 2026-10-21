@@ -1,7 +1,7 @@
 /**
  * The `matrx-user/marketing-brand` write targets patch ONE jsonb column. The
  * failure these tests exist to prevent is the destructive one: a write that
- * lands its own fields and silently drops the rest of the client's brand
+ * lands its own fields and silently drops the rest of the brand's brand
  * profile.
  */
 

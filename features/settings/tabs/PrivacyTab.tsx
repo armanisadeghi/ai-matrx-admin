@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { ShieldCheck, Lightbulb, DatabaseZap } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
@@ -34,6 +35,27 @@ export default function PrivacyTab() {
   const autoRag = useAutoRagPreference();
   const settings = useUniversalSettings();
   const shareProfile = settings.knobByKey(SHARE_PROFILE_KNOB_KEY);
+  // UniversalSettingsRows prints its own group heading from the key's `ui.group`
+  // (the registry files this key under "Privacy", which repeats this tab's title),
+  // so the row is handed over under this section's name with a one-line description
+  // and is NOT wrapped in a second SettingsSection. The full text stays in the help.
+  const agentsKnobs = useMemo(
+    () =>
+      shareProfile
+        ? [
+            {
+              ...shareProfile,
+              description: "Your agents see your name, work and links",
+              ui: {
+                ...shareProfile.ui,
+                group: "Your agents",
+                help: [shareProfile.description, shareProfile.ui.help].filter(Boolean).join(" "),
+              },
+            },
+          ]
+        : [],
+    [shareProfile],
+  );
 
   const handleAutoRagChange = (next: boolean) => {
     void autoRag
@@ -81,11 +103,7 @@ export default function PrivacyTab() {
         />
       </SettingsSection>
 
-      {shareProfile && (
-        <SettingsSection title="Your agents">
-          <UniversalSettingsRows knobs={[shareProfile]} hideKey />
-        </SettingsSection>
-      )}
+      {agentsKnobs.length > 0 && <UniversalSettingsRows knobs={agentsKnobs} hideKey />}
 
       <SettingsSection title="Your data" icon={DatabaseZap}>
         <SettingsLink

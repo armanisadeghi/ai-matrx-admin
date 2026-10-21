@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * The client workspace's one piece of chrome — the FULL breadcrumb concept the
+ * The brand workspace's one piece of chrome — the FULL breadcrumb concept the
  * org/scope tier already ships (`features/scopes/components/pages/ScopeBreadcrumb`):
  * EVERY level is a switcher, not just the brand.
  *
- *   Marketing › <client> ▾ › <section> ▾ › <site> ▾ › <site view> ▾
+ *   Marketing › <brand> ▾ › <section> ▾ › <site> ▾ › <site view> ▾
  *
  * It injects into the shell header as a FALLBACK portal (`<PageHeader fallback>`),
  * which is the same mounting contract `ScopesRouteHeader` uses at the org tier:
@@ -16,7 +16,7 @@
  *
  * Every dropdown answers "what else could I be looking at right here?" without
  * leaving the room: siblings of the CURRENT level, current one checked, each
- * one landing on the SAME kind of screen for the sibling. Client switching
+ * one landing on the SAME kind of screen for the sibling. Brand switching
  * preserves the route via `lib/brand-switch.ts`; site switching preserves the
  * branch AND the section via the route-section suffix helpers.
  *
@@ -91,7 +91,7 @@ interface CrumbLevel {
   /** Where the crumb's TEXT navigates (the level itself). */
   href?: string;
   options?: CrumbOption[];
-  /** Header shown above the options list ("Clients", "Sites", …). */
+  /** Header shown above the options list ("Brands", "Sites", …). */
   optionsLabel?: string;
   isCurrent?: boolean;
 }
@@ -279,9 +279,9 @@ export function MarketingBrandCrumb() {
 
   const brandPath = marketingRoutes.brand(brand.seg);
 
-  // access-errors: ok — sibling-client switcher; a failed read only shrinks the
+  // access-errors: ok — sibling-brand switcher; a failed read only shrinks the
   // dropdown, and the brand itself is already resolved by the layout.
-  // EVERY readable brand, across orgs — an agency's clients span orgs and the
+  // EVERY readable brand, across orgs — brands can span organizations and the
   // switcher must never silently trim to one (Arman, 2026-08-30).
   const brandOptions = useAllBrandOptions();
   // Only fetched inside a site branch (an empty id disables the query).
@@ -344,14 +344,14 @@ export function MarketingBrandCrumb() {
       key: "brand",
       label: brand.name,
       href: brandPath,
-      optionsLabel: "Clients",
+      optionsLabel: "Brands",
       options:
         (brandOptions.data ?? []).length > 1
           ? (brandOptions.data ?? []).map((row) => {
               const active = row.id === brand.id;
               return {
                 label: row.name,
-                // Same route, new client (degraded only where the path was
+                // Same route, new brand (degraded only where the path was
                 // entity-scoped) — lib/brand-switch.ts.
                 href: active
                   ? brandPath

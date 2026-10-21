@@ -11,13 +11,13 @@
  * doesn't need).
  */
 
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import React, { useEffect } from "react";
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import { Mic, Square } from "lucide-react";
 
 import { useSimpleRecorder } from "@/features/audio/hooks/useSimpleRecorder";
 import { toast } from "@/lib/toast";
-import { cn } from "@/lib/utils";
 
 interface VoiceNoteButtonProps {
   onRecordingComplete: (blob: Blob) => void;
@@ -51,35 +51,26 @@ export function VoiceNoteButton({
   };
 
   return (
-    <button
-      type="button"
-      onClick={toggle}
-      disabled={disabled}
-      aria-label={
-        recorder.isRecording ? "Stop voice note" : "Record a voice note"
-      }
-      className={cn(
-        "flex h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition-colors",
-        recorder.isRecording
-          ? "bg-red-600 text-white"
-          : "bg-white/10 text-white/90 hover:bg-white/20",
-        disabled && "opacity-40",
-      )}
-    >
-      {recorder.isRecording ? (
-        <>
-          <Square className="h-4 w-4 fill-current" />
-          <span className="tabular-nums">
-            {formatDurationSeconds(recorder.duration, { style: "clock" })}
-          </span>
-          <span
-            className="ml-0.5 h-2 w-2 animate-pulse rounded-full bg-white"
-            aria-hidden
-          />
-        </>
-      ) : (
-        <Mic className="h-4 w-4" />
-      )}
-    </button>
+    recorder.isRecording ? (
+      <ControlButton
+        type="button"
+        variant="danger"
+        onClick={toggle}
+        disabled={disabled}
+        aria-label="Stop voice note"
+        icon={<Square className="fill-current" />}
+      >
+        {formatDurationSeconds(recorder.duration, { style: "clock" })}
+      </ControlButton>
+    ) : (
+      <ControlButton
+        type="button"
+        variant="outline"
+        onClick={toggle}
+        disabled={disabled}
+        aria-label="Record a voice note"
+        icon={<Mic />}
+      />
+    )
   );
 }

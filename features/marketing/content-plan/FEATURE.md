@@ -30,7 +30,7 @@ starts idle. A block in the panel shifts every field below it and is forbidden.
 
 ## Purpose
 
-The client workspace for the `plan` schema — every URL a site _should_ have,
+The brand workspace for the `plan` schema — every URL a site _should_ have,
 as an editable tree (pillars → clusters → articles) with briefs, keyword
 bindings, topics, and the people/sources behind the content (E-E-A-T). The UI
 is for **seeing, deciding, and correcting — agents do the bulk writing**;
@@ -455,7 +455,7 @@ Write | Review | Build | Publish`. Every chip is always clickable — an
    platform builtins on the system-org `plan.profile`
    `vertical='platform-archetypes'`, merged with the site org's own, org
    shadowing a builtin key and SAYING so), **Counts** (per-family steppers plus
-   "Name them": paste the client's real service list one per line and it sets
+   "Name them": paste the brand's real service list one per line and it sets
    the count AND rewrites the slugs live), **the exact routes** then commit.
    It is a PERSISTENT readiness surface, not a day-zero wizard — the same
    screen answers "what is missing?" on an empty site, a half-built one, and a

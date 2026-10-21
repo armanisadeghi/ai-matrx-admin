@@ -68,7 +68,7 @@ it("preserves unknown opaque address 404", () => {
   expect(() =>
     MarketingAddressUnavailable({
       token: "web_brand",
-      address: "unknown-client",
+      address: "unknown-brand",
     }),
   ).toThrow("false-not-found");
 });

@@ -148,7 +148,7 @@ resources underneath a website-specific root.
   Batch context, execution units, results, failures, and attributed cost.
 
 /marketing/cost
-  Cross-site and client cost rollups.
+  Cross-site and brand cost rollups.
 ```
 
 ### Remaining approved route contract
@@ -179,7 +179,7 @@ The following routes are approved but are not yet implemented:
   Analysis providers and item → provider bindings.
 
 /marketing/findings
-  Recommended cross-site finding queue for agencies managing many client sites.
+  Recommended cross-site finding queue for anyone managing many brands' sites.
 
 /marketing/connections
   Recommended organization-level credential connections. A connection may be
@@ -258,7 +258,7 @@ evidence remains under the crawl that observed it.
 
 Reusable OAuth/vendor connections live at the Marketing or organization level.
 Site integrations are bindings from one managed site to an exact provider
-property. This permits one approved Google connection to support many client
+property. This permits one approved Google connection to support many brand
 sites without duplicating credentials.
 
 ### Cost

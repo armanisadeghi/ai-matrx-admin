@@ -17,6 +17,7 @@ import { Pencil, Trash2, GitCompareArrows } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 interface EditableTextSegmentRowProps {
   text: string;
@@ -151,18 +152,11 @@ export function EditableTextSegmentRow({
             >
               <Pencil className="h-3 w-3" />
             </button>
-            <button
-              type="button"
+            <ControlButton variant="quiet" removes type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 setConfirmOpen(true);
-              }}
-              aria-label={`Move ${itemKind} to Trash`}
-              title="Move to Trash"
-              className="inline-flex h-6 w-6 items-center justify-center rounded-sm bg-background/80 text-muted-foreground shadow-sm hover:bg-destructive hover:text-destructive-foreground"
-            >
-              <Trash2 className="h-3 w-3" />
-            </button>
+              }} aria-label={`Move ${itemKind} to Trash`} icon={<Trash2 />} />
           </div>
         </>
       )}

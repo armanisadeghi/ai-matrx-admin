@@ -65,6 +65,7 @@ import { getKindInputContractBySlug } from "@/features/content-ir/registry/schem
 import type { KindSchema } from "@ai-matrx/content-ir";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { displayId } from "@ai-matrx/design-system";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 interface ShapeInstancesTabProps {
   kind: string;
@@ -610,14 +611,8 @@ export default function ShapeInstancesTab({
                     )}
                     {editing ? "Cancel" : "Edit"}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setPendingDeleteId(selected.id)}
-                    className="flex h-7 items-center gap-1.5 rounded-md border border-red-500/30 px-2 text-xs text-red-700 transition-colors hover:bg-red-500/10 dark:text-red-300"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete
-                  </button>
+                  <ControlButton variant="quiet" removes type="button"
+                    onClick={() => setPendingDeleteId(selected.id)} icon={<Trash2 />}>Delete</ControlButton>
                 </div>
               </div>
 

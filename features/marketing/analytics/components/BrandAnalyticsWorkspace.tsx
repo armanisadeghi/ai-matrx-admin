@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The client's Analytics screen (`/marketing/[brandId]/analytics`) — the list of
+ * The brand's Analytics screen (`/marketing/[brandId]/analytics`) — the list of
  * this brand's websites with each site's headline Google Analytics numbers, and
  * the door into the full panel for any one of them.
  *
@@ -160,12 +160,12 @@ function SiteHeadline({ site }: { site: MarketingSite }) {
 export function BrandAnalyticsWorkspace({ brandId }: { brandId: string }) {
   const sites = useBrandSites(brandId);
   if (sites.isLoading) {
-    return <LoadingSurface label="Loading this client's websites…" />;
+    return <LoadingSurface label="Loading this brand's websites…" />;
   }
   if (sites.isError) {
     return (
       <InlineQueryError
-        what="this client's websites"
+        what="this brand's websites"
         error={sites.error}
         onRetry={() => void sites.refetch()}
       />
@@ -177,7 +177,7 @@ export function BrandAnalyticsWorkspace({ brandId }: { brandId: string }) {
       <NoWebsiteState
         compact
         brandId={brandId}
-        brandName="This client"
+        brandName="This brand"
         needs="Google Analytics traffic and conversions"
         alternatives={[]}
       />

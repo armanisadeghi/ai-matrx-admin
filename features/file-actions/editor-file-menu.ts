@@ -17,7 +17,6 @@ import {
   FilePlus2,
   Globe,
   Languages,
-  Settings,
   ShieldAlert,
   Tag,
 } from "lucide-react";
@@ -164,7 +163,8 @@ export function buildEditorFileMenu(spec: EditorFileSpec, h: EditorFileHandlers)
   push(row("file.details"));
   push(soon("file.security", "Security limitations", "editor.file.security-limitations", { icon: ShieldAlert }));
   if (spec.product === "sheets") {
-    push(row("file.settings") ?? soon("file.settings", "Settings", "workbooks.settings", { icon: Settings, keywords: ["locale", "time zone", "calculation"] }));
+    // Settings is built (the Sheets host supplies the row); its Coming-soon promise was retired, so there is no stand-in.
+    push(row("file.settings"));
     push(row("file.page-setup"));
   } else {
     push(row("file.language") ?? soon("file.language", "Language", "editor.file.language", { icon: Languages }));

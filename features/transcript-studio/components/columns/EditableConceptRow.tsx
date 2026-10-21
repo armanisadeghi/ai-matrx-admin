@@ -1,7 +1,7 @@
 "use client";
 
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
-import { Select } from "@ai-matrx/design-system/controls";
+import { Select, Button as ControlButton } from "@ai-matrx/design-system/controls";
 /**
  * Per-row edit/delete UI for concept items. The display mode mirrors
  * `ConceptsColumn`'s original button (kind chip + label + description) and
@@ -175,18 +175,11 @@ export function EditableConceptRow({
         >
           <Pencil className="h-3 w-3" />
         </button>
-        <button
-          type="button"
+        <ControlButton variant="quiet" removes type="button"
           onClick={(e) => {
             e.stopPropagation();
             setConfirmOpen(true);
-          }}
-          aria-label="Move concept to Trash"
-          title="Move to Trash"
-          className="inline-flex h-6 w-6 items-center justify-center rounded-sm bg-background/80 text-muted-foreground shadow-sm hover:bg-destructive hover:text-destructive-foreground"
-        >
-          <Trash2 className="h-3 w-3" />
-        </button>
+          }} aria-label="Move concept to Trash" icon={<Trash2 />} />
       </div>
       <ConfirmDialog
         open={confirmOpen}

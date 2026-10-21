@@ -36,6 +36,7 @@ import {
   type ListScopeKind,
 } from "@/lib/list-scope/types";
 import { listSessionLanes } from "../service/studioService";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 /** A session has no publish path (no web-published column), so Public is absent. */
 const SESSION_SCOPES: ListScopeKind[] = ["mine", "orgs", "shared"];
@@ -410,18 +411,11 @@ function SidebarItem({
               >
                 <Pencil className="h-3 w-3" />
               </button>
-              <button
-                type="button"
+              <ControlButton variant="quiet" removes type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   setConfirmDelete(true);
-                }}
-                aria-label="Move session to Trash"
-                title="Move to Trash"
-                className="inline-flex h-5 w-5 items-center justify-center rounded-sm text-muted-foreground opacity-0 transition-opacity hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100"
-              >
-                <Trash2 className="h-3 w-3" />
-              </button>
+                }} className="opacity-0 transition-opacity group-hover:opacity-100" aria-label="Move session to Trash" icon={<Trash2 />} />
             </div>
           </>
         )}

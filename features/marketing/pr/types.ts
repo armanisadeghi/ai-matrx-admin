@@ -239,7 +239,7 @@ export interface ParsedList<T> {
 }
 
 export type ProofKind = "document" | "data" | "quote" | "third_party" | "metric";
-export type GapOwner = "you" | "team" | "client" | "third_party";
+export type GapOwner = "you" | "team" | "brand" | "third_party";
 export type GapEffort = "quick" | "medium" | "heavy";
 
 /** One thing a journalist must be able to verify before they will run it. */
@@ -442,11 +442,14 @@ export function readMissingEvidence(
       how_to_get:
         str(record, "how_to_get", "how_to_close", "how", "next_step", "detail", "description") ??
         "No path recorded yet — the analysis did not say how to get this.",
-      owner: oneOf(
-        record,
-        ["owner", "owner_role", "who", "assignee", "responsible"],
-        ["you", "team", "client", "third_party"] as const,
-        "you",
+      // AI output may still say "client" (the old word for the brand): read it as "brand", never drop it.
+      owner: ((o) => (o === "client" ? "brand" : o))(
+        oneOf(
+          record,
+          ["owner", "owner_role", "who", "assignee", "responsible"],
+          ["you", "team", "brand", "client", "third_party"] as const,
+          "you",
+        ),
       ),
       effort: oneOf(
         record,

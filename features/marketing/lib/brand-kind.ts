@@ -155,7 +155,7 @@ export const BRAND_KIND_COPY: Record<BrandKind, BrandKindCopy> = {
       offerings: {
         name: "Offerings",
         description:
-          "The tree of what this client sells, and what each offering is worth — the spine every keyword and page is valued against.",
+          "The tree of what this brand sells, and what each offering is worth — the spine every keyword and page is valued against.",
       },
       guidelines: {
         name: "Guidelines",

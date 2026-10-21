@@ -121,6 +121,7 @@ import { chooseRoom } from "@/lib/collab/choose-room";
 import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/data/realtime/collab/react";
 import { WorkbookCursorOverlay } from "@/features/workbooks/components/WorkbookCursorOverlay";
 import { useSheetComments } from "@/features/workbooks/components/useSheetComments";
+import { useSheetSeatLock } from "@/features/workbooks/components/useSheetSeatLock";
 import { installSheetCommentAnchors } from "@ai-matrx/office/sheets/comment-anchors";
 import { getLatestSnapshot, saveSnapshot } from "@ai-matrx/office/sheets";
 import { useWorkbookGoogleLink, useLiveGoogleAdapter } from "@/features/google-workspace/linked/EditorGoogleLinks";
@@ -1138,6 +1139,7 @@ export default function WorkbookEditor({
     editable,
     wrapperRef: canvasWrapperRef,
   });
+  useSheetSeatLock({ univer: univerInstance, workbookId, ready: bootState === "ready", editable });
   const importFile = async (file: File) => {
     const reason = unsupportedFileReason(file);
     if (reason) {

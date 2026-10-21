@@ -70,6 +70,7 @@ import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
 import { useNow } from "@/hooks/useNow";
 import { DEAD_ENDS_DRILL } from "./deadEndsDrill";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 const DOCTRINE_HREF =
   "https://github.com/armanisadeghi/ai-matrx/blob/main/.claude/skills/no-dead-ends/SKILL.md";
@@ -757,15 +758,8 @@ function Header({
             Re-run <code className="font-mono">pnpm check:dead-ends:write</code>{" "}
             and commit both JSON files.
           </span>
-          <button
-            type="button"
-            onClick={onCopyRefresh}
-            title="Copy the refresh command"
-            aria-label="Copy the refresh command"
-            className="rounded p-0.5 hover:bg-red-500/20"
-          >
-            <Copy className="h-3 w-3" />
-          </button>
+          <ControlButton variant="quiet" removes type="button"
+            onClick={onCopyRefresh} aria-label="Copy the refresh command" icon={<Copy />} />
           <ErrorAlchemyMenu className="ml-auto" />
         </span>
       )}

@@ -31,6 +31,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import type { SurfaceBoundAgentEntry } from "@ai-matrx/chat/surfaces/services/surface-bound-agents.service";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 export interface SurfaceBoundAgentsListProps {
   surfaceName: string;
@@ -336,18 +337,13 @@ export function SurfaceBoundAgentsList({
                   <Settings className="h-3 w-3" />
                 </button>
                 {a.canDetach && (
-                  <button
-                    type="button"
-                    title={`Remove ${a.name} from ${surfaceLabel}`}
-                    aria-label={`Remove ${a.name} from ${surfaceLabel}`}
+                  <ControlButton variant="quiet" removes type="button"
+                   
+                   
                     onClick={(event) => {
                       event.stopPropagation();
                       setDetachTarget(a);
-                    }}
-                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-destructive/10 hover:text-destructive-ink transition-colors"
-                  >
-                    <Unlink className="h-3 w-3" />
-                  </button>
+                    }} className="shrink-0" aria-label={`Remove ${a.name} from ${surfaceLabel}`} icon={<Unlink />} />
                 )}
               </div>
             ))}

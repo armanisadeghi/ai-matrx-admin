@@ -137,7 +137,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "portfolio_summary",
     label: "Portfolio summary",
     description:
-      "The condensed triage rollup of the loaded brand rows: per brand its id, name, status, site domains, and pending discovery-review count — the 'which client needs attention' picture. Same rows as visible_brands, minus the detail. Empty on other hub views and during initial load. Bindable only — not auto-shipped.",
+      "The condensed triage rollup of the loaded brand rows: per brand its id, name, status, site domains, and pending discovery-review count — the 'which brand needs attention' picture. Same rows as visible_brands, minus the detail. Empty on other hub views and during initial load. Bindable only — not auto-shipped.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 2000,
@@ -309,7 +309,7 @@ export const marketingManifest: SurfaceManifest = {
   label: "Marketing Hub",
   urlPattern: "/marketing",
   intro: `<surface_intro>
-You are on the Marketing hub: the portfolio entry point where an agency-scale operator scans every brand (client company) and managed website they run, checks how the workspace is connected and what it costs, and decides where to go next. No single brand or site is in focus here — everything you see is an aggregate over the portfolio the user can access.
+You are on the Marketing hub: the portfolio entry point where an operator scans every brand and managed website they run, checks how the workspace is connected and what it costs, and decides where to go next. No single brand or site is in focus here — everything you see is an aggregate over the portfolio the user can access.
 Read hub_view first: it tells you which hub view is open (map, brands, sites, connections, cost) and therefore which values are populated. hub_pillars is the feature's own map — use it to route the user to the right surface by name and href instead of guessing URLs.
 Counts and rows reflect what is currently loaded in the UI under the active search, filters, sort, and page (see list_query) — they are a view, never the complete database. brand_count / sites_total are the true filtered totals; site_count is the unfiltered managed-site total; visible_brands / visible_sites are bounded samples. All values populate only after the view loads: treat an empty value as "not loaded yet", never as "the portfolio is empty".
 connection_status carries per-provider loading and unavailable flags — an unavailable inventory means the check failed, not that the account is disconnected. Never invent brands, sites, counts, connections, or costs that are not in the supplied values, and never act on a specific brand or site from here — the deeper brand, site, and page surfaces carry that context.
@@ -325,7 +325,7 @@ connection_status carries per-provider loading and unavailable flags — an unav
       name: "portfolio_analyst",
       label: "Portfolio analyst",
       description:
-        "Compares brands and sites across the portfolio to surface which client needs attention next (open findings, pending reviews, stale crawls).",
+        "Compares brands and sites across the portfolio to surface which brand needs attention next (open findings, pending reviews, stale crawls).",
       kind: "single",
       defaultAgentId: null,
       sortOrder: 100,
@@ -343,7 +343,7 @@ connection_status carries per-provider loading and unavailable flags — an unav
       name: "cost_analyst",
       label: "Cost analyst",
       description:
-        "Explains where workspace runtime cost and provider spend are going, by site or client organization, from the loaded rollups.",
+        "Explains where workspace runtime cost and provider spend are going, by site or organization, from the loaded rollups.",
       kind: "single",
       defaultAgentId: null,
       sortOrder: 120,

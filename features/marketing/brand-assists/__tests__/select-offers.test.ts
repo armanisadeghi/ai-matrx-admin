@@ -1,6 +1,7 @@
 import type { Assist } from "@/features/assists/types";
 import {
   brandAssistDedupeKey,
+  isRetiredBrandAssist,
   offersToEmit,
   type BrandAssistOffers,
 } from "../select-offers";
@@ -15,9 +16,9 @@ function offers(cooldown = 0): BrandAssistOffers {
     site: "theshrimpfarm.com",
     decline_cooldown_days: cooldown,
     offers: [
-      { assist_id: "who_ranks", title: "", body: "", verb: "", lands: "", cost_usd: "0.06", cost_points: 1200, rank: 5.4, done: false },
+      { assist_id: "site_audit", title: "", body: "", verb: "", lands: "", cost_usd: "0.06", cost_points: 1200, rank: 5.4, done: false },
       { assist_id: "colors_fonts", title: "", body: "", verb: "", lands: "", cost_usd: "0.0000", cost_points: 0, rank: 16, done: false },
-      { assist_id: "name_volume", title: "", body: "", verb: "", lands: "", cost_usd: "0.05", cost_points: 1000, rank: 6, done: false },
+      { assist_id: "logo_read", title: "", body: "", verb: "", lands: "", cost_usd: "0.05", cost_points: 1000, rank: 6, done: false },
     ],
   };
 }
@@ -36,8 +37,8 @@ describe("brand assist offers", () => {
   it("ranks most valuable, cheapest and most certain first", () => {
     expect(offersToEmit(offers(), [], NOW).map((o) => o.assist_id)).toEqual([
       "colors_fonts",
-      "name_volume",
-      "who_ranks",
+      "logo_read",
+      "site_audit",
     ]);
   });
 
@@ -47,21 +48,32 @@ describe("brand assist offers", () => {
   });
 
   it("a snooze (Later) is a decline too", () => {
-    const history = [row("name_volume", { suppressedUntil: "2026-10-16T19:00:00Z" })];
-    expect(offersToEmit(offers(), history, NOW).map((o) => o.assist_id)).not.toContain("name_volume");
+    const history = [row("logo_read", { suppressedUntil: "2026-10-16T19:00:00Z" })];
+    expect(offersToEmit(offers(), history, NOW).map((o) => o.assist_id)).not.toContain("logo_read");
   });
 
   it("only the cooldown knob brings a declined assist back, and only after it passes", () => {
-    const old = [row("who_ranks", { status: "dismissed", decidedAt: "2026-09-01T00:00:00Z" })];
-    const recent = [row("who_ranks", { status: "dismissed", decidedAt: "2026-10-15T00:00:00Z" })];
-    expect(offersToEmit(offers(30), old, NOW).map((o) => o.assist_id)).toContain("who_ranks");
-    expect(offersToEmit(offers(30), recent, NOW).map((o) => o.assist_id)).not.toContain("who_ranks");
+    const old = [row("site_audit", { status: "dismissed", decidedAt: "2026-09-01T00:00:00Z" })];
+    const recent = [row("site_audit", { status: "dismissed", decidedAt: "2026-10-15T00:00:00Z" })];
+    expect(offersToEmit(offers(30), old, NOW).map((o) => o.assist_id)).toContain("site_audit");
+    expect(offersToEmit(offers(30), recent, NOW).map((o) => o.assist_id)).not.toContain("site_audit");
   });
 
   it("never re-offers one already pending, run, or done", () => {
     const data = offers();
     data.offers[0].done = true;
-    const history = [row("colors_fonts", {}), row("name_volume", { status: "accepted" })];
+    const history = [row("colors_fonts", {}), row("logo_read", { status: "accepted" })];
     expect(offersToEmit(data, history, NOW)).toEqual([]);
+  });
+
+  it("never offers a brand-name search, even when a stale server still lists one", () => {
+    const data = offers();
+    data.offers.push({ assist_id: "name_volume", title: "", body: "", verb: "", lands: "", cost_usd: "0.05", cost_points: 1000, rank: 99, done: false });
+    data.offers.push({ assist_id: "who_ranks", title: "", body: "", verb: "", lands: "", cost_usd: "0.04", cost_points: 800, rank: 98, done: false });
+    const ids = offersToEmit(data, [], NOW).map((o) => o.assist_id);
+    expect(ids).not.toContain("name_volume");
+    expect(ids).not.toContain("who_ranks");
+    expect(isRetiredBrandAssist("brand.assist.who_ranks")).toBe(true);
+    expect(isRetiredBrandAssist("brand.assist.colors_fonts")).toBe(false);
   });
 });

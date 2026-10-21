@@ -3,7 +3,7 @@
 /**
  * THE READ-ONLY DOOR'S BODY (R7): the real workspace views, brand-free.
  *
- * A record-only grantee — a client the map was shared with — can read the map
+ * A record-only grantee — a person the map was shared with — can read the map
  * but not the brand above it, so the nested route would hand them an
  * AccessGate for a brand they were never given. The id door renders THIS
  * instead: the same `TopicalMapWorkspaceBody` every host uses, under a
