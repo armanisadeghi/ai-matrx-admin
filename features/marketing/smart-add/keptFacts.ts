@@ -15,7 +15,7 @@
  *   offerings               → web.brand_offering (active)
  *   what the person settled → web.brand.metadata.smart_add.confirmed, so the setup gate never asks again
  *
- * Provenance on every row: found_by (the mandate), agent kind, the round's run id, step, field, certainty,
+ * Provenance on every row: found_by (the producing mandate: the agent that found it), the round's run id, step, field, certainty,
  * reason, evidence urls, the decision. Nothing here hard-deletes; undo goes through validate/persist.ts
  * (soft-delete) and web.decision_retraction (UNDO.md).
  */
@@ -206,7 +206,6 @@ export function mergeConfirmedIntoPlan(
 function provenance(fact: BrandFact, decision: FactDecision): Record<string, Json> {
   return {
     found_by: fact.mandate ?? FACTS_FOUND_BY,
-    agent_kind: "brand_basics",
     run_id: fact.run_id ?? null,
     step: "facts",
     field: fact.field,
