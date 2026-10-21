@@ -1461,7 +1461,7 @@ export const ProTextarea = React.forwardRef<
           ? "rounded-2xl"
           : "rounded-md",
       // THE FIELD FOCUS (Arman 2026-10-21): border takes the ring + the one halo token, hero included.
-      "focus-visible:outline-none focus-visible:border-ring focus-visible:shadow-[var(--matrx-focus-halo)]",
+      "focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/18",
       "disabled:cursor-not-allowed disabled:opacity-50",
       fillHeight ? "min-h-0 flex-1 resize-none overflow-y-auto" : "resize-y",
       // Auto-grow disables the manual resize handle. Use overflow-y-auto
