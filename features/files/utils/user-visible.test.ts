@@ -104,7 +104,9 @@ describe("Recents — mirror of files.is_recent_activity", () => {
       "tool-images/1/shot.png",
       "Images/Generated/cat.png",
       "Generated/a.png",
-      "Applets/blocks/b.png",
+      // The storage folder is still "Agent Apps/blocks" (folder-conventions AGENT_BLOCKS and
+      // files.is_recent_activity); 0fe00f4889's Applets rename was UI-only and mis-rewrote this path.
+      "Agent Apps/blocks/b.png",
       "Images/agent-blocks/c.png",
       "Transcripts/Recordings/x.m4a",
       "FastFire/sessions/s.wav",
