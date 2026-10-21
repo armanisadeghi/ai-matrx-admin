@@ -10,7 +10,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Select, Button as ControlButton } from "@ai-matrx/design-system/controls";
+import { DateTimeField, Select, Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { Globe, Loader2, Trash2, UserPlus } from "lucide-react";
 import { extractErrorMessage } from "@/utils/errors";
 import {
@@ -258,11 +258,10 @@ export function PermissionsDialogBody({
           </label>
           <label className="flex flex-col gap-1 text-xs sm:col-span-2">
             <span className="text-muted-foreground">Expires (optional)</span>
-            <input
-              type="datetime-local"
+            <DateTimeField
+              aria-label="Expires"
               value={expiresAt}
-              onChange={(e) => setExpiresAt(e.target.value)}
-              className="rounded-md border bg-background px-2 py-1 text-sm"
+              onValueChange={(v) => setExpiresAt(v ?? "")}
             />
           </label>
         </div>

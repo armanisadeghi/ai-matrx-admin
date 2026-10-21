@@ -14,7 +14,7 @@
 
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import { Select, Button as ControlButton } from "@ai-matrx/design-system/controls";
+import { DateTimeField, Select, Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { useCallback, useState } from "react";
 import { Check, Copy, ExternalLink, Link, Loader2, Trash2 } from "lucide-react";
 import { extractErrorMessage } from "@/utils/errors";
@@ -214,11 +214,9 @@ export function ShareLinkDialogBody({
             <span className="text-muted-foreground">
               Expires (optional)
             </span>
-            <input
-              type="datetime-local"
+            <DateTimeField
               value={expiresAt}
-              onChange={(e) => setExpiresAt(e.target.value)}
-              className="rounded-md border bg-background px-2 py-1 text-sm"
+              onValueChange={(v) => setExpiresAt(v ?? "")}
             />
           </label>
           <label className="flex flex-col gap-1 text-xs sm:col-span-2">
