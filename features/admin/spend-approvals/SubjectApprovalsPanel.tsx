@@ -10,6 +10,8 @@
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { useAdminCost } from "@/components/cost/useAdminCost";
+import { useSeesDollars } from "@/components/cost/useCostDisplay";
 import { SpendApprovalsBoard, HistoryList } from "./SpendApprovalsBoard";
 import {
   SUBJECT_KIND_LABEL,
@@ -29,6 +31,8 @@ import {
 } from "@/features/admin/held-runs/heldRuns";
 
 export function HeldRunsList({ approvalId }: { approvalId: string }) {
+  const sees = useSeesDollars();
+  const points = useAdminCost();
   const [runs, setRuns] = useState<HeldRun[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
@@ -49,7 +53,7 @@ export function HeldRunsList({ approvalId }: { approvalId: string }) {
         <li key={r.id} className="flex min-w-0 items-center gap-2">
           <span className="shrink-0 tabular-nums text-muted-foreground">{new Date(r.last_seen_at).toLocaleString()}</span>
           <span className="min-w-0 truncate">
-            {r.model ?? "Model unknown"} · {replayCostLine(r.estimated_cost_usd)}
+            {r.model ?? "Model unknown"} · {replayCostLine(r.estimated_cost_usd, sees ? undefined : points)}
             {r.occurrence_count > 1 ? ` · ${r.occurrence_count}×` : ""}
           </span>
           <Link className="ml-auto shrink-0 text-primary hover:underline" href={heldRunHref(r.id)}>

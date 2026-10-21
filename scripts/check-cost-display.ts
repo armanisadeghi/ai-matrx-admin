@@ -270,7 +270,7 @@ export const ALLOWED_PLACES: Record<string, string> = {
   "features/admin/**": "admin-gated: admin feature screens",
   "features/administration/**": "admin-gated: the administration console",
   "features/cx-dashboard/**": "admin-gated: the conversation admin dashboard",
-  "features/organizations/admin/**": "admin-gated: platform admin's organization screens",
+  "features/organizations/admin/**": "info/details: an organization admin's member and spend screens, in points only (org admins are users: no dollars)",
   "features/mandates/admin*/**": "admin-gated: mandate admin screens",
   "features/builder-panel/**": "admin-gated: the builder's dev panel",
   "features/proof-runs/**": "admin-gated: proof-run operator screens",

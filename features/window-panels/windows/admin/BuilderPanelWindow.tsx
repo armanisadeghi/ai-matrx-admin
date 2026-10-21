@@ -18,6 +18,7 @@ import { usePathname } from "next/navigation";
 import { Select, Tabs, type SelectOption } from "@ai-matrx/design-system/controls";
 import { WindowPanel } from "@ai-matrx/summon/window";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
 import { selectDebugData } from "@/lib/redux/preferences/adminDebugSlice";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { APP_WIDE_SURFACES } from "@/features/ai-watch/followed-work-builder";
@@ -66,7 +67,9 @@ interface BuilderPanelWindowProps {
 }
 
 export default function BuilderPanelWindow({ isOpen, ...rest }: BuilderPanelWindowProps) {
-  if (!isOpen) return null;
+  // Admins only, like its sidebar toggle: a restored or summoned window must not show a member its costs.
+  const isAdmin = useAppSelector(selectIsAdminDebugger) ?? false;
+  if (!isOpen || !isAdmin) return null;
   return <BuilderPanelInner {...rest} />;
 }
 

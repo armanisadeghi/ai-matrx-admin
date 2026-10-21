@@ -175,9 +175,13 @@ export function replayLaunch(run: HeldRun, mode: ReplayVersionMode): ReplayLaunc
   return { door: "mandate", mandateKey: run.mandate_key ? storedMandateKey(run.mandate_key) : null, agentId: null, versionId: null, variables: run.variables, userInput };
 }
 
-/** The price line shown before the click — to the cent, never rounded to zero. */
-export function replayCostLine(estimated: number | null): string {
+/**
+ * The price line shown before the click — to the cent, never rounded to zero. `format` is the
+ * viewer's own (points for an organization's admin, `useAdminCost`); omitted, it is dollars (admin).
+ */
+export function replayCostLine(estimated: number | null, format?: (usd: number) => string): string {
   if (estimated == null) return "Cost not priced";
+  if (format) return `About ${format(estimated)} per replay`;
   if (estimated < 0.01) return "About <$0.01 per replay";
   return `About ${formatSpendUsd(estimated)} per replay`;
 }

@@ -30,7 +30,8 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { useCostDisplay, useSeesDollars } from "@/components/cost/useCostDisplay";
+import { useAdminCost } from "@/components/cost/useAdminCost";
 import { useListViewPrefs } from "@/lib/list-views/useListViewPrefs";
 import { recordToast, toast } from "@/lib/toast";
 import {
@@ -87,8 +88,15 @@ const TONE_CLASS: Record<"danger" | "warning", string> = {
 
 const when = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : "—");
 const whenDay = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString() : "—");
-/** Every dollar figure on this board: to the cent. */
-const cents = (usd: number | null | undefined) => formatAdminUsd(usd);
+/**
+ * Every cost figure on this board. A platform admin sees dollars to the cent; an organization's
+ * owner or admin (the org seat) is a user and sees points — never dollars (law 14).
+ */
+function useCents(): (usd: number | null | undefined) => string {
+  const sees = useSeesDollars();
+  const points = useAdminCost();
+  return (usd) => (sees ? formatAdminUsd(usd) : points(usd));
+}
 
 const EVENT_LABEL: Record<string, string> = {
   created: "Opened",
@@ -160,6 +168,7 @@ export function DecisionDialog({
   onClose: () => void;
   onDone: () => void;
 }) {
+  const cents = useCents();
   const [note, setNote] = useState("");
   const [expected, setExpected] = useState("");
   const [perMonth, setPerMonth] = useState("");
@@ -312,15 +321,24 @@ export function DecisionDialog({
   );
 }
 
-/** A dollar column to the cent (currency format, 2 places), plus its points twin hidden by default. */
+/**
+ * A dollar column to the cent (currency format, 2 places), plus its points twin hidden by default.
+ * A viewer who does not see dollars (an organization's admin) gets the points column alone, shown.
+ */
 function usdColumns(
   id: string,
   header: string,
   value: (r: SpendApprovalRow) => number | null | undefined,
   width: number,
   extra: Pick<MatrxColumnDef<SpendApprovalRow>, "tone" | "kpi"> = {},
+  seesDollars = true,
 ): MatrxColumnDef<SpendApprovalRow>[] {
   const [, points] = adminCostColumns<SpendApprovalRow>({ id, label: header, value });
+  if (!seesDollars) {
+    // A summed KPI's tone reads dollars; over a points column it would misfire, so the points-only seat drops it.
+    const kpi = extra.kpi && (Array.isArray(extra.kpi) ? extra.kpi : [extra.kpi]).map((k) => (k.op === "sum" ? { ...k, tone: undefined } : k));
+    return [{ ...points, width, ...extra, ...(kpi ? { kpi } : {}) }];
+  }
   return [
     {
       id,
@@ -359,6 +377,8 @@ export function SpendApprovalsBoard({
 }) {
   const { rows, setRows, loading, error, reload, decide } = useSpendApprovalsData(orgId);
   const { format } = useCostDisplay();
+  const cents = useCents();
+  const seesDollars = useSeesDollars();
   const knobs = useApprovalColorKnobs();
   const { prefs: viewPrefs, setPrefs: setViewPrefs } = useListViewPrefs(`spend-approvals-${seat}`);
   // The status filter is part of the view, so it lives in the URL under the table's own
@@ -584,8 +604,8 @@ export function SpendApprovalsBoard({
       width: 130,
       cell: (r) => <span className="tabular-nums">{r.automated_runs_30d}</span>,
     },
-    ...usdColumns("automated_cost_per_run", "Cost per automated run", (r) => r.automated_cost_per_run, 140, { tone: (r) => rowTone(perRunTone(r.automated_cost_per_run)) }),
-    ...usdColumns("automated_cost_30d", "Automated cost (30d)", (r) => r.automated_cost_30d, 130, { tone: (r) => rowTone(monthlyTone(r.automated_cost_30d)) }),
+    ...usdColumns("automated_cost_per_run", "Cost per automated run", (r) => r.automated_cost_per_run, 140, { tone: (r) => rowTone(perRunTone(r.automated_cost_per_run)) }, seesDollars),
+    ...usdColumns("automated_cost_30d", "Automated cost (30d)", (r) => r.automated_cost_30d, 130, { tone: (r) => rowTone(monthlyTone(r.automated_cost_30d)) }, seesDollars),
     {
       id: "first_run_at",
       header: "First run at",
@@ -607,8 +627,8 @@ export function SpendApprovalsBoard({
         { id: "waiting_monthly", op: "sum", label: "Waiting est./month", where: (r) => isWaiting(r), tone: (v) => rowTone(monthlyTone(v)) },
         { id: "approved_monthly", op: "sum", label: "Approved est./month", where: (r) => r.status === "approved" || r.status === "temporary" },
       ],
-    }),
-    ...usdColumns("max_cost_since", "Max cost since", (r) => r.max_cost_since, 120, { tone: (r) => rowTone(perRunTone(r.max_cost_since)) }),
+    }, seesDollars),
+    ...usdColumns("max_cost_since", "Max cost since", (r) => r.max_cost_since, 120, { tone: (r) => rowTone(perRunTone(r.max_cost_since)) }, seesDollars),
     {
       id: "runs_since",
       accessorKey: "runs_since",
@@ -621,9 +641,9 @@ export function SpendApprovalsBoard({
     ...usdColumns("avg_cost_since", "Avg cost since", (r) => r.avg_cost_since, 120, {
       tone: (r) => rowTone(perRunTone(r.avg_cost_since)),
       kpi: { id: "over_red", op: "count", label: "Avg over red line", countWhere: (r) => perRunTone(r.avg_cost_since) === "danger", tone: (n) => (n > 0 ? "danger" : undefined) },
-    }),
+    }, seesDollars),
     // ── available in Columns, hidden by default ──
-    ...usdColumns("first_run_cost", "First run cost", (r) => r.first_run_cost, 120, { tone: (r) => rowTone(perRunTone(r.first_run_cost)) }).map((c) => ({ ...c, hidden: true })),
+    ...usdColumns("first_run_cost", "First run cost", (r) => r.first_run_cost, 120, { tone: (r) => rowTone(perRunTone(r.first_run_cost)) }, seesDollars).map((c) => ({ ...c, hidden: true })),
     {
       id: "expires_at",
       header: "Expires at",

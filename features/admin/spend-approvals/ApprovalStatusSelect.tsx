@@ -12,6 +12,8 @@ import { Check, ChevronDown, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
 import { formatSpendUsd } from "@/components/cost/formatAdminCost";
+import { useAdminCost } from "@/components/cost/useAdminCost";
+import { useSeesDollars } from "@/components/cost/useCostDisplay";
 import { ApprovalStatusText } from "./RunApprovalCell";
 import {
   APPROVAL_STATUS_LABEL,
@@ -67,8 +69,11 @@ export function ApprovalStatusSelect({
   /** Throws to refuse; the parent rolls the optimistic status back. */
   onDecide: (decision: ApprovalDecision, next: ApprovalStatus, note: string, expiresAt: string | null) => Promise<void>;
 }) {
-  // Every dollar figure here is to the cent (Arman 2026-10-10); points stay off this confirm.
-  const format = (usd: number) => formatSpendUsd(usd);
+  // A platform admin sees every dollar figure to the cent (Arman 2026-10-10); an organization's
+  // admin is a user and sees points, never dollars (law 14).
+  const sees = useSeesDollars();
+  const points = useAdminCost();
+  const format = (usd: number) => (sees ? formatSpendUsd(usd) : points(usd));
   const knobs = useApprovalColorKnobs();
   const [open, setOpen] = useState(false);
   const [next, setNext] = useState<ApprovalStatus | null>(null);
