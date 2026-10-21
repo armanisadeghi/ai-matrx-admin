@@ -13,10 +13,15 @@
  * this feature exists to kill.
  */
 
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { FileText } from "lucide-react";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { formatCount } from "@ai-matrx/kit/format";
 
+import {
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentPx,
+} from "@/components/official/topic-tree/geometry";
 import { cn } from "@/lib/utils";
 
 import type { MapIntentColors } from "../../knobs";
@@ -51,8 +56,6 @@ export interface MapTableColumnContext {
   onToggleExpand: (slug: string) => void;
 }
 
-const INDENT_PX = 16;
-
 /** An absent number renders an empty, titled span; a real number renders itself. */
 function CountCell({
   value,
@@ -78,40 +81,32 @@ function TopicCell({ row, ctx }: { row: MapTableRow; ctx: MapTableColumnContext 
   return (
     <div
       className="flex min-w-0 items-center gap-1.5"
-      style={ctx.hierarchy ? { paddingLeft: row.depth * INDENT_PX } : undefined}
+      style={ctx.hierarchy ? { paddingLeft: treeIndentPx(row.depth) } : undefined}
     >
       {ctx.hierarchy ? (
-        row.hasChildren ? (
-          <button
-            type="button"
-            aria-label={row.expanded ? `Collapse ${row.name}` : `Expand ${row.name}`}
-            aria-expanded={row.expanded}
-            className="shrink-0 rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-            onClick={(event) => {
-              event.stopPropagation();
-              ctx.onToggleExpand(row.slug);
-            }}
-          >
-            {row.expanded ? (
-              <ChevronDown className="h-3.5 w-3.5" aria-hidden />
-            ) : (
-              <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-            )}
-          </button>
-        ) : (
-          <span className="inline-block h-4 w-4 shrink-0" aria-hidden />
-        )
+        <>
+          <TreeDisclosure
+            expandable={row.hasChildren}
+            expanded={row.expanded}
+            onToggle={() => ctx.onToggleExpand(row.slug)}
+          />
+          {row.hasChildren ? (
+            <TreeFolderIcon open={row.expanded} />
+          ) : (
+            <FileText aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
+          )}
+        </>
       ) : null}
       <span className="flex min-w-0 flex-col">
         <span className="flex min-w-0 items-center gap-1.5">
-          <span className={cn("truncate text-sm", row.selected && "font-semibold")}>
+          <span className={cn("truncate type-body", row.selected && "font-semibold")}>
             {row.name}
           </span>
           <TopicStatusMark status={status} compact />
         </span>
         {!ctx.hierarchy && row.ancestors.length > 0 ? (
           <span
-            className="truncate text-[11px] text-muted-foreground"
+            className="truncate type-meta text-muted-foreground"
             title={row.ancestors.join(" › ")}
           >
             {row.ancestors.join(" › ")}

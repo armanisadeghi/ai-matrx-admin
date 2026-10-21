@@ -18,15 +18,19 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useMemo, useState } from "react";
 import {
-  ChevronDown,
-  ChevronRight,
   Code2,
+  FileText,
   Copy,
   ListTree,
   Check,
   KeyRound,
 } from "lucide-react";
 
+import {
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import { ApplyDirectiveButton } from "@ai-matrx/content-ir/react";
 import type { DecodedDirective } from "@ai-matrx/content-ir";
 
@@ -74,27 +78,21 @@ function NodeRow({
     <li>
       <div
         className="group flex items-start gap-1.5 rounded py-0.5 hover:bg-accent/50"
-        style={{ paddingLeft: `${depth * 14}px` }}
+        style={treeIndentStyle(depth)}
       >
+        <TreeDisclosure
+          expandable={hasKids}
+          expanded={expanded}
+          onToggle={() => setOpen((v) => !v)}
+        />
         {hasKids ? (
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            className="mt-0.5 shrink-0 text-muted-foreground hover:text-foreground"
-            aria-label={expanded ? "Collapse" : "Expand"}
-          >
-            {expanded ? (
-              <ChevronDown className="h-3.5 w-3.5" />
-            ) : (
-              <ChevronRight className="h-3.5 w-3.5" />
-            )}
-          </button>
+          <TreeFolderIcon open={expanded} />
         ) : (
-          <span className="w-3.5 shrink-0" />
+          <FileText aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
         )}
 
         <span
-          className={`mt-0.5 shrink-0 rounded px-1 text-[10px] font-medium uppercase leading-4 ${
+          className={`shrink-0 rounded px-1 type-meta font-medium ${
             TYPE_STYLES[node.node_type] ?? "bg-muted text-muted-foreground"
           }`}
         >
@@ -103,25 +101,25 @@ function NodeRow({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-2">
-            <span className="text-xs font-medium text-foreground">{node.label}</span>
+            <span className="type-body font-medium text-foreground">{node.label}</span>
             {node.slug ? (
-              <span className="font-mono text-[11px] text-muted-foreground">
+              <span className="font-mono type-meta text-muted-foreground">
                 /{node.slug}
               </span>
             ) : null}
             {node.priority === 1 ? (
-              <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">
+              <span className="type-meta font-medium text-amber-600 dark:text-amber-400">
                 priority 1
               </span>
             ) : null}
             {hasKids && !expanded ? (
-              <span className="text-[10px] text-muted-foreground">
+              <span className="type-meta text-muted-foreground">
                 {kids.length} child{kids.length === 1 ? "" : "ren"}
               </span>
             ) : null}
           </div>
           {node.primary_keyword_phrase || node.page_type ? (
-            <div className="flex flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-x-2 type-meta text-muted-foreground">
               {node.primary_keyword_phrase ? (
                 <span className="flex items-center gap-1">
                   <KeyRound className="size-3" aria-hidden="true" />
