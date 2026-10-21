@@ -2,12 +2,14 @@
 
 /**
  * Accounts (UI-SPEC §3): the brand's own accounts and the competitor /
- * inspiration / client accounts it tracks, in ONE `MatrxDataTable`. One column
+ * inspiration accounts it tracks, in ONE `MatrxDataTable`. One column
  * per sortable/filterable value; Role filters as a column, so "group by role"
  * is the table's own filter + drill-down, not a hand-built grouping.
  *
- * Row actions: Refresh (names its points only when worth a warning) and Remove (confirm
- * names what is archived). Role is editable inline (Layer B edit under RLS).
+ * Row actions are declared once (`rowActionDefs`): every row carries the same strip in the same
+ * order, an action that does not apply drawn disabled in its slot. Refresh all sits in the toolbar.
+ * Above the table, `AccountsOverview` shows the brand's KPIs, platforms, competitors and top posts.
+ * Role is editable inline (Layer B edit under RLS).
  */
 
 import Link from "next/link";
@@ -21,7 +23,7 @@ import { countOf, withCostOn } from "../social-actions";
 import { xmlElement, xmlList } from "@ai-matrx/chat/surfaces/runtime/context-bundle";
 import { createSocialAccountsScope, SOCIAL_ACCOUNTS_SURFACE_NAME } from "@/features/surfaces/manifests/marketing-social-accounts.manifest";
 import { useMemo, useState, type ReactNode } from "react";
-import { Globe, Link2, Plus, RefreshCw, Trash2, UserCog, UserPlus } from "lucide-react";
+import { Activity, Globe, Link2, Plus, RefreshCw, Trash2, UserCog, UserPlus } from "lucide-react";
 
 import {
   Badge,
@@ -30,9 +32,13 @@ import {
   type SelectOption,
 } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
-import type { MatrxColumnDef, MatrxDataTableMobileCardControls } from "@ai-matrx/design-system/data-table/types";
+import type {
+  MatrxColumnDef,
+  MatrxDataTableMobileCardControls,
+  MatrxTableRowActionDef,
+} from "@ai-matrx/design-system/data-table/types";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { toast } from "@/lib/toast";
+import { recordToast, toast } from "@/lib/toast";
 import { useRefusedRead } from "../gated/RefusedReadOffer";
 import { GUIDED_CAPTURE_PLATFORMS } from "../gated/guidedJob";
 
@@ -76,6 +82,7 @@ import { socialRowOpen } from "../row-open";
 import { accountHref } from "../account-href";
 import { brandAccountHref } from "../property-account-href";
 import { AccountSummary } from "./AccountSummary";
+import { AccountsOverview } from "./AccountsOverview";
 import { OutlierBadge } from "./OutlierBadge";
 import { PlatformMark } from "./PlatformMark";
 import { ConnectAccountMenu, useStartConnection } from "./ConnectAccountMenu";
@@ -149,6 +156,7 @@ export function AccountsTab() {
     trackOwn,
     trackOwnRow,
     trackAllOwn,
+    refreshAllOwn,
   } = useTrackOwn(organizationId, brandId);
   const { agentCostText, confirmPosts } = useSocialSpend(organizationId);
   const { choice: countChoice } = usePostCount();
@@ -236,7 +244,10 @@ export function AccountsTab() {
         { organizationId },
       );
       await invalidate();
-      toast.success(`${accountName(row)} added to ${brand.name}`);
+      recordToast.success(
+        { type: "social_profile", id: row.profileId, title: accountName(row) },
+        `${accountName(row)} added to ${brand.name}`,
+      );
     } catch (err) {
       toast.error(socialErrorMessage(err, "Couldn't add the account to this brand"));
     } finally {
@@ -587,6 +598,104 @@ export function AccountsTab() {
     [accounts.data],
   );
   const untrackedOwn = rows.filter(trackableOwn);
+  const refreshable = rows.filter((r) => r.trackedAccountId && r.profileId);
+  const oldestRefresh = refreshable.map((r) => r.lastRefreshedAt).filter((d): d is string => Boolean(d)).sort()[0] ?? null;
+
+  // One fixed strip per row: every action keeps its slot on every row and is drawn disabled where
+  // it does not apply (or for a viewer), so the column lines up and nothing appears or vanishes.
+  const blocked = () => !canEdit || busyRow !== null;
+  const ownConnection = (r: AccountRow) => (r.role === "own" ? connections.of(r.platform) : null);
+  const canCapture = (r: AccountRow) =>
+    GUIDED_CAPTURE_PLATFORMS.has(r.platform) &&
+    (!r.profileId || refusedRows.has(r.rowId) || (r.status !== "active" && r.status !== "not_tracked"));
+  const rowActionDefs: MatrxTableRowActionDef<AccountRow>[] = [
+    {
+      id: "refresh",
+      icon: RefreshCw,
+      label: "Refresh posts",
+      tooltip: ["Refresh posts", askedPosts ? `${askedPosts} posts` : null].filter(Boolean).join(" · "),
+      unavailableTooltip: "Track the account first",
+      appliesTo: (r) => Boolean(r.trackedAccountId && r.profileId),
+      loading: (r) => busyRow === r.rowId,
+      disabled: blocked,
+      onClick: (r) => void refresh(r),
+    },
+    {
+      id: "track",
+      icon: UserPlus,
+      label: "Track as Own",
+      unavailableTooltip: "Already tracked, or not supported yet",
+      appliesTo: (r) => !r.trackedAccountId && trackableOwn(r),
+      loading: (r) => busyRow === r.rowId && !r.trackedAccountId,
+      disabled: blocked,
+      onClick: (r) => void trackOwn(r),
+    },
+    {
+      id: "sync-connection",
+      icon: Activity,
+      label: "Refresh private stats",
+      unavailableTooltip: "Own accounts with a live connection only",
+      appliesTo: (r) =>
+        r.role === "own" && Boolean(r.trackedAccountId) && !r.unassigned && ownConnection(r)?.state === "connected",
+      disabled: blocked,
+      onClick: (r) => void syncConnection(r),
+    },
+    {
+      id: "connect",
+      icon: Link2,
+      label: "Connect",
+      tooltip: "Connect or reconnect for private stats",
+      unavailableTooltip: "Already connected, or own accounts only",
+      appliesTo: (r) => {
+        const c = ownConnection(r);
+        return Boolean(c && c.canConnect && c.state !== "connected");
+      },
+      disabled: blocked,
+      onClick: (r) => {
+        const c = ownConnection(r);
+        if (c) startConnect(c);
+      },
+    },
+    {
+      id: "add-to-brand",
+      icon: Plus,
+      label: `Add to ${brand.name}`,
+      unavailableTooltip: "Already on this brand",
+      appliesTo: (r) => Boolean(r.unassigned && r.profileId),
+      disabled: blocked,
+      onClick: (r) => void addToBrand(r),
+    },
+    {
+      id: "owner",
+      icon: UserCog,
+      label: "Whose account",
+      tooltip: "Whose account: the brand's or a person's",
+      unavailableTooltip: "Own accounts on this brand only",
+      appliesTo: (r) => r.role === "own" && Boolean(r.propertyId) && !r.unassigned,
+      disabled: blocked,
+      onClick: (r) => setOwnerRow(r),
+    },
+    {
+      id: "capture",
+      icon: Globe,
+      label: "Capture with my browser",
+      tooltip: "Can't be read the usual way? Your own browser still can.",
+      unavailableTooltip: "Not needed: this account reads normally",
+      appliesTo: canCapture,
+      disabled: blocked,
+      onClick: (r) => openCapture(captureTarget(r)),
+    },
+    {
+      id: "remove",
+      icon: Trash2,
+      label: "Stop tracking",
+      tone: "destructive",
+      unavailableTooltip: "Not tracked",
+      appliesTo: (r) => Boolean(r.trackedAccountId),
+      disabled: blocked,
+      onClick: (r) => void remove(r),
+    },
+  ];
 
   // The agent surface: built from the rows already on screen (never a fetch).
   const surfaceScope = () =>
@@ -719,6 +828,7 @@ export function AccountsTab() {
         brandSeg={brandSeg}
         onChanged={() => void invalidate()}
       />
+      <AccountsOverview rows={rows} rowsLoading={accounts.isLoading} />
       <MatrxDataTable<AccountRow>
         tableId="marketing-social-accounts"
         urlState={{ id: "social-accounts" }}
@@ -746,144 +856,46 @@ export function AccountsTab() {
         }}
         toolbar={{
           searchPlaceholder: "Search accounts…",
-          actions: !canEdit ? undefined : (
-            <div className="flex items-center gap-2">
-              <PostCountControl organizationId={organizationId} disabled={busyRow !== null} />
-              <ConnectAccountMenu
-                organizationId={organizationId}
-                start={startConnect}
-                onManage={() => setManageOpen(true)}
-              />
-              {untrackedOwn.length > 1 ? (
-                <Button
-                  variant="outline"
-                  icon={<UserPlus />}
-                  disabled={busyRow !== null}
-                  title="Track every own account not tracked yet"
-                  onClick={() => void trackAllOwn(untrackedOwn)}
-                >
-                  {busyRow === "bulk"
-                    ? "Tracking…"
-                    : `Track all own (${untrackedOwn.length})`}
-                </Button>
+          // A fixed set: each control keeps its place and is disabled, never removed, when it cannot act.
+          actions: (
+            <div className="flex flex-wrap items-center gap-2">
+              {busyRow === "bulk-refresh" && progress ? (
+                <span className="text-xs text-primary">{progress}</span>
+              ) : oldestRefresh ? (
+                <span className="text-xs text-muted-foreground" title="The least recently refreshed account">
+                  Oldest refresh {relativeAge(oldestRefresh)}
+                </span>
               ) : null}
+              <PostCountControl organizationId={organizationId} disabled={!canEdit || busyRow !== null} />
+              {canEdit ? (
+                <ConnectAccountMenu
+                  organizationId={organizationId}
+                  start={startConnect}
+                  onManage={() => setManageOpen(true)}
+                />
+              ) : null}
+              <Button
+                variant="outline"
+                icon={<UserPlus />}
+                disabled={!canEdit || busyRow !== null || untrackedOwn.length === 0}
+                title={untrackedOwn.length ? "Track every own account not tracked yet" : "Every own account is tracked"}
+                onClick={() => void trackAllOwn(untrackedOwn)}
+              >
+                {busyRow === "bulk" ? "Tracking…" : `Track all own (${untrackedOwn.length})`}
+              </Button>
+              <Button
+                variant="primary"
+                icon={<RefreshCw />}
+                disabled={!canEdit || busyRow !== null || refreshable.length === 0}
+                title={refreshable.length ? `Fetch new posts for all ${refreshable.length} tracked accounts` : "No tracked accounts yet"}
+                onClick={() => void refreshAllOwn(refreshable)}
+              >
+                {busyRow === "bulk-refresh" ? "Refreshing…" : `Refresh all (${refreshable.length})`}
+              </Button>
             </div>
           ),
         }}
-        rowActions={(row) => !canEdit ? [] : [
-          row.trackedAccountId
-            ? {
-                id: "refresh",
-                icon: RefreshCw,
-                label: "Refresh",
-                tooltip: ["Refresh", askedPosts ? `${askedPosts} posts` : null]
-                  .filter(Boolean)
-                  .join(" · "),
-                loading: busyRow === row.rowId,
-                disabled: busyRow !== null,
-                onClick: () => void refresh(row),
-              }
-            : trackableOwn(row)
-              ? {
-                  id: "track",
-                  icon: UserPlus,
-                  label: "Track",
-                  tooltip: "Track as Own",
-                  loading: busyRow === row.rowId,
-                  disabled: busyRow !== null,
-                  onClick: () => void trackOwn(row),
-                }
-              : {
-                  id: "track",
-                  icon: UserPlus,
-                  label: "Track",
-                  tooltip: `${isSocialPlatform(row.platform) ? SOCIAL_PLATFORM_LABELS[row.platform] : row.platform} is not supported yet`,
-                  disabled: true,
-                  onClick: () => openTrack(),
-                },
-          ...(GUIDED_CAPTURE_PLATFORMS.has(row.platform) &&
-          (!row.profileId ||
-            refusedRows.has(row.rowId) ||
-            (row.status !== "active" && row.status !== "not_tracked"))
-            ? [
-                {
-                  id: "capture",
-                  icon: Globe,
-                  label: "Capture with my browser",
-                  tooltip:
-                    "Can't be read the usual way? Your own browser still can. Only your organization sees it.",
-                  disabled: busyRow !== null,
-                  onClick: () => openCapture(captureTarget(row)),
-                },
-              ]
-            : []),
-          // Whose account: the brand's own or a person's (a person's never counts toward the brand's KPIs).
-          ...(row.role === "own" && row.propertyId && !row.unassigned
-            ? [
-                {
-                  id: "owner",
-                  icon: UserCog,
-                  label: row.ownerKind === "person" ? "Owner: a person" : "Owner: the brand",
-                  tooltip: "Whose account is this?",
-                  disabled: busyRow !== null,
-                  onClick: () => setOwnerRow(row),
-                },
-              ]
-            : []),
-          ...(row.unassigned && row.profileId
-            ? [
-                {
-                  id: "add-to-brand",
-                  icon: Plus,
-                  label: "Add to brand",
-                  tooltip: `Show this account on ${brand.name}`,
-                  loading: busyRow === row.rowId,
-                  disabled: busyRow !== null,
-                  onClick: () => void addToBrand(row),
-                },
-              ]
-            : []),
-          ...(row.role === "own" && row.trackedAccountId && !row.unassigned && connections.of(row.platform)?.state === "connected"
-            ? [
-                {
-                  id: "sync-connection",
-                  icon: RefreshCw,
-                  label: "Refresh stats",
-                  tooltip: "Refresh private stats and posts",
-                  loading: busyRow === row.rowId,
-                  disabled: busyRow !== null,
-                  onClick: () => void syncConnection(row),
-                },
-              ]
-            : []),
-          ...(() => {
-            const c = row.role === "own" ? connections.of(row.platform) : null;
-            if (!c || !c.canConnect || c.state === "connected") return [];
-            const reconnect = c.state === "reconnect";
-            return [
-              {
-                id: reconnect ? "reconnect" : "connect",
-                icon: Link2,
-                label: reconnect ? "Reconnect" : "Connect",
-                tooltip: reconnect ? "Sign in again to restore private stats" : "Connect for private stats",
-                disabled: busyRow !== null,
-                onClick: () => startConnect(c),
-              },
-            ];
-          })(),
-          ...(row.trackedAccountId
-            ? [
-                {
-                  id: "remove",
-                  icon: Trash2,
-                  label: "Stop tracking",
-                  tone: "destructive" as const,
-                  disabled: busyRow !== null,
-                  onClick: () => void remove(row),
-                },
-              ]
-            : []),
-        ]}
+        rowActionDefs={rowActionDefs}
         emptyState={{
           title: "No accounts yet",
           description: "Paste a profile link",
