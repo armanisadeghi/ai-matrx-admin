@@ -461,12 +461,14 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
                     />
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {filteredIssues.length} issue
-                      {filteredIssues.length !== 1 ? "s" : ""} found
-                    </span>
-                  </div>
+                  {troubleshooting.issues.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600 dark:text-gray-400" data-troubleshooting-found="">
+                        {filteredIssues.length} issue
+                        {filteredIssues.length !== 1 ? "s" : ""} found
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -770,7 +772,8 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
                 })}
               </div>
 
-              {/* Totals: one quiet line; steps only when there are any */}
+              {/* Totals: one quiet line; steps only when there are any; nothing when the source named no issue (never "0 issues") */}
+              {troubleshooting.issues.length > 0 && (
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-3 text-sm text-muted-foreground" data-troubleshooting-totals="">
                 <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Target className="h-3.5 w-3.5" />{troubleshooting.issues.length} {troubleshooting.issues.length === 1 ? "issue" : "issues"}</span>
                 <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Wrench className="h-3.5 w-3.5" />{totalSolutions} {totalSolutions === 1 ? "solution" : "solutions"}</span>
@@ -778,6 +781,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
                   <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><CheckCircle2 className="h-3.5 w-3.5" />{completedSteps.size} of {totalSteps} steps done</span>
                 )}
               </div>
+              )}
             </div>
           </div>
         </div>

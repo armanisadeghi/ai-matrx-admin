@@ -88,3 +88,39 @@ it("reaching an action is not completing it; Mark as Completed is", () => {
   expect(completedCount()).toBe("1");
   expect(states.at(-1)?.completedPaths).toEqual(["fire"]);
 });
+
+// ── Review 5, G13 leftovers (2026-10-21): the two states the earlier fix shipped without a test ──
+
+it("after Mark as Completed the button reads Completed, is disabled, and is no longer the green call to action", () => {
+  act(() => button("Yes").click());
+  const before = button("Mark as Completed");
+  expect(before.disabled).toBe(false);
+  expect(before.hasAttribute("data-decision-completed")).toBe(false);
+  const callToActionLook = before.outerHTML.replace(/ title="[^"]*"| disabled=""| data-decision-completed=""/g, "").replace(/>[^<]*</g, "><");
+
+  act(() => before.click());
+  expect(host.querySelector('button[title="Mark as Completed"]')).toBeNull();
+  const done = button("Completed");
+  expect(done).not.toBeNull();
+  expect(done.disabled).toBe(true);
+  expect(done.hasAttribute("data-decision-completed")).toBe(true);
+  const doneLook = done.outerHTML.replace(/ title="[^"]*"| disabled=""| data-decision-completed=""/g, "").replace(/>[^<]*</g, "><");
+  expect(doneLook).not.toBe(callToActionLook);
+  // A second press changes nothing: still one completed action.
+  act(() => done.click());
+  expect(completedCount()).toBe("1");
+  expect(states.at(-1)?.completedPaths).toEqual(["fire"]);
+});
+
+it("the Decision Complete badge keeps its icon off the text (a gap-1.5 flex row, icon first)", () => {
+  expect(host.querySelector('[title="Decision Complete"]')).toBeNull(); // no action reached yet
+  act(() => button("Yes").click());
+  const badge = host.querySelector<HTMLElement>('[title="Decision Complete"]')!;
+  expect(badge).not.toBeNull();
+  const classes = badge.className.split(/\s+/);
+  expect(classes).toContain("gap-1.5");
+  expect(classes).not.toContain("gap-1");
+  expect(badge.firstElementChild?.querySelector("svg") ?? badge.firstElementChild).not.toBeNull();
+  expect(badge.firstElementChild?.textContent).toBe(""); // the icon comes first, the words after it
+  expect(badge.textContent).toContain("Decision Complete");
+});
