@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * check-reuse-index — verifies every repo path named in the Primitives Index
+ * check-reuse-index — verifies every repo path (and installed @ai-matrx/* specifier) named in the Primitives Index
  * of docs/reuse-first.md actually exists on disk.
  *
  * The index is the reuse-first doctrine's discovery surface (see CLAUDE.md →
@@ -21,6 +21,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { exitAfterDrain } from "./lib/exit-after-drain";
+import { resolvesInstalledAiMatrxSpecifier } from "./lib/ai-matrx-specifier";
 import { aliasTarget } from "./lib/source-roots.cjs";
 
 const INDEX_FILE = "docs/reuse-first.md";
@@ -58,6 +59,22 @@ let checked = 0;
 
 for (const raw of candidates) {
   let p = raw;
+  // Placeholder like `@ai-matrx/api/<domain>` names a family, not a path.
+  if (p.includes("<")) continue;
+  // Installed package specifier: resolve against node_modules exports, not the repo tree.
+  if (p.startsWith("@ai-matrx/")) {
+    const spec = p.split("#")[0].replace(/\/$/, "");
+    if (resolvesInstalledAiMatrxSpecifier(spec, repoRoot)) {
+      checked++;
+      continue;
+    }
+    if (aliasTarget(p) === null) {
+      checked++;
+      missing.push(raw);
+      continue;
+    }
+    // else: a repo-aliased specifier (@ai-matrx/chat/…) — check its source path below.
+  }
   p = aliasTarget(p) ?? p; // repo alias (@/, @host/, @ai-matrx/chat/)
   p = p.split("#")[0]; // strip anchors like file.ts#export
   if (p.endsWith("/*")) p = p.slice(0, -2); // glob → parent dir
