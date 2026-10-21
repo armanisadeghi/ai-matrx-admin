@@ -301,7 +301,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({
           className={`max-w-6xl mx-auto ${isFullScreen ? "bg-textured rounded-xl shadow-2xl h-full max-h-[95dvh] w-full flex flex-col overflow-hidden border border-border" : ""}`}
         >
           {isFullScreen && (
-            <div className="flex-shrink-0 px-3 py-2 border-b border-border flex items-center justify-between bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30">
+            <div className="flex-shrink-0 px-3 py-2 border-b border-border flex flex-wrap items-center justify-between gap-2 bg-muted/50">
               <div className="flex items-center gap-2 min-w-0">
                 <FolderOpen className="h-4 w-4 flex-shrink-0 text-violet-600 dark:text-violet-400" />
                 <h3 className="text-sm font-semibold text-foreground truncate">
@@ -581,7 +581,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({
               </div>
 
               {progressPercentage === 100 && totalResources > 0 && (
-                <div className="rounded-lg p-3 border border-green-300 dark:border-green-700 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30">
+                <div className="rounded-lg p-3 border border-green-300 dark:border-green-700">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-green-500 dark:bg-green-600 rounded-full flex-shrink-0">
                       <Award className="h-4 w-4 text-white" />

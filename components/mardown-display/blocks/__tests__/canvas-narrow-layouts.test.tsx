@@ -367,17 +367,18 @@ describe("recipe", () => {
     "2. Stir in the lemon.",
   ].join("\n");
 
-  it("wraps the quick stats two per row and keeps ingredients above the steps in a narrow pane", async () => {
+  it("draws the quick stats as one wrapping line (no tiles) and keeps ingredients above the steps in a narrow pane", async () => {
     const recipe = parseRecipeMarkdown(RECIPE);
     expect(recipe).not.toBeNull();
     await show(<RecipeViewer recipe={recipe!} />, null);
     const stats = () => container.querySelector("[data-testid='recipe-quick-stats']");
-    expect(stats()?.className).toContain("grid-cols-4");
+    expect(stats()?.className).toContain("flex-wrap");
+    expect(stats()?.className).not.toContain("grid");
+    for (const item of Array.from(stats()?.children ?? [])) expect(item.className).toContain("whitespace-nowrap");
     expect(container.innerHTML).toContain("@[550px]:grid-cols-2");
 
     await show(<RecipeViewer recipe={recipe!} />, NARROW);
-    expect(stats()?.className).toContain("grid-cols-2");
-    expect(stats()?.className).not.toContain("grid-cols-4");
+    expect(stats()?.className).toContain("flex-wrap");
     expect(container.innerHTML).not.toContain("@[550px]:grid-cols-2");
   });
 });
@@ -430,10 +431,11 @@ describe("structured info", () => {
 describe("tasks", () => {
   const TASKS = "- [ ] Weigh the truck\n  - [ ] Print the ticket\n- [x] Open the yard";
 
-  it("wraps the toolbar compactly and indents subtasks less in a narrow pane", async () => {
+  it("wraps the toolbar at every width and indents subtasks less in a narrow pane", async () => {
     await show(<TaskChecklist content={TASKS} hideTitle hideActions />, null);
     const toolbar = () => container.querySelector("[data-testid='task-checklist-toolbar']");
-    expect(toolbar()?.className).not.toContain("flex-wrap");
+    // Review 4 F3: a 375px note is not a "narrow" canvas, so the toolbar must wrap without it.
+    expect(toolbar()?.className).toContain("flex-wrap");
     expect(container.querySelector(".ml-8")).not.toBeNull();
 
     await show(<TaskChecklist content={TASKS} hideTitle hideActions />, NARROW);

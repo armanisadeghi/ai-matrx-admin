@@ -28,6 +28,16 @@ it("the tasks toolbar keeps each count whole", () => {
   expect(src).toMatch(/"whitespace-nowrap text-muted-foreground"[^\n]*\n\s*Main:/);
 });
 
-it("the recipe's four tiles stack two by two on a phone so a long time stays whole inside its tile", () => {
-  expect(read("cooking-recipes/cookingRecipeDisplay.tsx")).toContain('"grid-cols-2 sm:grid-cols-4"');
+it("the tasks toolbar ALWAYS wraps (review 4 F3: at 375px in a note `narrow` is false, so a narrow-only wrap ran the counts together)", () => {
+  const src = read("tasks/TaskChecklist.tsx");
+  const toolbar = tagWith(src, 'data-testid="task-checklist-toolbar"');
+  expect(toolbar).toMatch(/className="flex flex-wrap items-center gap-x-3 gap-y-1"/);
+  expect(toolbar).not.toMatch(/narrow &&/);
+  expect(src).toMatch(/"ml-auto flex items-center gap-2 whitespace-nowrap text-muted-foreground"/);
+});
+
+it("the recipe's stats are one wrapping line (review 4 F4: no tiles), each label with its value kept whole", () => {
+  const src = read("cooking-recipes/cookingRecipeDisplay.tsx");
+  expect(tagWith(src, 'data-testid="recipe-quick-stats"')).toContain("flex-wrap");
+  expect(src).toMatch(/<span key=\{key\} className="inline-flex items-center gap-1.5 whitespace-nowrap">/);
 });

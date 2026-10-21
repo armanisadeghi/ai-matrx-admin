@@ -26,7 +26,6 @@ import {
   ExternalLink,
   Bug,
   Wrench,
-  Zap,
   Clock,
   Star,
   Copy,
@@ -35,8 +34,6 @@ import {
   AlertCircle,
   Info,
   Target,
-  BookOpen,
-  Users,
   MessageSquare,
   Upload,
   Printer,
@@ -281,20 +278,12 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
     }, 2000);
   };
 
-  const getSeverityColor = (severity: string | undefined) => {
-    switch (severity) {
-      case "critical":
-        return "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800";
-      case "high":
-        return "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800";
-      case "medium":
-        return "text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800";
-      case "low":
-        return "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800";
-      default:
-        return "text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-950/30 border-gray-200 dark:border-gray-700";
-    }
-  };
+  const totalSolutions = troubleshooting.issues.reduce((sum, issue) => sum + issue.solutions.length, 0);
+  const totalSteps = troubleshooting.issues.reduce(
+    (sum, issue) => sum + issue.solutions.reduce((sSum, solution) => sSum + solution.steps.length, 0),
+    0,
+  );
+
 
   const getSeverityIcon = (severity: string | undefined) => {
     switch (severity) {
@@ -396,7 +385,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
           )}
           {/* Fullscreen Header */}
           {isFullScreen && (
-            <div className="flex-shrink-0 px-6 py-4 border-b border-border flex items-center justify-between bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30">
+            <div className="flex-shrink-0 px-6 py-4 border-b border-border flex flex-wrap items-center justify-between gap-2 bg-muted/50">
               <div className="flex items-center gap-3">
                 <HelpCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
                 <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">
@@ -411,14 +400,14 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
 
           {/* Scrollable Content */}
           <div className={isFullScreen ? "flex-1 overflow-y-auto" : ""}>
-            <div className="p-4 sm:p-6 space-y-6">
+            <div className="p-3 space-y-4">
               {/* Header Section */}
-              <div className="bg-gradient-to-br from-red-100 via-orange-50 to-yellow-100 dark:from-red-950/40 dark:via-orange-950/30 dark:to-yellow-950/40 rounded-xl p-4 sm:p-6">
+              <div className="space-y-3">
                 {(isFullScreen || troubleshooting.description) && (
-                <div className="flex flex-col gap-4 mb-6 @4xl:flex-row @4xl:items-start @4xl:justify-between">
+                <div className="flex flex-col gap-4 @4xl:flex-row @4xl:items-start @4xl:justify-between">
                   <div className="flex items-start gap-4">
                     {isFullScreen && (
-                      <div className="p-3 bg-red-500 dark:bg-red-600 rounded-xl shadow-md">
+                      <div className="p-3 bg-red-500 dark:bg-red-600 rounded-xl">
                         <HelpCircle className="h-8 w-8 text-white" />
                       </div>
                     )}
@@ -482,13 +471,12 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
               <div ref={blockContentRef} className="space-y-4">
                 {filteredIssues.map((issue) => {
                   const isExpanded = expandedIssues.has(issue.id);
-                  const severityColor = getSeverityColor(issue.severity);
                   const severityIcon = getSeverityIcon(issue.severity);
 
                   return (
                     <div
                       key={issue.id}
-                      className={`bg-textured rounded-xl shadow-lg border-2 ${severityColor.split(" ").slice(2).join(" ")} overflow-hidden`}
+                      className="overflow-hidden rounded-md border border-border"
                     >
                       {/* Issue Header */}
                       <Tile
@@ -497,7 +485,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
                         onClick={() => toggleIssue(issue.id)}
                         icon={severityIcon}
                         title={issue.symptom}
-                        line={[issue.description, issue.severity || "unknown", `${issue.solutions.length} solution${issue.solutions.length !== 1 ? "s" : ""}`].filter(Boolean).join(" · ")}
+                        line={[issue.description, issue.severity, `${issue.solutions.length} solution${issue.solutions.length !== 1 ? "s" : ""}`].filter(Boolean).join(" · ")}
                         end={isExpanded ? <ChevronDown /> : <ChevronRight />}
                       />
 
@@ -772,66 +760,13 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
                 })}
               </div>
 
-              {/* Summary Stats */}
-              <div className="grid md:grid-cols-4 gap-4">
-                <div className="bg-textured rounded-lg p-4 border-border">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Target className="h-5 w-5 text-red-600 dark:text-red-400" />
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">
-                      Total Issues
-                    </span>
-                  </div>
-                  <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                    {troubleshooting.issues.length}
-                  </div>
-                </div>
-
-                <div className="bg-textured rounded-lg p-4 border-border">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Wrench className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">
-                      Solutions
-                    </span>
-                  </div>
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                    {troubleshooting.issues.reduce(
-                      (sum, issue) => sum + issue.solutions.length,
-                      0,
-                    )}
-                  </div>
-                </div>
-
-                <div className="bg-textured rounded-lg p-4 border-border">
-                  <div className="flex items-center gap-3 mb-2">
-                    <CheckCircle2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">
-                      Completed
-                    </span>
-                  </div>
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    {completedSteps.size}
-                  </div>
-                </div>
-
-                <div className="bg-textured rounded-lg p-4 border-border">
-                  <div className="flex items-center gap-3 mb-2">
-                    <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">
-                      Total Steps
-                    </span>
-                  </div>
-                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                    {troubleshooting.issues.reduce(
-                      (sum, issue) =>
-                        sum +
-                        issue.solutions.reduce(
-                          (sSum, solution) => sSum + solution.steps.length,
-                          0,
-                        ),
-                      0,
-                    )}
-                  </div>
-                </div>
+              {/* Totals: one quiet line; steps only when there are any */}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-3 text-sm text-muted-foreground" data-troubleshooting-totals="">
+                <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Target className="h-3.5 w-3.5" />{troubleshooting.issues.length} {troubleshooting.issues.length === 1 ? "issue" : "issues"}</span>
+                <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Wrench className="h-3.5 w-3.5" />{totalSolutions} {totalSolutions === 1 ? "solution" : "solutions"}</span>
+                {totalSteps > 0 && (
+                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><CheckCircle2 className="h-3.5 w-3.5" />{completedSteps.size} of {totalSteps} steps done</span>
+                )}
               </div>
             </div>
           </div>

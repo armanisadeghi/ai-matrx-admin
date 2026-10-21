@@ -18,16 +18,46 @@ import { downloadFile } from "@ai-matrx/kit/download";
 
 const EXPORT_VERSION = '1.0.0';
 
+/** FNV-1a: a stable 32-bit number for a string. */
+function hashString(text: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+/** mulberry32: a small seeded generator, so the same seed always deals the same order. */
+function seededRandom(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 /**
- * Fisher-Yates shuffle algorithm for true randomization
+ * Fisher-Yates shuffle with a SEEDED generator. Review 4 F5: an unseeded shuffle re-dealt the options
+ * on every mount (Write, after a Controls edit, Read), so one quiz showed four different orders. The
+ * seed is the question itself, so a quiz is shuffled once and reads the same everywhere it is drawn.
  */
-function shuffleArray<T>(array: T[]): T[] {
+function shuffleArray<T>(array: T[], seed: number): T[] {
+  const random = seededRandom(seed);
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
+}
+
+/** The seed for one question's deal: its id, its text and its options. */
+export function questionShuffleSeed(question: Pick<OriginalQuestion, "id" | "question" | "options">): number {
+  return hashString([String(question.id), question.question, ...question.options].join("\u241f"));
 }
 
 /**
@@ -39,7 +69,7 @@ export function randomizeQuestion(question: OriginalQuestion): RandomizedQuestio
     originalIndex: index
   }));
 
-  const shuffled = shuffleArray(optionsWithIndices);
+  const shuffled = shuffleArray(optionsWithIndices, questionShuffleSeed(question));
   
   const shuffleMap = shuffled.map(item => item.originalIndex);
   const newCorrectAnswerIndex = shuffled.findIndex(

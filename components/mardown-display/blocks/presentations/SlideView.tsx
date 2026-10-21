@@ -212,7 +212,7 @@ export function SlideView({
         <SlideHeading slide={slide} c={c} fancy={fancy} big={big} eyebrow={eyebrow} />
         <div className={`mt-8 grid gap-5 ${stats.length >= 3 ? "grid-cols-3" : stats.length === 2 ? "grid-cols-2" : "grid-cols-1"}`}>
           {stats.map((s, i) => (
-            <div key={i} className="rounded-xl border border-border bg-card/60 p-5 text-center">
+            <div key={i} className="rounded-xl border border-border p-5 text-center">
               <div className={`font-bold ${big ? "text-5xl" : "text-3xl"}`} style={gradientText(c.primary, c.accent)}>
                 <SlideField path={`extra.stats.${i}.value`} text={s.value} placeholder="42%" />
               </div>

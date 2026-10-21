@@ -566,7 +566,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
           className={`max-w-6xl mx-auto ${isFullScreen ? "bg-textured rounded-xl shadow-2xl h-full max-h-[95dvh] w-full flex flex-col overflow-hidden border border-border" : ""}`}
         >
           {isFullScreen && (
-            <div className="flex-shrink-0 px-3 py-2 border-b border-border flex items-center justify-between bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30">
+            <div className="flex-shrink-0 px-3 py-2 border-b border-border flex flex-wrap items-center justify-between gap-2 bg-muted/50">
               <div className="flex items-center gap-2 min-w-0">
                 <Table className="h-4 w-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
                 <h3 className="text-sm font-semibold text-foreground truncate">
@@ -686,7 +686,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
               </div>
 
               {showScores && (
-                <div className="rounded-lg p-2 border border-yellow-200 dark:border-yellow-800/50 bg-gradient-to-r from-yellow-50/80 to-orange-50/80 dark:from-yellow-950/30 dark:to-orange-950/30">
+                <div className="rounded-lg p-2 border border-yellow-200 dark:border-yellow-800/50">
                   <h3 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
                     <Trophy className="h-3.5 w-3.5 text-yellow-500" />
                     Top performers
