@@ -1,6 +1,6 @@
 {
   "name": "app-matrx",
-  "version": "0.4.3426",
+  "version": "0.4.3428",
   "private": true,
   "scripts": {
     "check:dnd-context-id": "node scripts/check-dnd-context-id.mjs",
@@ -302,6 +302,8 @@
     "check:one-control": "node scripts/one-control/check-one-control.mjs",
     "check:property-rows": "node scripts/property-rows/check-property-rows.mjs",
     "check:property-rows:self-test": "node scripts/property-rows/check-property-rows.mjs --self-test",
+    "check:feature-pages": "node scripts/feature-pages/check-feature-pages.mjs",
+    "check:feature-pages:self-test": "node scripts/feature-pages/check-feature-pages.mjs --self-test",
     "check:page-top": "node scripts/page-top/check-page-top.mjs",
     "check:writing-boxes": "node scripts/writing-boxes/check-writing-boxes.mjs",
     "check:one-peek": "node scripts/one-peek/check-one-peek.mjs",

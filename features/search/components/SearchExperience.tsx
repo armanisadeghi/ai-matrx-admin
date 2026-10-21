@@ -968,6 +968,7 @@ function RunColumn({
       <ResultLine
         label={label}
         phase={run.phase}
+        empty={Boolean(run.empty)}
         hits={outcome ? hits : null}
         elapsedMs={outcome?.elapsedMs ?? null}
         unit={outcome?.result.__kind === "trend_report" ? "data points" : "results"}
@@ -1017,16 +1018,17 @@ function RunColumn({
         ))}
 
       {outcome && hits === 0 && run.phase === "done" && <NoResults />}
+      {!outcome && run.phase === "done" && run.empty && <NoResults message={run.empty} />}
     </section>
   );
 }
 
-function NoResults() {
+function NoResults({ message }: { message?: string }) {
   return (
     <div className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed border-border px-4 py-12 text-center">
       <SearchX className="mb-1 h-6 w-6 text-muted-foreground" />
       <p className="text-sm font-medium text-foreground">No results</p>
-      <p className="text-xs text-muted-foreground">Try other words, another tab or fewer options.</p>
+      <p className="text-xs text-muted-foreground">{message ?? "Try other words, another tab or fewer options."}</p>
     </div>
   );
 }
@@ -1034,6 +1036,8 @@ function NoResults() {
 function ResultLine({
   label,
   phase,
+  empty = false,
+  errorLabel,
   hits,
   elapsedMs,
   unit,
@@ -1041,6 +1045,7 @@ function ResultLine({
   trailing,
 }: {
   label: string;
+  empty?: boolean;
   phase: "idle" | "searching" | "working" | "uploading" | "done" | "error";
   hits: number | null;
   elapsedMs: number | null;
@@ -1064,8 +1069,10 @@ function ResultLine({
           ? phase === "uploading"
             ? "Uploading…"
             : "Searching…"
-          : phase === "error"
-            ? "Didn't come back"
+          : empty
+            ? "Nothing found"
+            : phase === "error"
+            ? (errorLabel ?? "Didn't come back")
             : hits !== null
               ? `${hits} ${hits === 1 ? (unit ?? "results").replace(/s$/, "") : (unit ?? "results")}${
                   elapsedMs !== null
@@ -1161,6 +1168,7 @@ function SpecialPanel({
         <ResultLine
           label={`@${special.handle} on ${where}`}
           phase={special.phase}
+          errorLabel={guest ? "Free account needed" : undefined}
           hits={special.outcome ? countResult("", special.outcome.result) : null}
           elapsedMs={special.outcome?.elapsedMs ?? null}
           inspect={inspect(special.outcome)}
@@ -1172,7 +1180,7 @@ function SpecialPanel({
         {special.phase === "working" && <SearchResultsSkeleton query={`@${special.handle}`} bare />}
         {special.phase === "error" && (
           <ErrorNotice
-            title={`Couldn't look up @${special.handle}`}
+            title={guest ? "Free account needed" : `Couldn't look up @${special.handle}`}
             message={special.error ?? "The lookup failed."}
             size="compact"
             actions={
@@ -1210,6 +1218,7 @@ function SpecialPanel({
         <ResultLine
           label="Search by image"
           phase={special.phase}
+          errorLabel={guest ? "Free account needed" : undefined}
           hits={null}
           elapsedMs={special.outcome?.elapsedMs ?? null}
           inspect={inspect(special.outcome)}
@@ -1235,7 +1244,9 @@ function SpecialPanel({
                   ? "Looking for where it appears…"
                   : special.phase === "done"
                     ? "Where it appears, and lookalikes"
-                    : "Didn't come back"}
+                    : guest
+                      ? "Free account needed"
+                      : "Didn't come back"}
             </div>
           </div>
         </div>
@@ -1247,7 +1258,7 @@ function SpecialPanel({
         )}
         {special.phase === "error" && (
           <ErrorNotice
-            title="Search by image didn't come back"
+            title={guest ? "Free account needed" : "Search by image didn't come back"}
             message={special.error ?? "The search failed."}
             size="compact"
             actions={guest ? <SignUpForMore /> : undefined}

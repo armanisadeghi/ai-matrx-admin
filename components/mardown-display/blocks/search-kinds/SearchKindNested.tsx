@@ -42,6 +42,7 @@ import {
 import {
   PlaceReviewBlock,
   PlaceReviewsBlock,
+  ReverseImageResultsBlock,
   SocialSearchResultsBlock,
   TrendReportBlock,
 } from "./insight-blocks";
@@ -92,6 +93,7 @@ const CANONICAL_COMPONENTS: Record<
   place_review: PlaceReviewBlock,
   place_reviews: PlaceReviewsBlock,
   social_search_results: SocialSearchResultsBlock,
+  reverse_image_search_results: ReverseImageResultsBlock,
   social_post: SocialPostBlock,
   social_profile: SocialProfileBlock,
 };

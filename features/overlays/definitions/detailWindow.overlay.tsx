@@ -14,7 +14,7 @@
 
 import { useCallback, useEffect } from "react";
 import { dispatchThunk, useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay } from "@ai-matrx/summon/boot";
 import type { DetailInstanceData } from "@ai-matrx/detail";
 import { openDetailSingleton } from "@/features/window-panels/detail/openDetailSingleton";
 import type { OverlayWire } from "./overlay-types";

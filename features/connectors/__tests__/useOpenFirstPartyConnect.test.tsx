@@ -37,7 +37,7 @@ const mockToastError = jest.fn();
 
 jest.mock("@/lib/redux/hooks", () => ({ useAppStore: () => mockStore, useAppSelector: () => "user-1" }));
 jest.mock("@/lib/redux/selectors/userSelectors", () => ({ selectUserId: () => "user-1" }));
-jest.mock("@ai-matrx/summon/open", () => ({ selectIsOverlayOpen: (state: { open: boolean }) => state.open }));
+jest.mock("@ai-matrx/summon/boot", () => ({ selectIsOverlayOpen: (state: { open: boolean }) => state.open }));
 jest.mock("@tanstack/react-query", () => ({
   useQueryClient: () => ({
     fetchQuery: async () => {

@@ -9,7 +9,7 @@
  */
 
 // The light path on `./open`: registering and reading a payload never loads the registry.
-import { peekHandle, registerHandleEntry, unregisterHandleEntry } from "@ai-matrx/summon/open";
+import { peekHandle, registerHandleEntry, unregisterHandleEntry } from "@ai-matrx/summon/boot-kit";
 import type { KnowledgeAttachTarget } from "@/features/knowledge/command-bar/attachTarget";
 import type { KnowledgeCommand } from "@/features/knowledge/command-bar/commands";
 

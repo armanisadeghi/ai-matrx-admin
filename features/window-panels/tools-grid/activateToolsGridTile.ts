@@ -1,4 +1,4 @@
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon/boot";
 import type { OverlayId } from "@ai-matrx/summon/open";
 // Plain-data metadata only (id / instance / windowId), fetched on the first click: the shell's nav
 // reaches this file on every route, and the index (every overlay's row, 27 KB) is first-load weight

@@ -14,7 +14,7 @@
 import { useEffect, useMemo } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import type { AppDispatch } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/boot";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "filePreviewWindow" as const;

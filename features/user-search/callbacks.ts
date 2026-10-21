@@ -1,12 +1,9 @@
-// Registration is summon's light path on `./open` (same pattern as the projects window callbacks):
+// Registration is summon's light path on `./boot-kit` (same pattern as the projects window callbacks):
 // the open hook and the field import this module, so the full handles registry must not ride it
 // into first load. Creating a group starts loading the registry; the window emits long after,
 // through the loaded registry (synchronously), so event order is unchanged.
-import {
-  newHandleId,
-  registerHandleEntry,
-  removeHandleGroup,
-} from "@ai-matrx/summon/open";
+import { newHandleId } from "@ai-matrx/summon/boot";
+import { registerHandleEntry, removeHandleGroup } from "@ai-matrx/summon/boot-kit";
 import type { UserSearchCandidate } from "./types";
 
 type Handles = typeof import("@ai-matrx/summon/handles");

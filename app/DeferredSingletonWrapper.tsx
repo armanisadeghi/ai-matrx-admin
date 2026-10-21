@@ -46,7 +46,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { registerIdleTask, useIdleReady } from "@ai-matrx/kit/idle-scheduler";
 import { useAppSelector } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/rootReducer";
-import { selectAnyOverlayTouched as selectAnyOverlayTouchedIn } from "@ai-matrx/summon/open";
+import { selectAnyOverlayTouched as selectAnyOverlayTouchedIn } from "@ai-matrx/summon/boot-kit";
 import {
   personPeekRequested,
   subscribePersonPeek,

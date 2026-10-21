@@ -7,12 +7,16 @@ import { useState } from "react";
 import { Copy, LifeBuoy } from "lucide-react";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { formatDurationMinutes } from "@ai-matrx/kit/format";
-import { Button, PropertyRow, SegmentedControl } from "@ai-matrx/design-system/controls";
+import { Button, PropertyRow, RegionSkeleton, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { ProInput } from "@/components/official/ProInput";
 import { MAIN_ORIGIN } from "@/lib/deployment/surfaces";
 import { Spinner } from "@/components/ui/loaders/Spinner";
 import { toast } from "@/lib/toast";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
+import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 import {
   Dialog,
   DialogContent,
@@ -21,8 +25,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  SUPPORT_SESSION_DEFAULT_MINUTES,
-  SUPPORT_SESSION_LENGTHS,
+  SUPPORT_SESSION_KNOBS,
+  knobMinuteChoices,
+  knobMinutes,
   createSupportSession,
   supportSessionLink,
 } from "./service";
@@ -33,10 +38,6 @@ export interface SupportSessionTarget {
   displayName: string | null;
 }
 
-const LENGTH_OPTIONS = SUPPORT_SESSION_LENGTHS.map((m) => ({
-  value: String(m),
-  label: formatDurationMinutes(m, { style: "long", abbreviate: true }),
-}));
 
 /** A local build keeps its own origin; every deployed build sends the person to the main app. */
 function linkOrigin(): string {
@@ -54,19 +55,25 @@ export function StartSupportSessionDialog({
 }) {
   const { copyText } = useClipboard({ notify: copyNotify });
   const [reason, setReason] = useState("");
-  const [minutes, setMinutes] = useState(String(SUPPORT_SESSION_DEFAULT_MINUTES));
+  const userId = useAppSelector(selectUserId);
+  const organizationId = useAppSelector(selectActiveOrganizationId);
+  const choices = knobMinuteChoices(useEffectiveKnob(organizationId, userId, SUPPORT_SESSION_KNOBS.lengthChoices));
+  const defaultMinutes = knobMinutes(useEffectiveKnob(organizationId, userId, SUPPORT_SESSION_KNOBS.defaultMinutes));
+  // The person's pick; until they pick, the knob's default length is the choice.
+  const [picked, setPicked] = useState<string | null>(null);
+  const minutes = picked ?? (defaultMinutes === null ? null : String(defaultMinutes));
   const [creating, setCreating] = useState(false);
   const [link, setLink] = useState<string | null>(null);
 
   const close = () => {
     setReason("");
-    setMinutes(String(SUPPORT_SESSION_DEFAULT_MINUTES));
+    setPicked(null);
     setLink(null);
     onClose();
   };
 
   const start = async () => {
-    if (!target) return;
+    if (!target || minutes === null) return;
     setCreating(true);
     try {
       const row = await createSupportSession({
@@ -107,15 +114,22 @@ export function StartSupportSessionDialog({
               autoFocus
               onSubmit={() => void start()}
               submitOnEnter
-              submitDisabled={creating || reason.trim().length < 3}
+              submitDisabled={creating || minutes === null || reason.trim().length < 3}
             />
-            <SegmentedControl
-              aria-label="Session length"
-              value={minutes}
-              onValueChange={setMinutes}
-              data={LENGTH_OPTIONS}
-              fill
-            />
+            {choices ? (
+              <SegmentedControl
+                aria-label="Session length"
+                value={minutes}
+                onValueChange={setPicked}
+                data={choices.map((m) => ({
+                  value: String(m),
+                  label: formatDurationMinutes(m, { style: "long", abbreviate: true }),
+                }))}
+                fill
+              />
+            ) : (
+              <RegionSkeleton />
+            )}
           </div>
         )}
         <DialogFooter>
@@ -134,7 +148,7 @@ export function StartSupportSessionDialog({
             <Button
               variant="primary"
               icon={creating ? <Spinner size="xs" className="text-current" /> : <LifeBuoy />}
-              disabled={creating || reason.trim().length < 3}
+              disabled={creating || minutes === null || reason.trim().length < 3}
               onClick={() => void start()}
             >
               Start

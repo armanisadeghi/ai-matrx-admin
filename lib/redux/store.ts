@@ -43,7 +43,7 @@ import { officeLookCookieMiddleware } from "@/lib/redux/preferences/officeLookCo
 import { tabOrganizationMiddleware } from "@/lib/organizations/tabOrganization";
 import { scopeTreeInvalidationMiddleware } from "@/features/scopes/redux/scopeTreeInvalidationMiddleware";
 import { scopeTreeDemandEnhancer } from "@/features/scopes/redux/scopeTreeDemand";
-import { createSummonGate } from "@ai-matrx/summon/open";
+import { createBootGate } from "@ai-matrx/summon/boot";
 import { bindOverlayStoreState, createStoreOverlayPorts } from "@/features/overlays/host/ports";
 import { reduxErrorCaptureMiddleware } from "@/lib/diagnostics/reduxErrorCaptureMiddleware";
 import {
@@ -227,7 +227,7 @@ export const makeStore = (initialState?: Partial<BaseReduxState>) => {
   const resolved = resolveStoreBootstrapState(initialState);
   const rootReducer = createSlimRootReducer();
   // @ai-matrx/summon: no slice or middleware until the core first loads (the gate queues and loads).
-  const summonGate = createSummonGate({ ports: createStoreOverlayPorts() });
+  const summonGate = createBootGate({ ports: createStoreOverlayPorts() });
   summonGate.attachReducer((reducers) => rootReducer.inject(reducers));
 
   const initialBootUserId =

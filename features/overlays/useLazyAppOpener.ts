@@ -11,7 +11,7 @@
 // loudly at the call (never a silent no-op).
 import { useContext, useMemo } from "react";
 import { ReactReduxContext } from "react-redux";
-import { lazyOpener, type LazyOpenerOptions } from "@ai-matrx/summon/open";
+import { lazyOpener, type LazyOpenerOptions } from "@ai-matrx/summon/boot-kit";
 import type { AppDispatch } from "@/lib/redux/store";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- any opener signature
