@@ -4,7 +4,7 @@
 // then the other built-ins, and a link to the whole gallery. Using one makes a NEW board from the template
 // and opens it (Use = duplicateBoard / the built-in's document), the same door as the gallery.
 
-import { LayoutTemplate, Sparkles } from "lucide-react";
+import { LayoutTemplate } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -109,7 +109,7 @@ export function StartTemplates({ starterKey }: { starterKey?: string }) {
             onClick={() => void use(t.key, t.title)}
             className="flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-sm text-foreground transition-colors hover:border-primary/60 hover:bg-primary/5 disabled:opacity-60"
           >
-            <Sparkles className="h-4 w-4 text-primary" />
+            <LayoutTemplate className="h-4 w-4 text-primary" />
             {busy === t.key ? "Making your board…" : t.title}
           </button>
         ))}
