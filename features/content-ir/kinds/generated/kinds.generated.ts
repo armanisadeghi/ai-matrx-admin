@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1637 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1638 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "a57c32e7207c";
+export const KIND_REGISTRY_FINGERPRINT = "1f2705e83d76";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -5119,7 +5119,7 @@ export interface JobHighlight {
 }
 
 /**
- * * Shared by 135 kinds (ad_creative, agent_assignment_batch_result, agent_build_assembly, agent_build_job_values, …).
+ * * Shared by 136 kinds (ad_creative, agent_assignment_batch_result, agent_build_assembly, agent_build_job_values, …).
  */
 export type JsonValue = unknown;
 
@@ -12571,6 +12571,31 @@ export interface AgentDefinition {
   custom_tools?: string[];
   context_policies?: AgentDefinitionContextPolicy[];
   variable_definitions?: AgentDefinitionVariable[];
+}
+
+/**
+ * What ``agent.definition.apply`` saves: the whole assembly, which pass of the build this save is
+ * (``revision`` = the state's send-backs) and, for a new version or fork, the agent it changes.
+ * Lane 3A-e: the node declared ``agent_build_assembly`` as its input kind after its input became
+ * this wrapper, so the input gate refused every save ("'agent_id', 'assembly', 'revision' were unexpected").
+ *  *
+ *  * Kind `agent_definition_apply_input` (registry v1).
+ */
+export interface AgentDefinitionApplyInput {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_definition_apply_input";
+  /**
+   * new_version / fork: the agent the build changes.
+   */
+  agent_id?: string | null;
+  assembly: AgentBuildAssembly;
+  /**
+   * agent_build_state.send_backs: which pass of the build this save is. A retry of the same pass writes nothing new; a later pass writes a new version of the same agent.
+   */
+  revision: number;
+  change_note?: string;
 }
 
 /**
@@ -64097,6 +64122,7 @@ export type GeneratedKindSlug =
   | "agent_build_state"
   | "agent_debrief"
   | "agent_definition"
+  | "agent_definition_apply_input"
   | "agent_factory.build_job.offer"
   | "agent_factory.build_request.offer"
   | "agent_factory.contract_step.offer"
@@ -65737,6 +65763,7 @@ export interface KindPayloadBySlug {
   "agent_build_state": AgentBuildState;
   "agent_debrief": AgentDebrief;
   "agent_definition": AgentDefinition;
+  "agent_definition_apply_input": AgentDefinitionApplyInput;
   "agent_factory.build_job.offer": AgentFactoryBuildJobOffer;
   "agent_factory.build_request.offer": AgentFactoryBuildRequestOffer;
   "agent_factory.contract_step.offer": AgentFactoryContractStepOffer;
@@ -67381,6 +67408,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "agent_build_state",
   "agent_debrief",
   "agent_definition",
+  "agent_definition_apply_input",
   "agent_factory.build_job.offer",
   "agent_factory.build_request.offer",
   "agent_factory.contract_step.offer",
