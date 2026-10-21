@@ -1,0 +1,3743 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0579",
+  "version": 1,
+  "title": "Data and AI Consultancy Desk",
+  "description": "Data and AI engagements from discovery to handover, with deliverables, evals and margin.",
+  "forWho": "Data, analytics and AI consultancies",
+  "icon": {
+    "emoji": "🧠"
+  },
+  "cover": {
+    "url": "gallery:tech-circuit-board",
+    "offsetY": 50
+  },
+  "category": "tech",
+  "tags": [
+    "data consulting",
+    "ai consultancy",
+    "analytics",
+    "machine learning",
+    "engagements",
+    "consultants"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-data-ai-consultancy-desk",
+    "catalogueId": "SP0579",
+    "useCase": "The managing partner of Quillmark Analytics uses this to see every engagement's stage, which deliverables are waiting on the client and the delivery margin on each.",
+    "industry": "software_it",
+    "vertical": "Data and AI consultancy",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Quillmark Analytics",
+      "describes": "A four-person data and AI consultancy doing data audits, dashboards, forecasting models and AI assistants for mid-size organizations.",
+      "address": {
+        "line1": "500 Foundry Row",
+        "city": "Denver",
+        "region": "CO",
+        "postalCode": "80202",
+        "country": "US"
+      },
+      "phone": "(303) 555-0130",
+      "website": "quillmarkanalytics.net",
+      "email": "hello@quillmarkanalytics.net",
+      "timezone": "America/Denver"
+    },
+    "cleanupTag": "use-case:spaces-data-ai-consultancy-desk",
+    "tables": [
+      {
+        "token": "engagement",
+        "name": "Engagements",
+        "labelSingular": "Engagement",
+        "labelPlural": "Engagements",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "briefcase",
+        "titleField": "eng_name",
+        "describes": "Every client engagement from discovery to handover: offering, fee, data access and delivery margin.",
+        "subject": "thing",
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "team_member": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Handed over"
+            ],
+            "filled": [
+              "handed_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Engagement plan",
+            "values": {
+              "status": "Discovery",
+              "eng_name": "New engagement"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The business question"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One sentence the sponsor would say, and the number that moves if we succeed."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Discovery"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Sponsor and day-to-day owner named"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Systems and data sources listed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Personal data and rules that apply written down"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Scope"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What is in, what is out, and what done means for each deliverable."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Handover"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Runbook and training delivered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Client team can run it without us"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Start and planned end are agreed in the statement of work; Handed over on is stamped when the client accepts the handover.",
+        "fields": [
+          {
+            "key": "eng_name",
+            "label": "Engagement",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Discovery",
+              "Proposal sent",
+              "Data audit",
+              "Pilot",
+              "Go or no-go",
+              "Production",
+              "Handed over",
+              "Lost"
+            ],
+            "choiceColors": {
+              "Discovery": "slate",
+              "Proposal sent": "blue",
+              "Data audit": "violet",
+              "Pilot": "amber",
+              "Go or no-go": "orange",
+              "Production": "teal",
+              "Handed over": "green",
+              "Lost": "red"
+            },
+            "required": true,
+            "default": "Discovery",
+            "statusGroups": {
+              "Discovery": "todo",
+              "Proposal sent": "todo",
+              "Data audit": "in_progress",
+              "Pilot": "in_progress",
+              "Go or no-go": "in_progress",
+              "Production": "in_progress",
+              "Handed over": "done",
+              "Lost": "done"
+            }
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "offering",
+            "label": "Offering",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Data audit",
+              "Analytics dashboard",
+              "Forecasting model",
+              "AI assistant on company documents",
+              "Data platform build",
+              "Advisory retainer"
+            ],
+            "choiceColors": {
+              "Data audit": "violet",
+              "Analytics dashboard": "blue",
+              "Forecasting model": "teal",
+              "AI assistant on company documents": "pink",
+              "Data platform build": "amber",
+              "Advisory retainer": "slate"
+            }
+          },
+          {
+            "key": "lead",
+            "label": "Engagement lead",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "fee_type",
+            "label": "Fee type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Fixed fee",
+              "Time and materials",
+              "Monthly retainer"
+            ],
+            "choiceColors": {
+              "Fixed fee": "blue",
+              "Time and materials": "amber",
+              "Monthly retainer": "teal"
+            }
+          },
+          {
+            "key": "value",
+            "label": "Contract value (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "start_on",
+            "label": "Start",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "end_on",
+            "label": "Planned end",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "handed_on",
+            "label": "Handed over on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "access",
+            "label": "Data access granted",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pii",
+            "label": "Personal data in scope",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "hours",
+            "label": "Hours logged",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "time_entries",
+            "pick": "hours",
+            "agg": "sum"
+          },
+          {
+            "key": "cost",
+            "label": "Delivery cost (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "time_entries",
+            "pick": "entry_cost",
+            "agg": "sum",
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "margin",
+            "label": "Delivery margin (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Stage} = \"Lost\", {Stage} = \"Discovery\", {Stage} = \"Proposal sent\"), \"\", {Contract value (USD)} - {Delivery cost (USD)})"
+          },
+          {
+            "key": "margin_pct",
+            "label": "Delivery margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Stage} = \"Lost\", {Stage} = \"Discovery\", {Stage} = \"Proposal sent\"), \"\", IF({Contract value (USD)} > 0, ROUND({Delivery margin (USD)} / {Contract value (USD)} * 100, 0), 0))"
+          },
+          {
+            "key": "open_deliv",
+            "label": "Deliverables open",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "deliverables",
+            "pick": "dlv_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Not started",
+                "In progress",
+                "Client review",
+                "Rework"
+              ]
+            }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "hand_btn",
+            "label": "Mark handed over",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "eng_handover"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "eng_take"
+            }
+          },
+          {
+            "key": "dlv_btn",
+            "label": "Add a deliverable",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "deliverable",
+              "template": "Deliverable brief",
+              "prefill": {
+                "engagement": "@row"
+              }
+            }
+          },
+          {
+            "key": "time_btn",
+            "label": "Log time",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "time_entry",
+              "template": "Time entry",
+              "prefill": {
+                "engagement": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "en-1",
+            "values": {
+              "eng_name": "Demand forecast for 40 stores",
+              "status": "Handed over",
+              "client": "cl-1",
+              "offering": "Forecasting model",
+              "lead": "tm-2",
+              "fee_type": "Fixed fee",
+              "value": 68000,
+              "start_on": "@today-5m",
+              "end_on": "@today-2m",
+              "handed_on": "@today-2m",
+              "access": true,
+              "pii": false
+            }
+          },
+          {
+            "key": "en-2",
+            "values": {
+              "eng_name": "Data readiness audit, claims data",
+              "status": "Handed over",
+              "client": "cl-2",
+              "offering": "Data audit",
+              "lead": "tm-1",
+              "fee_type": "Fixed fee",
+              "value": 24000,
+              "start_on": "@today-3m",
+              "end_on": "@today-2m",
+              "handed_on": "@today-7w",
+              "access": true,
+              "pii": true
+            }
+          },
+          {
+            "key": "en-3",
+            "values": {
+              "eng_name": "Policy assistant pilot for the service desk",
+              "status": "Pilot",
+              "client": "cl-2",
+              "offering": "AI assistant on company documents",
+              "lead": "tm-3",
+              "fee_type": "Fixed fee",
+              "value": 55000,
+              "start_on": "@today-5w",
+              "end_on": "@today+3w",
+              "access": true,
+              "pii": true,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "en-4",
+            "values": {
+              "eng_name": "Route cost dashboard",
+              "status": "Production",
+              "client": "cl-3",
+              "offering": "Analytics dashboard",
+              "lead": "tm-4",
+              "fee_type": "Time and materials",
+              "value": 36000,
+              "start_on": "@today-8w",
+              "end_on": "@today+2w",
+              "access": true,
+              "pii": false
+            }
+          },
+          {
+            "key": "en-5",
+            "values": {
+              "eng_name": "Warehouse and pipelines rebuild",
+              "status": "Data audit",
+              "client": "cl-4",
+              "offering": "Data platform build",
+              "lead": "tm-2",
+              "fee_type": "Time and materials",
+              "value": 120000,
+              "start_on": "@today-2w",
+              "end_on": "@today+4m",
+              "access": false,
+              "pii": false,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "en-6",
+            "values": {
+              "eng_name": "Scrap-rate prediction, go or no-go",
+              "status": "Go or no-go",
+              "client": "cl-5",
+              "offering": "Forecasting model",
+              "lead": "tm-2",
+              "fee_type": "Fixed fee",
+              "value": 42000,
+              "start_on": "@today-7w",
+              "end_on": "@today+1w",
+              "access": true,
+              "pii": false
+            }
+          },
+          {
+            "key": "en-7",
+            "values": {
+              "eng_name": "Monthly analytics advisory",
+              "status": "Production",
+              "client": "cl-1",
+              "offering": "Advisory retainer",
+              "lead": "tm-1",
+              "fee_type": "Monthly retainer",
+              "value": 72000,
+              "start_on": "@today-4m",
+              "end_on": "@today+8m",
+              "access": true,
+              "pii": false
+            }
+          },
+          {
+            "key": "en-8",
+            "values": {
+              "eng_name": "Grant reporting dashboards",
+              "status": "Proposal sent",
+              "client": "cl-6",
+              "offering": "Analytics dashboard",
+              "lead": "tm-4",
+              "fee_type": "Fixed fee",
+              "value": 28000,
+              "start_on": "@today+3w",
+              "end_on": "@today+11w"
+            }
+          },
+          {
+            "key": "en-9",
+            "values": {
+              "eng_name": "Chat assistant for the patient portal",
+              "status": "Lost",
+              "client": "cl-2",
+              "offering": "AI assistant on company documents",
+              "lead": "tm-3",
+              "fee_type": "Fixed fee",
+              "value": 90000,
+              "start_on": "@today-2m",
+              "end_on": "@today+2m"
+            }
+          }
+        ]
+      },
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building-2",
+        "titleField": "client_name",
+        "describes": "The organizations you work for, their industry and data maturity, and the work won with them.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "client_status": "Prospect",
+              "client_name": "New client"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Who"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Executive sponsor, day-to-day owner, IT and security contacts."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Their data"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Where it lives, who owns it, and how mature it is."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client_status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Prospect",
+              "Past client",
+              "Lost"
+            ],
+            "choiceColors": {
+              "Active": "green",
+              "Prospect": "blue",
+              "Past client": "slate",
+              "Lost": "red"
+            }
+          },
+          {
+            "key": "industry",
+            "label": "Industry",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Retail",
+              "Health insurance",
+              "Logistics",
+              "Manufacturing",
+              "Public sector",
+              "Finance"
+            ],
+            "choiceColors": {
+              "Retail": "pink",
+              "Health insurance": "teal",
+              "Logistics": "orange",
+              "Manufacturing": "amber",
+              "Public sector": "violet",
+              "Finance": "blue"
+            }
+          },
+          {
+            "key": "maturity",
+            "label": "Data maturity",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Spreadsheets and exports",
+              "Warehouse in place",
+              "Modern data stack"
+            ],
+            "choiceColors": {
+              "Spreadsheets and exports": "red",
+              "Warehouse in place": "amber",
+              "Modern data stack": "green"
+            }
+          },
+          {
+            "key": "sponsor",
+            "label": "Executive sponsor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "sponsor_email",
+            "label": "Sponsor email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "won",
+            "label": "Engagements won",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "engagements",
+            "pick": "eng_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Data audit",
+                "Pilot",
+                "Go or no-go",
+                "Production",
+                "Handed over"
+              ]
+            }
+          },
+          {
+            "key": "live",
+            "label": "Engagements live",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "engagements",
+            "pick": "eng_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Data audit",
+                "Pilot",
+                "Go or no-go",
+                "Production"
+              ]
+            }
+          },
+          {
+            "key": "lifetime",
+            "label": "Contracted value (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "engagements",
+            "pick": "value",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Data audit",
+                "Pilot",
+                "Go or no-go",
+                "Production",
+                "Handed over"
+              ]
+            },
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "new_eng",
+            "label": "Start an engagement",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "engagement",
+              "template": "Engagement plan",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "mail_btn",
+            "label": "Email sponsor",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{sponsor_email}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "cl-1",
+            "values": {
+              "client_name": "Harbor and Hearth Home Stores",
+              "client_status": "Active",
+              "industry": "Retail",
+              "maturity": "Warehouse in place",
+              "sponsor": "Delia Fontaine, COO",
+              "sponsor_email": "dfontaine@harborhearth.net"
+            }
+          },
+          {
+            "key": "cl-2",
+            "values": {
+              "client_name": "Bluestem Health Plan",
+              "client_status": "Active",
+              "industry": "Health insurance",
+              "maturity": "Warehouse in place",
+              "sponsor": "Raj Malhotra, VP Member Services",
+              "sponsor_email": "rmalhotra@bluestemhealth.net"
+            }
+          },
+          {
+            "key": "cl-3",
+            "values": {
+              "client_name": "Copperline Freight Systems",
+              "client_status": "Active",
+              "industry": "Logistics",
+              "maturity": "Modern data stack",
+              "sponsor": "Aoife Brennan, CFO",
+              "sponsor_email": "abrennan@copperlinefreight.net"
+            }
+          },
+          {
+            "key": "cl-4",
+            "values": {
+              "client_name": "Northvale Credit Union",
+              "client_status": "Active",
+              "industry": "Finance",
+              "maturity": "Spreadsheets and exports",
+              "sponsor": "Marcus Webb, CEO",
+              "sponsor_email": "mwebb@northvalecu.net"
+            }
+          },
+          {
+            "key": "cl-5",
+            "values": {
+              "client_name": "Ironleaf Fabrication",
+              "client_status": "Active",
+              "industry": "Manufacturing",
+              "maturity": "Spreadsheets and exports",
+              "sponsor": "Greta Solberg, Plant manager",
+              "sponsor_email": "gsolberg@ironleaffab.net"
+            }
+          },
+          {
+            "key": "cl-6",
+            "values": {
+              "client_name": "Riverbend County Health Department",
+              "client_status": "Prospect",
+              "industry": "Public sector",
+              "maturity": "Spreadsheets and exports",
+              "sponsor": "Dr. Nia Coleman, Director",
+              "sponsor_email": "ncoleman@riverbendcounty.net"
+            }
+          }
+        ]
+      },
+      {
+        "token": "deliverable",
+        "name": "Deliverables",
+        "labelSingular": "Deliverable",
+        "labelPlural": "Deliverables",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-check",
+        "titleField": "dlv_name",
+        "describes": "What each engagement hands the client: audits, gap maps, dashboards, models, evaluation sets and runbooks.",
+        "subject": "thing",
+        "independentOf": {
+          "engagement": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Accepted"
+            ],
+            "filled": [
+              "accepted_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Deliverable brief",
+            "values": {
+              "status": "Not started",
+              "dlv_name": "New deliverable"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Accepted when"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The test the client will apply, in their words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checks before review"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Numbers reconciled to a source the client trusts"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Evaluation run and score recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Limits and known failure cases written down"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Due is planned; Accepted on is stamped when the client signs off.",
+        "fields": [
+          {
+            "key": "dlv_name",
+            "label": "Deliverable",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not started",
+              "In progress",
+              "Client review",
+              "Rework",
+              "Accepted"
+            ],
+            "choiceColors": {
+              "Not started": "slate",
+              "In progress": "blue",
+              "Client review": "violet",
+              "Rework": "orange",
+              "Accepted": "green"
+            },
+            "required": true,
+            "default": "Not started",
+            "statusGroups": {
+              "Not started": "todo",
+              "In progress": "in_progress",
+              "Client review": "in_progress",
+              "Rework": "in_progress",
+              "Accepted": "done"
+            }
+          },
+          {
+            "key": "engagement",
+            "label": "Engagement",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "engagement",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Data audit report",
+              "Gap map",
+              "Dashboard",
+              "Model",
+              "Evaluation set",
+              "Runbook",
+              "Training session"
+            ],
+            "choiceColors": {
+              "Data audit report": "violet",
+              "Gap map": "slate",
+              "Dashboard": "blue",
+              "Model": "teal",
+              "Evaluation set": "pink",
+              "Runbook": "amber",
+              "Training session": "green"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "accepted_on",
+            "label": "Accepted on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "eval_score",
+            "label": "Evaluation score (%)",
+            "parityType": "percent",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "acceptance",
+            "label": "Accepted when",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ok_btn",
+            "label": "Mark accepted",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "dlv_accepted"
+            }
+          },
+          {
+            "key": "dlv_take",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "dlv_take_it"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "dv-1",
+            "values": {
+              "dlv_name": "Store-week forecast model and backtest",
+              "status": "Accepted",
+              "engagement": "en-1",
+              "kind": "Model",
+              "due_on": "@today-10w",
+              "accepted_on": "@today-9w",
+              "eval_score": 91,
+              "acceptance": "Weekly error under 12 percent on the last two quarters held out."
+            }
+          },
+          {
+            "key": "dv-2",
+            "values": {
+              "dlv_name": "Claims data quality report",
+              "status": "Accepted",
+              "engagement": "en-2",
+              "kind": "Data audit report",
+              "due_on": "@today-8w",
+              "accepted_on": "@today-7w",
+              "acceptance": "Every table scored for completeness, freshness and ownership."
+            }
+          },
+          {
+            "key": "dv-3",
+            "values": {
+              "dlv_name": "Use-case gap map",
+              "status": "Accepted",
+              "engagement": "en-2",
+              "kind": "Gap map",
+              "due_on": "@today-8w",
+              "accepted_on": "@today-7w"
+            }
+          },
+          {
+            "key": "dv-4",
+            "values": {
+              "dlv_name": "Policy question evaluation set, 200 questions",
+              "status": "Client review",
+              "engagement": "en-3",
+              "kind": "Evaluation set",
+              "due_on": "@today-2d",
+              "eval_score": 84,
+              "acceptance": "Service desk leads agree the answers to 200 real questions.",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "dv-5",
+            "values": {
+              "dlv_name": "Pilot assistant for 15 agents",
+              "status": "In progress",
+              "engagement": "en-3",
+              "kind": "Model",
+              "due_on": "@today+2w",
+              "eval_score": 78,
+              "acceptance": "At least 85 percent correct on the evaluation set; every answer cites the policy page.",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "dv-6",
+            "values": {
+              "dlv_name": "Route cost dashboard, v1",
+              "status": "Rework",
+              "engagement": "en-4",
+              "kind": "Dashboard",
+              "due_on": "@today",
+              "acceptance": "Finance can reconcile cost per mile to the ledger within 2 percent."
+            }
+          },
+          {
+            "key": "dv-7",
+            "values": {
+              "dlv_name": "Source system inventory",
+              "status": "In progress",
+              "engagement": "en-5",
+              "kind": "Data audit report",
+              "due_on": "@today+4d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "dv-8",
+            "values": {
+              "dlv_name": "Scrap-rate pilot results and recommendation",
+              "status": "Not started",
+              "engagement": "en-6",
+              "kind": "Runbook",
+              "due_on": "@today+6d"
+            }
+          },
+          {
+            "key": "dv-9",
+            "values": {
+              "dlv_name": "Dashboard training for store managers",
+              "status": "Not started",
+              "engagement": "en-7",
+              "kind": "Training session",
+              "due_on": "@today+3w"
+            }
+          }
+        ]
+      },
+      {
+        "token": "time_entry",
+        "name": "Time entries",
+        "labelSingular": "Time entry",
+        "labelPlural": "Time entries",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "timer",
+        "titleField": "entry_name",
+        "describes": "Hours by consultant and engagement at cost, so every engagement shows its true delivery margin.",
+        "subject": "thing",
+        "independentOf": {
+          "engagement": "Either record can be created or change status before the other.",
+          "team_member": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "Time entry",
+            "values": {
+              "billing": "Unbilled",
+              "entry_name": "New time entry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What was done"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One line the client would recognise on an invoice."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "entry_name",
+            "label": "Work done",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "billing",
+            "label": "Billing",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Unbilled",
+              "Invoiced",
+              "Non-billable"
+            ],
+            "choiceColors": {
+              "Unbilled": "amber",
+              "Invoiced": "green",
+              "Non-billable": "slate"
+            }
+          },
+          {
+            "key": "engagement",
+            "label": "Engagement",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "engagement",
+            "relationMax": 1
+          },
+          {
+            "key": "consultant",
+            "label": "Consultant",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "worked_on",
+            "label": "Logged on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "hours",
+            "label": "Hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 400
+              }
+            ],
+            "description": "One entry per block of work; long blocks are logged as a total."
+          },
+          {
+            "key": "cost_rate",
+            "label": "Cost per hour (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 400
+              }
+            ]
+          },
+          {
+            "key": "entry_cost",
+            "label": "Cost (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND({Hours} * {Cost per hour (USD)}, 2)"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "te-1",
+            "values": {
+              "entry_name": "Feature engineering and backtests",
+              "billing": "Invoiced",
+              "engagement": "en-1",
+              "consultant": "tm-2",
+              "worked_on": "@today-3m",
+              "hours": 96,
+              "cost_rate": 95
+            }
+          },
+          {
+            "key": "te-2",
+            "values": {
+              "entry_name": "Store manager interviews",
+              "billing": "Invoiced",
+              "engagement": "en-1",
+              "consultant": "tm-1",
+              "worked_on": "@today-4m",
+              "hours": 22,
+              "cost_rate": 120
+            }
+          },
+          {
+            "key": "te-3",
+            "values": {
+              "entry_name": "Profiling claims tables",
+              "billing": "Invoiced",
+              "engagement": "en-2",
+              "consultant": "tm-1",
+              "worked_on": "@today-10w",
+              "hours": 58,
+              "cost_rate": 120
+            }
+          },
+          {
+            "key": "te-4",
+            "values": {
+              "entry_name": "Policy library cleanup and chunking",
+              "billing": "Unbilled",
+              "engagement": "en-3",
+              "consultant": "tm-3",
+              "worked_on": "@today-3w",
+              "hours": 64,
+              "cost_rate": 105
+            }
+          },
+          {
+            "key": "te-5",
+            "values": {
+              "entry_name": "Evaluation set drafting with service leads",
+              "billing": "Unbilled",
+              "engagement": "en-3",
+              "consultant": "tm-4",
+              "worked_on": "@today-1w",
+              "hours": 30,
+              "cost_rate": 85
+            }
+          },
+          {
+            "key": "te-6",
+            "values": {
+              "entry_name": "Dashboard build and finance walkthrough",
+              "billing": "Invoiced",
+              "engagement": "en-4",
+              "consultant": "tm-4",
+              "worked_on": "@today-5w",
+              "hours": 120,
+              "cost_rate": 85
+            }
+          },
+          {
+            "key": "te-7",
+            "values": {
+              "entry_name": "Reconciliation fixes after review",
+              "billing": "Unbilled",
+              "engagement": "en-4",
+              "consultant": "tm-4",
+              "worked_on": "@today-3d",
+              "hours": 18,
+              "cost_rate": 85
+            }
+          },
+          {
+            "key": "te-8",
+            "values": {
+              "entry_name": "Source system interviews",
+              "billing": "Unbilled",
+              "engagement": "en-5",
+              "consultant": "tm-2",
+              "worked_on": "@today-6d",
+              "hours": 26,
+              "cost_rate": 95
+            }
+          },
+          {
+            "key": "te-9",
+            "values": {
+              "entry_name": "Scrap data join and baseline model",
+              "billing": "Invoiced",
+              "engagement": "en-6",
+              "consultant": "tm-2",
+              "worked_on": "@today-4w",
+              "hours": 110,
+              "cost_rate": 95
+            }
+          },
+          {
+            "key": "te-10",
+            "values": {
+              "entry_name": "Monthly advisory sessions",
+              "billing": "Invoiced",
+              "engagement": "en-7",
+              "consultant": "tm-1",
+              "worked_on": "@today-2w",
+              "hours": 48,
+              "cost_rate": 120
+            }
+          },
+          {
+            "key": "te-11",
+            "values": {
+              "entry_name": "Discovery call and proposal",
+              "billing": "Non-billable",
+              "engagement": "en-8",
+              "consultant": "tm-4",
+              "worked_on": "@today-1w",
+              "hours": 9,
+              "cost_rate": 85
+            }
+          },
+          {
+            "key": "te-12",
+            "values": {
+              "entry_name": "Proposal and security questionnaire",
+              "billing": "Non-billable",
+              "engagement": "en-9",
+              "consultant": "tm-3",
+              "worked_on": "@today-2m",
+              "hours": 14,
+              "cost_rate": 105
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each engagement is for one client.",
+        "fromTable": "engagement",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "engagements"
+      },
+      {
+        "describes": "Each engagement has one lead.",
+        "fromTable": "engagement",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "engagements_led"
+      },
+      {
+        "describes": "Each deliverable belongs to one engagement.",
+        "fromTable": "deliverable",
+        "fromField": "engagement",
+        "toTable": "engagement",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "deliverables"
+      },
+      {
+        "describes": "Each time entry is for one engagement.",
+        "fromTable": "time_entry",
+        "fromField": "engagement",
+        "toTable": "engagement",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "time_entries"
+      },
+      {
+        "describes": "Each time entry is one consultant's.",
+        "fromTable": "time_entry",
+        "fromField": "consultant",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "time_logged"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Lena Kristoffersen",
+              "role": "Managing partner",
+              "work_email": "lena@quillmarkanalytics.net",
+              "mobile": "(303) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Omar Haddad",
+              "role": "Lead data scientist",
+              "work_email": "omar@quillmarkanalytics.net",
+              "mobile": "(303) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Priya Natarajan",
+              "role": "AI engineer",
+              "work_email": "priya@quillmarkanalytics.net",
+              "mobile": "(303) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Callum Reid",
+              "role": "Analytics engineer",
+              "work_email": "callum@quillmarkanalytics.net",
+              "mobile": "(303) 555-0143",
+              "start_date": "@today-7y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "project_inquiry",
+        "name": "Project inquiry",
+        "describes": "How a prospective client describes the problem.",
+        "audience": "staff",
+        "table": "engagement",
+        "fields": [
+          {
+            "fieldKey": "eng_name",
+            "ask": "What problem do you want data or AI to solve?",
+            "required": true
+          },
+          {
+            "fieldKey": "client",
+            "ask": "Which organization is this for?",
+            "required": true
+          },
+          {
+            "fieldKey": "offering",
+            "ask": "Which kind of help sounds closest?"
+          },
+          {
+            "fieldKey": "start_on",
+            "ask": "When would you like to start?"
+          }
+        ],
+        "submitLabel": "Send the inquiry",
+        "confirmation": "Thanks. A partner will reply within two business days to book a discovery call."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "eng_handover",
+        "table": "engagement",
+        "name": "Mark handed over",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Handed over"
+          },
+          {
+            "field": "handed_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "eng_take",
+        "table": "engagement",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "dlv_accepted",
+        "table": "deliverable",
+        "name": "Mark accepted",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Accepted"
+          },
+          {
+            "field": "accepted_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "dlv_take_it",
+        "table": "deliverable",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_engagement",
+        "name": "All engagements",
+        "table": "engagement",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "engagement_board",
+        "name": "Engagements board",
+        "table": "engagement",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "engagement_mine",
+        "name": "My engagements",
+        "table": "engagement",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "client_status"
+      },
+      {
+        "token": "all_deliverable",
+        "name": "All deliverables",
+        "table": "deliverable",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "deliverable_board",
+        "name": "Deliverables board",
+        "table": "deliverable",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "deliverable_cal",
+        "name": "Deliverables calendar",
+        "table": "deliverable",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "deliverable_over",
+        "name": "Overdue",
+        "table": "deliverable",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "In progress",
+            "Client review",
+            "Rework"
+          ]
+        }
+      },
+      {
+        "token": "deliverable_week",
+        "name": "Due this week",
+        "table": "deliverable",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "In progress",
+            "Client review",
+            "Rework"
+          ]
+        }
+      },
+      {
+        "token": "deliverable_next7",
+        "name": "Next 7 days",
+        "table": "deliverable",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "In progress",
+            "Client review",
+            "Rework"
+          ]
+        }
+      },
+      {
+        "token": "deliverable_mine",
+        "name": "My deliverables",
+        "table": "deliverable",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_time_entry",
+        "name": "All time entries",
+        "table": "time_entry",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "time_entry_board",
+        "name": "Time entries board",
+        "table": "time_entry",
+        "kind": "kanban",
+        "groupBy": "billing"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Data and AI Consultancy Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "engagement",
+          "describes": "Every client engagement from discovery to handover: offering, fee, data access and delivery margin."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many deliverables are waiting on client review?",
+        "whyItMatters": "Deliverables in review hold up the next invoice.",
+        "expect": {
+          "table": "deliverable",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Client review"
+          },
+          "answer": 1,
+          "unit": "deliverables"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open engagements.",
+        "action": {
+          "kind": "open",
+          "surface": "engagement_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "engagement_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open deliverables.",
+        "action": {
+          "kind": "open",
+          "surface": "deliverable_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "deliverable_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-21",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "quillmarkanalytics.net",
+        "inbox-mail.net",
+        "harborhearth.net",
+        "bluestemhealth.net",
+        "copperlinefreight.net",
+        "northvalecu.net",
+        "ironleaffab.net",
+        "riverbendcounty.net"
+      ],
+      "fictionalStreets": [
+        "Foundry Row"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "data-ai-consultancy-desk",
+      "parent": null,
+      "title": "Data and AI Consultancy Desk",
+      "icon": {
+        "emoji": "🧠"
+      },
+      "cover": {
+        "url": "gallery:tech-circuit-board",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Start Monday on the Dashboard: deliverables due this week, anything in client review or rework, and delivery margin by offering. Each engagement moves Discovery, Proposal sent, Data audit, Pilot, Go or no-go, Production, Handed over. Log time from the engagement so its margin stays true."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:discovery-to-pilot"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:handover-and-evals"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Engagements"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every client engagement from discovery to handover: offering, fee, data access and delivery margin."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "engagement",
+              "view": "engagement_board"
+            },
+            "inline": true,
+            "title": "Engagements",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "enga-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "fee_type",
+                  "value",
+                  "start_on",
+                  "end_on",
+                  "handed_on",
+                  "access",
+                  "pii",
+                  "hours",
+                  "cost",
+                  "margin",
+                  "margin_pct",
+                  "open_deliv",
+                  "assigned_to",
+                  "hand_btn",
+                  "take_btn",
+                  "dlv_btn",
+                  "time_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "enga-t",
+                "name": "All engagements",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "enga-m",
+                "name": "My engagements",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "enga-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The organizations you work for, their industry and data maturity, and the work won with them."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "clie-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "client_status",
+                "hiddenFields": [
+                  "sponsor",
+                  "sponsor_email",
+                  "won",
+                  "live",
+                  "new_eng",
+                  "mail_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "clie-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "clie-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deliverables"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What each engagement hands the client: audits, gap maps, dashboards, models, evaluation sets and runbooks."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deliverable",
+              "view": "deliverable_board"
+            },
+            "inline": true,
+            "title": "Deliverables",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "deli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "accepted_on",
+                  "eval_score",
+                  "acceptance",
+                  "owner",
+                  "ok_btn",
+                  "dlv_take",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "deli-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "status",
+                  "due_on",
+                  "eval_score",
+                  "acceptance",
+                  "owner",
+                  "ok_btn",
+                  "dlv_take",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "deli-t",
+                "name": "All deliverables",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "deli-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "In progress",
+                    "Client review",
+                    "Rework"
+                  ]
+                }
+              },
+              {
+                "id": "deli-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "In progress",
+                    "Client review",
+                    "Rework"
+                  ]
+                }
+              },
+              {
+                "id": "deli-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "In progress",
+                    "Client review",
+                    "Rework"
+                  ]
+                }
+              },
+              {
+                "id": "deli-m",
+                "name": "My deliverables",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "deli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Time entries"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Hours by consultant and engagement at cost, so every engagement shows its true delivery margin."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "time_entry",
+              "view": "time_entry_board"
+            },
+            "inline": true,
+            "title": "Time entries",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "time-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "billing",
+                "hiddenFields": [
+                  "hours",
+                  "cost_rate",
+                  "entry_cost",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "time-t",
+                "name": "All time entries",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "time-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "data-ai-consultancy-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Data and AI projects fail in predictable places: the data was not what anyone thought, nobody agreed what good looks like, or the client cannot run the thing after you leave. This workspace is built around those three risks."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The four tables"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Engagements",
+              "bold": true
+            },
+            {
+              "text": ": one row per piece of client work. Stages follow how this work really runs: Discovery, Proposal sent, Data audit, Pilot, a Go or no-go decision, Production, then Handed over. Each shows fee type, contract value, whether data access is granted and whether personal data is in scope, plus hours, cost and delivery margin rolled up from time entries."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": ": industry, data maturity and the executive sponsor, with engagements won and contracted value."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Deliverables",
+              "bold": true
+            },
+            {
+              "text": ": audit reports, gap maps, dashboards, models, evaluation sets, runbooks and training. Each has Accepted when written in the client's words and, for models and assistants, an Evaluation score."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Time entries",
+              "bold": true
+            },
+            {
+              "text": ": hours by consultant at their cost per hour, unbilled, invoiced or non-billable."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A normal week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: the managing partner reads Live engagements and the Waiting on the client list. Anything in review over five days gets a call to the sponsor."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Each consultant logs time daily from the engagement with Log time."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every model or assistant deliverable has its evaluation run before Client review, with the score recorded."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "At the Go or no-go stage the sponsor decides with the pilot numbers in front of them; write the decision in the engagement page."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Friday: unbilled time is checked against fee type and invoiced."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who owns what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Area"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Discovery, proposals and sponsors"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Managing partner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Models, forecasts and evaluations"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lead data scientist"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Assistants and document pipelines"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "AI engineer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Dashboards and data pipelines"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Analytics engineer"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Personal data"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When Personal data in scope is ticked, data stays in the client's environment, access is named per person, and the handover includes how to remove our access."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "data-ai-consultancy-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "engagement",
+                      "view": "all_engagement"
+                    },
+                    "inline": true,
+                    "title": "Engagements by stage",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Engagements by stage",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "engagement",
+                      "view": "all_engagement"
+                    },
+                    "inline": true,
+                    "title": "Contract value by offering",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Contract value by offering",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "offering",
+                          "op": "sum",
+                          "field": "value"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "deliverable",
+                      "view": "all_deliverable"
+                    },
+                    "inline": true,
+                    "title": "Deliverables by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Deliverables by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "time_entry",
+                      "view": "all_time_entry"
+                    },
+                    "inline": true,
+                    "title": "Hours by billing",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Hours by billing",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "billing",
+                          "op": "sum",
+                          "field": "hours"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "client",
+                      "view": "all_client"
+                    },
+                    "inline": true,
+                    "title": "Clients by data maturity",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Clients by data maturity",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "maturity",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "engagement",
+                      "view": "all_engagement"
+                    },
+                    "inline": true,
+                    "title": "Delivery margin by fee type",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Delivery margin by fee type",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "fee_type",
+                          "op": "sum",
+                          "field": "margin"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Waiting on the client"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deliverable",
+              "view": "all_deliverable"
+            },
+            "inline": true,
+            "title": "Waiting on the client",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl0",
+                "name": "Client review",
+                "layout": "list",
+                "filters": {
+                  "status": "Client review"
+                }
+              }
+            ],
+            "activeViewId": "dl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Back for rework"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deliverable",
+              "view": "all_deliverable"
+            },
+            "inline": true,
+            "title": "Back for rework",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl1",
+                "name": "Rework",
+                "layout": "list",
+                "filters": {
+                  "status": "Rework"
+                }
+              }
+            ],
+            "activeViewId": "dl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Live engagements"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "engagement",
+              "view": "all_engagement"
+            },
+            "inline": true,
+            "title": "Live engagements",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl2",
+                "name": "Live",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Data audit",
+                    "Pilot",
+                    "Go or no-go",
+                    "Production"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Delivery margin (USD and %)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Contract value less hours logged at cost; blank before the work is won"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fixed-fee work under 45 percent needs a scope talk"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Evaluation score (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Share of the agreed test cases the model or assistant gets right"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Never hand over below the score written in Accepted when"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Deliverables open"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Not started, in progress, in review or rework"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two in rework on one engagement means the acceptance test was unclear"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Contracted value (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Engagements won with each client"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Your best clients get first look at new offerings"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "discovery-to-pilot",
+      "parent": "data-ai-consultancy-desk",
+      "title": "From discovery to a go or no-go",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most failed AI projects were never set up to succeed: the question was vague, the data was thinner than promised, or nobody said what result would be good enough. This page is the path every engagement takes before real money is spent."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Discovery (one to two weeks)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write the business question in one sentence the sponsor agrees with, for example \"Cut stock-outs in the top 200 products by a third.\""
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Name the number that will move and how it is measured today."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "List the systems, tables and documents involved, who owns them, and whether personal data is in them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Data audit (two to three weeks)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Check"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What we look for"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Completeness"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Missing values, missing months, missing stores"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Freshness"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How late the data arrives after the event"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Ownership"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A named person who can explain each table"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fit"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Whether the data can answer the business question at all"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The audit ends with a gap map: each gap, its effect on the question, and what fixing it costs. Sometimes the right answer is to stop here and fix the data first."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pilot (four to eight weeks, fixed fee)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "One use case, on real data, with the people who will use it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Agree Accepted when before building: for a model, the error on held-out data; for an assistant, the share of an agreed question set answered correctly with a source."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Build the evaluation set with the client's experts, not from our own guesses."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Report the score honestly, including the cases it gets wrong."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The go or no-go meeting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Score against the agreed bar"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cost to run in production, per month"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Who on the client side will own it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "What it would take to reach the bar if it fell short"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A no-go is a good outcome when the evidence says so. Write it down and close the engagement cleanly."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "handover-and-evals",
+      "parent": "data-ai-consultancy-desk",
+      "title": "Evaluations and handover",
+      "icon": {
+        "emoji": "🧪"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A model or assistant is only finished when the client's team can check it and run it without us. This page covers how we evaluate before review and what a complete handover contains."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Evaluation before every client review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Run the agreed evaluation set on the exact version being delivered."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record the score in Evaluation score on the deliverable."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read every failure, not just the total. Group them: missing source document, wrong number, out-of-date policy, misunderstood question."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Fix the biggest group first and re-run. Never tune on the evaluation set itself; keep a held-back slice nobody looks at until the end."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move the deliverable to Client review only when the score meets Accepted when."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What we tell the client"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Item"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Example"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Score and what it means"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "87 of 100 policy questions answered correctly with a citation"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Known weak spots"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Questions about plans retired before last year"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cost to run"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Monthly hosting and usage at current volume"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "How to re-test"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The evaluation set and the command or button that runs it"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Handover checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Runbook: how to run, monitor, re-train or update the documents"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Evaluation set and how to re-run it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Dashboards or alerts for drift and errors"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Training session with the people who will own it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Our access removed, listed person by person"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Sponsor sign-off, then press Mark handed over"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After handover"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Offer a short advisory retainer for the first months. The usual questions are about drift: the business changed, the data changed, and the score quietly fell. A monthly re-run of the evaluation set catches it early."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Worked example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The service desk assistant pilot scored 78 percent against an 85 percent bar. Grouping failures showed most came from three outdated policy pages; once the client replaced them, the score rose to 84 and the next round targets the remaining phrasing gaps."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
