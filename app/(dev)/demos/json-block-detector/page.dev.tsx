@@ -48,6 +48,7 @@ import {
   type BlockSchemaRegistry,
   type KindSample,
 } from "@/features/content-ir/registry/schema-source-kind-tables";
+import { TREE_INDENT_PX } from "@/components/official/topic-tree/geometry";
 import { SchemaConvertTab } from "./SchemaConvertTab";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
@@ -254,7 +255,7 @@ function KindEventRow({
   const path = "path" in event ? (event.path ?? []) : [];
   const depth = kindDepth(path);
   const palette = depthStyle(depth);
-  const indent = depth * 12;
+  const indent = depth * TREE_INDENT_PX;
   const meta = `@ ${pathLabel(path)} · ${event.at}`;
 
   const rowCls = (extra?: string) =>

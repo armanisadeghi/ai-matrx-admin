@@ -28,6 +28,7 @@
  * Open it with ONE call: `useWatchAiRun()(…)` (features/overlays/definitions/aiWatchWindow.overlay.tsx).
  */
 
+import { treeIndentStyle } from "@/components/official/topic-tree/geometry";
 import { useEffect, useRef, useState } from "react";
 import EverythingFeed from "./EverythingFeed";
 import { KIND_KEY } from "@ai-matrx/content-ir";
@@ -574,7 +575,7 @@ function LaneAnswer({ requestId, recorded, live }: { requestId: string; recorded
           </div>
           <dl className="mt-1 flex flex-col gap-0.5">
             {rows.map((r, i) => (
-              <div key={i} style={{ paddingLeft: r.depth * 12 }} className="flex gap-2">
+              <div key={i} style={treeIndentStyle(r.depth)} className="flex gap-2">
                 {r.label ? <dt className="shrink-0 text-muted-foreground">{r.label}</dt> : null}
                 {r.text !== null ? <dd className="min-w-0 break-words text-foreground"><RowText text={r.text} /></dd> : null}
               </div>
@@ -610,7 +611,7 @@ function RecordedLaneAnswer({ text }: { text: string }) {
       {rows ? (
         <dl className="flex flex-col gap-0.5" data-testid="ai-watch-recorded-value">
           {rows.map((r, i) => (
-            <div key={i} style={{ paddingLeft: r.depth * 12 }} className="flex gap-2">
+            <div key={i} style={treeIndentStyle(r.depth)} className="flex gap-2">
               {r.label ? <dt className="shrink-0 text-muted-foreground">{r.label}</dt> : null}
               {r.text !== null ? <dd className="min-w-0 break-words text-foreground"><RowText text={r.text} /></dd> : null}
             </div>
@@ -868,9 +869,9 @@ function ContinuationTurn({ frame, title }: { frame: MandateRunData; title?: str
       </div>
       {view.input != null ? <Block label="Turn input" value={view.input} open /> : null}
       {context.length === 0 ? (
-        <div className="text-muted-foreground">No context on this turn</div>
+        <div className="text-muted-foreground">No context values on this turn</div>
       ) : (
-        context.map(([key, value]) => <Block key={key} label={`${key} · context`} value={value} />)
+        context.map(([key, value]) => <Block key={key} label={`${key} · context values`} value={value} />)
       )}
     </Section>
   );

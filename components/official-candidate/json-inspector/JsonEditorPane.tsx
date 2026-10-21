@@ -50,6 +50,7 @@ export function JsonEditorPane({
   value,
   onUpdate,
   readOnly = false,
+  // tree-indent-ok: JSON text tab width in spaces for a code editor, not a tree
   indent = 2,
   className,
 }: JsonEditorPaneProps) {

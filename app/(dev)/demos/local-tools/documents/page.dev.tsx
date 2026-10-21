@@ -8,14 +8,10 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import {
   AlertTriangle,
   Check,
-  ChevronDown,
-  ChevronRight,
   Clock,
   Edit3,
   FilePlus,
   FileText,
-  Folder,
-  FolderOpen,
   FolderPlus,
   GitBranch,
   HardDrive,
@@ -32,6 +28,11 @@ import {
   Upload,
   X,
 } from "lucide-react";
+import {
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import { LocalToolsPageShell } from "../_lib/LocalToolsPageShell";
 import { useMatrxLocalContext } from "../_lib/MatrxLocalContext";
 import type {
@@ -214,36 +215,20 @@ function FolderTree({
     return (
       <div key={folder.id}>
         <div
-          className={`flex items-center gap-1 px-2 py-1 rounded cursor-pointer text-xs group transition-colors ${
+          className={`flex items-center gap-1 pr-2 h-7 rounded cursor-pointer type-body group transition-colors ${
             isSelected
               ? "bg-accent text-accent-foreground"
               : "hover:bg-accent/50"
           }`}
-          style={{ paddingLeft: `${depth * 12 + 8}px` }}
+          style={treeIndentStyle(depth)}
           onClick={() => onSelect(folder.id)}
         >
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              toggle(folder.id);
-            }}
-            className="p-0.5 shrink-0"
-          >
-            {folder.children && folder.children.length > 0 ? (
-              isExpanded ? (
-                <ChevronDown className="w-3 h-3" />
-              ) : (
-                <ChevronRight className="w-3 h-3" />
-              )
-            ) : (
-              <span className="w-3 h-3 inline-block" />
-            )}
-          </button>
-          {isExpanded ? (
-            <FolderOpen className="w-3.5 h-3.5 text-yellow-500 shrink-0" />
-          ) : (
-            <Folder className="w-3.5 h-3.5 text-yellow-500 shrink-0" />
-          )}
+          <TreeDisclosure
+            expandable={!!folder.children && folder.children.length > 0}
+            expanded={isExpanded}
+            onToggle={() => toggle(folder.id)}
+          />
+          <TreeFolderIcon open={isExpanded} />
 
           {renamingId === folder.id ? (
             <input

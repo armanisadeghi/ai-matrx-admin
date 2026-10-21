@@ -12,6 +12,7 @@ import {
   ArrowRight,
   ArrowUp,
   ChevronRight,
+  FileText,
   IndentDecrease,
   IndentIncrease,
   Plus,
@@ -30,6 +31,11 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { SimpleTooltip } from "@/components/matrx/Tooltip";
 import { cn } from "@/lib/utils";
+import {
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 
 import type { MermaidEditorAction } from "../workbench/useMermaidEditor";
 import type { MermaidOp } from "@ai-matrx/rich-content/mermaid/model/ops";
@@ -155,9 +161,18 @@ function InlineTextEdit({
   );
 }
 
-function RowShell({ children, className }: { children: React.ReactNode; className?: string }) {
+function RowShell({
+  children,
+  className,
+  style,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   return (
     <div
+      style={style}
       className={cn(
         "group/row flex min-h-9 items-center gap-1 rounded-md px-1.5 hover:bg-muted/60",
         className,
@@ -369,21 +384,26 @@ function MindmapNodeRow({
   const [collapsed, setCollapsed] = useState(false);
   return (
     <div>
-      <RowShell className={cn(depth > 0 && "ml-[calc(var(--mm-depth)*1.25rem)]")}>
-        <span style={{ width: depth * 20 }} className="shrink-0" />
-        <SimpleTooltip text={collapsed ? "Expand" : "Collapse"}>
-          <button
-            type="button"
-            aria-label={collapsed ? "Expand" : "Collapse"}
-            onClick={() => setCollapsed((v) => !v)}
-            className={cn(
-              "rounded p-0.5 text-muted-foreground hover:bg-muted",
-              node.children.length === 0 && "invisible",
-            )}
-          >
-            <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", !collapsed && "rotate-90")} />
-          </button>
-        </SimpleTooltip>
+      <RowShell style={treeIndentStyle(depth)}>
+        {node.children.length === 0 ? (
+          <TreeDisclosure expandable={false} />
+        ) : (
+          <SimpleTooltip text={collapsed ? "Expand" : "Collapse"}>
+            <button
+              type="button"
+              aria-label={collapsed ? "Expand" : "Collapse"}
+              onClick={() => setCollapsed((v) => !v)}
+              className="flex h-4 w-4 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted"
+            >
+              <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", !collapsed && "rotate-90")} />
+            </button>
+          </SimpleTooltip>
+        )}
+        {node.children.length === 0 ? (
+          <FileText aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
+        ) : (
+          <TreeFolderIcon open={!collapsed} />
+        )}
         <InlineTextEdit
           value={node.label}
           ariaLabel={`Rename ${node.label}`}

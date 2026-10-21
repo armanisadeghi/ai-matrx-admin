@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronRight, Edit, Save, X, Plus, Trash } from 'lucide-react';
+import { Braces, Brackets, Edit, Save, X, Plus, Trash } from 'lucide-react';
 import { Input } from "@ai-matrx/design-system";
 import type { JsonEditorItemProps } from "./types";
 import { jsonUtils } from './newUitls';
 import type { JsonValue, JsonObject } from '@/types/json';
+import {
+    TreeDisclosure,
+    treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 /**
@@ -66,7 +70,6 @@ const JsonEditorItem: React.FC<JsonEditorItemProps> = ({
     );
 
     const isObject = typeof value === 'object' && value !== null;
-    const indent = depth * 12;
 
     const handleEdit = () => {
         if (readOnly) return;
@@ -137,20 +140,19 @@ const JsonEditorItem: React.FC<JsonEditorItemProps> = ({
                 "group type-body",
                 error && "bg-destructive/10 rounded-sm"
             )}
-            style={{marginLeft: `${indent}px`}}
         >
             {/* Rest of the JSX remains largely the same */}
-            <div className="flex items-center py-0.5 hover:bg-muted/50 rounded-sm -ml-1 pl-1">
-                {isObject && (
-                    <button
-                        onClick={onToggle}
-                        className="p-0.5 text-muted-foreground hover:text-foreground"
-                    >
-                        {isExpanded ? 
-                            <ChevronDown className="h-3 w-3"/> : 
-                            <ChevronRight className="h-3 w-3"/>
-                        }
-                    </button>
+            <div
+                className="flex items-center gap-1 min-h-7 hover:bg-muted/50 rounded-sm"
+                style={treeIndentStyle(depth)}
+            >
+                <TreeDisclosure expandable={isObject} expanded={isExpanded} onToggle={onToggle} />
+                {isObject ? (
+                    Array.isArray(value)
+                        ? <Brackets className="h-4 w-4 shrink-0 text-muted-foreground"/>
+                        : <Braces className="h-4 w-4 shrink-0 text-muted-foreground"/>
+                ) : (
+                    <span aria-hidden="true" className="h-4 w-4 shrink-0"/>
                 )}
 
                 {isEditing ? (
@@ -233,7 +235,7 @@ const JsonEditorItem: React.FC<JsonEditorItemProps> = ({
             </div>
 
             {error && (
-                <div className="text-destructive type-secondary mt-0.5 ml-4">{error.message} <ErrorAlchemyMenu /></div>
+                <div className="text-destructive type-secondary mt-0.5" style={treeIndentStyle(depth + 2)}>{error.message} <ErrorAlchemyMenu /></div>
             )}
 
             {isObject && isExpanded && (

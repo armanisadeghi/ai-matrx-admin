@@ -15,6 +15,7 @@ interface JsonDisplayProps {
 const JsonDisplay: React.FC<JsonDisplayProps> = ({
   data,
   className,
+  // tree-indent-ok: JSON.stringify spacing in a text block, not a tree
   indentLevel = 2,
   maxHeight,
 }) => {
