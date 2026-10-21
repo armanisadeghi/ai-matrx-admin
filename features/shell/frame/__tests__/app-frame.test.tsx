@@ -203,8 +203,8 @@ describe("the app grid is one Tab stop", () => {
     const tiles = [...grid.querySelectorAll<HTMLElement>("[data-mf-tile]")];
     expect(tiles.length).toBeGreaterThan(5);
     const stops = [...grid.querySelectorAll<HTMLElement>("a, button")].filter((el) => el.tabIndex === 0);
-    // The Edit button and exactly one tile.
-    expect(stops.map((el) => el.textContent?.trim())).toEqual(["Edit", expect.stringContaining("Chat")]);
+    // Exactly one tile, and the Edit favorites button under the grid.
+    expect(stops.map((el) => el.textContent?.trim())).toEqual([expect.stringContaining("Chat"), "Edit favorites"]);
 
     act(() => tiles[0].focus());
     act(() => {
@@ -485,8 +485,10 @@ describe("product marks (owner, 2026-10-20: Google's way)", () => {
     const marks = [...document.querySelectorAll<HTMLElement>('[role="group"][aria-label="Products"] [data-mf-mark]')];
     expect(marks.length).toBeGreaterThan(5);
     for (const m of marks) {
-      expect(m.className).toContain("size-12");
-      expect(m.querySelector("svg")!.getAttribute("class")).toContain("size-10");
+      expect(m.className).toContain("size-8");
+      // Whole pixels on the SVG itself: 32px, stroke 1.75, no scaling.
+      expect(m.querySelector("svg")!.getAttribute("width")).toBe("32");
+      expect(m.querySelector("svg")!.getAttribute("stroke-width")).toBe("1.75");
       expect(m.className).not.toMatch(/\bbg-|rounded/);
     }
     const css = readFileSync(join(__dirname, "..", "frame.css"), "utf8");
@@ -522,5 +524,52 @@ describe("the lineup follows the owner's tree (common-docs/projects/app-frame/TR
     const intelligence = PRODUCTS.find((p) => p.id === "intelligence")!;
     expect(memory.icon).not.toBe(intelligence.icon);
     expect(PRODUCTS.filter((p) => p.icon === memory.icon)).toHaveLength(1);
+  });
+});
+
+describe("the app grid is Google-tight (owner, 2026-10-20 fourth round)", () => {
+  const nine = ["chat", "memory", "workspace", "docs", "drive", "data", "crm", "intelligence", "meet"];
+  async function openGrid(props: Partial<AppFrameProps> = {}) {
+    mount(base({ form: "desktop", favorites: nine, ...props }));
+    act(() => q<HTMLButtonElement>('[aria-label="All products"]')!.click());
+    await nextFrame();
+    return document.querySelector<HTMLElement>('[role="group"][aria-label="Products"]')!;
+  }
+  const names = (root: Element) =>
+    [...root.querySelectorAll("[data-mf-mark]")].map((m) => m.parentElement!.querySelector(".mf-grid-name")!.textContent);
+
+  it("A: nine favorites in the card, then every other product once, in family order, with no heading rows", async () => {
+    const grid = await openGrid();
+    const card = grid.querySelector('[aria-label="Your favorites"]')!;
+    expect(card.className).toContain("grid-cols-3");
+    expect(names(card)).toEqual(["Chat", "Memory", "Workspace", "Docs", "Drive", "Data", "CRM", "Intelligence", "Meet"]);
+    const list = names(grid.querySelector('[aria-label="All products"]')!);
+    const expected = PRODUCT_FAMILIES.flatMap((f) => PRODUCTS.filter((p) => p.family === f.id && !nine.includes(p.id))).map((p) => p.name);
+    expect(list).toEqual(expected);
+    // Nothing appears twice in the popover, and no family heading rows.
+    const all = names(grid);
+    expect(new Set(all).size).toBe(PRODUCTS.length);
+    expect(all).toHaveLength(PRODUCTS.length);
+    expect(grid.querySelectorAll(".type-label, .mf-grid-divider")).toHaveLength(0);
+    // Tight cells: 80px tall, one-line names.
+    for (const tile of grid.querySelectorAll("[data-mf-mark]")) {
+      expect(tile.parentElement!.className).toContain("h-20");
+      expect(tile.parentElement!.querySelector(".mf-grid-name")!.className).toContain("truncate");
+    }
+  });
+
+  it("B: a hairline with a tiny family name between families, still no heading rows and no repeats", async () => {
+    const grid = await openGrid({ gridLook: "B" });
+    const labels = [...grid.querySelectorAll(".mf-grid-divider")].map((d) => d.textContent);
+    expect(labels.length).toBeGreaterThan(3);
+    expect(labels).not.toContain("Memory"); // Memory's only tile is a favorite here: no empty family
+    expect(names(grid)).toHaveLength(PRODUCTS.length);
+  });
+
+  it("C: the same layout, each mark on a soft same-hue shape", async () => {
+    const grid = await openGrid({ gridLook: "C" });
+    const marks = [...grid.querySelectorAll("[data-mf-mark]")];
+    expect(marks.every((m) => m.className.includes("mf-mark-filled"))).toBe(true);
+    expect(marks[0].querySelector("svg")!.getAttribute("width")).toBe("24");
   });
 });

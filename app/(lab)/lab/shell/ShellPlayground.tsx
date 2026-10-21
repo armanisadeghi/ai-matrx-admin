@@ -10,6 +10,7 @@ import { Button, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { AppFrame } from "@/features/shell/frame/AppFrame";
 import type { FrameHeaderEdge } from "@/features/shell/frame/AppFrame";
+import type { FrameGridLook } from "@/features/shell/frame/AppGrid";
 import { PRODUCTS, PRODUCT_FAMILIES, productById } from "@/features/shell/frame/products";
 import { defaultPageActions, placeholderHeaderTools } from "@/features/shell/frame/SheetHeader";
 import type { FrameCrumb, FrameProduct, FrameVariant } from "@/features/shell/frame/types";
@@ -89,7 +90,18 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
   const [showOwner, setShowOwner] = useState(false);
   const loaded = useLoadedModules();
   const [headerEdge, setHeaderEdge] = useState<FrameHeaderEdge>("fade");
-  const [favorites, setFavorites] = useState<string[]>(["chat", "crm", "docs"]);
+  const [gridLook, setGridLook] = useState<FrameGridLook>("A");
+  const [favorites, setFavorites] = useState<string[]>([
+    "chat",
+    "memory",
+    "workspace",
+    "docs",
+    "drive",
+    "data",
+    "crm",
+    "intelligence",
+    "meet",
+  ]);
   const [contactId, setContactId] = useState<string | null>(null);
   const [view, setView] = useState("all");
   const [starred, setStarred] = useState<string[]>([]);
@@ -302,6 +314,16 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             { value: "375", label: "375" },
           ]}
         />
+        <SegmentedControl<FrameGridLook>
+          aria-label="Grid"
+          value={gridLook}
+          onValueChange={setGridLook}
+          data={[
+            { value: "A", label: "Grid A" },
+            { value: "B", label: "Grid B" },
+            { value: "C", label: "Grid C" },
+          ]}
+        />
         <SegmentedControl<FrameHeaderEdge>
           aria-label="Header edge"
           value={headerEdge}
@@ -366,6 +388,7 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             pageKey={`lab-shell:${pageKey}`}
             onSideChatAddress={(search) => replaceAddressWithoutNavigating(`${window.location.pathname}${search}`)}
             headerEdge={headerEdge}
+            gridLook={gridLook}
             loadCompanion={loadSampleCompanion}
             loadCanvas={loadSampleCanvas}
             status={

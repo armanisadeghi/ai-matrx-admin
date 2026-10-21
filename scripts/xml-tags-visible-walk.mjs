@@ -132,6 +132,37 @@ try {
   await shot("error");
 }
 
+// The chat: the person's own message (their bubble) and the answer, through the Test Reply agent
+// (cheap test agent; never General Chat). `CHAT_AGENT` overrides it.
+if (process.env.XMLTAGS_CHAT !== "0") {
+  try {
+    const agent = process.env.CHAT_AGENT ?? "8a4b7c8e-144f-4391-b5f0-3d2cd2ecee0f";
+    await page.goto(`${ORIGIN}/chat/a/${agent}`, { waitUntil: "domcontentloaded", timeout: 120000 });
+    const box = page.locator("textarea").first();
+    await box.waitFor({ timeout: 90000 });
+    await sleep(3000);
+    await box.fill(`XMLTAGS chat. Repeat this message back exactly.\n\n<info>\n\n</info>\n\n<plan>\nship it\n</plan>\n\n<foo>\nfoo body\n</foo>`);
+    await box.press("Enter");
+    await sleep(20000);
+    results.chat = await page.evaluate(() =>
+      [...document.querySelectorAll("[data-xml-section]")].filter((el) => el.getBoundingClientRect().height > 0).map((el) => ({
+        tag: el.getAttribute("data-xml-section"),
+        shared: el.hasAttribute("data-xml-section-container"),
+        empty: !!el.querySelector("[data-xml-section-empty]"),
+        inUserBubble: !!el.closest("[data-message-role='user'], [data-role='user'], .user-message, [data-user-message]"),
+      })));
+    results.chatRawTagText = await page.evaluate(() => /<info>|<\/plan>|<foo>/.test(document.querySelector("main")?.innerText ?? ""));
+    results.chatUrl = page.url();
+    const first = page.locator("[data-xml-section='info']").first();
+    await first.scrollIntoViewIfNeeded().catch(() => {});
+    await sleep(800);
+    await shot("05-chat");
+  } catch (e) {
+    results.chatError = e.message.slice(0, 300);
+    await shot("chat-error");
+  }
+}
+
 // Cleanup: only this walk's own note, content checked.
 const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
 await sb.auth.signInWithPassword({ email: env.AI_ADMIN_USERNAME, password: env.AI_ADMIN_PASSWORD });

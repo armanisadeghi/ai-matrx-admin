@@ -29,8 +29,12 @@ together. Linear is the visual reference. It is built beside the old shell and i
   the ask bar. `?side_chat=open|closed` opens the page with the side chat in that state.
   "Hairline | Fade" switches the header's lower edge for the owner's comparison.
 - `AppFrame.tsx`: the frame. Holds the forms, the variants, the drawer and the companion.
-- `AppGrid.tsx`: the 9-dot product grid. Tiles are grouped by family under an editable
-  favorites group. A tile always opens its product in a new tab. The grid is one Tab stop,
+- `AppGrid.tsx`: the 9-dot product grid, Google-tight (owner, 2026-10-20): a 320px popover,
+  3 columns of 80px cells (32px glyph, one-line 12px name), the favorites (up to 9) in a
+  rounded card, then every other product ONCE in family order, with no heading rows; "Edit
+  favorites" sits under the grid. Bake-off until the owner picks (`look`, playground "Grid
+  A | B | C"): A plain; B a hairline with a 10px family name between families; C marks on a
+  soft same-hue shape. A tile always opens its product in a new tab; the grid is one Tab stop
   and arrow keys move between tiles.
 - `FrameSidebar.tsx`: the product's own menu. Every row is a real link (`href`, defaulting to
   `<homeHref>/<id>`). A plain click calls `onSelectItem`; a modified click keeps the browser's
@@ -169,6 +173,9 @@ the canvas and the ask bar, the per-page memory and the link, the forms and canv
 ownership attributes, and no `className`/`style` on any exported props type.
 
 ## Change log
+
+- 2026-10-20 (round 8): the app grid rebuilt Google-tight (card, one grid, no headings, no
+  repeats, 32px whole-pixel glyphs), with the A | B | C bake-off.
 
 - 2026-10-20 (round 7): the lineup follows the owner's tree (Memory replaces Knowledge and
   sits first after Yours; Home, Productivity, E-Commerce, Other and More added).

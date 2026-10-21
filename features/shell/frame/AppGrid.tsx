@@ -1,11 +1,12 @@
 "use client";
 
-// THE APP GRID — the 9-dot button and its popover of product tiles, grouped by
-// family, with an editable "Your favorites" group on top (Google's apps
-// popover). A tile ALWAYS opens its product in a new tab (owner ruling,
-// 2026-10-17). The grid is ONE Tab stop (roving tabindex); arrow keys move
-// between tiles by position; Esc closes (Radix). A favorite appears once for
-// the keyboard: its copy in its family list is mouse-only.
+// THE APP GRID — the 9-dot button and its popover, built tight like Google's apps popover
+// (owner, 2026-10-20 fourth round): a 320px popover, 3 columns of 80px cells (a 32px glyph
+// and a one-line name), the favorites in a rounded card on top, then every other product in
+// ONE grid in family order. No heading rows, and nothing appears twice: a favorite is not
+// repeated below. A tile ALWAYS opens its product in a new tab (owner, 2026-10-17). The grid is
+// ONE Tab stop (roving tabindex); arrows move between tiles by position; Esc closes (Radix).
+// `look` is the owner's bake-off (A plain, B family hairlines, C filled marks) until he picks.
 import { useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { Check, Grip, Pencil, Star } from "lucide-react";
@@ -22,7 +23,15 @@ export interface AppGridProps {
   onFavoritesChange: (ids: string[]) => void;
   /** The product the frame is showing — marked in the grid. */
   currentProductId?: string;
+  /** PLAYGROUND BAKE-OFF ONLY (owner picks one, then this goes); default `A`. */
+  look?: FrameGridLook;
 }
+
+/** A = Google's layout; B = A plus a hairline and a tiny family name between families; C = A with filled marks. */
+export type FrameGridLook = "A" | "B" | "C";
+
+/** The card holds at most this many favorites (3 × 3, as Google's does). */
+export const GRID_FAVORITES_MAX = 9;
 
 const TILE_SELECTOR = "[data-mf-tile]";
 
@@ -67,6 +76,7 @@ export function AppGrid({
   favorites,
   onFavoritesChange,
   currentProductId,
+  look = "A",
 }: AppGridProps) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -75,7 +85,13 @@ export function AppGrid({
 
   const favoriteProducts = favorites
     .map((id) => products.find((p) => p.id === id))
-    .filter((p): p is FrameProduct => Boolean(p));
+    .filter((p): p is FrameProduct => Boolean(p))
+    .slice(0, GRID_FAVORITES_MAX);
+  const favoriteIds = new Set(favoriteProducts.map((p) => p.id));
+  // Every other product once, in family order (editing: every product, so each can be starred).
+  const rest = families.flatMap((f) =>
+    products.filter((p) => p.family === f.id && (editing || !favoriteIds.has(p.id))),
+  );
 
   function toggleFavorite(id: string) {
     onFavoritesChange(
@@ -89,14 +105,10 @@ export function AppGrid({
     if (moveByArrow(bodyRef.current, target, e.key)) e.preventDefault();
   }
 
-  // The keyboard's tile order: favorites, then each family without its favorites.
+  // The keyboard's tile order: the favorites card, then the list.
   const navKeys = [
-    ...favoriteProducts.map((p) => `fav-${p.id}`),
-    ...families.flatMap((f) =>
-      products
-        .filter((p) => p.family === f.id && (editing || !favorites.includes(p.id)))
-        .map((p) => `${f.id}-${p.id}`),
-    ),
+    ...(editing ? [] : favoriteProducts.map((p) => `fav-${p.id}`)),
+    ...rest.map((p) => `all-${p.id}`),
   ];
   const activeKey = rovingKey && navKeys.includes(rovingKey) ? rovingKey : navKeys[0];
 
@@ -110,14 +122,10 @@ export function AppGrid({
       tabIndex: key === activeKey ? 0 : -1,
       onFocus: () => navigable && setRovingKey(key),
     };
-    const glyph = <ProductMark product={product} size="grid" />;
-    const label = (
-      <span className="type-secondary line-clamp-2 w-full text-center text-foreground">
-        {product.name}
-      </span>
-    );
+    const glyph = <ProductMark product={product} size="grid" filled={look === "C"} />;
+    const label = <span className="mf-grid-name w-full truncate text-center">{product.name}</span>;
     const tileClass = cn(
-      "relative flex min-h-24 flex-col items-center justify-start gap-1 rounded-xl px-1 pt-2.5 pb-2",
+      "relative flex h-20 min-w-0 flex-col items-center justify-center gap-1.5 rounded-xl px-1",
       "outline-none hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
     );
     if (editing) {
@@ -136,7 +144,7 @@ export function AppGrid({
           <Star
             aria-hidden
             className={cn(
-              "absolute top-1.5 right-1.5 size-3.5",
+              "absolute top-1.5 right-1.5 size-3",
               isFavorite ? "fill-current text-foreground" : "text-muted-foreground",
             )}
           />
@@ -174,7 +182,7 @@ export function AppGrid({
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        width="xl"
+        width="lg"
         padding="none"
         surface="solid"
         onOpenAutoFocus={(e) => {
@@ -189,41 +197,34 @@ export function AppGrid({
           onKeyDown={onKeyDown}
           className="mf-grid-scroll overflow-y-auto overscroll-contain p-2"
         >
-          <section aria-label="Your favorites" className="pb-2">
-            <div className="flex h-8 items-center justify-between pl-2">
-              <span className="type-label">Your favorites</span>
-              <Button
-                variant="quiet"
-                icon={editing ? <Check /> : <Pencil />}
-                onClick={() => setEditing((v) => !v)}
-              >
-                {editing ? "Done" : "Edit"}
-              </Button>
-            </div>
-            {favoriteProducts.length > 0 ? (
-              <div className="grid grid-cols-3 gap-1 sm:grid-cols-4">
-                {favoriteProducts.map((p) => renderTile(p, "fav"))}
-              </div>
+          {!editing && favoriteProducts.length > 0 ? (
+            <section aria-label="Your favorites" className="mf-grid-card grid grid-cols-3 p-1">
+              {favoriteProducts.map((p) => renderTile(p, "fav"))}
+            </section>
+          ) : null}
+          <section aria-label={editing ? "Choose favorites" : "All products"} className="pt-1">
+            {look === "B" && !editing ? (
+              families.map((family) => {
+                const members = rest.filter((p) => p.family === family.id);
+                if (members.length === 0) return null;
+                return (
+                  <div key={family.id}>
+                    <div className="mf-grid-divider" aria-hidden>
+                      <span>{family.label}</span>
+                    </div>
+                    <div className="grid grid-cols-3">{members.map((p) => renderTile(p, "all"))}</div>
+                  </div>
+                );
+              })
             ) : (
-              <p className="type-secondary px-2 py-3 text-muted-foreground">
-                Press Edit, then star a product
-              </p>
+              <div className="grid grid-cols-3">{rest.map((p) => renderTile(p, "all"))}</div>
             )}
           </section>
-          {families.map((family) => {
-            const members = products.filter((p) => p.family === family.id);
-            if (members.length === 0) return null;
-            return (
-              <section key={family.id} aria-label={family.label} className="mf-rule-t py-2">
-                <div className="flex h-8 items-center pl-2">
-                  <span className="type-label">{family.label}</span>
-                </div>
-                <div className="grid grid-cols-3 gap-1 sm:grid-cols-4">
-                  {members.map((p) => renderTile(p, family.id))}
-                </div>
-              </section>
-            );
-          })}
+          <div className="flex justify-center pt-1">
+            <Button variant="quiet" icon={editing ? <Check /> : <Pencil />} onClick={() => setEditing((v) => !v)}>
+              {editing ? "Done" : "Edit favorites"}
+            </Button>
+          </div>
         </div>
       </PopoverContent>
     </Popover>

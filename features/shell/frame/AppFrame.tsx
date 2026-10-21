@@ -19,7 +19,7 @@ import { PortalContainerProvider } from "@ai-matrx/design-system";
 import { Button, Tabs } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system/cn";
 import { AppGrid } from "./AppGrid";
-import type { AppGridProps } from "./AppGrid";
+import type { AppGridProps, FrameGridLook } from "./AppGrid";
 import { FrameSidebar } from "./FrameSidebar";
 import {
   AskBar,
@@ -164,6 +164,8 @@ export interface AppFrameProps {
   onSidebarOpenChange?: (open: boolean) => void;
   /** PLAYGROUND A/B ONLY (see FrameHeaderEdge); default `fade`. */
   headerEdge?: FrameHeaderEdge;
+  /** PLAYGROUND BAKE-OFF ONLY: the app grid's look (see FrameGridLook); default `A`. */
+  gridLook?: FrameGridLook;
 }
 
 export function formFor(width: number): FrameForm {
@@ -387,7 +389,7 @@ export function AppFrame(props: AppFrameProps) {
   const companionMounted = useLatched(companionShown);
   const canvasMounted = useLatched(canvasOpen);
 
-  const grid: AppGridProps = { products, families, favorites, onFavoritesChange };
+  const grid: AppGridProps = { products, families, favorites, onFavoritesChange, look: props.gridLook };
 
   const drawer = useModalPanel({
     open: drawerShown,
