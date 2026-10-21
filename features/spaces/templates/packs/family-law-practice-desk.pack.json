@@ -1,0 +1,4201 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0574",
+  "version": 1,
+  "title": "Family Law Practice Desk",
+  "description": "Divorce, custody and support matters with disclosures, court dates and retainers.",
+  "forWho": "Family law firms and solo family lawyers",
+  "icon": {
+    "emoji": "⚖️"
+  },
+  "cover": {
+    "url": "gallery:legal-scales-of-justice",
+    "offsetY": 50
+  },
+  "category": "legal",
+  "tags": [
+    "family law",
+    "divorce",
+    "custody",
+    "child support",
+    "attorney",
+    "lawyer"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-family-law-practice-desk",
+    "catalogueId": "SP0574",
+    "useCase": "The managing attorney at Calloway Pierce Family Law uses this to see every matter's stage, what is owed in disclosure, the next court date and whose retainer needs a top-up.",
+    "industry": "legal_professional",
+    "vertical": "Family law practice",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Calloway Pierce Family Law",
+      "describes": "A four-person family law firm handling divorce, custody, support, protective orders and adoptions.",
+      "address": {
+        "line1": "300 Juniper Ridge Avenue",
+        "city": "Austin",
+        "region": "TX",
+        "postalCode": "78701",
+        "country": "US"
+      },
+      "phone": "(512) 555-0150",
+      "website": "callowaypiercelaw.net",
+      "email": "intake@callowaypiercelaw.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-family-law-practice-desk",
+    "tables": [
+      {
+        "token": "matter",
+        "name": "Matters",
+        "labelSingular": "Matter",
+        "labelPlural": "Matters",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "briefcase",
+        "titleField": "matter_name",
+        "describes": "Every divorce, custody, support and adoption matter, with its stage, trust balance and marital estate.",
+        "subject": "thing",
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "team_member": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Closed"
+            ],
+            "filled": [
+              "closed_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New family matter",
+            "values": {
+              "status": "Intake",
+              "matter_name": "New matter"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Intake"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Conflict check run on both spouses and any new partner"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Safety screen asked privately; safe way to reach written down"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Children's names, ages and current schedule"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Engagement"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Engagement letter signed, scope stated in plain words"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Retainer deposited to trust; floor agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "First 30 days"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Petition or response filed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Disclosure list sent to the client"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Standing orders read with the client"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "before": [
+          [
+            "opened_on",
+            "closed_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "matter_name",
+            "label": "Matter",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Intake",
+              "Retained",
+              "Disclosure",
+              "Mediation",
+              "Trial prep",
+              "Settled",
+              "Decree entered",
+              "Closed"
+            ],
+            "choiceColors": {
+              "Intake": "slate",
+              "Retained": "blue",
+              "Disclosure": "violet",
+              "Mediation": "yellow",
+              "Trial prep": "orange",
+              "Settled": "teal",
+              "Decree entered": "green",
+              "Closed": "gray"
+            },
+            "required": true,
+            "default": "Intake",
+            "statusGroups": {
+              "Intake": "todo",
+              "Retained": "in_progress",
+              "Disclosure": "in_progress",
+              "Mediation": "in_progress",
+              "Trial prep": "in_progress",
+              "Settled": "done",
+              "Decree entered": "done",
+              "Closed": "done"
+            }
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "matter_type",
+            "label": "Matter type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Divorce",
+              "Custody and parenting time",
+              "Child support",
+              "Spousal support",
+              "Modification",
+              "Protective order",
+              "Adoption",
+              "Prenuptial agreement"
+            ],
+            "choiceColors": {
+              "Divorce": "blue",
+              "Custody and parenting time": "violet",
+              "Child support": "teal",
+              "Spousal support": "amber",
+              "Modification": "orange",
+              "Protective order": "red",
+              "Adoption": "green",
+              "Prenuptial agreement": "slate"
+            }
+          },
+          {
+            "key": "attorney",
+            "label": "Lead attorney",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "opposing",
+            "label": "Opposing party",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "opp_counsel",
+            "label": "Opposing counsel",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "case_no",
+            "label": "Court and case number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "children",
+            "label": "Minor children",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10
+              }
+            ]
+          },
+          {
+            "key": "conflict",
+            "label": "Conflict check",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not run",
+              "Clear",
+              "Conflict found"
+            ],
+            "choiceColors": {
+              "Not run": "slate",
+              "Clear": "green",
+              "Conflict found": "red"
+            },
+            "default": "Not run"
+          },
+          {
+            "key": "fee",
+            "label": "Fee arrangement",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Hourly, evergreen retainer",
+              "Flat fee",
+              "Limited scope"
+            ],
+            "choiceColors": {
+              "Hourly, evergreen retainer": "blue",
+              "Flat fee": "teal",
+              "Limited scope": "violet"
+            }
+          },
+          {
+            "key": "trust",
+            "label": "In trust now (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "floor",
+            "label": "Retainer floor (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "billed",
+            "label": "Billed to date (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 250000
+              }
+            ]
+          },
+          {
+            "key": "unbilled_hours",
+            "label": "Unbilled hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "opened_on",
+            "label": "Opened",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "closed_on",
+            "label": "Closed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "topup",
+            "label": "Retainer check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Stage} = \"Closed\", {Stage} = \"Decree entered\"), \"\", IF({Fee arrangement} = \"Hourly, evergreen retainer\", IF({In trust now (USD)} < {Retainer floor (USD)}, \"Request top-up\", \"OK\"), \"Not on retainer\"))"
+          },
+          {
+            "key": "assets",
+            "label": "Assets disclosed (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "disclosures",
+            "pick": "value",
+            "agg": "sum",
+            "filter": {
+              "category": [
+                "Income",
+                "Bank and investment",
+                "Retirement",
+                "Real estate",
+                "Business interest"
+              ]
+            },
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "debts",
+            "label": "Debts disclosed (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "disclosures",
+            "pick": "value",
+            "agg": "sum",
+            "filter": {
+              "category": "Debts"
+            },
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "net_estate",
+            "label": "Net marital estate (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Assets disclosed (USD)} - {Debts disclosed (USD)}"
+          },
+          {
+            "key": "docs_out",
+            "label": "Documents outstanding",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "disclosures",
+            "pick": "doc_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Requested",
+                "Missing"
+              ]
+            }
+          },
+          {
+            "key": "dates_open",
+            "label": "Open court dates and deadlines",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "events",
+            "pick": "event_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "To calendar",
+                "Calendared",
+                "Prepared",
+                "Continued"
+              ]
+            }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Paralegal",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "close_btn",
+            "label": "Close matter",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "matter_close"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "matter_take"
+            }
+          },
+          {
+            "key": "add_event",
+            "label": "Add a court date",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "event",
+              "template": "Court date prep",
+              "prefill": {
+                "matter": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_doc",
+            "label": "Request a document",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "disclosure",
+              "template": "Disclosure item",
+              "prefill": {
+                "matter": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "mt-1",
+            "values": {
+              "matter_name": "Delgado dissolution with two children",
+              "status": "Disclosure",
+              "client": "cl-1",
+              "matter_type": "Divorce",
+              "attorney": "tm-1",
+              "opposing": "Ramon Delgado",
+              "opp_counsel": "Fairweather Stone LLP",
+              "case_no": "Travis Co. 25-FM-1182",
+              "children": 2,
+              "conflict": "Clear",
+              "fee": "Hourly, evergreen retainer",
+              "trust": 6200,
+              "floor": 5000,
+              "billed": 14850,
+              "unbilled_hours": 11.5,
+              "opened_on": "@today-4m",
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "mt-2",
+            "values": {
+              "matter_name": "Brennan parenting time after relocation",
+              "status": "Mediation",
+              "client": "cl-2",
+              "matter_type": "Modification",
+              "attorney": "tm-2",
+              "opposing": "Siobhan Brennan",
+              "opp_counsel": "Self-represented",
+              "case_no": "Travis Co. 21-FM-0457",
+              "children": 1,
+              "conflict": "Clear",
+              "fee": "Hourly, evergreen retainer",
+              "trust": 1900,
+              "floor": 3500,
+              "billed": 8420,
+              "unbilled_hours": 6.25
+            }
+          },
+          {
+            "key": "mt-3",
+            "values": {
+              "matter_name": "Achebe divorce, family business at issue",
+              "status": "Trial prep",
+              "client": "cl-3",
+              "matter_type": "Divorce",
+              "attorney": "tm-1",
+              "opposing": "Chidi Achebe",
+              "opp_counsel": "Lomax and Pryor",
+              "case_no": "Travis Co. 24-FM-2290",
+              "children": 0,
+              "conflict": "Clear",
+              "fee": "Hourly, evergreen retainer",
+              "trust": 12500,
+              "floor": 10000,
+              "billed": 41200,
+              "unbilled_hours": 22,
+              "opened_on": "@today-11m",
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "mt-4",
+            "values": {
+              "matter_name": "Whitaker child support recalculation",
+              "status": "Retained",
+              "client": "cl-4",
+              "matter_type": "Child support",
+              "attorney": "tm-2",
+              "opposing": "Derek Whitaker",
+              "opp_counsel": "Self-represented",
+              "case_no": "Hays Co. 22-FM-0915",
+              "children": 2,
+              "conflict": "Clear",
+              "fee": "Flat fee",
+              "trust": 0,
+              "floor": 0,
+              "billed": 2500,
+              "unbilled_hours": 0,
+              "opened_on": "@today-3w"
+            }
+          },
+          {
+            "key": "mt-5",
+            "values": {
+              "matter_name": "Nakamura protective order hearing",
+              "status": "Retained",
+              "client": "cl-5",
+              "matter_type": "Protective order",
+              "attorney": "tm-1",
+              "opposing": "Withheld for safety",
+              "opp_counsel": "Unknown",
+              "case_no": "Travis Co. 25-PO-0331",
+              "children": 1,
+              "conflict": "Clear",
+              "fee": "Limited scope",
+              "trust": 0,
+              "floor": 0,
+              "billed": 1800,
+              "unbilled_hours": 3,
+              "opened_on": "@today-6d"
+            }
+          },
+          {
+            "key": "mt-6",
+            "values": {
+              "matter_name": "Lindqvist and Haas prenuptial agreement",
+              "status": "Settled",
+              "client": "cl-6",
+              "matter_type": "Prenuptial agreement",
+              "attorney": "tm-2",
+              "opposing": "Jonas Haas",
+              "opp_counsel": "Bellweather Family Law",
+              "children": 0,
+              "conflict": "Clear",
+              "fee": "Flat fee",
+              "trust": 0,
+              "floor": 0,
+              "billed": 3200,
+              "unbilled_hours": 0,
+              "opened_on": "@today-2m"
+            }
+          },
+          {
+            "key": "mt-7",
+            "values": {
+              "matter_name": "Okafor stepparent adoption",
+              "status": "Decree entered",
+              "client": "cl-7",
+              "matter_type": "Adoption",
+              "attorney": "tm-1",
+              "opposing": "None (consent filed)",
+              "opp_counsel": "None",
+              "case_no": "Williamson Co. 25-AD-0074",
+              "children": 1,
+              "conflict": "Clear",
+              "fee": "Flat fee",
+              "trust": 0,
+              "floor": 0,
+              "billed": 4750,
+              "unbilled_hours": 0,
+              "opened_on": "@today-7m"
+            }
+          },
+          {
+            "key": "mt-8",
+            "values": {
+              "matter_name": "Moreau spousal support review",
+              "status": "Intake",
+              "client": "cl-8",
+              "matter_type": "Spousal support",
+              "attorney": "tm-2",
+              "opposing": "Laurent Moreau",
+              "children": 0,
+              "conflict": "Not run",
+              "fee": "Hourly, evergreen retainer",
+              "trust": 0,
+              "floor": 4000,
+              "billed": 0,
+              "unbilled_hours": 1.5,
+              "opened_on": "@today-2d"
+            }
+          },
+          {
+            "key": "mt-9",
+            "values": {
+              "matter_name": "Castellanos custody, uncontested",
+              "status": "Closed",
+              "client": "cl-9",
+              "matter_type": "Custody and parenting time",
+              "attorney": "tm-2",
+              "opposing": "Elena Castellanos",
+              "opp_counsel": "Self-represented",
+              "case_no": "Travis Co. 24-FM-1720",
+              "children": 1,
+              "conflict": "Clear",
+              "fee": "Flat fee",
+              "trust": 0,
+              "floor": 0,
+              "billed": 3900,
+              "unbilled_hours": 0,
+              "opened_on": "@today-9m",
+              "closed_on": "@today-1m"
+            }
+          }
+        ]
+      },
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "The people you represent, how to reach them safely, and what is in trust for them.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "client_status": "Prospect",
+              "client_name": "New client"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "First call"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What happened and what they need now: custody, support, safety, the house"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Who else is involved, for the conflict check"
+                    }
+                  ]
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Safe way to reach confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Consultation booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client_status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Prospect",
+              "Active",
+              "Former",
+              "Declined to represent"
+            ],
+            "choiceColors": {
+              "Prospect": "slate",
+              "Active": "green",
+              "Former": "gray",
+              "Declined to represent": "red"
+            }
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "contact",
+            "label": "Safe way to reach",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Mobile, text ok",
+              "Mobile, call only",
+              "Email only",
+              "Through office only"
+            ],
+            "choiceColors": {
+              "Mobile, text ok": "green",
+              "Mobile, call only": "blue",
+              "Email only": "violet",
+              "Through office only": "amber"
+            }
+          },
+          {
+            "key": "safety",
+            "label": "Safety concern",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "description": "Do not leave messages at home; check the safe way to reach first."
+          },
+          {
+            "key": "referred",
+            "label": "Referred by",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Past client",
+              "Therapist or counselor",
+              "Another attorney",
+              "Web search"
+            ],
+            "choiceColors": {
+              "Past client": "green",
+              "Therapist or counselor": "violet",
+              "Another attorney": "blue",
+              "Web search": "slate"
+            }
+          },
+          {
+            "key": "open_matters",
+            "label": "Open matters",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "matters",
+            "pick": "matter_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Intake",
+                "Retained",
+                "Disclosure",
+                "Mediation",
+                "Trial prep"
+              ]
+            }
+          },
+          {
+            "key": "client_trust",
+            "label": "In trust (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "matters",
+            "pick": "trust",
+            "agg": "sum",
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "client_billed",
+            "label": "Billed (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "matters",
+            "pick": "billed",
+            "agg": "sum",
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "new_matter",
+            "label": "Open a matter",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "matter",
+              "template": "New family matter",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "mail_btn",
+            "label": "Email client",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "cl-1",
+            "values": {
+              "client_name": "Marisol Delgado",
+              "client_status": "Active",
+              "phone": "(512) 555-0161",
+              "email": "marisol.d@inbox-mail.net",
+              "contact": "Mobile, text ok",
+              "referred": "Therapist or counselor"
+            }
+          },
+          {
+            "key": "cl-2",
+            "values": {
+              "client_name": "Patrick Brennan",
+              "client_status": "Active",
+              "phone": "(512) 555-0162",
+              "email": "pbrennan@inbox-mail.net",
+              "contact": "Mobile, call only",
+              "referred": "Past client"
+            }
+          },
+          {
+            "key": "cl-3",
+            "values": {
+              "client_name": "Ngozi Achebe",
+              "client_status": "Active",
+              "phone": "(512) 555-0163",
+              "email": "ngozi.achebe@inbox-mail.net",
+              "contact": "Email only",
+              "referred": "Another attorney"
+            }
+          },
+          {
+            "key": "cl-4",
+            "values": {
+              "client_name": "Shauna Whitaker",
+              "client_status": "Active",
+              "phone": "(512) 555-0164",
+              "email": "shauna.w@inbox-mail.net",
+              "contact": "Mobile, text ok",
+              "referred": "Web search"
+            }
+          },
+          {
+            "key": "cl-5",
+            "values": {
+              "client_name": "Emi Nakamura",
+              "client_status": "Active",
+              "phone": "(512) 555-0165",
+              "email": "emi.n@inbox-mail.net",
+              "contact": "Through office only",
+              "safety": true,
+              "referred": "Therapist or counselor"
+            }
+          },
+          {
+            "key": "cl-6",
+            "values": {
+              "client_name": "Annika Lindqvist",
+              "client_status": "Active",
+              "phone": "(512) 555-0166",
+              "email": "annika.l@inbox-mail.net",
+              "contact": "Email only",
+              "referred": "Past client"
+            }
+          },
+          {
+            "key": "cl-7",
+            "values": {
+              "client_name": "Tobenna Okafor",
+              "client_status": "Former",
+              "phone": "(512) 555-0167",
+              "email": "t.okafor@inbox-mail.net",
+              "contact": "Mobile, text ok",
+              "referred": "Web search"
+            }
+          },
+          {
+            "key": "cl-8",
+            "values": {
+              "client_name": "Celine Moreau",
+              "client_status": "Prospect",
+              "phone": "(512) 555-0168",
+              "email": "celine.moreau@inbox-mail.net",
+              "contact": "Mobile, call only",
+              "referred": "Another attorney"
+            }
+          },
+          {
+            "key": "cl-9",
+            "values": {
+              "client_name": "Adrián Castellanos",
+              "client_status": "Former",
+              "phone": "(512) 555-0169",
+              "email": "adrian.c@inbox-mail.net",
+              "contact": "Mobile, text ok",
+              "referred": "Past client"
+            }
+          }
+        ]
+      },
+      {
+        "token": "event",
+        "name": "Court dates and deadlines",
+        "labelSingular": "Court date or deadline",
+        "labelPlural": "Court dates and deadlines",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-clock",
+        "titleField": "event_name",
+        "describes": "Hearings, mediation sessions and filing deadlines, with how each date was counted.",
+        "subject": "thing",
+        "independentOf": {
+          "matter": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "done_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Court date prep",
+            "values": {
+              "status": "To calendar",
+              "event_name": "New court date"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Date"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "How it was counted and who checked it."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Preparation"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Client told the date, time, courtroom and what to bring"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Exhibits and proposed orders ready two days ahead"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Witnesses confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the judge ordered and the next date."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Date is set by the court or the rules; Done on is stamped when the event is completed.",
+        "fields": [
+          {
+            "key": "event_name",
+            "label": "Court date or deadline",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To calendar",
+              "Calendared",
+              "Prepared",
+              "Continued",
+              "Done",
+              "Missed"
+            ],
+            "choiceColors": {
+              "To calendar": "slate",
+              "Calendared": "blue",
+              "Prepared": "violet",
+              "Continued": "amber",
+              "Done": "green",
+              "Missed": "red"
+            },
+            "required": true,
+            "default": "To calendar",
+            "statusGroups": {
+              "To calendar": "todo",
+              "Calendared": "todo",
+              "Prepared": "in_progress",
+              "Continued": "in_progress",
+              "Done": "done",
+              "Missed": "done"
+            }
+          },
+          {
+            "key": "matter",
+            "label": "Matter",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "matter",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Hearing",
+              "Filing deadline",
+              "Mediation session",
+              "Disclosure due",
+              "Response due",
+              "Parenting class"
+            ],
+            "choiceColors": {
+              "Hearing": "red",
+              "Filing deadline": "orange",
+              "Mediation session": "yellow",
+              "Disclosure due": "violet",
+              "Response due": "blue",
+              "Parenting class": "teal"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "done_on",
+            "label": "Done on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "counted",
+            "label": "How the date was counted",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ev_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "event_done"
+            }
+          },
+          {
+            "key": "ev_take",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "event_take"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ev-1",
+            "values": {
+              "event_name": "Temporary orders hearing",
+              "status": "Prepared",
+              "matter": "mt-1",
+              "kind": "Hearing",
+              "due_on": "@today+2d 09:00",
+              "counted": "Set by the court at the status conference.",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "ev-2",
+            "values": {
+              "event_name": "Sworn inventory and appraisement due",
+              "status": "Calendared",
+              "matter": "mt-1",
+              "kind": "Disclosure due",
+              "due_on": "@today-1d 17:00",
+              "counted": "Per the standing order, 30 days after the answer.",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "ev-3",
+            "values": {
+              "event_name": "Half-day mediation",
+              "status": "Calendared",
+              "matter": "mt-2",
+              "kind": "Mediation session",
+              "due_on": "@today 13:00",
+              "counted": "Agreed with the other side by email."
+            }
+          },
+          {
+            "key": "ev-4",
+            "values": {
+              "event_name": "Pretrial exhibit list",
+              "status": "To calendar",
+              "matter": "mt-3",
+              "kind": "Filing deadline",
+              "due_on": "@today+4d 17:00",
+              "counted": "14 days before docket call under the scheduling order."
+            }
+          },
+          {
+            "key": "ev-5",
+            "values": {
+              "event_name": "Final trial setting",
+              "status": "Calendared",
+              "matter": "mt-3",
+              "kind": "Hearing",
+              "due_on": "@today+18d 09:00",
+              "counted": "Docket call week; confirm the Friday before."
+            }
+          },
+          {
+            "key": "ev-6",
+            "values": {
+              "event_name": "Answer to support petition",
+              "status": "Calendared",
+              "matter": "mt-4",
+              "kind": "Response due",
+              "due_on": "@today+6d 10:00",
+              "counted": "Monday after 20 days from service."
+            }
+          },
+          {
+            "key": "ev-7",
+            "values": {
+              "event_name": "Protective order hearing",
+              "status": "Prepared",
+              "matter": "mt-5",
+              "kind": "Hearing",
+              "due_on": "@today+5d 08:30",
+              "counted": "Within 14 days of the temporary order."
+            }
+          },
+          {
+            "key": "ev-8",
+            "values": {
+              "event_name": "Co-parenting class certificate",
+              "status": "Continued",
+              "matter": "mt-2",
+              "kind": "Parenting class",
+              "due_on": "@today-3d 17:00",
+              "counted": "Before final orders; class moved by the provider."
+            }
+          },
+          {
+            "key": "ev-9",
+            "values": {
+              "event_name": "Prove-up hearing",
+              "status": "Done",
+              "matter": "mt-7",
+              "kind": "Hearing",
+              "due_on": "@today-7m 10:00",
+              "done_on": "@today-7m",
+              "counted": "Uncontested docket."
+            }
+          },
+          {
+            "key": "ev-10",
+            "values": {
+              "event_name": "Initial disclosures served",
+              "status": "Done",
+              "matter": "mt-3",
+              "kind": "Disclosure due",
+              "due_on": "@today-8m 17:00",
+              "done_on": "@today-8m",
+              "counted": "30 days after the answer."
+            }
+          }
+        ]
+      },
+      {
+        "token": "disclosure",
+        "name": "Financial disclosures",
+        "labelSingular": "Disclosure item",
+        "labelPlural": "Disclosure items",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-text",
+        "titleField": "doc_name",
+        "describes": "Every document both sides owe in financial disclosure, by category, with values for the property division.",
+        "subject": "thing",
+        "independentOf": {
+          "matter": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Served"
+            ],
+            "filled": [
+              "served_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Disclosure item",
+            "values": {
+              "status": "Requested",
+              "doc_name": "New document"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The request"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What exactly is needed and for which months or years."
+                    }
+                  ]
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Asked of the client or served on the other side"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Due date set"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "When it arrives"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Complete: every page, every account"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Value entered for the property division"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Copy served if it is ours to produce"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Due is the deadline; Served on is stamped when the document goes to the other side, before or after it.",
+        "fields": [
+          {
+            "key": "doc_name",
+            "label": "Disclosure item",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Requested",
+              "Missing",
+              "Received",
+              "Reviewed",
+              "Served"
+            ],
+            "choiceColors": {
+              "Requested": "slate",
+              "Missing": "red",
+              "Received": "blue",
+              "Reviewed": "violet",
+              "Served": "green"
+            },
+            "required": true,
+            "default": "Requested",
+            "statusGroups": {
+              "Requested": "todo",
+              "Missing": "todo",
+              "Received": "in_progress",
+              "Reviewed": "in_progress",
+              "Served": "done"
+            }
+          },
+          {
+            "key": "matter",
+            "label": "Matter",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "matter",
+            "relationMax": 1
+          },
+          {
+            "key": "side",
+            "label": "Whose",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Our client",
+              "Other party"
+            ],
+            "choiceColors": {
+              "Our client": "blue",
+              "Other party": "orange"
+            }
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Income",
+              "Bank and investment",
+              "Retirement",
+              "Real estate",
+              "Business interest",
+              "Debts",
+              "Child expenses"
+            ],
+            "choiceColors": {
+              "Income": "green",
+              "Bank and investment": "blue",
+              "Retirement": "violet",
+              "Real estate": "teal",
+              "Business interest": "amber",
+              "Debts": "red",
+              "Child expenses": "pink"
+            }
+          },
+          {
+            "key": "value",
+            "label": "Value (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000000
+              }
+            ]
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "served_on",
+            "label": "Served on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Chasing it",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "served_btn",
+            "label": "Mark served",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "doc_served"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "dc-1",
+            "values": {
+              "doc_name": "Three years of joint tax returns",
+              "status": "Served",
+              "matter": "mt-1",
+              "side": "Our client",
+              "category": "Income",
+              "value": 0,
+              "due_on": "@today-3w",
+              "served_on": "@today-20d"
+            }
+          },
+          {
+            "key": "dc-2",
+            "values": {
+              "doc_name": "Marital home appraisal",
+              "status": "Reviewed",
+              "matter": "mt-1",
+              "side": "Our client",
+              "category": "Real estate",
+              "value": 485000,
+              "due_on": "@today-6d"
+            }
+          },
+          {
+            "key": "dc-3",
+            "values": {
+              "doc_name": "Mortgage statement",
+              "status": "Received",
+              "matter": "mt-1",
+              "side": "Our client",
+              "category": "Debts",
+              "value": 212400,
+              "due_on": "@today-6d"
+            }
+          },
+          {
+            "key": "dc-4",
+            "values": {
+              "doc_name": "Husband's 401(k) statements",
+              "status": "Missing",
+              "matter": "mt-1",
+              "side": "Other party",
+              "category": "Retirement",
+              "value": 0,
+              "due_on": "@today-2d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "dc-5",
+            "values": {
+              "doc_name": "Joint checking, 12 months",
+              "status": "Received",
+              "matter": "mt-1",
+              "side": "Our client",
+              "category": "Bank and investment",
+              "value": 18350,
+              "due_on": "@today-6d"
+            }
+          },
+          {
+            "key": "dc-6",
+            "values": {
+              "doc_name": "Childcare and activity receipts",
+              "status": "Requested",
+              "matter": "mt-1",
+              "side": "Our client",
+              "category": "Child expenses",
+              "value": 0,
+              "due_on": "@today+4d"
+            }
+          },
+          {
+            "key": "dc-7",
+            "values": {
+              "doc_name": "Business valuation, landscaping company",
+              "status": "Reviewed",
+              "matter": "mt-3",
+              "side": "Other party",
+              "category": "Business interest",
+              "value": 640000,
+              "due_on": "@today-5w"
+            }
+          },
+          {
+            "key": "dc-8",
+            "values": {
+              "doc_name": "Brokerage account statements",
+              "status": "Served",
+              "matter": "mt-3",
+              "side": "Our client",
+              "category": "Bank and investment",
+              "value": 126800,
+              "due_on": "@today-2m",
+              "served_on": "@today-2m"
+            }
+          },
+          {
+            "key": "dc-9",
+            "values": {
+              "doc_name": "Equipment loans on the business",
+              "status": "Received",
+              "matter": "mt-3",
+              "side": "Other party",
+              "category": "Debts",
+              "value": 93500,
+              "due_on": "@today-5w"
+            }
+          },
+          {
+            "key": "dc-10",
+            "values": {
+              "doc_name": "Pension statement and plan rules",
+              "status": "Requested",
+              "matter": "mt-3",
+              "side": "Other party",
+              "category": "Retirement",
+              "value": 0,
+              "due_on": "@today",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "dc-11",
+            "values": {
+              "doc_name": "Father's pay stubs, last six",
+              "status": "Requested",
+              "matter": "mt-4",
+              "side": "Other party",
+              "category": "Income",
+              "value": 0,
+              "due_on": "@today+6d"
+            }
+          },
+          {
+            "key": "dc-12",
+            "values": {
+              "doc_name": "Health insurance premium for the children",
+              "status": "Received",
+              "matter": "mt-4",
+              "side": "Our client",
+              "category": "Child expenses",
+              "value": 0,
+              "due_on": "@today-1w"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each matter is for one client.",
+        "fromTable": "matter",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "matters"
+      },
+      {
+        "describes": "Each matter has one lead attorney.",
+        "fromTable": "matter",
+        "fromField": "attorney",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "matters_led"
+      },
+      {
+        "describes": "Each court date or deadline belongs to one matter.",
+        "fromTable": "event",
+        "fromField": "matter",
+        "toTable": "matter",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "events"
+      },
+      {
+        "describes": "Each document belongs to one matter.",
+        "fromTable": "disclosure",
+        "fromField": "matter",
+        "toTable": "matter",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "disclosures"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Renata Calloway",
+              "role": "Managing attorney",
+              "work_email": "renata@callowaypiercelaw.net",
+              "mobile": "(512) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Malcolm Pierce",
+              "role": "Associate attorney",
+              "work_email": "malcolm@callowaypiercelaw.net",
+              "mobile": "(512) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Yesenia Duarte",
+              "role": "Senior paralegal",
+              "work_email": "yesenia@callowaypiercelaw.net",
+              "mobile": "(512) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Graham Holt",
+              "role": "Intake and billing",
+              "work_email": "graham@callowaypiercelaw.net",
+              "mobile": "(512) 555-0143",
+              "start_date": "@today-7y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "consultation_request",
+        "name": "Consultation request",
+        "describes": "How a prospective client asks for a first meeting.",
+        "audience": "staff",
+        "table": "client",
+        "fields": [
+          {
+            "fieldKey": "client_name",
+            "ask": "What is your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "contact",
+            "ask": "What is the safest way to reach you?",
+            "required": true
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "What number may the office call?"
+          },
+          {
+            "fieldKey": "referred",
+            "ask": "How did you hear about the firm?"
+          }
+        ],
+        "submitLabel": "Ask for a consultation",
+        "confirmation": "Thank you. The intake team will reach you the way you chose, within one business day."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "matter_close",
+        "table": "matter",
+        "name": "Close matter",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Closed"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "matter_take",
+        "table": "matter",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "event_done",
+        "table": "event",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          },
+          {
+            "field": "done_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "event_take",
+        "table": "event",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "doc_served",
+        "table": "disclosure",
+        "name": "Mark served",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Served"
+          },
+          {
+            "field": "served_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_matter",
+        "name": "All matters",
+        "table": "matter",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "matter_board",
+        "name": "Matters board",
+        "table": "matter",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "matter_mine",
+        "name": "My matters",
+        "table": "matter",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "client_status"
+      },
+      {
+        "token": "all_event",
+        "name": "All court dates and deadlines",
+        "table": "event",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "event_board",
+        "name": "Court dates and deadlines board",
+        "table": "event",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "event_cal",
+        "name": "Court dates and deadlines calendar",
+        "table": "event",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "event_over",
+        "name": "Overdue",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To calendar",
+            "Calendared",
+            "Prepared",
+            "Continued"
+          ]
+        }
+      },
+      {
+        "token": "event_week",
+        "name": "Due this week",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To calendar",
+            "Calendared",
+            "Prepared",
+            "Continued"
+          ]
+        }
+      },
+      {
+        "token": "event_next7",
+        "name": "Next 7 days",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To calendar",
+            "Calendared",
+            "Prepared",
+            "Continued"
+          ]
+        }
+      },
+      {
+        "token": "event_mine",
+        "name": "My court dates and deadlines",
+        "table": "event",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_disclosure",
+        "name": "All disclosure items",
+        "table": "disclosure",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "disclosure_board",
+        "name": "Disclosure items board",
+        "table": "disclosure",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "disclosure_cal",
+        "name": "Disclosure items calendar",
+        "table": "disclosure",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "disclosure_over",
+        "name": "Overdue",
+        "table": "disclosure",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Missing"
+          ]
+        }
+      },
+      {
+        "token": "disclosure_week",
+        "name": "Due this week",
+        "table": "disclosure",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Missing"
+          ]
+        }
+      },
+      {
+        "token": "disclosure_next7",
+        "name": "Next 7 days",
+        "table": "disclosure",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Missing"
+          ]
+        }
+      },
+      {
+        "token": "disclosure_mine",
+        "name": "My disclosure items",
+        "table": "disclosure",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Family Law Practice Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "matter",
+          "describes": "Every divorce, custody, support and adoption matter, with its stage, trust balance and marital estate."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many disclosure documents are missing right now?",
+        "whyItMatters": "Missing documents are the usual reason mediation fails.",
+        "expect": {
+          "table": "disclosure",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Missing"
+          },
+          "answer": 1,
+          "unit": "documents"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open matters.",
+        "action": {
+          "kind": "open",
+          "surface": "matter_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "matter_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open court dates and deadlines.",
+        "action": {
+          "kind": "open",
+          "surface": "event_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "event_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-21",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "callowaypiercelaw.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Juniper Ridge Avenue"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "family-law-practice-desk",
+      "parent": null,
+      "title": "Family Law Practice Desk",
+      "icon": {
+        "emoji": "⚖️"
+      },
+      "cover": {
+        "url": "gallery:legal-scales-of-justice",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Start each morning on the Dashboard: court dates this week, documents still owed, and retainers below their floor. Each matter moves Intake to Decree entered on the Matters board; add court dates and disclosure requests from the matter so they stay linked. Mark done and Mark served stamp the day."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:financial-disclosure"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:evergreen-retainers"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Matters"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every divorce, custody, support and adoption matter, with its stage, trust balance and marital estate."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "matter",
+              "view": "matter_board"
+            },
+            "inline": true,
+            "title": "Matters",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "matt-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "opposing",
+                  "opp_counsel",
+                  "case_no",
+                  "children",
+                  "conflict",
+                  "fee",
+                  "trust",
+                  "floor",
+                  "billed",
+                  "unbilled_hours",
+                  "opened_on",
+                  "closed_on",
+                  "topup",
+                  "assets",
+                  "debts",
+                  "net_estate",
+                  "docs_out",
+                  "dates_open",
+                  "assigned_to",
+                  "close_btn",
+                  "take_btn",
+                  "add_event",
+                  "add_doc",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "matt-t",
+                "name": "All matters",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "matt-m",
+                "name": "My matters",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "matt-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The people you represent, how to reach them safely, and what is in trust for them."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "clie-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "client_status",
+                "hiddenFields": [
+                  "phone",
+                  "email",
+                  "safety",
+                  "open_matters",
+                  "client_billed",
+                  "new_matter",
+                  "mail_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "clie-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "clie-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Court dates and deadlines"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Hearings, mediation sessions and filing deadlines, with how each date was counted."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "event",
+              "view": "event_board"
+            },
+            "inline": true,
+            "title": "Court dates and deadlines",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "even-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "done_on",
+                  "counted",
+                  "owner",
+                  "ev_done",
+                  "ev_take",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "even-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "status",
+                  "due_on",
+                  "counted",
+                  "owner",
+                  "ev_done",
+                  "ev_take",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "even-t",
+                "name": "All court dates and deadlines",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "even-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To calendar",
+                    "Calendared",
+                    "Prepared",
+                    "Continued"
+                  ]
+                }
+              },
+              {
+                "id": "even-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To calendar",
+                    "Calendared",
+                    "Prepared",
+                    "Continued"
+                  ]
+                }
+              },
+              {
+                "id": "even-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To calendar",
+                    "Calendared",
+                    "Prepared",
+                    "Continued"
+                  ]
+                }
+              },
+              {
+                "id": "even-m",
+                "name": "My court dates and deadlines",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "even-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Financial disclosures"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every document both sides owe in financial disclosure, by category, with values for the property division."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "disclosure",
+              "view": "disclosure_board"
+            },
+            "inline": true,
+            "title": "Financial disclosures",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "disc-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "value",
+                  "due_on",
+                  "served_on",
+                  "owner",
+                  "served_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "disc-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "status",
+                  "value",
+                  "due_on",
+                  "served_on",
+                  "owner",
+                  "served_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "disc-t",
+                "name": "All disclosure items",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "disc-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Missing"
+                  ]
+                }
+              },
+              {
+                "id": "disc-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Missing"
+                  ]
+                }
+              },
+              {
+                "id": "disc-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Missing"
+                  ]
+                }
+              },
+              {
+                "id": "disc-m",
+                "name": "My disclosure items",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "disc-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "family-law-practice-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Family law runs on three clocks at once: the court's dates, the disclosure deadlines, and the client's money in trust. This workspace keeps all three on each matter so nobody has to remember them."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The four tables"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Matters",
+              "bold": true
+            },
+            {
+              "text": ": one row per case, with its stage (Intake, Retained, Disclosure, Mediation, Trial prep, Settled, Decree entered, Closed), the opposing party and counsel, court and case number, minor children and the fee arrangement. Each matter totals the assets and debts disclosed into a Net marital estate."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": ": the person you represent and the safe way to reach them. Safety concern means never leave a message at home and never send mail to a shared address."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Court dates and deadlines",
+              "bold": true
+            },
+            {
+              "text": ": hearings, mediation sessions and filing or response deadlines. Write how the date was counted, so a second person can check it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Financial disclosures",
+              "bold": true
+            },
+            {
+              "text": ": every document either side owes: tax returns, statements, appraisals, debts, child expenses. Each has a category and a value once known."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A normal week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: the paralegal opens Court dates and deadlines, This week view, and confirms each client knows their date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Each new date is entered the day it is set, counted by one person and checked by another."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Disclosure requests are added from the matter with Request a document. Anything past due moves to Missing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Friday: billing opens Matters and reads the Retainer check. Every Request top-up gets a letter."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Before any mediation, Documents outstanding on that matter must be zero or explained."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who owns what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Area"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Calendar and date counting"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Senior paralegal, checked by the attorney"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Disclosure chase"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Paralegal on the matter"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Retainers and billing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Intake and billing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Strategy, hearings and settlement"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lead attorney"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Care with this data"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Children appear only as a count on the matter. Safety details live in the client's private page, not in shared notes. Never put the other party's address in a field the client can see."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "family-law-practice-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "matter",
+                      "view": "all_matter"
+                    },
+                    "inline": true,
+                    "title": "Matters by stage",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Matters by stage",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "matter",
+                      "view": "all_matter"
+                    },
+                    "inline": true,
+                    "title": "Matters by type",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Matters by type",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "matter_type",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "disclosure",
+                      "view": "all_disclosure"
+                    },
+                    "inline": true,
+                    "title": "Disclosure value by category",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Disclosure value by category",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "category",
+                          "op": "sum",
+                          "field": "value"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "event",
+                      "view": "all_event"
+                    },
+                    "inline": true,
+                    "title": "Dates by kind",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Dates by kind",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "kind",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "matter",
+                      "view": "all_matter"
+                    },
+                    "inline": true,
+                    "title": "Billed by fee arrangement",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Billed by fee arrangement",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "fee",
+                          "op": "sum",
+                          "field": "billed"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "disclosure",
+                      "view": "all_disclosure"
+                    },
+                    "inline": true,
+                    "title": "Documents by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Documents by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Court dates and deadlines ahead"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "event",
+              "view": "all_event"
+            },
+            "inline": true,
+            "title": "Court dates and deadlines ahead",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl0",
+                "name": "Open dates",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "To calendar",
+                    "Calendared",
+                    "Prepared",
+                    "Continued"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Documents still owed"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "disclosure",
+              "view": "all_disclosure"
+            },
+            "inline": true,
+            "title": "Documents still owed",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl1",
+                "name": "Requested or missing",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Missing"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Matters in disclosure or mediation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "matter",
+              "view": "all_matter"
+            },
+            "inline": true,
+            "title": "Matters in disclosure or mediation",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl2",
+                "name": "Working",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Disclosure",
+                    "Mediation",
+                    "Trial prep"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Retainer check"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "In trust now against the retainer floor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Request top-up means send the replenishment letter this week"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Net marital estate (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Assets disclosed less debts disclosed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Blank values mean the document has not been valued yet"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Documents outstanding"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Requested and Missing documents on the matter"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Above zero before mediation means ask for a continuance or a deadline"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Open court dates and deadlines"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Everything not Done or Missed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every one needs an owner"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "financial-disclosure",
+      "parent": "family-law-practice-desk",
+      "title": "Running financial disclosure",
+      "icon": {
+        "emoji": "📑"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most divorces settle on the numbers. Disclosure is where the numbers come from, and a missing statement is the usual reason a mediation day is wasted. This page is the routine the firm uses on every divorce and support matter."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Day one list"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When a matter moves to Disclosure, add these from the matter with Request a document:"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Category"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Documents we ask for"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Income"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Three years of tax returns, recent pay stubs, any bonus or commission letters"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Bank and investment"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Twelve months of every checking, savings and brokerage account"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Retirement"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Latest statements and the plan rules for any pension"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Real estate"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Deed, mortgage statement, an appraisal or broker opinion"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Business interest"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two years of business returns, profit and loss, a valuation if contested"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Debts"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Card statements, car and equipment loans, tax debts"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Child expenses"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Childcare, school, activities and the children's health premium"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Working the list"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set a due date on every request. Our client's documents are due in 21 days."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Other party's documents follow the rules or the standing order; write the deadline and how it was counted."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On arrival, check every page is there, then mark Received. After the attorney reviews it, enter its value and mark Reviewed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ours to produce: press Mark served when it goes to the other side."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Past due without a word: move to Missing and send the deficiency letter."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the estate"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The matter adds Assets disclosed and Debts disclosed into Net marital estate. It is only as good as the values entered. A retirement account still at zero means it has not been valued, not that it is empty."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before mediation checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Documents outstanding is zero, or each missing item has a letter on file"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Net marital estate reviewed with the client"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Child support worked out on current income"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client's own list of the items they care most about"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "evergreen-retainers",
+      "parent": "family-law-practice-desk",
+      "title": "Evergreen retainers and trust",
+      "icon": {
+        "emoji": "🏦"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Family matters are long and unpredictable, so most hourly clients here sign an evergreen retainer: a deposit held in trust that is topped back up whenever it falls below an agreed floor. This page is how the firm keeps it fair to the client and safe for the firm."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How it works"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The engagement letter names the deposit and the floor, for example a 7,500 deposit and a 5,000 floor."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Invoices are paid from trust only after the client has had the invoice for the agreed number of days."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "When In trust now falls below Retainer floor, Retainer check says Request top-up."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Flat fee and limited scope matters say Not on retainer and are billed by their own letter."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Friday routine"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Matters and the All matters view. Sort by Retainer check."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "For each Request top-up, send the replenishment letter: the current balance, the floor, the amount needed and the date it is needed by."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record the request date in the matter's page."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If a top-up is two weeks late and a hearing is close, the attorney calls the client before any more work is done."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Unbilled hours above 10 on a matter means invoices are due this week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Words that help"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "\"Your trust account is below the amount we agreed to keep on hand. A deposit of 2,100 by the 15th keeps your case moving without a pause before the mediation.\""
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Plain numbers, a date, and the reason. Never surprise a client with a withdrawal."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules we never bend"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Client money stays in trust until it is earned and invoiced."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "One client's trust never pays another client's bill."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "At close, any unused balance is refunded within 30 days, and the matter is closed with Close matter so the closing date is stamped."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Worked example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The Brennan matter has 1,900 in trust and a 3,500 floor before a half-day mediation. Billing sends the letter on Friday asking for 3,000; the client pays Tuesday, the balance is updated, and Retainer check returns to OK."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
