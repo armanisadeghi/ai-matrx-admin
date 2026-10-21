@@ -11,15 +11,9 @@ import { useEffect, useRef, useState, type ComponentType } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
-import { CopyForAiAction } from "@/features/admin/attention/CopyForAiAction";
-import {
-  RecordPageHeader,
-  type RecordPageAction,
-  type RecordPageMenuItem,
-} from "@/features/shell/components/header/templates/RecordPageHeader";
-import { useRecordTitle } from "@/lib/record-title/record-title";
+import type { RecordPageAction, RecordPageMenuItem } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { recordToast } from "@/lib/toast";
+import { OrgMemberRecord } from "@/features/organizations/admin/components/OrgMemberRecord";
 import { personStatus } from "../lib/accountStatus";
 import { personChanged, useUserActions, type UserActions, type UserActionSubject } from "./useUserActions";
 import { actionSubjectOf, fetchUserOverview, personTitle, type UserOverview } from "./userOverview";
@@ -28,68 +22,80 @@ import { UserOrganizationsTab } from "./UserOrganizationsTab";
 import { UserBillingTab } from "./UserBillingTab";
 import { UserPreferencesTab } from "./UserPreferencesTab";
 import { UserAcquisitionTab } from "./UserAcquisitionTab";
-import { UserSupportTab } from "./UserSupportTab";
-import { UserHistoryTab } from "./UserHistoryTab";
-import { UserActivityTab } from "./UserActivityTab";
-import { UserContentTab } from "./UserContentTab";
-import { UserNotesTab } from "./UserNotesTab";
 import { UserSecurityTab } from "./UserSecurityTab";
 import { UserRecordSurface } from "./UserRecordSurface";
+import { SCOPED_TAB_BODIES } from "./scopedTabBodies";
+import { UserRecordFrame, activeTabOf, tabFromPath } from "./UserRecordFrame";
 import {
+  PLATFORM_SCOPE,
   USERS_HUB_PATH,
   USER_ACTION_PARAM,
   isUserActionId,
-  isVisibleUserTab,
   userActions,
   userRecordHref,
-  visibleUserTabs,
   type UserActionId,
+  type UserRecordScope,
   type UserTabId,
 } from "./userSurfaces";
 
-export interface UserTabBodyProps {
+/** What every tab gets, from either seat (the platform page or an organization's member page). */
+export interface ScopedTabBodyProps {
   userId: string;
-  overview: UserOverview;
+  /** Whose seat is looking: an organization's tabs read only that organization's slice. */
+  scope: UserRecordScope;
+  /** What the page calls this person. */
+  personName: string;
   /** The page's version: every tab loader keys on it, so a change anywhere refreshes the open tab. */
   version: number;
   /** Something about this person changed: every held copy drops it and the page + tab re-read. */
   reload: () => void;
+  /** What this tab shows, for Copy for AI (the page copies the record + the open tab's data). */
+  shareForAi: (data: unknown) => void;
+  /** Platform seat only: THE dispatch (useUserActions) and its subject. */
+  actions?: UserActions;
+  subject?: UserActionSubject;
+}
+
+
+/** A platform-only tab: the scoped props plus the person's admin overview and the dispatch. */
+export interface UserTabBodyProps extends ScopedTabBodyProps {
+  overview: UserOverview;
   /** THE dispatch (useUserActions) — tabs run registered actions through it, never their own copy. */
   actions: UserActions;
   /** The person as the actions' subject. */
   subject: UserActionSubject;
-  /** What this tab shows, for Copy for AI (the page copies overview + the open tab's data). */
-  shareForAi: (data: unknown) => void;
 }
 
 // The body of every BUILT tab (userSurfaces.ts `built: true`). Overview renders inline below because
 // it needs the page's reopen action. Each body mounts only while its tab is open, so it reads its
 // own data then — nothing is fetched for a closed tab.
-const TAB_BODIES: Partial<Record<UserTabId, ComponentType<UserTabBodyProps>>> = {
+const TAB_BODIES: Partial<Record<UserTabId, ComponentType<UserTabBodyProps> | ComponentType<ScopedTabBodyProps>>> = {
+  ...SCOPED_TAB_BODIES,
   organizations: UserOrganizationsTab,
   billing: UserBillingTab,
   preferences: UserPreferencesTab,
   acquisition: UserAcquisitionTab,
-  support: UserSupportTab,
-  history: UserHistoryTab,
-  activity: UserActivityTab,
-  content: UserContentTab,
-  notes: UserNotesTab,
   security: UserSecurityTab,
 };
 
-/** The tab segment of `/administration/users/<id>/<tab>`, or undefined on Overview. */
-function tabFromPath(pathname: string, userId: string): string | undefined {
-  const base = `${USERS_HUB_PATH}/${encodeURIComponent(userId)}`;
-  if (!pathname.startsWith(`${base}/`)) return undefined;
-  return decodeURIComponent(pathname.slice(base.length + 1)) || undefined;
+/**
+ * THE page for one person. `scope` says whose seat: platform admins (default), or one
+ * organization's owners and admins, who get the same frame and tabs over that organization's slice
+ * with the org seat's actions (OrgMemberRecord).
+ */
+export function UserRecordPage({ userId, tab, scope = PLATFORM_SCOPE }: { userId: string; tab?: string; scope?: UserRecordScope }) {
+  return scope.kind === "organization" ? (
+    <OrgMemberRecord userId={userId} tab={tab} scope={scope} />
+  ) : (
+    <PlatformUserRecord userId={userId} tab={tab} />
+  );
 }
 
-export function UserRecordPage({ userId, tab: tabProp }: { userId: string; tab?: string }) {
+function PlatformUserRecord({ userId, tab: tabProp }: { userId: string; tab?: string }) {
   const router = useRouter();
   // Rendered by the [id] layout, so it stays mounted across tabs and reads the tab from the address.
   const pathname = usePathname();
-  const tab = tabProp ?? tabFromPath(pathname, userId);
+  const tab = tabProp ?? tabFromPath(pathname, userId, PLATFORM_SCOPE);
   const validId = isUuidShape(userId);
   const [version, setVersion] = useState(0);
   const { data: overview, loading, error: loadError } = useRecordLoad(fetchUserOverview, userId, version, validId);
@@ -110,19 +116,12 @@ export function UserRecordPage({ userId, tab: tabProp }: { userId: string; tab?:
   const actions = useUserActions({ onChanged: () => setVersion((v) => v + 1) });
 
   // A tab that is not registered, or not built yet, is never an empty page: it opens Overview.
-  const activeTab: UserTabId = isVisibleUserTab(tab) ? tab : "overview";
-  useEffect(() => {
-    if (tab && !isVisibleUserTab(tab)) router.replace(userRecordHref(userId));
-  }, [tab, userId, router]);
+  const activeTab: UserTabId = activeTabOf(tab, PLATFORM_SCOPE);
 
   const title = overview ? personTitle(overview) : null;
-  useRecordTitle(title);
 
   const subject = overview ? actionSubjectOf(overview) : null;
   const label = title ?? "this person";
-
-  // What the open tab shows, for Copy for AI (read at click time; never re-renders the page).
-  const tabData = useRef<{ tab: UserTabId; data: unknown } | null>(null);
 
   const run = (id: UserActionId) => {
     if (subject) actions.run(id, subject);
@@ -185,79 +184,57 @@ export function UserRecordPage({ userId, tab: tabProp }: { userId: string; tab?:
 
   const status = subject ? personStatus(subject) : undefined;
 
-  const tabs = visibleUserTabs();
-  const Body = activeTab === "overview" ? null : TAB_BODIES[activeTab];
-
   return (
     <UserRecordSurface overview={overview} activeTab={activeTab}>
-      <RecordPageHeader
+      <UserRecordFrame
+        userId={userId}
+        scope={PLATFORM_SCOPE}
+        tab={tab}
+        title={title}
         backHref={USERS_HUB_PATH}
         parents={[{ label: "Users & Access", href: USERS_HUB_PATH }]}
         // access-errors: ok — admin.user_overview reads auth.users as SECURITY DEFINER (no RLS): no row is no account.
-        record={{ name: title ?? (loading ? "User" : "User not found") }}
+        placeholderName={{ loading: "User", missing: "User not found" }}
+        loading={loading}
         status={status}
         actions={headerActions}
-        menu={menuItems.length ? { items: menuItems } : undefined}
-      />
-      <div className="h-full overflow-y-auto px-4 pt-4 sm:px-6" data-matrx-page-scroll="" data-testid="user-record">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 pb-6">
-          {!validId ? (
+        menuItems={menuItems}
+        notices={
+          !validId ? (
             <ErrorNotice size="inline" message="That address does not name an account." error={`Not a user id: ${userId}`} operation="Open user" />
           ) : error ? (
             <ErrorNotice size="inline" message={error} error={error} operation="Read user overview" calls={["admin.user_overview"]} />
-          ) : null}
-
-          {loading && !overview ? <RegionSkeleton shape="cards" count={6} aria-label="Loading user" /> : null}
-
-          {overview ? (
-            <>
-              <div className="flex items-end justify-between gap-3">
-                {tabs.length > 1 ? (
-                  <Tabs<UserTabId>
-                    aria-label="User sections"
-                    value={activeTab}
-                    onValueChange={(next) => router.push(userRecordHref(userId, next))}
-                    data={tabs.map((t) => ({ value: t.id, label: t.label }))}
-                  />
-                ) : (
-                  <span />
-                )}
-                <CopyForAiAction
-                  label="User"
-                  agent={() => {
-                    const shown = tabData.current?.tab === activeTab ? tabData.current.data : undefined;
-                    return {
-                      kind: "admin-user",
-                      location: userRecordHref(userId, activeTab),
-                      description: "One person's admin record and the open tab.",
-                      attributes: { id: overview.identity.id, email: overview.identity.email ?? "", tab: activeTab },
-                      data: shown === undefined ? overview : { overview, [activeTab]: shown },
-                    };
-                  }}
-                />
-              </div>
-              {activeTab === "overview" ? (
-                <UserOverviewTab overview={overview} onReopen={() => run("reopen")} />
-              ) : Body && subject ? (
-                <Body
-                  key={activeTab}
-                  userId={userId}
-                  overview={overview}
-                  version={version}
-                  reload={reload}
-                  actions={actions}
-                  subject={subject}
-                  shareForAi={(data) => {
-                    tabData.current = { tab: activeTab, data };
-                  }}
-                />
-              ) : null}
-            </>
-          ) : null}
-        </div>
-      </div>
-
-      {actions.dialogs}
+          ) : null
+        }
+        ready={overview !== null}
+        copyForAi={{
+          label: "User",
+          kind: "admin-user",
+          description: "One person's admin record and the open tab.",
+          attributes: { id: overview?.identity.id ?? userId, email: overview?.identity.email ?? "" },
+          data: overview,
+        }}
+        renderTab={(open, shareForAi) => {
+          if (!overview || !subject) return null;
+          if (open === "overview") return <UserOverviewTab overview={overview} onReopen={() => run("reopen")} />;
+          const Body = TAB_BODIES[open];
+          return Body ? (
+            <Body
+              key={open}
+              userId={userId}
+              scope={PLATFORM_SCOPE}
+              personName={personTitle(overview)}
+              overview={overview}
+              version={version}
+              reload={reload}
+              actions={actions}
+              subject={subject}
+              shareForAi={shareForAi}
+            />
+          ) : null;
+        }}
+        dialogs={actions.dialogs}
+      />
     </UserRecordSurface>
   );
 }

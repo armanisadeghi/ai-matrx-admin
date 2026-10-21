@@ -1,6 +1,6 @@
 import { OWNED_RESOURCE_COLUMNS as MEMBER_RESOURCE_COLUMNS } from "./OwnedResourcesTable";
 
-describe("MemberResourcesView canonical table contract", () => {
+describe("OwnedResourcesTable canonical table contract", () => {
   it("keeps every resource field independently filterable and sortable", () => {
     expect(MEMBER_RESOURCE_COLUMNS.map((column) => column.id)).toEqual([
       "type",

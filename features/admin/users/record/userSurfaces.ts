@@ -43,8 +43,33 @@ import {
   WalletCards,
 } from "lucide-react";
 import { usagePersonHref } from "@/features/admin/usage-drill/usageLinks";
+import { orgAdminHref, orgAdminMemberHref } from "@/features/organizations/admin/routes";
 
 export const USERS_HUB_PATH = "/administration/users";
+
+// ── SCOPE: whose seat is looking ────────────────────────────────────────────────────────────────
+//
+// The same page serves two seats (Arman 2026-10-18): platform admins at /administration/users/<id>,
+// and an organization's owners and admins at /organizations/<slug>/admin/users/<id>, who see only
+// that organization's slice — the tabs marked for it below, read through the org-gated
+// iam.org_admin_member_* / public.org_admin_* RPCs, with the org seat's own actions.
+
+export type UserRecordScope =
+  | { kind: "platform" }
+  | { kind: "organization"; orgId: string; orgSlug: string; orgName: string };
+
+export const PLATFORM_SCOPE: UserRecordScope = { kind: "platform" };
+
+/** Where this seat's people live: the platform hub, or the organization's admin page. */
+export function scopeHubPath(scope: UserRecordScope): string {
+  return scope.kind === "platform" ? USERS_HUB_PATH : orgAdminHref(scope.orgSlug);
+}
+
+function recordBase(userId: string, scope: UserRecordScope): string {
+  return scope.kind === "platform"
+    ? `${USERS_HUB_PATH}/${encodeURIComponent(userId)}`
+    : orgAdminMemberHref(scope.orgSlug, encodeURIComponent(userId));
+}
 
 export type UserTabId =
   | "overview"
@@ -65,20 +90,24 @@ export interface UserTab {
   icon: LucideIcon;
   /** False until the tab's body exists; unbuilt tabs are hidden (see the header). */
   built: boolean;
+  /** Shown to an organization's admins too (that organization's slice only). */
+  inOrganization?: boolean;
+  /** The organization seat's label, where its slice is a different thing. */
+  organizationLabel?: string;
 }
 
 export const USER_TABS: readonly UserTab[] = [
-  { id: "overview", label: "Overview", icon: LayoutDashboard, built: true },
-  { id: "activity", label: "Activity", icon: Activity, built: true },
+  { id: "overview", label: "Overview", icon: LayoutDashboard, built: true, inOrganization: true },
+  { id: "activity", label: "Activity", icon: Activity, built: true, inOrganization: true },
   { id: "billing", label: "Billing & usage", icon: WalletCards, built: true },
   { id: "organizations", label: "Organizations", icon: Building2, built: true },
-  { id: "content", label: "Content", icon: FolderOpen, built: true },
-  { id: "support", label: "Support sessions", icon: LifeBuoy, built: true },
-  { id: "notes", label: "Notes", icon: StickyNote, built: true },
+  { id: "content", label: "Content", icon: FolderOpen, built: true, inOrganization: true },
+  { id: "support", label: "Support sessions", icon: LifeBuoy, built: true, inOrganization: true, organizationLabel: "Feedback" },
+  { id: "notes", label: "Notes", icon: StickyNote, built: true, inOrganization: true },
   { id: "security", label: "Security", icon: ShieldCheck, built: true },
   { id: "preferences", label: "Preferences", icon: SlidersHorizontal, built: true },
   { id: "acquisition", label: "Acquisition", icon: UserPlus, built: true },
-  { id: "history", label: "Admin history", icon: History, built: true },
+  { id: "history", label: "Admin history", icon: History, built: true, inOrganization: true },
 ];
 
 const TAB_IDS = new Set<string>(USER_TABS.map((t) => t.id));
@@ -87,19 +116,25 @@ export function isUserTabId(value: string | null | undefined): value is UserTabI
   return value != null && TAB_IDS.has(value);
 }
 
-/** The tabs a person sees, in order — only built ones. */
-export function visibleUserTabs(): UserTab[] {
-  return USER_TABS.filter((t) => t.built);
+function inScope(t: UserTab, scope: UserRecordScope): boolean {
+  return t.built && (scope.kind === "platform" || t.inOrganization === true);
 }
 
-/** True when `tab` names a registered tab whose body exists. */
-export function isVisibleUserTab(tab: string | null | undefined): tab is UserTabId {
-  return isUserTabId(tab) && USER_TABS.some((t) => t.id === tab && t.built);
+/** The tabs this seat sees, in order — only built ones, labeled for the seat. */
+export function visibleUserTabs(scope: UserRecordScope = PLATFORM_SCOPE): UserTab[] {
+  return USER_TABS.filter((t) => inScope(t, scope)).map((t) =>
+    scope.kind === "organization" && t.organizationLabel ? { ...t, label: t.organizationLabel } : t,
+  );
 }
 
-/** THE address of one person's admin record (Overview when no tab). */
-export function userRecordHref(userId: string, tab: UserTabId = "overview"): string {
-  const base = `${USERS_HUB_PATH}/${encodeURIComponent(userId)}`;
+/** True when `tab` names a registered tab whose body exists for this seat. */
+export function isVisibleUserTab(tab: string | null | undefined, scope: UserRecordScope = PLATFORM_SCOPE): tab is UserTabId {
+  return isUserTabId(tab) && USER_TABS.some((t) => t.id === tab && inScope(t, scope));
+}
+
+/** THE address of one person's record for this seat (Overview when no tab). */
+export function userRecordHref(userId: string, tab: UserTabId = "overview", scope: UserRecordScope = PLATFORM_SCOPE): string {
+  const base = recordBase(userId, scope);
   return tab === "overview" ? base : `${base}/${tab}`;
 }
 

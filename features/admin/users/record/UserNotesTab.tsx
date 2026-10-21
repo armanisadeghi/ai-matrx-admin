@@ -9,8 +9,13 @@
 // The Accounts "Personal notes" (crm.party_research) text moved here as "only me" notes
 // (20261018190000); its category stays there. Read-only beside it, each with its source named:
 // organization member notes (iam.org_member_controls.notes) and the plan note (billing.user_plan.note).
+//
+// An organization's seat sees that organization's slice: its member note about the person
+// (iam.org_member_controls.notes, read and written only through the org-admin RPCs, so the person and
+// their coworkers never read it). The platform's notes are filed in the admin organization, never
+// shown here; a note in workbench.notes inside the organization would be readable by every member.
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Lock, Pin, PinOff, StickyNote } from "lucide-react";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { Badge, Button, EmptyState, PropertyRow, RegionSkeleton, SegmentedControl } from "@ai-matrx/design-system/controls";
@@ -23,13 +28,15 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { createClient } from "@/utils/supabase/client";
 import * as NotesAPI from "@/features/notes/service/notesApi";
-import { AdminUserRef } from "../components/AdminUserRef";
 import { addUserNote, readUserNotes, setUserNotePinned, type NoteShownTo } from "../service/userNotes";
+import { getOrgMember, setMemberControls } from "@/features/organizations/admin/service";
+import type { OrgAdminMemberDetail } from "@/features/organizations/admin/types";
 import { adminOrganizationHref } from "./UserOrganizationsTab";
-import { personTitle } from "./userOverview";
 import { useRecordLoad } from "./useRecordLoad";
 import { noteWasEdited } from "./noteEdited";
-import type { UserTabBodyProps } from "./UserRecordPage";
+import { ScopedPersonRef } from "./ScopedPersonRef";
+import type { ScopedTabBodyProps } from "./UserRecordPage";
+import { PLATFORM_SCOPE, type UserRecordScope } from "./userSurfaces";
 
 type ShownTo = NoteShownTo;
 
@@ -121,7 +128,78 @@ const SHARE_OPTIONS = [
   { value: "only_me", label: "Only me" },
 ] as const;
 
-export function UserNotesTab({ userId, overview, version: pageVersion, shareForAi }: UserTabBodyProps) {
+type OrganizationScope = Extract<UserRecordScope, { kind: "organization" }>;
+
+/** The organization's one member note about this person (admin-only), edited in place. */
+function OrganizationMemberNote({ userId, scope, version: pageVersion, reload, shareForAi }: ScopedTabBodyProps & { scope: OrganizationScope }) {
+  const fetcher = useMemo(() => (id: string) => getOrgMember(scope.orgId, id), [scope]);
+  const { data: member, loading, error } = useRecordLoad<OrgAdminMemberDetail>(fetcher, userId, pageVersion);
+  const [draft, setDraft] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    if (member) shareForAi({ memberNote: member.notes });
+  }, [member, shareForAi]);
+
+  const saved = member?.notes ?? "";
+  const text = draft ?? saved;
+
+  async function save() {
+    if (!member) return;
+    setSaving(true);
+    try {
+      // The controls RPC takes the whole set; every other control is passed back unchanged.
+      await setMemberControls(scope.orgId, userId, {
+        memberLevel: member.memberLevel,
+        tierOverride: member.tierOverride,
+        storageCapBytes: member.storageCapBytes,
+        monthlyBudgetMcents: member.monthlyBudgetMcents,
+        notes: text.trim() ? text : null,
+      });
+      setDraft(null);
+      reload();
+    } catch (e) {
+      toast.error(`Note not saved: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading && !member) return <RegionSkeleton shape="rows" count={2} twoLine aria-label="Loading note" />;
+  if (error && !member) {
+    return <ErrorNotice size="inline" message="The member note could not load" error={error} operation="Read member note" calls={["public.org_admin_get_member"]} />;
+  }
+  return (
+    <section className="flex flex-col gap-2" data-testid="org-member-note">
+      <h3 className="type-title">Member note · {scope.orgName}</h3>
+      <ProTextarea
+        value={text}
+        onChange={(e) => setDraft(e.target.value)}
+        placeholder={`Note about ${member?.displayName || member?.email || "this member"}`}
+        rows={4}
+        autoGrow
+        surfaceName="org-admin-member-note"
+      />
+      <div className="flex items-center justify-end gap-2">
+        <span className="mr-auto type-secondary text-muted-foreground">Seen by this organization&apos;s owners and admins</span>
+        {draft !== null && draft !== saved ? (
+          <Button variant="quiet" onClick={() => setDraft(null)}>
+            Cancel
+          </Button>
+        ) : null}
+        <Button variant="primary" icon={<StickyNote />} disabled={saving || draft === null || draft === saved} onClick={() => void save()}>
+          {saving ? "Saving…" : "Save note"}
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+export function UserNotesTab(props: ScopedTabBodyProps) {
+  const { scope } = props;
+  return scope.kind === "organization" ? <OrganizationMemberNote {...props} scope={scope} /> : <PlatformUserNotes {...props} />;
+}
+
+function PlatformUserNotes({ userId, personName, version: pageVersion, shareForAi }: ScopedTabBodyProps) {
   const me = useAppSelector(selectUserId);
   const [version, setVersion] = useState(0);
   const { data, loading, error } = useRecordLoad(loadPersonNotes, userId, pageVersion + version);
@@ -133,7 +211,6 @@ export function UserNotesTab({ userId, overview, version: pageVersion, shareForA
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<{ id: string; text: string } | null>(null);
   const reload = () => setVersion((v) => v + 1);
-  const personName = personTitle(overview);
 
   async function addNote() {
     const text = draft.trim();
@@ -224,7 +301,7 @@ export function UserNotesTab({ userId, overview, version: pageVersion, shareForA
               return (
                 <li key={n.id} className="flex flex-col gap-1.5 py-3">
                   <div className="flex items-center gap-2">
-                    {n.created_by ? <AdminUserRef userId={n.created_by} hideEmail /> : <span className="type-secondary text-muted-foreground">Unknown author</span>}
+                    {n.created_by ? <ScopedPersonRef userId={n.created_by} scope={PLATFORM_SCOPE} /> : <span className="type-secondary text-muted-foreground">Unknown author</span>}
                     <span className="type-secondary text-muted-foreground" title={new Date(n.created_at).toLocaleString()}>
                       {formatRelativeTime(n.created_at)}
                       {noteWasEdited(n) ? " · edited" : ""}

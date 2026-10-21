@@ -6,7 +6,7 @@
 // detail.reason), newest first. Actor words come from the batched admin label lookup so the
 // column sorts and filters by name.
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRecordLoad } from "./useRecordLoad";
 import { History } from "lucide-react";
 import { readOf } from "@ai-matrx/design-system";
@@ -16,12 +16,13 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { createClient } from "@/utils/supabase/client";
 import { isJsonObject } from "@/types/json";
 import type { Json } from "@/types/database.types";
-import { AdminUserRef } from "../components/AdminUserRef";
+import { ScopedPersonRef } from "./ScopedPersonRef";
 import { adminActionWords } from "../lib/adminActionWords";
 import { resolveAdminUserLabels } from "../useAdminUserLabel";
 import { adminOrganizationHref } from "./UserOrganizationsTab";
 import AppLink from "@/components/navigation/AppLink";
-import type { UserTabBodyProps } from "./UserRecordPage";
+import type { ScopedTabBodyProps } from "./UserRecordPage";
+import type { UserRecordScope } from "./userSurfaces";
 
 export interface HistoryRow {
   id: string;
@@ -30,6 +31,8 @@ export interface HistoryRow {
   action: string;
   actor_id: string | null;
   actor: string;
+  /** The actor's email when the read returned it (an organization's seat names people by it). */
+  actor_email?: string | null;
   reason: string;
   organization_id: string | null;
   before: Json | null;
@@ -132,15 +135,26 @@ export async function listUserAdminHistory(userId: string, limit = HISTORY_PAGE)
   return { rows: rows.sort((a, b) => b.at.localeCompare(a.at)), more };
 }
 
-// Stable fetchers, one per window size (useRecordLoad wants a stable function).
-const BY_LIMIT = new Map<number, (userId: string) => Promise<HistoryPage>>();
-function historyFor(limit: number): (userId: string) => Promise<HistoryPage> {
-  let fetcher = BY_LIMIT.get(limit);
-  if (!fetcher) {
-    fetcher = (userId: string) => listUserAdminHistory(userId, limit);
-    BY_LIMIT.set(limit, fetcher);
-  }
-  return fetcher;
+/** One organization's admin actions on the person (iam.org_admin_member_audit) — that org's slice. */
+export async function listOrganizationMemberHistory(orgId: string, userId: string, limit = HISTORY_PAGE): Promise<HistoryPage> {
+  const { data, error } = await createClient()
+    .schema("iam")
+    .rpc("org_admin_member_audit", { p_org_id: orgId, p_user_id: userId, p_limit: limit });
+  if (error) throw error;
+  const rows: HistoryRow[] = (data ?? []).map((r) => ({
+    id: `o:${r.id}`,
+    at: r.created_at,
+    source: "Organization" as const,
+    action: adminActionWords(r.action),
+    actor_id: r.actor_user_id ?? metadataActor(r.metadata),
+    actor: r.actor_email ?? (r.actor_user_id ? "" : "System"),
+    actor_email: r.actor_email,
+    reason: reasonOf(r.detail, r.metadata),
+    organization_id: orgId,
+    before: null,
+    after: r.detail,
+  }));
+  return { rows, more: rows.length >= limit };
 }
 
 function changedKeys(before: Json | null, after: Json | null): string[] {
@@ -187,14 +201,15 @@ function DiffCell({ row }: { row: HistoryRow }) {
   );
 }
 
-const COLUMNS: MatrxColumnDef<HistoryRow>[] = [
+function columnsFor(scope: UserRecordScope): MatrxColumnDef<HistoryRow>[] {
+  return [
   { id: "at", accessorKey: "at", header: "When", format: { id: "datetime" }, width: 170 },
   {
     id: "actor",
     accessorKey: "actor",
     header: "Who",
     width: 200,
-    cell: (r) => (r.actor_id ? <AdminUserRef userId={r.actor_id} name={r.actor} hideEmail /> : <span>{r.actor}</span>),
+    cell: (r) => (r.actor_id ? <ScopedPersonRef userId={r.actor_id} scope={scope} name={r.actor} email={r.actor_email} /> : <span>{r.actor}</span>),
   },
   { id: "action", accessorKey: "action", header: "Action", filter: "select", width: 200 },
   { id: "reason", accessorKey: "reason", header: "Reason", width: 260 },
@@ -205,7 +220,7 @@ const COLUMNS: MatrxColumnDef<HistoryRow>[] = [
     filter: "select",
     width: 120,
     cell: (r) =>
-      r.organization_id ? (
+      r.organization_id && scope.kind === "platform" ? (
         <AppLink href={adminOrganizationHref(r.organization_id)} className="hover:text-primary">
           {r.source}
         </AppLink>
@@ -220,13 +235,23 @@ const COLUMNS: MatrxColumnDef<HistoryRow>[] = [
     width: 280,
     cell: (r) => <DiffCell row={r} />,
   },
-];
+  ];
+}
 
-export function UserHistoryTab({ userId, version: pageVersion, shareForAi }: UserTabBodyProps) {
+export function UserHistoryTab({ userId, scope, version: pageVersion, shareForAi }: ScopedTabBodyProps) {
   const [version, setVersion] = useState(0);
   const [limit, setLimit] = useState(HISTORY_PAGE);
 
-  const { data, loading, error } = useRecordLoad(historyFor(limit), userId, `${pageVersion + version}:${limit}`);
+  // Stable for one seat + window (useRecordLoad wants a stable function); the window rides the version.
+  const fetcher = useMemo(
+    () =>
+      scope.kind === "organization"
+        ? (id: string) => listOrganizationMemberHistory(scope.orgId, id, limit)
+        : (id: string) => listUserAdminHistory(id, limit),
+    [scope, limit],
+  );
+  const columns = useMemo(() => columnsFor(scope), [scope]);
+  const { data, loading, error } = useRecordLoad(fetcher, userId, `${pageVersion + version}:${limit}`);
   const rows = data?.rows ?? [];
   useEffect(() => shareForAi({ history: rows }), [rows, shareForAi]);
 
@@ -234,7 +259,7 @@ export function UserHistoryTab({ userId, version: pageVersion, shareForAi }: Use
     <div className="flex flex-col gap-2" data-testid="user-history-tab">
       <MatrxDataTable
         data={rows}
-        columns={COLUMNS}
+        columns={columns}
         getRowId={(r) => r.id}
         isLoading={loading && !data}
         pageSize={50}

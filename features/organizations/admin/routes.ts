@@ -21,9 +21,10 @@ export function orgAdminMemberHref(orgSlug: string, userId: string): string {
   return `/organizations/${orgSlug}/admin/users/${userId}`;
 }
 
+/** The member page's Content tab: what they own in this organization. */
 export function orgAdminMemberResourcesHref(
   orgSlug: string,
   userId: string,
 ): string {
-  return `${orgAdminMemberHref(orgSlug, userId)}/resources`;
+  return `${orgAdminMemberHref(orgSlug, userId)}/content`;
 }

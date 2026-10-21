@@ -18,7 +18,7 @@ import { conversationHref } from "@/features/hindsight/subject-doors";
 import { feedbackHref } from "@/features/admin/feedback/doors";
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import { adminOrganizationHref } from "./UserOrganizationsTab";
-import { isVisibleUserTab, userRecordHref } from "./userSurfaces";
+import { PLATFORM_SCOPE, isVisibleUserTab, userRecordHref, type UserRecordScope } from "./userSurfaces";
 
 export const ACTIVITY_KINDS = [
   "admin",
@@ -52,6 +52,19 @@ export const ACTIVITY_KIND_LABEL: Record<ActivityKind, string> = {
   error: "Errors",
   contact: "Messages",
 };
+
+/** What an organization's admins see: only that organization's sources (iam.org_admin_member_activity). */
+export const ORGANIZATION_ACTIVITY_KINDS: readonly ActivityKind[] = ["org_admin", "run", "feedback"];
+
+/** The kinds this seat's timeline carries, in chip order. */
+export function activityKindsFor(scope: UserRecordScope): readonly ActivityKind[] {
+  return scope.kind === "platform" ? ACTIVITY_KINDS : ORGANIZATION_ACTIVITY_KINDS;
+}
+
+/** The RPC behind this seat's timeline (named in error notices). */
+export function activityCallFor(scope: UserRecordScope): string {
+  return scope.kind === "platform" ? "admin.user_activity" : "iam.org_admin_member_activity";
+}
 
 export function isActivityKind(value: string): value is ActivityKind {
   return (ACTIVITY_KINDS as readonly string[]).includes(value);
@@ -129,16 +142,19 @@ export async function fetchActivityPage(
   kinds: readonly ActivityKind[] | null,
   limit = 50,
   beforeKey: string | null = null,
+  scope: UserRecordScope = PLATFORM_SCOPE,
 ): Promise<ActivityPage> {
-  const { data, error } = await createClient()
-    .schema("admin")
-    .rpc("user_activity", {
-      p_user: userId,
-      ...(before ? { p_before: before } : {}),
-      ...(before && beforeKey ? { p_before_key: beforeKey } : {}),
-      ...(kinds ? { p_kinds: [...kinds] } : {}),
-      p_limit: limit,
-    });
+  const cursor = {
+    ...(before ? { p_before: before } : {}),
+    ...(before && beforeKey ? { p_before_key: beforeKey } : {}),
+    ...(kinds ? { p_kinds: [...kinds] } : {}),
+    p_limit: limit,
+  };
+  // Same page shape from both seats; the organization's read returns only that organization's rows.
+  const { data, error } =
+    scope.kind === "platform"
+      ? await createClient().schema("admin").rpc("user_activity", { p_user: userId, ...cursor })
+      : await createClient().schema("iam").rpc("org_admin_member_activity", { p_org_id: scope.orgId, p_user_id: userId, ...cursor });
   if (error) throw error;
   return parseActivityPage(data);
 }
@@ -204,10 +220,27 @@ export function groupActivityByDay(items: readonly ActivityItem[], now: Date = n
   return days;
 }
 
-/** The ONE door for an activity row's record, or null when that record has no page. */
-export function activityRecordHref(record: ActivityRecord | null, personId: string): string | null {
+/** The ONE door for an activity row's record, or null when that record has no page (for this seat). */
+export function activityRecordHref(
+  record: ActivityRecord | null,
+  personId: string,
+  scope: UserRecordScope = PLATFORM_SCOPE,
+): string | null {
   if (!record) return null;
   const id = record.id;
+  if (scope.kind === "organization") {
+    // An organization's admins open only doors they can: this person's tabs, and the run itself.
+    switch (record.type) {
+      case "admin_history":
+        return userRecordHref(record.user_id ?? personId, "history", scope);
+      case "feedback":
+        return userRecordHref(personId, "support", scope);
+      case "workflow_run":
+        return id ? runHref(id) : null;
+      default:
+        return null;
+    }
+  }
   switch (record.type) {
     case "admin_history":
       return userRecordHref(record.user_id ?? personId, "history");

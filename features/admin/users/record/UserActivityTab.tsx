@@ -7,7 +7,7 @@
 // The kind chips re-read the server with that kind only; "Load older" walks next_before. A source
 // that could not be read is named in an inline notice, never silently missing.
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   Bell,
@@ -29,12 +29,13 @@ import { ErrorNotice } from "@ai-matrx/design-system";
 import { Button, EmptyState, RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import AppLink from "@/components/navigation/AppLink";
-import { AdminUserRef } from "../components/AdminUserRef";
+import { ScopedPersonRef } from "./ScopedPersonRef";
 import { adminActionWords } from "../lib/adminActionWords";
 import { useRecordLoad } from "./useRecordLoad";
 import {
-  ACTIVITY_KINDS,
   ACTIVITY_KIND_LABEL,
+  activityCallFor,
+  activityKindsFor,
   activityRecordHref,
   appendActivityPage,
   fetchActivityPage,
@@ -44,7 +45,8 @@ import {
   type ActivityKind,
   type ActivityPage,
 } from "./userActivity";
-import type { UserTabBodyProps } from "./UserRecordPage";
+import type { ScopedTabBodyProps } from "./UserRecordPage";
+import type { UserRecordScope } from "./userSurfaces";
 
 type Filter = "all" | ActivityKind;
 
@@ -64,23 +66,12 @@ const KIND_ICON: Record<ActivityKind, LucideIcon> = {
   error: CircleAlert,
 };
 
-const FILTERS: { value: Filter; label: string }[] = [
-  { value: "all", label: "All" },
-  ...ACTIVITY_KINDS.map((k) => ({ value: k, label: ACTIVITY_KIND_LABEL[k] })),
-];
+/** The kind chips this seat's timeline offers. */
+function filtersFor(scope: UserRecordScope): { value: Filter; label: string }[] {
+  return [{ value: "all", label: "All" }, ...activityKindsFor(scope).map((k) => ({ value: k, label: ACTIVITY_KIND_LABEL[k] }))];
+}
 
 const kindsOf = (filter: Filter): ActivityKind[] | null => (filter === "all" ? null : [filter]);
-
-// Stable fetchers, one per filter (useRecordLoad wants a stable function, never an inline closure).
-const FIRST_PAGE = new Map<Filter, (userId: string) => Promise<ActivityPage>>();
-function firstPageFor(filter: Filter): (userId: string) => Promise<ActivityPage> {
-  let fetcher = FIRST_PAGE.get(filter);
-  if (!fetcher) {
-    fetcher = (userId: string) => fetchActivityPage(userId, null, kindsOf(filter));
-    FIRST_PAGE.set(filter, fetcher);
-  }
-  return fetcher;
-}
 
 function exactTime(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
@@ -93,9 +84,9 @@ function exactTime(iso: string): string {
   });
 }
 
-function ActivityRow({ item, personId }: { item: ActivityItem; personId: string }) {
+function ActivityRow({ item, personId, scope }: { item: ActivityItem; personId: string; scope: UserRecordScope }) {
   const Icon = isActivityKind(item.kind) ? KIND_ICON[item.kind] : History;
-  const href = activityRecordHref(item.record, personId);
+  const href = activityRecordHref(item.record, personId, scope);
   const byOther = item.actor_id && item.actor_id !== personId ? item.actor_id : null;
   // Admin rows read in the Admin history tab's words (one formatter for the same audit row).
   const words = item.kind === "admin" || item.kind === "org_admin" ? adminActionWords(item.title) : item.title;
@@ -114,7 +105,7 @@ function ActivityRow({ item, personId }: { item: ActivityItem; personId: string 
           {title}
           {byOther ? (
             <span className="flex min-w-0 items-baseline gap-1 type-secondary text-muted-foreground">
-              by <AdminUserRef userId={byOther} hideEmail />
+              by <ScopedPersonRef userId={byOther} scope={scope} />
             </span>
           ) : null}
         </div>
@@ -128,8 +119,21 @@ function ActivityRow({ item, personId }: { item: ActivityItem; personId: string 
 }
 
 // Keyed on person + filter + refresh by the tab, so every switch mounts fresh (skeleton, no old rows).
-function ActivityFeed({ userId, filter, shareForAi }: { userId: string; filter: Filter; shareForAi: (data: unknown) => void }) {
-  const { data: first, loading, error } = useRecordLoad(firstPageFor(filter), userId, 0);
+function ActivityFeed({
+  userId,
+  scope,
+  filter,
+  shareForAi,
+}: {
+  userId: string;
+  scope: UserRecordScope;
+  filter: Filter;
+  shareForAi: (data: unknown) => void;
+}) {
+  // The feed is keyed on person + seat + filter, so this fetcher is stable for its whole life.
+  const firstPage = useMemo(() => (id: string) => fetchActivityPage(id, null, kindsOf(filter), undefined, null, scope), [filter, scope]);
+  const { data: first, loading, error } = useRecordLoad(firstPage, userId, 0);
+  const call = activityCallFor(scope);
   const [more, setMore] = useState<ActivityPage | null>(null);
   const [olderBusy, setOlderBusy] = useState(false);
   const [olderError, setOlderError] = useState<unknown>(null);
@@ -146,7 +150,7 @@ function ActivityFeed({ userId, filter, shareForAi }: { userId: string; filter: 
         message="Activity could not load."
         error={error}
         operation="Read activity"
-        calls={["admin.user_activity"]}
+        calls={[call]}
       />
     );
   }
@@ -160,7 +164,7 @@ function ActivityFeed({ userId, filter, shareForAi }: { userId: string; filter: 
     setOlderBusy(true);
     setOlderError(null);
     try {
-      const next = await fetchActivityPage(userId, page.next_before, kindsOf(filter), undefined, page.next_before_key);
+      const next = await fetchActivityPage(userId, page.next_before, kindsOf(filter), undefined, page.next_before_key, scope);
       setMore(appendActivityPage(page, next));
     } catch (e) {
       setOlderError(e);
@@ -177,7 +181,7 @@ function ActivityFeed({ userId, filter, shareForAi }: { userId: string; filter: 
           message={`Unavailable: ${failed.map((s) => (isActivityKind(s.kind) ? ACTIVITY_KIND_LABEL[s.kind] : s.kind)).join(", ")}`}
           error={failed.map((s) => `${s.kind}: ${s.error ?? "failed"}`).join("\n")}
           operation="Read activity sources"
-          calls={["admin.user_activity"]}
+          calls={[call]}
         />
       ) : null}
       {days.length === 0 ? (
@@ -191,14 +195,14 @@ function ActivityFeed({ userId, filter, shareForAi }: { userId: string; filter: 
             <h3 className="type-meta font-medium text-muted-foreground">{d.label}</h3>
             <ul className="divide-y divide-border">
               {d.items.map((item) => (
-                <ActivityRow key={item.key} item={item} personId={userId} />
+                <ActivityRow key={item.key} item={item} personId={userId} scope={scope} />
               ))}
             </ul>
           </section>
         ))
       )}
       {olderError ? (
-        <ErrorNotice size="inline" message="Older activity could not load." error={olderError} operation="Read older activity" calls={["admin.user_activity"]} />
+        <ErrorNotice size="inline" message="Older activity could not load." error={olderError} operation="Read older activity" calls={[call]} />
       ) : null}
       {page.next_before ? (
         <div>
@@ -211,18 +215,24 @@ function ActivityFeed({ userId, filter, shareForAi }: { userId: string; filter: 
   );
 }
 
-export function UserActivityTab({ userId, version: pageVersion, shareForAi }: UserTabBodyProps) {
+export function UserActivityTab({ userId, scope, version: pageVersion, shareForAi }: ScopedTabBodyProps) {
   const [filter, setFilter] = useState<Filter>("all");
   const [version, setVersion] = useState(0);
   return (
     <div data-testid="user-activity-tab" className="grid gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Tabs<Filter> variant="capsule" aria-label="Activity kind" value={filter} onValueChange={setFilter} data={FILTERS} />
+        <Tabs<Filter> variant="capsule" aria-label="Activity kind" value={filter} onValueChange={setFilter} data={filtersFor(scope)} />
         <Button variant="quiet" onClick={() => setVersion((v) => v + 1)}>
           Refresh
         </Button>
       </div>
-      <ActivityFeed key={`${userId}|${filter}|${pageVersion}|${version}`} userId={userId} filter={filter} shareForAi={shareForAi} />
+      <ActivityFeed
+        key={`${userId}|${scope.kind}|${filter}|${pageVersion}|${version}`}
+        userId={userId}
+        scope={scope}
+        filter={filter}
+        shareForAi={shareForAi}
+      />
     </div>
   );
 }

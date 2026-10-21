@@ -1,7 +1,8 @@
 "use client";
 
 /**
- * Per-member admin controls: tier/level, storage cap, monthly budget, notes.
+ * Per-member admin controls: tier/level, storage cap, monthly budget. The member note is edited on
+ * the member page's Notes tab (its one home); a save here passes it back unchanged.
  * Advisory in v1 — values are stored, tracked, and surfaced; hard enforcement into the
  * upload/usage paths is a deliberate follow-up (see features/organizations/admin/FEATURE.md).
  */
@@ -16,7 +17,6 @@ import type { OrgAdminMember } from "../types";
 import { bytesToGb, gbToBytes, MCENTS_PER_USD, usdToMcents } from "../utils";
 import { pointsToUsd, usdToPoints } from "@ai-matrx/kit/format";
 import { usePointsRate } from "@/components/cost/pointsRate.client";
-import { ProTextarea } from "@/components/official/ProTextarea";
 
 interface Props {
   orgId: string;
@@ -40,7 +40,6 @@ export function MemberControlsForm({ orgId, member, onSaved }: Props) {
     (member.monthlyBudgetMcents == null
       ? ""
       : String(usdToPoints(member.monthlyBudgetMcents / MCENTS_PER_USD, { rate }) ?? ""));
-  const [notes, setNotes] = useState(member.notes ?? "");
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
@@ -55,7 +54,7 @@ export function MemberControlsForm({ orgId, member, onSaved }: Props) {
             ? ""
             : String(pointsToUsd(Number(budgetPoints), { rate }) ?? ""),
         ),
-        notes: notes.trim() || null,
+        notes: member.notes,
       });
       toast.success("Controls saved");
       onSaved();
@@ -113,18 +112,6 @@ export function MemberControlsForm({ orgId, member, onSaved }: Props) {
             placeholder="No limit"
           />
         </div>
-      </div>
-
-      <div className="space-y-1.5">
-        <Label htmlFor="notes">Admin notes</Label>
-        <ProTextarea
-          id="notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          rows={2}
-          placeholder="Internal notes about this member (optional)"
-          className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        />
       </div>
 
       <div className="flex items-start gap-2 rounded-md bg-muted/50 p-2.5 text-xs text-muted-foreground">

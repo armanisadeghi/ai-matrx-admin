@@ -3,8 +3,10 @@
 // A person's Support tab: their support sessions (the Support sessions table, narrowed by prop),
 // Start support session (the page's one dispatch), and the feedback they filed
 // (users.user_feedback by user_id) — each row opens its record in the feedback console.
+// An organization's seat (tab label "Feedback") sees only the feedback they filed in that
+// organization (iam.org_admin_member_feedback); support sessions are platform staff's, so not here.
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRecordLoad } from "./useRecordLoad";
 import { LifeBuoy, MessageSquareWarning } from "lucide-react";
 import { readOf } from "@ai-matrx/design-system";
@@ -16,7 +18,8 @@ import AppLink from "@/components/navigation/AppLink";
 import { createClient } from "@/utils/supabase/client";
 import { feedbackHref } from "@/features/admin/feedback/doors";
 import { SupportSessionsTableClient } from "../support-sessions/SupportSessionsTableClient";
-import type { UserTabBodyProps } from "./UserRecordPage";
+import type { ScopedTabBodyProps } from "./UserRecordPage";
+import type { UserRecordScope } from "./userSurfaces";
 
 interface FeedbackRow {
   id: string;
@@ -45,18 +48,33 @@ async function listFeedbackBy(userId: string): Promise<{ rows: FeedbackRow[]; to
   return { rows, total: count ?? rows.length };
 }
 
-const FEEDBACK_COLUMNS: MatrxColumnDef<FeedbackRow>[] = [
+/** The feedback they filed in one organization, newest FEEDBACK_CAP plus the full count. */
+async function listOrganizationFeedbackBy(orgId: string, userId: string): Promise<{ rows: FeedbackRow[]; total: number }> {
+  const { data, error } = await createClient()
+    .schema("iam")
+    .rpc("org_admin_member_feedback", { p_org_id: orgId, p_user_id: userId, p_limit: FEEDBACK_CAP });
+  if (error) throw error;
+  const rows = (data ?? []).map(({ total: _total, ...r }) => r);
+  return { rows, total: Number(data?.[0]?.total ?? 0) };
+}
+
+function feedbackColumns(scope: UserRecordScope): MatrxColumnDef<FeedbackRow>[] {
+  return [
   { id: "created_at", accessorKey: "created_at", header: "Filed", format: { id: "datetime" }, width: 170 },
   {
     id: "description",
     accessorKey: "description",
     header: "Feedback",
     width: 360,
-    cell: (r) => (
-      <AppLink href={feedbackHref(r.id)} className="line-clamp-1 hover:text-primary">
-        {r.description || "Untitled"}
-      </AppLink>
-    ),
+    // The feedback console is the platform's; an organization's seat reads the words here.
+    cell: (r) =>
+      scope.kind === "platform" ? (
+        <AppLink href={feedbackHref(r.id)} className="line-clamp-1 hover:text-primary">
+          {r.description || "Untitled"}
+        </AppLink>
+      ) : (
+        <span className="line-clamp-1">{r.description || "Untitled"}</span>
+      ),
   },
   { id: "feedback_type", accessorKey: "feedback_type", header: "Type", filter: "select", width: 110 },
   {
@@ -69,20 +87,28 @@ const FEEDBACK_COLUMNS: MatrxColumnDef<FeedbackRow>[] = [
   },
   { id: "priority", accessorFn: (r) => r.priority ?? "", header: "Priority", filter: "select", width: 100 },
   { id: "route", accessorFn: (r) => r.route ?? "", header: "Route", width: 220 },
-];
+  ];
+}
 
-export function UserSupportTab({ userId, version: pageVersion, reload, actions, subject, shareForAi }: UserTabBodyProps) {
+export function UserSupportTab({ userId, scope, version: pageVersion, reload, actions, subject, shareForAi }: ScopedTabBodyProps) {
   const [version, setVersion] = useState(0);
-  // Start support session is the page's one action (its dialog reloads the page when it closes).
-  const blocked = actions.blockedReason("support_session", subject);
+  // Start support session is the platform page's one action (its dialog reloads the page when it closes).
+  const support = scope.kind === "platform" && actions && subject ? { actions, subject } : null;
+  const blocked = support ? support.actions.blockedReason("support_session", support.subject) : null;
 
-  const { data: feedbackData, loading, error } = useRecordLoad(listFeedbackBy, userId, pageVersion + version);
+  const fetcher = useMemo(
+    () => (scope.kind === "organization" ? (id: string) => listOrganizationFeedbackBy(scope.orgId, id) : listFeedbackBy),
+    [scope],
+  );
+  const columns = useMemo(() => feedbackColumns(scope), [scope]);
+  const { data: feedbackData, loading, error } = useRecordLoad(fetcher, userId, pageVersion + version);
   const feedback = feedbackData?.rows ?? [];
   const feedbackTotal = feedbackData?.total ?? 0;
   useEffect(() => shareForAi({ feedback }), [feedback, shareForAi]);
 
   return (
     <div className="flex flex-col gap-5" data-testid="user-support-tab">
+      {support ? (
       <section className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-2">
           <h3 className="type-title">Support sessions</h3>
@@ -91,17 +117,18 @@ export function UserSupportTab({ userId, version: pageVersion, reload, actions, 
             icon={<LifeBuoy />}
             disabled={blocked !== null}
             title={blocked ?? undefined}
-            onClick={() => actions.run("support_session", subject)}
+            onClick={() => support.actions.run("support_session", support.subject)}
           >
             Start support session
           </Button>
         </div>
         <SupportSessionsTableClient targetUserId={userId} reloadKey={pageVersion} onChanged={reload} />
       </section>
+      ) : null}
 
       <section className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="type-title">Feedback filed</h3>
+          <h3 className="type-title">{scope.kind === "organization" ? `Feedback filed in ${scope.orgName}` : "Feedback filed"}</h3>
           {!error && feedbackTotal > feedback.length ? (
             <span className="type-secondary text-muted-foreground">
               Showing {formatCount(feedback.length)} of {formatCount(feedbackTotal)}
@@ -110,7 +137,7 @@ export function UserSupportTab({ userId, version: pageVersion, reload, actions, 
         </div>
         <MatrxDataTable
           data={feedback}
-          columns={FEEDBACK_COLUMNS}
+          columns={columns}
           getRowId={(r) => r.id}
           isLoading={loading}
           pageSize={25}
