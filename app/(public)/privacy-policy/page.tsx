@@ -471,6 +471,19 @@ const PrivacyPolicyPage = () => {
             )
           </li>
           <li>
+            <strong>Cloudflare Turnstile</strong> &mdash; an invisible check
+            that a new visitor is a person, not a bot. Receives browser and
+            device signals when a visitor starts using the Service without an
+            account. (
+            <OutboundLink
+              href="https://www.cloudflare.com/turnstile-privacy-policy/"
+              rel="external"
+            >
+              Turnstile Privacy Addendum
+            </OutboundLink>
+            )
+          </li>
+          <li>
             <strong>Groq</strong> &mdash; speech-to-text. Receives the audio you
             submit when you use voice input. (
             <OutboundLink
