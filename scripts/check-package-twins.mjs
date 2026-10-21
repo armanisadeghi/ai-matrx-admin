@@ -93,6 +93,7 @@ import {
   selfTestUuidShape,
   UUID_SHAPE_POSITIVES,
 } from "./uuid-shape.mjs";
+import { runContentLane, selfTestContentLane } from "./content-lane.mjs";
 import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
@@ -122,6 +123,9 @@ const { emitItem, endItems } = await import("./checks/items.mjs").then(
 );
 const STRICT = process.argv.includes("--strict");
 const SELF_TEST = process.argv.includes("--self-test");
+const PRUNE_STALE = process.argv.includes("--prune-stale");
+/** --content-only: run just the CONTENT lane (fast loop for whoever is deleting copies). */
+const CONTENT_ONLY = process.argv.includes("--content-only");
 
 const register = JSON.parse(
   readFileSync(resolve(ROOT, "scripts/package-twins.json"), "utf8"),
@@ -1398,8 +1402,13 @@ if (SELF_TEST) {
       }
     }
   }
+  let contentSample = null;
+  for (const c of ["kit/src/format.ts", "../aidream/apps/shared/kit/src/format.ts"]) {
+    try { contentSample = readFileSync(resolve(ROOT, c), "utf8"); break; } catch { /* next */ }
+  }
+  selfTestContentLane({ sampleSource: contentSample });
   console.log(
-    `check:package-twins self-test PASSED (every lane can fail) — ` +
+    `check:package-twins self-test PASSED (every lane can fail, incl. the CONTENT lane) — ` +
       `${TWINS.length} collapsed export(s) registered, plus ` +
       `${SHAPE_RULES.length} SHAPE rule(s): ` +
       `${SHAPE_RULES.map((r) => r.id).join(", ")}, and the ALIAS lane in four forms (specifier, assignment, wrapper, object-property pass-through).`,
@@ -1477,6 +1486,16 @@ export function staleNameCensus(rows, hits) {
     console.error(`\ncheck:package-twins — ${breach}\n`);
     process.exit(1);
   }
+}
+
+if (CONTENT_ONLY) {
+  const r = await runContentLane({
+    root: ROOT, register, registerPath: resolve(ROOT, "scripts/package-twins.json"),
+    excludePrefixes: [], prune: PRUNE_STALE, log: (m) => console.log(m), error: (m) => console.error(m),
+  });
+  process.exitCode = r.ok === false && STRICT ? 1 : 0;
+  await new Promise((res) => setImmediate(res));
+  process.exit(process.exitCode);
 }
 
 const findings = [];
@@ -1697,7 +1716,23 @@ if (VENDORED.prefixes.length > 0) {
   );
 }
 
+/**
+ * THE CONTENT LANE (2026-10-21, scripts/content-lane.mjs): whole-file copies
+ * between the app and package source, or between packages. Opt-in per register
+ * via `contentLane`; its census is `contentCensus` (shrink-only).
+ */
+const CONTENT = await runContentLane({
+  root: ROOT,
+  register,
+  registerPath: resolve(ROOT, "scripts/package-twins.json"),
+  excludePrefixes: VENDORED.prefixes,
+  prune: PRUNE_STALE,
+  log: (m) => console.log(m),
+  error: (m) => console.error(m),
+});
+
 const clean =
+  CONTENT.ok !== false &&
   findings.length === 0 &&
   shapeFailures === 0 &&
   nameCensusFailures === 0 &&
@@ -1737,7 +1772,7 @@ if (clean) {
       );
     }
   }
-  advisoryNote(findings.length + shapeFailures + nameCensusFailures + VENDORED.errors.length + OWNER_GAPS.length);
+  advisoryNote((CONTENT.uncensused?.length ?? 0) + (CONTENT.stale?.length ?? 0) + findings.length + shapeFailures + nameCensusFailures + VENDORED.errors.length + OWNER_GAPS.length);
 }
 
 /**
