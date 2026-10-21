@@ -275,9 +275,9 @@ const CHROME_AVOIDANCE_SELECTOR = `[data-matrx-table-footer], ${ATTENTION_DOCK_S
  * THE SHARED LIFT for floating chrome other than the assists dock (the admin error badge…): how far
  * `el` must rise from its resting place (`currentLift` px below where it is drawn now) so it sits over
  * no control, composer, pager, attention dock or list row — 0 when it is already clear, null when no
- * spot up to the shell header is free. The chrome moves; the page never makes room for it.
+ * spot within `maxPx` is free. The chrome moves; the page never makes room for it.
  */
-export function floatingLiftFor(el: HTMLElement, currentLift: number): number | null {
+export function floatingLiftFor(el: HTMLElement, currentLift: number, maxPx: number = LIFT_MAX_PX): number | null {
   const drawn = el.getBoundingClientRect();
   if (!sized(drawn)) return 0;
   const base = { top: drawn.top + currentLift, bottom: drawn.bottom + currentLift, left: drawn.left, right: drawn.right };
@@ -291,7 +291,7 @@ export function floatingLiftFor(el: HTMLElement, currentLift: number): number | 
       for (const target of avoid) if (overlaps(probe, target)) return target;
       return hitCoverage(probe, true, samplePoints(probe), el);
     },
-    window.innerHeight,
+    maxPx,
   );
 }
 
