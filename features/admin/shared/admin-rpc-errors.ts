@@ -2,8 +2,9 @@
 //
 // Shared error interpretation for the super-admin SECURITY DEFINER RPC
 // families (admin_update_app_config, admin_upsert_catalog_entry, ...).
-// All of them raise 42501 for non-super-admins and 40001 ("Conflict: ...")
-// for optimistic-concurrency failures.
+// All of them raise 42501 for non-super-admins and PT409 ("Conflict: ...")
+// for optimistic-concurrency failures — never 40001, which PostgREST retries
+// without limit (2026-10-21 outage; DB guard platform._no_retried_refusal_code).
 
 export interface AdminRpcError {
   code?: string;
@@ -17,8 +18,8 @@ export function rpcErrorMessage(error: AdminRpcError): string {
   return error.message;
 }
 
-/** ERRCODE 40001 ("Conflict: …") raised when the row changed since it was
+/** ERRCODE PT409 ("Conflict: …") raised when the row changed since it was
  *  loaded (optimistic-concurrency check on p_expected_updated_at). */
 export function isConflictError(error: AdminRpcError): boolean {
-  return error.code === "40001" || error.message.startsWith("Conflict:");
+  return error.code === "PT409" || error.message.startsWith("Conflict:");
 }

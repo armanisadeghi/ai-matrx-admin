@@ -248,7 +248,7 @@ export function homeReceiptFrom(data: unknown): HomeReceipt {
 export function homeRefusalMessage(error: { code?: string | null; message?: string | null }): string {
   const message = error.message?.trim();
   if (message) return message;
-  if (error.code === "40001") return "This was changed somewhere else. Reload it and move it again.";
+  if (error.code === "PT409") return "This was changed somewhere else. Reload it and move it again.";
   if (error.code === "42501") return "You cannot move this there.";
   return "This could not be moved.";
 }

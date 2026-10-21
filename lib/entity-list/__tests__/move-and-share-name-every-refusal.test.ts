@@ -57,7 +57,7 @@ describe("Move to… (platform.set_home per row)", () => {
   it("sends each row's own version and names the row a version conflict refused", async () => {
     answer = (_s, _fn, a) =>
       a.p_entity_id === "a2"
-        ? { data: null, error: { code: "40001", message: "This was changed somewhere else. Reload it and move it again." } }
+        ? { data: null, error: { code: "PT409", message: "This was changed somewhere else. Reload it and move it again." } }
         : {
             data: { home_scope_id: "s-9", organization_id: "org-2", organization_changed: true, version: 4, kept_fields: [], unchanged: false },
             error: null,
