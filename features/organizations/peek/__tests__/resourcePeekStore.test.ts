@@ -24,7 +24,7 @@ describe("resourcePeekStore", () => {
     jest.advanceTimersByTime(RESOURCE_PEEK_HOST_WAIT_MS - 1);
     expect(open).not.toHaveBeenCalled();
     jest.advanceTimersByTime(1);
-    expect(open).toHaveBeenCalledWith("/notes/n1", "_blank", "noopener,noreferrer");
+    expect(open).toHaveBeenCalledWith("/notes/n1", "_blank", "noopener");
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(getOpenResourcePeeks()).toHaveLength(0);
     expect(resourcePeekRequested()).toBe(false);

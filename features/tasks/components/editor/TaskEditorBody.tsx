@@ -97,6 +97,7 @@ import { useTaskEditorControllerCtx } from "./TaskEditorControllerContext";
 import { PropertyRow } from "./editorPrimitives";
 import { LinkedRecordsSection } from "@/features/scopes/components/linked-records/LinkedRecordsSection";
 import { insertBlockAtLine } from "@/utils/text-insertion";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const TASKS_SURFACE_NAME = "matrx-user/tasks";
 
@@ -801,15 +802,13 @@ export function TaskEditorBody({
                       compact={compact}
                       last={!task.parent_task_id}
                     >
-                      <a
+                      <OutboundLink
                         href={`/projects/${encodeURIComponent(project.id)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="truncate text-xs font-medium text-foreground transition-colors hover:text-primary"
                         title={project.name}
                       >
                         {project.name}
-                      </a>
+                      </OutboundLink>
                     </PropertyRow>
                   )}
                   {task.parent_task_id && (

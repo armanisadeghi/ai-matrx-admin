@@ -82,7 +82,7 @@ export interface ReservedNoticeTab {
  * Call `go(href)` when the destination is known, `cancel()` when there is none.
  */
 export function reserveNoticeTab(): ReservedNoticeTab {
-  const tab = typeof window === "undefined" ? null : window.open("about:blank", "_blank");
+  const tab = typeof window === "undefined" ? null : openOutbound("about:blank", "_blank");
   let settled = false;
   return {
     go: (href) => {

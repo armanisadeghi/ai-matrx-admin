@@ -15,6 +15,7 @@ import type { DiscoverResult } from "../discovery";
 import { inLineup, MAX_ROWS, type CompareRow } from "../rows";
 import { ItemLogo } from "./ItemLogo";
 import { RATING_SOURCE } from "./Lineup";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function PickList({ result, rows, onAdd, onClose }: {
   result: DiscoverResult;
@@ -75,8 +76,8 @@ export function PickList({ result, rows, onAdd, onClose }: {
                   <div className="flex min-w-0 items-center gap-1.5">
                     <span className="truncate text-base font-semibold text-foreground" title={m.name}>{m.name}</span>
                     {m.url ? (
-                      <a href={m.url} target="_blank" rel="noopener noreferrer" aria-label={`Open ${m.name}`}
-                        className="shrink-0 text-muted-foreground hover:text-foreground"><ExternalLink className="h-3.5 w-3.5" /></a>
+                      <OutboundLink href={m.url} aria-label={`Open ${m.name}`}
+                        className="shrink-0 text-muted-foreground hover:text-foreground"><ExternalLink className="h-3.5 w-3.5" /></OutboundLink>
                     ) : null}
                   </div>
                   <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">

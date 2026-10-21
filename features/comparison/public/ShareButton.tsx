@@ -15,6 +15,7 @@ import { toast } from "@/lib/toast";
 
 import { useComparisonOrganizationId } from "../hooks";
 import { CopyLinkButton } from "./SharedActions";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface ShareLink {
   slug: string;
@@ -80,10 +81,10 @@ export function ShareButton() {
     <>
       <CopyLinkButton path={link.path} />
       <Button variant="outline" asChild>
-        <a href={link.path} target="_blank" rel="noopener noreferrer">
+        <OutboundLink href={link.path}>
           <ExternalLink className="h-4 w-4" aria-hidden />
           Open
-        </a>
+        </OutboundLink>
       </Button>
       <Button variant="quiet" disabled={busy} onClick={() => void stop()}>Stop sharing</Button>
     </>

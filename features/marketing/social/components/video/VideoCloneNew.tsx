@@ -57,6 +57,7 @@ import { plainRenderMessage } from "../../video/render-errors";
 import { MusicPicker } from "./MusicPicker";
 import { NO_MUSIC, musicCostLine, musicForBrief, type MusicChoice } from "../../video/music";
 import { CaptionLookPicker, CostLine, FailureLine, FilePickButton, RunLog, closeSteps, pushStep, type RunStep } from "./StudioParts";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const ASPECTS: ReadonlyArray<{ value: CloneAspect; label: string }> = [
   { value: "9:16", label: "9:16" },
@@ -218,9 +219,9 @@ function ReferencePanel({ postId }: { postId: string }) {
         {post.data?.platform ? <Badge>{post.data.platform}</Badge> : null}
         {s?.durationSeconds ? <span className="type-meta text-muted-foreground">{s.durationSeconds.toFixed(1)}s</span> : null}
         {post.data?.url ? (
-          <a href={post.data.url} target="_blank" rel="noreferrer" className="type-meta ml-auto text-muted-foreground underline">
+          <OutboundLink href={post.data.url} className="type-meta ml-auto text-muted-foreground underline">
             Original
-          </a>
+          </OutboundLink>
         ) : null}
       </div>
       <div className="mx-auto w-full max-w-[18rem] overflow-hidden rounded-lg bg-muted" style={{ aspectRatio: "9 / 16" }}>

@@ -9,6 +9,7 @@ import { readAppConfigKey } from "@/lib/config-attestation/appConfig";
 import { whenEngagedLate } from "@/lib/boot/engagedLate";
 import { noticeSchema } from "@/features/admin/applications/config/schema";
 import { defineClientKeyFamily } from "@/lib/sync/client-storage";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const dismissed = defineClientKeyFamily({
   id: "web-app-notice.dismissed.v1",
@@ -45,7 +46,7 @@ export function WebAppNotice() {
         id: "web-app-notice",
         description: n.body,
         duration: Infinity,
-        action: n.url ? { label: "Open", onClick: () => window.open(n.url, "_blank", "noopener") } : undefined,
+        action: n.url ? { label: "Open", onClick: () => openOutbound(n.url, "_blank", "noopener") } : undefined,
         cancel: { label: "Dismiss", onClick: () => dismissed.set(id, new Date().toISOString()) },
       });
     });

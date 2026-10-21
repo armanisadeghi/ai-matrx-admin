@@ -22,6 +22,7 @@ import { passRate } from "../verdicts";
 import type { TestRunView, TestVerdict } from "../types";
 import { RunsTable } from "./AgentTestTables";
 import { TestCost } from "./TestCost";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const ADMIN_AGENT_BASE = "/administration/agents/system-agents/agents";
 
@@ -215,7 +216,7 @@ export function AgentTestsPlatformPage() {
               onOpen={(run) => {
                 const agentId = run.agentIds[0];
                 if (agentId)
-                  window.open(
+                  openOutbound(
                     `${ADMIN_AGENT_BASE}/${agentId}/test?run=${run.id}`,
                     "_blank",
                     "noopener",

@@ -21,6 +21,7 @@ import { extractErrorMessage } from "@/utils/errors";
 import { useBrandAssets, useDeleteBrandAsset, useUpdateBrandAsset } from "@/features/marketing/data/hooks";
 import { isJsonRecord, type BrandAsset } from "@/features/marketing/types";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function field(asset: BrandAsset, key: string): string | null {
   const v = isJsonRecord(asset.data) ? asset.data[key] : null;
@@ -70,9 +71,9 @@ function Evidence({ asset }: { asset: BrandAsset }) {
     <div className="min-w-0 type-meta text-muted-foreground" data-testid="brand-visual-evidence">
       <div className="truncate" title={parts.join(" · ")}>{parts.join(" · ") || "Found on your site"}</div>
       {asset.source_url ? (
-        <a href={asset.source_url} target="_blank" rel="noreferrer" className="truncate hover:underline">
+        <OutboundLink href={asset.source_url} className="truncate hover:underline">
           {asset.source_url.replace(/^https?:\/\//, "")}
-        </a>
+        </OutboundLink>
       ) : null}
     </div>
   );

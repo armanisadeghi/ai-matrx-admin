@@ -29,6 +29,7 @@ import {
 } from "../rows";
 import { FacetOptions } from "./FacetOptions";
 import { ItemLogo } from "./ItemLogo";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Where a matched thing's rating comes from, said on the card. */
 export const RATING_SOURCE: Record<string, string> = {
@@ -235,11 +236,11 @@ function MatchBody({ match, category, photo, source }: { match: LookupMatch; cat
       <ItemLogo name={match.name} logoUrl={match.logo_url} website={match.website} size={64} fill={photo} />
       <div className="min-w-0 space-y-1">
         {match.url ? (
-          <a href={match.url} target="_blank" rel="noopener noreferrer"
+          <OutboundLink href={match.url}
             className="group inline-flex max-w-full items-start gap-1 text-base font-semibold text-foreground hover:underline" title={match.name}>
             <span className="line-clamp-2">{match.name}</span>
             <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100" aria-hidden />
-          </a>
+          </OutboundLink>
         ) : <span className="line-clamp-2 text-base font-semibold text-foreground" title={match.name}>{match.name}</span>}
         {category ? <Chip label={category.split(",")[0]} tone="neutral" /> : null}
         {match.detail && !category.startsWith(match.detail) ? <div className="type-secondary truncate text-muted-foreground" title={match.detail}>{match.detail}</div> : null}

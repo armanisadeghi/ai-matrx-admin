@@ -1,3 +1,4 @@
+import { openOutbound } from "@ai-matrx/kit/outbound";
 /**
  * The resource-peek request store — tiny on purpose (the `personPeekStore` shape).
  *
@@ -82,7 +83,7 @@ function giveUpWaiting(): void {
       `[resource-peek] no peek host on this page after ${RESOURCE_PEEK_HOST_WAIT_MS} ms — ${request.kind} ${request.id} cannot open in place` +
         (request.fallbackHref ? `; opening ${request.fallbackHref} in a new tab` : "; and it has no fallbackHref, so nothing opens"),
     );
-    if (request.fallbackHref) window.open(request.fallbackHref, "_blank", "noopener,noreferrer");
+    if (request.fallbackHref) openOutbound(request.fallbackHref, "_blank", "noopener");
     request.onClose?.();
   }
 }

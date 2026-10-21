@@ -56,6 +56,7 @@ import {
   describeTestRequest,
   promoteBlockedBecause,
 } from "./run-words";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const TEST_POLL_SECONDS_KNOB = { feature: "ai.models", key: "test_poll_seconds" } as const;
 const TEST_POLL_COUNT_KNOB = { feature: "ai.models", key: "test_poll_count" } as const;
@@ -331,14 +332,12 @@ function CandidateDetail({
             {s.gated !== "none" ? ` · Gated (${s.gated})` : ""}
           </p>
         </div>
-        <a
+        <OutboundLink
           href={s.card_url}
-          target="_blank"
-          rel="noreferrer"
           className="inline-flex items-center gap-1 text-sm text-primary"
         >
           Model card <ExternalLink className="h-3 w-3" />
-        </a>
+        </OutboundLink>
       </header>
 
       {ambiguities.length ? (

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import type { TileMenuAction } from "../items/types";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface TileMenuComment {
   /** Comments on the tile's thread; null while unknown (never loaded). */
@@ -116,7 +117,7 @@ export function TileMenu({ title, typeLabel, href, comment, actions = [], focuse
             </DropdownMenuItem>
           )}
           {href && (
-            <DropdownMenuItem data-board-menu-action="open" onSelect={() => window.open(href, "_blank", "noopener,noreferrer")}>
+            <DropdownMenuItem data-board-menu-action="open" onSelect={() => openOutbound(href, "_blank", "noopener")}>
               <ExternalLink className="h-4 w-4" />
               Open
             </DropdownMenuItem>

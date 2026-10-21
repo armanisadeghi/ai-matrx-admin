@@ -21,6 +21,7 @@ import { Shared } from "../stage/Shared";
 import { shownHost, type FoundAccount, type FoundCards } from "./foundCards";
 import { FitText } from "./FitText";
 import styles from "./found.module.css";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export const href = (url: string) => withReferral(/^https?:\/\//i.test(url) ? url : `https://${url}`);
 export const compact = new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 });
@@ -183,7 +184,7 @@ export function FoundStage({
               </Slot>
               <Slot key="lead" id="lead" label="Social" icon={<Layers className="size-4" />} filled={Boolean(lead)} working={working} className="sm:col-span-2">
                 {lead ? (
-                  <a href={href(lead.item.url ?? lead.item.value)} target="_blank" rel="noopener noreferrer" data-clickable className="block h-full">
+                  <OutboundLink href={href(lead.item.url ?? lead.item.value)} data-clickable className="block h-full">
                     <CardBody
                       dark
                       art={<AccountPicture account={lead} size="size-14" />}
@@ -191,14 +192,14 @@ export function FoundStage({
                       value={<span className="text-[1.45rem] sm:text-[1.6rem]"><FitText text={handleOf(lead)} /></span>}
                       sub={lead.followers != null ? `${compact.format(lead.followers)} followers` : undefined}
                     />
-                  </a>
+                  </OutboundLink>
                 ) : null}
               </Slot>
               <Slot key="website" id="website" label="Your site" icon={<Globe className="size-4" />} filled={Boolean(cards.website)} working={working} className="sm:col-span-3">
                 {cards.website ? (
-                  <a href={href(cards.website.url ?? cards.website.value)} target="_blank" rel="noopener noreferrer" data-clickable className="block h-full">
+                  <OutboundLink href={href(cards.website.url ?? cards.website.value)} data-clickable className="block h-full">
                     <CardBody icon={<Globe className="size-4" />} label="Your site" value={<FitText text={shownHost(cards.website)} />} />
-                  </a>
+                  </OutboundLink>
                 ) : null}
               </Slot>
               <Slot key="location" id="location" label="Based in" icon={<MapPin className="size-4" />} filled={Boolean(cards.location)} working={working} className="sm:col-span-3">
@@ -222,11 +223,9 @@ export function FoundStage({
                     </span>
                     <div className="flex flex-wrap gap-x-6 gap-y-3">
                       {more.map((a) => (
-                        <a
+                        <OutboundLink
                           key={a.item.key}
                           href={href(a.item.url ?? a.item.value)}
-                          target="_blank"
-                          rel="noopener noreferrer"
                           data-clickable
                           className="flex min-w-0 items-center gap-2.5"
                         >
@@ -235,7 +234,7 @@ export function FoundStage({
                             <span className="truncate text-lg font-semibold leading-tight text-foreground">{handleOf(a)}</span>
                             <span className="text-sm text-muted-foreground">{platformLabel(a.platform)}</span>
                           </span>
-                        </a>
+                        </OutboundLink>
                       ))}
                     </div>
                   </div>

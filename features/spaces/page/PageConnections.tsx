@@ -20,6 +20,7 @@ import {
 import { catalogConnectionPresentation } from "@/features/settings/pages/integration-catalog-state";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const SETTINGS_HREF = "/settings/integrations";
 
@@ -56,12 +57,12 @@ export function PageConnections() {
           ))
         : null}
       <div className="my-1 border-t border-border" />
-      <a href={SETTINGS_HREF} target="_blank" rel="noopener" className="spaces-menu-row" data-clickable="">
+      <OutboundLink href={SETTINGS_HREF} className="spaces-menu-row" data-clickable="">
         <span className="spaces-menu-row-icon">
           <ExternalLink size={16} />
         </span>
         <span className="flex-1 truncate text-left">Add connections</span>
-      </a>
+      </OutboundLink>
     </div>
   );
 }

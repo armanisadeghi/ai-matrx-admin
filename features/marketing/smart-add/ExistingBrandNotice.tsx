@@ -12,6 +12,7 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { marketingSeg } from "@/features/marketing/lib/keys";
 import type { BrandMatch } from "./brandMatch";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const MAX_LISTED = 4;
 
@@ -63,14 +64,12 @@ export function ExistingBrandNotice({
               ) : null}
             </span>
             <div className="flex flex-wrap items-center gap-2">
-              <a
+              <OutboundLink
                 href={marketingRoutes.brand(marketingSeg({ id: m.brand.id, slug: m.brand.slug }))}
-                target="_blank"
-                rel="noreferrer"
                 className="inline-flex h-7 items-center gap-1 rounded-md border border-border px-2.5 text-sm font-medium text-foreground hover:bg-muted"
               >
                 Open it <ExternalLink className="size-3.5" />
-              </a>
+              </OutboundLink>
               <Button variant="primary" onClick={() => onAddTo(m)} data-testid="existing-brand-enrich">
                 Add what&apos;s new to it
               </Button>

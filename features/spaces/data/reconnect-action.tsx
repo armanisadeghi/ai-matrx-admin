@@ -1,6 +1,7 @@
 // AT-FOLLOW: a connected-app refusal on a run step ships its reconnect action. The server's refusals all end in
 // "Settings → Integrations → <App>", so one reader turns that sentence into a link to that app's setting.
 import React from "react";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const DOORS: [RegExp, string, string][] = [
   [/microsoft|outlook|teams/i, "Microsoft", "/user-settings/integrations/microsoft"],
@@ -25,14 +26,12 @@ export function ReconnectAction({ says }: { says: string | null | undefined }) {
   const door = reconnectDoor(says);
   if (!door) return null;
   return (
-    <a
+    <OutboundLink
       className="ml-2 underline"
       href={door.href}
-      target="_blank"
-      rel="noopener"
       data-testid="spaces-automation-reconnect"
     >
       {door.label === "Integrations" ? "Open integrations" : `Reconnect ${door.label}`}
-    </a>
+    </OutboundLink>
   );
 }

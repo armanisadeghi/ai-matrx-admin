@@ -8,6 +8,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getJson } from "@/lib/python-client";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface FreeAllowance {
   feature: string;
@@ -64,10 +65,10 @@ export function FreeAllowanceNote({ feature, refreshKey }: { feature: string; re
   if (!line) return null;
   if (line.href) {
     return (
-      <a href={line.href} target="_blank" rel="noopener noreferrer"
+      <OutboundLink href={line.href}
         className="type-secondary font-medium text-primary underline-offset-4 hover:underline">
         {line.text}
-      </a>
+      </OutboundLink>
     );
   }
   return <span className="type-secondary tabular-nums text-muted-foreground">{line.text}</span>;

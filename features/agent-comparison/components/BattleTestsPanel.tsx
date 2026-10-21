@@ -41,6 +41,7 @@ import { TestRunPanel } from "@/features/agent-tests/components/AgentTestPage";
 import { selectActiveBattleColumns, selectMountedBattleSetId, type BattleColumnDescriptor } from "../shared/activeBattleColumns";
 import { useCatalogBoundSelector } from "../shared/useCatalogBoundSelector";
 import { SYNTHETIC_PREFIX, planBattleTests, withVersionIds, type ColumnFacts } from "../shared/battleTestSetups";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 function columnFacts(state: RootState, column: BattleColumnDescriptor): ColumnFacts {
   const instanceAgentId = selectAgentIdFromInstance(column.conversationId)(state) ?? null;
@@ -196,7 +197,7 @@ export function BattleTestsPanel() {
         {caseAgentId ? (
           <Button
             variant="quiet"
-            onClick={() => window.open(`/agents/${caseAgentId}/test`, "_blank", "noopener")}
+            onClick={() => openOutbound(`/agents/${caseAgentId}/test`, "_blank", "noopener")}
             data-testid="battle-tests-edit-cases"
           >
             {caseCount === 0 ? "Add a case" : "Edit cases"}

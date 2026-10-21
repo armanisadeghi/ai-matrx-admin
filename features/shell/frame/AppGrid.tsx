@@ -15,6 +15,7 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system/cn";
 import { ProductMark } from "./ProductMark";
 import type { FrameProduct, ProductFamily } from "./types";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export interface AppGridProps {
   products: readonly FrameProduct[];
@@ -152,11 +153,9 @@ export function AppGrid({
       );
     }
     return (
-      <a
+      <OutboundLink
         key={key}
         href={product.homeHref}
-        target="_blank"
-        rel="noopener noreferrer"
         {...keyboard}
         aria-current={product.id === currentProductId ? "page" : undefined}
         className={cn(tileClass, product.id === currentProductId && "bg-accent")}
@@ -165,7 +164,7 @@ export function AppGrid({
         {glyph}
         {label}
         <span className="sr-only">(opens in a new tab)</span>
-      </a>
+      </OutboundLink>
     );
   }
 

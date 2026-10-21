@@ -20,6 +20,7 @@ import { platformLabel } from "@/features/marketing/social/components/PlatformMa
 import { BRAND_ASSET_KIND_LABELS, isBrandAssetKind } from "@/features/marketing/types";
 import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const SHOWN = 6;
 
@@ -247,9 +248,9 @@ export function BrandOverviewActivity({
             return (
               <li key={e.key}>
                 {e.external ? (
-                  <a href={e.href} target="_blank" rel="noopener noreferrer" className={cls}>
+                  <OutboundLink href={e.href} className={cls}>
                     {body}
-                  </a>
+                  </OutboundLink>
                 ) : (
                   <Link href={e.href} className={cls}>
                     {body}

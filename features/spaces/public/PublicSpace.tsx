@@ -38,6 +38,7 @@ import {
   type PublicPageRef,
   type PublicSpaceView,
 } from "./public-view";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 const READ_ONLY = (what: string) => () => {
   throw new Error(`${what} is not available on a published page.`);
@@ -103,7 +104,7 @@ function DuplicateButton({
       icon={<Copy size={15} />}
       onClick={() =>
         embedded
-          ? window.open(target, "_blank", "noopener")
+          ? openOutbound(target, "_blank", "noopener")
           : window.location.assign(target)
       }
       data-testid="public-duplicate"

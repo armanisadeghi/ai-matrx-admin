@@ -62,7 +62,7 @@ function vaultPort(): VaultPort {
 const openUrl = (url: string) => void openOutbound(url, "_blank", "noopener");
 /** "Open in new tab" for one item (the Authenticator's code rows): the item's own page. */
 const openItemInNewTab = (itemId: string) =>
-  void window.open(`/vault/${encodeURIComponent(itemId)}`, "_blank", "noopener");
+  void openOutbound(`/vault/${encodeURIComponent(itemId)}`, "_blank", "noopener");
 
 const notify: Notify = (message, kind) => {
   if (kind === "error") toast.error(message);
