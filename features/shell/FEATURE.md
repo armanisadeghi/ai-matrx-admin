@@ -101,7 +101,7 @@ Pills, assists, badges, alarms, notices, toasts, the chat dock and the window tr
 
 ## THE PAGE RUNWAY — every scrolling page scrolls its last line to about half the screen (owner, 2026-10-19)
 
-- Supersedes "the page end = the gutter" below for every page that SCROLLS. One value: `--matrx-page-runway` = `max(50dvh, --matrx-floating-clearance)` (`styles/shell.css`). Every shell runway `::after`, `.scroll-page-end-space`, education's boundary, and the full-page notes editor (all four modes) read it; nothing hand-writes `pb-[85dvh]`/`40dvh`. A non-scrolling list surface (`data-matrx-page-end`) keeps its small foot.
+- Supersedes "the page end = the gutter" below for every page that SCROLLS. One value: `--matrx-page-runway` = `max(50dvh, safe area + page end)` (`styles/shell.css`) — a constant since 2026-10-20: pages read it as padding, so it never follows what floats. Every shell runway `::after`, `.scroll-page-end-space`, education's boundary, and the full-page notes editor (all four modes) read it; nothing hand-writes `pb-[85dvh]`/`40dvh`. A non-scrolling list surface (`data-matrx-page-end`) keeps its small foot.
 - A pane inside an app viewport that is a page (the notes editor) marks its root `data-matrx-page-runway` and pads by `var(--matrx-page-runway)`; a `ProTextarea` host passes `--matrx-textarea-end` so the control-row reserve (44px) is a floor, never a ceiling.
 - Nothing may SHRINK it; the assists pill no longer insets any scroller (removed 2026-10-20 — FLOATING THINGS NEVER MOVE THE PAGE).
 - A page's own bottom bar (a status bar flush with the floor — the notes metadata bar) carries `data-matrx-page-foot`; `FloatingClearanceSync` publishes its height as `--matrx-page-foot-h` and the page assistant dock rests above it, never on it.

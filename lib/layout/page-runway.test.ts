@@ -15,7 +15,8 @@ const SHELL_CSS = read("styles/shell.css");
 
 describe("the page runway value", () => {
   it("is ONE token: half the screen, never less than the floating clearance", () => {
-    expect(SHELL_CSS).toMatch(/--matrx-page-runway:\s*max\(50dvh,\s*var\(--matrx-floating-clearance\)\);/);
+    // A constant — never what floats: pages read it as padding (floating things never move the page).
+    expect(SHELL_CSS).toMatch(/--matrx-page-runway:\s*max\(50dvh,\s*calc\(env\(safe-area-inset-bottom, 0px\) \+ var\(--matrx-page-end\)\)\);/);
     expect(PAGE_RUNWAY_VIEWPORT_FRACTION).toBe(0.5);
   });
 

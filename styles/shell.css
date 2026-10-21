@@ -2072,12 +2072,14 @@ body[style*="pointer-events: none"] {
       var(--matrx-page-end)
   );
   /* THE PAGE RUNWAY (owner, 2026-10-19): every page that scrolls can scroll
-     its last line up to about HALF the screen — never less than what floats.
+     its last line up to about HALF the screen. A CONSTANT: pages read it as
+     padding, so it never follows what floats (floating things never move the
+     page, 2026-10-20 — chrome taller than half the screen floats over the end).
      The one value every page scroller, notes editor pane and education page
      reads; nothing hand-writes a big bottom padding. lib/layout/page-rhythm.ts
      PAGE_RUNWAY_VIEWPORT_FRACTION pins it; the dev guard screams
      `[page-runway]` when a page ends short of it. */
-  --matrx-page-runway: max(50dvh, var(--matrx-floating-clearance));
+  --matrx-page-runway: max(50dvh, calc(env(safe-area-inset-bottom, 0px) + var(--matrx-page-end)));
 }
 
 /* A DIALOG BODY THAT SCROLLS ENDS CLEAR OF FLOATING CHROME TOO. A dialog is portalled outside

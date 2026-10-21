@@ -41,13 +41,17 @@ const SKIP = /(\.test\.|\.spec\.|\/__tests__\/)/;
 const CHROME_VAR = String.raw`--(?:matrx-floating-(?:measured|clearance|fixed-measured)|shell-fixed-[a-z-]+|page-bottom-dock-h|assist-[a-z-]+|admin-attention-[a-z-]+|matrx-toast-floor|front-toast-height|matrx-window-scroller-runway|error-badge-[a-z-]+)\b`;
 const READS_CHROME = new RegExp(String.raw`var\(\s*${CHROME_VAR}`);
 
-const CSS_LAYOUT_PROP = /^(?:padding(?:-[a-z]+)*|margin(?:-[a-z]+)*|height|min-height|max-height|(?:min-|max-)?block-size)$/;
+const CSS_LAYOUT_PROP = /^(?:padding(?:-[a-z]+)*|margin(?:-[a-z]+)*|(?:min-|max-)?(?:height|width|block-size|inline-size)|flex-basis|flex|grid-template-(?:rows|columns))$/;
 const TW_LAYOUT_CLASS = new RegExp(
-  String.raw`(?:^|[\s"'\`{(])(?:[a-z0-9-]+:)*!?(?:p[btyxlrse]?|m[btyxlrse]?|h|min-h|max-h|size)-\[[^\]\s]*var\(\s*${CHROME_VAR}`,
+  String.raw`(?:^|[\s"'\`{(])(?:[a-z0-9-]+:)*!?(?:p[btyxlrse]?|m[btyxlrse]?|h|min-h|max-h|w|min-w|max-w|size|basis)-\[[^\]\s]*var\(\s*${CHROME_VAR}`,
 );
+/** Inline style keys (quoted or not), value on the same or a later line. Scanned over the whole file. */
 const INLINE_LAYOUT_STYLE = new RegExp(
-  String.raw`\b(?:padding|margin|height|minHeight|maxHeight|blockSize|minBlockSize|maxBlockSize)[A-Za-z]*\s*:\s*[\`"'][^\`"'\n]*var\(\s*${CHROME_VAR}`,
+  String.raw`["']?\b(?:padding|margin|height|minHeight|maxHeight|width|minWidth|maxWidth|blockSize|minBlockSize|maxBlockSize|inlineSize|flexBasis|gridTemplateRows|gridTemplateColumns)[A-Za-z]*["']?\s*:\s*[\`"'][^\`"']*?var\(\s*${CHROME_VAR}`,
+  "g",
 );
+/** A page re-publishing a chrome variable under its own name, to read it later. */
+const ALIAS_STYLE = new RegExp(String.raw`["']--[a-z0-9-]+["']\s*:\s*[\`"'][^\`"']*?var\(\s*${CHROME_VAR}`, "g");
 
 /** Floating chrome lives here; its code may position ITSELF but never pad, margin or size another element. */
 const CHROME_CODE = [
@@ -56,8 +60,9 @@ const CHROME_CODE = [
   "features/admin/attention/",
   "features/ai-test-mode/AiTestModeDock",
   "features/shell/components/FloatingClearanceSync",
+  "lib/layout/floating-chrome",
 ];
-const STYLES_PAGE = /\.style\.(?:padding|margin|height|minHeight|maxHeight)[A-Za-z]*\s*=(?!=)|style\.setProperty\(\s*["'`](?:padding|margin|height|min-height|max-height)/;
+const STYLES_PAGE = /\.style\.(?:padding|margin|height|minHeight|maxHeight|width|cssText)[A-Za-z]*\s*=(?!=)|style\.setProperty\(\s*["'`](?:padding|margin|height|min-height|max-height|width)|Object\.assign\(\s*[\w.]+\.style\b|setAttribute\(\s*["'`]style["'`]/;
 
 const RETIRED = /\b(?:useFixedCornerClearance|FIXED_CORNER_CLEARANCE_VAR|FLOATING_FIXED_MEASURED_VAR|applyAssistClearance)\b|--shell-fixed-(?:corner|alert)-clearance|--matrx-floating-fixed-measured/;
 
@@ -93,6 +98,15 @@ function scanCss(file, raw) {
     }
   }
   function checkDecl(text, offset) {
+    const alias = /^\s*(--[a-z0-9-]+)\s*:([\s\S]*)$/.exec(text);
+    if (alias && READS_CHROME.test(alias[2])) {
+      const selector = selectors[selectors.length - 1] ?? "";
+      // The shell derives its own runway values from the measure once, on :root; anything else is an alias a page can pad by.
+      if (!(file === "styles/shell.css" && /^:root$/.test(selector.trim()))) {
+        findings.push({ rule: "layout-reads-chrome", file, line: lineOf(source, offset + text.search(/\S/)), title: `\`${alias[1]}\` re-publishes a floating-chrome variable under another name` });
+      }
+      return;
+    }
     const m = /^\s*([a-z-]+)\s*:([\s\S]*)$/.exec(text);
     if (!m || !CSS_LAYOUT_PROP.test(m[1]) || !READS_CHROME.test(m[2])) return;
     const selector = selectors[selectors.length - 1] ?? "";
@@ -111,8 +125,14 @@ function scanCss(file, raw) {
 function scanScript(file, raw) {
   const findings = [];
   const source = stripJsComments(raw);
+  const chromeCode = CHROME_CODE.some((p) => file.startsWith(p));
+  for (const re of chromeCode ? [INLINE_LAYOUT_STYLE] : [INLINE_LAYOUT_STYLE, ALIAS_STYLE]) {
+    for (const m of source.matchAll(re)) {
+      findings.push({ rule: "layout-reads-chrome", file, line: lineOf(source, m.index), title: "sizes the page by (or re-publishes) a variable floating chrome publishes" });
+    }
+  }
   source.split("\n").forEach((text, i) => {
-    if (TW_LAYOUT_CLASS.test(text) || INLINE_LAYOUT_STYLE.test(text)) {
+    if (TW_LAYOUT_CLASS.test(text)) {
       findings.push({ rule: "layout-reads-chrome", file, line: i + 1, title: "pads, margins or sizes the page by a variable floating chrome publishes" });
     }
     if (CHROME_CODE.some((p) => file.startsWith(p)) && STYLES_PAGE.test(text)) {
@@ -152,9 +172,15 @@ function selfTest() {
     ["a page foot padded by floating chrome is RED", "x.css", `[data-matrx-page-end] {\n  padding-block-end: calc(var(--matrx-floating-measured) + 1rem);\n}`, ["layout-reads-chrome"]],
     ["a height shrunk by chrome inside @media is RED", "x.css", `@media (min-width: 640px) {\n  .rail { height: calc(100dvh - var(--admin-attention-lift, 0px)); }\n}`, ["layout-reads-chrome"]],
     ["a trailing ::after runway is GREEN", "x.css", `.shell-main::after {\n  content: "";\n  block-size: max(50dvh, var(--matrx-floating-clearance));\n}`, []],
-    ["a variable definition is GREEN", "x.css", `:root { --matrx-page-runway: max(50dvh, var(--matrx-floating-clearance)); }`, []],
+    ["the shell's runway definition on :root is GREEN", "styles/shell.css", `:root { --matrx-page-runway: max(50dvh, var(--matrx-floating-clearance)); }`, []],
     ["a comment naming the old mechanism is GREEN", "x.css", `/* it used --shell-fixed-corner-clearance once */\n.a { color: red; }`, []],
     ["assists padding a scroller is RED", "features/assists/x.ts", `el.style.paddingBottom = \`\${need}px\`;`, ["chrome-styles-page"]],
+    ["a multi-line style object with a quoted key is RED", "x.tsx", `const s = {\n  "paddingBottom":\n    \`calc(1rem + var(--matrx-floating-clearance))\`,\n};`, ["layout-reads-chrome"]],
+    ["a width cut by chrome is RED", "x.tsx", `<div className="max-w-[calc(100vw-var(--assist-dock-lift))]" />`, ["layout-reads-chrome"]],
+    ["an alias of a chrome variable is RED", "x.css", `.page { --room: var(--matrx-floating-clearance); padding-bottom: var(--room); }`, ["layout-reads-chrome"]],
+    ["an alias in a style object is RED", "x.tsx", `<div style={{ "--room": "var(--page-bottom-dock-h)" }} />`, ["layout-reads-chrome"]],
+    ["the shell deriving its runway on :root is GREEN", "styles/shell.css", `:root { --matrx-floating-clearance: calc(var(--matrx-floating-measured) + 1rem); }`, []],
+    ["chrome writing cssText onto the page is RED", "features/assists/x.ts", `el.style.cssText = "padding-bottom: 40px";`, ["chrome-styles-page"]],
     ["assists moving itself is GREEN", "features/assists/x.ts", `box.style.setProperty("--assist-dock-lift", v);`, []],
   ];
   let failed = 0;
