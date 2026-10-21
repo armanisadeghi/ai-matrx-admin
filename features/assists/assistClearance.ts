@@ -61,8 +61,11 @@ const INTERACTIVE =
  * A list's row (table row, group header, card, list item carrying a row id): never a free spot.
  * A chat message (`data-message-id`) is a row of the transcript: the pill floated over the person's
  * own message bubble, which is text, not a control (live 2026-10-19, "4 assists" on /chat).
+ * A rich block in a note or an answer (`data-block-menu`, the one wrapper every block carries) is a
+ * row of the document the same way: the pill sat on a tasks block's progress bar in Split (review 5,
+ * G11, 2026-10-21).
  */
-const ROW = '[data-row-id], [data-matrx-table-group-row], tr, [role="row"], [data-message-id]';
+const ROW = '[data-row-id], [data-matrx-table-group-row], tr, [role="row"], [data-message-id], [data-block-menu]';
 const LIFT_VAR = "--assist-dock-lift";
 const YIELD_ATTR = "data-assist-dock-yield";
 /**

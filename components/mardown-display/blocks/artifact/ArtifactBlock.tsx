@@ -8,6 +8,7 @@ import { toast } from "@/lib/toast";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { artifactContentToMarkdown } from "@/features/canvas/export/exportArtifactMarkdown";
 import { useUnbindArtifact } from "@/features/canvas/materialization/useUnbindArtifact";
+import { ArtifactDoorsDrawnProvider } from "@/features/canvas/output/ArtifactBlockAttach";
 import { ArtifactVersionHistory } from "@/features/canvas/components/ArtifactVersionHistory";
 import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
@@ -407,7 +408,9 @@ const ArtifactBlock: React.FC<ArtifactBlockProps> = ({
       </div>
 
       {/* Content — routes to the real renderer by type. Full width, no chrome. */}
-      <div className="overflow-hidden">{renderContent()}</div>
+      <ArtifactDoorsDrawnProvider value>
+        <div className="overflow-hidden">{renderContent()}</div>
+      </ArtifactDoorsDrawnProvider>
     </div>
   );
 };

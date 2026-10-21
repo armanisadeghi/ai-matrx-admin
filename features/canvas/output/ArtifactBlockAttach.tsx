@@ -7,7 +7,7 @@
  * screenshot captures the block as drawn, at attach time.
  */
 
-import React, { useRef, useState } from "react";
+import React, { createContext, useContext, useRef, useState } from "react";
 import { ChevronDown, Maximize2, Paperclip } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import {
@@ -23,6 +23,14 @@ import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artif
 import { useOpenArtifactInCanvas } from "@/features/canvas/hooks/useOpenArtifactInCanvas";
 import type { CanvasContentType } from "@/features/canvas/canvasContent";
 import type { RenderedArtifactRepresentation } from "@ai-matrx/chat/agents/types/instance.types";
+
+/**
+ * An ancestor that already draws the saved artifact's doors (Version history, Open in canvas) in its
+ * own row provides this, so the block's attach row never draws them a second time (review 5, G10:
+ * every saved chat-answer block showed both twice).
+ */
+const ArtifactDoorsDrawnContext = createContext(false);
+export const ArtifactDoorsDrawnProvider = ArtifactDoorsDrawnContext.Provider;
 
 export interface ArtifactBlockAttachProps {
   type: string;
@@ -61,6 +69,7 @@ export function ArtifactBlockAttach({
   // history and Open in canvas — beside the same body the live block drew (BlockRenderer Stage 3b).
   const savedId = isMaterializedArtifactId(artifactId) ? artifactId!.trim() : null;
   const { openArtifact } = useOpenArtifactInCanvas();
+  const doorsDrawnAbove = useContext(ArtifactDoorsDrawnContext);
 
   const attachAs = async (representation: RenderedArtifactRepresentation) => {
     const store = getStore();
@@ -94,7 +103,7 @@ export function ArtifactBlockAttach({
         data-artifact-attach-tools=""
         className={`flex h-6 items-center justify-end opacity-0 transition-opacity group-hover/artifact-attach:opacity-100 focus-within:opacity-100 ${enabled ? "" : "invisible pointer-events-none"}`}
       >
-        {savedId ? (
+        {savedId && !doorsDrawnAbove ? (
           <>
             <ArtifactVersionHistory
               canvasItemId={savedId}

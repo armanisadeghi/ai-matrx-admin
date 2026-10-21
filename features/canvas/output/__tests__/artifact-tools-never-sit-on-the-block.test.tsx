@@ -12,7 +12,7 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-import { ArtifactBlockAttach } from "../ArtifactBlockAttach";
+import { ArtifactBlockAttach, ArtifactDoorsDrawnProvider } from "../ArtifactBlockAttach";
 
 jest.mock("@/lib/redux/store-singleton", () => ({ getStore: () => null }));
 jest.mock("@/features/canvas/components/ArtifactVersionHistory", () => ({ ArtifactVersionHistory: () => null }));
@@ -21,6 +21,22 @@ jest.mock("../artifactAttach", () => ({
   artifactAttachOptions: () => [{ value: "screenshot", label: "Screenshot" }],
   attachArtifactToChat: jest.fn(),
 }));
+
+const SAVED = "0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d";
+async function mountSaved(doorsDrawnAbove: boolean) {
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  await act(async () => {
+    createRoot(container).render(
+      <ArtifactDoorsDrawnProvider value={doorsDrawnAbove}>
+        <ArtifactBlockAttach type="stats" data={{}} title="Totals" conversationId="c1" artifactId={SAVED}>
+          <p>body</p>
+        </ArtifactBlockAttach>
+      </ArtifactDoorsDrawnProvider>,
+    );
+  });
+  return container;
+}
 
 async function mount(enabled: boolean) {
   const container = document.createElement("div");
@@ -53,5 +69,11 @@ describe("the artifact tools never sit on the block", () => {
     expect(tools).not.toBeNull();
     expect(tools.className).toMatch(/invisible/);
     expect(tools.className).toMatch(/pointer-events-none/);
+  });
+
+  it("draws Open in canvas once for a saved block: the row above owns it (G10)", async () => {
+    expect((await mountSaved(false)).querySelectorAll('[aria-label="Open in canvas"]').length).toBe(1);
+    document.body.innerHTML = "";
+    expect((await mountSaved(true)).querySelectorAll('[aria-label="Open in canvas"]').length).toBe(0);
   });
 });
