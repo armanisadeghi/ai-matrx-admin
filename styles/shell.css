@@ -2786,7 +2786,7 @@ html[data-board-embed] .flex-col > [data-matrx-page-dock] {
 
 .shell-mobile-search-wrap input:focus-visible {
   border-color: var(--ring);
-  box-shadow: 0 0 0 2px color-mix(in oklab, var(--ring) 22%, transparent);
+  box-shadow: var(--matrx-focus-halo); /* THE FIELD FOCUS, Arman 2026-10-21 */
 }
 
 .shell-mobile-drawer-body {
