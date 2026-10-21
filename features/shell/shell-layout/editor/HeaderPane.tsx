@@ -16,7 +16,8 @@ import {
   useSensors,
   type DragMoveEvent,
 } from "@dnd-kit/core";
-import { ArrowDown, ArrowUp, Bell, BrainCircuit, GripVertical, Lock, MessageSquare, PanelRight, Plus, Search, Trash2, type LucideIcon } from "lucide-react";
+import { INTELLIGENCE_ICON } from "@/components/icons/domain-icons";
+import { ArrowDown, ArrowUp, Bell, GripVertical, Lock, MessageSquare, PanelRight, Plus, Search, Trash2, type LucideIcon } from "lucide-react";
 import { DragCursorMonitor, Popover, PopoverContent, PopoverTrigger, cn } from "@ai-matrx/design-system";
 import { Button, SearchField } from "@ai-matrx/design-system/controls";
 import ShellIcon from "@/features/shell/components/ShellIcon";
@@ -31,7 +32,7 @@ type HeaderDrop = { id: string; side: "before" | "after" };
 
 const CONTROL: Record<HeaderControlId, { label: string; Icon: LucideIcon }> = {
   search: { label: "Search", Icon: Search },
-  intelligence: { label: "Intelligence", Icon: BrainCircuit },
+  intelligence: { label: "Intelligence", Icon: INTELLIGENCE_ICON },
   messages: { label: "Messages", Icon: MessageSquare },
   notifications: { label: "Notifications", Icon: Bell },
   canvas: { label: "Canvas", Icon: PanelRight },
