@@ -58,7 +58,7 @@ const values: SurfaceValue[] = [
     name: "board_items",
     label: "Items on the board",
     description:
-      "Every item on the board: {live_item_ids, item_count, omitted_count, items, limits}. Each item is {id, title, kind, surface, live, selected?, parked?, removed?, basics?, basics_at?, basics_stale?, full_values?, basics_note?}. `surface` names the item's feature surface (null for board-only content). The LIVE item's full surface is already in your context as that surface; a selected item that is not live carries `full_values`. `basics` are a few of every other item's own values (a note's title and first line with its word count, a table's name and row count, a task's status and due date), bounded by `limits` — fewer and shorter as the board grows. An item whose tile is asleep carries its last-known basics with `basics_at` (when they were taken); `basics_stale: true` means only its type and name are known so far. Every item on this board — a note, a table, a list, a task, a file — is reached with board_open_item(id) then board_item_act(id, …), in this same turn; do not look for them with knowledge_search or the data tool, and do not call apply_surface_write for an item that is not live.",
+      "Every item on the board: {live_item_ids, item_count, omitted_count, items, limits}. Each item is {id, title, kind, surface, live, selected?, parked?, removed?, basics?, basics_at?, basics_stale?, full_values?, basics_note?}. `surface` names the item's feature surface (null for board-only content). The LIVE item's full surface is already in your context as that surface; a selected item that is not live carries `full_values`. `basics` are a few of every other item's own values (a note's title and first line with its word count, a table's name and row count, a task's status and due date), bounded by `limits` — fewer and shorter as the board grows. An item whose tile is asleep carries its last-known basics with `basics_at` (when they were taken); `basics_stale: true` means only its type and name are known so far. Every item on this board — a note, a table, a list, a task, a file — is reached with board_open_item(id) then board_item_act(id, …), in this same turn. Start here before knowledge_search or the data tool, and do not call apply_surface_write for an item that is not live.",
     valueType: "object",
     alwaysAvailable: true,
     typicalCharCount: 4000,
@@ -97,6 +97,7 @@ export const boardManifest: SurfaceManifest = {
   urlPattern: "/demos/board",
   intro: `<surface_intro>
 The person is looking at a Board: an infinite, zoomable plane of tiles (live AI results, notes, rendered markdown, generated pages, images, meeting parts, workflow steps) grouped into named frames. They pan and zoom it like a map.
+WORK FROM THE BOARD FIRST. What the person put here is what they are working on: when they ask about something, start with board_items (already in your context) and open the matching items with board_open_item. Reach for knowledge_search or the data tool only for what is not on the board, or when they ask you to look further.
 You can WORK ON THE BOARD with the board_* tools, and every change you make lands on the person's undo stack like their own:
 - board_read first — it returns every tile's id, rect (board pixels; x right, y down) and a text excerpt, plus frames and connections.
 - board_add_items to put the person's REAL records on the board as live tiles, many in one call: an existing note, file, chat, document, table, picklist, task, War Room, meeting, workflow run, research topic, project, flashcard deck or scope by {type, id}, or a new blank one with {type, new: true}. To put an agent's form (or a chat) for a NAMED agent on the board pass {type: "agent-form" (or "chat"), agent: "<name or id>"}: the agent is resolved through the agent catalog and an unknown or ambiguous name is refused with the candidates. A record already on the board is reported, not doubled.
@@ -107,7 +108,7 @@ You can WORK ON THE BOARD with the board_* tools, and every change you make land
 - board_shape to SKETCH: rectangles and ovals with text, lines and arrows (from_id/to_id bind an end to a tile or shape so it follows it), pen strokes, each with a color, fill, weight and dash; create, update or delete in one call. Use it to draw a diagram or a flow beside the tiles; board_read lists every shape.
 - Working INSIDE items (rewrite a note, fix a table, change a task, act on a file) — any of them, in ONE turn:
   - The LIVE item (the one the person has selected or is working in) arrives in full: its feature's own values, write targets and tools, exactly as on its own page.
-  - These items are NOT found by knowledge_search or the data tool, and apply_surface_write only reaches the live one: board_items is the list, board_open_item is the way in.
+  - board_items is the list and board_open_item is the way in; apply_surface_write only reaches the live one.
   - board_items names EVERY other item — id, title, kind, surface — with a few basics, so you know what each one is.
   - For any other item: board_open_item(id) returns its values and its controls (write targets and tools, as its page offers them), then board_item_act(id, target + value, or tool + input) changes it through the item's own rules — the person approves where that item asks. Open as many items as the request needs; you never have to wait a turn.
 Prefer arranging and grouping over describing where things are. Ask before removing something the person made.
@@ -115,8 +116,8 @@ Prefer arranging and grouping over describing where things are. Ask before remov
   groups,
   values: mergeBaselineValues([], values),
   otherItemsHint:
-    "This page is a Board. The targets listed below are only for the LIVE item. Any other item on the board (see board_items) is reached with board_open_item(id), then board_item_act(id, target + value) — that is how you read or change a note, table, list or task that is not live. Do not search for board items with knowledge_search.",
+    "This page is a Board. The targets listed below are only for the LIVE item. Any other item on the board (see board_items) is reached with board_open_item(id), then board_item_act(id, target + value) — that is how you read or change a note, table, list or task that is not live. Start with what is on the board; use knowledge_search only for what it does not hold.",
   hostLead:
-    "The surface you are on is one item on the person's Board (the live tile). board_items lists every item (id, kind, name, basics). Reach any other with board_open_item(id), then board_item_act(id, target + value or tool + input) — never knowledge_search.",
+    "The surface you are on is one item on the person's Board (the live tile). board_items lists every item (id, kind, name, basics). Reach any other with board_open_item(id), then board_item_act(id, target + value or tool + input). Work from the board's items first; search beyond them only for what the board does not hold.",
   clientTools: BOARD_CLIENT_TOOLS,
 };

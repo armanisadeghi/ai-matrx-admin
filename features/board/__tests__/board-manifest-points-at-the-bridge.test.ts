@@ -22,6 +22,6 @@ describe("the Board manifest points every agent at board_open_item / board_item_
   });
 
   it("states it in the surface intro", () => {
-    expect(boardManifest.intro).toContain("NOT found by knowledge_search");
+    expect(boardManifest.intro).toContain("WORK FROM THE BOARD FIRST");
   });
 });
