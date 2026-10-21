@@ -288,17 +288,19 @@ export function ResearchFilterBar({
 
   return (
     <>
-      <div className={cn("rounded-lg border border-border bg-card", className)}>
+      {/* No frame (Arman 2026-10-21): the controls draw their own borders; a card around
+          them read as a second border on a tinted background. */}
+      <div className={className}>
         {/* Wraps (never clips): at tablet widths the facets + actions need a second line. */}
         <ControlRow>
-          <span className="type-meta font-medium text-foreground/80 pl-1.5 shrink-0">
-            {title}
+          <span className="inline-flex shrink-0 items-baseline gap-1.5 px-[3px] pr-2">
+            <span className="type-title text-foreground">{title}</span>
+            {count && (
+              <span className="type-meta text-muted-foreground tabular-nums">
+                {read ? <UntrustedCount value={count} read={read} label={title} /> : count}
+              </span>
+            )}
           </span>
-          {count && (
-            <span className="type-meta text-muted-foreground tabular-nums shrink-0">
-              {read ? <UntrustedCount value={count} read={read} label={title} /> : count}
-            </span>
-          )}
 
           {!isMobile && pills}
 
@@ -313,7 +315,6 @@ export function ResearchFilterBar({
 
           {showSearch && (
             <>
-              <div className="w-px h-4 bg-border/30 mx-0.5 hidden sm:block" />
               <SearchField
                 className="flex-1 min-w-[9rem]"
                 value={search ?? ""}

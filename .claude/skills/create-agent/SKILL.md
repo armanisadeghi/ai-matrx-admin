@@ -91,7 +91,7 @@ below is visible in that one agent.
 **Branch files — read only when your run reaches them:**
 - Agent emits content-IR kinds → [kind-registration.md](kind-registration.md) (step 5).
 - Converting an existing blob agent → [blob-agent-conversion.md](blob-agent-conversion.md).
-- Starting any build as a coding agent (step 6, before `agent_author create`) → [factory-route.md](factory-route.md): mandate, 3 real inputs, idempotency key, outcomes.
+- Starting any build as a coding agent (step 6, before any agent create) → [factory-route.md](factory-route.md): mandate, 3 real inputs, the workflow start, outcomes.
 
 ## The order of operations
 
@@ -292,10 +292,10 @@ variables (`variables` itself is refused). One `update` may carry `model_id` +
 `variable_definitions` + `messages` together, so a whole agent flip is one versioned call. Optional variables render as empty strings, so keep
 them on labeled lines after the conversational opening rather than mid-sentence.
 
-**Our coding agents build through the Agent Factory — read [factory-route.md](factory-route.md) before the first `create`.**
-`create` may return a `build_id` instead of an `agent_id`: poll `agent_author action=build_status`;
-only `agent_kept: true` gives an `agent_id`. A headless caller must send ≥3 REAL examples in
-`sample_inputs` up front or the server refuses (nothing spent); always send an `idempotency_key`.
+**Our coding agents build through the `agent_build` workflow — read [factory-route.md](factory-route.md) before the first build.**
+Start it with the `workflow` MCP (`action=start_system key=agent_build subject=build:<uuid>`), follow the run
+with `status`; only a finished run that kept the agent gives an `agent_id`. A headless caller must send ≥3 REAL
+examples up front or the run refuses (nothing spent); the subject is the idempotency key.
 When the person named a format, pass their words in `output_format` (e.g. "a Markdown table with
 columns Owner | Task | Due"); `response_format` only takes text/json/json_schema.
 

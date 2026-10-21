@@ -8,16 +8,26 @@
  * grid cell, any focusable control in the body — belongs to that content.
  */
 
-/** A text-entry target: fields, contenteditable, EditContext hosts, ARIA textboxes. */
+const EDITABLE_ROLES = ["textbox", "combobox", "searchbox", "spinbutton"];
+
+/**
+ * A text-entry target: fields, contenteditable, EditContext hosts, and ARIA
+ * textbox / combobox / searchbox / spinbutton — the element itself or the
+ * nearest ancestor that declares it (a combobox's inner span, a search field's
+ * wrapper), inside a tile or a portaled popover alike.
+ */
 export function isTyping(target: EventTarget | null): boolean {
   const el = target as (HTMLElement & { editContext?: unknown }) | null;
   if (!el || typeof el.getAttribute !== "function") return false;
-  return (
+  if (
     el.isContentEditable ||
     ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName) ||
     el.editContext != null ||
-    el.getAttribute("role") === "textbox"
-  );
+    EDITABLE_ROLES.includes(el.getAttribute("role") ?? "")
+  ) {
+    return true;
+  }
+  return typeof el.closest === "function" && el.closest(EDITABLE_ROLES.map((r) => `[role="${r}"]`).join(",")) !== null;
 }
 
 /** True when a key with this target is the board's to answer. */

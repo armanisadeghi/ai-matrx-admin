@@ -15,7 +15,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Building2, RotateCcw, Share2, ShoppingBag, Store } from "lucide-react";
+import { Building2, ListChecks, RotateCcw, Share2, ShoppingBag, Store } from "lucide-react";
 import { Button, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { ErrorNotice, ReadFailure } from "@ai-matrx/design-system";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
@@ -98,6 +98,7 @@ const KIND_UI: Record<string, { label: string; icon: React.ReactNode; soonId?: s
   companies_reviews: { label: "Companies", icon: <Building2 className="h-4 w-4" /> },
   products: { label: "Products", icon: <ShoppingBag className="h-4 w-4" />, soonId: "compare.products" },
   social_accounts: { label: "Social", icon: <Share2 className="h-4 w-4" />, soonId: "compare.social-accounts" },
+  list_items: { label: "Anything", icon: <ListChecks className="h-4 w-4" /> },
 };
 
 /** The identity a compared item was sent with (`ComparedItem.item_id` is its link, else its label). */

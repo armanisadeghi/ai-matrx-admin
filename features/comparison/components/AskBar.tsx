@@ -25,6 +25,7 @@ const PLACEHOLDER: Record<string, string> = {
   companies_reviews: "payroll software — or Gusto vs Rippling",
   products: "headphones under $300 — or two product links",
   social_accounts: "fitness creators on TikTok — or @a vs @b",
+  list_items: "Lincoln Elementary in Omaha vs Westside Elementary",
 };
 
 export function AskBar({

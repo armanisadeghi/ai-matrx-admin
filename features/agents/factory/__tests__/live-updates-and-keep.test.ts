@@ -5,8 +5,8 @@
  *
  *  1. An OLD pipeline build that is still running keeps updating on its own event stream
  *     (`GET /runtime/executions/{id}/events/stream`), with no timer.
- *  2. The Factory list of old builds re-reads through the canonical realtime channel on the build rows
- *     (`runtime.global_execution`, type agent_factory_build), with no timer.
+ *  2. The Factory list of old builds never subscribes to `runtime.global_execution` (lane 3B-revert: the
+ *     table left the realtime publication; the list keeps Refresh, focus and reconnect re-reads).
  *  3. The client never writes `agent.definition` from the build view: "Keep it anyway" goes through the
  *     server's keep door (which updates the agent through the agent service and marks it unproven).
  */
@@ -31,6 +31,15 @@ function old(file: string): string {
   writeFileSync(join(dir, file), text);
   return readFileSync(join(dir, file), "utf8");
 }
+/** The lane 3B-fix commit that added the list's live feed. */
+const FEED_COMMIT = "3e9c78b4ab";
+function oldAt(commit: string, file: string): string {
+  const text = execFileSync("git", ["show", `${commit}:${FACTORY}/${file}`], { cwd: ROOT, encoding: "utf8", maxBuffer: 20_000_000 });
+  const dir = mkdtempSync(join(tmpdir(), "factory-3b-feed-"));
+  mkdirSync(dirname(join(dir, file)), { recursive: true });
+  writeFileSync(join(dir, file), text);
+  return readFileSync(join(dir, file), "utf8");
+}
 function code(text: string): string {
   return text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
 }
@@ -39,11 +48,15 @@ export function followsOldBuildOnItsEventStream(detailHook: string): boolean {
   const c = code(detailHook);
   return /operationEventsStream\s*\(/.test(c) && /execution_id/.test(c);
 }
-export function listFollowsBuildRows(page: string, hook: string | null): boolean {
-  if (!/useFactoryBuildChanges\s*\(\s*reload\s*\)/.test(code(page))) return false;
-  if (hook === null) return false;
-  const h = code(hook);
-  return /schema:\s*["']runtime["']/.test(h) && /table:\s*["']global_execution["']/.test(h) && /type=eq\.agent_factory_build/.test(h);
+/** True when anything under features/agents/factory opens a realtime channel on global_execution. */
+export function subscribesToGlobalExecution(files: Record<string, string>): string[] {
+  const out: string[] = [];
+  for (const [path, text] of Object.entries(files)) {
+    const c = code(text);
+    if (/useChannel\s*\(|postgresChanges|\.channel\s*\(/.test(c) && /global_execution/.test(c)) out.push(path);
+    if (/useFactoryBuildChanges/.test(c)) out.push(`${path}: useFactoryBuildChanges`);
+  }
+  return out;
 }
 export function writesAgentDefinition(source: string): boolean {
   const c = code(source);
@@ -59,12 +72,20 @@ describe("an old build that is still running updates live, without a timer", () 
   });
 });
 
-describe("the list of old builds re-reads when a build starts or changes", () => {
-  it("is bound to runtime.global_execution (type agent_factory_build) through the realtime channel", () => {
-    expect(listFollowsBuildRows(live("components/FactoryBuildsPage.tsx"), live("useFactoryBuildChanges.ts"))).toBe(true);
+describe("the list of old builds never subscribes to runtime.global_execution", () => {
+  const LIST_FILES = ["components/FactoryBuildsPage.tsx", "useFactoryBuildChanges.ts"];
+  it("has no realtime binding on global_execution (it is not in the publication; Refresh, focus and reconnect re-read)", () => {
+    const files: Record<string, string> = {};
+    for (const f of ["components/FactoryBuildsPage.tsx", "service.ts", "useBuildDetail.ts", "components/BuildProgress.tsx"]) files[f] = live(f);
+    expect(subscribesToGlobalExecution(files)).toEqual([]);
   });
-  it("fails on the pre-fix page (no live feed at all)", () => {
-    expect(listFollowsBuildRows(old("components/FactoryBuildsPage.tsx"), null)).toBe(false);
+  it("keeps the list's Refresh button", () => {
+    expect(code(live("components/FactoryBuildsPage.tsx"))).toMatch(/refresh:\s*\{\s*onRefresh:\s*reload/);
+  });
+  it("fails on the code that had the live feed (lane 3B-fix, out of git)", () => {
+    const files: Record<string, string> = {};
+    for (const f of LIST_FILES) files[f] = oldAt(FEED_COMMIT, f);
+    expect(subscribesToGlobalExecution(files).length).toBeGreaterThan(0);
   });
 });
 

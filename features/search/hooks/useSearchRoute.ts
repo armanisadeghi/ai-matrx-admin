@@ -26,7 +26,7 @@ import { understandInput } from "@/features/search/input-understanding";
 import { isToolTab } from "@/features/search/tools/searchToolPlan";
 import { useSearchInputs } from "./useSearchInputs";
 
-export function useSearchRoute() {
+export function useSearchRoute({ guest = false }: { guest?: boolean } = {}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [initial] = useState(() =>
@@ -42,7 +42,7 @@ export function useSearchRoute() {
     alwaysIncludeRaw: isAdminDebugger,
     keywords: initial.query,
     maxResults: initial.count,
-    engine: initial.engine,
+    engine: guest ? "brave" : initial.engine,
     vertical: initial.vertical,
     socialPlatform: initial.socialPlatform,
     options: initial.options,
@@ -70,7 +70,7 @@ export function useSearchRoute() {
     }
     if (
       understood.mode === "words" &&
-      initial.engine === "brave" &&
+      (guest || initial.engine === "brave") &&
       tabHasEngineChoice(initial.vertical)
     ) {
       void form.handleSearch();

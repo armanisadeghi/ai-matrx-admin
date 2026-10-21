@@ -1,4 +1,3 @@
-"use client";
 // lib/guest/turnstile.ts — the invisible human check sent when a NEW guest is made (FREE-ALLOWANCE.md §5).
 //
 // aidream verifies the token only when it is about to mint a new guest identity (knob

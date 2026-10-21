@@ -263,6 +263,17 @@ function TaskHome({
 
 function TaskCard({ resolved, onOpen }: { resolved: ResolvedTask; onOpen: () => void }) {
   const { task, confirmed, all } = resolved;
+  // The library is where a person decides what to pull: each task shows what its cheapest source costs
+  // (points for everyone; the dollar figure only for a viewer who sees dollars).
+  const { rate } = useCostDisplay();
+  const priceText = usePriceText();
+  const cheapest = all.reduce<LibrarySource | null>((best, s) => {
+    const p = pointsPerRecord(s, rate);
+    if (p == null) return best;
+    const b = best ? pointsPerRecord(best, rate) : null;
+    return b == null || p < b ? s : best;
+  }, null);
+  const price = cheapest ? priceText(cheapest, 1) : null;
   return (
     <button
       type="button"
@@ -278,6 +289,11 @@ function TaskCard({ resolved, onOpen }: { resolved: ResolvedTask; onOpen: () => 
         <div className="text-base font-semibold leading-snug text-foreground">{task.title}</div>
         <p className="mt-1 text-sm text-muted-foreground">{task.example}</p>
       </div>
+      {price ? (
+        <span className="text-xs font-medium text-foreground" data-task-price="">
+          From {price} / record
+        </span>
+      ) : null}
       <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
         {confirmed.length > 0 ? (
           <>

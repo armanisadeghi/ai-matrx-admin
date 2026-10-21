@@ -33,6 +33,7 @@ export interface WatchtowerDeps {
 function stateOf(row: WatchtowerRow): string {
   if (row.kind === "failing") return "failing its checks";
   if (row.kind === "degraded") return "working worse than last week";
+  if (row.kind === "battle_note") return "weekly comparison";
   return "daily note";
 }
 
@@ -52,7 +53,7 @@ export function watchtowerItems(rows: readonly WatchtowerRow[], deps: Watchtower
       about: null,
       fix: row.detail,
       record: null,
-      doors: [{ kind: "evidence", href, label: row.kind === "daily_note" ? "Watchtower" : "Its last checks", what: "Each check that ran, its result, seconds and points." }],
+      doors: [{ kind: "evidence", href, label: row.kind === "battle_note" ? "Tool Battle" : row.kind === "daily_note" ? "Watchtower" : "Its last checks", what: "Each check that ran, its result, seconds and points." }],
       impactDeclared: null,
       actions: [],
       copy: {

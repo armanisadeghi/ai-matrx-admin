@@ -60,6 +60,8 @@ export interface EsignEditorProps {
   organizationId: string | null;
   /** Asked when a write needs an organization and none is chosen (the organization gate). */
   resolveOrganizationId?: () => Promise<string>;
+  /** Whose people the People tab offers: the envelope's organization, else the active one (a new draft). */
+  peopleOrganizationId: string | null;
   me: Person | null;
   uploader: EditorUploader;
   /** The draft now exists on the server: the host moves the address bar. */
@@ -132,8 +134,9 @@ export function EsignEditor(props: EsignEditorProps) {
   const [tab, setTab] = useState<"documents" | "people" | "message" | "fields">(props.initial.draft.documents.length ? "people" : "documents");
   // The organization's people are read when the People tab is shown — never on opening the editor.
   const { connections } = useUserConnections({
-    ...(props.organizationId ? { organizationId: props.organizationId } : {}),
-    enabled: tab === "people",
+    ...(props.peopleOrganizationId ? { organizationId: props.peopleOrganizationId } : {}),
+    // No organization named means every organization's roster: wait for one instead.
+    enabled: tab === "people" && !!props.peopleOrganizationId,
   });
   const people: Person[] = connections.map((c) => ({ user_id: c.user_id, display_name: c.display_name ?? null, email: c.email ?? null }));
   const [zoom, setZoom] = useState(1);

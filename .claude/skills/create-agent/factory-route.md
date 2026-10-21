@@ -13,9 +13,7 @@ that lacks the data now will not have it later. The server enforces it: with kno
 `agent_factory.proof_policy_agents` = `require_samples` (the default), a build started from the
 `agent_author` / Agent Service / people-MCP `agents` / custom-action doors with fewer than 3 usable
 real examples is **refused before anything is spent**, and the refusal names what to send. There is
-no "build unproven" for an agent caller. (If an `agent_author create` instead returns an `agent_id`
-at once, that organization's door knob is still `legacy`: today's builder ran, nothing was proven,
-say so in your report.)
+no "build unproven" for an agent caller.
 
 ## 1. Write the mandate (the contract; no prompt-writing)
 
@@ -30,7 +28,7 @@ These map onto the `spec` of the build as `goals`, `variables` (with teaching he
 
 ## 2. Gather at least 3 REAL inputs BEFORE you call create (6 for a Mandate's Holder)
 
-**A build for a Mandate (`mandate_key` set, door `mandate_holder_draft`) needs 6 usable real cases, not 3.** The floor is the knob `agent_factory.representative_min_pool`, default 6 (aidream `services/agent_build/intake.py` reads it). Below it the build is refused before any step runs: "the proof pool is below its floor". The pool counts the Mandate's captured runs plus your samples. A Mandate on a provision also needs its default binding (consumption map) written first, or the build fails with `BindingRequired`.
+**A build for a Mandate (`mandate_key` set, door `mandate_holder_draft`) needs 6 usable real cases, not 3.** The floor is the knob `agent_factory.representative_min_pool`, default 6 (aidream `services/agent_build/job_facts.py` reads it). Below it the build is refused before any step runs: "the proof pool is below its floor". The pool counts the Mandate's captured runs plus your samples. A Mandate on a provision also needs its default binding (consumption map) written first, or the build fails with `BindingRequired`.
 
 Real = taken from real runs, chats, records, files or pages of the job. Never invented, never
 paraphrased into tidier ones, never placeholders (the no-fake-data rule). Where to look: the

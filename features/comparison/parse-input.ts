@@ -13,7 +13,10 @@
 
 import type { ComparisonItemInput } from "./contract";
 
-export type KindKey = "companies_reviews" | "local_business" | "products" | "social_accounts";
+export type KindKey = "companies_reviews" | "local_business" | "products" | "social_accounts" | "list_items";
+
+/** Kinds whose rows are a name with an optional city ("Name in City"). */
+const NAMED_WITH_PLACE = (kind: KindKey): boolean => kind === "local_business" || kind === "list_items";
 
 export interface ParsedItem {
   /** What the person typed for this item, trimmed — shown on its chip. */
@@ -95,12 +98,12 @@ function segments(text: string, kind: KindKey): string[] {
   // there are 3+ parts ("A, B, C" is a list).
   if (one.includes(",")) {
     const parts = one.split(",").map((s) => s.trim()).filter(Boolean);
-    if (kind !== "local_business" || parts.length >= 3) return parts;
+    if (!NAMED_WITH_PLACE(kind) || parts.length >= 3) return parts;
   }
   // "A and B" is a list for names (never inside a link); for places only with a trailing
   // "in/near/at City" ("A and B in Nashville TN").
   if (!isLink(one) && / and /i.test(one) &&
-      (kind === "companies_reviews" || (kind === "local_business" && / (?:in|near|at) \S/i.test(one)))) {
+      (kind === "companies_reviews" || (NAMED_WITH_PLACE(kind) && / (?:in|near|at) \S/i.test(one)))) {
     return one.split(/ and /i).map((s) => s.trim()).filter(Boolean);
   }
   return one ? [one] : [];
@@ -116,7 +119,7 @@ function itemFor(text: string, kind: KindKey, area: string): ComparisonItemInput
     const url = /^https?:\/\//i.test(text) ? text : `https://${text}`;
     return { url };
   }
-  if (kind === "local_business") {
+  if (NAMED_WITH_PLACE(kind)) {
     const { name, city } = splitNameAndPlace(text);
     const where = city || area.trim();
     return { label: name, inputs: { name, ...(where ? { city: where } : {}), country: "US" } };
@@ -129,7 +132,7 @@ function itemFor(text: string, kind: KindKey, area: string): ComparisonItemInput
  * it read as "these are all there" rather than each item's own city.
  */
 function sharedAreaOf(parts: string[], kind: KindKey): string {
-  if (kind !== "local_business" || parts.length < 2) return "";
+  if (!NAMED_WITH_PLACE(kind) || parts.length < 2) return "";
   const named = parts.map((p) => (isLink(p) ? "" : splitNameAndPlace(p).city));
   const last = named[named.length - 1];
   return last && named.slice(0, -1).every((c) => !c) ? last : "";

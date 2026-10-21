@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { isOpenStatus } from "@/features/tasks/constants/status";
 import { Loader2, FolderKanban, ChevronDown } from "lucide-react";
@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/utils/cn";
 import { useProjectsWithTasks } from "@/features/tasks/hooks/useTaskManager";
 import type { ProjectWithTasks, DatabaseTask } from "@/features/tasks/types";
+import { getUserTasks } from "@/features/tasks/services/taskService";
 import { filterAndSortBySearch, matchesSearch } from "@ai-matrx/kit/search-scoring";
 import { usePickerInputFocus } from "./usePickerInputFocus";
 import {
@@ -62,6 +63,34 @@ export function TasksResourcePicker({ onBack, onSelect }: TasksResourcePickerPro
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
 
   const hasQuery = searchQuery.trim().length > 0;
+
+  // Every task the person can read, fetched once on the first search at the project level: a task
+  // with no project is in no project's list, so a search over projects alone could never find it.
+  const [allTasks, setAllTasks] = useState<DatabaseTask[] | null>(null);
+  const wantsAllTasks = hasQuery && !selectedProject;
+  useEffect(() => {
+    if (!wantsAllTasks || allTasks !== null) return;
+    let live = true;
+    getUserTasks()
+      .then((rows) => {
+        if (live) setAllTasks(rows);
+      })
+      .catch(() => {
+        if (live) setAllTasks([]);
+      });
+    return () => {
+      live = false;
+    };
+  }, [wantsAllTasks, allTasks]);
+
+  // Tasks matched by title, with or without a project (the projects' own tasks + the full read).
+  const matchedTasks: DatabaseTask[] = (() => {
+    if (!wantsAllTasks) return [];
+    const byId = new Map<string, DatabaseTask>();
+    for (const p of projects) for (const t of p.tasks ?? []) byId.set(t.id, t);
+    for (const t of allTasks ?? []) byId.set(t.id, t);
+    return filterAndSortBySearch([...byId.values()], searchQuery, [{ get: (t) => t.title, weight: "title" }]);
+  })();
 
   // Keep original order; match on project name or any nested task title/description.
   const filteredProjects = !hasQuery
@@ -293,11 +322,25 @@ export function TasksResourcePicker({ onBack, onSelect }: TasksResourcePickerPro
       }
       return <div>{filteredTasks.map(renderTask)}</div>;
     }
-    if (filteredProjects.length === 0) {
-      return <PickerEmpty>{hasQuery ? "No projects found" : "No projects yet"}</PickerEmpty>;
+    if (filteredProjects.length === 0 && matchedTasks.length === 0) {
+      return <PickerEmpty>{hasQuery ? "Nothing found" : "No projects yet"}</PickerEmpty>;
     }
     return (
       <div>
+        {matchedTasks.length > 0 && (
+          <div data-testid="task-title-matches">
+            <PickerSectionLabel>Tasks</PickerSectionLabel>
+            {matchedTasks.map((task) => (
+              <PickerRow
+                key={task.id}
+                label={<span className={cn(task.status === "completed" && "text-muted-foreground")}>{task.title}</span>}
+                trailing={<span className={cn(CHIP_CLASS, "bg-blue-500/15 text-blue-600 dark:text-blue-400")}>{task.status}</span>}
+                onClick={() => onSelect({ type: "task", data: task })}
+              />
+            ))}
+            {filteredProjects.length > 0 && <PickerSectionLabel>Projects</PickerSectionLabel>}
+          </div>
+        )}
         {filteredProjects.map((project) => {
           const { incomplete, total } = getProjectTaskCount(project);
           return (

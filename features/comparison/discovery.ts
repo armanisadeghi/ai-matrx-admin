@@ -76,6 +76,7 @@ const CONCEPT_CUE = /^(?:find|show me|search for|what are|which|who|best|top|che
 export function inferMode(text: string, kind: KindKey): InputMode {
   const t = text.trim();
   if (!t) return "compare";
+  if (kind === "list_items") return "compare"; // a general list is only ever names; no concept search
   if (CONCEPT_CUE.test(t) && !/\s(?:vs\.?|versus)\s|\n/i.test(t)) return "find";
   return parseInput(t, kind).items.length >= 2 ? "compare" : "find";
 }

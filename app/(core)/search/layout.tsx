@@ -2,7 +2,7 @@
 //
 // /search — one URL, two audiences (module-landing-pages doctrine).
 //
-// A guest gets the public marketing landing for Matrx Search and is NEVER
+// A guest searches for free (cheap engine, the free allowance counts it) and is NEVER
 // bounced to a login wall. A signed-in visitor gets the search engine itself
 // at the same URL, so a shared `/search?q=…` link keeps working for both: the
 // guest reads what it is, signs in, and lands back on the search they were
@@ -14,7 +14,7 @@
 
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
 import { MarketingPageShell } from "@/features/shell/components/MarketingPageShell";
-import SearchLanding from "@/features/auth/components/module-landing/landings/SearchLanding";
+import { GuestSearch } from "@/features/search/components/GuestSearch";
 import { createRouteMetadata } from "@/utils/route-metadata";
 
 export const metadata = createRouteMetadata("/search", {
@@ -36,7 +36,7 @@ export default async function SearchLayout({
   if (!isAuthenticated) {
     return (
       <MarketingPageShell>
-        <SearchLanding />
+        <GuestSearch />
       </MarketingPageShell>
     );
   }

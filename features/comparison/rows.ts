@@ -97,7 +97,7 @@ export function rowsFromText(text: string, kind: KindKey, near: string): Compare
   return parsed.items.slice(0, MAX_ROWS).map((i) => {
     if (isLink(i.text)) return newRow({ name: i.text });
     const inputs = (i.input.inputs ?? {}) as Record<string, unknown>;
-    if (kind === "local_business") {
+    if (kind === "local_business" || kind === "list_items") {
       const name = typeof inputs.name === "string" ? inputs.name : i.text;
       const city = typeof inputs.city === "string" ? inputs.city : "";
       return newRow({ name, city, cityFromNear: Boolean(city) && city === near.trim() });
@@ -135,6 +135,10 @@ export function rowItem(kind: KindKey, row: CompareRow): ComparisonItemInput {
   const name = row.name.trim();
   const website = row.website.trim();
   if (kind === "companies_reviews" && website) return { label: name || website, website };
+  if (kind === "list_items" && !isLink(name)) {
+    const city = row.city.trim();
+    return { label: name, inputs: { name, ...(city ? { city } : {}) } };
+  }
   const parsed = parseInput(name, kind).items[0];
   return parsed?.input ?? { label: name };
 }

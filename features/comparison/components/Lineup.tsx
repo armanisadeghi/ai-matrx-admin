@@ -35,11 +35,12 @@ import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 /** Where a matched thing's rating comes from, said on the card. */
 export const RATING_SOURCE: Record<string, string> = {
   local_business: "map listing", companies_reviews: "review page", products: "store page", social_accounts: "profile",
+  list_items: "its page",
 };
 
 const NAME_LABEL: Record<string, string> = {
   local_business: "Business name", companies_reviews: "Company name", products: "Product name or link",
-  social_accounts: "@handle or profile link",
+  social_accounts: "@handle or profile link", list_items: "Name",
 };
 
 export function Lineup({
@@ -205,8 +206,8 @@ function SlotCard({ index, row, kind, onEdit, onFind, onPick, onChange, onRemove
           onSubmit={(e) => { e.preventDefault(); onFind(); }}>
           <ProInput value={row.name} autoFocus={row.focus} aria-label={`${NAME_LABEL[kind.key] ?? "Name"} ${index + 1}`}
             placeholder={NAME_LABEL[kind.key] ?? "Name"} onChange={(e) => onEdit({ name: e.target.value })} />
-          {places ? (
-            <ProInput value={row.city} aria-label={`City ${index + 1}`} placeholder="City or area"
+          {places || kind.key === "list_items" ? (
+            <ProInput value={row.city} aria-label={`City ${index + 1}`} placeholder={places ? "City or area" : "City (optional)"}
               onChange={(e) => onEdit({ city: e.target.value })} />
           ) : null}
           {places || companies ? (

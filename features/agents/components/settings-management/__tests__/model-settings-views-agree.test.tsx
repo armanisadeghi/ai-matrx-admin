@@ -288,7 +288,9 @@ describe("Model Settings — every view shows the same truth", () => {
       makeStore({ modelId: GEMINI_IMAGE, settings: { aspect_ratio: "1:1" } }),
     );
     const rows = Object.fromEntries(readForm().map((r) => [r.key, r]));
-    expect(rows.internal_web_search.state).toBe("default");
+    // Not set (the panel's row states are unset | set | off | bound); the model's default is
+    // named beside it, never shown as a stored value.
+    expect(rows.internal_web_search.state).toBe("unset");
     expect(rows.internal_web_search.text).toMatch(/Model default: On/);
     expect(rows.aspect_ratio.state).toBe("set");
   });

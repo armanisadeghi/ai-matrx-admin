@@ -137,7 +137,7 @@ export const SEARCH_TAB_LABEL: Record<SearchTab, string> = {
 };
 
 /** Every tab, the engine tabs first and the catalog tabs (Deep · Reviews · AI answers) after them. */
-const TAB_OPTIONS: { value: SearchTab | ToolTab; label: string }[] = [
+const ALL_TAB_OPTIONS: { value: SearchTab | ToolTab; label: string }[] = [
   ...(Object.keys(SEARCH_TAB_LABEL) as SearchTab[]).map((value) => ({
     value,
     label: SEARCH_TAB_LABEL[value],
@@ -368,9 +368,28 @@ export interface SearchExperienceProps {
   inputs: UseSearchInputsReturn;
   /** Which route hosts it — the scraper route adds its scrape doors. */
   surface: "search" | "scraper";
+  /** A signed-out visitor: the cheap engine and the open tabs only, with a gentle "Sign up free" for the rest. */
+  guest?: boolean;
 }
 
-export function SearchExperience({ form, inputs, surface }: SearchExperienceProps) {
+/** The visitor's gentle way to more — a plain link, new tab never needed (it is the account door). */
+function SignUpForMore() {
+  const next = typeof window === "undefined" ? "/search" : `${window.location.pathname}${window.location.search}`;
+  return (
+    <a
+      href={`/sign-up?redirectTo=${encodeURIComponent(next)}`}
+      className="inline-flex h-8 items-center rounded-md px-2 text-sm font-medium text-primary underline-offset-4 hover:underline"
+    >
+      Sign up free for more
+    </a>
+  );
+}
+
+/** The tabs a visitor can use: the ones the cheap engine answers on its own. */
+const GUEST_TABS: ReadonlySet<string> = new Set(["web", "news", "images", "videos", "places"]);
+
+export function SearchExperience({ form, inputs, surface, guest = false }: SearchExperienceProps) {
+  const TAB_OPTIONS = guest ? ALL_TAB_OPTIONS.filter((t) => GUEST_TABS.has(t.value)) : ALL_TAB_OPTIONS;
   const {
     keywords,
     setKeywords,
@@ -401,7 +420,7 @@ export function SearchExperience({ form, inputs, surface }: SearchExperienceProp
   // start screen for one frame.
   const [pinnedTop, setPinnedTop] = useState(() => keywords.trim() !== "");
 
-  const engineChoice = tabHasEngineChoice(vertical);
+  const engineChoice = !guest && tabHasEngineChoice(vertical);
 
   // The catalog tabs (Deep · Reviews · AI answers) run Tools through /tools/calls in their own panel;
   // the tab and the call live in the address (`?tab=`, `?call=`), so a reload or a shared link reopens them.
@@ -717,6 +736,7 @@ export function SearchExperience({ form, inputs, surface }: SearchExperienceProp
                   run={run}
                   tab={lastRequest?.vertical ?? vertical}
                   query={lastRequest?.query ?? keywords.trim()}
+                  guest={guest}
                   onRetry={
                     run.provider === "brave" && engine === "brave"
                       ? () => void handleSearch()
@@ -731,6 +751,12 @@ export function SearchExperience({ form, inputs, surface }: SearchExperienceProp
               query={keywords.trim()}
               onRun={() => runTab(vertical)}
             />
+          )}
+
+          {guest && showRuns && !isLoading && (
+            <div className="flex justify-center pt-2">
+              <SignUpForMore />
+            </div>
           )}
 
           {errorDiagnostics && isAdminDebugger && !special && (
@@ -920,11 +946,13 @@ function RunColumn({
   tab,
   query,
   onRetry,
+  guest = false,
 }: {
   run: KeywordEngineRun;
   tab: SearchTab;
   query: string;
   onRetry?: () => void;
+  guest?: boolean;
 }) {
   const isAdminDebugger = useAppSelector(selectIsAdminDebugger);
   const [inspectorOpen, setInspectorOpen] = useState(false);
@@ -961,10 +989,15 @@ function RunColumn({
           message={run.error ?? "The search failed."}
           size="compact"
           actions={
-            onRetry ? (
-              <Button variant="quiet" icon={<RotateCcw />} onClick={onRetry}>
-                Try again
-              </Button>
+            onRetry || guest ? (
+              <div className="flex flex-wrap items-center gap-2">
+                {onRetry && (
+                  <Button variant="quiet" icon={<RotateCcw />} onClick={onRetry}>
+                    Try again
+                  </Button>
+                )}
+                {guest && <SignUpForMore />}
+              </div>
             ) : undefined
           }
         />

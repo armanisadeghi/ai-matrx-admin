@@ -40,3 +40,21 @@ describe("isTyping — which key targets belong to a text field", () => {
     expect(isTyping(window)).toBe(false);
   });
 });
+
+describe("isTyping — every editable in a tile or popover owns its keys", () => {
+  it.each(["combobox", "searchbox", "spinbutton"])("treats an ARIA %s as typing", (role) => {
+    const box = document.createElement("div");
+    box.setAttribute("role", role);
+    expect(isTyping(box)).toBe(true);
+  });
+
+  it("treats a child of an ARIA textbox or combobox (an inner span) as typing", () => {
+    const combo = document.createElement("div");
+    combo.setAttribute("role", "combobox");
+    const inner = document.createElement("span");
+    combo.appendChild(inner);
+    document.body.appendChild(combo);
+    expect(isTyping(inner)).toBe(true);
+    combo.remove();
+  });
+});
