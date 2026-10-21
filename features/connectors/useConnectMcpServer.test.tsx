@@ -69,6 +69,7 @@ const notion: McpCatalogEntry = {
   lastUsedAt: null,
   transportUsed: null,
   tokenExpiresAt: null,
+  products: [],
 };
 
 (

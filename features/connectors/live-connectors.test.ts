@@ -35,6 +35,7 @@ function entry(
     lastUsedAt: null,
     transportUsed: null,
     tokenExpiresAt: null,
+    products: [],
     ...rest,
   };
 }

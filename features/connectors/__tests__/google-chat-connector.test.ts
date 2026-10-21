@@ -11,15 +11,17 @@
  * Mutation: drop the Gmail aliases, count `gmail_read` as usable in chat, or
  * call a row with a stale account "connected" — each case goes RED.
  */
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { buildConnectorList } from "@ai-matrx/chat/agents/connectors/chat-connector-list";
 import { GOOGLE_SCOPE, GOOGLE_WORKSPACE_FILE_SCOPES } from "@/lib/googleScopes";
 import { filterDirectory, DEFAULT_DIRECTORY_FILTERS } from "../integration-directory";
 import type { IntegrationDirectoryItem } from "../integration-directory";
 import { GOOGLE_CONNECTOR_PROVIDER } from "../provider-config";
-import { CATALOG_SEARCH_TERMS } from "../connector-search-terms";
 import {
   GOOGLE_CHAT_TOOL_NAMES,
   buildGoogleChatConnector,
+  googleAccountSummary,
   googleChatState,
 } from "../google-chat-connector";
 
@@ -38,7 +40,6 @@ const listFor = (rows: TestRow[], needle: string, state = settled) =>
   buildConnectorList({
     servers: [],
     firstParty: [buildGoogleChatConnector(rows, state)],
-    searchTermsBySlug: CATALOG_SEARCH_TERMS,
     added: [],
     agentSlugs: new Set(),
     removedTools: [],
@@ -53,8 +54,13 @@ describe("the Google state a chat sees", () => {
     expect(googleChatState([SEND_ONLY], settled)).toBe("connected");
   });
 
-  it("an account that only holds a product chat cannot use (the Search Console grant) is not connected for chat", () => {
-    expect(googleChatState([row(["openid", GOOGLE_SCOPE.webmastersReadonly])], settled)).toBe("not_connected");
+  it("an account that only holds a product chat cannot use (the Search Console grant) is connected, with nothing for chat", () => {
+    const only = row(["openid", GOOGLE_SCOPE.webmastersReadonly]);
+    // The window calls this account Connected; the chat does not claim otherwise…
+    expect(googleChatState([only], settled)).toBe("connected");
+    // …and says no product in it is usable in a chat (the row reads "Nothing connected for chat yet").
+    const c = buildGoogleChatConnector([only], settled);
+    expect(c.products.some((p) => p.inChat && p.granted)).toBe(false);
   });
 
   it("an expired account is repairable, never 'connected'", () => {
@@ -64,6 +70,35 @@ describe("the Google state a chat sees", () => {
   it("says loading and unavailable instead of guessing 'not connected'", () => {
     expect(googleChatState([], { loading: true, failed: false })).toBe("loading");
     expect(googleChatState([], { loading: false, failed: true })).toBe("unavailable");
+  });
+});
+
+describe("the menu and the Browse window say the same about Google (defect E, round 2)", () => {
+  // The live shape that disagreed on 2026-10-20: one account needs reconnecting (calendar, tasks), another
+  // is healthy and holds Gmail send.
+  const broken = row(["openid", GOOGLE_SCOPE.calendarEventsOwnedReadonly, GOOGLE_SCOPE.tasksReadonly], "needs_reauth");
+  const healthy = row(["openid", GOOGLE_SCOPE.gmailSend]);
+  const rows = [broken, healthy];
+
+  it("is 'needs repair' in the chat exactly when the window's card says 'Needs attention'", () => {
+    expect(googleAccountSummary(rows, settled).status).toBe("Needs attention");
+    expect(googleChatState(rows, settled)).toBe("needs_reauth");
+  });
+
+  it("is 'connected' in the chat exactly when the window's card says 'Connected'", () => {
+    expect(googleAccountSummary([healthy], settled).status).toBe("Connected");
+    expect(googleChatState([healthy], settled)).toBe("connected");
+  });
+
+  it("the Google row is listed as the person's own, off in this chat, with no 'Add' offered", () => {
+    const out = listFor(rows, "gmail");
+    expect(out[0].group).toBe("off");
+    expect(out[0].on).toBe(false);
+  });
+
+  it("the window draws its Google card through the same summary function", () => {
+    const source = readFileSync(join(process.cwd(), "features/settings/pages/IntegrationsSettingsPage.tsx"), "utf8");
+    expect(source).toMatch(/googleAccountSummary\(\s*myGoogleConnections/);
   });
 });
 
@@ -101,9 +136,16 @@ describe("searching in the + menu", () => {
     expect(out[0].kind === "first_party" && out[0].addProduct).toBeNull();
   });
 
-  it("finds Microsoft Work IQ by Outlook and Teams through the catalog terms", () => {
-    expect(CATALOG_SEARCH_TERMS["microsoft-work-iq"].join(" ")).toMatch(/Outlook/);
-    expect(CATALOG_SEARCH_TERMS["microsoft-work-iq"].join(" ")).toMatch(/Teams/);
+  it("every Google product carries its own search words in the provider config (no list in the connector)", () => {
+    for (const product of GOOGLE_CONNECTOR_PROVIDER.products) {
+      expect({ key: product.key, words: product.searchTerms.trim().length > 0 }).toEqual({ key: product.key, words: true });
+    }
+  });
+
+  it("finds a Google product the chat cannot use yet (Analytics) and says it is not in chat", () => {
+    const out = listFor([DOCS], "analytics");
+    expect(out.map((r) => r.key)).toEqual(["fp:google"]);
+    expect(out[0].kind === "first_party" && out[0].matchedProduct?.inChat).toBe(false);
   });
 });
 
@@ -115,7 +157,7 @@ describe("the chat and the directory window agree on the same words", () => {
     vendor: "Google",
     category: "productivity",
     // Exactly how IntegrationsSettingsPage builds the native Google card's keywords.
-    keywords: GOOGLE_CONNECTOR_PROVIDER.products.map((p) => `${p.name} ${p.promise}`).join(" "),
+    keywords: GOOGLE_CONNECTOR_PROVIDER.products.map((p) => `${p.name} ${p.searchTerms} ${p.promise}`).join(" "),
     artwork: { id: "google", name: "Google Workspace", blurb: "", surfaces: ["directory"] },
     featured: true,
     saved: false,

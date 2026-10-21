@@ -5,6 +5,11 @@ import { readConnectionStatus } from "./connection-status";
 import type { IntegrationAbility } from "./provider-folds";
 import type { ConnectorDefinition } from "./types";
 
+/** Everything a catalog connector can be found by besides its name: its slug and the products the catalog stores for it. */
+export function catalogSearchKeywords(entry: Pick<McpCatalogEntry, "slug" | "products">): string {
+  return [entry.slug, ...entry.products.flatMap((product) => [product.name, ...product.aliases])].join(" ");
+}
+
 export type DirectoryView = "discover" | "yours";
 export type DirectoryFilter = "all" | "connected" | "available" | "coming_soon";
 export interface IntegrationDirectoryItem {

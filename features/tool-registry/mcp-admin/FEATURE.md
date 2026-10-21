@@ -89,6 +89,11 @@ has run.
 
 ## Change Log
 
+- **2026-10-20** — Meta tab → **Search products**: edits `tool.mcp_server.products` (`[{ name, aliases[] }]`, one
+  product per line `Name | alias, alias`) through `updateServerProducts` (`mergeJsonColumn`, version
+  compare-and-set). The chat's + menu and the connectors directory search these words, so a product added
+  here is findable at once. Guard: `services/mcpAdmin.service.test.ts` (search products).
+
 - **2026-09-28** — Metadata now edits `tool.mcp_server.metadata.tool_allowlist`
   as trimmed, deduplicated exact names, one per line. `mergeJsonColumn` retains
   concurrent unrelated metadata; clearing the list removes the key and requires

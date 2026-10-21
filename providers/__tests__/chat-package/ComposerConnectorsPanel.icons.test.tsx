@@ -24,7 +24,7 @@ jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () 
 
 import { ComposerConnectorsPanel } from "@ai-matrx/chat/agents/components/inputs/smart-input/composer/ComposerConnectorsPanel";
 function entry(extra: Partial<McpCatalogEntry> = {}): McpCatalogEntry {
-  return { serverId: "server", slug: "example", name: "Example", vendor: "Example", description: null, category: "productivity", iconUrl: "/missing.svg", color: "#123456", websiteUrl: null, docsUrl: null, endpointUrl: null, transport: "http", authStrategy: "none", isOfficial: true, isFeatured: false, hasRemote: true, hasLocal: false, supportsMcpApps: false, serverStatus: "active", connectionReady: true, connectionId: "connection", connectionStatus: "connected", connectedAt: null, lastUsedAt: null, transportUsed: null, tokenExpiresAt: null, ...extra };
+  return { serverId: "server", slug: "example", name: "Example", vendor: "Example", description: null, category: "productivity", iconUrl: "/missing.svg", color: "#123456", websiteUrl: null, docsUrl: null, endpointUrl: null, transport: "http", authStrategy: "none", isOfficial: true, isFeatured: false, hasRemote: true, hasLocal: false, supportsMcpApps: false, serverStatus: "active", connectionReady: true, connectionId: "connection", connectionStatus: "connected", connectedAt: null, lastUsedAt: null, transportUsed: null, tokenExpiresAt: null, products: [], ...extra };
 }
 let container: HTMLDivElement;
 let root: Root;

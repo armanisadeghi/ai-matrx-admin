@@ -133,6 +133,7 @@ import { foldAbilities } from "@/features/connectors/provider-folds";
 import { useSettingsTabNavigate } from "@/features/settings/components/SettingsPresentationContext";
 import {
   DEFAULT_DIRECTORY_FILTERS,
+  catalogSearchKeywords,
   directoryDetailFromParams,
   filterDirectory,
   savedAccountSummary,
@@ -141,6 +142,9 @@ import {
 } from "@/features/connectors/integration-directory";
 import { getConnector } from "@/features/connectors/registry";
 import { GOOGLE_CONNECTOR_PROVIDER } from "@/features/connectors/provider-config";
+import { googleAccountSummary } from "@/features/connectors/google-chat-connector";
+import { ChatConnectorSwitchRow } from "@/features/connectors/ChatConnectorSwitchRow";
+import { chatSwitchTargetFor } from "@/features/connectors/chat-switch-target";
 import { MICROSOFT_CAMPAIGN_DESCRIPTORS } from "@/features/microsoft-integration/campaigns";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { selectOrganizationsList } from "@/features/scopes/redux/selectors/tree";
@@ -273,7 +277,16 @@ const DOOR_HREFS: Record<string, string> = {
 export function IntegrationsWorkspace({
   embedded = false,
   initialProvider = null,
-}: { embedded?: boolean; initialProvider?: string | null } = {}) {
+  initialQuery = "",
+  chatConversationId = null,
+}: {
+  embedded?: boolean;
+  initialProvider?: string | null;
+  /** What the person had searched in the chat's + menu: the window lands on it. */
+  initialQuery?: string;
+  /** The chat the window was opened from: each connector's detail then offers "In this chat". */
+  chatConversationId?: string | null;
+} = {}) {
   const organizationId = useAppSelector(selectOrganizationId);
   const userId = useAppSelector(selectUserId);
   const dispatch = useAppDispatch();
@@ -307,8 +320,10 @@ export function IntegrationsWorkspace({
       github.loading,
       availability[entry.slug],
     );
-  const [filters, setFilters] = useState<DirectoryFilters>(
-    DEFAULT_DIRECTORY_FILTERS,
+  const [filters, setFilters] = useState<DirectoryFilters>(() =>
+    initialQuery.trim()
+      ? { ...DEFAULT_DIRECTORY_FILTERS, query: initialQuery.trim(), browse: "all" }
+      : DEFAULT_DIRECTORY_FILTERS,
   );
   const [socialInventory, setSocialInventory] = useState<{
     userId: string;
@@ -514,15 +529,11 @@ export function IntegrationsWorkspace({
       ),
     ),
   ];
-  const google = savedAccountSummary(
-    myGoogleConnections.map((account) => ({
-      identity:
-        account.account_email ?? account.account_name ?? "Google account",
-      status: account.health,
-    })),
-    googleInventory.isLoading,
-    googleInventory.isError,
-  );
+  // The chat's + menu draws Google through this same function (`google-chat-connector.ts`).
+  const google = googleAccountSummary(myGoogleConnections, {
+    loading: googleInventory.isLoading,
+    failed: googleInventory.isError,
+  });
   const githubSummary = savedAccountSummary(
     github.inventory.connection
       ? [
@@ -672,7 +683,7 @@ export function IntegrationsWorkspace({
       null,
       google,
       GOOGLE_CONNECTOR_PROVIDER.products
-        .map((product) => `${product.name} ${product.promise}`)
+        .map((product) => `${product.name} ${product.searchTerms} ${product.promise}`)
         .join(" "),
     ),
     nativeItem(
@@ -847,7 +858,9 @@ export function IntegrationsWorkspace({
           description: describeForViewer(entry, showInternalNotes),
           vendor: `${entry.vendor} · Agent tools`,
           category: entry.category,
-          keywords: entry.slug,
+          // The products the catalog stores for this connector (Outlook, Teams, Jira …): the same
+          // data the chat's + menu searches.
+          keywords: catalogSearchKeywords(entry),
           artwork: {
             id: entry.slug,
             name: entry.name,
@@ -1071,7 +1084,18 @@ export function IntegrationsWorkspace({
     }
   };
 
-  const renderDetail = (item: IntegrationDirectoryItem) =>
+  const renderDetail = (item: IntegrationDirectoryItem) => {
+    const chatTarget = chatConversationId ? chatSwitchTargetFor(item) : null;
+    return (
+      <div className="space-y-4">
+        {chatConversationId && chatTarget ? (
+          <ChatConnectorSwitchRow conversationId={chatConversationId} target={chatTarget} />
+        ) : null}
+        {renderDetailBody(item)}
+      </div>
+    );
+  };
+  const renderDetailBody = (item: IntegrationDirectoryItem) =>
     item.abilities?.length ? (
       <AbilitySections
         item={item}

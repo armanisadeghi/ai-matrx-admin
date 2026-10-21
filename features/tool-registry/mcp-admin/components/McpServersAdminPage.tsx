@@ -58,7 +58,10 @@ import {
   computeTestFreshness,
   formatRelativeAge,
   requiresUnrestrictedToolAllowlistConfirmation,
+  productsFromColumn,
+  productsToText,
   toolAllowlistFromMetadata,
+  updateServerProducts,
   updateServerToolAllowlist,
   createServerConfig,
   updateServerConfig,
@@ -1483,6 +1486,23 @@ function MetaTabEditor({
     toolAllowlistFromMetadata(server.metadata).join("\n"),
   );
   const [saving, setSaving] = useState(false);
+  const [productsText, setProductsText] = useState(() => productsToText(productsFromColumn(server.products)));
+  const [savingProducts, setSavingProducts] = useState(false);
+
+  const saveProducts = async () => {
+    setSavingProducts(true);
+    try {
+      const saved = await updateServerProducts(currentServer, productsText);
+      setCurrentServer(saved);
+      setProductsText(productsToText(productsFromColumn(saved.products)));
+      toast.success(`Search products saved for ${saved.slug}`);
+      onUpdated();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save search products");
+    } finally {
+      setSavingProducts(false);
+    }
+  };
 
   const saveToolAllowlist = async () => {
     if (requiresUnrestrictedToolAllowlistConfirmation(toolAllowlistText)) {
@@ -1519,6 +1539,33 @@ function MetaTabEditor({
   const meta = serverMeta(currentServer);
   return (
     <div className="space-y-3">
+      <section className="rounded-md border border-border bg-card p-3 space-y-2">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <Label htmlFor={`mcp-products-${currentServer.id}`} className="type-label">
+              Search products
+            </Label>
+            <p className="type-secondary mt-1 text-muted-foreground">
+              One product per line: its name, then | and its other words.
+            </p>
+          </div>
+          <Button
+            icon={savingProducts && <Loader2 className="animate-spin" />}
+            variant="primary"
+            onClick={() => void saveProducts()}
+            disabled={savingProducts}
+          >
+            Save products
+          </Button>
+        </div>
+        <Textarea mono
+          id={`mcp-products-${currentServer.id}`}
+          value={productsText}
+          onChange={(event) => setProductsText(event.target.value)}
+          placeholder={"Outlook | mail, email, inbox\nTeams | chat, meetings"}
+          rows={5}
+        />
+      </section>
       <section className="rounded-md border border-border bg-card p-3 space-y-2">
         <div className="flex items-center justify-between gap-3">
           <div>

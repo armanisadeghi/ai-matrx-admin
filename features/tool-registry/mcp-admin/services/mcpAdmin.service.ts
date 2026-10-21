@@ -2,7 +2,7 @@
 
 import { publishedToWebPatch } from "@/lib/row-access";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
-import { mergeJsonColumn } from "@ai-matrx/data/db";
+import { guardedUpdate, mergeJsonColumn } from "@ai-matrx/data/db";
 import { createClient } from "@/utils/supabase/client";
 import { writeOne } from "@/utils/supabase/writeOne";
 import type { Database } from "@/types/database.types";
@@ -137,6 +137,95 @@ export async function updateServerToolAllowlist(
     );
   }
   throw result.error;
+}
+
+/**
+ * WHAT A PERSON TYPES TO FIND THIS CONNECTOR — `tool.mcp_server.products`, `[{ name, aliases[] }]`.
+ * The chat's + menu and the directory window both search it. The editor is one product per line:
+ * `Outlook | mail, email, inbox` (name, then its other words).
+ */
+export interface McpProduct {
+  name: string;
+  aliases: string[];
+}
+
+export function productsFromColumn(value: unknown): McpProduct[] {
+  if (!Array.isArray(value)) return [];
+  const out: McpProduct[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== "object") continue;
+    const { name, aliases } = item as { name?: unknown; aliases?: unknown };
+    if (typeof name !== "string" || !name.trim()) continue;
+    out.push({
+      name: name.trim(),
+      aliases: Array.isArray(aliases)
+        ? aliases.filter((a): a is string => typeof a === "string" && a.trim() !== "").map((a) => a.trim())
+        : [],
+    });
+  }
+  return out;
+}
+
+export function productsToText(products: readonly McpProduct[]): string {
+  return products
+    .map((product) => (product.aliases.length > 0 ? `${product.name} | ${product.aliases.join(", ")}` : product.name))
+    .join("\n");
+}
+
+/** One product per line, first order kept, a repeated name saved once. A blank editor saves no products. */
+export function productsFromText(text: string): McpProduct[] {
+  const seen = new Set<string>();
+  const out: McpProduct[] = [];
+  for (const line of text.split(/\r?\n/)) {
+    const [rawName, ...rest] = line.split("|");
+    const name = (rawName ?? "").trim();
+    if (!name || seen.has(name.toLowerCase())) continue;
+    seen.add(name.toLowerCase());
+    const aliases = [
+      ...new Set(
+        rest
+          .join("|")
+          .split(",")
+          .map((alias) => alias.trim())
+          .filter(Boolean),
+      ),
+    ];
+    out.push({ name, aliases });
+  }
+  return out;
+}
+
+/**
+ * Save only `products`, compare-and-set on the row version like every other edit here
+ * (`guardedUpdate`: the edit is the whole column, so a version that moved for another column is
+ * retried against the new version and a changed `products` is a conflict, never overwritten).
+ */
+export async function updateServerProducts(
+  server: Pick<McpServerRow, "id" | "products" | "version">,
+  editorText: string,
+): Promise<McpServerRow> {
+  const next = productsFromText(editorText);
+  const baseline = JSON.stringify(productsFromColumn(server.products));
+  const fetchCurrent = () => sb().schema("tool").from("mcp_server").select("*").eq("id", server.id).maybeSingle();
+  const result = await guardedUpdate<McpServerRow>({
+    expectedVersion: server.version,
+    fetchCurrent,
+    applyUpdate: ({ expectedVersion, nextVersion }) =>
+      sb()
+        .schema("tool")
+        .from("mcp_server")
+        .update({ products: next as unknown as McpServerRow["products"], version: nextVersion })
+        .eq("id", server.id)
+        .eq("version", expectedVersion)
+        .select("*")
+        .maybeSingle(),
+    rebase: { isPhantom: (current) => JSON.stringify(productsFromColumn(current.products)) === baseline },
+  });
+  if (result.status === "saved") return result.row;
+  if (result.status === "not_found") {
+    throw new Error("This MCP server is no longer available. Reload and try again.");
+  }
+  throw new Error("Someone else changed this server's search products while you were editing. Reload and try again.");
 }
 
 export async function listServers(): Promise<McpServerRow[]> {

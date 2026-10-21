@@ -17,7 +17,7 @@ jest.mock("@ai-matrx/chat/agents/hooks/useMcpTools", () => ({
     catalog: [], status: "succeeded", availabilityStatus: "succeeded",
     refreshAvailability: jest.fn(),
     serverStates: [{
-      entry: { slug: "github", name: "GitHub", connectionId: null, iconUrl: null },
+      entry: { slug: "github", name: "GitHub", connectionId: null, iconUrl: null, products: [] },
       truth: { state: "connected", reason: null }, toolCount: 12, attachable: [],
     }],
   }),

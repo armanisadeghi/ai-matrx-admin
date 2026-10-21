@@ -49,7 +49,6 @@ export function useFirstPartyConnectors(
   return {
     ready: Boolean(inventory.data) || failed,
     connectors: connectorsFrom(inventory.data, viewer, { loading, failed }),
-    searchTermsBySlug: {}, // TEMPORARY until @ai-matrx/chat 0.8.260 is installed (the old list builder reads it)
     // Resolves with the connectors as the fresh read found them (null when it failed).
     refresh: async () => {
       const fresh = await inventory.refetch();

@@ -1,5 +1,6 @@
 import {
   DEFAULT_DIRECTORY_FILTERS,
+  catalogSearchKeywords,
   directoryDetailFromParams,
   filterDirectory,
   savedAccountSummary,
@@ -88,5 +89,31 @@ describe("OAuth return detail mapping", () => {
     expect(directoryDetailFromParams(new URLSearchParams("microsoft_status=ok"))).toBe("native:microsoft");
     expect(directoryDetailFromParams(new URLSearchParams("provider=dropbox&oauth_status=success"))).toBe("native:dropbox");
     expect(directoryDetailFromParams(new URLSearchParams("provider=slack"))).toBe("provider:slack");
+  });
+});
+
+
+describe("the directory finds a catalog connector by the products the CATALOG stores for it (defect D)", () => {
+  const atlassian = item({
+    id: "atlassian",
+    name: "Atlassian (Jira & Confluence)",
+    keywords: catalogSearchKeywords({
+      slug: "atlassian",
+      products: [
+        { name: "Jira", aliases: ["tickets", "sprints"] },
+        { name: "Confluence", aliases: ["wiki"] },
+      ],
+    }),
+  });
+  const bare = item({ id: "atlassian", name: "Atlassian (Jira & Confluence)", keywords: catalogSearchKeywords({ slug: "atlassian", products: [] }) });
+
+  it("names, aliases and the slug are all searchable", () => {
+    for (const word of ["jira", "tickets", "sprints", "wiki", "atlassian"]) {
+      expect(filterDirectory([atlassian], { ...DEFAULT_DIRECTORY_FILTERS, query: word })).toHaveLength(1);
+    }
+  });
+
+  it("without the catalog's products the same alias finds nothing — the data is what finds it", () => {
+    expect(filterDirectory([bare], { ...DEFAULT_DIRECTORY_FILTERS, query: "sprints" })).toHaveLength(0);
   });
 });

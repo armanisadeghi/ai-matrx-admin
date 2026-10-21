@@ -34,6 +34,7 @@ const githubEntry = {
   lastUsedAt: null,
   transportUsed: null,
   tokenExpiresAt: null,
+  products: [],
 } satisfies McpCatalogEntry;
 
 describe("catalogConnectionPresentation", () => {

@@ -7,6 +7,10 @@ jest.mock("@/utils/supabase/client", () => ({
 import {
   getMcpTestNotificationLevel,
   mergeMcpToolAllowlist,
+  productsFromColumn,
+  productsFromText,
+  productsToText,
+  updateServerProducts,
   requiresUnrestrictedToolAllowlistConfirmation,
   toolAllowlistFromMetadata,
   updateServerToolAllowlist,
@@ -292,5 +296,47 @@ describe("MCP tool allowlists", () => {
       updateServerToolAllowlist(server, "search_projects"),
     ).rejects.toThrow("kept changing while saving");
     expect(table.update).toHaveBeenCalledTimes(3);
+  });
+});
+
+
+describe("search products (tool.mcp_server.products)", () => {
+  it("round-trips one product per line, name then its other words", () => {
+    const text = "Outlook | mail, email, inbox\nTeams | chat\nWord";
+    const products = productsFromText(text);
+    expect(products).toEqual([
+      { name: "Outlook", aliases: ["mail", "email", "inbox"] },
+      { name: "Teams", aliases: ["chat"] },
+      { name: "Word", aliases: [] },
+    ]);
+    expect(productsToText(products)).toBe(text);
+  });
+
+  it("saves a repeated name once, trims, drops blank lines, and a blank editor saves no products", () => {
+    expect(productsFromText("Jira | tickets, tickets\n\n jira \n  ")).toEqual([{ name: "Jira", aliases: ["tickets"] }]);
+    expect(productsFromText("  \n")).toEqual([]);
+  });
+
+  it("reads a stored column defensively", () => {
+    expect(productsFromColumn(null)).toEqual([]);
+    expect(productsFromColumn([{ name: "Jira", aliases: ["tickets", 3] }, { aliases: ["x"] }, "Jira"])).toEqual([
+      { name: "Jira", aliases: ["tickets"] },
+    ]);
+  });
+
+  it("refuses to overwrite products someone else changed since the editor loaded", async () => {
+    const mine = { ...server, products: [], version: 4 };
+    const theirs = { ...mine, products: [{ name: "Jira", aliases: [] }], version: 5 };
+    mcpServerBoundary([{ data: theirs, error: null }], [{ data: null, error: null }]);
+    await expect(updateServerProducts(mine as never, "Confluence")).rejects.toThrow(/Someone else changed/);
+  });
+
+  it("writes only the products column, compare-and-set on the row version", async () => {
+    const current = { ...server, products: [], version: 4 };
+    const saved = { ...current, products: [{ name: "Jira", aliases: ["tickets"] }], version: 5 };
+    const { table, writeQuery } = mcpServerBoundary([{ data: current, error: null }], [{ data: saved, error: null }]);
+    await expect(updateServerProducts(current as never, "Jira | tickets")).resolves.toEqual(saved);
+    expect(table.update).toHaveBeenCalledWith({ products: [{ name: "Jira", aliases: ["tickets"] }], version: 5 });
+    expect(writeQuery.eq).toHaveBeenCalledWith("version", 4);
   });
 });

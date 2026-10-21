@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { beginConnectFlow, endConnectFlow } from "@ai-matrx/chat/agents/connectors/connect-intent-store";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { fetchCatalog } from "@ai-matrx/chat/agents/redux/mcp/mcp.slice";
@@ -14,12 +15,21 @@ interface LiveIntegrationsWindowProps {
   onClose: () => void;
   /** Land on this provider's detail. */
   provider?: string | null;
+  /** Land on the list with this search typed (what the person searched in the chat's menu). */
+  search?: string | null;
+  /** The chat the window was opened from: what is connected here joins it, and each connector offers "In this chat". */
+  conversationId?: string | null;
+  /** When this open was asked for: a new value restarts the window on its list. */
+  openedAt?: number;
 }
 
 export default function LiveIntegrationsWindow({
   isOpen,
   onClose,
   provider,
+  search,
+  conversationId,
+  openedAt = 0,
 }: LiveIntegrationsWindowProps) {
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
@@ -38,6 +48,14 @@ export default function LiveIntegrationsWindow({
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);
   }, [isOpen, dispatch, queryClient]);
+  // A window opened FROM a chat is a connect flow for that chat while it is up, and the chat reads
+  // the connections again once it is gone (`connect-intent-store.ts`): so what is connected here
+  // reaches the chat even when nothing else read Google. Ending on unmount covers every way it closes.
+  useEffect(() => {
+    if (!isOpen || !conversationId) return;
+    beginConnectFlow(conversationId);
+    return () => endConnectFlow(conversationId);
+  }, [isOpen, conversationId]);
   if (!isOpen) return null;
 
   return (
@@ -62,7 +80,12 @@ export default function LiveIntegrationsWindow({
         }}
         bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden p-0"
       >
-        <LiveIntegrationsList provider={provider ?? null} />
+        <LiveIntegrationsList
+          key={openedAt}
+          provider={provider ?? null}
+          search={search ?? ""}
+          conversationId={conversationId ?? null}
+        />
       </WindowPanel>
     </NonEditableContextMenu>
   );

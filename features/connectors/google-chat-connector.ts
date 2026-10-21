@@ -66,7 +66,7 @@ const CHAT_PRODUCT_FACTS: Readonly<Record<string, ChatProductFacts>> = {
   gmail_modify: { inChat: false, chatNote: "Changing messages is not available in chat yet." },
   calendar: { inChat: true, chatNote: "Reads your calendar." },
   contacts: { inChat: true, chatNote: "Looks up your contacts." },
-  tasks: { inChat: true, chatNote: "Reads your Google Tasks." },
+  tasks: { inChat: true, chatNote: "Reads your to-do list." },
 };
 
 const NOT_IN_CHAT: ChatProductFacts = { inChat: false, chatNote: "Not available in chat yet." };

@@ -29,21 +29,43 @@ two doors and the product words (Arman, 2026-10-20). Google is not an MCP server
 (MCP catalog) could not show or connect it:
 
 - `useFirstPartyConnectors.ts` / `google-chat-connector.ts` — Google as one row, built from
-  `provider-config.ts` and `google-status.ts` (the only places that say what Google covers) plus a short
-  alias table (`email`, `inbox`, …) and what a CHAT does with each product (`inChat`, `chatNote`). Gmail
-  in chat = prepare an email the person reviews and sends; reading the inbox has no chat tool and the row
-  says so. `enabled: false` is the passive read the adoption hook uses (no Google read until engaged).
-- `useOpenFirstPartyConnect.ts` — opens the consent dialog (`connectorConsentDialog`) with the searched
-  product switched on, waits for it to close, re-reads the inventory and answers true only if the
-  account/product now exists. (The Google connect WINDOW grants Docs/Sheets only — it can never connect Gmail.)
-- `connector-search-terms.ts` — the products of catalog connectors that no other file names (Outlook,
-  Teams, Jira …); Microsoft's come from `MICROSOFT_CAMPAIGN_DESCRIPTORS`.
+  `provider-config.ts` (each product carries its own `searchTerms`) and `google-status.ts` (the only
+  places that say what Google covers) plus what a CHAT does with each product (`inChat`, `chatNote`).
+  Gmail in chat = prepare an email the person reviews and sends; reading the inbox has no chat tool and
+  the row says so. **One truth with the Browse window:** the row's state is `googleAccountSummary` — the
+  SAME `savedAccountSummary` over the SAME accounts (the viewer's own, `ownGoogleConnections`) the
+  window's Google card draws — so any account needing repair makes both say "needs repair", and the menu
+  shows Reconnect, not a switch. `enabled: false` is the passive read the adoption hook uses (no Google
+  read until engaged); `refresh()` resolves with the connectors the fresh read found.
+- `useOpenFirstPartyConnect.ts` + `first-party-connect-flow.ts` — opens the consent dialog
+  (`connectorConsentDialog`) with the searched product switched on, subscribes BEFORE opening and waits for
+  it to be seen and closed (`waitForOverlayClosed`; no short give-up — it says "did not open" after 30 s),
+  then decides from a fresh read (`connectLanded`): proven → true; the account did not change (a cancel)
+  → false at once; changed but not yet proven → read once more. (The Google connect WINDOW grants
+  Docs/Sheets only — it can never connect Gmail.) Guards: `first-party-connect-flow.test.ts`,
+  `useOpenFirstPartyConnect.test.tsx`.
+- **Product names are data.** A catalog connector's products are `tool.mcp_server.products`
+  (`[{ name, aliases[] }]`, returned by `get_mcp_catalog_for_user` as `entry.products`, seeded for every
+  row by `migrations/mcp_server_products_for_search.sql`); both the chat's + menu and the directory
+  window search them (`catalogSearchKeywords`). No file in this app lists products any more
+  (`connector-search-terms.ts` is gone); Google's live in `provider-config.ts`. The MCP admin
+  (`/administration/agents/mcp-servers`, Meta tab → **Search products**, one product per line:
+  `Outlook | mail, email`) edits the column.
 - `useConnectMcpServer.connect(entry, endpointOverride?, { conversationId })` → `Promise<boolean>`; with a
   chat it opens the directory window instead of a page for "configure" servers, and hands the chat's
   baseline to the page that comes back for the GitHub install.
-- The directory window (`liveIntegrationsWindow`) takes `{ conversationId?, provider? }`, lands on the
-  provider's card and re-reads the catalog + Google inventory as it closes and when the tab is shown again.
-  The directory's search is the chat package's `connector-search` (one matcher, no twin).
+- The directory window (`liveIntegrationsWindow`) takes `{ conversationId?, provider?, search? }`. Every
+  open starts it afresh (`openedAt` keys the list), on its LIST, or on the provider's card, or on the
+  typed search — never on whatever an earlier visit left open. Opened from a chat it is a CONNECT FLOW for
+  that chat (`beginConnectFlow` on mount, `endConnectFlow` on unmount, chat package
+  `connect-intent-store`): the chat reads Google while it is up and once more as it closes, so a
+  connection made here joins the chat even when nothing else read Google. Each connector's detail then
+  offers **In this chat** (`ChatConnectorSwitchRow`, `chat-switch-target.ts`) — the SAME setting the +
+  menu row flips (`useChatConnectorSwitch`). It re-reads the catalog + Google inventory as it closes and
+  when the tab is shown again. The directory's search is the chat package's `connector-search` (one
+  matcher, no twin).
+- Google's chat tool names (`GOOGLE_CHAT_TOOL_NAMES`) are the server's: `pnpm check:google-chat-tools[:strict]`
+  asks the live registry, `google-chat-tool-names-are-the-servers.test.ts` reads the server source.
 
 ## Entry points
 
@@ -346,6 +368,7 @@ One entry in `registry.ts`: id (generic to the provider, permanent), name (today
 
 ## Change log
 
+- **2026-10-20 (round 2)** — Products are catalog data; the menu and the window agree on Google (`googleAccountSummary`); the window lands on its list or the typed search and offers "In this chat" per connector when opened from a chat; a connection made there reaches the chat (connect flow); the Gmail connect waits for the dialog robustly (`first-party-connect-flow.ts`); Google's chat tool names are guarded against server renames.
 - **2026-10-20** — The chat's Connections list covers both connection systems: Google as a first-party row (`google-chat-connector.ts`, `useFirstPartyConnectors`, `useOpenFirstPartyConnect`), search by product (`connector-search-terms.ts`), `connect()` resolves to a boolean and takes the chat, the directory window takes `{ conversationId, provider }`. Guards: `__tests__/google-chat-connector.test.ts`, `useConnectMcpServer.test.tsx`.
 - 2026-10-05 — The directory is the one place to find a connection: Bing Webmaster (yours/shared via the ownership rule), your own database, this computer and Connect your AI are listed as door items (`DOOR_HREFS` in `IntegrationsSettingsPage.tsx`) that open their existing screens. Main menu "Integrations" now lands on Connectors.
 

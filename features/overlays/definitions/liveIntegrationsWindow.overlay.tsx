@@ -17,6 +17,8 @@ export interface OpenLiveIntegrationsWindowOptions {
   conversationId?: string;
   /** Land on this provider's detail (a catalog slug, or a first-party id such as `google`). */
   provider?: string;
+  /** Land on the list with this search typed — what the person searched in the chat's + menu. */
+  search?: string;
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
@@ -29,6 +31,10 @@ export function createLiveIntegrationsWindowOpener(store: AppStore) {
         data: {
           conversationId: options?.conversationId ?? null,
           provider: options?.provider ?? null,
+          search: options?.search ?? null,
+          // Every open starts the window afresh — on its list, or where it was asked to land — even
+          // when it was already open (or minimized) on some connector's detail from an earlier visit.
+          openedAt: Date.now(),
         },
       }),
     );
