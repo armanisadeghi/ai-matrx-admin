@@ -49,6 +49,11 @@ together. Linear is the visual reference. It is built beside the old shell and i
 - `FrameModules.tsx`: the heavy-module machinery: `lazyModule` (one `React.lazy` per loader),
   `ModuleSlot` (Suspense with a row skeleton, and an honest failure), the labelled stand-ins,
   the side chat's resize handle and the ask bar.
+- `flows/` (`index.ts` + one JSON per family, schema `flows/SCHEMA.md`): what every product
+  holds and how its pages connect. The playground draws each sidebar from it (rows are the
+  flow's sections, hover shows the real route; Intelligence's six parts are its sections) and,
+  in "Body: Flow" (default), shows the product's Map, Journeys and Problems; "Big picture"
+  shows every family, product and section on one screen (`app/(lab)/lab/shell/FlowView.tsx`).
 - `ProductMark.tsx`: a product's mark, Google's way: the glyph itself in the product's color
   (the design system's chip ink for its hue, light and dark values), 40px in the grid's 48px
   cell (stroke 1.5), 18px beside the sidebar's product name (stroke 1.75). No tinted tile.
@@ -191,6 +196,9 @@ the canvas and the ask bar, the per-page memory and the link, the forms and canv
 ownership attributes, and no `className`/`style` on any exported props type.
 
 ## Change log
+
+- 2026-10-21 (round 10): the playground's sidebars come from the product flows; Flow view
+  (Map, Journeys, Problems) and Big picture; tests tie every tile to a flow and back.
 
 - 2026-10-21: route link graph de-noised (synthetic menu/sidebar/layout/tab nodes, rendered-only imports, barrels resolved, admin-map edges, helper evaluation).
 
