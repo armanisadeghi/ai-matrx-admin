@@ -1,0 +1,1247 @@
+route	tree node	how found today	note
+/acquisition	Memory › Research › Sources	menu: Knowledge › Acquisition Console	acquisition console / blocks
+/acquisition/blocks	Memory › Research › Sources	menu: Knowledge › Acquisition Blocks	acquisition console / blocks
+/acquisition/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/agent-connections	BUILD › Connectors	menu: Agents › Agent Connections	agent connections
+/agent-connections/agents	BUILD › Connectors	in-page link under menu: Agents › Agent Connections	agent connections
+/agent-connections/commands	BUILD › Connectors	in-page link under menu: Agents › Agent Connections	agent connections
+/agent-connections/hooks	BUILD › Connectors	unreachable: empty page (owner's cleanup list)	agent connections
+/agent-connections/instructions	BUILD › Connectors	in-page link under menu: Agents › Agent Connections	agent connections
+/agent-connections/mcp-servers	BUILD › Connectors	in-page link under menu: Agents › Agent Connections	agent connections
+/agent-connections/plugins	BUILD › Code	menu: Code › Coding Connections	coding connections
+/agent-connections/preferences	BUILD › Connectors	in-page link under menu: Agents › Agent Connections	agent connections
+/agent-connections/prompts	BUILD › Connectors	in-page link under menu: Agents › Agent Connections	agent connections
+/agent-connections/registries	BUILD › Connectors	in-page link under menu: Agents › Agent Connections	agent connections
+/agent-connections/render-blocks	BUILD › Intelligence › Agents	menu: Agents › Content Blocks	skills / content blocks
+/agent-connections/resources	BUILD › Connectors	in-page link under menu: Agents › Agent Connections	agent connections
+/agent-connections/skills	BUILD › Intelligence › Agents	menu: Agents › Skills	skills / content blocks
+/agent-connections/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/agent-connections/sub-agents	BUILD › Connectors	unreachable: empty page (owner's cleanup list)	agent connections
+/agents	BUILD › Intelligence › Agents	no menu; linked in-app (2147 places)	
+/agents/[id]	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/answers	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/answers/calibration	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/approvals	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/build	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/hindsight	BUILD › Intelligence › Hindsight	opened from a record link	per-agent Review tab
+/agents/[id]/latest	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/run	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/runs	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/shortcuts	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/shortcuts/[shortcutId]	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/shortcuts/batch	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/shortcuts/new	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/shortcuts/old/edit/[shortcutId]	BUILD › Intelligence › Agents	unreachable: nothing links to it (owner's cleanup list, KILL)	legacy shortcut editor
+/agents/[id]/shortcuts/old/new	BUILD › Intelligence › Agents	unreachable: nothing links to it (owner's cleanup list, KILL)	legacy shortcut editor
+/agents/[id]/surfaces	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/surfaces/batch	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/test	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/v/[version]	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/widgets	BUILD › Intelligence › Agents	opened from a record link	
+/agents/admin	BUILD › Intelligence › Agents	no menu; linked in-app (2 places)	
+/agents/all	BUILD › Intelligence › Agents	menu: Agents	
+/agents/battle	BUILD › Intelligence › Agents	menu: Agents › Agent Battle	
+/agents/battle/conversation	BUILD › Intelligence › Agents	in-page link under menu: Agents › Agent Battle	
+/agents/battle/conversation/[setId]	BUILD › Intelligence › Agents	opened from a list (under menu: Agents › Agent Battle)	
+/agents/battle/matrix	BUILD › Intelligence › Agents	in-page link under menu: Agents › Agent Battle	
+/agents/battle/matrix/[setId]	BUILD › Intelligence › Agents	opened from a list (under menu: Agents › Agent Battle)	
+/agents/battle/model	BUILD › Intelligence › Agents	in-page link under menu: Agents › Agent Battle	
+/agents/battle/model/[setId]	BUILD › Intelligence › Agents	opened from a list (under menu: Agents › Agent Battle)	
+/agents/battle/open	BUILD › Intelligence › Agents	unreachable: old address that redirects (owner's cleanup list)	
+/agents/battle/open/[setId]	BUILD › Intelligence › Agents	opened from a list (under menu: Agents › Agent Battle)	
+/agents/battle/request-mod	BUILD › Intelligence › Agents	in-page link under menu: Agents › Agent Battle	
+/agents/battle/request-mod/[setId]	BUILD › Intelligence › Agents	opened from a list (under menu: Agents › Agent Battle)	
+/agents/battle/settings	BUILD › Intelligence › Agents	in-page link under menu: Agents › Agent Battle	
+/agents/battle/settings/[setId]	BUILD › Intelligence › Agents	opened from a list (under menu: Agents › Agent Battle)	
+/agents/battle/smart-add	BUILD › Intelligence › Agents	in-page link under menu: Agents › Agent Battle	
+/agents/battle/smart-add/[setId]	BUILD › Intelligence › Agents	opened from a list (under menu: Agents › Agent Battle)	
+/agents/battle/system-prompt	BUILD › Intelligence › Agents	in-page link under menu: Agents › Agent Battle	
+/agents/battle/system-prompt/[setId]	BUILD › Intelligence › Agents	opened from a list (under menu: Agents › Agent Battle)	
+/agents/battle/tools	BUILD › Intelligence › Agents	in-page link under menu: Agents › Agent Battle	
+/agents/battle/tools/[setId]	BUILD › Intelligence › Agents	opened from a list (under menu: Agents › Agent Battle)	
+/agents/battle/tuning	BUILD › Intelligence › Agents	in-page link under menu: Agents › Agent Battle	
+/agents/battle/tuning/[setId]	BUILD › Intelligence › Agents	opened from a list (under menu: Agents › Agent Battle)	
+/agents/battle/variations	BUILD › Intelligence › Agents	in-page link under menu: Agents › Agent Battle	
+/agents/battle/variations/[setId]	BUILD › Intelligence › Agents	opened from a list (under menu: Agents › Agent Battle)	
+/agents/browse	BUILD › Intelligence › Agents	unreachable: old address that redirects (owner's cleanup list)	
+/agents/builds/[buildId]	BUILD › Intelligence › Agents	opened from a record link	
+/agents/categories	BUILD › Intelligence › Agents	menu: Agents › Categories	
+/agents/classic	BUILD › Intelligence › Agents	no menu; linked in-app (3 places)	
+/agents/compare	BUILD › Intelligence › Agents	menu: Agents › Compare Agents	
+/agents/go/[...slug]	BUILD › Intelligence › Agents	opened from a record link	
+/agents/new	BUILD › Intelligence › Agents	menu: Agents › New Agent	
+/agents/new/builder	BUILD › Intelligence › Agents	in-page link under menu: Agents › New Agent	
+/agents/new/builder/customizer	BUILD › Intelligence › Agents	in-page link under menu: Agents › New Agent	
+/agents/new/builder/instant	BUILD › Intelligence › Agents	in-page link under menu: Agents › New Agent	
+/agents/new/builder/tabs	BUILD › Intelligence › Agents	in-page link under menu: Agents › New Agent	
+/agents/new/generate	BUILD › Intelligence › Agents	in-page link under menu: Agents › New Agent	
+/agents/new/import	BUILD › Intelligence › Agents	window: Agents › Import Agent Window	
+/agents/new/manual	BUILD › Intelligence › Agents	in-page link under menu: Agents › New Agent	
+/agents/new/studio	BUILD › Intelligence › Agents	unreachable: empty page (owner's cleanup list)	Agent Studio
+/agents/new/studio/from-claude	BUILD › Intelligence › Agents	in-page link under menu: Agents › New Agent	Agent Studio
+/agents/new/studio/with-claude-code	BUILD › Intelligence › Agents	in-page link under menu: Agents › New Agent	Agent Studio
+/agents/orchestra-studio	BUILD › Intelligence › Agents	menu: Agents › Orchestra Studio	
+/agents/orchestras	BUILD › Intelligence › Workflows	menu: Workflows › Orchestras	orchestras
+/agents/orchestras/[conductorId]	BUILD › Intelligence › Workflows	opened from a list (under menu: Workflows › Orchestras)	orchestras
+/agents/org-chart	BUILD › Intelligence › Agents	menu: Agents › Org Chart	
+/agents/prompt-blocks	BUILD › Intelligence › Agents	menu: Agents › Prompt blocks	
+/agents/prompt-blocks/[id]	BUILD › Intelligence › Agents	opened from a list (under menu: Agents › Prompt blocks)	
+/agents/prompt-blocks/new	BUILD › Intelligence › Agents	in-page link under menu: Agents › Prompt blocks	
+/agents/shortcuts	BUILD › Intelligence › Agents	menu: Agents › Shortcuts	
+/agents/shortcuts/[shortcutId]	BUILD › Intelligence › Agents	opened from a list (under menu: Agents › Shortcuts)	
+/agents/shortcuts/all	BUILD › Intelligence › Agents	in-page link under menu: Agents › Shortcuts	
+/agents/shortcuts/edit/[id]	BUILD › Intelligence › Agents	opened from a list (under menu: Agents › Shortcuts)	
+/agents/shortcuts/new	BUILD › Intelligence › Agents	in-page link under menu: Agents › Shortcuts	
+/agents/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/agents/templates	BUILD › Intelligence › Agents	menu: Agents › Templates	
+/agents/templates/[id]	BUILD › Intelligence › Agents	opened from a list (under menu: Agents › Templates)	
+/applets	BUILD › Applets	menu: Applets	
+/applets/admin	BUILD › Applets	in-page link under menu: Applets	
+/applets/build	BUILD › Applets	menu: Applets › Build an Applet	
+/applets/build/[id]	BUILD › Applets	opened from a list (under menu: Applets › Build an Applet)	
+/applets/build/layout	BUILD › Applets	in-page link under menu: Applets › Build an Applet	
+/applets/manage/[id]	BUILD › Applets	opened from a list (under menu: Applets)	
+/applets/manage/[id]/code	BUILD › Applets	opened from a list (under menu: Applets)	
+/applets/manage/[id]/run	BUILD › Applets	opened from a list (under menu: Applets)	
+/applets/manage/[id]/settings	BUILD › Applets	opened from a list (under menu: Applets)	
+/applets/manage/[id]/v/[version]	BUILD › Applets	opened from a list (under menu: Applets)	
+/applets/manage/[id]/versions	BUILD › Applets	opened from a list (under menu: Applets)	
+/applets/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/approvals	NOT TILES › Account menu	menu: Account › Approvals	approvals
+/approvals/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/artifacts	BUSINESS › Marketing	menu: Publish › Artifacts	artifacts
+/artifacts/[id]	BUSINESS › Marketing	opened from a list (under menu: Publish › Artifacts)	artifacts
+/artifacts/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/assists	BUILD › Intelligence › Mandates	menu: Intelligence › Assists	assists
+/board	YOURS › Workspace › Boards	menu: Workspace › Board	
+/board/[id]	YOURS › Workspace › Boards	opened from a list (under menu: Workspace › Board)	
+/board/all	YOURS › Workspace › Boards	in-page link under menu: Workspace › Board	
+/board/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/bring-your-work	BUILD › Connectors	menu: Integrations › Connect your AI	
+/camera	Productivity › Media	menu: Media › Camera	camera (tree also lists camera under Capture)
+/camera/admin	Productivity › Media	in-page link under menu: Media › Camera	camera (tree also lists camera under Capture)
+/camera/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/capture/needs-you	SOLUTIONS › E-Commerce	menu: Industries › Commerce › Needs You	
+/chat	YOURS › Chat › Chats	unreachable: old address that redirects (owner's cleanup list)	
+/chat/[conversationId]	YOURS › Chat › Chats	opened from a record link	
+/chat/a/[agentId]	YOURS › Chat › Chats	opened from a record link	
+/chat/message-templates	BUSINESS › Messages	menu: Communications › Message Templates	message templates
+/chat/message-templates/[id]	BUSINESS › Messages	opened from a list (under menu: Communications › Message Templates)	message templates
+/chat/message-templates/edit/[id]	BUSINESS › Messages	unreachable: nothing links to it (owner's cleanup list, KILL)	message templates
+/chat/message-templates/new	BUSINESS › Messages	in-page link under menu: Communications › Message Templates	message templates
+/chat/new	YOURS › Chat › Chats	menu: Chat	
+/chat/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/chat/talk	YOURS › Chat › Voice / Talk	unreachable: old address that redirects (owner's cleanup list)	
+/chat/talk/[conversationId]	YOURS › Chat › Voice / Talk	opened from a list (under menu: Chat › Talk)	
+/chat/talk/a/[agentId]	YOURS › Chat › Voice / Talk	opened from a list (under menu: Chat › Talk)	
+/chat/voice	YOURS › Chat › Voice / Talk	menu: Chat › Voice	
+/chat/voice/gemini	YOURS › Chat › Voice / Talk	NO LINK FOUND (sits under menu: Chat › Voice)	
+/chat/voice/music	YOURS › Chat › Voice / Talk	NO LINK FOUND (sits under menu: Chat › Voice)	
+/chat/voice/playground	YOURS › Chat › Voice / Talk	in-page link under menu: Chat › Voice	
+/cms	BUSINESS › Marketing	menu: Publish › CMS	CMS & pages
+/cms/[siteId]	BUSINESS › Marketing	opened from a list (under menu: Publish › CMS)	CMS & pages
+/cms/[siteId]/collections	BUSINESS › Marketing	opened from a list (under menu: Publish › CMS)	CMS & pages
+/cms/[siteId]/collections/[collectionId]	BUSINESS › Marketing	opened from a list (under menu: Publish › CMS)	CMS & pages
+/cms/[siteId]/components	BUSINESS › Marketing	opened from a list (under menu: Publish › CMS)	CMS & pages
+/cms/[siteId]/pages/[pageId]	BUSINESS › Marketing	opened from a list (under menu: Publish › CMS)	CMS & pages
+/cms/[siteId]/pages/new	BUSINESS › Marketing	opened from a list (under menu: Publish › CMS)	CMS & pages
+/cms/[siteId]/settings	BUSINESS › Marketing	opened from a list (under menu: Publish › CMS)	CMS & pages
+/cms/admin	BUSINESS › Marketing	in-page link under menu: Publish › CMS	CMS & pages
+/cms/html-pages	BUSINESS › Marketing	menu: Publish › HTML Pages	CMS & pages
+/cms/html-pages/[pageId]	BUSINESS › Marketing	opened from a list (under menu: Publish › HTML Pages)	CMS & pages
+/cms/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/code	BUILD › Code	menu: Code	
+/code/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/commerce/attention	SOLUTIONS › E-Commerce	menu: Industries › Commerce › Needs Attention	
+/commerce/drafts	SOLUTIONS › E-Commerce	menu: Industries › Commerce › Drafts	
+/commerce/intake	SOLUTIONS › E-Commerce	menu: Industries › Commerce › Intake	
+/commerce/intake/admin	SOLUTIONS › E-Commerce	in-page link under menu: Industries › Commerce › Intake	
+/commerce/intake/answer	SOLUTIONS › E-Commerce	menu: Industries › Commerce › Intake Answers	
+/commerce/intake/assets	SOLUTIONS › E-Commerce	menu: Industries › Commerce › Intake Assets	
+/commerce/intake/assets/[id]	SOLUTIONS › E-Commerce	opened from a list (under menu: Industries › Commerce › Intake Assets)	
+/commerce/intake/instant	SOLUTIONS › E-Commerce	menu: Industries › Commerce › Instant Intake	
+/commerce/intake/v2	SOLUTIONS › E-Commerce	in-page link under menu: Industries › Commerce › Intake	
+/commerce/intake/v2/instant	SOLUTIONS › E-Commerce	unreachable: nothing links to it (owner's cleanup list, ASK)	
+/commerce/intake/v3	SOLUTIONS › E-Commerce	unreachable: nothing links to it (owner's cleanup list, ASK)	
+/commerce/intake/v3/instant	SOLUTIONS › E-Commerce	unreachable: nothing links to it (owner's cleanup list, ASK)	
+/commerce/labels	SOLUTIONS › E-Commerce	menu: Industries › Commerce › QR Labels	
+/commerce/labels/[batchId]	SOLUTIONS › E-Commerce	opened from a list (under menu: Industries › Commerce › QR Labels)	
+/commerce/labels/printers	SOLUTIONS › E-Commerce	menu: Industries › Commerce › Certified Printers	
+/commerce/labels/printers/certify	SOLUTIONS › E-Commerce	in-page link under menu: Industries › Commerce › Certified Printers	
+/commerce/review/admin	SOLUTIONS › E-Commerce	no menu; linked in-app (2 places)	
+/commerce/stores/connect	SOLUTIONS › E-Commerce	menu: Industries › Commerce › Connect a Store	
+/commerce/triage	SOLUTIONS › E-Commerce	menu: Industries › Commerce › Triage	
+/compare	Productivity › Data › Templates, compare, data-to-model	menu: Data › Compare	
+/compare/old	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
+/compare/old/data-stores	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
+/compare/old/graph-demo	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
+/compare/old/knowledge-home	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
+/compare/old/libraries	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
+/compare/old/library-catalog	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
+/compare/old/rag	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
+/compare/old/sources	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
+/compare/old/transcripts	Memory › (from Knowledge, to place)	in-page link under menu: Data › Compare	+ restored old Transcripts page
+/connect-computer	NOT TILES › Account menu	menu: Computer › Connect a Computer	devices & Computer
+/connected-sources	BUILD › Connectors	menu: Integrations › Connected Sources	
+/context-items	Productivity › Data › Scopes & context	menu: Data › Context Items	
+/context-items/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/crm	BUSINESS › CRM	menu: CRM	
+/crm/[partyId]	BUSINESS › CRM	opened from a list (under menu: CRM)	
+/crm/admin	BUSINESS › CRM	in-page link under menu: CRM	
+/crm/chasebox	BUSINESS › CRM	menu: CRM › Chasebox	
+/crm/deals	BUSINESS › CRM	menu: CRM › Deals	
+/crm/deals/[dealId]	BUSINESS › CRM	opened from a list (under menu: CRM › Deals)	
+/crm/duplicates	BUSINESS › CRM	menu: CRM › Duplicates	
+/crm/import	BUSINESS › CRM	menu: CRM › Import Contacts	
+/crm/inbox	BUSINESS › CRM	menu: CRM › Outreach Inbox	
+/crm/outreach-lists	BUSINESS › CRM	menu: CRM › Outreach Lists	
+/crm/outreach-lists/[listId]	BUSINESS › CRM	opened from a list (under menu: CRM › Outreach Lists)	
+/crm/outreach-lists/[listId]/dial	BUSINESS › CRM	opened from a list (under menu: CRM › Outreach Lists)	
+/crm/sending-identities	BUSINESS › CRM	menu: CRM › Sending Mailboxes	
+/crm/sending-identities/[identityId]	BUSINESS › CRM	opened from a list (under menu: CRM › Sending Mailboxes)	
+/crm/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/d/[renderId]	Productivity › Docs › Documents	opened from a record link	+ one AI-rendered document at its own address
+/dashboard	YOURS › Home › Today	menu: Workspace	Dashboard (one of three entry-page candidates)
+/dashboard/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/data	Productivity › Data › Bases & tables	menu: Data	
+/data/[tableId]	Productivity › Data › Bases & tables	opened from a list (under menu: Data)	
+/data/[tableId]/r/[recordId]	Productivity › Data › Bases & tables	opened from a list (under menu: Data)	
+/data/bases	Productivity › Data › Bases & tables	menu: Data › Bases	
+/data/bases/[homeId]	Productivity › Data › Bases & tables	opened from a list (under menu: Data › Bases)	
+/data/connect	Productivity › Data › Bases & tables	in-page link under menu: Data	
+/data/custom-fields/[token]	Productivity › Data › Bases & tables	opened from a list (under menu: Data)	
+/data/dashboards	YOURS › Workspace › Pages & Dashboards	menu: Workspace › Dashboards	
+/data/interfaces/[interfaceId]	Productivity › Data › Bases & tables	opened from a list (under menu: Data)	+ Interfaces (full-screen app over a table)
+/data/library	Productivity › Data › Bases & tables	menu: Data › Data Library	
+/data/library/lab	Productivity › Data › Templates, compare, data-to-model	menu: Data › Data to Model	
+/data/library/unlock	Productivity › Data › Bases & tables	in-page link under menu: Data › Data Library	
+/data/pages	YOURS › Workspace › Pages & Dashboards	menu: Workspace › Pages	
+/data/pages/[pageId]	YOURS › Workspace › Pages & Dashboards	opened from a list (under menu: Workspace › Pages)	
+/data/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/decisions	BUILD › Intelligence › Mandates	menu: Intelligence › Decisions	decisions / review answers
+/decisions/review	BUILD › Intelligence › Mandates	menu: Intelligence › Review Answers	decisions / review answers
+/decisions/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/detail	MORE	unreachable: nothing links to it (owner's cleanup list, ASK)	+ record-detail showcase (window / panel / page)
+/detail/[type]/[id]	MORE	opened from a record link	+ record-detail showcase (window / panel / page)
+/detail/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/devices	NOT TILES › Account menu	menu: Code › Devices	devices & Computer
+/devices/[deviceId]	NOT TILES › Account menu	opened from a list (under menu: Code › Devices)	devices & Computer
+/devices/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/dictionary/admin	Memory › (from Knowledge, to place)	no menu; linked in-app (3 places)	+ dictionary (only admin map + window here)
+/dictionary/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/documents	Productivity › Docs › Documents	menu: Content › Documents	
+/documents/[id]	Productivity › Docs › Documents	opened from a list (under menu: Content › Documents)	
+/documents/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/documents/templates	Productivity › Docs › Documents	in-page link under menu: Content › Documents	
+/drive	BUILD › Masterwork	no menu; linked in-app (22 places)	+ short link: drive a rulebook interview by phone
+/drive/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/education	SOLUTIONS › Education	menu: Industries	
+/education/admin	SOLUTIONS › Education	in-page link under menu: Industries	
+/education/audio-study	SOLUTIONS › Education	menu: Industries › Education › Audio Study	
+/education/audio-study/[id]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Audio Study)	
+/education/audio-study/[id]/edit	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Audio Study)	
+/education/audio-study/new	SOLUTIONS › Education	in-page link under menu: Industries › Education › Audio Study	
+/education/audio-study/new/manual	SOLUTIONS › Education	in-page link under menu: Industries › Education › Audio Study	
+/education/audio-study/review	SOLUTIONS › Education	in-page link under menu: Industries › Education › Audio Study	
+/education/classes	SOLUTIONS › Education	menu: Industries › Education › My Classes	
+/education/classes/[classId]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › My Classes)	
+/education/classes/[classId]/tests/[testId]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › My Classes)	
+/education/classes/[classId]/tests/[testId]/study	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › My Classes)	
+/education/classes/join	SOLUTIONS › Education	menu: Industries › Education › Join a Class	
+/education/creator	SOLUTIONS › Education	menu: Industries › Education › Creator Page	
+/education/data	SOLUTIONS › Education	menu: Industries › Education › Your Education Data	
+/education/exam-prep	SOLUTIONS › Education	menu: Industries › Education › Exam Prep	
+/education/exam-prep/[slug]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Exam Prep)	
+/education/family	SOLUTIONS › Education	menu: Industries › Education › Family Dashboard	
+/education/family/[studentId]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Family Dashboard)	
+/education/fastfire	SOLUTIONS › Education	menu: Industries › Education › Fast Fire	
+/education/fastfire/capture-test	SOLUTIONS › Education	unreachable: old address that redirects (owner's cleanup list)	
+/education/features	SOLUTIONS › Education	menu: Industries › Education › Education Features	
+/education/features/[slug]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Education Features)	
+/education/flashcards	SOLUTIONS › Education	menu: Industries › Education › Flashcard Studio	
+/education/flashcards-2	SOLUTIONS › Education	unreachable: old address that redirects (owner's cleanup list)	
+/education/flashcards/[setId]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Flashcard Studio)	
+/education/flashcards/[setId]/edit	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Flashcard Studio)	
+/education/flashcards/[setId]/learn	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Flashcard Studio)	
+/education/flashcards/[setId]/match	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Flashcard Studio)	
+/education/flashcards/[setId]/sessions	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Flashcard Studio)	
+/education/flashcards/[setId]/study	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Flashcard Studio)	
+/education/flashcards/[setId]/test	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Flashcard Studio)	
+/education/flashcards/[setId]/write	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Flashcard Studio)	
+/education/flashcards/admin	SOLUTIONS › Education	in-page link under menu: Industries › Education › Flashcard Studio	
+/education/flashcards/new	SOLUTIONS › Education	in-page link under menu: Industries › Education › Flashcard Studio	
+/education/flashcards/new/from-source	SOLUTIONS › Education	in-page link under menu: Industries › Education › Flashcard Studio	
+/education/flashcards/new/import	SOLUTIONS › Education	in-page link under menu: Industries › Education › Flashcard Studio	
+/education/flashcards/progress	SOLUTIONS › Education	unreachable: old address that redirects (owner's cleanup list)	
+/education/flashcards/review	SOLUTIONS › Education	in-page link under menu: Industries › Education › Flashcard Studio	
+/education/flashcards/sessions	SOLUTIONS › Education	in-page link under menu: Industries › Education › Flashcard Studio	
+/education/flashcards/sessions/[sessionId]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Flashcard Studio)	
+/education/flashcards/weak-areas	SOLUTIONS › Education	in-page link under menu: Industries › Education › Flashcard Studio	
+/education/game	SOLUTIONS › Education	menu: Industries › Education › Study Games	
+/education/game/host	SOLUTIONS › Education	menu: Industries › Education › Host a Game	
+/education/game/join	SOLUTIONS › Education	menu: Industries › Education › Join a Game	
+/education/game/play/[roomId]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Study Games)	
+/education/game/solo	SOLUTIONS › Education	menu: Industries › Education › Solo Arcade	
+/education/grade-work	SOLUTIONS › Education	menu: Industries › Education › Grade My Work	
+/education/kits	SOLUTIONS › Education	menu: Industries › Education › Kits	
+/education/kits/[sourceId]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Kits)	
+/education/kits/new	SOLUTIONS › Education	menu: Industries › Education › Create a Study Kit	
+/education/learn	SOLUTIONS › Education	menu: Industries › Education › Learn	
+/education/learn/[...slug]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Learn)	
+/education/learn/admin	SOLUTIONS › Education	in-page link under menu: Industries › Education › Learn	
+/education/levels	SOLUTIONS › Education	menu: Industries › Education › Levels	
+/education/levels/[slug]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Levels)	
+/education/library	SOLUTIONS › Education	menu: Industries › Education › Library	
+/education/library/community	SOLUTIONS › Education	menu: Industries › Education › Community Library	
+/education/library/suggestions	SOLUTIONS › Education	menu: Industries › Education › Library Suggestions	
+/education/media/[id]	SOLUTIONS › Education	opened from a list (under menu: Industries)	
+/education/memory	SOLUTIONS › Education	menu: Industries › Education › Memory Aids	
+/education/memory/[id]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Memory Aids)	
+/education/memory/[id]/edit	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Memory Aids)	
+/education/memory/new	SOLUTIONS › Education	in-page link under menu: Industries › Education › Memory Aids	
+/education/memory/new/manual	SOLUTIONS › Education	in-page link under menu: Industries › Education › Memory Aids	
+/education/mind-maps	SOLUTIONS › Education	menu: Industries › Education › Mind Maps & Diagrams	
+/education/mind-maps/[id]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Mind Maps & Diagrams)	
+/education/mind-maps/[id]/edit	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Mind Maps & Diagrams)	
+/education/mind-maps/new	SOLUTIONS › Education	in-page link under menu: Industries › Education › Mind Maps & Diagrams	
+/education/mind-maps/new/manual	SOLUTIONS › Education	in-page link under menu: Industries › Education › Mind Maps & Diagrams	
+/education/notes	SOLUTIONS › Education	menu: Industries › Education › Smart Notes	
+/education/notes/[id]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Smart Notes)	
+/education/notes/[id]/edit	SOLUTIONS › Education	unreachable: nothing links to it (owner's cleanup list, KILL)	
+/education/notes/new	SOLUTIONS › Education	unreachable: nothing links to it (owner's cleanup list, KILL)	
+/education/offline	SOLUTIONS › Education	menu: Industries › Education › Offline	
+/education/overview	SOLUTIONS › Education	menu: Industries › Education › Overview	
+/education/planner	SOLUTIONS › Education	menu: Industries › Education › Study Planner	
+/education/practice-oral	SOLUTIONS › Education	menu: Industries › Education › Spoken Practice	
+/education/practice-tests	SOLUTIONS › Education	menu: Industries › Education › Practice Tests	
+/education/practice-tests/[id]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Practice Tests)	
+/education/practice-tests/[id]/edit	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Practice Tests)	
+/education/practice-tests/[id]/results	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Practice Tests)	
+/education/practice-tests/new	SOLUTIONS › Education	in-page link under menu: Industries › Education › Practice Tests	
+/education/progress	SOLUTIONS › Education	menu: Industries › Education › Progress	
+/education/progress/learning-gain	SOLUTIONS › Education	menu: Industries › Education › Learning Gain	
+/education/quizzes	SOLUTIONS › Education	menu: Industries › Education › Quizzes	
+/education/quizzes/[id]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Quizzes)	
+/education/quizzes/[id]/edit	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Quizzes)	
+/education/quizzes/[id]/results	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Quizzes)	
+/education/quizzes/new	SOLUTIONS › Education	in-page link under menu: Industries › Education › Quizzes	
+/education/sessions	SOLUTIONS › Education	menu: Industries › Education › Sessions	
+/education/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/education/start	SOLUTIONS › Education	in-page link under menu: Industries	
+/education/study-aids	SOLUTIONS › Education	menu: Industries › Education › Study Aids	
+/education/study-aids/[slug]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Study Aids)	
+/education/study-guides	SOLUTIONS › Education	menu: Industries › Education › Study Guides	
+/education/study-guides/[id]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Study Guides)	
+/education/subjects	SOLUTIONS › Education	menu: Industries › Education › Subjects	
+/education/subjects/[slug]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Subjects)	
+/education/subjects/quick-math	SOLUTIONS › Education	menu: Industries › Education › Quick Math	
+/education/subjects/quick-math/[id]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Quick Math)	
+/education/subjects/quick-math/admin	SOLUTIONS › Education	in-page link under menu: Industries › Education › Quick Math	
+/education/summaries	SOLUTIONS › Education	menu: Industries › Education › Study Summaries	
+/education/summaries/[id]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Study Summaries)	
+/education/summaries/[id]/edit	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › Study Summaries)	
+/education/summaries/new	SOLUTIONS › Education	in-page link under menu: Industries › Education › Study Summaries	
+/education/tutor	SOLUTIONS › Education	menu: Industries › Education › AI Tutor	
+/education/tutor/[conversationId]	SOLUTIONS › Education	opened from a list (under menu: Industries › Education › AI Tutor)	
+/education/tutor/new	SOLUTIONS › Education	in-page link under menu: Industries › Education › AI Tutor	
+/esign	BUSINESS › Business Tools › E-signatures	menu: Content › E-Signatures	
+/esign/[envelopeId]	BUSINESS › Business Tools › E-signatures	opened from a list (under menu: Content › E-Signatures)	
+/esign/new	BUSINESS › Business Tools › E-signatures	menu: Content › Send for Signature	
+/esign/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/esign/templates	BUSINESS › Business Tools › E-signatures	menu: Content › E-Sign Templates	
+/esign/templates/[templateId]	BUSINESS › Business Tools › E-signatures	opened from a list (under menu: Content › E-Sign Templates)	
+/exports	Memory › Capture	menu: Account › Bring Your Export	import (menu: Account › Bring Your Export)
+/exports/[libraryId]	Memory › Capture	opened from a list (under menu: Account › Bring Your Export)	import (menu: Account › Bring Your Export)
+/exports/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/features	YOURS › Home › Browse everything	menu: Other	Browse features
+/features/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/files	Productivity › Drive	no menu; linked in-app (769 places)	
+/files/[...path]	Productivity › Drive	unreachable: old address that redirects (owner's cleanup list)	
+/files/activity	Productivity › Drive	menu: Files › File Activity	
+/files/admin	Productivity › Drive	no menu; linked in-app (2 places)	
+/files/all/[[...path]]	Productivity › Drive	opened from a list (under menu: Files)	
+/files/f/[fileId]	Productivity › Drive	opened from a record link	
+/files/f/[fileId]/studio	Productivity › Drive	opened from a record link	
+/files/folders	Productivity › Drive	menu: Files › Folders	
+/files/google-drive	Productivity › Drive	menu: Files › Google Drive	
+/files/photos	Productivity › Drive	menu: Files › Photos	
+/files/recents	Productivity › Drive	menu: Files › Recents	
+/files/requests	Productivity › Drive	menu: Files › File Requests	
+/files/shared	Productivity › Drive	menu: Files › Shared	
+/files/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/files/starred	Productivity › Drive	menu: Files › Starred	
+/files/trash	Productivity › Drive	menu: Files › File Trash	
+/files/webhooks	Productivity › Drive	menu: Files › File Webhooks	
+/gmail-read-review	Not in the app frame › Google verification pages	no menu; linked in-app (1 places)	shown to Google's reviewers, not users
+/google-analytics-youtube-review	Not in the app frame › Google verification pages	unreachable: nothing links to it (owner's cleanup list, ASK)	shown to Google's reviewers, not users
+/google-other-contacts-review	Not in the app frame › Google verification pages	no menu; linked in-app (1 places)	shown to Google's reviewers, not users
+/google-read-only-review	Not in the app frame › Google verification pages	no menu; linked in-app (2 places)	shown to Google's reviewers, not users
+/hr	BUSINESS › HR	menu: Human Resources	
+/hr/assets	BUSINESS › HR	menu: Human Resources › Assets	
+/hr/compliance	BUSINESS › HR	menu: Human Resources › Compliance	
+/hr/compliance/laws	BUSINESS › HR	in-page link under menu: Human Resources › Compliance	
+/hr/documents	BUSINESS › HR	menu: Human Resources › Documents	
+/hr/engagement	BUSINESS › HR	menu: Human Resources › Engagement	
+/hr/hiring	BUSINESS › HR	menu: Human Resources › Hiring	
+/hr/leave	BUSINESS › HR	menu: Human Resources › Time Off	
+/hr/leave/balances	BUSINESS › HR	in-page link under menu: Human Resources › Time Off	
+/hr/leave/balances/[employmentId]/[policyId]	BUSINESS › HR	opened from a list (under menu: Human Resources › Time Off)	
+/hr/leave/calendar	BUSINESS › HR	in-page link under menu: Human Resources › Time Off	
+/hr/me	BUSINESS › HR	menu: Human Resources › My Info	
+/hr/me/clock	BUSINESS › HR	in-page link under menu: Human Resources › My Info	
+/hr/me/documents	BUSINESS › HR	unreachable: empty page (owner's cleanup list)	
+/hr/me/pay	BUSINESS › HR	in-page link under menu: Human Resources › My Info	
+/hr/me/schedule	BUSINESS › HR	unreachable: empty page (owner's cleanup list)	
+/hr/me/time-off	BUSINESS › HR	in-page link under menu: Human Resources › My Info	
+/hr/me/time-off/[policyId]	BUSINESS › HR	opened from a list (under menu: Human Resources › My Info)	
+/hr/me/timesheet	BUSINESS › HR	in-page link under menu: Human Resources › My Info	
+/hr/me/training	BUSINESS › HR	unreachable: empty page (owner's cleanup list)	
+/hr/onboarding	BUSINESS › HR	menu: Human Resources › Onboarding	
+/hr/people	BUSINESS › HR	menu: Human Resources › People	
+/hr/people/[employeeId]	BUSINESS › HR	opened from a list (under menu: Human Resources › People)	
+/hr/people/[employeeId]/[tab]	BUSINESS › HR	opened from a list (under menu: Human Resources › People)	
+/hr/people/[employeeId]/c/[tabKey]	BUSINESS › HR	opened from a list (under menu: Human Resources › People)	
+/hr/people/new	BUSINESS › HR	in-page link under menu: Human Resources › People	
+/hr/people/org-chart	BUSINESS › HR	in-page link under menu: Human Resources › People	
+/hr/people/relations	BUSINESS › HR	in-page link under menu: Human Resources › People	
+/hr/people/relations/[caseId]	BUSINESS › HR	opened from a list (under menu: Human Resources › People)	
+/hr/people/verifications	BUSINESS › HR	in-page link under menu: Human Resources › People	
+/hr/performance	BUSINESS › HR	menu: Human Resources › Performance	
+/hr/performance/360	BUSINESS › HR	in-page link under menu: Human Resources › Performance	
+/hr/performance/[reviewId]	BUSINESS › HR	opened from a list (under menu: Human Resources › Performance)	
+/hr/performance/[reviewId]/meeting	BUSINESS › HR	opened from a list (under menu: Human Resources › Performance)	
+/hr/performance/cycles/[cycleId]	BUSINESS › HR	opened from a list (under menu: Human Resources › Performance)	
+/hr/performance/goals	BUSINESS › HR	in-page link under menu: Human Resources › Performance	
+/hr/performance/respond/[trackId]	BUSINESS › HR	opened from a list (under menu: Human Resources › Performance)	
+/hr/performance/reviews/[reviewId]	BUSINESS › HR	opened from a list (under menu: Human Resources › Performance)	
+/hr/reports	BUSINESS › HR	menu: Human Resources › HR Reports	
+/hr/schedule	BUSINESS › HR	menu: Human Resources › Schedule	
+/hr/settings	BUSINESS › HR	menu: Human Resources › HR Settings	
+/hr/settings/access	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/ai	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/alerts	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/calendars	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/codes	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/devices	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/employer	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/exit-surveys	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/fields	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/leave-policies	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/leave-policies/[policyId]	BUSINESS › HR	opened from a list (under menu: Human Resources › HR Settings)	
+/hr/settings/leave-policies/[policyId]/enrollment	BUSINESS › HR	opened from a list (under menu: Human Resources › HR Settings)	
+/hr/settings/notifications	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/pay-groups	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/retention	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/review-templates	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/schedule-rules	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/structure	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/time-rules	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/settings/workflows	BUSINESS › HR	in-page link under menu: Human Resources › HR Settings	
+/hr/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/hr/tasks	BUSINESS › HR	menu: Human Resources › HR Tasks	
+/hr/tasks/[instanceId]	BUSINESS › HR	opened from a list (under menu: Human Resources › HR Tasks)	
+/hr/time	BUSINESS › HR	menu: Human Resources › Time	
+/hr/time/clock	BUSINESS › HR	in-page link under menu: Human Resources › Time	
+/hr/time/exceptions	BUSINESS › HR	in-page link under menu: Human Resources › Time	
+/hr/time/overtime	BUSINESS › HR	in-page link under menu: Human Resources › Time	
+/hr/time/overtime/[requestId]	BUSINESS › HR	opened from a list (under menu: Human Resources › Time)	
+/hr/time/periods	BUSINESS › HR	in-page link under menu: Human Resources › Time	
+/hr/time/periods/[periodId]	BUSINESS › HR	opened from a list (under menu: Human Resources › Time)	
+/hr/time/punches	BUSINESS › HR	in-page link under menu: Human Resources › Time	
+/hr/time/timesheets	BUSINESS › HR	in-page link under menu: Human Resources › Time	
+/hr/time/timesheets/[employmentId]	BUSINESS › HR	opened from a list (under menu: Human Resources › Time)	
+/hr/training	BUSINESS › HR	menu: Human Resources › Training	
+/images	Productivity › Media	menu: Media	images
+/images/ai-generate	Productivity › Media	in-page link under menu: Media	images
+/images/all-files	Productivity › Media	in-page link under menu: Media	images
+/images/annotate	Productivity › Media	in-page link under menu: Media	images
+/images/avatar	Productivity › Media	in-page link under menu: Media	images
+/images/branded	Productivity › Media	in-page link under menu: Media	images
+/images/convert	Productivity › Media	in-page link under menu: Media	images
+/images/edit	Productivity › Media	in-page link under menu: Media	images
+/images/edit/[id]	Productivity › Media	opened from a list (under menu: Media)	images
+/images/from-base64	Productivity › Media	in-page link under menu: Media	images
+/images/generate	Productivity › Media	in-page link under menu: Media	images
+/images/library	Productivity › Media	in-page link under menu: Media	images
+/images/manager	Productivity › Media	in-page link under menu: Media	images
+/images/my-cloud	Productivity › Media	in-page link under menu: Media	images
+/images/presets	Productivity › Media	in-page link under menu: Media	images
+/images/profile-photo	NOT TILES › Account menu	unreachable: nothing links to it (owner's cleanup list, ASK)	profile photo
+/images/public-search	Productivity › Media	in-page link under menu: Media	images
+/images/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/images/studio	Productivity › Media	in-page link under menu: Media	images
+/images/studio-library	Productivity › Media	in-page link under menu: Media	images
+/images/studio-light	Productivity › Media	in-page link under menu: Media	images
+/images/tools	Productivity › Media	in-page link under menu: Media	images
+/images/upload	Productivity › Media	in-page link under menu: Media	images
+/intelligence	BUILD › Intelligence › Mandates	menu: Intelligence › By feature	+ 'By feature' view of mandates
+/intelligence/[feature]	BUILD › Intelligence › Mandates	opened from a list (under menu: Intelligence › By feature)	+ 'By feature' view of mandates
+/intelligence/[feature]/unassigned	BUILD › Intelligence › Mandates	opened from a list (under menu: Intelligence › By feature)	+ 'By feature' view of mandates
+/intelligence/go/[...slug]	BUILD › Intelligence › Mandates	opened from a list (under menu: Intelligence › By feature)	+ 'By feature' view of mandates
+/invitations/class/accept/[token]	Not in the app frame › Invitation links	opened from a record link	accept-invite page opened from an email
+/invitations/employee/accept/[token]	Not in the app frame › Invitation links	opened from a record link	accept-invite page opened from an email
+/invitations/organization/accept/[token]	Not in the app frame › Invitation links	opened from a record link	accept-invite page opened from an email
+/invitations/portal/accept/[token]	Not in the app frame › Invitation links	opened from a record link	accept-invite page opened from an email
+/invitations/project/accept/[token]	Not in the app frame › Invitation links	opened from a record link	accept-invite page opened from an email
+/invitations/share/accept/[token]	Not in the app frame › Invitation links	opened from a record link	accept-invite page opened from an email
+/invitations/table/accept/[token]	Not in the app frame › Invitation links	opened from a record link	accept-invite page opened from an email
+/knowledge	Memory	menu: Knowledge	Knowledge home / hub / about
+/knowledge-graph	Memory › Research › Graph, extractions, data stores	no menu; linked in-app (8 places)	old address (redirect to graph)
+/knowledge-graph/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/knowledge/about	Memory	menu: Knowledge › About Knowledge	Knowledge home / hub / about
+/knowledge/admin	Memory › Advanced	in-page link under menu: Knowledge	+ feature admin map
+/knowledge/ask	Memory › Ask & search	in-page link under menu: Knowledge	
+/knowledge/data-stores	Memory › Research › Graph, extractions, data stores	menu: Knowledge › Data Stores	
+/knowledge/extractions	Memory › Research › Graph, extractions, data stores	menu: Knowledge › Extractions	
+/knowledge/extractions/[id]	Memory › Research › Graph, extractions, data stores	opened from a list (under menu: Knowledge › Extractions)	
+/knowledge/extractions/admin	Memory › Advanced	in-page link under menu: Knowledge › Extractions	+ feature admin map
+/knowledge/flow	Memory › Research › Sources	menu: Knowledge › Pipeline Flow	pipeline (tree also lists it under Advanced)
+/knowledge/graph	Memory › Research › Graph, extractions, data stores	menu: Knowledge › Knowledge Graph	
+/knowledge/hub	Memory	menu: Knowledge › Knowledge hub	Knowledge home / hub / about
+/knowledge/library	Memory › Research › Sources	menu: Knowledge › Sources	menu calls /knowledge/library 'Sources'
+/knowledge/library-catalog	Memory › Research › Library	menu: Knowledge › Library Catalog	
+/knowledge/library-curate	Memory › Research › Library	menu: Knowledge › Curate Library	
+/knowledge/library/[id]/preview	Memory › Research › Sources	opened from a list (under menu: Knowledge › Sources)	menu calls /knowledge/library 'Sources'
+/knowledge/repositories	Memory › Advanced	menu: Knowledge › Repositories	repositories
+/knowledge/search	Memory › Advanced	menu: Knowledge › Search Lab	search lab
+/knowledge/sources/[id]	Memory › Research › Sources	opened from a list (under menu: Knowledge)	
+/knowledge/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/knowledge/transcripts/[id]	Memory › Everything	opened from a list (under menu: Knowledge)	item viewer
+/knowledge/trash	Memory › Forget & archive	in-page link under menu: Knowledge	
+/knowledge/viewer/[id]	Memory › Everything	opened from a list (under menu: Knowledge)	item viewer
+/knowledge/visualization	Memory › Research › Graph, extractions, data stores	unreachable: old address that redirects (owner's cleanup list)	old address (redirect)
+/launchpad	YOURS › Home	menu: Workspace › Launchpad	Launchpad (entry-page candidate)
+/launchpad/[key]	YOURS › Home	opened from a list (under menu: Workspace › Launchpad)	Launchpad (entry-page candidate)
+/launchpad/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/legal	SOLUTIONS › Legal	menu: Industries › Legal	
+/legal/ca-wc	SOLUTIONS › Legal	menu: Industries › Legal › CA Workers' Comp	
+/legal/ca-wc/cases	SOLUTIONS › Legal	menu: Industries › Legal › WC Cases	
+/legal/ca-wc/pd-ratings-calculator	SOLUTIONS › Legal	menu: Industries › Legal › PD Ratings Calculator	
+/legal/ca-wc/pd-ratings-calculator/[claimId]	SOLUTIONS › Legal	opened from a list (under menu: Industries › Legal › PD Ratings Calculator)	
+/legal/ca-wc/utilities	SOLUTIONS › Legal	menu: Industries › Legal › WC Utilities	
+/legal/ca-wc/utilities/life-expectancy	SOLUTIONS › Legal	in-page link under menu: Industries › Legal › WC Utilities	
+/legal/ca-wc/utilities/present-value	SOLUTIONS › Legal	in-page link under menu: Industries › Legal › WC Utilities	
+/legal/ca-wc/utilities/weeks	SOLUTIONS › Legal	in-page link under menu: Industries › Legal › WC Utilities	
+/legal/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/libraries	Productivity › Media	menu: Media › Libraries	+ Media Source Catalog: paste a YouTube channel/playlist (menu: Media › Libraries)
+/libraries/[id]	Productivity › Media	opened from a list (under menu: Media › Libraries)	+ Media Source Catalog: paste a YouTube channel/playlist (menu: Media › Libraries)
+/libraries/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/make	YOURS › Workspace › Make	menu: Workspace › Make	
+/make/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/mandates	BUILD › Intelligence › Mandates	menu: Intelligence › All Mandates	
+/mandates/[mandateKey]	BUILD › Intelligence › Mandates	opened from a list (under menu: Intelligence › All Mandates)	
+/mandates/id/[id]	BUILD › Intelligence › Mandates	unreachable: old address that redirects (owner's cleanup list)	
+/mandates/list-preview	BUILD › Intelligence › Mandates	menu: Intelligence	
+/mandates/new-preview	BUILD › Intelligence › Mandates	menu: Intelligence › New Mandate	
+/mandates/record-preview/[mandateKey]	BUILD › Intelligence › Mandates	opened from a list (under menu: Intelligence › All Mandates)	
+/mandates/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/maps	Productivity › Docs › Visual maps	menu: Content › Visual Maps	
+/maps/[id]	Productivity › Docs › Visual maps	opened from a list (under menu: Content › Visual Maps)	
+/maps/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/markdown-studio	Productivity › Docs › Markdown studio	menu: Utilities	
+/markdown-studio/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/marketing	BUSINESS › Marketing	menu: Marketing	
+/marketing/[brandId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/ads	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/analytics	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content/map	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content/map/[mapId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content/map/[mapId]/graph	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content/map/[mapId]/history	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content/map/[mapId]/pages	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content/map/[mapId]/table	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content/map/[mapId]/text	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content/plan	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content/plan/[siteId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content/plan/[siteId]/ai-runs	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content/plan/[siteId]/brief	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content/plan/[siteId]/entities	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content/plan/[siteId]/map	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content/plan/[siteId]/setup	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content/plan/[siteId]/table	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/content/studio	BUSINESS › Marketing	unreachable: empty page (owner's cleanup list)	
+/marketing/[brandId]/email	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/identity	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/identity/audience	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/identity/claims	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/identity/guidelines	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/identity/knowledge	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/identity/media	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/identity/media/generate	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/identity/media/research	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/identity/media/sources	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/identity/messaging	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/identity/offerings	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/identity/strategy	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/identity/voice	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/inbox	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/[brandId]/intelligence/ai-visibility	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence/competitors	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence/competitors/all	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence/competitors/competitors	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence/competitors/evidence	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence/competitors/history	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence/competitors/opportunities	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence/competitors/review	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence/competitors/run	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence/monitoring	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence/monitoring/setup	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence/reputation	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence/reputation/[siteId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence/reputation/[siteId]/cases	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence/reputation/[siteId]/evidence	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence/reputation/[siteId]/narratives	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/intelligence/reputation/[siteId]/publications	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/locations	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/locations/[locationId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/locations/[locationId]/grid	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/offerings	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/planning	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/[brandId]/planning/calendar	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/planning/initiatives	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/planning/initiatives/[id]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/pr	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/pr/outreach	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/[...rest]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/ai-visibility	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/ai-visibility/[view]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/analysis	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/audit	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/authority	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/authority/evidence	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/authority/routes	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/automations	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/automations/history	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/automations/proposals	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/automations/unplaced	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/backlinks	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/backlinks/anchors	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/backlinks/changes	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/backlinks/competitors	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/backlinks/coverage	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/backlinks/domains	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/backlinks/insights	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/backlinks/links	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/backlinks/pages	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/backlinks/prospects	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/capabilities	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/changes	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/changes/untracked	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/context	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/coverage	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/findings	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/findings/[findingId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/growth-loop	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/keywords	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/keywords/performance	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/keywords/research	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/keywords/value	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/keywords/value/dimensions	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/keywords/value/packs	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/keywords/value/rules	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/keywords/value/settings	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/keywords/workbench	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/links	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/links/external	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/links/plan	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/links/table	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/performance	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/rankings	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/reports	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/search-console	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/search-console/digs	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/search-console/insights	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/search-console/new-pages	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/search-console/watchlist	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/seo/[siteId]/valuation	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/settings	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/socials	BUSINESS › Marketing	unreachable: empty page (owner's cleanup list)	
+/marketing/[brandId]/socials/[platform]/[accountId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/socials/accounts	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/socials/ads	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/socials/kpis	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/socials/outliers	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/socials/post/[postId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/socials/research	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/socials/studio	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/socials/swipe	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/socials/videos	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/socials/videos/[projectId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/socials/videos/formats	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/socials/videos/new	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/[...rest]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/crawls	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/links	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/logs	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports/[reportKey]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/snapshots	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/urls	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/crawls/new	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/media	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/media/standards	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/media/videos	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/pages	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/pages/[pageId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/[snapshotId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/settings	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/settings/access	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/settings/intake	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/settings/integrations	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/sitemaps	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/sitemaps/[sitemapId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/structure	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/websites/[siteId]/structure/columns	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/admin	BUSINESS › Marketing	in-page link under menu: Marketing	+ feature admin map
+/marketing/admin/keyword-data-quality	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	+ feature admin map
+/marketing/ads	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/ai-visibility	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/ai-visibility/runs/[runId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/approvals	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/audience	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/automations	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/backlink-valuation	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/brands	BUSINESS › Marketing	menu: Marketing › Brands	
+/marketing/brands/[brandId]/[[...rest]]	BUSINESS › Marketing	opened from a list (under menu: Marketing › Brands)	
+/marketing/brands/new-website	BUSINESS › Marketing	in-page link under menu: Marketing › Brands	
+/marketing/brands/offerings	BUSINESS › Marketing	in-page link under menu: Marketing › Brands	
+/marketing/brands/smart-add	BUSINESS › Marketing	in-page link under menu: Marketing › Brands	
+/marketing/brands/smart-add/company	BUSINESS › Marketing	in-page link under menu: Marketing › Brands	
+/marketing/brands/smart-add/enrich/[brandId]	BUSINESS › Marketing	opened from a list (under menu: Marketing › Brands)	
+/marketing/brands/smart-add/found	BUSINESS › Marketing	in-page link under menu: Marketing › Brands	
+/marketing/brands/smart-add/person	BUSINESS › Marketing	in-page link under menu: Marketing › Brands	
+/marketing/brands/smart-add/validate/[brandId]	BUSINESS › Marketing	opened from a list (under menu: Marketing › Brands)	
+/marketing/calendar	BUSINESS › Marketing	in-page link under menu: Marketing	
+/marketing/capabilities	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/changes/[changeId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/competitors	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/connections	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/connections/bing	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/connections/bing/callback	BUSINESS › Marketing	in-page link under menu: Marketing	
+/marketing/connections/google/read-only	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/content-plan	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/content-plan/[siteId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/content-plan/nodes/[nodeId]	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/content-studio	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/cost	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/discovery/youtube	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/discovery/youtube/videos/[videoId]	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/email	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/growth-loop/[loopRunId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/initiatives	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/initiatives/[id]	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/keyword-intelligence	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/keyword-research	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/local	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/monitoring	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/monitoring/[trackerId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/operations/approvals	BUSINESS › Marketing	menu: Marketing › Approvals	
+/marketing/operations/automations	BUSINESS › Marketing	menu: Marketing › Automations	
+/marketing/operations/automations/history	BUSINESS › Marketing	in-page link under menu: Marketing › Automations	
+/marketing/operations/automations/proposals	BUSINESS › Marketing	in-page link under menu: Marketing › Automations	
+/marketing/operations/automations/unplaced	BUSINESS › Marketing	in-page link under menu: Marketing › Automations	
+/marketing/operations/capabilities	BUSINESS › Marketing	menu: Marketing › SEO Capabilities	
+/marketing/operations/connections	BUSINESS › Marketing	menu: Marketing › Connections	
+/marketing/operations/connections/bing	BUSINESS › Marketing	in-page link under menu: Marketing › Connections	
+/marketing/operations/connections/google	BUSINESS › Marketing	in-page link under menu: Marketing › Connections	
+/marketing/operations/connections/google/read-only	BUSINESS › Marketing	in-page link under menu: Marketing › Connections	
+/marketing/operations/data-quality	BUSINESS › Marketing	menu: Marketing › Data Quality	
+/marketing/outreach	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/pages/[pageId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/pr	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/properties/[propertyId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/ranks	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/reports	BUSINESS › Marketing	menu: Marketing › Reports	
+/marketing/reports/cost	BUSINESS › Marketing	menu: Marketing › Cost	
+/marketing/reports/ranks	BUSINESS › Marketing	menu: Marketing › Rank Roll-up	
+/marketing/reports/search-console	BUSINESS › Marketing	menu: Marketing › Search Console	
+/marketing/reports/search-console/digs	BUSINESS › Marketing	in-page link under menu: Marketing › Search Console	
+/marketing/reports/search-console/insights	BUSINESS › Marketing	in-page link under menu: Marketing › Search Console	
+/marketing/reports/search-console/new-pages	BUSINESS › Marketing	in-page link under menu: Marketing › Search Console	
+/marketing/reports/search-console/watchlist	BUSINESS › Marketing	in-page link under menu: Marketing › Search Console	
+/marketing/screenshots/[screenshotId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/search-console	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/sites	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/sites/[siteId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/sites/[siteId]/[...rest]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/sites/new	BUSINESS › Marketing	in-page link under menu: Marketing	
+/marketing/snapshots/[snapshotId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/social	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/marketing/tools	BUSINESS › Marketing	menu: Marketing › All SEO Tools	
+/marketing/tools/domain	BUSINESS › Marketing	menu: Marketing › Domain Research	
+/marketing/tools/domain/check	BUSINESS › Marketing	in-page link under menu: Marketing › Domain Research	
+/marketing/tools/youtube	BUSINESS › Marketing	menu: Marketing › YouTube Research	
+/marketing/tools/youtube/videos/[videoId]	BUSINESS › Marketing	opened from a list (under menu: Marketing › YouTube Research)	
+/marketing/topical-maps/[mapId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/topical-maps/start	BUSINESS › Marketing	in-page link under menu: Marketing	
+/marketing/topical-maps/topics/[topicId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/masterwork	BUILD › Masterwork	menu: Masterwork	
+/masterwork/[id]	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/[id]/body-of-work	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/[id]/conduct	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/[id]/drip	BUILD › Masterwork	unreachable: nothing links to it (owner's cleanup list, ASK)	
+/masterwork/[id]/drive	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/[id]/import	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/[id]/inbox	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/[id]/interview	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/[id]/masterworks	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/[id]/plan	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/[id]/probe	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/[id]/record	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/[id]/sort	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/[id]/sources	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/[id]/sources/kept	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/[id]/sources/kept/[sourceKey]	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/[id]/teach-back	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/[id]/triad	BUILD › Masterwork	opened from a list (under menu: Masterwork)	
+/masterwork/admin	BUILD › Masterwork	in-page link under menu: Masterwork	
+/masterwork/all	BUILD › Masterwork	menu: Masterwork › All Rulebooks	
+/masterwork/approaches	BUILD › Masterwork	menu: Masterwork › Ways to build one	
+/masterwork/encore	BUILD › Masterwork	menu: Masterwork › Encore	
+/masterwork/encore/[id]	BUILD › Masterwork	opened from a list (under menu: Masterwork › Encore)	
+/masterwork/new	BUILD › Masterwork	in-page link under menu: Masterwork	
+/masterwork/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/masterwork/vision-interview	BUILD › Masterwork	menu: Masterwork › Vision Interviews	
+/masterwork/vision-interview/[sessionId]	BUILD › Masterwork	opened from a list (under menu: Masterwork › Vision Interviews)	
+/masterwork/vision-interview/new	BUILD › Masterwork	in-page link under menu: Masterwork › Vision Interviews	
+/me/access-log	NOT TILES › Account menu	menu: Account › Access Log	+ access log
+/medical	SOLUTIONS › Medical	menu: Industries › Medical	
+/medical/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/meet-matrx	NOT TILES › Account menu	menu: Account › Meet Matrx	Meet Matrx / welcome
+/meetings	BUSINESS › Meet	menu: Communications › Meetings	meetings
+/meetings/[id]	BUSINESS › Meet	opened from a list (under menu: Communications › Meetings)	meetings
+/meetings/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/messages	BUSINESS › Messages	menu: Communications	
+/messages-showcase	MORE	unreachable: nothing links to it (owner's cleanup list, ASK)	+ messages showcase (demo)
+/messages/[conversationId]	BUSINESS › Messages	opened from a list (under menu: Communications)	
+/messages/admin	BUSINESS › Messages	in-page link under menu: Communications	
+/messages/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/messenger	BUSINESS › Messages	menu: Communications › Messenger	
+/messenger/agents	YOURS › Chat › Agent Messenger	menu: Chat › Agent Messenger	
+/messenger/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/messenger/whatsapp	BUSINESS › Messages	in-page link under menu: Communications › Messenger	
+/notes	Productivity › Docs › Notes	menu: Content	
+/notes/[id]	Productivity › Docs › Notes	opened from a list (under menu: Content)	
+/notes/[id]/diff	Productivity › Docs › Notes	opened from a list (under menu: Content)	
+/notes/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/notifications	EVERYWHERE › Notifications	menu: Communications › Notifications	
+/notifications/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/o/[id]	EVERYWHERE › Search & command	opened from a record link	+ opens any id the platform mints
+/organizations	NOT TILES › Account menu	menu: Account	organizations
+/organizations/[orgId]	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/admin	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/admin/ai-spend	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/admin/ai-spend/detail	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/admin/automations/[kind]/[id]	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/admin/spend-approvals	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/admin/spend-approvals/[kind]/[subjectId]	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/admin/triggers	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/admin/triggers/[triggerId]/runs/[runId]	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/admin/users/[userId]	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/admin/users/[userId]/resources	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/applets	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as BUILD › Applets
+/organizations/[orgId]/context-items	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Data › Scopes & context
+/organizations/[orgId]/files	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Drive
+/organizations/[orgId]/hr	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as BUSINESS › HR
+/organizations/[orgId]/mandates	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as BUILD › Intelligence › Mandates
+/organizations/[orgId]/mandates/[mandateKey]	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as BUILD › Intelligence › Mandates
+/organizations/[orgId]/mandates/new	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as BUILD › Intelligence › Mandates
+/organizations/[orgId]/notes	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Docs › Notes
+/organizations/[orgId]/org-2	NOT TILES › Account menu	unreachable: nothing links to it (owner's cleanup list, KILL)	organizations
+/organizations/[orgId]/performance-reviews	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as BUSINESS › HR
+/organizations/[orgId]/projects	NOT TILES › Account menu	unreachable: old address that redirects (owner's cleanup list)	organization's own view; same job as YOURS › Workspace › Projects & Tasks
+/organizations/[orgId]/projects/[projectId]	NOT TILES › Account menu	unreachable: old address that redirects (owner's cleanup list)	organization's own view; same job as YOURS › Workspace › Projects & Tasks
+/organizations/[orgId]/projects/[projectId]/settings	NOT TILES › Account menu	unreachable: old address that redirects (owner's cleanup list)	organization's own view; same job as YOURS › Workspace › Projects & Tasks
+/organizations/[orgId]/prompts	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as BUILD › Intelligence › Agents
+/organizations/[orgId]/resources/[kind]	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as BUILD › Intelligence › Agents
+/organizations/[orgId]/scopes	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Data › Scopes & context
+/organizations/[orgId]/scopes/[typeId]	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Data › Scopes & context
+/organizations/[orgId]/scopes/[typeId]/[scopeId]	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Data › Scopes & context
+/organizations/[orgId]/scopes/[typeId]/[scopeId]/[itemId]	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Data › Scopes & context
+/organizations/[orgId]/scopes/[typeId]/[scopeId]/context-items	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Data › Scopes & context
+/organizations/[orgId]/scopes/[typeId]/[scopeId]/edit	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Data › Scopes & context
+/organizations/[orgId]/scopes/[typeId]/context-items	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Data › Scopes & context
+/organizations/[orgId]/scopes/[typeId]/context-items/[itemId]	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Data › Scopes & context
+/organizations/[orgId]/scopes/[typeId]/context-items/[itemId]/edit	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Data › Scopes & context
+/organizations/[orgId]/scopes/[typeId]/edit	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Data › Scopes & context
+/organizations/[orgId]/settings	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/settings/api-keys	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/settings/change-policy	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/settings/configuration	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/settings/domains	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/settings/keyword-value	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/settings/mandates	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/settings/mandates/[mandateKey]	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/settings/payments	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/settings/scopes	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/settings/system-context	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/shortcuts	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as BUILD › Intelligence › Agents
+/organizations/[orgId]/shortcuts/categories	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as BUILD › Intelligence › Agents
+/organizations/[orgId]/shortcuts/edit/[id]	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as BUILD › Intelligence › Agents
+/organizations/[orgId]/shortcuts/shortcuts	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as BUILD › Intelligence › Agents
+/organizations/[orgId]/tables	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Data › Bases & tables
+/organizations/[orgId]/tasks	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as YOURS › Workspace › Projects & Tasks
+/organizations/[orgId]/templates	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Data › Templates, compare, data-to-model
+/organizations/[orgId]/workflows	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as BUILD › Intelligence › Workflows
+/organizations/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/pick-lists	Productivity › Data › Pick lists	menu: Data › Pick Lists	
+/pick-lists/[id]	Productivity › Data › Pick lists	opened from a list (under menu: Data › Pick Lists)	
+/pick-lists/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/podcast	BUSINESS › Marketing	menu: Publish	podcasts
+/podcast/[slug]	BUSINESS › Marketing	opened from a list (under menu: Publish)	podcasts
+/podcast/[slug]/blog	BUSINESS › Marketing	opened from a list (under menu: Publish)	podcasts
+/podcast/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/podcast/studio	BUSINESS › Marketing	menu: Publish › Podcasts	podcasts
+/podcast/studio/create	BUSINESS › Marketing	menu: Publish › New Podcast	podcasts
+/podcast/studio/create-a	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-b	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-c	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-d	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-dense	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-e	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-f	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-refine	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-reimagine	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-sharp	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-a	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-b	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-c	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-d	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-dense/[id]	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-e	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-f	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-refine/[id]	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-reimagine/[id]	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-sharp/[id]	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run/[id]	BUSINESS › Marketing	opened from a list (under menu: Publish › Podcasts)	podcasts
+/podcast/studio/show/[showId]	BUSINESS › Marketing	opened from a list (under menu: Publish › Podcasts)	podcasts
+/presentations	Productivity › Docs › Slides	menu: Media › Presentations	menu has it under Media › Presentations
+/presentations/[id]	Productivity › Docs › Slides	opened from a list (under menu: Media › Presentations)	menu has it under Media › Presentations
+/presentations/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/presentations/templates	Productivity › Docs › Slides	in-page link under menu: Media › Presentations	menu has it under Media › Presentations
+/print	BUSINESS › Business Tools › Print & labels	menu: Publish › All printables	
+/print/admin	BUSINESS › Business Tools › Print & labels	in-page link under menu: Publish › All printables	
+/print/barcodes	BUSINESS › Business Tools › QR codes & barcodes	menu: Publish › Barcodes	
+/print/booklet	BUSINESS › Business Tools › Print & labels	menu: Publish › Booklet imposition	
+/print/branded-qr	BUSINESS › Business Tools › QR codes & barcodes	menu: Publish › Branded QR	
+/print/certificates	BUSINESS › Business Tools › Print & labels	menu: Publish › Certificates & workbooks	
+/print/documents	BUSINESS › Business Tools › Print & labels	menu: Publish › Markdown to print or PDF	
+/print/education	BUSINESS › Business Tools › Print & labels	menu: Publish › Cheat sheets & study aids	
+/print/exams	BUSINESS › Business Tools › Print & labels	menu: Publish › Practice tests & bubble sheets	
+/print/flashcards	BUSINESS › Business Tools › Print & labels	menu: Publish › Flashcard decks	
+/print/labels	BUSINESS › Business Tools › Print & labels	menu: Publish › Label sheets & rolls	
+/print/order	BUSINESS › Business Tools › Print & labels	menu: Publish › Order printed copies	
+/print/qr	BUSINESS › Business Tools › QR codes & barcodes	menu: Publish › QR codes	
+/print/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/print/zpl	BUSINESS › Business Tools › Print & labels	menu: Publish › ZPL labels	
+/projects	YOURS › Workspace › Projects & Tasks	menu: Workspace › Projects	
+/projects/[projectId]	YOURS › Workspace › Projects & Tasks	opened from a list (under menu: Workspace › Projects)	
+/projects/[projectId]/settings	YOURS › Workspace › Projects & Tasks	opened from a list (under menu: Workspace › Projects)	
+/projects/new	YOURS › Workspace › Projects & Tasks	menu: Workspace › New Project	
+/projects/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/rag	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, KILL)	old Knowledge home / admin map (pre-Memory)
+/rag/admin	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, KILL)	old Knowledge home / admin map (pre-Memory)
+/rag/data-stores	Memory › Research › Graph, extractions, data stores	unreachable: nothing links to it (owner's cleanup list, KILL)	old /rag address
+/rag/flow	Memory › Research › Sources	unreachable: nothing links to it (owner's cleanup list, KILL)	old /rag address
+/rag/library	Memory › Research › Sources	unreachable: nothing links to it (owner's cleanup list, KILL)	old /rag address
+/rag/library-catalog	Memory › Research › Library	unreachable: nothing links to it (owner's cleanup list, KILL)	old /rag address
+/rag/library/[id]/preview	Memory › Research › Sources	opened from a record link	old /rag address
+/rag/repositories	Memory › Advanced	unreachable: nothing links to it (owner's cleanup list, KILL)	old /rag address
+/rag/search	Memory › Advanced	no menu; linked in-app (11 places)	old /rag address of search lab
+/rag/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/rag/viewer/[id]	Memory › Everything	opened from a record link	old /rag item viewer
+/rag/visualization	Memory › Research › Graph, extractions, data stores	unreachable: old address that redirects (owner's cleanup list)	old /rag address
+/redeem	NOT TILES › Account menu	no menu; linked in-app (9 places)	+ redeem a code (billing)
+/reports	BUILD › Intelligence › Mandates	menu: Intelligence › Reports	reports / drift
+/reports/admin	BUILD › Intelligence › Mandates	in-page link under menu: Intelligence › Reports	reports / drift
+/reports/agent-drift	BUILD › Intelligence › Mandates	menu: Intelligence › Agent Drift	reports / drift
+/reports/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/research	Memory › Research	menu: Knowledge › Research	research topics
+/research/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/research/tags/[tagId]	Memory › Research	unreachable: old address that redirects (owner's cleanup list)	research topics
+/research/topics	Memory › Research	in-page link under menu: Knowledge › Research	research topics
+/research/topics/[topicId]	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/agents	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/analysis	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/content	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/context	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/costs	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/curate	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/document	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/documents	Memory › Research	unreachable: old address that redirects (owner's cleanup list)	research topics
+/research/topics/[topicId]/experts	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/intelligence	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/keywords	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/keywords/[keywordId]	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/media	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/media/debug	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/outputs	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/settings	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/social	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/sources	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/sources/[sourceId]	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/synthesis	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/tags	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/tags/[tagId]	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/tasks	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/[topicId]/youtube	Memory › Research	opened from a list (under menu: Knowledge › Research)	research topics
+/research/topics/new	Memory › Research	menu: Knowledge › New Research	new research
+/resources/term-lists	BUILD › Intelligence › Agents	menu: Agents › Term Lists	term lists
+/review/page-cleanup	Admin (separate site)	no menu; linked in-app (2 places)	+ owner review list of lost pages; lives in the main app
+/sandbox	BUILD › Code	menu: Code › Sandboxes	
+/sandbox/[id]	BUILD › Code	opened from a list (under menu: Code › Sandboxes)	
+/sandbox/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/schedules	BUILD › Intelligence › Workflows	menu: Workflows › Schedules	
+/schedules/[id]	BUILD › Intelligence › Workflows	opened from a list (under menu: Workflows › Schedules)	
+/schedules/[id]/edit	BUILD › Intelligence › Workflows	opened from a list (under menu: Workflows › Schedules)	
+/schedules/new	BUILD › Intelligence › Workflows	menu: Workflows › New Schedule	
+/schedules/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/scopes	Productivity › Data › Scopes & context	menu: Data › Scopes	
+/scopes/manage	Productivity › Data › Scopes & context	unreachable: old address that redirects (owner's cleanup list)	
+/scopes/s/[scopeId]	Productivity › Data › Scopes & context	opened from a list (under menu: Data › Scopes)	
+/scopes/settings	Productivity › Data › Scopes & context	in-page link under menu: Data › Scopes	
+/scopes/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/scopes/templates	Productivity › Data › Scopes & context	in-page link under menu: Data › Scopes	
+/scraper	Memory › Capture	menu: Web	web scraper
+/scraper/[id]	Memory › Capture	unreachable: old address that redirects (owner's cleanup list)	web scraper
+/scraper/batch	Memory › Capture	in-page link under menu: Web	web scraper
+/scraper/quick	Memory › Capture	in-page link under menu: Web	web scraper
+/scraper/search	Memory › Capture	in-page link under menu: Web	web scraper
+/scraper/search-and-scrape	Memory › Capture	in-page link under menu: Web	web scraper
+/scraper/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/search	Memory › Ask & search	menu: Web › Search	+ Matrx Search (menu: Web › Search); search over web + yours
+/search/experience	Memory › Ask & search	menu: Web › Matrx Search	+ Matrx Search (menu: Web › Search); search over web + yours
+/search/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/settings/data	NOT TILES › Account menu	unreachable: old address that redirects (owner's cleanup list)	settings (one catch-all page holds every settings tab: billing, connectors, voices, memory, API keys…)
+/shapes	BUILD › Intelligence › Shapes	no menu; linked in-app (105 places)	
+/shapes/[kind]	BUILD › Intelligence › Shapes	opened from a record link	
+/shapes/[kind]/examples	BUILD › Intelligence › Shapes	opened from a record link	
+/shapes/[kind]/gate	BUILD › Intelligence › Shapes	opened from a record link	
+/shapes/[kind]/inputs	BUILD › Intelligence › Shapes	opened from a record link	
+/shapes/[kind]/instances	BUILD › Intelligence › Shapes	opened from a record link	
+/shapes/[kind]/schema	BUILD › Intelligence › Shapes	opened from a record link	
+/shapes/[kind]/stream	BUILD › Intelligence › Shapes	opened from a record link	
+/shapes/[kind]/table	BUILD › Intelligence › Shapes	opened from a record link	
+/shapes/[kind]/template	BUILD › Intelligence › Shapes	opened from a record link	
+/shapes/[kind]/test	BUILD › Intelligence › Shapes	opened from a record link	
+/shapes/admin	BUILD › Intelligence › Shapes	no menu; linked in-app (2 places)	
+/shapes/all	BUILD › Intelligence › Shapes	menu: Data › Shapes	
+/shapes/id/[id]	BUILD › Intelligence › Shapes	unreachable: old address that redirects (owner's cleanup list)	
+/shapes/instances/[id]	BUILD › Intelligence › Shapes	opened from a record link	
+/shapes/new	BUILD › Intelligence › Shapes	no menu; linked in-app (5 places)	
+/shapes/playground	BUILD › Intelligence › Shapes	NO MENU, NO LINK FOUND	
+/shapes/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/spaces	YOURS › Workspace › Spaces	menu: Workspace › Spaces	
+/spaces/[spaceId]	YOURS › Workspace › Spaces	opened from a list (under menu: Workspace › Spaces)	
+/spaces/duplicate	YOURS › Workspace › Spaces	in-page link under menu: Workspace › Spaces	
+/spaces/home	YOURS › Workspace › Spaces	in-page link under menu: Workspace › Spaces	
+/spaces/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/spaces/use-template	YOURS › Workspace › Spaces	in-page link under menu: Workspace › Spaces	
+/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/staff	BUSINESS › Messages	menu: Communications › Your Staff	
+/staff/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/start	YOURS › Home	no menu; linked in-app (67 places)	Start (entry-page candidate)
+/suggestions	Memory › Research › Library	menu: Knowledge › Suggestions	suggestions
+/suggestions/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/surfaces	BUILD › Intelligence › Agents	menu: Agents › Surfaces	surfaces
+/surfaces/[...name]	BUILD › Intelligence › Agents	opened from a list (under menu: Agents › Surfaces)	surfaces
+/surfaces/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/tasks	YOURS › Workspace › Projects & Tasks	menu: Workspace › Tasks	
+/tasks/[id]	YOURS › Workspace › Projects & Tasks	opened from a list (under menu: Workspace › Tasks)	
+/tasks/compare	YOURS › Workspace › Projects & Tasks	NO LINK FOUND (sits under menu: Workspace › Tasks)	
+/tasks/new	YOURS › Workspace › Projects & Tasks	menu: Workspace › New Task	
+/tasks/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/teams/id/[teamId]	NOT TILES › Account menu	opened from a record link	team address (redirects to org settings)
+/tool-call-visualization/admin	MORE	no menu; linked in-app (18 places)	+ tool-call display admin
+/tools/pdf-extractor	BUSINESS › Business Tools › PDF & scans	menu: Files › PDF Extractor	
+/tools/pdf-extractor/[id]	BUSINESS › Business Tools › PDF & scans	opened from a list (under menu: Files › PDF Extractor)	
+/tools/pdf-extractor/admin	BUSINESS › Business Tools › PDF & scans	in-page link under menu: Files › PDF Extractor	
+/tools/product-capture	SOLUTIONS › E-Commerce	menu: Industries › Commerce	
+/tools/product-capture/admin	SOLUTIONS › E-Commerce	in-page link under menu: Industries › Commerce	
+/tools/product-capture/all	SOLUTIONS › E-Commerce	menu: Industries › Commerce › All Products	
+/tools/product-capture/answer	SOLUTIONS › E-Commerce	menu: Industries › Commerce › Product Questions	
+/tools/product-capture/instant	SOLUTIONS › E-Commerce	menu: Industries › Commerce › Instant Capture	
+/tools/product-capture/item/[id]	SOLUTIONS › E-Commerce	opened from a list (under menu: Industries › Commerce)	
+/tools/product-capture/manage	SOLUTIONS › E-Commerce	menu: Industries › Commerce › Product Pipeline	
+/tools/scanner	BUSINESS › Business Tools › PDF & scans	menu: Media › Scanner	phone scanner (menu: Media › Scanner)
+/tools/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/transcripts	Productivity › Audio	menu: Audio	
+/transcripts/admin	Productivity › Audio	in-page link under menu: Audio	
+/transcripts/cleanup	Productivity › Audio	menu: Audio › Cleanup	
+/transcripts/new	Productivity › Audio	menu: Audio › New Transcript	
+/transcripts/processor	Productivity › Audio	menu: Audio › Processor	
+/transcripts/scribe	Productivity › Audio	menu: Audio › Scribe	
+/transcripts/scribe/[sessionId]	Productivity › Audio	opened from a list (under menu: Audio › Scribe)	
+/transcripts/scribe/unsorted	Productivity › Audio	menu: Audio › Unsorted Scribe	
+/transcripts/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/transcripts/studio	Productivity › Audio	menu: Audio › Studio	
+/trash	NOT TILES › Account menu	menu: Account › Trash	trash (all kinds)
+/trash/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/user-settings/[[...path]]	NOT TILES › Account menu	opened from a list (under menu: Account › Settings)	settings (one catch-all page holds every settings tab: billing, connectors, voices, memory, API keys…)
+/user-settings/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/vault	NOT TILES › Account menu	menu: Account › Vault	vault & keys
+/vault/[itemId]	NOT TILES › Account menu	opened from a list (under menu: Account › Vault)	vault & keys
+/vault/approve-browser	NOT TILES › Account menu	NO LINK FOUND (sits under menu: Account › Vault)	vault & keys
+/vault/authenticator	NOT TILES › Account menu	menu: Account › Authenticator	vault & keys
+/vault/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/voice	Productivity › Audio	menu: Audio › Voice Playground	voice playground
+/voice/playground	Productivity › Audio	in-page link under menu: Audio › Voice Playground	voice playground
+/voice/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/voice/tester	Productivity › Audio	menu: Audio › Voice Tester	voice playground
+/war-room	YOURS › Workspace › War Rooms	menu: Workspace › War Room	
+/war-room/[id]	YOURS › Workspace › War Rooms	opened from a list (under menu: Workspace › War Room)	
+/war-room/admin	YOURS › Workspace › War Rooms	in-page link under menu: Workspace › War Room	
+/war-room/all	YOURS › Workspace › War Rooms	menu: Workspace › New War Room	
+/war-room/new	YOURS › Workspace › War Rooms	in-page link under menu: Workspace › War Room	
+/war-room/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/welcome	NOT TILES › Account menu	menu: Account › Welcome	Meet Matrx / welcome
+/welcome/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/work	YOURS › Chat	menu: Chat › Overview	+ AI Work: overview, live runs, saved requests, connections & sync
+/work/admin	YOURS › Chat	in-page link under menu: Chat › Overview	+ AI Work: overview, live runs, saved requests, connections & sync
+/work/connections	YOURS › Chat	in-page link under menu: Chat › Overview	+ AI Work: overview, live runs, saved requests, connections & sync
+/work/conversations	YOURS › Chat › Imported AI chats	menu: Chat › Provider Conversations	menu calls it Provider Conversations
+/work/conversations/[conversationId]	YOURS › Chat › Imported AI chats	opened from a list (under menu: Chat › Provider Conversations)	menu calls it Provider Conversations
+/work/live	YOURS › Chat	menu: Chat › Live	+ AI Work: overview, live runs, saved requests, connections & sync
+/work/new	YOURS › Chat	in-page link under menu: Chat › Overview	+ AI Work: overview, live runs, saved requests, connections & sync
+/work/requests	YOURS › Chat	in-page link under menu: Chat › Overview	+ AI Work: overview, live runs, saved requests, connections & sync
+/work/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/workbooks	Productivity › Data › Sheets	menu: Data › Workbooks	menu calls them Workbooks
+/workbooks/[id]	Productivity › Data › Sheets	opened from a list (under menu: Data › Workbooks)	menu calls them Workbooks
+/workbooks/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/workbooks/templates	Productivity › Data › Sheets	in-page link under menu: Data › Workbooks	menu calls them Workbooks
+/workflows	BUILD › Intelligence › Workflows	no menu; linked in-app (167 places)	
+/workflows/[id]	BUILD › Intelligence › Workflows	opened from a record link	
+/workflows/[id]/design	BUILD › Intelligence › Workflows	opened from a record link	
+/workflows/[id]/review	BUILD › Intelligence › Workflows	opened from a record link	
+/workflows/[id]/review/[issueId]	BUILD › Intelligence › Workflows	opened from a record link	
+/workflows/[id]/runs	BUILD › Intelligence › Workflows	opened from a record link	
+/workflows/[id]/triggers	BUILD › Intelligence › Workflows	opened from a record link	
+/workflows/all	BUILD › Intelligence › Workflows	menu: Workflows	
+/workflows/bakeoff	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff/dense-2/[id]	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff/dense/[id]	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff/refine-2/[id]	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff/refine/[id]	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff/reimagine-2/[id]	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff/reimagine/[id]	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff/sharp-2/[id]	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff/sharp/[id]	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/battle	BUILD › Intelligence › Workflows	menu: Workflows › Workflow Battle	
+/workflows/builder/[tableId]	BUILD › Intelligence › Workflows	opened from a record link	
+/workflows/review	BUILD › Intelligence › Workflows	menu: Workflows › Review	
+/workflows/runs	BUILD › Intelligence › Workflows	menu: Workflows › Workflow Runs	
+/workflows/runs/[runId]	BUILD › Intelligence › Workflows	opened from a list (under menu: Workflows › Workflow Runs)	
+/workflows/runs/analyze	BUILD › Intelligence › Workflows	menu: Workflows › Analyze Runs	
+/workflows/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/workflows/waiting	BUILD › Intelligence › Workflows	menu: Workflows › Waiting on You	
+/kiosk	Not in the app frame › Kiosk (HR punch tablet)	no menu; linked in-app (19 places)	by design: device page for HR time clock; home is Business › HR › time; not in the app frame by design (kiosk)
+/kiosk/[deviceId]	Not in the app frame › Kiosk (HR punch tablet)	opened from a record link	by design: device page for HR time clock; home is Business › HR › time; not in the app frame by design (kiosk)
+/applets/[slug]/[[...path]]	BUILD › Applets	shared link (opened from a message, never from a menu)	shared link: a published applet; not in the app frame by design (link)
+/b/[bookingId]	BUSINESS › Meet	shared link (opened from a message, never from a menu)	shared link: booking page a guest opens (booking); not in the app frame by design (link)
+/b/manage/[ref]	BUSINESS › Meet	shared link (opened from a message, never from a menu)	shared link: booking page a guest opens (booking); not in the app frame by design (link)
+/capture/[sheetId]	SOLUTIONS › E-Commerce	shared link (opened from a message, never from a menu)	shared link: capture sheet; not in the app frame by design (link)
+/f/[formId]	Productivity › Data › Forms	shared link (opened from a message, never from a menu)	shared link: a form a stranger fills in; not in the app frame by design (link)
+/q/[token]	BUSINESS › Business Tools › QR codes & barcodes	shared link (opened from a message, never from a menu)	shared link: QR code landing; not in the app frame by design (link)
+/rsvp/[secret]	BUSINESS › Meet	shared link (opened from a message, never from a menu)	shared link: RSVP to an invite; not in the app frame by design (link)
+/secure/[token]	NOT TILES › Account menu	shared link (opened from a message, never from a menu)	shared link: secure delivery of a secret (vault); not in the app frame by design (link)
+/sign/e/[envelopeId]	BUSINESS › Business Tools › E-signatures	shared link (opened from a message, never from a menu)	shared link: signer's page; not in the app frame by design (link)
+/site/[slug]	BUSINESS › Marketing	shared link (opened from a message, never from a menu)	shared link: published CMS site; not in the app frame by design (link)
+/v/[slug]	BUSINESS › Marketing	shared link (opened from a message, never from a menu)	shared link: short link / video page; not in the app frame by design (link)
+/x/sign	BUSINESS › Business Tools › E-signatures	shared link (opened from a message, never from a menu)	shared link: sign by phone; not in the app frame by design (link)
+/x/sign/phone	BUSINESS › Business Tools › E-signatures	shared link (opened from a message, never from a menu)	shared link: sign by phone; not in the app frame by design (link)
+/meet	BUSINESS › Meet	no menu; linked in-app (145 places)	by design full-bleed meeting stage (meetings, calls); not in the app frame by design (meet)
+/meet/[slug]	BUSINESS › Meet	opened from a record link	by design full-bleed meeting stage (meetings, calls); not in the app frame by design (meet)
+/portal	Not in the app frame › Portal (departed members)	no menu; linked in-app (39 places)	by design: separate signed-in portal; not in the app frame by design (portal)
+/portal/[orgId]	Not in the app frame › Portal (departed members)	opened from a record link	by design: separate signed-in portal; not in the app frame by design (portal)
+/portal/c/[slug]	Not in the app frame › Portal (departed members)	opened from a record link	by design: separate signed-in portal; not in the app frame by design (portal)
+/portal/c/[slug]/f/[formId]	Not in the app frame › Portal (departed members)	opened from a record link	by design: separate signed-in portal; not in the app frame by design (portal)
+/portal/c/[slug]/r/[recordId]	Not in the app frame › Portal (departed members)	opened from a record link	by design: separate signed-in portal; not in the app frame by design (portal)
+/appointment-reminder	Not in the app frame › Message footers	public website page	page reached from an SMS/email
+/c/[handle]	Not in the app frame › Share links	opened from a record link	public share/short link
+/canvas/discover	EVERYWHERE › Canvas	public website page	+ public canvas gallery / shared canvas
+/canvas/shared/[token]	EVERYWHERE › Canvas	opened from a record link	+ public canvas gallery / shared canvas
+/compare/s/[slug]	Productivity › Data › Templates, compare, data-to-model	opened from a list (under menu: Data › Compare)	shared comparison link
+/contact	Not in the app frame › Public website	public website page	marketing / legal page
+/desktop	Not in the app frame › Public website	public website page	marketing / legal page
+/developers/oauth	Not in the app frame › Public website	public website page	marketing / legal page
+/download	Not in the app frame › Public website	public website page	marketing / legal page
+/extend	Not in the app frame › Public website	public website page	marketing / legal page
+/free/character-counter	BUSINESS › Business Tools › Utilities	menu: Utilities › Character Counter	free utility
+/free/data-truncator	BUSINESS › Business Tools › Utilities	menu: Utilities › Data Truncator	free utility
+/free/games/matrx-2048	MORE	public website page	games
+/free/games/matrx-jump	MORE	menu: Other › Matrx Jump	games
+/free/games/matrx-jump/character-maker	MORE	in-page link under menu: Other › Matrx Jump	games
+/free/games/matrx-jump/jump-with-settings	MORE	NO LINK FOUND (sits under menu: Other › Matrx Jump)	games
+/free/games/tic-tac-toe	MORE	menu: Other › Tic Tac Toe	games
+/free/uuid/array	BUSINESS › Business Tools › Utilities	public website page	free utility
+/free/uuid/generator	BUSINESS › Business Tools › Utilities	menu: Utilities › UUID Generator	free utility
+/free/zip-code-heatmap	BUSINESS › Marketing	menu: Utilities › Zip Code Heatmap	heatmap (menu calls it Utilities › Zip Code Heatmap)
+/free/zip-code-heatmap/[id]	BUSINESS › Marketing	opened from a list (under menu: Utilities › Zip Code Heatmap)	heatmap (menu calls it Utilities › Zip Code Heatmap)
+/how-it-works	Not in the app frame › Public website	public website page	marketing / legal page
+/how-we-prove-it	Not in the app frame › Public website	public website page	marketing / legal page
+/import/ai-chats	BUILD › Masterwork	menu: Masterwork › Import your AI chats	import AI chats (tree also lists it under Chat › Imported AI chats)
+/import/ai-chats/[provider]	BUILD › Masterwork	opened from a list (under menu: Masterwork › Import your AI chats)	import AI chats (tree also lists it under Chat › Imported AI chats)
+/l/[code]	Not in the app frame › Share links	opened from a record link	public share/short link
+/loop	Not in the app frame › Public website	public website page	marketing / legal page
+/loop/diagram	Not in the app frame › Public website	public website page	marketing / legal page
+/matrx-extend-demo	Not in the app frame › Public website	public website page	marketing / legal page
+/open/chat/[conversationId]	YOURS › Chat › Chats	opened from a record link	share link that opens a chat
+/p/e/[resourceType]/[id]	Not in the app frame › Share links	opened from a record link	public share/short link
+/pricing	NOT TILES › Account menu	public website page	billing: public pricing page
+/pricing/compare	NOT TILES › Account menu	public website page	billing: public pricing page
+/pricing/pledge	NOT TILES › Account menu	public website page	billing: public pricing page
+/privacy-policy	Not in the app frame › Public website	public website page	marketing / legal page
+/privacy-policy/extension	Not in the app frame › Public website	public website page	marketing / legal page
+/r/[token]	Not in the app frame › Share links	opened from a record link	public share/short link
+/request-access/thank-you	Not in the app frame › Public website	public website page	marketing / legal page
+/s/[token]	Not in the app frame › Share links	opened from a record link	public share/short link
+/seo	BUSINESS › Marketing	public website page	+ free public SEO tools (/seo/*), not linked from the app
+/seo/ai-visibility	BUSINESS › Marketing	public website page	+ free public SEO tools (/seo/*), not linked from the app
+/seo/metadata	BUSINESS › Marketing	public website page	+ free public SEO tools (/seo/*), not linked from the app
+/seo/page-audit	BUSINESS › Marketing	public website page	+ free public SEO tools (/seo/*), not linked from the app
+/seo/robots-tester	BUSINESS › Marketing	public website page	+ free public SEO tools (/seo/*), not linked from the app
+/seo/social-preview	BUSINESS › Marketing	public website page	+ free public SEO tools (/seo/*), not linked from the app
+/seo/structured-data	BUSINESS › Marketing	public website page	+ free public SEO tools (/seo/*), not linked from the app
+/sms	Not in the app frame › Message footers	public website page	page reached from an SMS/email
+/sms/personal-staff	Not in the app frame › Message footers	public website page	page reached from an SMS/email
+/templates	Productivity › Data › Templates, compare, data-to-model	menu: Data › Templates	templates gallery (public page)
+/templates/[slug]	Productivity › Data › Templates, compare, data-to-model	opened from a list (under menu: Data › Templates)	templates gallery (public page)
+/templates/applets	BUILD › Applets	menu: Applets › Applet Templates	applet templates
+/templates/category/[industry]	Productivity › Data › Templates, compare, data-to-model	opened from a list (under menu: Data › Templates)	templates gallery (public page)
+/templates/job/[job]	Productivity › Data › Templates, compare, data-to-model	opened from a list (under menu: Data › Templates)	templates gallery (public page)
+/templates/workspaces	YOURS › Workspace	in-page link under menu: Data › Templates	+ workspace templates gallery
+/templates/workspaces/[category]	YOURS › Workspace	opened from a list (under menu: Data › Templates)	+ workspace templates gallery
+/terms-and-conditions	Not in the app frame › Public website	public website page	marketing / legal page
+/terms-of-service	Not in the app frame › Public website	public website page	marketing / legal page
+/the-landscape	Not in the app frame › Public website	public website page	marketing / legal page
+/unsubscribe/[token]	Not in the app frame › Message footers	opened from a record link	page reached from an SMS/email
+/why-ai-matrx	Not in the app frame › Public website	public website page	marketing / legal page
+/	YOURS › Home	no menu; linked in-app (18268 places)	site root
+/auth/auth-code-error	Not in the app frame › Sign-in plumbing	no menu; linked in-app (1 places)	sign-in step, never a destination
+/auth/desktop-handoff	Not in the app frame › Sign-in plumbing	NO MENU, NO LINK FOUND	sign-in step, never a destination
+/auth/support-session/ended	Not in the app frame › Sign-in plumbing	no menu; linked in-app (1 places)	sign-in step, never a destination
+/auth/verifying	Not in the app frame › Sign-in plumbing	no menu; linked in-app (2 places)	sign-in step, never a destination
+/error	Not in the app frame › Sign-in plumbing	no menu; linked in-app (2205 places)	error page
+/oauth/callback/[app]	Not in the app frame › Sign-in plumbing	opened from a record link	OAuth consent/callback (others signing in with us)
+/oauth/consent	Not in the app frame › Sign-in plumbing	no menu; linked in-app (1 places)	OAuth consent/callback (others signing in with us)
+/oauth/success	Not in the app frame › Sign-in plumbing	NO MENU, NO LINK FOUND	OAuth consent/callback (others signing in with us)
+/samples	MORE	no menu; linked in-app (38 places)	+ samples page (root)
+/_flash-cards	MORE	unreachable: nothing links to it (owner's cleanup list, KILL)	old flash-card test pages (pre-App-Router)
+/_flashcard	MORE	unreachable: nothing links to it (owner's cleanup list, KILL)	old flash-card test pages (pre-App-Router)
+/_flashcard/[category]	MORE	unreachable: nothing links to it (owner's cleanup list, KILL)	old flash-card test pages (pre-App-Router)
+/_flashcard/[category]/[id]	MORE	unreachable: nothing links to it (owner's cleanup list, KILL)	old flash-card test pages (pre-App-Router)
+/agent-lists	BUILD › Intelligence › Agents	unreachable: nothing links to it (owner's cleanup list, ASK)	+ agent lists hub (todos and plans agents write)
+/local	NOT TILES › Account menu	menu: Computer	devices & Computer (menu: Computer › My Devices)
+/news	Memory › Research	menu: Knowledge › News	news
+/registered-results	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, ASK)	+ internal viewers for workflow outputs
+/registered-results/events-viewer	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, ASK)	+ internal viewers for workflow outputs
+/registered-results/sitemap-viewer	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, ASK)	+ internal viewers for workflow outputs

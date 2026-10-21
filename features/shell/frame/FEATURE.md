@@ -6,6 +6,10 @@
 
 ---
 
+## Every page has a home
+
+`route-homes.tsv` gives every page in the app (core, transitional, public, portal, link, meet, kiosk, root) its node in the product tree (common-docs/projects/app-frame/TREE.md) and how a person finds it today. `__tests__/every-page-has-a-home.test.ts` fails on a page with no row, a blank home, a duplicate or a stale row (owner, 2026-10-20: nothing built is ever lost). Add a row with every new page.
+
 ## Purpose
 
 The new app frame from the owner's model (2026-10-17): AI Matrx works like Google Workspace. Each
