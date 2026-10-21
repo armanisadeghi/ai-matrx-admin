@@ -56,7 +56,6 @@ import { TapTargetButtonTransparent, TapTargetCopyButton } from "@ai-matrx/desig
 import {
   ExternalLinkTapButton,
   MaximizeTapButton,
-  MoreHorizontalTapButton,
   XTapButton,
 } from "@ai-matrx/design-system/tap-target/buttons";
 import { buildAgentPayload } from "@ai-matrx/alchemy/operate";
@@ -73,12 +72,6 @@ import {
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -236,10 +229,13 @@ export function ToastDetailBody({
   kind,
   message,
   detail,
+  doors,
 }: {
   kind: SmartToastKind;
   message: string;
   detail: SmartToastDetail;
+  /** A narrow toast's window / new-tab doors: they live in its peek, never behind a More button. */
+  doors?: { openWindow?: () => void; href?: string } | undefined;
 }) {
   const k = KIND[kind];
   return (
@@ -264,6 +260,20 @@ export function ToastDetailBody({
           {detail.body}
         </p>
       )}
+      {doors && (doors.openWindow || doors.href) ? (
+        <div className="flex items-center gap-3 border-t border-border pt-2 text-[13px]">
+          {doors.openWindow ? (
+            <button type="button" className="inline-flex items-center gap-1 text-primary-ink hover:underline" onClick={doors.openWindow}>
+              <Maximize2 aria-hidden className="h-3.5 w-3.5" /> Open in window
+            </button>
+          ) : null}
+          {doors.href ? (
+            <OutboundLink href={doors.href} className="inline-flex items-center gap-1 text-primary-ink hover:underline">
+              <ExternalLink aria-hidden className="h-3.5 w-3.5" /> Open in new tab
+            </OutboundLink>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -332,12 +342,13 @@ export function SmartToastCard({
 
   // A message longer than two lines is never lost: the clamp hides the rest
   // and the peek carries the whole text, even when the caller sent no detail.
-  const detail = options.detail ?? (clamped ? {} : undefined);
+  // Narrow: the window/new-tab doors fold into the peek, so a toast with any door has one.
+  const detail = options.detail ?? (clamped || (narrow && (options.href || options.window)) ? {} : undefined);
   const windowTitle =
     typeof options.window === "object" && options.window.title ? options.window.title : detail?.title ?? message;
   const canWindow = !!(options.detail && options.window);
   const optionalCount = (detail ? 1 : 0) + (canWindow ? 1 : 0) + (options.href ? 1 : 0);
-  const folded = narrow && optionalCount > 0;
+  const folded = narrow && optionalCount > 0; // the optional doors live in the peek
   const openWindow = () => {
     if (options.detail) openToastWindow({ title: windowTitle, kind, message, detail: options.detail });
   };
@@ -381,7 +392,12 @@ export function SmartToastCard({
         >
           <HoverCardTrigger asChild>{messageNode}</HoverCardTrigger>
           <HoverCardContent side="top" align="start" sideOffset={8} className={PEEK_CLASS}>
-            <ToastDetailBody kind={kind} message={message} detail={detail} />
+            <ToastDetailBody
+              kind={kind}
+              message={message}
+              detail={detail}
+              doors={folded ? { openWindow: canWindow ? openWindow : undefined, href: options.href } : undefined}
+            />
           </HoverCardContent>
         </HoverCard>
       ) : (
@@ -415,32 +431,6 @@ export function SmartToastCard({
             rel="noopener noreferrer"
           />
         )}
-        {folded && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <MoreHorizontalTapButton variant="transparent" ariaLabel="More" tooltip="More" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-40">
-              {detail && (
-                <DropdownMenuItem onSelect={() => setPinned(true)}>
-                  <ChevronDown aria-hidden /> Details
-                </DropdownMenuItem>
-              )}
-              {canWindow && (
-                <DropdownMenuItem onSelect={openWindow}>
-                  <Maximize2 aria-hidden /> Open in window
-                </DropdownMenuItem>
-              )}
-              {options.href && (
-                <DropdownMenuItem asChild>
-                  <OutboundLink href={options.href}>
-                    <ExternalLink aria-hidden /> Open in new tab
-                  </OutboundLink>
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
         {/* ONE copy affordance per toast. An error's is the Alchemy Menu (every
             error on screen carries it, inside its own box); it takes the copy
             slot instead of sitting beside a second copy glyph. */}
@@ -465,7 +455,10 @@ export function SmartToastCard({
             onCopied={onCopied}
           />
         )}
-        <XTapButton variant="transparent" ariaLabel="Close" tooltip="Close" onClick={onClose} />
+        {/* Narrow: close tucks against copy (the two 38px tap boxes read as two far-apart islands at 240px). */}
+        <span className={cn("inline-flex", narrow && "-ml-2")}>
+          <XTapButton variant="transparent" ariaLabel="Close" tooltip="Close" onClick={onClose} />
+        </span>
       </div>
     </div>
   );

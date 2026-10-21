@@ -133,7 +133,7 @@ describe("SmartToastCard at 240px", () => {
       ),
     );
 
-  it("folds the optional layers into one More button so copy, close and more fit on one row", () => {
+  it("narrow (Arman 2026-10-21): no More button — the optional doors live in the peek; only copy and close sit beside the text", () => {
     render(TOAST_LONG_SAMPLE, {
       detail: { title: "Note saved", rows: [{ label: "Revision", value: "14" }] },
       window: true,
@@ -145,7 +145,10 @@ describe("SmartToastCard at 240px", () => {
     expect(controls.className).toContain("flex-nowrap");
     expect(controls.className).toContain("shrink-0");
     const labels = Array.from(controls.querySelectorAll("[aria-label]")).map((b) => b.getAttribute("aria-label"));
-    expect(labels).toEqual(["More", "Copy for AI", "Close"]);
+    expect(labels).toEqual(["Copy for AI", "Close"]);
+    expect(card.querySelector('[aria-label="More"]')).toBeNull();
+    // the message opens the peek that carries the window / new-tab doors
+    expect(card.querySelector("[data-toast-message]")!.className).toContain("cursor-pointer");
     expect(card.className).toContain("min-w-[240px]");
   });
 
@@ -158,13 +161,13 @@ describe("SmartToastCard at 240px", () => {
     const text = wrap.querySelector("p")!;
     expect(text.className).toContain("line-clamp-2");
     expect(text.textContent).toBe(TOAST_LONG_SAMPLE);
-    // Clamped with no caller detail: the peek exists (the message opens it)
-    // and the narrow card folds "Details" + "New tab" behind More.
+    // Clamped with no caller detail: the peek exists (the message opens it) and
+    // carries the new-tab door; no More button doubles the text's own ellipsis.
     expect(wrap.className).toContain("cursor-pointer");
     const labels = Array.from(card.querySelectorAll("[data-toast-controls] [aria-label]")).map((b) =>
       b.getAttribute("aria-label"),
     );
-    expect(labels).toEqual(["More", "Copy for AI", "Close"]);
+    expect(labels).toEqual(["Copy for AI", "Close"]);
   });
 
   it("keeps a short message with no extra layers to copy and close only", () => {

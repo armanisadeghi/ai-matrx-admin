@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-21T06:58:48.012Z",
+  "generated_at": "2026-10-21T07:30:27.280Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -301,6 +301,12 @@
       "filename": "20261020240120_readspeed4_d_kept_values_wait_for_a_working_refresh.sql",
       "checksum": "7e0702c369ac6ab5106136737ccced4646ac2cfc39aa1ce9b3747cd5e35fa854",
       "applied_at": "2026-10-19 23:55:03.655223+00"
+    },
+    "migrations/campaign/20261021073000_confgrant_a_a_a_column_share_opens_it_at_any_level.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261021073000_confgrant_a_a_a_column_share_opens_it_at_any_level.sql",
+      "checksum": "bd94dd69ffdbf8165741699b496c2657cde563c29a8f81d0056896519ad2c179",
+      "applied_at": "2026-10-21 07:30:25.908414+00"
     },
     "migrations/campaign/20261021240000_readspeed5_a_the_refresh_door_works_out_values_in_the_compute_lane.sql": {
       "source": "matrx-frontend",

@@ -224,3 +224,13 @@ describe("the approved header mode pill (Arman, 2026-10-20)", () => {
     expect(nav).toMatch(/py-0\.5 px-2\.5 text-\[0\.6875rem\] font-medium rounded-full/);
   });
 });
+
+describe("the collapsed mode menu is the canonical outline button (Arman, 2026-10-21)", () => {
+  it("never draws the retired glowing selected-pill-with-chevron trigger", () => {
+    const nav = read("features/shell/components/header/RouteModeNav.tsx")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/^\s*\/\/.*$/gm, "");
+    expect(nav).not.toContain("cn(ITEM, NAV_ITEM_SELECTED)");
+    expect(nav).toContain('<Button variant="outline" aria-label="Switch view">');
+  });
+});

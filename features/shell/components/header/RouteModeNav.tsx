@@ -52,6 +52,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import NavLink from "@/components/navigation/NavLink";
 import { ChevronDown, type LucideIcon } from "lucide-react";
+import { Button } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -396,30 +397,24 @@ export function RouteModeNav({
           </div>
         )}
         {/* The collapsed trigger, as the visible menu variant draws it. */}
-        <span ref={menuRef} className={cn(PILL, "w-max max-w-none px-1")}>
-          <span className={cn(ITEM, NAV_ITEM_SELECTED)}>
-            {ActiveIcon && <ActiveIcon />}
-            {!(isMobile && ActiveIcon) && (
-              <span>{current?.name ?? fallbackLabel}</span>
-            )}
-            <ChevronDown className="opacity-60" />
-          </span>
+        <span ref={menuRef} className="inline-flex w-max max-w-none">
+          <Button variant="outline" tabIndex={-1}>
+            {ActiveIcon && <ActiveIcon aria-hidden />}
+            {!(isMobile && ActiveIcon) && <span>{current?.name ?? fallbackLabel}</span>}
+            <ChevronDown aria-hidden />
+          </Button>
         </span>
         {/* The smallest trigger: the icon alone. RouteHeader reserves room for
             it beside the title (`data-route-nav-min`). */}
         <span
           ref={menuIconRef}
           data-route-nav-min
-          className={cn(PILL, "w-max max-w-none px-1")}
+          className="inline-flex w-max max-w-none"
         >
-          <span className={cn(ITEM, NAV_ITEM_SELECTED)}>
-            {ActiveIcon ? (
-              <ActiveIcon />
-            ) : (
-              <span>{current?.name ?? fallbackLabel}</span>
-            )}
-            <ChevronDown className="opacity-60" />
-          </span>
+          <Button variant="outline" tabIndex={-1}>
+            {ActiveIcon ? <ActiveIcon aria-hidden /> : <span>{current?.name ?? fallbackLabel}</span>}
+            <ChevronDown aria-hidden />
+          </Button>
         </span>
       </div>
 
@@ -429,25 +424,13 @@ export function RouteModeNav({
           {/* Both triggers render; CSS picks (SSR ZERO LAYOUT SHIFT): the phone
               pill opens a bottom sheet, the desktop capsule a dropdown. */}
           <span className="contents md:hidden">
-            <button
-              type="button"
-              className={cn(PILL, "min-h-11 px-1")}
-              aria-label="Switch view"
-              onClick={() => setMobileMenuOpen(true)}
-            >
-              <span className={cn(ITEM, NAV_ITEM_SELECTED)}>
-                {ActiveIcon && <ActiveIcon />}
-                <span
-                  className={cn(
-                    ActiveIcon &&
-                      (iconTrigger ? "sr-only" : "hidden sm:inline"),
-                  )}
-                >
-                  {current?.name ?? fallbackLabel}
-                </span>
-                <ChevronDown className="opacity-60" />
+            <Button variant="outline" aria-label="Switch view" onClick={() => setMobileMenuOpen(true)}>
+              {ActiveIcon && <ActiveIcon aria-hidden />}
+              <span className={cn(ActiveIcon && (iconTrigger ? "sr-only" : "hidden sm:inline"))}>
+                {current?.name ?? fallbackLabel}
               </span>
-            </button>
+              <ChevronDown aria-hidden />
+            </Button>
             <BottomSheet
               open={mobileMenuOpen}
               onOpenChange={setMobileMenuOpen}
@@ -502,28 +485,16 @@ export function RouteModeNav({
           </span>
           <span className="hidden md:contents">
             <DropdownMenu>
-              {/* The track is decoration; the BUTTON is the selected capsule
-                itself, so the pressable box hugs its label. A button that is
-                the whole track reads as a pill stretched by the track's inset
-                (pill-guard, Rulebook/Industry packs/Setup headers,
-                2026-10-05). */}
-              <span className={cn(PILL, "px-1")}>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className={cn(ITEM, NAV_ITEM_SELECTED)}
-                    aria-label="Switch view"
-                  >
-                    {ActiveIcon && <ActiveIcon />}
-                    <span
-                      className={cn(iconTrigger && ActiveIcon && "sr-only")}
-                    >
-                      {current?.name ?? fallbackLabel}
-                    </span>
-                    <ChevronDown className="opacity-60" />
-                  </button>
-                </DropdownMenuTrigger>
-              </span>
+              {/* THE COLLAPSED MODE MENU IS THE CANONICAL OUTLINE BUTTON (Arman, 2026-10-21):
+                  the glowing selected-pill-with-chevron it used to draw is retired everywhere.
+                  The open pill (all modes visible) is the approved agents-header pill. */}
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" aria-label="Switch view">
+                  {ActiveIcon && <ActiveIcon aria-hidden />}
+                  <span className={cn(iconTrigger && ActiveIcon && "sr-only")}>{current?.name ?? fallbackLabel}</span>
+                  <ChevronDown aria-hidden />
+                </Button>
+              </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="center"
                 className={cn(
