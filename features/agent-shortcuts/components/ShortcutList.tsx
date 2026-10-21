@@ -7,7 +7,6 @@ import {
   type MatrxColumnDef,
 } from "@ai-matrx/design-system/data-table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
@@ -17,12 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   Check,
   Copy,
@@ -34,6 +28,8 @@ import {
   Zap,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { useAgentShortcuts } from "../hooks/useAgentShortcuts";
 import { useAgentShortcutCrud } from "../hooks/useAgentShortcutCrud";
 import { getPlacementTypeMeta } from "../constants";
@@ -207,6 +203,66 @@ export function ShortcutList({
     }
   };
 
+  const shortcutsLabel = (n: number) => `${n} shortcut${n === 1 ? "" : "s"}`;
+  const { rowActionDefs, bulkActions } = defineRowVerbs<AgentShortcutRecord>(
+    [
+      ...(onEdit
+        ? [{ id: "edit", icon: Edit2, label: "Edit", onClick: (s: AgentShortcutRecord) => onEdit(s), bulk: false as const, noBulk: "edit" as const }]
+        : []),
+      ...(!readonly && onDuplicate
+        ? [{ id: "duplicate", icon: Copy, label: "Duplicate", onClick: (s: AgentShortcutRecord) => onDuplicate(s), bulk: false as const, noBulk: "single" as const }]
+        : []),
+      ...(!readonly && onPromoteToGlobal && scope !== "global"
+        ? [{ id: "promote", icon: Globe, label: "Promote to Global (admin)", onClick: (s: AgentShortcutRecord) => onPromoteToGlobal(s), bulk: false as const, noBulk: "single" as const }]
+        : []),
+      ...(!readonly
+        ? [
+            {
+              id: "activate", icon: Eye, label: "Activate",
+              appliesTo: (s: AgentShortcutRecord) => !s.isActive, unavailableTooltip: "Already active",
+              onClick: (s: AgentShortcutRecord) => void handleToggleActive(s),
+              bulk: {
+                done: "Activated",
+                skipReason: (s: AgentShortcutRecord) => (s.isActive ? "Already active" : null),
+                confirm: (t: { ids: string[] }) => ({
+                  title: `Activate ${shortcutsLabel(t.ids.length)}?`,
+                  description: "They appear for the people they are scoped to.",
+                  confirmLabel: "Activate",
+                }),
+                runOne: (id: string) => crud.updateShortcut(id, { isActive: true }),
+              },
+            },
+            {
+              id: "deactivate", icon: EyeOff, label: "Deactivate",
+              appliesTo: (s: AgentShortcutRecord) => s.isActive, unavailableTooltip: "Already inactive",
+              onClick: (s: AgentShortcutRecord) => void handleToggleActive(s),
+              bulk: {
+                done: "Deactivated",
+                skipReason: (s: AgentShortcutRecord) => (s.isActive ? null : "Already inactive"),
+                confirm: (t: { ids: string[] }) => ({
+                  title: `Deactivate ${shortcutsLabel(t.ids.length)}?`,
+                  description: "They stop appearing for the people they are scoped to until activated again.",
+                  confirmLabel: "Deactivate",
+                  variant: "destructive" as const,
+                }),
+                runOne: (id: string) => crud.updateShortcut(id, { isActive: false }),
+              },
+            },
+          ]
+        : []),
+    ],
+    { noun: "shortcut", getRowId: (s) => s.id, getRowName: (s) => s.label },
+  );
+  const bulk = useTableBulkSelection<AgentShortcutRecord>({
+    noun: "shortcut",
+    rows: filteredShortcuts,
+    getRowId: (s) => s.id,
+    getRowName: (s) => s.label,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: () => void refetch(),
+  });
+
   const columns = useMemo<MatrxColumnDef<AgentShortcutRecord>[]>(
     () => [
       {
@@ -379,46 +435,9 @@ export function ShortcutList({
         <MatrxDataTable<AgentShortcutRecord>
           drill={SHORTCUTS_DRILL}
           data={filteredShortcuts}
-          columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (shortcut) => (
-            <div
-              className="flex items-center gap-1"
-              onClick={(event) => event.stopPropagation()}
-            >
-              {onEdit && (
-                <ShortcutAction label="Edit" onClick={() => onEdit(shortcut)}>
-                  <Edit2 className="size-3" />
-                </ShortcutAction>
-              )}
-              {!readonly && onDuplicate && (
-                <ShortcutAction
-                  label="Duplicate"
-                  onClick={() => onDuplicate(shortcut)}
-                >
-                  <Copy className="size-3" />
-                </ShortcutAction>
-              )}
-              {!readonly && onPromoteToGlobal && scope !== "global" && (
-                <ShortcutAction
-                  label="Promote to Global (admin)"
-                  onClick={() => onPromoteToGlobal(shortcut)}
-                >
-                  <Globe className="size-3" />
-                </ShortcutAction>
-              )}
-              {!readonly && (
-                <ShortcutAction
-                  label={shortcut.isActive ? "Deactivate" : "Activate"}
-                  onClick={() => void handleToggleActive(shortcut)}
-                >
-                  {shortcut.isActive ? (
-                    <EyeOff className="size-3" />
-                  ) : (
-                    <Eye className="size-3" />
-                  )}
-                </ShortcutAction>
-              )}
-            </div>
-          ) }]}
+          columns={[...(columns)]}
+          rowActionDefs={rowActionDefs}
+          {...(readonly ? {} : { selection: bulk.selection })}
           getRowId={(shortcut) => shortcut.id}
           getRowHref={(shortcut) => doorHrefFor?.(shortcut) ?? undefined}
           onRowOpen={onEdit}
@@ -733,26 +752,5 @@ export function ShortcutList({
         <div className="sr-only">Scope: {scope}</div>
       </div>
     </TooltipProvider>
-  );
-}
-
-function ShortcutAction({
-  label,
-  onClick,
-  children,
-}: {
-  label: string;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button variant="outline" onClick={onClick}>
-          {children}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
   );
 }

@@ -16,7 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
-import { X } from "lucide-react";
 import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";

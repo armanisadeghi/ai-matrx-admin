@@ -414,7 +414,9 @@ export function TriggersManager({
     ? `${pending.t.cost.owner_email ?? "an unknown account"} for ${pending.t.cost.organization_name ?? "no organization"}`
     : "";
 
-  const stateOne = (action: TriggerAction) => (id: string) => setWorkflowTriggerState(id, action);
+  const stateOne = (action: TriggerAction) => async (id: string) => {
+    await setWorkflowTriggerState(id, action);
+  };
   const monthlyOf = (rows: ManagedTrigger[]) =>
     rows.reduce((sum, r) => sum + (r.overview.is_active ? r.cost.est_monthly_cost : 0), 0);
   const triggersLabel = (n: number) => `${n} ${n === 1 ? "trigger" : "triggers"}`;
@@ -422,7 +424,7 @@ export function TriggersManager({
     [
       {
         id: "resume-limit", icon: OctagonPause, label: "Resume", tooltip: "Resume (paused by a limit)",
-        appliesTo: (t) => t.cost.guardrail_pause,
+        appliesTo: (t) => !!t.cost.guardrail_pause,
         unavailableTooltip: "Not paused by a limit",
         onClick: (t) => {
           resumeAutomation("workflow_trigger", t.overview.trigger_id)
@@ -440,7 +442,9 @@ export function TriggersManager({
             description: "Each trigger starts firing again and spends at its recent rate.",
             confirmLabel: "Resume",
           }),
-          runOne: (id) => resumeAutomation("workflow_trigger", id),
+          runOne: async (id) => {
+            await resumeAutomation("workflow_trigger", id);
+          },
         },
       },
       {

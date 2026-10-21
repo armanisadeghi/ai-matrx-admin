@@ -38,8 +38,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { TapTargetButtonTransparent } from "@ai-matrx/design-system/tap-target";
-import { PencilTapButton, PlayTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -64,10 +62,8 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { recordToast, toast } from "@/lib/toast";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
-import { runPerRow } from "@/lib/entity-list/standardBulkActions";
 import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
-import type { EntityBulkAction } from "@/lib/entity-list/selection";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
@@ -803,33 +799,6 @@ export default function SystemJobsPage() {
     },
   ];
 
-  const renderDbRowActions = (j: DbJobResponse) => {
-    const isBusy = dbBusy.has(j.jobid);
-    return (
-      <>
-        <TapTargetButtonTransparent
-          ariaLabel={
-            isBusy
-              ? "Updating database job"
-              : j.active
-                ? "Disable database job"
-                : "Enable database job"
-          }
-          disabled={isBusy}
-          onClick={() => void toggleDbActive(j)}
-        >
-          {isBusy ? <Loader2 className="animate-spin" /> : <Power />}
-        </TapTargetButtonTransparent>
-        <PencilTapButton
-          variant="transparent"
-          ariaLabel="Edit database job"
-          disabled={isBusy}
-          onClick={() => setEditingDbJob(j)}
-        />
-      </>
-    );
-  };
-
   // Right-click menu for the pg_cron pane — same rationale as the system-jobs
   // pane above: page-local identity, every item delegates to the row-button
   // handler already defined.
@@ -982,58 +951,53 @@ export default function SystemJobsPage() {
     onRefresh: () => void load(),
     onRemoveRows: () => undefined,
   });
-  const dbJobBulkActions: EntityBulkAction<DbJobResponse>[] = [
-    {
-      id: "enable-db-jobs",
-      label: "Enable",
-      icon: Power,
-      confirm: (sel) => ({
-        title: `Enable ${sel.count} database job${sel.count === 1 ? "" : "s"}?`,
-        description: `This starts real recurring work inside Postgres for ${sel.count} job${sel.count === 1 ? "" : "s"}, each on its own schedule until disabled.`,
-        confirmLabel: "Enable",
-      }),
-      run: (sel) =>
-        runPerRow(
-          sel,
-          async (id) => {
+  const dbJobsLabel = (n: number) => `${n} database job${n === 1 ? "" : "s"}`;
+  const { rowActionDefs: dbRowActionDefs, bulkActions: dbJobBulkActions } = defineRowVerbs<DbJobResponse>(
+    [
+      {
+        id: "enable", icon: Power, label: "Enable database job",
+        appliesTo: (j) => !j.active, unavailableTooltip: "Already enabled",
+        loading: (j) => dbBusy.has(j.jobid), disabled: (j) => dbBusy.has(j.jobid),
+        onClick: (j) => void toggleDbActive(j),
+        bulk: {
+          label: "Enable", done: "Enabled",
+          confirm: (t) => ({
+            title: `Enable ${dbJobsLabel(t.ids.length)}?`,
+            description: `This starts real recurring work inside Postgres for ${dbJobsLabel(t.ids.length)}, each on its own schedule until disabled.`,
+            confirmLabel: "Enable",
+          }),
+          runOne: async (id) => {
             applyDbPatched(await patchDbJob(Number(id), { active: true }));
           },
-          {
-            done: "Enabled",
-            noun: "database job",
-            labelOf: (j) => j.jobname ?? `job ${j.jobid}`,
-            skipReason: (j) => (j.active ? "Already enabled" : null),
-          },
-          (j) => String(j.jobid),
-        ),
-    },
-    {
-      id: "disable-db-jobs",
-      label: "Disable",
-      icon: Power,
-      variant: "destructive",
-      confirm: (sel) => ({
-        title: `Disable ${sel.count} database job${sel.count === 1 ? "" : "s"}?`,
-        description: `This stops real database maintenance. ${sel.count} job${sel.count === 1 ? "" : "s"} — pruning, refreshes, partitions — stop until re-enabled.`,
-        confirmLabel: "Disable",
-        variant: "destructive",
-      }),
-      run: (sel) =>
-        runPerRow(
-          sel,
-          async (id) => {
+        },
+      },
+      {
+        id: "disable", icon: Power, label: "Disable database job", tone: "destructive",
+        appliesTo: (j) => j.active, unavailableTooltip: "Already disabled",
+        loading: (j) => dbBusy.has(j.jobid), disabled: (j) => dbBusy.has(j.jobid),
+        onClick: (j) => void toggleDbActive(j),
+        bulk: {
+          label: "Disable", done: "Disabled",
+          confirm: (t) => ({
+            title: `Disable ${dbJobsLabel(t.ids.length)}?`,
+            description: `This stops real database maintenance. ${dbJobsLabel(t.ids.length)} (pruning, refreshes, partitions) stop until re-enabled.`,
+            confirmLabel: "Disable",
+            variant: "destructive",
+          }),
+          runOne: async (id) => {
             applyDbPatched(await patchDbJob(Number(id), { active: false }));
           },
-          {
-            done: "Disabled",
-            noun: "database job",
-            labelOf: (j) => j.jobname ?? `job ${j.jobid}`,
-            skipReason: (j) => (j.active ? null : "Already disabled"),
-          },
-          (j) => String(j.jobid),
-        ),
-    },
-  ];
+        },
+      },
+      {
+        id: "edit", icon: Pencil, label: "Edit database job",
+        disabled: (j) => dbBusy.has(j.jobid),
+        onClick: (j) => setEditingDbJob(j),
+        bulk: false, noBulk: "edit",
+      },
+    ],
+    { noun: "database job", getRowId: (j) => String(j.jobid), getRowName: (j) => j.jobname ?? `job ${j.jobid}` },
+  );
   const dbJobBulk = useTableBulkSelection<DbJobResponse>({
     noun: "database job",
     rows: dbRows,
@@ -1165,7 +1129,8 @@ export default function SystemJobsPage() {
             urlState={{ id: "scheduling-db-jobs" }}
             selection={dbJobBulk.selection}
             data={dbRows}
-            columns={[...(dbColumns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (r) => renderDbRowActions(r) }]}
+            columns={dbColumns}
+            rowActionDefs={dbRowActionDefs}
             getRowId={(r) => String(r.jobid)}
             isLoading={dbLoading}
             isFetching={dbFetching}
