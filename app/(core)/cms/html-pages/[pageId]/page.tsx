@@ -9,7 +9,7 @@ import React, {
   useState,
 } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
+import { HTMLPageService } from "@ai-matrx/chat/window-panels/windows/html-pages/html-page-service";
 import type { HtmlPageRecord } from "@/features/html-pages/types";
 import HtmlPageEditor from "@/features/html-pages/components/HtmlPageEditor";
 import PageHeader from "@/features/shell/components/header/PageHeader";
@@ -48,7 +48,7 @@ function HtmlPageEditBody() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = (await HTMLPageService.getPage(pageId)) as HtmlPageRecord;
+      const data = (await HTMLPageService.getPage(pageId)) as unknown as HtmlPageRecord;
       setPage(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load page");
@@ -85,7 +85,7 @@ function HtmlPageEditBody() {
       );
       const refreshed = (await HTMLPageService.getPage(
         pageId,
-      )) as HtmlPageRecord;
+      )) as unknown as HtmlPageRecord;
       setPage(refreshed);
     } catch (err) {
       const message =

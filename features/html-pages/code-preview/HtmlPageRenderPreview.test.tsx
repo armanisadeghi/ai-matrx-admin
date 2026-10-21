@@ -11,7 +11,7 @@ let mockDirty = true;
 let mockUrl = 'https://mymatrx.com/p/1';
 jest.mock('@/lib/redux/hooks', () => ({ useAppSelector: () => ({ dirty: mockDirty, name: 'Test page' }) }));
 jest.mock('@/features/code/redux/tabsSlice', () => ({ selectTabById: () => () => null }));
-jest.mock('@/features/html-pages/services/htmlPageService', () => ({ HTMLPageService: { getPage: async () => ({ id: 'p1', url: mockUrl, updated_at: 'now' }) } }));
+jest.mock('@ai-matrx/chat/window-panels/windows/html-pages/html-page-service', () => ({ HTMLPageService: { getPage: async () => ({ id: 'p1', url: mockUrl, updated_at: 'now' }) } }));
 jest.mock('@/components/errors/ErrorAlchemyMenu', () => ({ ErrorAlchemyMenu: () => null }));
 import { HtmlPageRenderPreview } from './HtmlPageRenderPreview';
 const code = '<button onclick="this.textContent=\'Working\'">Run</button>';

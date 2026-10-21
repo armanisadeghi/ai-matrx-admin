@@ -44,7 +44,7 @@ import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useOrganizationLabel } from "@/features/organizations/hooks/useOrganizationLabel";
-import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
+import { HTMLPageService } from "@ai-matrx/chat/window-panels/windows/html-pages/html-page-service";
 import SandboxedHtml from "@ai-matrx/rich-content/display/blocks/common/SandboxedHtml";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
@@ -175,7 +175,8 @@ function HtmlPagePreview({
   useEffect(() => {
     let active = true;
     HTMLPageService.getPage(pageId)
-      .then((page: { html_content?: string | null }) => {
+      .then((row) => {
+        const page = row as { html_content?: string | null };
         if (active) setState({ pageId, html: page?.html_content ?? "", error: null });
       })
       .catch((err: unknown) => {

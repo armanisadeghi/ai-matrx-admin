@@ -22,9 +22,11 @@ describe("one page per canvas version", () => {
 
   it("pages go to the server's /cms/html-pages door — no Next.js proxy", () => {
     expect(existsSync(join(process.cwd(), "app/api/html-pages/route.ts"))).toBe(false);
-    const src = read("features/html-pages/services/htmlPageService.js");
+    // The service is the chat package's (one home for the web and Matrx 2).
+    const src = readFileSync(require.resolve("@ai-matrx/chat/window-panels/windows/html-pages/html-page-service"), "utf8");
+    expect(existsSync(join(root, "features/html-pages/services/htmlPageService.js"))).toBe(false);
     expect(src).not.toMatch(/\/api\/html-pages/);
-    expect(src).toMatch(/path: '\/cms\/html-pages'/);
+    expect(src).toMatch(/path: "\/cms\/html-pages"/);
   });
 
   it("a chat page version publishes through the server's one writer", () => {

@@ -53,7 +53,7 @@ jest.mock("@/lib/redux/selectors/userSelectors", () => ({ selectUser: () => null
 jest.mock("@/features/canvas/hooks/useCanvas", () => ({
   useCanvas: () => ({ open: jest.fn() }),
 }));
-jest.mock("@/features/html-pages/services/htmlPageService", () => ({
+jest.mock("@ai-matrx/chat/window-panels/windows/html-pages/html-page-service", () => ({
   HTMLPageService: {
     createPage: jest.fn(async () => ({ url: "https://mymatrx.com/p/page-1" })),
   },

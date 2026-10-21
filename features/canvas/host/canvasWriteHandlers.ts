@@ -305,12 +305,12 @@ export function newestOwnVersion<T extends CanvasArtifactVersion>(chain: T[], ca
 /** The real save paths: the html page API route and the canvas version RPC. */
 export const canvasRecordServices: CanvasRecordServices = {
   async readHtmlPage(pageId) {
-    const { HTMLPageService } = await import("@/features/html-pages/services/htmlPageService");
+    const { HTMLPageService } = await import("@ai-matrx/chat/window-panels/windows/html-pages/html-page-service");
     const page = (await HTMLPageService.getPage(pageId)) as { html_content?: unknown };
     return typeof page?.html_content === "string" ? page.html_content : "";
   },
   async saveHtmlPage(pageId, html) {
-    const { HTMLPageService } = await import("@/features/html-pages/services/htmlPageService");
+    const { HTMLPageService } = await import("@ai-matrx/chat/window-panels/windows/html-pages/html-page-service");
     await HTMLPageService.updatePage(pageId, html, undefined, undefined, undefined);
   },
   async readCanvasItem(canvasId) {

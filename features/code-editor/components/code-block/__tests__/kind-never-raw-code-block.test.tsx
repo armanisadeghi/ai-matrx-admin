@@ -25,7 +25,7 @@ jest.mock("@/features/overlays/definitions/smartCodeEditorWindow.overlay", () =>
 jest.mock("@ai-matrx/rich-content/code-block/SmallCodeEditor", () => ({ __esModule: true, default: () => null }));
 jest.mock("@ai-matrx/rich-content/code-block/CodeBlockHeader", () => ({ __esModule: true, default: () => null }));
 jest.mock("@ai-matrx/rich-content/code-block/StickyButtons", () => ({ __esModule: true, default: () => null }));
-jest.mock("@/features/html-pages/services/htmlPageService", () => ({ HTMLPageService: {} }));
+jest.mock("@ai-matrx/chat/window-panels/windows/html-pages/html-page-service", () => ({ HTMLPageService: {} }));
 // jsdom has no IntersectionObserver; CodeBlock's sticky buttons observe its
 // edges. An inert, fully typed stand-in (never reports an intersection).
 class InertIntersectionObserver implements IntersectionObserver {

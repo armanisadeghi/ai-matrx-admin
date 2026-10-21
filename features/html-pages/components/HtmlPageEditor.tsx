@@ -37,7 +37,7 @@ import {
   getHtmlPagesNavOrder,
   setHtmlPagesNavOrder,
 } from "@/features/html-pages/utils/nav-order";
-import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
+import { HTMLPageService } from "@ai-matrx/chat/window-panels/windows/html-pages/html-page-service";
 import { useHtmlPagesManager } from "@/features/html-pages/hooks/useHtmlPagesManager";
 import { useHtmlPageSurfaceScope } from "@/features/html-pages/hooks/useHtmlPageSurfaceScope";
 import { HTML_PAGE_CONTEXT_MENU_PROPS } from "@/features/html-pages/agent-context/htmlPageContextMenuProps";

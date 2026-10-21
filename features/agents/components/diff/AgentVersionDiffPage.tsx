@@ -80,6 +80,8 @@ export function AgentVersionDiffPage({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [versions, setVersions] = useState<AgentVersionHistoryItem[]>([]);
+  // Bumped after a restore so the history re-reads and shows the version the restore saved.
+  const [historyRead, setHistoryRead] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   /**
@@ -181,7 +183,7 @@ export function AgentVersionDiffPage({
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agentId]);
+  }, [agentId, historyRead]);
 
   // Fetch left snapshot when selected
   useEffect(() => {
@@ -228,8 +230,14 @@ export function AgentVersionDiffPage({
         promoteAgentVersion({ agentId, version: leftVersion }),
       ).unwrap();
       if (result.success) {
-        // agx_promote_version saves no new version: say so, never let a person wait for a new row.
-        toast.success(promoteSuccessMessage(leftVersion));
+        // agx_promote_version saves the restore as a new version and names it; the history re-reads.
+        toast.success(
+          promoteSuccessMessage(leftVersion, {
+            newVersion: result.new_version ?? null,
+            unchanged: result.unchanged === true,
+          }),
+        );
+        setHistoryRead((n) => n + 1);
       } else {
         toast.error(result.error ?? "Failed to promote version");
       }
@@ -775,7 +783,7 @@ export function AgentVersionDiffPage({
           <AlertDialogHeader>
             <AlertDialogTitle>Promote Version</AlertDialogTitle>
             <AlertDialogDescription>
-              {promoteConfirmMessage(leftVersion)}
+              {leftVersion != null ? promoteConfirmMessage(leftVersion) : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

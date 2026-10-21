@@ -1,8 +1,8 @@
 /**
  * Guard: the Promote confirm and the toast after it say the same true thing about the history.
- * `agx_promote_version` saves NO new version, but the dialog once promised the current configuration
- * "will be saved as a new version" while the toast said none was. Both sentences now come from
- * `@ai-matrx/agents/versions` (one shared constant); this fails if the dialog goes back to its own words.
+ * `agx_promote_version` saves the restore as a NEW version (aidream migration 20261021233500) and
+ * answers its number as `new_version` (`unchanged: true` when nothing needed saving). Both sentences
+ * come from `@ai-matrx/agents/versions`; the toast names the saved version from the door's answer.
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -11,14 +11,15 @@ import { promoteConfirmMessage, promoteSuccessMessage } from "@ai-matrx/agents/v
 const SRC = readFileSync(join(__dirname, "..", "AgentVersionDiffPage.tsx"), "utf8");
 
 describe("Promote confirm vs result", () => {
-  it("the dialog builds its sentence from the shared helper, not its own prose", () => {
+  it("the dialog and the toast build their sentences from the shared helpers and the door's answer", () => {
     expect(SRC).toContain("promoteConfirmMessage(");
-    expect(SRC).toContain("promoteSuccessMessage(");
-    expect(SRC).not.toMatch(/will be saved as a\s+new version/i);
+    expect(SRC).toMatch(/promoteSuccessMessage\(leftVersion, \{\s*newVersion: result\.new_version/);
+    expect(SRC).toMatch(/unchanged: result\.unchanged/);
   });
 
-  it("the confirm and the result agree that no new version is saved", () => {
-    expect(promoteConfirmMessage(1)).toMatch(/no new version is saved/);
-    expect(promoteSuccessMessage(1)).toMatch(/no new version was saved/);
+  it("the confirm and the result agree that a restore saves a new version, and the result says which", () => {
+    expect(promoteConfirmMessage(1)).toMatch(/saved as a new version/);
+    expect(promoteSuccessMessage(1, { newVersion: 3 })).toBe("Restored v1 as a new version (v3)");
+    expect(promoteSuccessMessage(1, { newVersion: 2, unchanged: true })).toBe("Already matches v1 — nothing to save");
   });
 });

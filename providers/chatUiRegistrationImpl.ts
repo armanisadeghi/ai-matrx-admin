@@ -32,7 +32,6 @@ import type { CustomDataBindingPreview as CustomDataBindingPreviewType } from "@
 import { Cost } from "@/components/cost/Cost";
 import type { CanvasItemCard as CanvasItemCardType } from "@/features/canvas/components/CanvasItemCard";
 import type { NoteEditorCore as NoteEditorCoreType } from "@/features/notes/components/NoteEditorCore";
-import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
 import { loadCodeEditHistoryThunk } from "@/features/code/redux/codeEditHistoryHydration";
 import { reconcileMessagesArtifacts } from "@/features/canvas/materialization/reconcileArtifacts";
 import { adoptCloudBrowserRunFromStream } from "@/features/cloud-browser/redux/adoptRunFromStream";
@@ -106,7 +105,6 @@ export const fullSlotImpls = {
 // The deferred functions: thunks and services the package runs after first paint (a tool call, a
 // conversation load's follow-ups, a share). chatUiRegistration.ts binds each to this module.
 export const fullFnImpls = {
-  HTMLPageService,
   loadCodeEditHistoryThunk,
   reconcileMessagesArtifacts,
   adoptCloudBrowserRunFromStream,
