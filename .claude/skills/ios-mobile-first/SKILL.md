@@ -38,6 +38,7 @@ description: "iOS-native mobile web UX rules. Use when building any UI component
    chat dock float over it; when one would cover something, it moves itself (lifts, rests above
    the bar, yields). No page pads, shrinks or re-centres for one. Only the empty scroll room after a
    page's last line may grow. Guard: `pnpm check:overlays-never-move-page` (matrx-frontend).
+19. **Every feature has the same pages** (front door, `/all`, `/new`, record, sub-feature) and **derived breadcrumbs**: [feature pages](/policies/feature-pages.md).
 <!-- rules:stamp-end -->
 
 > **Official guide:** `~/.arman/rules/nextjs-best-practices/nextjs-guide.md` — See the official guide for core architecture. The old §13 (Mobile-First) was removed; mobile-first patterns in this file will move to a dedicated *Mobile & Responsive UX* guide.

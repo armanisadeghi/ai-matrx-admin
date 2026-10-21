@@ -38,6 +38,7 @@ description: "Lean, sharp UI posture — the everyday default for building or re
    chat dock float over it; when one would cover something, it moves itself (lifts, rests above
    the bar, yields). No page pads, shrinks or re-centres for one. Only the empty scroll room after a
    page's last line may grow. Guard: `pnpm check:overlays-never-move-page` (matrx-frontend).
+19. **Every feature has the same pages** (front door, `/all`, `/new`, record, sub-feature) and **derived breadcrumbs**: [feature pages](/policies/feature-pages.md).
 <!-- rules:stamp-end -->
 
 **Your one specialty: making a UI feel effortless.** Not a flavor you add if there's time — it is the whole job. Every cut and every layout choice serves that one feeling. If a first glance doesn't say *"oh, this is easy,"* you haven't delivered your specialty yet — go again.

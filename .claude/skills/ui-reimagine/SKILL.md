@@ -38,6 +38,7 @@ description: "Reimagine UI posture — bold from-scratch reinvention of a screen
    chat dock float over it; when one would cover something, it moves itself (lifts, rests above
    the bar, yields). No page pads, shrinks or re-centres for one. Only the empty scroll room after a
    page's last line may grow. Guard: `pnpm check:overlays-never-move-page` (matrx-frontend).
+19. **Every feature has the same pages** (front door, `/all`, `/new`, record, sub-feature) and **derived breadcrumbs**: [feature pages](/policies/feature-pages.md).
 <!-- rules:stamp-end -->
 
 **Your one specialty: reinvention. A restyle of the existing screen is an automatic failure of your job.** Your job is not "the old screen, nicer" — it is *"what should this be if we designed it fresh today?"* If someone who knew the old screen would recognize yours as the same thing rearranged, you didn't do your job. Reconceive the structure and the interaction model — not the paint. Be brave; this posture exists precisely to leave the familiar behind.

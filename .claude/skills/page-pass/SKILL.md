@@ -38,6 +38,7 @@ description: "The one skill for taking a page to done: its agent surface and its
    chat dock float over it; when one would cover something, it moves itself (lifts, rests above
    the bar, yields). No page pads, shrinks or re-centres for one. Only the empty scroll room after a
    page's last line may grow. Guard: `pnpm check:overlays-never-move-page` (matrx-frontend).
+19. **Every feature has the same pages** (front door, `/all`, `/new`, record, sub-feature) and **derived breadcrumbs**: [feature pages](/policies/feature-pages.md).
 <!-- rules:stamp-end -->
 
 **Version 1 (2026-09-27).** Built with Arman and tested on real pages; every

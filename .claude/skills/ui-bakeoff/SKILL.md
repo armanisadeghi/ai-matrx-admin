@@ -38,6 +38,7 @@ description: "Orchestrator that runs one UI brief through all four ui-* posture 
    chat dock float over it; when one would cover something, it moves itself (lifts, rests above
    the bar, yields). No page pads, shrinks or re-centres for one. Only the empty scroll room after a
    page's last line may grow. Guard: `pnpm check:overlays-never-move-page` (matrx-frontend).
+19. **Every feature has the same pages** (front door, `/all`, `/new`, record, sub-feature) and **derived breadcrumbs**: [feature pages](/policies/feature-pages.md).
 <!-- rules:stamp-end -->
 
 Running the same brief through four different design postures in parallel, then choosing the best and merging the rest, is the most reliable way to get a great UI here. This skill orchestrates that. You (the agent that triggered this skill) are the conductor — you interview, you spawn, you present, you merge. You do **not** design anything yourself.

@@ -38,6 +38,7 @@ description: "Overlay system on @ai-matrx/summon: dialogs, sheets and windows de
    chat dock float over it; when one would cover something, it moves itself (lifts, rests above
    the bar, yields). No page pads, shrinks or re-centres for one. Only the empty scroll room after a
    page's last line may grow. Guard: `pnpm check:overlays-never-move-page` (matrx-frontend).
+19. **Every feature has the same pages** (front door, `/all`, `/new`, record, sub-feature) and **derived breadcrumbs**: [feature pages](/policies/feature-pages.md).
 <!-- rules:stamp-end -->
 
 The engine is the npm package `@ai-matrx/summon` (source: `../aidream/apps/shared/summon`, guides: its `README.md` and `FEATURE.md`). This repo owns only the **app's overlays** (`features/overlays/definitions/`) and the **host wiring** (`features/overlays/host/`). Deep reference: [`features/overlays/FEATURE.md`](../../../features/overlays/FEATURE.md).

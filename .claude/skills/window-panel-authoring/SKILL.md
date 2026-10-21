@@ -38,6 +38,7 @@ description: "Recipe for creating or changing a floating window. Use when adding
    chat dock float over it; when one would cover something, it moves itself (lifts, rests above
    the bar, yields). No page pads, shrinks or re-centres for one. Only the empty scroll room after a
    page's last line may grow. Guard: `pnpm check:overlays-never-move-page` (matrx-frontend).
+19. **Every feature has the same pages** (front door, `/all`, `/new`, record, sub-feature) and **derived breadcrumbs**: [feature pages](/policies/feature-pages.md).
 <!-- rules:stamp-end -->
 
 A window is an overlay whose render module returns a `WindowPanel`. The engine (`WindowPanel`, window manager, persistence, links) is the package `@ai-matrx/summon`; **a defect in that engine is fixed in `../aidream/apps/shared/summon` in the same session**, never worked around in the window. Slots, drag, tray and phone presentation: `window-panels` skill. Definition, render module, registry and opener rules: `overlay-system` skill (read it first, the file list below assumes it).

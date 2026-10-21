@@ -38,6 +38,7 @@ description: "Continuous localhost UI iteration loop with Arman, through full su
    chat dock float over it; when one would cover something, it moves itself (lifts, rests above
    the bar, yields). No page pads, shrinks or re-centres for one. Only the empty scroll room after a
    page's last line may grow. Guard: `pnpm check:overlays-never-move-page` (matrx-frontend).
+19. **Every feature has the same pages** (front door, `/all`, `/new`, record, sub-feature) and **derived breadcrumbs**: [feature pages](/policies/feature-pages.md).
 <!-- rules:stamp-end -->
 
 Own the focused surface continuously: **requested changes first, then full surface completion, then certification.** Arman may inspect localhost while you work; that is visibility, not a pause or a request for an early handoff.

@@ -38,6 +38,7 @@ description: "The universal v3 right-click menu (EditableContextMenu / NonEditab
    chat dock float over it; when one would cover something, it moves itself (lifts, rests above
    the bar, yields). No page pads, shrinks or re-centres for one. Only the empty scroll room after a
    page's last line may grow. Guard: `pnpm check:overlays-never-move-page` (matrx-frontend).
+19. **Every feature has the same pages** (front door, `/all`, `/new`, record, sub-feature) and **derived breadcrumbs**: [feature pages](/policies/feature-pages.md).
 <!-- rules:stamp-end -->
 
 The deep contract is **[`features/context-menu-host/FEATURE.md`](../../../features/context-menu-host/FEATURE.md)** — read it once. This skill is the rollout recipe; editing the v3 internals is that FEATURE.md's job, and a worker assigned a shard from `pnpm check:context-menu` follows the `context-menu-rollout` skill on top of this one. The proven reference is **`/demos/context-menu/canonical`** (every panel is a real v3 wiring; copy the one that matches your surface). The v2 menu (`UnifiedAgentContextMenu`) was deleted 2026-07-19 — every surface renders v3.

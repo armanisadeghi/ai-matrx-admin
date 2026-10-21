@@ -38,6 +38,7 @@ description: "(core) route header and body-height conformance via PageHeader. Us
    chat dock float over it; when one would cover something, it moves itself (lifts, rests above
    the bar, yields). No page pads, shrinks or re-centres for one. Only the empty scroll room after a
    page's last line may grow. Guard: `pnpm check:overlays-never-move-page` (matrx-frontend).
+19. **Every feature has the same pages** (front door, `/all`, `/new`, record, sub-feature) and **derived breadcrumbs**: [feature pages](/policies/feature-pages.md).
 <!-- rules:stamp-end -->
 
 **Read `features/shell/components/header/variants/USAGE.md` first** — it is the canonical spec for the injection zone, variants, and body-height table. This skill is the *fix workflow*: how to classify a broken route, which exemplar to copy, and how to verify in the browser on desktop AND mobile.

@@ -38,6 +38,7 @@ description: "Dense UI posture — maximum information density with clear hierar
    chat dock float over it; when one would cover something, it moves itself (lifts, rests above
    the bar, yields). No page pads, shrinks or re-centres for one. Only the empty scroll room after a
    page's last line may grow. Guard: `pnpm check:overlays-never-move-page` (matrx-frontend).
+19. **Every feature has the same pages** (front door, `/all`, `/new`, record, sub-feature) and **derived breadcrumbs**: [feature pages](/policies/feature-pages.md).
 <!-- rules:stamp-end -->
 
 **Density is your identity — not a nice-to-have you reach for if there's spare time.** Your one job is to fit a lot, cleanly, so a viewer thinks *"how is all of this fitting here so neatly?"* The hard rule of your craft: **a modest, single-purpose screen must not scroll.** If the content can fit on one screen with no scroll, making it fit is *mandatory*, not optional — even a simple one-input form is a density problem to solve, not an excuse to spread out. Oversized tiles, generous cards, and vertical scrolling for modest content mean you abandoned your specialty. When in doubt: tighter.
