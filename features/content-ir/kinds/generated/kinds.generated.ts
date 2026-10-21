@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1638 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1641 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "1f2705e83d76";
+export const KIND_REGISTRY_FINGERPRINT = "5f8e6c9c700b";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -1776,6 +1776,23 @@ export interface BrandClaimGroup {
 }
 
 /**
+ * One verbatim quote the entity-kind reason rests on, named by its input slot.
+ *  *
+ *  * From kind `brand_entity_kind_decision`.
+ */
+export interface BrandEntityKindEvidence {
+  input: "known_facts" | "what_was_typed" | "site_identity" | "profiles" | "rules_read" | "started_as";
+  /**
+   * An exact substring of that input.
+   */
+  quote: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
  * * From kind `brand_intake_facts`.
  */
 export interface BrandFact {
@@ -1845,6 +1862,27 @@ export interface BrandFinding {
 }
 
 /**
+ * Question 2 of the is-this-us decision: how the account relates to the brand, asked only when is_this_us is no
+ * (the relationship list has no 'same brand' option by design).
+ *  *
+ *  * From kind `brand_identity_match_decision`.
+ */
+export interface BrandIdentityRelationAnswer {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * One key of web.brand_relation_kind, or none_of_these (unrelated), needs_person (a tie the evidence cannot name) or unanswerable (exactly when is_this_us is not no).
+   */
+  answer: "founder" | "key_person" | "parent_company" | "sister_company" | "subsidiary" | "location" | "sub_brand" | "former_account" | "unofficial" | "partner" | "competitor" | "none_of_these" | "needs_person" | "unanswerable";
+  /**
+   * Confidence in the answer, 0-1; null exactly when answer is unanswerable.
+   */
+  probability: number | null;
+}
+
+/**
  * * From kind `brand_image_fingerprint_list`.
  */
 export interface BrandImageFingerprint {
@@ -1884,6 +1922,23 @@ export interface BrandImageRow {
   __kind?: string;
   source?: string | null;
   file_id?: string | null;
+}
+
+/**
+ * Question 1 of the is-this-us decision: is this account the brand's own main official account.
+ *  *
+ *  * From kind `brand_identity_match_decision`.
+ */
+export interface BrandIsThisUsAnswer {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  answer: "yes" | "no" | "unanswerable";
+  /**
+   * Confidence in the answer, 0-1; null exactly when answer is unanswerable.
+   */
+  probability: number | null;
 }
 
 /**
@@ -2534,6 +2589,50 @@ export interface CleanFact {
   field_key: string;
   confidence?: string;
   value_display: string;
+}
+
+/**
+ * One line of the new script, for one reference beat (same index, same role, in order).
+ *  *
+ *  * From kind `clone_script_rewrite`.
+ */
+export interface CloneScriptBeat {
+  /**
+   * The new words spoken in this beat
+   */
+  line: string;
+  /**
+   * The reference beat's role: hook, setup, turn, proof, cta, ...
+   */
+  role: string;
+  /**
+   * The reference beat's index (0 = the first beat)
+   */
+  index: number;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
+ * A reference on-screen text overlay rewritten for the new subject, by the offered overlay index.
+ *  *
+ *  * From kind `clone_script_rewrite`.
+ */
+export interface CloneScriptOverlay {
+  /**
+   * The new overlay text (similar length, product facts only)
+   */
+  text: string;
+  /**
+   * The offered overlay's index
+   */
+  index: number;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
 }
 
 /**
@@ -12486,7 +12585,7 @@ export interface AgentBuildResult {
 /**
  * Everything one agent build knows, carried step to step.
  *  *
- *  * Kind `agent_build_state` (registry v1).
+ *  * Kind `agent_build_state` (registry v2).
  */
 export interface AgentBuildState {
   op?: "create" | "new_version" | "fork";
@@ -12521,6 +12620,10 @@ export interface AgentBuildState {
   stop_reason?: string;
   instructions?: JsonValue;
   request_text?: string;
+  /**
+   * The new answer format the contract proposed, once filed (R43): slug, feedback_id, status.
+   */
+  kind_proposal?: JsonValue;
   held_out_cases?: JsonValue[];
   kind_shortlist?: string[];
   saved_agent_id?: string | null;
@@ -17368,6 +17471,32 @@ export interface BrandEarlyFacts {
 }
 
 /**
+ * Person, business or person with a business (mandate ``brand_intake.entity_kind_decision``), with a probability
+ * and hover-only grounding. The tab the person picked stays the answer; this only proposes a label.
+ *  *
+ *  * Kind `brand_entity_kind_decision` (registry v1).
+ */
+export interface BrandEntityKindDecision {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "brand_entity_kind_decision";
+  /**
+   * One line: the deciding discriminator (grounding; hover only).
+   */
+  reason: string;
+  /**
+   * The quotes the reason rests on.
+   */
+  evidence: BrandEntityKindEvidence[];
+  entity_kind: "business" | "person" | "person_with_business" | "unanswerable";
+  /**
+   * Confidence in the entity_kind given, 0-1 (never null).
+   */
+  probability: number;
+}
+
+/**
  * Kind `brand_evidence` (registry v4).
  */
 export interface BrandEvidence {
@@ -17512,6 +17641,22 @@ export interface BrandIdentifyWebResults {
    * The registered kind this payload is an instance of.
    */
   __kind?: "brand_identify_web_results";
+}
+
+/**
+ * The is-this-us decision on ONE found account (mandate ``brand_intake.identity_match_decision``): yes/no with a
+ * probability, and the relation only when it is not us. ``identity_match_fanout.mark`` turns it into a we-think
+ * glow; it never selects for the person.
+ *  *
+ *  * Kind `brand_identity_match_decision` (registry v1).
+ */
+export interface BrandIdentityMatchDecision {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "brand_identity_match_decision";
+  relation: BrandIdentityRelationAnswer;
+  is_this_us: BrandIsThisUsAnswer;
 }
 
 /**
@@ -21586,6 +21731,45 @@ export interface ClientSiteAudit {
   site_name?: string;
   audited_on: string;
   overall_score: number;
+}
+
+/**
+ * A reference video's spoken script rewritten for a new product (mandate ``social.clone_script_rewrite``):
+ * the whole script, the same script split one line per reference beat, the hook and call-to-action lines, the
+ * language, and the reference's on-screen text overlays rewritten for the new subject (an overlay with nothing
+ * true to say is left out; ``[]`` when none). Consumed by ``video_director.service.rewrite_script_full``.
+ *  *
+ *  * Kind `clone_script_rewrite` (registry v1).
+ */
+export interface CloneScriptRewrite {
+  /**
+   * Exactly one line per reference beat, in order
+   */
+  beats: CloneScriptBeat[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "clone_script_rewrite";
+  /**
+   * The whole new script, one text
+   */
+  script: string;
+  /**
+   * The call to action, inside the CTA beat
+   */
+  cta_line: string;
+  /**
+   * BCP-47 language of the script
+   */
+  language: string;
+  /**
+   * Rewritten on-screen overlays by offered index; [] when none
+   */
+  overlays: CloneScriptOverlay[];
+  /**
+   * The opening line: the first beat's first sentence (at most 120 characters)
+   */
+  hook_line: string;
 }
 
 /**
@@ -64288,6 +64472,7 @@ export type GeneratedKindSlug =
   | "brand_confirmed_facts"
   | "brand_early_fact"
   | "brand_early_facts"
+  | "brand_entity_kind_decision"
   | "brand_evidence"
   | "brand_evidence_findings"
   | "brand_evidence_item"
@@ -64295,6 +64480,7 @@ export type GeneratedKindSlug =
   | "brand_fact_rows"
   | "brand_identify_findings"
   | "brand_identify_web_results"
+  | "brand_identity_match_decision"
   | "brand_image_fingerprint_list"
   | "brand_image_group_list"
   | "brand_image_list"
@@ -64352,6 +64538,7 @@ export type GeneratedKindSlug =
   | "citation"
   | "claim_evidence"
   | "client_site_audit"
+  | "clone_script_rewrite"
   | "cms_align_item"
   | "cms_align_result"
   | "cms_asset_result"
@@ -65929,6 +66116,7 @@ export interface KindPayloadBySlug {
   "brand_confirmed_facts": BrandConfirmedFacts;
   "brand_early_fact": BrandEarlyFact;
   "brand_early_facts": BrandEarlyFacts;
+  "brand_entity_kind_decision": BrandEntityKindDecision;
   "brand_evidence": BrandEvidence;
   "brand_evidence_findings": BrandEvidenceFindings;
   "brand_evidence_item": BrandEvidenceItem;
@@ -65936,6 +66124,7 @@ export interface KindPayloadBySlug {
   "brand_fact_rows": BrandFactRows;
   "brand_identify_findings": BrandIdentifyFindings;
   "brand_identify_web_results": BrandIdentifyWebResults;
+  "brand_identity_match_decision": BrandIdentityMatchDecision;
   "brand_image_fingerprint_list": BrandImageFingerprintList;
   "brand_image_group_list": BrandImageGroupList;
   "brand_image_list": BrandImageList;
@@ -65993,6 +66182,7 @@ export interface KindPayloadBySlug {
   "citation": Citation;
   "claim_evidence": ClaimEvidence;
   "client_site_audit": ClientSiteAudit;
+  "clone_script_rewrite": CloneScriptRewrite;
   "cms_align_item": CmsAlignItem;
   "cms_align_result": CmsAlignResult;
   "cms_asset_result": CmsAssetResult;
@@ -67574,6 +67764,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "brand_confirmed_facts",
   "brand_early_fact",
   "brand_early_facts",
+  "brand_entity_kind_decision",
   "brand_evidence",
   "brand_evidence_findings",
   "brand_evidence_item",
@@ -67581,6 +67772,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "brand_fact_rows",
   "brand_identify_findings",
   "brand_identify_web_results",
+  "brand_identity_match_decision",
   "brand_image_fingerprint_list",
   "brand_image_group_list",
   "brand_image_list",
@@ -67638,6 +67830,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "citation",
   "claim_evidence",
   "client_site_audit",
+  "clone_script_rewrite",
   "cms_align_item",
   "cms_align_result",
   "cms_asset_result",
