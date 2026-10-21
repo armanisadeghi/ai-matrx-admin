@@ -9,7 +9,13 @@
 
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import { Copy, Info } from "lucide-react";
+import { Copy, Info, Tag } from "lucide-react";
+import {
+  TREE_ROW_TEXT,
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import type { Json } from "@/types/database.types";
 import type { StoredFieldElement } from "@ai-matrx/content-ir";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
@@ -17,6 +23,10 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 
 interface FieldRow {
   name: string;
+  /** The field's own key (no parent prefix) — what the indented row shows. */
+  label: string;
+  /** An inline object: its fields follow at depth + 1. */
+  container: boolean;
   depth: number;
   type: string;
   required: boolean;
@@ -31,11 +41,17 @@ const FIELD_COLUMNS: MatrxColumnDef<FieldRow>[] = [
     width: 265,
     cell: (row) => (
       <span
-        className="block truncate font-mono text-xs"
-        style={{ paddingLeft: `${row.depth * 16}px` }}
+        className={`flex min-w-0 items-center gap-1 font-mono ${TREE_ROW_TEXT}`}
+        style={treeIndentStyle(row.depth)}
         title={row.name}
       >
-        {row.name}
+        <TreeDisclosure expandable={false} />
+        {row.container ? (
+          <TreeFolderIcon open />
+        ) : (
+          <Tag aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
+        )}
+        <span className="truncate">{row.label}</span>
       </span>
     ),
   },
@@ -108,6 +124,8 @@ function flattenStoredFields(
   for (const el of elements) {
     rows.push({
       name: `${prefix}${el.name}`,
+      label: el.name,
+      container: el.type === "inline_object",
       depth,
       type: typeSummary(el, schema),
       required: el.required ?? false,

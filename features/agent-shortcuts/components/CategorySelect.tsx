@@ -34,7 +34,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  DynamicIcon,
+  TREE_INDENT_PX,
+  TreeFolderIcon,
+} from "@/components/official/topic-tree/geometry";
+import {
   getIconComponent,
 } from "@ai-matrx/icons";
 import {
@@ -258,13 +261,7 @@ export function CategorySelect({
             </span>
           ) : selectedCategory ? (
             <div className="flex items-center gap-1.5 min-w-0">
-              <DynamicIcon
-                name={selectedCategory.iconName}
-                color={selectedCategory.color || "zinc"}
-                size={compact ? 3 : 4}
-                fallbackIcon="SquareMenu"
-                className="shrink-0"
-              />
+              <TreeFolderIcon />
               {showPlacementHeaders && selectedPlacementMeta && (
                 <Badge
                   variant="secondary"
@@ -354,9 +351,8 @@ function CategorySelectItem({
   hasChildren: boolean;
   compact?: boolean;
 }) {
-  // 12px per level keeps deep trees readable inside the popover without
-  // overflowing the trigger width.
-  const indent = depth * 12;
+  // Same step as every tree (TREE_INDENT_PX); the item height is the menu's own.
+  const indent = depth * TREE_INDENT_PX;
 
   return (
     <SelectItem value={category.id} className="pl-2">
@@ -365,21 +361,7 @@ function CategorySelectItem({
           className="inline-flex items-center shrink-0"
           style={{ paddingLeft: indent }}
         >
-          {depth > 0 ? (
-            <span
-              className="text-muted-foreground/60 mr-1 select-none"
-              aria-hidden
-            >
-              └
-            </span>
-          ) : null}
-          <DynamicIcon
-            name={category.iconName}
-            color={category.color || "zinc"}
-            size={compact ? 3 : 3.5}
-            fallbackIcon="SquareMenu"
-            className="shrink-0"
-          />
+          <TreeFolderIcon open={hasChildren} />
         </span>
         <span
           className={cn(
@@ -391,7 +373,7 @@ function CategorySelectItem({
           {category.label}
         </span>
         {!category.isActive && (
-          <Badge variant="outline" className="text-[10px] h-4 ml-1 shrink-0">
+          <Badge variant="outline" className="text-xs h-5 ml-1 shrink-0">
             inactive
           </Badge>
         )}
