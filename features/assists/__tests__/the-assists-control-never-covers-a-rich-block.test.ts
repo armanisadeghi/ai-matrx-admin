@@ -69,4 +69,64 @@ describe("the assists control never covers a rich block", () => {
     expect(lift === 0 && !slot).toBe(false);
     expect(yielded).toBe(false);
   });
+
+  it("with the header full, rests in the note's status bar, never faded over a block (review 6 H8)", () => {
+    const DOCK: Box = { top: 836, bottom: 866, left: 1273, right: 1427 };
+    const dock = el("div", DOCK);
+    dock.setAttribute("data-assists-dock", "");
+    // The header's right cluster runs the whole width: no room beside it.
+    const header = el("header", { top: 0, bottom: 48, left: 0, right: W });
+    const cluster = el("div", { top: 4, bottom: 44, left: 8, right: W }, header);
+    cluster.setAttribute("data-header-right-set", "");
+    // Split: blocks fill both panes down to the status bar.
+    const pane: Box = { top: 48, bottom: H - 28, left: 0, right: W };
+    const blocks: HTMLElement[] = [];
+    for (let top = 48; top < H - 28; top += 140) {
+      const menu = el("div", { top, bottom: Math.min(top + 140, H - 28), left: 0, right: W });
+      menu.setAttribute("data-block-menu", "");
+      blocks.push(el("div", { top, bottom: Math.min(top + 140, H - 28), left: 0, right: W }, menu));
+    }
+    // The note's own bottom bar: a Home button and two tags at the left, empty to the right.
+    const foot = el("div", { top: H - 28, bottom: H, left: 0, right: W });
+    foot.setAttribute("data-matrx-page-foot", "");
+    const home = el("button", { top: H - 24, bottom: H - 4, left: 8, right: 120 }, foot);
+    home.textContent = "General";
+    const tag = el("span", { top: H - 24, bottom: H - 4, left: 130, right: 190 }, foot);
+    tag.textContent = "notes";
+    (document as unknown as { elementsFromPoint: (x: number, y: number) => Element[] }).elementsFromPoint = (x, y) => {
+      if (inside(x, y, pane)) return [blocks[Math.min(blocks.length - 1, Math.floor((y - 48) / 140))]!];
+      if (y >= H - 28) {
+        if (inside(x, y, { top: H - 24, bottom: H - 4, left: 8, right: 120 })) return [home, foot];
+        if (inside(x, y, { top: H - 24, bottom: H - 4, left: 130, right: 190 })) return [tag, foot];
+        return [foot];
+      }
+      return [y < 48 ? cluster : document.body];
+    };
+
+    expect(applyAssistDockLift()).toBe("slot");
+    expect(dock.hasAttribute("data-assist-dock-yield")).toBe(false);
+    expect(document.documentElement.getAttribute("data-assist-dock-slot")).toBe("footer");
+    // Placed in the bar's band, right of its content, over no block.
+    const right = W - Number.parseFloat(dockPlacementVar("--assist-dock-slot-right"));
+    const bottom = H - Number.parseFloat(dockPlacementVar("--assist-dock-slot-bottom"));
+    const placed: Box = { top: bottom - 30, bottom, left: right - 154, right };
+    expect(placed.left).toBeGreaterThan(190);
+    expect(placed.top).toBeGreaterThanOrEqual(H - 28 - 2);
+  });
+
+  it("a note's status bar inside a window is never the page's slot", () => {
+    const foot = el("div", { top: 500, bottom: 528, left: 400, right: 900 });
+    const win = document.createElement("div");
+    win.setAttribute("data-window-panel", "");
+    document.body.appendChild(win);
+    win.appendChild(foot);
+    foot.setAttribute("data-matrx-page-foot", "");
+    const dock = el("div", { top: 836, bottom: 866, left: 1273, right: 1427 });
+    dock.setAttribute("data-assists-dock", "");
+    const block = el("div", { top: 0, bottom: H, left: 0, right: W });
+    block.setAttribute("data-block-menu", "");
+    const inner = el("div", { top: 0, bottom: H, left: 0, right: W }, block);
+    (document as unknown as { elementsFromPoint: (x: number, y: number) => Element[] }).elementsFromPoint = () => [inner];
+    expect(applyAssistDockLift()).not.toBe("slot");
+  });
 });
