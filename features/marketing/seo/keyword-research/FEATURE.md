@@ -284,7 +284,7 @@ and the same block renders read-only in chat.
 
 - 2026-08-30 — **The deep link is no longer route-coupled.** The 2026-08-27
   route-scoped `UrlPanelManager` was pinned to `/marketing/keyword-research`,
-  which became a `permanentRedirect` to the client roster on 2026-08-29 — so
+  which became a `permanentRedirect` to the brands list on 2026-08-29 — so
   the manager mounted nowhere and `?panels=keyword_research` silently stopped
   working two days after it shipped. One global unallowlisted manager now owns
   every `?panels=` key on every authenticated route
