@@ -22,6 +22,29 @@ is limited to immediately usable providers.
 
 ---
 
+## The chat's Connections list (+ menu)
+
+The composer's + menu → Connections is the chat package's `ComposerConnectorsPanel`; this app supplies
+two doors and the product words (Arman, 2026-10-20). Google is not an MCP server, so the panel's list
+(MCP catalog) could not show or connect it:
+
+- `useFirstPartyConnectors.ts` / `google-chat-connector.ts` — Google as one row, built from
+  `provider-config.ts` and `google-status.ts` (the only places that say what Google covers) plus a short
+  alias table (`email`, `inbox`, …) and what a CHAT does with each product (`inChat`, `chatNote`). Gmail
+  in chat = prepare an email the person reviews and sends; reading the inbox has no chat tool and the row
+  says so. `enabled: false` is the passive read the adoption hook uses (no Google read until engaged).
+- `useOpenFirstPartyConnect.ts` — opens the consent dialog (`connectorConsentDialog`) with the searched
+  product switched on, waits for it to close, re-reads the inventory and answers true only if the
+  account/product now exists. (The Google connect WINDOW grants Docs/Sheets only — it can never connect Gmail.)
+- `connector-search-terms.ts` — the products of catalog connectors that no other file names (Outlook,
+  Teams, Jira …); Microsoft's come from `MICROSOFT_CAMPAIGN_DESCRIPTORS`.
+- `useConnectMcpServer.connect(entry, endpointOverride?, { conversationId })` → `Promise<boolean>`; with a
+  chat it opens the directory window instead of a page for "configure" servers, and hands the chat's
+  baseline to the page that comes back for the GitHub install.
+- The directory window (`liveIntegrationsWindow`) takes `{ conversationId?, provider? }`, lands on the
+  provider's card and re-reads the catalog + Google inventory as it closes and when the tab is shown again.
+  The directory's search is the chat package's `connector-search` (one matcher, no twin).
+
 ## Entry points
 
 **Components**
@@ -323,6 +346,7 @@ One entry in `registry.ts`: id (generic to the provider, permanent), name (today
 
 ## Change log
 
+- **2026-10-20** — The chat's Connections list covers both connection systems: Google as a first-party row (`google-chat-connector.ts`, `useFirstPartyConnectors`, `useOpenFirstPartyConnect`), search by product (`connector-search-terms.ts`), `connect()` resolves to a boolean and takes the chat, the directory window takes `{ conversationId, provider }`. Guards: `__tests__/google-chat-connector.test.ts`, `useConnectMcpServer.test.tsx`.
 - 2026-10-05 — The directory is the one place to find a connection: Bing Webmaster (yours/shared via the ownership rule), your own database, this computer and Connect your AI are listed as door items (`DOOR_HREFS` in `IntegrationsSettingsPage.tsx`) that open their existing screens. Main menu "Integrations" now lands on Connectors.
 
 - 2026-10-05 — Every provider has a legible mark in both themes: `ConnectorTile` (white brand plate, xs–lg) is the ONE way a logo sits on a card/row/chip; artwork chain reordered (Simple Icons → Google 128px site icon → catalog art → raw favicon); `ConnectorMark` skips rasters under 32px and images that failed before hydration (`decode()`), ending at a monogram. All 139 live catalog entries resolve to a real logo. ServerCard's hand-rolled image chain replaced by the tile.

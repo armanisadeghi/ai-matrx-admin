@@ -8,6 +8,7 @@ let mockWarnings: { code: string; metadata: { slug: string; reason: string } }[]
 jest.mock("@ai-matrx/chat/store/hooks", () => ({
   useAppSelector: (selector: (state: unknown) => unknown) => selector({}),
   useAppDispatch: () => mockDispatch,
+  useAppStore: () => ({ getState: () => ({}) }),
 }));
 // The host code this test renders reads the app's own hooks (P3): one double covers both.
 jest.mock("@/lib/redux/hooks", () => jest.requireMock("@ai-matrx/chat/store/hooks"));

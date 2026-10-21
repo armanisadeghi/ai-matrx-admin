@@ -5,7 +5,7 @@ import type { McpCatalogEntry } from "@ai-matrx/chat/agents/types/mcp.types";
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let mockEntries: McpCatalogEntry[] = [];
 const mockDispatch = jest.fn();
-jest.mock("@ai-matrx/chat/store/hooks", () => ({ useAppDispatch: () => mockDispatch, useAppSelector: () => undefined }));
+jest.mock("@ai-matrx/chat/store/hooks", () => ({ useAppDispatch: () => mockDispatch, useAppSelector: () => undefined, useAppStore: () => ({ getState: () => ({}) }) }));
 jest.mock("@ai-matrx/chat/agents/hooks/useMcpTools", () => ({ useMcpCatalog: () => ({ catalog: mockEntries, serverStates: mockEntries.map(entry => ({ entry, truth: { state: "connected", reason: null }, toolCount: 1, attachable: [] })), status: "succeeded", availabilityStatus: "succeeded", refreshAvailability: jest.fn() }) }));
 jest.mock("@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors", () => ({ selectPrimaryRequest: jest.fn() }));
 jest.mock("@ai-matrx/chat/agents/redux/agent-definition/selectors", () => ({
