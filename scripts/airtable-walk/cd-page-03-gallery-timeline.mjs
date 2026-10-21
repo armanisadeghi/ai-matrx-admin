@@ -28,7 +28,7 @@ const browser = await chromium.launch({ headless: true });
 try {
   table = must(await declareTable(client, { name: `Shoots ${tag}`, labelSingular: "Shoot", labelPlural: "Shoots",
     fields: [{ key: "name", label: "Shoot", type: "text", sort: 10 }, { key: "cover", label: "Cover", type: "url", sort: 20 },
-      { key: "starts", label: "Starts", type: "datetime", sort: 30 }, { key: "ends", label: "Ends", type: "datetime", sort: 40 }] }), "table");
+      { key: "starts", label: "Starts", type: "date", sort: 30 }, { key: "ends", label: "Ends", type: "date", sort: 40 }] }), "table");
   for (const [name, starts, ends] of ROWS)
     must(await client.recordWrite({ table_id: table, data: { name, starts, ends, cover: `https://picsum.photos/seed/${encodeURIComponent(name)}/400/240` } }), "row");
   const gallery = { id: id(), name: "Gallery", charts: [], blocks: [

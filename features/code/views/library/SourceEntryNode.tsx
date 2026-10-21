@@ -24,6 +24,7 @@ import { FileIcon } from "../../styles/file-icon";
 import {
   ACTIVE_ROW,
   HOVER_ROW,
+  ROW_HEIGHT,
   TEXT_BODY,
 } from "../../styles/tokens";
 import type {
@@ -34,7 +35,7 @@ import type {
 import { Button } from "@/components/ui/button";
 import { openContextMenuForElement } from "@ai-matrx/context-menu/engine";
 import { copyToClipboard } from "@/lib/clipboard/copy";
-import { TREE_ROW_TEXT, TreeDisclosure, treeIndentStyle } from "@/components/official/topic-tree/geometry";
+import { TreeDisclosure, treeIndentStyle } from "@/components/official/topic-tree/geometry";
 
 interface SourceEntryNodeProps {
   /** Start open (the one row a focused host is editing). */
@@ -230,8 +231,7 @@ export const SourceEntryNode: React.FC<SourceEntryNodeProps> = ({
           }}
           className={cn(
             "flex items-center gap-1 rounded-sm",
-            "h-7",
-            TREE_ROW_TEXT,
+            ROW_HEIGHT,
             "max-lg:h-11",
             TEXT_BODY,
             !renaming && "cursor-pointer",
@@ -358,8 +358,7 @@ const SourceFieldLeaf: React.FC<SourceFieldLeafProps> = ({
       }}
       className={cn(
         "flex items-center gap-1 cursor-pointer rounded-sm",
-        "h-7",
-        TREE_ROW_TEXT,
+        ROW_HEIGHT,
         TEXT_BODY,
         HOVER_ROW,
         active && ACTIVE_ROW,

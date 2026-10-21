@@ -1300,7 +1300,7 @@ function FsTree({
           else onSelectFile(node.path, node.name);
         }}
       >
-        <TreeDisclosure expandable={node.isDir} expanded={node.expanded} />
+        <TreeDisclosure expandable={node.isDir} expanded={node.expanded} label={node.name} />
         {node.isDir ? (
           <TreeFolderIcon open={node.expanded} />
         ) : (
