@@ -1,0 +1,3881 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0585",
+  "version": 1,
+  "title": "Pet Grooming and Boarding",
+  "description": "Grooming table, boarding runs, vaccine records and incident notes for every pet.",
+  "forWho": "Pet groomers, kennels and pet lodges",
+  "icon": {
+    "emoji": "🐾"
+  },
+  "cover": {
+    "url": "gallery:services-dog-grooming-salon",
+    "offsetY": 50
+  },
+  "category": "services",
+  "tags": [
+    "grooming",
+    "boarding",
+    "kennel",
+    "dogs",
+    "pets",
+    "daycare"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-pet-grooming-boarding",
+    "catalogueId": "SP0585",
+    "useCase": "The owner of Thistle Hill Pet Lodge uses this to see who is on the grooming table, which runs are full and whose vaccines have lapsed.",
+    "industry": "field_home_services",
+    "vertical": "Pet grooming and boarding",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Thistle Hill Pet Lodge",
+      "describes": "A six-person grooming salon and boarding kennel with three grooming tables, twenty dog runs and a cat room.",
+      "address": {
+        "line1": "905 Quarry Bend Road",
+        "city": "Boulder",
+        "region": "CO",
+        "postalCode": "80301",
+        "country": "US"
+      },
+      "phone": "(303) 555-0190",
+      "website": "thistlehillpetlodge.net",
+      "email": "desk@thistlehillpetlodge.net",
+      "timezone": "America/Denver"
+    },
+    "cleanupTag": "use-case:spaces-pet-grooming-boarding",
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Ingrid Solano-Barre",
+              "role": "Owner",
+              "work_email": "ingrid@thistlehillpetlodge.net",
+              "mobile": "(303) 555-0141",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Theo Marchetti",
+              "role": "Lead groomer",
+              "work_email": "theo@thistlehillpetlodge.net",
+              "mobile": "(303) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Keziah Okafor",
+              "role": "Groomer",
+              "work_email": "keziah@thistlehillpetlodge.net",
+              "mobile": "(303) 555-0143",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Bram Halvorsen",
+              "role": "Kennel lead",
+              "work_email": "bram@thistlehillpetlodge.net",
+              "mobile": "(303) 555-0144",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Lila Nakamura",
+              "role": "Front desk",
+              "work_email": "lila@thistlehillpetlodge.net",
+              "mobile": "(303) 555-0145",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Diego Ferrante",
+              "role": "Kennel attendant",
+              "work_email": "diego@thistlehillpetlodge.net",
+              "mobile": "(303) 555-0146",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "groom_picked_up",
+        "table": "groom",
+        "name": "Mark picked up",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Picked up"
+          },
+          {
+            "field": "picked_up_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "groom_take",
+        "table": "groom",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "stay_out",
+        "table": "stay",
+        "name": "Check out",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Checked out"
+          },
+          {
+            "field": "left_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "incident_told",
+        "table": "incident",
+        "name": "Mark owner told",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Owner told"
+          },
+          {
+            "field": "told_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Pet Grooming and Boarding assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "groom",
+          "describes": "Every bath and haircut on the grooming table: service, groomer, time on the table and what it earned per hour."
+        },
+        {
+          "name": "related_tables",
+          "table": "pet",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many pets are boarding with us right now?",
+        "whyItMatters": "Staffing and feeding are planned from the boarders in the building.",
+        "expect": {
+          "table": "stay",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Checked in"
+          },
+          "answer": 3,
+          "unit": "pets"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open grooms.",
+        "action": {
+          "kind": "open",
+          "surface": "groom_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "groom_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open pets.",
+        "action": {
+          "kind": "open",
+          "surface": "pet_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "pet_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open stays.",
+        "action": {
+          "kind": "open",
+          "surface": "stay_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "stay_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-21",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "thistlehillpetlodge.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Quarry Bend Road"
+      ]
+    },
+    "version": 1,
+    "tables": [
+      {
+        "token": "pet",
+        "name": "Pets",
+        "labelSingular": "Pet",
+        "labelPlural": "Pets",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "paw-print",
+        "titleField": "pet_name",
+        "describes": "Every dog and cat you care for: owner, coat, handling notes and when each vaccine runs out.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New pet",
+            "values": {
+              "species": "Dog"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before the first visit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Vaccine record from the vet: rabies, distemper combo, bordetella for dogs"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Emergency contact and permission to treat"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Feeding amounts and times written as the owner says them"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Behavior"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "How they are with other dogs, people, the dryer and nail trims"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Anything that has ever caused a bite or a scuffle"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Coat"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Length the owner likes, problem areas, and a photo of the last groom they liked."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "pet_name",
+            "label": "Pet",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "species",
+            "label": "Species",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Dog",
+              "Cat"
+            ],
+            "choiceColors": {
+              "Dog": "orange",
+              "Cat": "violet"
+            },
+            "default": "Dog"
+          },
+          {
+            "key": "breed",
+            "label": "Breed",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "size",
+            "label": "Size",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Toy, under 10 lb",
+              "Small, 10 to 25 lb",
+              "Medium, 26 to 50 lb",
+              "Large, 51 to 90 lb",
+              "Giant, over 90 lb",
+              "Cat"
+            ],
+            "choiceColors": {
+              "Toy, under 10 lb": "pink",
+              "Small, 10 to 25 lb": "yellow",
+              "Medium, 26 to 50 lb": "teal",
+              "Large, 51 to 90 lb": "blue",
+              "Giant, over 90 lb": "violet",
+              "Cat": "slate"
+            }
+          },
+          {
+            "key": "coat",
+            "label": "Coat",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Smooth",
+              "Double coat",
+              "Curly or doodle",
+              "Wire",
+              "Long and silky"
+            ],
+            "choiceColors": {
+              "Smooth": "slate",
+              "Double coat": "blue",
+              "Curly or doodle": "violet",
+              "Wire": "orange",
+              "Long and silky": "pink"
+            }
+          },
+          {
+            "key": "handling",
+            "label": "Handling",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Easygoing",
+              "Nervous, go slow",
+              "Muzzle for nails",
+              "Dog-selective, no group play"
+            ],
+            "choiceColors": {
+              "Easygoing": "green",
+              "Nervous, go slow": "yellow",
+              "Muzzle for nails": "orange",
+              "Dog-selective, no group play": "red"
+            },
+            "default": "Easygoing"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Owner phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Owner email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "vet",
+            "label": "Vet clinic",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "rabies_until",
+            "label": "Rabies good until",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "core_until",
+            "label": "Distemper combo good until",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "bordetella_until",
+            "label": "Bordetella good until",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "vaccines",
+            "label": "Vaccines",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Species} = \"Cat\", IF(OR({Rabies good until} < TODAY(), {Distemper combo good until} < TODAY()), \"Update needed\", \"Current\"), IF(OR({Rabies good until} < TODAY(), {Distemper combo good until} < TODAY(), {Bordetella good until} < TODAY()), \"Update needed\", \"Current\"))"
+          },
+          {
+            "key": "grooms_done",
+            "label": "Grooms",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "grooms",
+            "pick": "groom_name",
+            "agg": "count",
+            "filter": {
+              "status": "Picked up"
+            }
+          },
+          {
+            "key": "nights",
+            "label": "Nights boarded",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "stays",
+            "pick": "nights",
+            "agg": "sum",
+            "filter": {
+              "status": "Checked out"
+            }
+          },
+          {
+            "key": "groom_spend",
+            "label": "Grooming spend (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "grooms",
+            "pick": "price",
+            "agg": "sum",
+            "filter": {
+              "status": "Picked up"
+            }
+          },
+          {
+            "key": "add_groom_btn",
+            "label": "Book a groom",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "groom",
+              "template": "Groom card",
+              "prefill": {
+                "pet": "@row"
+              }
+            }
+          },
+          {
+            "key": "call_btn",
+            "label": "Call owner",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "tel:{{phone}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "pet-1",
+            "values": {
+              "pet_name": "Biscuit",
+              "species": "Dog",
+              "breed": "Golden retriever",
+              "size": "Large, 51 to 90 lb",
+              "coat": "Double coat",
+              "handling": "Easygoing",
+              "owner": "Harriet Pemberton",
+              "phone": "(303) 555-0101",
+              "email": "harriet.pemberton@inbox-mail.net",
+              "vet": "Foothills Animal Clinic",
+              "rabies_until": "@today+400d",
+              "core_until": "@today+300d",
+              "bordetella_until": "@today+120d"
+            }
+          },
+          {
+            "key": "pet-2",
+            "values": {
+              "pet_name": "Juniper",
+              "species": "Dog",
+              "breed": "Labradoodle",
+              "size": "Medium, 26 to 50 lb",
+              "coat": "Curly or doodle",
+              "handling": "Nervous, go slow",
+              "owner": "Marcus Ellery",
+              "phone": "(303) 555-0102",
+              "email": "marcus.ellery@inbox-mail.net",
+              "vet": "Foothills Animal Clinic",
+              "rabies_until": "@today+250d",
+              "core_until": "@today+250d",
+              "bordetella_until": "@today+12d"
+            }
+          },
+          {
+            "key": "pet-3",
+            "values": {
+              "pet_name": "Pepper",
+              "species": "Dog",
+              "breed": "Miniature schnauzer",
+              "size": "Small, 10 to 25 lb",
+              "coat": "Wire",
+              "handling": "Muzzle for nails",
+              "owner": "Aiko Brennan",
+              "phone": "(303) 555-0103",
+              "email": "aiko.brennan@inbox-mail.net",
+              "vet": "Pearl Street Vet",
+              "rabies_until": "@today+500d",
+              "core_until": "@today+200d",
+              "bordetella_until": "@today+90d"
+            }
+          },
+          {
+            "key": "pet-4",
+            "values": {
+              "pet_name": "Otis",
+              "species": "Dog",
+              "breed": "French bulldog",
+              "size": "Small, 10 to 25 lb",
+              "coat": "Smooth",
+              "handling": "Easygoing",
+              "owner": "Delphine Arroyo",
+              "phone": "(303) 555-0104",
+              "email": "delphine.arroyo@inbox-mail.net",
+              "vet": "Pearl Street Vet",
+              "rabies_until": "@today+300d",
+              "core_until": "@today+150d",
+              "bordetella_until": "@today-5d"
+            }
+          },
+          {
+            "key": "pet-5",
+            "values": {
+              "pet_name": "Maple",
+              "species": "Dog",
+              "breed": "Bernese mountain dog",
+              "size": "Giant, over 90 lb",
+              "coat": "Double coat",
+              "handling": "Easygoing",
+              "owner": "Soren Whitaker",
+              "phone": "(303) 555-0105",
+              "email": "soren.whitaker@inbox-mail.net",
+              "vet": "Flatirons Veterinary",
+              "rabies_until": "@today+600d",
+              "core_until": "@today+320d",
+              "bordetella_until": "@today+150d"
+            }
+          },
+          {
+            "key": "pet-6",
+            "values": {
+              "pet_name": "Clementine",
+              "species": "Cat",
+              "breed": "Maine coon",
+              "size": "Cat",
+              "coat": "Long and silky",
+              "handling": "Nervous, go slow",
+              "owner": "Rosa Lindqvist",
+              "phone": "(303) 555-0106",
+              "email": "rosa.lindqvist@inbox-mail.net",
+              "vet": "Flatirons Veterinary",
+              "rabies_until": "@today+280d",
+              "core_until": "@today+200d"
+            }
+          },
+          {
+            "key": "pet-7",
+            "values": {
+              "pet_name": "Bruno",
+              "species": "Dog",
+              "breed": "Boxer mix",
+              "size": "Large, 51 to 90 lb",
+              "coat": "Smooth",
+              "handling": "Dog-selective, no group play",
+              "owner": "Kwame Asante",
+              "phone": "(303) 555-0107",
+              "email": "kwame.asante@inbox-mail.net",
+              "vet": "Foothills Animal Clinic",
+              "rabies_until": "@today+200d",
+              "core_until": "@today+180d",
+              "bordetella_until": "@today+60d"
+            }
+          },
+          {
+            "key": "pet-8",
+            "values": {
+              "pet_name": "Waffles",
+              "species": "Dog",
+              "breed": "Shih tzu",
+              "size": "Toy, under 10 lb",
+              "coat": "Long and silky",
+              "handling": "Easygoing",
+              "owner": "Beatrice Okonkwo",
+              "phone": "(303) 555-0108",
+              "email": "beatrice.okonkwo@inbox-mail.net",
+              "vet": "Pearl Street Vet",
+              "rabies_until": "@today+350d",
+              "core_until": "@today+260d",
+              "bordetella_until": "@today+200d"
+            }
+          },
+          {
+            "key": "pet-9",
+            "values": {
+              "pet_name": "Scout",
+              "species": "Dog",
+              "breed": "Border collie",
+              "size": "Medium, 26 to 50 lb",
+              "coat": "Double coat",
+              "handling": "Easygoing",
+              "owner": "Elliot Vance",
+              "phone": "(303) 555-0109",
+              "email": "elliot.vance@inbox-mail.net",
+              "vet": "Flatirons Veterinary",
+              "rabies_until": "@today+450d",
+              "core_until": "@today+300d",
+              "bordetella_until": "@today+25d"
+            }
+          },
+          {
+            "key": "pet-10",
+            "values": {
+              "pet_name": "Mochi",
+              "species": "Cat",
+              "breed": "Ragdoll",
+              "size": "Cat",
+              "coat": "Long and silky",
+              "handling": "Easygoing",
+              "owner": "Hana Moreau",
+              "phone": "(303) 555-0110",
+              "email": "hana.moreau@inbox-mail.net",
+              "vet": "Pearl Street Vet",
+              "rabies_until": "@today+500d",
+              "core_until": "@today+340d"
+            }
+          },
+          {
+            "key": "pet-11",
+            "values": {
+              "pet_name": "Rocket",
+              "species": "Dog",
+              "breed": "Goldendoodle",
+              "size": "Large, 51 to 90 lb",
+              "coat": "Curly or doodle",
+              "handling": "Easygoing",
+              "owner": "Tobias Grant",
+              "phone": "(303) 555-0111",
+              "email": "tobias.grant@inbox-mail.net",
+              "vet": "Foothills Animal Clinic",
+              "rabies_until": "@today+320d",
+              "core_until": "@today+240d",
+              "bordetella_until": "@today+170d"
+            }
+          },
+          {
+            "key": "pet-12",
+            "values": {
+              "pet_name": "Hazel",
+              "species": "Dog",
+              "breed": "Standard poodle",
+              "size": "Medium, 26 to 50 lb",
+              "coat": "Curly or doodle",
+              "handling": "Easygoing",
+              "owner": "Imogen Castellanos",
+              "phone": "(303) 555-0112",
+              "email": "imogen.castellanos@inbox-mail.net",
+              "vet": "Flatirons Veterinary",
+              "rabies_until": "@today+150d",
+              "core_until": "@today+120d",
+              "bordetella_until": "@today+80d"
+            }
+          }
+        ],
+        "datesIndependent": "Each vaccine runs on its own schedule from the vet; none of the three dates comes before another."
+      },
+      {
+        "token": "groom",
+        "name": "Grooming appointments",
+        "labelSingular": "Groom",
+        "labelPlural": "Grooms",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "scissors",
+        "titleField": "groom_name",
+        "describes": "Every bath and haircut on the grooming table: service, groomer, time on the table and what it earned per hour.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Picked up"
+            ],
+            "filled": [
+              "picked_up_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Groom card",
+            "values": {
+              "status": "Booked",
+              "groom_name": "New groom"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "At drop-off"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Length and style confirmed with the owner, with a photo if they have one"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Mats, skin spots or lumps checked and pointed out before starting"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Pickup time and phone number confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "On the table"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Nails, ears, sanitary trim"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Bath, dry, brush out"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Haircut"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pickup"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Owner told about anything found on the skin"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Next groom booked before they leave"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "groom_name",
+            "label": "Appointment",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Booked",
+            "choices": [
+              "Booked",
+              "Checked in",
+              "On the table",
+              "Ready for pickup",
+              "Picked up",
+              "No-show",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Booked": "slate",
+              "Checked in": "blue",
+              "On the table": "violet",
+              "Ready for pickup": "teal",
+              "Picked up": "green",
+              "No-show": "pink",
+              "Cancelled": "red"
+            },
+            "statusGroups": {
+              "Booked": "todo",
+              "Checked in": "in_progress",
+              "On the table": "in_progress",
+              "Ready for pickup": "in_progress",
+              "Picked up": "done",
+              "No-show": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "pet",
+            "label": "Pet",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "pet",
+            "relationMax": 1
+          },
+          {
+            "key": "groomer",
+            "label": "Groomer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "service",
+            "label": "Service",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Bath and brush",
+              "Full groom",
+              "Puppy intro",
+              "Nail trim",
+              "De-shed treatment",
+              "Hand strip"
+            ],
+            "choiceColors": {
+              "Bath and brush": "blue",
+              "Full groom": "violet",
+              "Puppy intro": "pink",
+              "Nail trim": "slate",
+              "De-shed treatment": "orange",
+              "Hand strip": "yellow"
+            }
+          },
+          {
+            "key": "appt_at",
+            "label": "Drop-off",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "picked_up_on",
+            "label": "Picked up on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "matting_fee",
+            "label": "Matting or add-ons (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes on the table",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 480
+              }
+            ]
+          },
+          {
+            "key": "per_hour",
+            "label": "Earned per hour (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Status} = \"Cancelled\", {Status} = \"No-show\"), \"\", IF({Minutes on the table} > 0, ROUND(({Price (USD)} + {Matting or add-ons (USD)}) / {Minutes on the table} * 60, 0), \"\"))"
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pick_btn",
+            "label": "Mark picked up",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "groom_picked_up"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "groom_take"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "groo-1",
+            "values": {
+              "groom_name": "Biscuit, de-shed and tidy",
+              "status": "Picked up",
+              "pet": "pet-1",
+              "groomer": "tm-2",
+              "service": "De-shed treatment",
+              "appt_at": "@today-12d 08:30",
+              "picked_up_on": "@today-12d",
+              "price": 95,
+              "matting_fee": 0,
+              "minutes": 100
+            }
+          },
+          {
+            "key": "groo-2",
+            "values": {
+              "groom_name": "Juniper, full doodle groom",
+              "status": "Picked up",
+              "pet": "pet-2",
+              "groomer": "tm-2",
+              "service": "Full groom",
+              "appt_at": "@today-10d 09:00",
+              "picked_up_on": "@today-10d",
+              "price": 120,
+              "matting_fee": 25,
+              "minutes": 135
+            }
+          },
+          {
+            "key": "groo-3",
+            "values": {
+              "groom_name": "Pepper, schnauzer cut",
+              "status": "Picked up",
+              "pet": "pet-3",
+              "groomer": "tm-3",
+              "service": "Full groom",
+              "appt_at": "@today-9d 10:00",
+              "picked_up_on": "@today-9d",
+              "price": 80,
+              "matting_fee": 0,
+              "minutes": 75
+            }
+          },
+          {
+            "key": "groo-4",
+            "values": {
+              "groom_name": "Waffles, puppy face and feet",
+              "status": "Picked up",
+              "pet": "pet-8",
+              "groomer": "tm-3",
+              "service": "Full groom",
+              "appt_at": "@today-7d 08:00",
+              "picked_up_on": "@today-7d",
+              "price": 70,
+              "matting_fee": 0,
+              "minutes": 65
+            }
+          },
+          {
+            "key": "groo-5",
+            "values": {
+              "groom_name": "Scout, bath and brush",
+              "status": "Picked up",
+              "pet": "pet-9",
+              "groomer": "tm-3",
+              "service": "Bath and brush",
+              "appt_at": "@today-6d 11:00",
+              "picked_up_on": "@today-6d",
+              "price": 65,
+              "matting_fee": 0,
+              "minutes": 60
+            }
+          },
+          {
+            "key": "groo-6",
+            "values": {
+              "groom_name": "Clementine, lion cut",
+              "status": "Picked up",
+              "pet": "pet-6",
+              "groomer": "tm-2",
+              "service": "Full groom",
+              "appt_at": "@today-5d 09:30",
+              "picked_up_on": "@today-5d",
+              "price": 110,
+              "matting_fee": 20,
+              "minutes": 90
+            }
+          },
+          {
+            "key": "groo-7",
+            "values": {
+              "groom_name": "Hazel, continental clip",
+              "status": "Picked up",
+              "pet": "pet-12",
+              "groomer": "tm-2",
+              "service": "Full groom",
+              "appt_at": "@today-4d 08:00",
+              "picked_up_on": "@today-4d",
+              "price": 135,
+              "matting_fee": 0,
+              "minutes": 150
+            }
+          },
+          {
+            "key": "groo-8",
+            "values": {
+              "groom_name": "Otis, nail trim",
+              "status": "No-show",
+              "pet": "pet-4",
+              "groomer": "tm-3",
+              "service": "Nail trim",
+              "appt_at": "@today-3d 15:00",
+              "price": 20,
+              "matting_fee": 0
+            }
+          },
+          {
+            "key": "groo-9",
+            "values": {
+              "groom_name": "Rocket, full doodle groom",
+              "status": "On the table",
+              "pet": "pet-11",
+              "groomer": "tm-2",
+              "service": "Full groom",
+              "appt_at": "@today 08:30",
+              "price": 140,
+              "matting_fee": 30
+            }
+          },
+          {
+            "key": "groo-10",
+            "values": {
+              "groom_name": "Pepper, nails and sanitary",
+              "status": "Ready for pickup",
+              "pet": "pet-3",
+              "groomer": "tm-3",
+              "service": "Nail trim",
+              "appt_at": "@today 09:00",
+              "price": 20,
+              "matting_fee": 0,
+              "minutes": 20
+            }
+          },
+          {
+            "key": "groo-11",
+            "values": {
+              "groom_name": "Maple, bath and blowout",
+              "status": "Checked in",
+              "pet": "pet-5",
+              "groomer": "tm-3",
+              "service": "Bath and brush",
+              "appt_at": "@today 10:00",
+              "price": 85,
+              "matting_fee": 0
+            }
+          },
+          {
+            "key": "groo-12",
+            "values": {
+              "groom_name": "Bruno, bath before boarding pickup",
+              "status": "Booked",
+              "pet": "pet-7",
+              "groomer": "tm-3",
+              "service": "Bath and brush",
+              "appt_at": "@today+1d 09:00",
+              "price": 60,
+              "matting_fee": 0
+            }
+          },
+          {
+            "key": "groo-13",
+            "values": {
+              "groom_name": "Juniper, face, feet and tail",
+              "status": "Booked",
+              "pet": "pet-2",
+              "groomer": "tm-2",
+              "service": "Full groom",
+              "appt_at": "@today+2d 08:30",
+              "price": 75,
+              "matting_fee": 0
+            }
+          },
+          {
+            "key": "groo-14",
+            "values": {
+              "groom_name": "Scout, de-shed treatment",
+              "status": "Booked",
+              "pet": "pet-9",
+              "groomer": "tm-3",
+              "service": "De-shed treatment",
+              "appt_at": "@today+4d 10:00",
+              "price": 85,
+              "matting_fee": 0
+            }
+          },
+          {
+            "key": "groo-15",
+            "values": {
+              "groom_name": "Mochi, comb-out and sanitary",
+              "status": "Booked",
+              "pet": "pet-10",
+              "groomer": "tm-2",
+              "service": "Bath and brush",
+              "appt_at": "@today+5d 11:30",
+              "price": 70,
+              "matting_fee": 0
+            }
+          },
+          {
+            "key": "groo-16",
+            "values": {
+              "groom_name": "Biscuit, bath and brush",
+              "status": "Booked",
+              "pet": "pet-1",
+              "groomer": "tm-3",
+              "service": "Bath and brush",
+              "appt_at": "@today+6d 08:00",
+              "price": 75,
+              "matting_fee": 0
+            }
+          },
+          {
+            "key": "groo-17",
+            "values": {
+              "groom_name": "Waffles, full groom",
+              "status": "Cancelled",
+              "pet": "pet-8",
+              "groomer": "tm-3",
+              "service": "Full groom",
+              "appt_at": "@today+3d 13:00",
+              "price": 70,
+              "matting_fee": 0
+            }
+          }
+        ],
+        "independentOf": {
+          "pet": "Either record can be created or change status before the other.",
+          "groomer": "Either record can be created or change status before the other."
+        },
+        "datesIndependent": "Drop-off is the booking; the pickup date is stamped when the owner collects, usually the same day."
+      },
+      {
+        "token": "stay",
+        "name": "Boarding stays",
+        "labelSingular": "Stay",
+        "labelPlural": "Stays",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "bed",
+        "titleField": "stay_name",
+        "describes": "Who is sleeping over, in which run, for how many nights, with feeding and medication notes.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Checked out"
+            ],
+            "filled": [
+              "left_on"
+            ]
+          }
+        ],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "stay_name",
+            "label": "Stay",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Reserved",
+            "choices": [
+              "Reserved",
+              "Checked in",
+              "Checked out",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Reserved": "blue",
+              "Checked in": "violet",
+              "Checked out": "green",
+              "Cancelled": "red"
+            },
+            "statusGroups": {
+              "Reserved": "todo",
+              "Checked in": "in_progress",
+              "Checked out": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "pet",
+            "label": "Pet",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "pet",
+            "relationMax": 1
+          },
+          {
+            "key": "run",
+            "label": "Run",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Standard run",
+              "Large run",
+              "Suite with a cot",
+              "Cat condo"
+            ],
+            "choiceColors": {
+              "Standard run": "blue",
+              "Large run": "violet",
+              "Suite with a cot": "orange",
+              "Cat condo": "pink"
+            }
+          },
+          {
+            "key": "check_in",
+            "label": "Check-in",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "check_out",
+            "label": "Check-out",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "nights",
+            "label": "Nights",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Check-in}, {Check-out}, 'days')"
+          },
+          {
+            "key": "nightly_rate",
+            "label": "Nightly rate (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 300
+              }
+            ]
+          },
+          {
+            "key": "extras",
+            "label": "Playtime and extras (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "meds",
+            "label": "Gets medication",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "feeding",
+            "label": "Feeding",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "left_on",
+            "label": "Went home on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "total",
+            "label": "Stay total (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Cancelled\", \"\", {Nights} * {Nightly rate (USD)} + {Playtime and extras (USD)})"
+          },
+          {
+            "key": "out_btn",
+            "label": "Check out",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "stay_out"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "stay-1",
+            "values": {
+              "stay_name": "Biscuit, long weekend",
+              "status": "Checked out",
+              "pet": "pet-1",
+              "run": "Large run",
+              "check_in": "@today-30d",
+              "check_out": "@today-26d",
+              "nightly_rate": 58,
+              "extras": 48,
+              "meds": false,
+              "feeding": "2 cups kibble, morning and night",
+              "left_on": "@today-26d"
+            }
+          },
+          {
+            "key": "stay-2",
+            "values": {
+              "stay_name": "Scout and the family trip",
+              "status": "Checked out",
+              "pet": "pet-9",
+              "run": "Standard run",
+              "check_in": "@today-21d",
+              "check_out": "@today-14d",
+              "nightly_rate": 52,
+              "extras": 84,
+              "meds": false,
+              "feeding": "1.5 cups, morning and night",
+              "left_on": "@today-14d"
+            }
+          },
+          {
+            "key": "stay-3",
+            "values": {
+              "stay_name": "Clementine, owner traveling",
+              "status": "Checked out",
+              "pet": "pet-6",
+              "run": "Cat condo",
+              "check_in": "@today-18d",
+              "check_out": "@today-13d",
+              "nightly_rate": 36,
+              "extras": 0,
+              "meds": true,
+              "feeding": "Wet food twice; thyroid pill at night",
+              "left_on": "@today-13d"
+            }
+          },
+          {
+            "key": "stay-4",
+            "values": {
+              "stay_name": "Hazel, conference week",
+              "status": "Checked out",
+              "pet": "pet-12",
+              "run": "Suite with a cot",
+              "check_in": "@today-11d",
+              "check_out": "@today-6d",
+              "nightly_rate": 72,
+              "extras": 60,
+              "meds": false,
+              "feeding": "Own food, 1 cup twice",
+              "left_on": "@today-6d"
+            }
+          },
+          {
+            "key": "stay-5",
+            "values": {
+              "stay_name": "Bruno, owner moving house",
+              "status": "Checked in",
+              "pet": "pet-7",
+              "run": "Large run",
+              "check_in": "@today-3d",
+              "check_out": "@today+1d",
+              "nightly_rate": 58,
+              "extras": 0,
+              "meds": false,
+              "feeding": "3 cups raw mix, split twice; walks alone"
+            }
+          },
+          {
+            "key": "stay-6",
+            "values": {
+              "stay_name": "Maple, family wedding",
+              "status": "Checked in",
+              "pet": "pet-5",
+              "run": "Suite with a cot",
+              "check_in": "@today-2d",
+              "check_out": "@today+3d",
+              "nightly_rate": 78,
+              "extras": 60,
+              "meds": true,
+              "feeding": "4 cups, joint supplement with breakfast"
+            }
+          },
+          {
+            "key": "stay-7",
+            "values": {
+              "stay_name": "Mochi, owner in hospital",
+              "status": "Checked in",
+              "pet": "pet-10",
+              "run": "Cat condo",
+              "check_in": "@today-1d",
+              "check_out": "@today+6d",
+              "nightly_rate": 36,
+              "extras": 0,
+              "meds": false,
+              "feeding": "Dry food free choice, wet at 5 pm"
+            }
+          },
+          {
+            "key": "stay-8",
+            "values": {
+              "stay_name": "Rocket, ski trip",
+              "status": "Reserved",
+              "pet": "pet-11",
+              "run": "Large run",
+              "check_in": "@today+2d",
+              "check_out": "@today+7d",
+              "nightly_rate": 58,
+              "extras": 60,
+              "meds": false,
+              "feeding": "2.5 cups, morning and night"
+            }
+          },
+          {
+            "key": "stay-9",
+            "values": {
+              "stay_name": "Juniper, holiday visit",
+              "status": "Reserved",
+              "pet": "pet-2",
+              "run": "Standard run",
+              "check_in": "@today+5d",
+              "check_out": "@today+12d",
+              "nightly_rate": 52,
+              "extras": 84,
+              "meds": false,
+              "feeding": "Own food, 1 cup twice"
+            }
+          },
+          {
+            "key": "stay-10",
+            "values": {
+              "stay_name": "Otis, short trip",
+              "status": "Cancelled",
+              "pet": "pet-4",
+              "run": "Standard run",
+              "check_in": "@today+4d",
+              "check_out": "@today+6d",
+              "nightly_rate": 52,
+              "extras": 0,
+              "meds": false,
+              "feeding": "1 cup twice"
+            }
+          }
+        ],
+        "independentOf": {
+          "pet": "Either record can be created or change status before the other."
+        },
+        "before": [
+          [
+            "check_in",
+            "check_out"
+          ],
+          [
+            "check_in",
+            "left_on"
+          ]
+        ]
+      },
+      {
+        "token": "incident",
+        "name": "Incident notes",
+        "labelSingular": "Incident",
+        "labelPlural": "Incidents",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-list",
+        "titleField": "incident_name",
+        "describes": "Anything that happened to a pet in your care, who saw it and when the owner was told.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Owner told",
+              "Closed"
+            ],
+            "filled": [
+              "told_on"
+            ]
+          }
+        ],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "incident_name",
+            "label": "Incident",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Open",
+            "choices": [
+              "Open",
+              "Owner told",
+              "Closed"
+            ],
+            "choiceColors": {
+              "Open": "amber",
+              "Owner told": "blue",
+              "Closed": "green"
+            },
+            "statusGroups": {
+              "Open": "todo",
+              "Owner told": "in_progress",
+              "Closed": "done"
+            }
+          },
+          {
+            "key": "pet",
+            "label": "Pet",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "pet",
+            "relationMax": 1
+          },
+          {
+            "key": "staff",
+            "label": "Written by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "What happened",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Small nick from clippers",
+              "Upset stomach",
+              "Scuffle in play group",
+              "Not eating",
+              "Skin or ear problem found"
+            ],
+            "choiceColors": {
+              "Small nick from clippers": "orange",
+              "Upset stomach": "yellow",
+              "Scuffle in play group": "red",
+              "Not eating": "violet",
+              "Skin or ear problem found": "teal"
+            }
+          },
+          {
+            "key": "severity",
+            "label": "Severity",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Note only",
+              "Owner told at pickup",
+              "Vet visit"
+            ],
+            "choiceColors": {
+              "Note only": "slate",
+              "Owner told at pickup": "yellow",
+              "Vet visit": "red"
+            }
+          },
+          {
+            "key": "happened_at",
+            "label": "When",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "told_on",
+            "label": "Owner told on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "told_btn",
+            "label": "Mark owner told",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "incident_told"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "inci-1",
+            "values": {
+              "incident_name": "Clipper nick behind the left ear",
+              "status": "Closed",
+              "pet": "pet-2",
+              "staff": "tm-2",
+              "kind": "Small nick from clippers",
+              "severity": "Owner told at pickup",
+              "happened_at": "@today-10d 10:40",
+              "told_on": "@today-10d"
+            }
+          },
+          {
+            "key": "inci-2",
+            "values": {
+              "incident_name": "Soft stool on the second night",
+              "status": "Closed",
+              "pet": "pet-9",
+              "staff": "tm-4",
+              "kind": "Upset stomach",
+              "severity": "Note only",
+              "happened_at": "@today-19d 07:15",
+              "told_on": "@today-14d"
+            }
+          },
+          {
+            "key": "inci-3",
+            "values": {
+              "incident_name": "Red skin patch under the collar",
+              "status": "Owner told",
+              "pet": "pet-12",
+              "staff": "tm-2",
+              "kind": "Skin or ear problem found",
+              "severity": "Owner told at pickup",
+              "happened_at": "@today-4d 09:20",
+              "told_on": "@today-4d"
+            }
+          },
+          {
+            "key": "inci-4",
+            "values": {
+              "incident_name": "Skipped breakfast",
+              "status": "Open",
+              "pet": "pet-10",
+              "staff": "tm-6",
+              "kind": "Not eating",
+              "severity": "Note only",
+              "happened_at": "@today 07:30"
+            }
+          }
+        ],
+        "independentOf": {
+          "pet": "Either record can be created or change status before the other.",
+          "staff": "Either record can be created or change status before the other."
+        },
+        "datesIndependent": "The incident time is when it happened; the told date is stamped when the owner hears about it."
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each appointment is for one pet.",
+        "fromTable": "groom",
+        "fromField": "pet",
+        "toTable": "pet",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "grooms"
+      },
+      {
+        "describes": "One groomer owns the appointment.",
+        "fromTable": "groom",
+        "fromField": "groomer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "grooms"
+      },
+      {
+        "describes": "Each stay is for one pet.",
+        "fromTable": "stay",
+        "fromField": "pet",
+        "toTable": "pet",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "stays"
+      },
+      {
+        "describes": "Each note is about one pet.",
+        "fromTable": "incident",
+        "fromField": "pet",
+        "toTable": "pet",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "incidents"
+      },
+      {
+        "describes": "Who saw it and wrote it up.",
+        "fromTable": "incident",
+        "fromField": "staff",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "incidents_written"
+      }
+    ],
+    "views": [
+      {
+        "token": "all_pet",
+        "name": "All pets",
+        "table": "pet",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "pet_board",
+        "name": "Pets board",
+        "table": "pet",
+        "kind": "kanban",
+        "groupBy": "size"
+      },
+      {
+        "token": "pet_bord",
+        "name": "Bordetella running out",
+        "table": "pet",
+        "kind": "grid",
+        "within": {
+          "bordetella_until": {
+            "relative": "next_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "all_groom",
+        "name": "All grooms",
+        "table": "groom",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "groom_board",
+        "name": "Grooms board",
+        "table": "groom",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "groom_cal",
+        "name": "Grooms calendar",
+        "table": "groom",
+        "kind": "calendar",
+        "dateField": "appt_at",
+        "allDay": true
+      },
+      {
+        "token": "groom_today",
+        "name": "On the table today",
+        "table": "groom",
+        "kind": "grid",
+        "within": {
+          "appt_at": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "groom_week",
+        "name": "This week",
+        "table": "groom",
+        "kind": "grid",
+        "within": {
+          "appt_at": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "groom_next7",
+        "name": "Next 7 days",
+        "table": "groom",
+        "kind": "grid",
+        "within": {
+          "appt_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Booked"
+        }
+      },
+      {
+        "token": "groom_mine",
+        "name": "My grooms",
+        "table": "groom",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_stay",
+        "name": "All stays",
+        "table": "stay",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "stay_board",
+        "name": "Stays board",
+        "table": "stay",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "stay_cal",
+        "name": "Stays calendar",
+        "table": "stay",
+        "kind": "calendar",
+        "dateField": "check_in",
+        "allDay": true
+      },
+      {
+        "token": "stay_arriving",
+        "name": "Arriving in 7 days",
+        "table": "stay",
+        "kind": "grid",
+        "within": {
+          "check_in": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Reserved"
+        }
+      },
+      {
+        "token": "stay_here",
+        "name": "In the building",
+        "table": "stay",
+        "kind": "grid",
+        "filters": {
+          "status": "Checked in"
+        }
+      },
+      {
+        "token": "stay_leaving",
+        "name": "Going home this week",
+        "table": "stay",
+        "kind": "grid",
+        "within": {
+          "check_out": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "all_incident",
+        "name": "All incidents",
+        "table": "incident",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "incident_board",
+        "name": "Incidents board",
+        "table": "incident",
+        "kind": "kanban",
+        "groupBy": "status"
+      }
+    ],
+    "forms": [
+      {
+        "token": "booking_request",
+        "name": "Request a booking",
+        "describes": "How an owner asks for a groom or a stay.",
+        "audience": "staff",
+        "table": "pet",
+        "fields": [
+          {
+            "fieldKey": "pet_name",
+            "ask": "What is your pet's name?",
+            "required": true
+          },
+          {
+            "fieldKey": "breed",
+            "ask": "Breed?"
+          },
+          {
+            "fieldKey": "owner",
+            "ask": "Your name?"
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Best phone number?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. The front desk will call to confirm a time."
+      }
+    ]
+  },
+  "pages": [
+    {
+      "key": "pet-grooming-boarding",
+      "parent": null,
+      "title": "Pet Grooming and Boarding",
+      "icon": {
+        "emoji": "🐾"
+      },
+      "cover": {
+        "url": "gallery:services-dog-grooming-salon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Pets holds every dog and cat with their vaccines. Grooming appointments is the table; Boarding stays is the kennel; Incident notes keeps owners told. Start on the Dashboard: today's grooms, who is in the building, and vaccines running out."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:groom-pricing"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:boarding-routine"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pets"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every dog and cat you care for: owner, coat, handling notes and when each vaccine runs out."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "pet",
+              "view": "pet_board"
+            },
+            "inline": true,
+            "title": "Pets",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pet-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "size",
+                "hiddenFields": [
+                  "species",
+                  "coat",
+                  "phone",
+                  "email",
+                  "vet",
+                  "rabies_until",
+                  "core_until",
+                  "bordetella_until",
+                  "vaccines",
+                  "grooms_done",
+                  "nights",
+                  "groom_spend",
+                  "add_groom_btn",
+                  "call_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "pet-t",
+                "name": "All pets",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pet-bord",
+                "name": "Bordetella running out",
+                "layout": "list",
+                "icon": "Syringe",
+                "within": {
+                  "bordetella_until": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                }
+              }
+            ],
+            "activeViewId": "pet-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Grooming appointments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every bath and haircut on the grooming table: service, groomer, time on the table and what it earned per hour."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "groom",
+              "view": "groom_board"
+            },
+            "inline": true,
+            "title": "Grooming appointments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "groo-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "groomer",
+                  "picked_up_on",
+                  "price",
+                  "matting_fee",
+                  "minutes",
+                  "per_hour",
+                  "assigned_to",
+                  "pick_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "groo-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "appt_at",
+                "hiddenFields": [
+                  "status",
+                  "groomer",
+                  "picked_up_on",
+                  "price",
+                  "matting_fee",
+                  "minutes",
+                  "per_hour",
+                  "assigned_to",
+                  "pick_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "groo-t",
+                "name": "All grooms",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "groo-today",
+                "name": "On the table today",
+                "layout": "list",
+                "icon": "Scissors",
+                "within": {
+                  "appt_at": {
+                    "relative": "today"
+                  }
+                }
+              },
+              {
+                "id": "groo-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "appt_at": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "groo-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "appt_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Booked"
+                }
+              },
+              {
+                "id": "groo-mine",
+                "name": "My grooms",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "groo-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Boarding stays"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Who is sleeping over, in which run, for how many nights, with feeding and medication notes."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "stay",
+              "view": "stay_board"
+            },
+            "inline": true,
+            "title": "Boarding stays",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "stay-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "check_in",
+                  "nights",
+                  "nightly_rate",
+                  "extras",
+                  "meds",
+                  "feeding",
+                  "left_on",
+                  "total",
+                  "out_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "stay-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "check_in",
+                "hiddenFields": [
+                  "status",
+                  "check_in",
+                  "nights",
+                  "nightly_rate",
+                  "extras",
+                  "meds",
+                  "feeding",
+                  "left_on",
+                  "total",
+                  "out_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "stay-t",
+                "name": "All stays",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "stay-arriving",
+                "name": "Arriving in 7 days",
+                "layout": "list",
+                "icon": "LogIn",
+                "within": {
+                  "check_in": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Reserved"
+                }
+              },
+              {
+                "id": "stay-here",
+                "name": "In the building",
+                "layout": "list",
+                "icon": "Home",
+                "filters": {
+                  "status": "Checked in"
+                }
+              },
+              {
+                "id": "stay-leaving",
+                "name": "Going home this week",
+                "layout": "list",
+                "icon": "LogOut",
+                "within": {
+                  "check_out": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "stay-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Incident notes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Anything that happened to a pet in your care, who saw it and when the owner was told."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "incident",
+              "view": "incident_board"
+            },
+            "inline": true,
+            "title": "Incident notes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "inci-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "staff",
+                  "happened_at",
+                  "told_on",
+                  "told_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "inci-t",
+                "name": "All incidents",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "inci-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "pet-grooming-boarding",
+      "title": "Start here: how the lodge runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Pets is the master record: owner, coat, handling and vaccines. Grooming appointments is the grooming table. Boarding stays is the kennel. Incident notes is what you owe every owner: the truth about what happened while you had their pet."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Front desk, every morning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open the Dashboard. Check "
+            },
+            {
+              "text": "Arriving in 7 days",
+              "bold": true
+            },
+            {
+              "text": " against the vaccine column on each pet: nobody boards or plays in group with an expired record."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check in each groom on arrival and confirm the cut with the owner."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check in boarders, write feeding and medication on the stay, and put them in the run listed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Groomers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Take your appointments with "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": ". Move each pet to On the table, then Ready for pickup, and enter the minutes it took. Press "
+            },
+            {
+              "text": "Mark picked up",
+              "bold": true
+            },
+            {
+              "text": " when the owner leaves."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Kennel"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The kennel lead reads "
+            },
+            {
+              "text": "In the building",
+              "bold": true
+            },
+            {
+              "text": " at every shift change and feeds from the stay notes. Anything unusual becomes an Incident note right away; the owner is told before pickup, never at it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Handling colors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Green means easygoing. Yellow means slow introductions. Orange means a muzzle for nails. Red means no group play."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every color is set on the pet record once, so every shift and every groomer sees the same warning."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "pet-grooming-boarding",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Who is on the grooming table today, who is sleeping over, who arrives this week and whose vaccines are running out."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "groom",
+                      "view": "all_groom"
+                    },
+                    "inline": true,
+                    "title": "Grooming appointments",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-grooms-by-service",
+                        "name": "Grooms by service",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "service",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "c-grooms-by-service"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "groom",
+                      "view": "all_groom"
+                    },
+                    "inline": true,
+                    "title": "Grooming appointments",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-grooming-revenue-by-",
+                        "name": "Grooming revenue by service",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "service",
+                          "op": "sum",
+                          "field": "price"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "c-grooming-revenue-by-"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "stay",
+                      "view": "all_stay"
+                    },
+                    "inline": true,
+                    "title": "Boarding stays",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-stays-by-run",
+                        "name": "Stays by run",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "run",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "c-stays-by-run"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On the table today"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "groom",
+              "view": "all_groom"
+            },
+            "inline": true,
+            "title": "Grooming appointments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-today-s-grooms",
+                "name": "Today's grooms",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "appt_at": {
+                    "relative": "today"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "l-today-s-grooms"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "In the building"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "stay",
+              "view": "all_stay"
+            },
+            "inline": true,
+            "title": "Boarding stays",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-boarding-now",
+                "name": "Boarding now",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Checked in"
+                }
+              }
+            ],
+            "activeViewId": "l-boarding-now"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My grooms"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "groom",
+              "view": "all_groom"
+            },
+            "inline": true,
+            "title": "Grooming appointments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-assigned-to-me",
+                "name": "Assigned to me",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "l-assigned-to-me"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Arriving this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "stay",
+              "view": "all_stay"
+            },
+            "inline": true,
+            "title": "Boarding stays",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-arrivals",
+                "name": "Arrivals",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "check_in": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Reserved"
+                }
+              }
+            ],
+            "activeViewId": "l-arrivals"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Bordetella running out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "pet",
+              "view": "all_pet"
+            },
+            "inline": true,
+            "title": "Pets",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-kennel-cough-lapsing",
+                "name": "Kennel cough lapsing",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "bordetella_until": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                }
+              }
+            ],
+            "activeViewId": "l-kennel-cough-lapsing"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Open incidents"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "incident",
+              "view": "all_incident"
+            },
+            "inline": true,
+            "title": "Incident notes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-not-yet-told",
+                "name": "Not yet told",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Open"
+                }
+              }
+            ],
+            "activeViewId": "l-not-yet-told"
+          }
+        }
+      ]
+    },
+    {
+      "key": "groom-pricing",
+      "parent": "pet-grooming-boarding",
+      "title": "Pricing grooms by coat and time",
+      "icon": {
+        "emoji": "✂️"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A grooming table earns by the hour, not by the dog. Price every service so that a groomer's hour on the table earns at least 60 USD, and charge for the coats that take longer."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The base menu"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Service"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Small"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Medium"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Large"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Giant"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Bath and brush"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "55 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "65 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "75 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "85 USD"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Full groom"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "70 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "90 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "120 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "150 USD"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "De-shed treatment"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "65 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "75 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "95 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "115 USD"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Nail trim"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "20 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "20 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "20 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "25 USD"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Coats that cost more"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Curly or doodle:",
+              "bold": true
+            },
+            {
+              "text": " add 15 to 30 USD. These coats mat close to the skin and take longest to dry."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Double coat:",
+              "bold": true
+            },
+            {
+              "text": " a de-shed takes an hour of blowing out. Never shave a double coat short unless the vet asks; it can grow back patchy."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Wire:",
+              "bold": true
+            },
+            {
+              "text": " hand stripping is slow work. Price it per hour, not per dog."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Matting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Matted coats are a welfare issue as well as a time issue. Tell the owner at drop-off, shave down rather than de-mat if it would hurt, and add a matting fee. Write the conversation on the groom card."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the per-hour number"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Enter "
+            },
+            {
+              "text": "Minutes on the table",
+              "bold": true
+            },
+            {
+              "text": " at the end of every groom. The "
+            },
+            {
+              "text": "Earned per hour",
+              "bold": true
+            },
+            {
+              "text": " column divides the price and add-ons by the time. Look at it each week:"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Under 55 USD an hour on a service means it is underpriced or the groomer needs help with that coat."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A breed that always runs long, for example a standard poodle in a show clip, deserves its own price."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cancelled and no-show appointments leave the column blank, so the average stays honest."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "No-shows"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send a reminder by text the day before. A second no-show means a deposit for the next booking. Otis's empty nail-trim slot is the kind of gap that costs a groomer half an hour."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rebook at pickup"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Most coats need a groom every four to eight weeks. Book the next one before the owner leaves; it fills the calendar more reliably than any advertising."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "boarding-routine",
+      "parent": "pet-grooming-boarding",
+      "title": "Boarding: check-in, care and check-out",
+      "icon": {
+        "emoji": "🏠"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Owners leave their pets with you because they trust you will notice. Every step below exists so that nothing about a boarder depends on one person's memory."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At booking"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Reserve the run that fits: standard runs for most dogs, large runs for big dogs and siblings, suites for older dogs that need a cot, and the cat condos away from barking. Record nights, nightly rate and any playtime on the stay."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Vaccines"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Before a dog boards or joins group play, check three dates on its pet record: rabies, the distemper combination and bordetella for kennel cough. Cats need rabies and their own combination vaccine. The "
+            },
+            {
+              "text": "Vaccines",
+              "bold": true
+            },
+            {
+              "text": " column turns to Update needed the day anything lapses, and Otis is the example: his kennel cough shot ran out, so he cannot stay until the owner brings a new record."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Check-in"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Weigh the dog and write the weight on the stay page."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Take the food in labeled bags; write the amounts on the stay as the owner says them."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Medication goes in the locked box with the pet's name on it. Tick "
+            },
+            {
+              "text": "Gets medication",
+              "bold": true
+            },
+            {
+              "text": " so every shift sees it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask for a phone number that will answer during the trip."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every shift"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Feed from the stay notes and record anything not eaten. Two skipped meals in a row is an incident note and a call to the owner."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pets marked red for handling never go in group play."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Walk, clean the run, fresh water, and a few minutes of attention for each boarder."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Check-out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Bathe long-stay dogs before they go home if the owner asked for it. Press "
+            },
+            {
+              "text": "Check out",
+              "bold": true
+            },
+            {
+              "text": ": it stamps the day they went home. Tell the owner how the stay went, including anything in Incident notes, before you take payment."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Run"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Nightly rate"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Standard run"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "52 USD"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Large run"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "58 USD"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Suite with a cot"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "72 to 78 USD"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cat condo"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "36 USD"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
