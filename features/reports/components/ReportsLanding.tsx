@@ -6,6 +6,10 @@
 "use client";
 
 import Link from "next/link";
+import { xmlElement, xmlList, xmlText } from "@ai-matrx/chat/surfaces/runtime/context-bundle";
+import { useRouter } from "next/navigation";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { parseReportDestination } from "../surface-contract";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -21,6 +25,7 @@ import {
 } from "@/features/surfaces/manifests/admin-reporting.manifest";
 
 export function ReportsLanding({ mode = "user" }: { mode?: "user" | "admin" }) {
+  const router = useRouter();
   const reports = mode === "admin" ? REPORTS.filter((r) => r.adminHref) : REPORTS;
 
   const content = (
@@ -74,12 +79,15 @@ export function ReportsLanding({ mode = "user" }: { mode?: "user" | "admin" }) {
       available_report_slugs: reports.filter((report) => report.status === "live").map((report) => report.slug),
       report_is_admin_scope: false,
       reports_catalog: reports,
+      report_overview: xmlList("reports", reports, (report) => xmlElement("report", { slug: report.slug, title: report.title, href: report.href, status: report.status }, xmlText("description", report.description, { max: 250 })), { maxRows: 25 }),
       report_count: reports.length,
       content: reports.map((report) => `${report.title}: ${report.description} (${report.href}; ${report.status})`).join("\n"),
     });
     return (
-      <SurfaceRuntimeProvider surfaceName="matrx-user/reports" getScope={getScope}>
+      <SurfaceRuntimeProvider surfaceName="matrx-user/reports" getScope={getScope} getWriteHandlers={() => ({ open_report: { validate: (value) => { parseReportDestination(value); }, apply: (value) => { const report = parseReportDestination(value); router.push(report.href); return { summary: `Opened ${report.title}.`, data: { slug: report.slug, href: report.href } }; } } })}>
+        <NonEditableContextMenu sourceFeature="reports" surfaceName="matrx-user/reports" menuVersion={1} getApplicationScope={getScope} contentSource={{ type: "raw" }} extraSections={[{ id: "reports", label: "Reports", anchor: "after-clipboard", items: reports.filter((report) => report.status === "live").map((report) => ({ kind: "item", id: report.slug, label: `Open ${report.title}`, icon: ArrowRight, onSelect: () => router.push(report.href) })) }]}>
           <div data-surface-value="reports_catalog">{content}</div>
+        </NonEditableContextMenu>
       </SurfaceRuntimeProvider>
     );
   }

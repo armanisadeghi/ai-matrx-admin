@@ -41,6 +41,9 @@ const groups: SurfaceValueGroup[] = [
 ];
 
 const surfaceSpecific: SurfaceValue[] = [
+  { name: "assist_table_controls", label: "Live table controls", description: "Immediate table controls as displayed, including search before its read debounce. Compare assist_table_query for the requested read state.", valueType: "object", alwaysAvailable: true, typicalCharCount: 350, group: "inbox_view", sortOrder: 315 },
+  { name: "assist_preferences_ready", label: "Preferences ready", description: "Whether synced quiet preferences have hydrated. Quiet controls are refused until true.", valueType: "boolean", alwaysAvailable: true, typicalCharCount: 5, group: "inbox_view", sortOrder: 375 },
+  { name: "assist_overview", label: "Inbox overview", description: "Compact XML of current controls, current read status, and up to 25 successful matching rows. Pending or failed reads carry no stale row content.", valueType: "string", alwaysAvailable: true, typicalCharCount: 4000, inlineUpTo: 4500, group: "inbox_state", sortOrder: 410 },
   { name: "assist_include_snoozed", label: "Include snoozed", description: "Whether snoozed assists are included in the current view. Always present.", valueType: "boolean", alwaysAvailable: true, typicalCharCount: 5, group: "inbox_view", sortOrder: 130 },
   { name: "assist_starred_only", label: "Starred only", description: "Whether the view is limited to starred assists. Always present.", valueType: "boolean", alwaysAvailable: true, typicalCharCount: 5, group: "inbox_view", sortOrder: 140 },
   { name: "assist_unseen_only", label: "Unseen only", description: "Whether the view is limited to unseen assists. Always present.", valueType: "boolean", alwaysAvailable: true, typicalCharCount: 5, group: "inbox_view", sortOrder: 150 },
@@ -134,15 +137,22 @@ export const assistsManifest: SurfaceManifest = {
     "The user inbox of one-click AI assists.",
   readiness: "partial",
   readinessNote:
-    "The manager emits loaded rows, statistics, suppressions, query, quiet preferences, and action state through a runtime provider. Outside-helper attribution/binding and independent certification remain.",
+    "The manager emits loaded rows, statistics, suppressions, query, quiet preferences, and action state through a runtime provider. Canonical menu and view/triage handlers are wired; live outside-helper binding proof and independent certification remain.",
   label: "Assists",
   urlPattern: "/assists",
   intro: `<surface_intro>
 You are on the Assists inbox: the user's queue of one-click AI assists that producers across the platform have proposed for them. Each assist is an offer, not an action.
 assist_status_tab plus assist_view_flags describe which slice they are looking at; assist_total_count is the true server-side match count, not the page size.
+Use set_assist_view for inbox filters, resume_assists for the existing quiet preference, and update_assists for approved flag/restore/dismiss/snooze changes. Use these page targets rather than generic tools; they never execute an assist.
 Nothing here executes on your say-so — an assist runs only when the user presses its own verb-labeled button. Treat silenced_sources as a decision the user already made.
 </surface_intro>`,
+  guide: "features/surfaces/guides/assists.md",
   groups,
+  writeTargets: [
+    { name: "set_assist_view", label: "Assist view", description: "Changes existing inbox controls without executing an assist. JSON object with optional status_tab (pending|accepted|dismissed|resolved|all), urgency (normal|elevated|urgent or null), include_snoozed/starred_only/unseen_only/show_silenced (boolean), search/source_key/surface_name (string; null clears source_key/surface_name), source_kind (deterministic|agent|sweep|stream or null), page/page_size (positive integer), sort ({id: created_at|decided_at|priority|confidence|status|sourceKey|first_seen_at|occurrences, direction: asc|desc} or null). Only supplied fields change. Filter changes reset to page one unless page is supplied. Unknown fields refused.", valueType: "object", valueKind: "json", updatesValue: "assist_view", mode: "ui", applyPolicy: "auto", group: "inbox_view", sortOrder: 100 },
+    { name: "resume_assists", label: "Resume assists", description: "Turns global assists back on through the synced quiet preference, like the existing Turn on button. Value must be boolean true. Does not accept or execute any assist; refused until preferences hydrate.", valueType: "boolean", updatesValue: "assist_quiet", mode: "entity", applyPolicy: "ask", group: "inbox_view", sortOrder: 110 },
+    { name: "update_assists", label: "Update assists", description: "Saves triage changes through existing row controls after approval; never executes an assist. JSON ARRAY of {id: loaded assist UUID, starred?: boolean, status?: pending|dismissed, snooze?: 1d|7d|30d}. Exactly one change per entry. pending restores the assist; dismissed removes it from active suggestions; snooze is allowed only for pending rows. Send status or snooze, not both. Unknown/unloaded or repeated ids refused before any change. No create/delete targets: this inbox has no record creation/deletion controls; dismiss preserves the record.", valueType: "array", valueKind: "json", updatesValue: "loaded_assists", mode: "entity", applyPolicy: "ask", group: "inbox_state", sortOrder: 120 },
+  ],
   values: mergeBaselineValues(pickBaseline("selection", "context"), surfaceSpecific),
 };
 
@@ -164,6 +174,9 @@ export function createAssistsScope(values: {
   assist_load_state: "loading" | "ready" | "failed";
   assist_load_error?: string;
   assist_table_query: object;
+  assist_table_controls: object;
+  assist_preferences_ready: boolean;
+  assist_overview: string;
   assist_status_counts?: object;
   loaded_assists?: unknown[];
   source_suppressions?: unknown[];

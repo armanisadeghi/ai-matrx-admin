@@ -7,6 +7,7 @@
 
 "use client";
 
+import type { TableUrlState } from "@ai-matrx/design-system/data-table/url-state";
 import { DriftSeverityBadge } from "@/features/agents/components/usages/DriftSeverityBadge";
 import { DRIFT_SEVERITY_ORDER } from "@/features/agents/components/usages/severity";
 import { cn } from "@/lib/utils";
@@ -36,6 +37,7 @@ interface RollupTableProps {
   sort: { key: ReportSortKey; desc: boolean };
   onSort: (key: ReportSortKey) => void;
   summary?: RollupSummary;
+  table?: TableUrlState;
 }
 
 type CanonicalRollupRow = { agentId: string; agentName: string; currentVersion: number; usages: number; breaking: number; silent: number; stale: number; affectedUsers?: number };
@@ -48,6 +50,7 @@ export function RollupTable({
   onSelect,
   sort,
   summary,
+  table,
 }: RollupTableProps) {
   const isAdmin = mode === "admin";
   const count = isAdmin ? adminRows.length : rows.length;
@@ -87,7 +90,7 @@ export function RollupTable({
           className="px-3 py-1.5"
         />
       ) : null}
-      <MatrxDataTable urlState={{ id: `agent-drift-${mode}`, defaultSort: { id: sort.key === 'agentName' ? 'agent' : sort.key === 'totalUsages' ? 'usages' : sort.key === 'stalePins' ? 'stale' : sort.key, direction: sort.desc ? 'desc' : 'asc' } }} data={canonicalRows} columns={columns} getRowId={(row) => row.agentId} pageSize={50} onRowOpen={(row) => onSelect(row.agentId)} tableStyle={oneRowTint(selectedAgentId)} toolbar={{ search: true, searchPlaceholder: 'Search agents…' }} detail={{ enabled: false }} />
+      <MatrxDataTable {...(table ? { query: { mode: "controlled-local" as const, state: table.state, onStateChange: table.onStateChange } } : { urlState: { id: `agent-drift-${mode}`, defaultSort: { id: sort.key === 'agentName' ? 'agent' : sort.key === 'totalUsages' ? 'usages' : sort.key === 'stalePins' ? 'stale' : sort.key, direction: sort.desc ? 'desc' as const : 'asc' as const } } })} data={canonicalRows} columns={columns} getRowId={(row) => row.agentId} pageSize={50} onRowOpen={(row) => onSelect(row.agentId)} tableStyle={oneRowTint(selectedAgentId)} toolbar={{ search: true, searchPlaceholder: 'Search agents…' }} detail={{ enabled: false }} />
     </>
   );
 }
