@@ -1,0 +1,3577 @@
+[
+  {
+    "product": "Marketing",
+    "family": "Business",
+    "summary": "An agency-style workspace: pick a client, then work on their websites, search ranking, content, social, local listings and outreach. Roll-ups, research tools and connections sit outside any one client.",
+    "entry": "/marketing",
+    "clientSwitcher": {
+      "at": "top of the sidebar",
+      "target": "/marketing/brands",
+      "note": "Shows the picked client (name from /marketing/[brandId]); every \"client\" section below uses that client. With no client picked, only the Clients section and the agency-wide sections show."
+    },
+    "sections": [
+      {
+        "name": "Clients",
+        "route": "/marketing/brands",
+        "clientScoped": false,
+        "why": "Every client, add one, and the cross-client hub.",
+        "pages": [
+          {
+            "route": "/marketing/brands",
+            "title": "Clients",
+            "role": "list",
+            "reachedFrom": [
+              "@menu",
+              "/cms/[siteId]/settings",
+              "/marketing/[brandId]/ads"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/inbox",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]"
+            ]
+          },
+          {
+            "route": "/marketing",
+            "title": "Marketing hub",
+            "role": "list",
+            "reachedFrom": [
+              "@menu",
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/inbox"
+            ]
+          },
+          {
+            "route": "/marketing/brands/new-website",
+            "title": "New website",
+            "role": "create",
+            "reachedFrom": [
+              "/marketing/[brandId]/analytics",
+              "/marketing/[brandId]/content/plan",
+              "/marketing/[brandId]/identity/guidelines"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/brands/smart-add/company",
+            "title": "Smart Add: company",
+            "role": "create",
+            "reachedFrom": [
+              "/marketing/[brandId]",
+              "/marketing/brands",
+              "/marketing/brands/offerings"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/marketing/brands/smart-add/enrich/[brandId]",
+            "title": "Smart Add: enrich",
+            "role": "create",
+            "reachedFrom": [
+              "/marketing/[brandId]",
+              "/marketing/brands",
+              "/marketing"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/marketing/brands/smart-add/found",
+            "title": "Smart Add: what we found",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]",
+              "/marketing/brands",
+              "/marketing"
+            ],
+            "leadsTo": []
+          }
+        ]
+      },
+      {
+        "name": "Overview",
+        "route": "/marketing/[brandId]",
+        "clientScoped": true,
+        "why": "One client at a glance: properties, health, activity, inbox.",
+        "pages": [
+          {
+            "route": "/marketing/[brandId]",
+            "title": "Client overview",
+            "role": "record",
+            "reachedFrom": [
+              "/marketing/[brandId]/content/map/[mapId]/graph",
+              "/marketing/[brandId]/content/map/[mapId]/history",
+              "/marketing/[brandId]/content/map/[mapId]"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/analytics",
+              "/marketing/[brandId]/content/map/[mapId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/analytics",
+            "title": "Analytics",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/socials",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands/new-website"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/inbox",
+            "title": "Inbox",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]",
+              "/marketing/[brandId]/websites/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/identity",
+              "/marketing/[brandId]/offerings",
+              "/marketing/[brandId]/socials"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Websites",
+        "route": "/marketing/[brandId]/websites",
+        "clientScoped": true,
+        "why": "The client's sites: pages, structure, sitemaps, crawls, media, settings.",
+        "pages": [
+          {
+            "route": "/marketing/[brandId]/websites",
+            "title": "Websites",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/identity/guidelines",
+              "/marketing/[brandId]/identity/knowledge",
+              "/marketing/[brandId]/identity/offerings"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/socials",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands/new-website"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]",
+            "title": "Site overview",
+            "role": "record",
+            "reachedFrom": [
+              "/marketing/[brandId]/identity/guidelines",
+              "/marketing/[brandId]/identity/knowledge",
+              "/marketing/[brandId]/identity/offerings"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/content/map/[mapId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/crawls",
+            "title": "Crawls",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/websites/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/sites"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]",
+            "title": "Crawl",
+            "role": "record",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/sites"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/links",
+            "title": "Links",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]/authority",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/logs",
+            "title": "Logs",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/sites"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports",
+            "title": "Reports",
+            "role": "report",
+            "reachedFrom": [
+              "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports/[reportKey]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/sites"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports/[reportKey]",
+            "title": "Report",
+            "role": "record",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/snapshots",
+            "title": "Snapshots",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/urls",
+            "title": "Urls",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/crawls/new",
+            "title": "New",
+            "role": "create",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/media",
+            "title": "Media",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/websites/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/media/standards",
+            "title": "Standards",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/media/videos",
+            "title": "Videos",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/pages",
+            "title": "Pages",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/websites/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+            "title": "Page",
+            "role": "record",
+            "reachedFrom": [
+              "/cms/[siteId]/pages/[pageId]",
+              "/cms/[siteId]/pages/new",
+              "/marketing/[brandId]/content/plan/[siteId]/ai-runs"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/intelligence/reputation/[siteId]",
+              "/marketing/[brandId]/seo/[siteId]/authority",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots",
+            "title": "Snapshots",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/[snapshotId]",
+            "title": "Snapshot",
+            "role": "record",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/settings",
+            "title": "Settings",
+            "role": "settings",
+            "reachedFrom": [
+              "/marketing/[brandId]/websites/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/[brandId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/settings/access",
+            "title": "Access",
+            "role": "settings",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/[brandId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/settings/intake",
+            "title": "Intake",
+            "role": "settings",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/[brandId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/settings/integrations",
+            "title": "Integrations",
+            "role": "settings",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/[brandId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/sitemaps",
+            "title": "Sitemaps",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/websites/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/sites"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/sitemaps/[sitemapId]",
+            "title": "Sitemap",
+            "role": "record",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/structure",
+            "title": "Structure",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/websites/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/brands",
+              "/marketing/sites"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/websites/[siteId]/structure/columns",
+            "title": "Columns",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/brands",
+              "/marketing/sites"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "SEO",
+        "route": "/marketing/[brandId]/seo",
+        "clientScoped": true,
+        "why": "Search work on a site: audit, keywords, rankings, backlinks, search console, AI visibility.",
+        "pages": [
+          {
+            "route": "/marketing/[brandId]/seo",
+            "title": "SEO (pick a site)",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]",
+              "/marketing/admin",
+              "/marketing/brands/smart-add"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/intelligence/competitors",
+              "/marketing/[brandId]/seo/[siteId]/keywords",
+              "/marketing/[brandId]/socials"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]",
+            "title": "Site SEO overview",
+            "role": "record",
+            "reachedFrom": [
+              "/marketing/[brandId]/intelligence/reputation/[siteId]",
+              "/marketing/[brandId]",
+              "/marketing/[brandId]/websites/[siteId]"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/intelligence/reputation/[siteId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/ai-visibility",
+            "title": "Ai Visibility",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/brands",
+              "/marketing/sites",
+              "/seo/ai-visibility"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/ai-visibility/[view]",
+            "title": "Ai Visibility",
+            "role": "record",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/intelligence/competitors",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/analysis",
+            "title": "Analysis",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/audit",
+            "title": "Audit",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/authority",
+            "title": "Authority",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]/backlinks/anchors",
+              "/marketing/[brandId]/seo/[siteId]/backlinks/changes",
+              "/marketing/[brandId]/seo/[siteId]/backlinks/competitors"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/authority/evidence",
+            "title": "Evidence",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/authority/routes",
+            "title": "Routes",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/automations",
+            "title": "Automations",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/content-plan/[siteId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/automations/history",
+            "title": "History",
+            "role": "report",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/content-plan/[siteId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/automations/proposals",
+            "title": "Proposals",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/content-plan/[siteId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/automations/unplaced",
+            "title": "Unplaced",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/content-plan/[siteId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/backlinks",
+            "title": "Backlinks",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/intelligence/monitoring/setup",
+              "/marketing/[brandId]/intelligence/reputation/[siteId]",
+              "/marketing/[brandId]/seo/[siteId]/authority"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/backlinks/anchors",
+            "title": "Anchors",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/intelligence/monitoring/setup",
+              "/marketing/[brandId]/intelligence/reputation/[siteId]",
+              "/marketing/[brandId]/seo/[siteId]/authority"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/backlinks/changes",
+            "title": "Changes",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/intelligence/monitoring/setup",
+              "/marketing/[brandId]/intelligence/reputation/[siteId]",
+              "/marketing/[brandId]/seo/[siteId]/authority"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/backlinks/competitors",
+            "title": "Competitors",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/intelligence/monitoring/setup",
+              "/marketing/[brandId]/intelligence/reputation/[siteId]",
+              "/marketing/[brandId]/seo/[siteId]/authority"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/backlinks/coverage",
+            "title": "Coverage",
+            "role": "report",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/intelligence/monitoring/setup",
+              "/marketing/[brandId]/intelligence/reputation/[siteId]",
+              "/marketing/[brandId]/seo/[siteId]/authority"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/backlinks/domains",
+            "title": "Domains",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/intelligence/monitoring/setup",
+              "/marketing/[brandId]/intelligence/reputation/[siteId]",
+              "/marketing/[brandId]/seo/[siteId]/authority"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/backlinks/insights",
+            "title": "Insights",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/intelligence/monitoring/setup",
+              "/marketing/[brandId]/intelligence/reputation/[siteId]",
+              "/marketing/[brandId]/seo/[siteId]/authority"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/backlinks/links",
+            "title": "Links",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/intelligence/monitoring/setup",
+              "/marketing/[brandId]/intelligence/reputation/[siteId]",
+              "/marketing/[brandId]/seo/[siteId]/authority"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/backlinks/pages",
+            "title": "Pages",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/intelligence/monitoring/setup",
+              "/marketing/[brandId]/intelligence/reputation/[siteId]",
+              "/marketing/[brandId]/seo/[siteId]/authority"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/backlinks/prospects",
+            "title": "Prospects",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/intelligence/monitoring/setup",
+              "/marketing/[brandId]/intelligence/reputation/[siteId]",
+              "/marketing/[brandId]/seo/[siteId]/authority"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/capabilities",
+            "title": "Capabilities",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/admin",
+              "/marketing/capabilities"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands/new-website",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/changes",
+            "title": "Changes",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/admin",
+              "/marketing/changes/[changeId]"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/changes/untracked",
+            "title": "Untracked",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/context",
+            "title": "Context",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/identity",
+              "/marketing/[brandId]/intelligence/competitors",
+              "/marketing/[brandId]/planning/initiatives"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/coverage",
+            "title": "Coverage",
+            "role": "report",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/content/map/[mapId]",
+              "/marketing/[brandId]/content/map",
+              "/marketing/[brandId]/content/plan"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/findings",
+            "title": "Findings",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/findings/[findingId]",
+            "title": "Finding",
+            "role": "record",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/growth-loop",
+            "title": "Growth Loop",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/content-plan/[siteId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/keywords",
+            "title": "Keywords",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/[brandId]/seo",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/keywords/performance",
+            "title": "Performance",
+            "role": "report",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/keywords/research",
+            "title": "Research",
+            "role": "tool",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/keywords/value",
+            "title": "Value",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/keywords/value/dimensions",
+            "title": "Dimensions",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands/[brandId]/[[...rest]]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/keywords/value/packs",
+            "title": "Packs",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/keywords/value/rules",
+            "title": "Rules",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/keywords/value/settings",
+            "title": "Settings",
+            "role": "settings",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/sites"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+            "title": "Workbench",
+            "role": "tool",
+            "reachedFrom": [
+              "/marketing/[brandId]/content/map/[mapId]/graph",
+              "/marketing/[brandId]/content/map/[mapId]/history",
+              "/marketing/[brandId]/content/map/[mapId]"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/links",
+            "title": "Links",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]/authority",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/links/external",
+            "title": "External",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]/authority",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/links/plan",
+            "title": "Plan",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]/authority",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/links/table",
+            "title": "Table",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]/authority",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/performance",
+            "title": "Performance",
+            "role": "report",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/rankings",
+            "title": "Rankings",
+            "role": "report",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/reports",
+            "title": "Reports",
+            "role": "report",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]"
+            ],
+            "leadsTo": [
+              "/marketing/brands",
+              "/marketing/sites"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/search-console",
+            "title": "Search console",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/[brandId]/seo/[siteId]/search-console/digs",
+              "/marketing/[brandId]/seo/[siteId]/search-console/insights"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/search-console/digs",
+            "title": "Digs",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/seo/[siteId]/search-console",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/search-console/insights",
+            "title": "Insights",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/seo/[siteId]/search-console",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/search-console/new-pages",
+            "title": "New Pages",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/seo/[siteId]/search-console",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/search-console/watchlist",
+            "title": "Watchlist",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/seo/[siteId]/search-console",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/seo/[siteId]/valuation",
+            "title": "Valuation",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/marketing/ai-visibility/runs/[runId]",
+            "title": "Runs",
+            "role": "record",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/seo/ai-visibility"
+            ]
+          },
+          {
+            "route": "/marketing/growth-loop/[loopRunId]",
+            "title": "Growth Loop",
+            "role": "record",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Content",
+        "route": "/marketing/[brandId]/content/plan",
+        "clientScoped": true,
+        "why": "What to write and publish: content plans and topical maps.",
+        "pages": [
+          {
+            "route": "/marketing/[brandId]/content/plan",
+            "title": "Content plan",
+            "role": "list",
+            "reachedFrom": [
+              "/cms/[siteId]/pages/[pageId]",
+              "/cms/[siteId]/pages/new",
+              "/marketing/[brandId]/content/map"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/marketing/[brandId]/content/map",
+              "/marketing/[brandId]/socials"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/content",
+            "title": "Topical maps (home)",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/content/map/[mapId]",
+              "/marketing/[brandId]/content/map",
+              "/marketing/[brandId]/content/plan"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/content/map",
+            "title": "Map",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/content/map/[mapId]/graph",
+              "/marketing/[brandId]/content/map/[mapId]/history",
+              "/marketing/[brandId]/content/map/[mapId]"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/content/map/[mapId]",
+              "/marketing/[brandId]/content/plan",
+              "/marketing/[brandId]/identity"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/content/map/[mapId]",
+            "title": "Map",
+            "role": "record",
+            "reachedFrom": [
+              "/cms/[siteId]/pages/[pageId]",
+              "/cms/[siteId]/pages/new",
+              "/marketing/[brandId]/content/map/[mapId]/graph"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/content/map"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/content/map/[mapId]/graph",
+            "title": "Graph",
+            "role": "tool",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/content/map/[mapId]",
+              "/marketing/[brandId]/content/map",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/content/map/[mapId]/history",
+            "title": "History",
+            "role": "report",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/content/map/[mapId]",
+              "/marketing/[brandId]/content/map",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/content/map/[mapId]/pages",
+            "title": "Pages",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/content/map/[mapId]",
+              "/marketing/[brandId]/content/map",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/content/map/[mapId]/table",
+            "title": "Table",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/content/map/[mapId]",
+              "/marketing/[brandId]/content/map",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/content/map/[mapId]/text",
+            "title": "Text",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/content/map/[mapId]",
+              "/marketing/[brandId]/content/map",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/content/plan/[siteId]",
+            "title": "Plan",
+            "role": "record",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/content/map/[mapId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/content/plan/[siteId]/ai-runs",
+            "title": "Ai Runs",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/content/map/[mapId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/content/plan/[siteId]/brief",
+            "title": "Brief",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/content/map/[mapId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/content/plan/[siteId]/entities",
+            "title": "Entities",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/content/map/[mapId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/content/plan/[siteId]/map",
+            "title": "Map",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/content/map/[mapId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/content/plan/[siteId]/setup",
+            "title": "Setup",
+            "role": "settings",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/content/map/[mapId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/content/plan/[siteId]/table",
+            "title": "Table",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/content/map/[mapId]"
+            ]
+          },
+          {
+            "route": "/marketing/topical-maps/[mapId]",
+            "title": "Topical Map",
+            "role": "record",
+            "reachedFrom": [
+              "/cms/[siteId]/collections",
+              "/cms/[siteId]/components",
+              "/cms/[siteId]"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/content/map/[mapId]",
+              "/marketing/[brandId]/content/map",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench"
+            ]
+          },
+          {
+            "route": "/marketing/topical-maps/start",
+            "title": "Start",
+            "role": "create",
+            "reachedFrom": [
+              "/marketing/[brandId]/websites/[siteId]"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/content/map/[mapId]",
+              "/marketing/[brandId]/content/map",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Social",
+        "route": "/marketing/[brandId]/socials",
+        "clientScoped": true,
+        "why": "The client's accounts, look-ups, outliers, swipe file, video studio, ad library.",
+        "pages": [
+          {
+            "route": "/marketing/[brandId]/socials/[platform]/[accountId]",
+            "title": "Social",
+            "role": "record",
+            "reachedFrom": [
+              "/marketing/[brandId]/intelligence/competitors/competitors",
+              "/marketing/[brandId]/intelligence/competitors/evidence",
+              "/marketing/[brandId]/intelligence/competitors/history"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/socials/accounts",
+              "/marketing/[brandId]/socials",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/socials/accounts",
+            "title": "Accounts",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]",
+              "/marketing/[brandId]/socials/[platform]/[accountId]"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/marketing/[brandId]/socials/ads",
+            "title": "Ad library",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/marketing/[brandId]/socials/kpis",
+            "title": "Kpis",
+            "role": "report",
+            "reachedFrom": [
+              "/marketing/[brandId]"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/socials/[platform]/[accountId]",
+              "/marketing/[brandId]/socials",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/socials/outliers",
+            "title": "Outliers",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/socials"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/socials/post/[postId]",
+            "title": "Post",
+            "role": "record",
+            "reachedFrom": [
+              "/marketing/[brandId]/socials"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/socials/[platform]/[accountId]",
+              "/marketing/[brandId]/socials",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/socials/research",
+            "title": "Look up",
+            "role": "tool",
+            "reachedFrom": [
+              "/marketing/[brandId]"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/marketing/[brandId]/socials/studio",
+            "title": "Studio",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/socials",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/socials/swipe",
+            "title": "Swipe file",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/socials"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/socials/videos",
+            "title": "Videos",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/socials"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/socials/videos/[projectId]",
+            "title": "Video",
+            "role": "record",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/socials"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/socials/videos/formats",
+            "title": "Formats",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/socials"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/socials/videos/new",
+            "title": "New",
+            "role": "create",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/socials"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Local & Listings",
+        "route": "/marketing/[brandId]/locations",
+        "clientScoped": true,
+        "why": "Business locations, listings, reviews and the local rank grid.",
+        "pages": [
+          {
+            "route": "/marketing/[brandId]/locations",
+            "title": "Locations",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/locations/[locationId]/grid",
+              "/marketing/[brandId]/locations/[locationId]",
+              "/marketing/[brandId]"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations/[locationId]/grid",
+              "/marketing/[brandId]/locations/[locationId]",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/locations/[locationId]",
+            "title": "Location",
+            "role": "record",
+            "reachedFrom": [
+              "/marketing/[brandId]/locations/[locationId]/grid",
+              "/marketing/[brandId]/locations",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations/[locationId]/grid",
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/locations/[locationId]/grid",
+            "title": "Grid",
+            "role": "tool",
+            "reachedFrom": [
+              "/marketing/[brandId]/locations/[locationId]",
+              "/marketing/[brandId]/locations"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/locations/[locationId]"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Press, Email & Ads",
+        "route": "/marketing/[brandId]/pr",
+        "clientScoped": true,
+        "why": "Outreach: press room, email, advertising, PR calendar and initiatives.",
+        "pages": [
+          {
+            "route": "/marketing/[brandId]/pr",
+            "title": "Press room",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/socials"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/ads",
+            "title": "Advertising",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/email",
+            "title": "Email",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/planning/calendar",
+            "title": "Calendar",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/planning/initiatives",
+            "title": "Initiatives",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/planning",
+              "/marketing/[brandId]/seo/[siteId]/context",
+              "/marketing/admin"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/marketing/[brandId]/planning/initiatives/[id]",
+            "title": "Initiative",
+            "role": "record",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/initiatives"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/pr/outreach",
+            "title": "Outreach",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/socials",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands/new-website"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Competitors & Reputation",
+        "route": "/marketing/[brandId]/intelligence/competitors",
+        "clientScoped": true,
+        "why": "Who else is out there, what is said about the client, news monitors, what AI says.",
+        "pages": [
+          {
+            "route": "/marketing/[brandId]/intelligence/competitors",
+            "title": "Competitors",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/identity",
+              "/marketing/[brandId]/intelligence/competitors/all",
+              "/marketing/[brandId]/intelligence/competitors/competitors"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/identity"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/intelligence/ai-visibility",
+            "title": "What AI says",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/intelligence/competitors/competitors",
+            "title": "Competitors",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/identity"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/intelligence/competitors/evidence",
+            "title": "Evidence",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/identity"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/intelligence/competitors/history",
+            "title": "History",
+            "role": "report",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/identity"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/intelligence/competitors/opportunities",
+            "title": "Opportunities",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/identity"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/intelligence/competitors/review",
+            "title": "Review",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/identity"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/intelligence/competitors/run",
+            "title": "Run",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/identity"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/intelligence/monitoring",
+            "title": "Monitoring",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/intelligence/monitoring/setup",
+              "/marketing/[brandId]/intelligence/reputation",
+              "/marketing/[brandId]"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/intelligence/monitoring/setup"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/intelligence/monitoring/setup",
+            "title": "Setup",
+            "role": "settings",
+            "reachedFrom": [
+              "/marketing/[brandId]/intelligence/monitoring",
+              "/marketing/[brandId]/seo/[siteId]/backlinks/anchors",
+              "/marketing/[brandId]/seo/[siteId]/backlinks/changes"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/identity"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/intelligence/reputation",
+            "title": "Reputation",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/intelligence/monitoring"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/intelligence/reputation/[siteId]",
+            "title": "Reputation",
+            "role": "record",
+            "reachedFrom": [
+              "/marketing/[brandId]/intelligence/reputation",
+              "/marketing/[brandId]/seo/[siteId]/backlinks/anchors",
+              "/marketing/[brandId]/seo/[siteId]/backlinks/changes"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/seo/[siteId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/intelligence/reputation/[siteId]/cases",
+            "title": "Cases",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/[brandId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/intelligence/reputation/[siteId]/evidence",
+            "title": "Evidence",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/[brandId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/intelligence/reputation/[siteId]/narratives",
+            "title": "Narratives",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/[brandId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/intelligence/reputation/[siteId]/publications",
+            "title": "Publications",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/[brandId]"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Brand",
+        "route": "/marketing/[brandId]/identity",
+        "clientScoped": true,
+        "why": "Who the client is: voice, strategy, audience, claims, media, products.",
+        "pages": [
+          {
+            "route": "/marketing/[brandId]/identity",
+            "title": "Identity",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/content/map",
+              "/marketing/[brandId]/content",
+              "/marketing/[brandId]/content/plan/[siteId]/ai-runs"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/intelligence/competitors",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/identity/audience",
+            "title": "Audience",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/sites"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/identity/claims",
+            "title": "Claims",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/sites"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/identity/guidelines",
+            "title": "Guidelines",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/identity/knowledge",
+            "title": "Knowledge",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/identity/media",
+            "title": "Media",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/identity/media/generate",
+            "title": "Generate",
+            "role": "tool",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/identity/media/research",
+            "title": "Research",
+            "role": "tool",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/identity/media/sources",
+            "title": "Sources",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/identity/messaging",
+            "title": "Messaging",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/sites"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/identity/offerings",
+            "title": "Products & services (identity copy)",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/[brandId]/websites/[siteId]",
+              "/marketing/[brandId]/websites"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/identity/strategy",
+            "title": "Strategy",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/identity",
+              "/marketing/brands",
+              "/marketing/sites"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/identity/voice",
+            "title": "Voice",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/socials",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/[brandId]/offerings",
+            "title": "Products & services",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/inbox",
+              "/marketing/[brandId]",
+              "/marketing/brands/offerings"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Client settings",
+        "route": "/marketing/[brandId]/settings",
+        "clientScoped": true,
+        "why": "The client's address and settings.",
+        "pages": [
+          {
+            "route": "/marketing/[brandId]/settings",
+            "title": "Settings",
+            "role": "settings",
+            "reachedFrom": [
+              "/marketing/[brandId]",
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/sites"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Reports",
+        "route": "/marketing/reports",
+        "clientScoped": false,
+        "why": "Roll-ups across all clients: reports, cost, ranks, search console, social.",
+        "pages": [
+          {
+            "route": "/marketing/reports",
+            "title": "Reports",
+            "role": "report",
+            "reachedFrom": [
+              "@menu",
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/reports/cost",
+            "title": "Cost",
+            "role": "report",
+            "reachedFrom": [
+              "@menu",
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio"
+            ],
+            "leadsTo": [
+              "/marketing/brands",
+              "/marketing/operations/approvals",
+              "/marketing/operations/connections"
+            ]
+          },
+          {
+            "route": "/marketing/reports/ranks",
+            "title": "Rank roll-up",
+            "role": "report",
+            "reachedFrom": [
+              "@menu",
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands",
+              "/marketing/operations/approvals"
+            ]
+          },
+          {
+            "route": "/marketing/reports/search-console",
+            "title": "Search console roll-up",
+            "role": "report",
+            "reachedFrom": [
+              "@menu",
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/reports/search-console/digs",
+            "title": "Digs",
+            "role": "report",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/reports/search-console/insights",
+            "title": "Insights",
+            "role": "report",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/reports/search-console/new-pages",
+            "title": "New Pages",
+            "role": "report",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/reports/search-console/watchlist",
+            "title": "Watchlist",
+            "role": "report",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/locations",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/social",
+            "title": "Social roll-up",
+            "role": "list",
+            "reachedFrom": [
+              "@menu",
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/socials",
+              "/marketing/brands",
+              "/marketing/operations/approvals"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Research tools",
+        "route": "/marketing/tools",
+        "clientScoped": false,
+        "why": "Free analyzers and research for any site, plus the zip-code heatmap.",
+        "pages": [
+          {
+            "route": "/marketing/tools",
+            "title": "All SEO tools",
+            "role": "tool",
+            "reachedFrom": [
+              "@menu",
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/inbox"
+            ]
+          },
+          {
+            "route": "/free/zip-code-heatmap",
+            "title": "Zip code heatmap",
+            "role": "tool",
+            "reachedFrom": [
+              "@menu",
+              "/free/zip-code-heatmap/[id]"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/marketing/tools/domain",
+            "title": "Domain research",
+            "role": "tool",
+            "reachedFrom": [
+              "@menu",
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/tools/domain/check",
+            "title": "Website check",
+            "role": "tool",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/tools/youtube",
+            "title": "YouTube research",
+            "role": "tool",
+            "reachedFrom": [
+              "@menu",
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio"
+            ],
+            "leadsTo": [
+              "/marketing/tools/youtube/videos/[videoId]"
+            ]
+          },
+          {
+            "route": "/marketing/tools/youtube/videos/[videoId]",
+            "title": "Video",
+            "role": "record",
+            "reachedFrom": [
+              "/marketing/admin",
+              "/marketing/discovery/youtube/videos/[videoId]",
+              "/marketing/tools/youtube"
+            ],
+            "leadsTo": [
+              "/marketing/tools/youtube"
+            ]
+          },
+          {
+            "route": "/seo/ai-visibility",
+            "title": "Ai Visibility",
+            "role": "tool",
+            "reachedFrom": [
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio",
+              "/marketing/[brandId]/seo/[siteId]/ai-visibility/[view]"
+            ],
+            "leadsTo": [
+              "/marketing/brands",
+              "/marketing/keyword-research",
+              "/marketing/operations/approvals"
+            ]
+          },
+          {
+            "route": "/seo/metadata",
+            "title": "Metadata",
+            "role": "tool",
+            "reachedFrom": [
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio",
+              "/marketing"
+            ],
+            "leadsTo": [
+              "/marketing/brands",
+              "/marketing/keyword-research",
+              "/marketing/operations/approvals"
+            ]
+          },
+          {
+            "route": "/seo/page-audit",
+            "title": "Page Audit",
+            "role": "tool",
+            "reachedFrom": [
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio",
+              "/marketing"
+            ],
+            "leadsTo": [
+              "/marketing/brands",
+              "/marketing/keyword-research",
+              "/marketing/operations/approvals"
+            ]
+          },
+          {
+            "route": "/seo/robots-tester",
+            "title": "Robots Tester",
+            "role": "tool",
+            "reachedFrom": [
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio",
+              "/marketing"
+            ],
+            "leadsTo": [
+              "/marketing/brands",
+              "/marketing/keyword-research",
+              "/marketing/operations/approvals"
+            ]
+          },
+          {
+            "route": "/seo/social-preview",
+            "title": "Social Preview",
+            "role": "tool",
+            "reachedFrom": [
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio",
+              "/marketing"
+            ],
+            "leadsTo": [
+              "/marketing/brands",
+              "/marketing/keyword-research",
+              "/marketing/operations/approvals"
+            ]
+          },
+          {
+            "route": "/seo/structured-data",
+            "title": "Structured Data",
+            "role": "tool",
+            "reachedFrom": [
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio",
+              "/marketing"
+            ],
+            "leadsTo": [
+              "/marketing/brands",
+              "/marketing/keyword-research",
+              "/marketing/operations/approvals"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Operations",
+        "route": "/marketing/operations/connections",
+        "clientScoped": false,
+        "why": "Connect Google and Bing, automations, approvals, capabilities, data quality.",
+        "pages": [
+          {
+            "route": "/marketing/operations/connections",
+            "title": "Connections",
+            "role": "list",
+            "reachedFrom": [
+              "@menu",
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio"
+            ],
+            "leadsTo": [
+              "/marketing/operations/connections/bing",
+              "/marketing/operations/connections/google"
+            ]
+          },
+          {
+            "route": "/marketing/connections/bing/callback",
+            "title": "Bing sign-in return",
+            "role": "tool",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/operations/connections/bing"
+            ]
+          },
+          {
+            "route": "/marketing/operations/approvals",
+            "title": "Approvals",
+            "role": "list",
+            "reachedFrom": [
+              "@menu",
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/brands"
+            ]
+          },
+          {
+            "route": "/marketing/operations/automations",
+            "title": "Automations",
+            "role": "list",
+            "reachedFrom": [
+              "@menu",
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/operations/automations/history",
+            "title": "History",
+            "role": "report",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/operations/automations/proposals",
+            "title": "Proposals",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/operations/automations/unplaced",
+            "title": "Unplaced",
+            "role": "list",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/operations/capabilities",
+            "title": "SEO capabilities",
+            "role": "list",
+            "reachedFrom": [
+              "@menu",
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/marketing/operations/connections/bing",
+            "title": "Bing",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]/seo/[siteId]/keywords",
+              "/marketing/[brandId]/seo/[siteId]/keywords/performance",
+              "/marketing/[brandId]/seo/[siteId]/keywords/workbench"
+            ],
+            "leadsTo": [
+              "/marketing/connections"
+            ]
+          },
+          {
+            "route": "/marketing/operations/connections/google",
+            "title": "Google",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/[brandId]",
+              "/marketing/[brandId]/seo/[siteId]/search-console/digs",
+              "/marketing/[brandId]/seo/[siteId]/search-console/insights"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]",
+              "/marketing/connections",
+              "/marketing/operations/connections/bing"
+            ]
+          },
+          {
+            "route": "/marketing/operations/connections/google/read-only",
+            "title": "Read Only",
+            "role": "list",
+            "reachedFrom": [
+              "/marketing/admin"
+            ],
+            "leadsTo": [
+              "/marketing/operations/connections/google"
+            ]
+          },
+          {
+            "route": "/marketing/operations/data-quality",
+            "title": "Data quality",
+            "role": "list",
+            "reachedFrom": [
+              "@menu",
+              "/marketing/[brandId]/ads",
+              "/marketing/[brandId]/content/studio"
+            ],
+            "leadsTo": []
+          }
+        ]
+      },
+      {
+        "name": "Publish",
+        "route": "/cms",
+        "clientScoped": false,
+        "why": "Websites we publish: CMS, HTML pages, artifacts, podcasts.",
+        "pages": [
+          {
+            "route": "/cms",
+            "title": "CMS sites",
+            "role": "list",
+            "reachedFrom": [
+              "@menu",
+              "/artifacts/[id]",
+              "/cms/[siteId]"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms/html-pages"
+            ]
+          },
+          {
+            "route": "/artifacts",
+            "title": "Artifacts",
+            "role": "list",
+            "reachedFrom": [
+              "@menu",
+              "/artifacts/[id]"
+            ],
+            "leadsTo": [
+              "/artifacts/[id]",
+              "/cms/html-pages/[pageId]",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/artifacts/[id]",
+            "title": "Artifact",
+            "role": "record",
+            "reachedFrom": [
+              "/artifacts",
+              "/cms/[siteId]/pages/[pageId]",
+              "/cms/[siteId]/pages/new"
+            ],
+            "leadsTo": [
+              "/artifacts",
+              "/cms/[siteId]",
+              "/cms/html-pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/cms/[siteId]",
+            "title": "Cms",
+            "role": "record",
+            "reachedFrom": [
+              "/artifacts/[id]",
+              "/cms/[siteId]/collections",
+              "/cms/[siteId]/components"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]/collections",
+              "/cms/[siteId]/components",
+              "/cms/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/cms/[siteId]/collections",
+            "title": "Collections",
+            "role": "list",
+            "reachedFrom": [
+              "/cms/[siteId]",
+              "/cms/[siteId]/collections/[collectionId]",
+              "/cms/[siteId]/components"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]/collections/[collectionId]",
+              "/cms/[siteId]/components",
+              "/cms/[siteId]/pages/new"
+            ]
+          },
+          {
+            "route": "/cms/[siteId]/collections/[collectionId]",
+            "title": "Collection",
+            "role": "record",
+            "reachedFrom": [
+              "/cms/[siteId]/collections",
+              "/cms/admin"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]/collections"
+            ]
+          },
+          {
+            "route": "/cms/[siteId]/components",
+            "title": "Components",
+            "role": "list",
+            "reachedFrom": [
+              "/cms/[siteId]",
+              "/cms/[siteId]/collections",
+              "/cms/[siteId]/pages/[pageId]"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]/collections",
+              "/cms/[siteId]/pages/new",
+              "/cms/[siteId]/settings"
+            ]
+          },
+          {
+            "route": "/cms/[siteId]/pages/[pageId]",
+            "title": "Page",
+            "role": "record",
+            "reachedFrom": [
+              "/cms/[siteId]",
+              "/cms/[siteId]/pages/new",
+              "/cms/admin"
+            ],
+            "leadsTo": [
+              "/artifacts/[id]",
+              "/cms/[siteId]/collections",
+              "/cms/[siteId]/components"
+            ]
+          },
+          {
+            "route": "/cms/[siteId]/pages/new",
+            "title": "New",
+            "role": "create",
+            "reachedFrom": [
+              "/cms/[siteId]",
+              "/cms/[siteId]/collections",
+              "/cms/[siteId]/components"
+            ],
+            "leadsTo": [
+              "/artifacts/[id]",
+              "/cms/[siteId]/collections",
+              "/cms/[siteId]/components"
+            ]
+          },
+          {
+            "route": "/cms/[siteId]/settings",
+            "title": "Settings",
+            "role": "settings",
+            "reachedFrom": [
+              "/cms/[siteId]",
+              "/cms/[siteId]/collections",
+              "/cms/[siteId]/components"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]/collections",
+              "/cms/[siteId]/components",
+              "/cms/[siteId]/pages/new"
+            ]
+          },
+          {
+            "route": "/cms/admin",
+            "title": "CMS admin map",
+            "role": "list",
+            "reachedFrom": [
+              "/cms/[siteId]",
+              "/cms/[siteId]/collections",
+              "/cms/[siteId]/components"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]/collections/[collectionId]",
+              "/cms/[siteId]/collections",
+              "/cms/[siteId]/components"
+            ]
+          },
+          {
+            "route": "/cms/html-pages",
+            "title": "HTML pages",
+            "role": "list",
+            "reachedFrom": [
+              "@menu",
+              "/cms/admin",
+              "/cms"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]/pages/[pageId]",
+              "/cms/html-pages/[pageId]",
+              "/cms"
+            ]
+          },
+          {
+            "route": "/cms/html-pages/[pageId]",
+            "title": "Html Page",
+            "role": "record",
+            "reachedFrom": [
+              "/artifacts/[id]",
+              "/artifacts",
+              "/cms/[siteId]/pages/[pageId]"
+            ],
+            "leadsTo": [
+              "/artifacts/[id]",
+              "/cms/[siteId]/pages/[pageId]"
+            ]
+          },
+          {
+            "route": "/podcast",
+            "title": "Podcasts",
+            "role": "list",
+            "reachedFrom": [
+              "@menu",
+              "/podcast/[slug]",
+              "/podcast/studio"
+            ],
+            "leadsTo": [
+              "/podcast/[slug]",
+              "/podcast/studio/create",
+              "/podcast/studio/show/[showId]"
+            ]
+          },
+          {
+            "route": "/podcast/[slug]",
+            "title": "Podcast",
+            "role": "record",
+            "reachedFrom": [
+              "/podcast",
+              "/podcast/studio/create",
+              "/podcast/studio"
+            ],
+            "leadsTo": [
+              "/podcast"
+            ]
+          },
+          {
+            "route": "/podcast/[slug]/blog",
+            "title": "Blog",
+            "role": "list",
+            "reachedFrom": [
+              "/podcast/studio/run/[id]"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/podcast/studio",
+            "title": "Podcast studio",
+            "role": "list",
+            "reachedFrom": [
+              "@menu",
+              "/podcast",
+              "/podcast/studio/create"
+            ],
+            "leadsTo": [
+              "/podcast/[slug]",
+              "/podcast/studio/create",
+              "/podcast/studio/show/[showId]"
+            ]
+          },
+          {
+            "route": "/podcast/studio/create",
+            "title": "Create",
+            "role": "create",
+            "reachedFrom": [
+              "@menu",
+              "/podcast",
+              "/podcast/studio"
+            ],
+            "leadsTo": [
+              "/podcast/[slug]",
+              "/podcast/studio/run/[id]",
+              "/podcast/studio"
+            ]
+          },
+          {
+            "route": "/podcast/studio/run/[id]",
+            "title": "Run",
+            "role": "record",
+            "reachedFrom": [
+              "/podcast/studio/create"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/podcast/studio/show/[showId]",
+            "title": "Show",
+            "role": "record",
+            "reachedFrom": [
+              "/podcast",
+              "/podcast/studio"
+            ],
+            "leadsTo": [
+              "/cms/[siteId]",
+              "/cms",
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          },
+          {
+            "route": "/site/[slug]",
+            "title": "Shared public page",
+            "role": "record",
+            "reachedFrom": [
+              "(no link found)"
+            ],
+            "leadsTo": [
+              "/marketing/[brandId]/websites/[siteId]/[...rest]"
+            ]
+          }
+        ]
+      }
+    ],
+    "journeys": [
+      {
+        "name": "Audit a client's website",
+        "steps": [
+          "/marketing/brands",
+          "/marketing/[brandId]",
+          "/marketing/[brandId]/websites",
+          "/marketing/[brandId]/websites/[siteId]",
+          "/marketing/[brandId]/websites/[siteId]/crawls/new",
+          "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]",
+          "/marketing/[brandId]/seo/[siteId]/findings"
+        ]
+      },
+      {
+        "name": "Add a new client with Smart Add",
+        "steps": [
+          "/marketing/brands",
+          "/marketing/brands/smart-add/company",
+          "/marketing/brands/smart-add/found",
+          "/marketing/brands/smart-add/enrich/[brandId]",
+          "/marketing/[brandId]",
+          "/marketing/[brandId]/identity"
+        ]
+      },
+      {
+        "name": "Find and track keywords for a site",
+        "steps": [
+          "/marketing/[brandId]/seo",
+          "/marketing/[brandId]/seo/[siteId]",
+          "/marketing/[brandId]/seo/[siteId]/keywords",
+          "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+          "/marketing/[brandId]/seo/[siteId]/rankings"
+        ]
+      },
+      {
+        "name": "Plan and write new content",
+        "steps": [
+          "/marketing/[brandId]/content/plan",
+          "/marketing/[brandId]/content/plan/[siteId]",
+          "/marketing/topical-maps/start",
+          "/marketing/topical-maps/[mapId]",
+          "/cms",
+          "/cms/[siteId]/pages/new"
+        ]
+      },
+      {
+        "name": "Check a client's social competitors",
+        "steps": [
+          "/marketing/[brandId]/socials/accounts",
+          "/marketing/[brandId]/socials/research",
+          "/marketing/[brandId]/socials/outliers",
+          "/marketing/[brandId]/intelligence/competitors"
+        ]
+      },
+      {
+        "name": "Connect Google, then see search results",
+        "steps": [
+          "/marketing/operations/connections",
+          "/marketing/operations/connections/google",
+          "/marketing/reports/search-console",
+          "/marketing/[brandId]/seo/[siteId]/search-console"
+        ]
+      },
+      {
+        "name": "Quick-check any website (no client needed)",
+        "steps": [
+          "/marketing/tools",
+          "/marketing/tools/domain",
+          "/marketing/tools/domain/check",
+          "/seo/page-audit"
+        ]
+      },
+      {
+        "name": "Weekly cross-client review",
+        "steps": [
+          "/marketing/reports",
+          "/marketing/reports/ranks",
+          "/marketing/reports/cost",
+          "/marketing/operations/approvals",
+          "/marketing/operations/automations"
+        ]
+      }
+    ],
+    "stranded": [
+      {
+        "route": "/marketing/[brandId]/content/studio",
+        "why": "Reserved empty page (Coming Soon) that nothing links to.",
+        "proposedHome": "Content"
+      },
+      {
+        "route": "/marketing/brands/offerings",
+        "why": "Third copy of the products list; nothing links to it.",
+        "proposedHome": "Brand"
+      },
+      {
+        "route": "/marketing/brands/smart-add/person",
+        "why": "A Smart Add step no page links to.",
+        "proposedHome": "Clients"
+      },
+      {
+        "route": "/marketing/brands/smart-add/validate/[brandId]",
+        "why": "A Smart Add step no page links to.",
+        "proposedHome": "Clients"
+      },
+      {
+        "route": "/marketing/calendar",
+        "why": "Cross-client PR calendar chooser; only the dev admin map links it.",
+        "proposedHome": "Press, Email & Ads"
+      },
+      {
+        "route": "/marketing/monitoring",
+        "why": "Agency-wide news monitors list; only the dev admin map links it.",
+        "proposedHome": "Competitors & Reputation"
+      },
+      {
+        "route": "/marketing/monitoring/[trackerId]",
+        "why": "One news monitor; nothing links to it.",
+        "proposedHome": "Competitors & Reputation"
+      },
+      {
+        "route": "/marketing/properties/[propertyId]",
+        "why": "A property record with no link in; only the admin map names it.",
+        "proposedHome": "Websites"
+      },
+      {
+        "route": "/marketing/pages/[pageId]",
+        "why": "Un-scoped copy of the Page Workspace; the client-scoped page has the real links.",
+        "proposedHome": "Websites"
+      },
+      {
+        "route": "/marketing/snapshots/[snapshotId]",
+        "why": "Un-scoped page snapshot; reached only from the un-scoped page.",
+        "proposedHome": "Websites"
+      },
+      {
+        "route": "/marketing/screenshots/[screenshotId]",
+        "why": "Un-scoped screenshot; reached only from the un-scoped snapshot.",
+        "proposedHome": "Websites"
+      },
+      {
+        "route": "/marketing/admin",
+        "why": "Developer map of every Marketing page; not for marketers.",
+        "proposedHome": "(admin site)"
+      },
+      {
+        "route": "/seo",
+        "why": "Public SEO tools index marked Coming soon; no menu entry.",
+        "proposedHome": "Research tools"
+      },
+      {
+        "route": "/free/zip-code-heatmap/[id]",
+        "why": "A saved heatmap with no link in.",
+        "proposedHome": "Research tools"
+      },
+      {
+        "route": "/marketing/topical-maps/topics/[topicId]",
+        "why": "One topic of a map; nothing links to it.",
+        "proposedHome": "Content"
+      }
+    ],
+    "buried": [
+      {
+        "route": "/marketing/[brandId]/websites",
+        "depth": 3,
+        "why": "Marketing > Clients > pick a client > Websites. The menu opens on the client list and Websites only appears after a client is picked.",
+        "proposal": "Make Websites the first section under the client switcher; with one client, skip the list and land on it."
+      },
+      {
+        "route": "/marketing/[brandId]/websites/[siteId]",
+        "depth": 4,
+        "why": "A site is reached through client, then Websites, then the site; no cross-client site list exists (the old one was removed).",
+        "proposal": "Add an \"All websites\" view in the Clients section, filterable by client."
+      },
+      {
+        "route": "/marketing/[brandId]/seo/[siteId]",
+        "depth": 4,
+        "why": "SEO first asks for a client, then a site, then shows the tools.",
+        "proposal": "Remember the last site per client; open straight onto it."
+      },
+      {
+        "route": "/marketing/operations/connections",
+        "depth": 2,
+        "why": "Google and Bing must be connected before any ranking or search data shows, yet the link sits in the Operations group at the bottom.",
+        "proposal": "Show a \"Connect Google\" prompt on the client overview and SEO pages until done."
+      },
+      {
+        "route": "/marketing/[brandId]/identity/voice",
+        "depth": 4,
+        "why": "Voice, strategy, claims and audience hide behind a card grid on the Identity page.",
+        "proposal": "List the identity rooms as sidebar children of Brand."
+      },
+      {
+        "route": "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+        "depth": 6,
+        "why": "The main keyword tool is client > SEO > site > Keywords > Workbench.",
+        "proposal": "Put Keywords as a direct sidebar row of the site SEO menu with Workbench as its default tab."
+      },
+      {
+        "route": "/marketing/[brandId]/socials/videos",
+        "depth": 4,
+        "why": "The video studio is a tab on Social, with create/formats only inside it.",
+        "proposal": "Keep, but add a \"New video\" button on the Social overview."
+      }
+    ],
+    "missingFromTree": [
+      {
+        "name": "Websites",
+        "route": "/marketing/[brandId]/websites",
+        "why": "TREE.md lists \"hub, brands, SEO, search console, social, CMS & pages, podcasts, artifacts, reports, automations, approvals, research, heatmap\" with no Websites. It is the client's main asset and the base of SEO."
+      },
+      {
+        "name": "Content",
+        "route": "/marketing/[brandId]/content/plan",
+        "why": "Content plans and topical maps are a core marketing job; TREE only has CMS & pages."
+      },
+      {
+        "name": "Local & Listings",
+        "route": "/marketing/[brandId]/locations",
+        "why": "Locations, Google Business Profiles, reviews and the local rank grid are not in TREE."
+      },
+      {
+        "name": "Press, Email & Ads",
+        "route": "/marketing/[brandId]/pr",
+        "why": "PR, outreach, email and advertising have routes (some Coming Soon) but no TREE entry."
+      },
+      {
+        "name": "Competitors & Reputation",
+        "route": "/marketing/[brandId]/intelligence/competitors",
+        "why": "Competitors, news monitoring, AI visibility and reputation are not in TREE."
+      },
+      {
+        "name": "Brand (identity)",
+        "route": "/marketing/[brandId]/identity",
+        "why": "Voice, strategy, audience and claims are not in TREE."
+      },
+      {
+        "name": "Connections",
+        "route": "/marketing/operations/connections",
+        "why": "Google/Bing connection is the gate to rankings; TREE lists automations and approvals but not connections, capabilities or data quality."
+      },
+      {
+        "name": "Client switcher",
+        "route": "/marketing/brands",
+        "why": "The agency model (client first) is not in TREE."
+      }
+    ],
+    "legacy": [
+      {
+        "route": "/marketing/[brandId]/intelligence",
+        "kind": "redirect",
+        "note": "Sends people to Competitors (first tab)."
+      },
+      {
+        "route": "/marketing/[brandId]/intelligence/competitors/all",
+        "kind": "redirect",
+        "note": "Sends people to Competitors."
+      },
+      {
+        "route": "/marketing/[brandId]/planning",
+        "kind": "redirect",
+        "note": "Sends people to Initiatives."
+      },
+      {
+        "route": "/marketing/[brandId]/seo/[siteId]/[...rest]",
+        "kind": "redirect",
+        "note": "Sends people to the right site sub-page (catch-all for old addresses)."
+      },
+      {
+        "route": "/marketing/[brandId]/socials",
+        "kind": "redirect",
+        "note": "Sends people to Social > Accounts."
+      },
+      {
+        "route": "/marketing/[brandId]/websites/[siteId]/[...rest]",
+        "kind": "redirect",
+        "note": "Sends people to the right site sub-page (catch-all for old addresses)."
+      },
+      {
+        "route": "/marketing/admin/keyword-data-quality",
+        "kind": "redirect",
+        "note": "Sends people to Operations > Data Quality."
+      },
+      {
+        "route": "/marketing/ads",
+        "kind": "redirect",
+        "note": "Sends people to the Clients list."
+      },
+      {
+        "route": "/marketing/ai-visibility",
+        "kind": "redirect",
+        "note": "Sends people to the Clients list."
+      },
+      {
+        "route": "/marketing/approvals",
+        "kind": "redirect",
+        "note": "Sends people to Operations > Approvals."
+      },
+      {
+        "route": "/marketing/audience",
+        "kind": "redirect",
+        "note": "Sends people to the Clients list."
+      },
+      {
+        "route": "/marketing/automations",
+        "kind": "redirect",
+        "note": "Sends people to Operations > Automations."
+      },
+      {
+        "route": "/marketing/backlink-valuation",
+        "kind": "redirect",
+        "note": "Sends people to the Clients list."
+      },
+      {
+        "route": "/marketing/brands/[brandId]/[[...rest]]",
+        "kind": "redirect",
+        "note": "Sends people to the client workspace (old address under /brands)."
+      },
+      {
+        "route": "/marketing/brands/smart-add",
+        "kind": "redirect",
+        "note": "Sends people to Smart Add > company."
+      },
+      {
+        "route": "/marketing/capabilities",
+        "kind": "redirect",
+        "note": "Sends people to Operations > SEO Capabilities."
+      },
+      {
+        "route": "/marketing/changes/[changeId]",
+        "kind": "redirect",
+        "note": "Sends people to the site Changes page for that change."
+      },
+      {
+        "route": "/marketing/competitors",
+        "kind": "redirect",
+        "note": "Sends people to the Clients list."
+      },
+      {
+        "route": "/marketing/connections",
+        "kind": "redirect",
+        "note": "Sends people to Operations > Connections."
+      },
+      {
+        "route": "/marketing/connections/bing",
+        "kind": "redirect",
+        "note": "Sends people to Operations > Connections > Bing."
+      },
+      {
+        "route": "/marketing/connections/google/read-only",
+        "kind": "redirect",
+        "note": "Sends people to Operations > Connections > Google read-only."
+      },
+      {
+        "route": "/marketing/content-plan",
+        "kind": "redirect",
+        "note": "Sends people to the Clients list."
+      },
+      {
+        "route": "/marketing/content-plan/[siteId]",
+        "kind": "redirect",
+        "note": "Sends people to the client Content plan for that site."
+      },
+      {
+        "route": "/marketing/content-plan/nodes/[nodeId]",
+        "kind": "redirect",
+        "note": "Sends people to the client Content plan."
+      },
+      {
+        "route": "/marketing/content-studio",
+        "kind": "redirect",
+        "note": "Sends people to the Clients list."
+      },
+      {
+        "route": "/marketing/cost",
+        "kind": "redirect",
+        "note": "Sends people to Reports > Cost."
+      },
+      {
+        "route": "/marketing/discovery/youtube",
+        "kind": "redirect",
+        "note": "Sends people to Research tools > YouTube."
+      },
+      {
+        "route": "/marketing/discovery/youtube/videos/[videoId]",
+        "kind": "redirect",
+        "note": "Sends people to Research tools > YouTube video."
+      },
+      {
+        "route": "/marketing/email",
+        "kind": "redirect",
+        "note": "Sends people to the Clients list."
+      },
+      {
+        "route": "/marketing/initiatives",
+        "kind": "redirect",
+        "note": "Sends people to the Clients list."
+      },
+      {
+        "route": "/marketing/initiatives/[id]",
+        "kind": "redirect",
+        "note": "Sends people to the client Initiatives page."
+      },
+      {
+        "route": "/marketing/keyword-intelligence",
+        "kind": "redirect",
+        "note": "Sends people to the Clients list."
+      },
+      {
+        "route": "/marketing/keyword-research",
+        "kind": "redirect",
+        "note": "Sends people to the Clients list."
+      },
+      {
+        "route": "/marketing/local",
+        "kind": "redirect",
+        "note": "Sends people to the client Locations page (or the Clients list)."
+      },
+      {
+        "route": "/marketing/outreach",
+        "kind": "redirect",
+        "note": "Sends people to the Clients list."
+      },
+      {
+        "route": "/marketing/pr",
+        "kind": "redirect",
+        "note": "Sends people to the Clients list."
+      },
+      {
+        "route": "/marketing/ranks",
+        "kind": "redirect",
+        "note": "Sends people to Reports > Rank Roll-up."
+      },
+      {
+        "route": "/marketing/search-console",
+        "kind": "redirect",
+        "note": "Sends people to Reports > Search Console."
+      },
+      {
+        "route": "/marketing/sites",
+        "kind": "redirect",
+        "note": "Sends people to the Clients list."
+      },
+      {
+        "route": "/marketing/sites/[siteId]",
+        "kind": "redirect",
+        "note": "Sends people to the client Websites > site page."
+      },
+      {
+        "route": "/marketing/sites/[siteId]/[...rest]",
+        "kind": "redirect",
+        "note": "Sends people to the client Websites > site sub-page."
+      },
+      {
+        "route": "/marketing/sites/new",
+        "kind": "redirect",
+        "note": "Sends people to Clients > New website."
+      }
+    ],
+    "duplicates": [
+      {
+        "routes": [
+          "/marketing/brands/offerings",
+          "/marketing/[brandId]/offerings",
+          "/marketing/[brandId]/identity/offerings"
+        ],
+        "note": "Three places list products and services."
+      },
+      {
+        "routes": [
+          "/marketing/[brandId]/content",
+          "/marketing/[brandId]/content/map"
+        ],
+        "note": "Same topical-maps home rendered at two addresses."
+      },
+      {
+        "routes": [
+          "/marketing/topical-maps/[mapId]",
+          "/marketing/[brandId]/content/map/[mapId]"
+        ],
+        "note": "Topical map exists un-scoped and client-scoped; both are live and linked."
+      },
+      {
+        "routes": [
+          "/marketing/pages/[pageId]",
+          "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
+        ],
+        "note": "Page Workspace at an un-scoped and a client-scoped address."
+      },
+      {
+        "routes": [
+          "/marketing/monitoring",
+          "/marketing/[brandId]/intelligence/monitoring"
+        ],
+        "note": "News monitors: agency list and per-client list."
+      },
+      {
+        "routes": [
+          "/marketing/operations/automations",
+          "/marketing/[brandId]/seo/[siteId]/automations"
+        ],
+        "note": "Automations console per organization and per site, same four tabs."
+      },
+      {
+        "routes": [
+          "/marketing/operations/capabilities",
+          "/marketing/[brandId]/seo/[siteId]/capabilities"
+        ],
+        "note": "SEO capabilities catalog and per-site view."
+      },
+      {
+        "routes": [
+          "/marketing/reports/search-console",
+          "/marketing/[brandId]/seo/[siteId]/search-console"
+        ],
+        "note": "Search console roll-up and per-site, same four tabs."
+      },
+      {
+        "routes": [
+          "/marketing/[brandId]/websites/[siteId]/media",
+          "/marketing/[brandId]/identity/media"
+        ],
+        "note": "Site media redirects into brand media for some views; two media homes."
+      },
+      {
+        "routes": [
+          "/marketing/[brandId]/ads",
+          "/marketing/[brandId]/socials/ads"
+        ],
+        "note": "Advertising (Google Ads) and the social ad library are separate ad homes."
+      },
+      {
+        "routes": [
+          "/marketing/[brandId]/intelligence/ai-visibility",
+          "/marketing/[brandId]/seo/[siteId]/ai-visibility",
+          "/seo/ai-visibility"
+        ],
+        "note": "AI visibility lives per client, per site and as a free public tool."
+      },
+      {
+        "routes": [
+          "/marketing/brands/new-website",
+          "/cms"
+        ],
+        "note": "Adding a website for tracking vs creating a site to publish are two doors with similar names."
+      }
+    ]
+  }
+]
