@@ -4,10 +4,9 @@
  * The brand home's Overview tab: one bounded card per area, each a SUMMARY that opens its own
  * tab or page (never the full list on the home). Reads only what BrandWorkspace already loaded.
  */
-import { useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowRight, AtSign, Globe2, ImageOff, Images, ListChecks, Plus } from "lucide-react";
+import { ArrowRight, Globe2, ImageOff, ListChecks, Plus } from "lucide-react";
 import { useOutsideImage } from "@/features/marketing/lib/useOutsideImage";
 import type { LucideIcon } from "lucide-react";
 
@@ -19,7 +18,6 @@ import { contactFactValue } from "@/features/marketing/lib/ContactFactValue";
 import { businessFactValueText } from "@/features/marketing/lib/business-fact-value";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { SiteIdentityMark } from "@/features/marketing/components/shared/SiteConnectionChips";
-import { PropertyKindMark } from "@/features/marketing/components/shared/PropertyKindMark";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { BUSINESS_FACT_KIND_LABELS } from "@/features/marketing/types";
 import type { BrandProperty, BusinessFact, BusinessFactKind, MarketingSite } from "@/features/marketing/types";
@@ -33,8 +31,6 @@ const CONTACT_KINDS: ReadonlyArray<{ kind: BusinessFactKind; label: string }> = 
 ];
 
 const PREVIEW_SITES = 4;
-const PREVIEW_MARKS = 14;
-const PREVIEW_ASSETS = 8;
 
 export interface OverviewFactGroup {
   kind: BusinessFactKind;
@@ -224,44 +220,6 @@ export function BrandOverviewWebsites({
   );
 }
 
-export function BrandOverviewSocial({
-  properties,
-  onOpen,
-}: {
-  properties: BrandProperty[];
-  onOpen: () => void;
-}) {
-  const platforms = new Map<string, number>();
-  for (const property of properties) platforms.set(property.kind, (platforms.get(property.kind) ?? 0) + 1);
-  return (
-    <SectionCard
-      title="Social profiles"
-      anchor="overview-social"
-      headerExtra={<OpenLink label={properties.length ? `All ${properties.length}` : "Open"} onClick={onOpen} />}
-    >
-      {properties.length === 0 ? (
-        <EmptyState icon={<AtSign />} title="No social profiles yet" />
-      ) : (
-        <div className="flex flex-wrap items-center gap-2 p-3">
-          {[...platforms.entries()].slice(0, PREVIEW_MARKS).map(([kind, count]) => (
-            <button
-              key={kind}
-              type="button"
-              onClick={onOpen}
-              className="matrx-tap-area inline-flex items-center gap-1 rounded-md px-1 py-0.5 hover:bg-accent/40"
-              aria-label={`${kind}: ${count}`}
-              title={`${kind}: ${count}`}
-            >
-              <PropertyKindMark kind={kind} size={24} />
-              {count > 1 ? <span className="type-meta tabular-nums text-muted-foreground">{count}</span> : null}
-            </button>
-          ))}
-        </div>
-      )}
-    </SectionCard>
-  );
-}
-
 export function BrandOverviewFacts({
   groups,
   total,
@@ -304,7 +262,7 @@ export function BrandOverviewFacts({
  * One asset tile: shimmer while the picture loads; outside pictures fall back through useOutsideImage; a source
  * that truly fails shows an image glyph and its site's domain, never a broken image.
  */
-function AssetTile({ asset, onOpen }: { asset: OverviewAsset; onOpen: () => void }) {
+export function AssetTile({ asset, onOpen }: { asset: OverviewAsset; onOpen: () => void }) {
   const image = useOutsideImage(asset.preview);
   return (
     <button
@@ -337,39 +295,10 @@ function AssetTile({ asset, onOpen }: { asset: OverviewAsset; onOpen: () => void
   );
 }
 
-export function BrandOverviewAssets({
-  assets,
-  total,
-  onOpen,
-}: {
-  assets: OverviewAsset[];
-  total: number;
-  onOpen: () => void;
-}) {
-  const shown = assets.filter((asset) => asset.preview || asset.color).slice(0, PREVIEW_ASSETS);
-  return (
-    <SectionCard
-      title="Brand assets"
-      anchor="overview-assets"
-      headerExtra={<OpenLink label={total ? `All ${total}` : "Open"} onClick={onOpen} />}
-    >
-      {shown.length === 0 ? (
-        <EmptyState icon={<Images />} title="No assets yet" />
-      ) : (
-        <div className="grid grid-cols-4 gap-2 p-3 sm:grid-cols-8 lg:grid-cols-4">
-          {shown.map((asset) => (
-            <AssetTile key={asset.id} asset={asset} onOpen={onOpen} />
-          ))}
-        </div>
-      )}
-    </SectionCard>
-  );
-}
-
-/** The brand home while it loads: the same frame (header card, tab bar, two-column grid), so nothing moves when it arrives. */
 /** The brand hero's one height at every width — the hero and its loading placeholder share it, so nothing moves. */
 export const BRAND_HERO_FRAME = "h-[156px]";
 
+/** The brand home while it loads: the same frame (hero, tab bar, KPI band, two columns), so nothing moves when it arrives. */
 export function BrandHomeSkeleton() {
   return (
     <main className="h-full overflow-y-auto bg-textured p-3 pt-[calc(var(--shell-header-h)+0.5rem)] sm:p-4 sm:pt-[calc(var(--shell-header-h)+0.75rem)]">
@@ -383,6 +312,12 @@ export function BrandHomeSkeleton() {
           </div>
         </div>
         <div className="h-[33px] rounded-lg border border-border bg-card" />
+        {/* The Overview's KPI band (KpiGrid: 2 / 3 / 6 across), each tile its loaded height. */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          {Array.from({ length: 6 }, (_, i) => (
+            <div key={i} className="h-[76px] rounded-md border border-border bg-card" />
+          ))}
+        </div>
         <div className="grid items-start gap-3 lg:grid-cols-3">
           <div className="grid min-w-0 gap-3 lg:col-span-2">
             <div className="h-64 rounded-lg border border-border bg-card" />

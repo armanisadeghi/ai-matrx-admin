@@ -60,7 +60,6 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { useBrandSocialAccounts } from "@/features/marketing/social/hooks";
-import { brandAccountHref } from "@/features/marketing/social/property-account-href";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { webCopy } from "@/features/marketing/lib/copy-payloads";
 import { businessFactValueText } from "@/features/marketing/lib/business-fact-value";
@@ -89,12 +88,17 @@ import {
   BRAND_HERO_FRAME,
   BrandHomeSkeleton,
   BrandOverviewAbout,
-  BrandOverviewAssets,
   BrandOverviewContact,
   BrandOverviewFacts,
-  BrandOverviewSocial,
   BrandOverviewWebsites,
 } from "@/features/marketing/components/brands/BrandOverview";
+import {
+  BrandOverviewAccounts,
+  BrandOverviewActions,
+  BrandOverviewKnown,
+  BrandOverviewKpis,
+  BrandOverviewLook,
+} from "@/features/marketing/components/brands/BrandOverviewPanels";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
@@ -120,11 +124,6 @@ import {
   SiteConnectionChips,
   SiteIdentityMark,
 } from "@/features/marketing/components/shared/SiteConnectionChips";
-import {
-  PropertyKindMark,
-  propertyPublicUrl,
-  toPropertyKind,
-} from "@/features/marketing/components/shared/PropertyKindMark";
 import { useAccess } from "@/utils/permissions/access";
 import { canEditAccess } from "@/utils/permissions/access-core";
 import { BrandSocialProfilesCard } from "@/features/marketing/components/brands/BrandSocialProfilesCard";
@@ -134,7 +133,6 @@ import { BrandWebDecisionsSection } from "@/features/marketing/components/brands
 import { BrandFirmographicSection, BrandPresenceSection, BrandRecognitionSection } from "./BrandTempHomes";
 import { BrandBackgroundWork } from "@/features/marketing/components/brands/BrandBackgroundWork";
 import { factDisplayLabel } from "@/features/marketing/lib/factLabel";
-import { BrandOfferingsSummary } from "@/features/marketing/offerings/BrandOfferingsPanel";
 import { BrandArchiveFlow } from "@/features/marketing/components/brands/BrandArchiveFlow";
 import { ChangeReviewWindow } from "@/features/trash/review/ChangeReviewWindow";
 import { PersonBrandAvatar, PersonFollowerTotal } from "@/features/marketing/components/brands/PersonBrandAvatar";
@@ -145,7 +143,6 @@ import { linkLabel as linkLabelOf } from "@/features/marketing/lib/link-in-bio";
 import {
   BRAND_ASSET_KIND_LABELS,
   BUSINESS_FACT_KIND_LABELS,
-  PROPERTY_KIND_LABELS,
   isBrandAssetKind,
   isBusinessFactKind,
   isJsonRecord,
@@ -172,8 +169,6 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@ai-matrx/design-system";
-import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
-import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** Compact icon-button used by every cockpit row's edit/delete actions. */
@@ -215,6 +210,24 @@ function RowActionButton({
 }
 
 /** A stored website may lack its scheme; a bare domain in an href is a relative link. */
+/** The most saturated of the brand's colors (a near-white or near-black never leads); null when there are none. */
+function vividColor(values: readonly string[]): string | null {
+  let best: { value: string; score: number } | null = null;
+  for (const value of values) {
+    const hex = value.trim().replace(/^#/, "");
+    const full = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex.slice(0, 6);
+    if (!/^[0-9a-f]{6}$/i.test(full)) continue;
+    const [r, g, b] = [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255);
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const light = (max + min) / 2;
+    const sat = max === min ? 0 : (max - min) / (1 - Math.abs(2 * light - 1));
+    const score = sat * (1 - Math.abs(light - 0.5));
+    if (!best || score > best.score) best = { value: `#${full}`, score };
+  }
+  return best && best.score > 0.05 ? best.value : null;
+}
+
 function externalHref(url: string): string {
   return /^[a-z][a-z0-9+.-]*:/i.test(url) ? url : `https://${url}`;
 }
@@ -582,7 +595,14 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   // The tab lives in the URL (?tab=), so a reload, a shared link and Back all keep it.
-  const [tab, setTabState] = useState<BrandTab>(() => toBrandTab(searchParams.get("tab")));
+  const urlTab = toBrandTab(searchParams.get("tab"));
+  const [tab, setTabState] = useState<BrandTab>(urlTab);
+  // A link that changes ?tab= (a KPI tile, Back) opens that tab: follow the URL when it moves.
+  const [seenUrlTab, setSeenUrlTab] = useState<BrandTab>(urlTab);
+  if (urlTab !== seenUrlTab) {
+    setSeenUrlTab(urlTab);
+    setTabState(urlTab);
+  }
   const setTab = (next: BrandTab) => {
     setTabState(next);
     const params = new URLSearchParams(searchParams.toString());
@@ -697,6 +717,23 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
       a.sort_order - b.sort_order,
   );
   const factGroups = groupFactsByKind(factRows);
+  const brandSeg = marketingSeg(current);
+  const tabHref = (next: string) => `${marketingRoutes.brand(brandSeg)}${next === "overview" ? "" : `?tab=${next}`}`;
+  const brandColors = sortedAssets
+    .map((asset) => ({ id: asset.id, value: assetColorValue(asset), name: asset.title }))
+    .filter((c): c is { id: string; value: string; name: string | null } => Boolean(c.value));
+  const brandFonts = sortedAssets
+    .filter((asset) => asset.kind === "font" && (asset.title || asset.source_url))
+    .map((asset) => ({ id: asset.id, name: asset.title || (asset.source_url ?? "") }));
+  const toOverviewAsset = (asset: BrandAsset) => ({
+    id: asset.id,
+    preview: assetPreviewUrl(asset),
+    color: null,
+    label: isBrandAssetKind(asset.kind) ? BRAND_ASSET_KIND_LABELS[asset.kind] : humanizeIdentifier(asset.kind) || asset.kind,
+  });
+  const heroAccent = vividColor(brandColors.map((c) => c.value));
+  const LOGO_KINDS: readonly string[] = ["logo", "logo_dark", "wordmark", "favicon", "headshot"];
+  const logoAssets = sortedAssets.filter((asset) => LOGO_KINDS.includes(asset.kind) && assetPreviewUrl(asset)).map(toOverviewAsset);
 
   // Surface scope — assembled at trigger time from what the cockpit already
   // loaded. No fetching; keys are omitted when their data is not loaded yet.
@@ -880,7 +917,18 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
           {/* A person brand leads with the person: their face and their accounts come first. */}
           {/* Fixed-height hero (BRAND_HERO_FRAME): every line holds its height from first paint, so the
               loading placeholder and the loaded page are the same size at every width. */}
-          <section className={`${BRAND_HERO_FRAME} flex items-start gap-3 overflow-hidden rounded-lg border border-border bg-card p-4 sm:gap-4${isPersonBrand(current) ? " order-first" : ""}`}>
+          <section className={`${BRAND_HERO_FRAME} relative isolate flex items-start gap-3 overflow-hidden rounded-lg border border-border bg-card p-4 sm:gap-4${isPersonBrand(current) ? " order-first" : ""}`}>
+            {/* The brand's most vivid color as a thin top edge and a faint wash (its data, not a theme color). */}
+            {heroAccent ? (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 -z-10"
+                  style={{ background: `linear-gradient(120deg, color-mix(in srgb, ${heroAccent} 16%, transparent), transparent 55%)` }}
+                />
+                <span aria-hidden="true" className="absolute inset-x-0 top-0 -z-10 h-1" style={{ background: heroAccent }} />
+              </>
+            ) : null}
             <div className="size-12 shrink-0 sm:size-[72px] [&>*]:!size-full">
               {isPersonBrand(current) ? (
                 <PersonBrandAvatar
@@ -1026,59 +1074,10 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   <SmartAddSetupStatus brandId={current.id} organizationId={current.organization_id} />
                 </div>
               </div>
-              {/* One non-wrapping row of accounts; what does not fit is a +N that opens the Social tab. */}
-              <div className="mt-2 flex h-6 min-w-0 flex-nowrap items-center gap-x-2 overflow-hidden">
-                {socialProperties.slice(0, 8).map((property, index) => {
-                  // A phone shows six marks; the +N below counts what each width hides.
-                  const phoneHidden = index >= 6 ? " max-sm:hidden" : "";
-                  const accountRow = (socialAccounts.data ?? []).find((r) => r.propertyId === property.id);
-                  const href = accountRow
-                    ? brandAccountHref(marketingSeg(current), accountRow)
-                    : propertyPublicUrl(property);
-                  const internal = Boolean(accountRow && href);
-                  const label =
-                    PROPERTY_KIND_LABELS[toPropertyKind(property.kind)];
-                  const title = property.handle
-                    ? `${label} · ${formatSocialHandle({ platform: property.kind, handle: property.handle, url: property.url })}`
-                    : label;
-                  return internal && href ? (
-                    <Link
-                      prefetch={false}
-                      key={property.id}
-                      href={href}
-                      title={title}
-                      aria-label={title}
-                      className={`matrx-tap-area inline-flex shrink-0 transition-transform hover:scale-110${phoneHidden}`}
-                    >
-                      <PropertyKindMark kind={property.kind} size={24} />
-                    </Link>
-                  ) : href ? (
-                    <OutboundLink
-                      key={property.id}
-                      href={href}
-                      title={title}
-                      aria-label={title}
-                      className={`matrx-tap-area inline-flex shrink-0 transition-transform hover:scale-110${phoneHidden}`}
-                    >
-                      <PropertyKindMark kind={property.kind} size={24} />
-                    </OutboundLink>
-                  ) : (
-                    <span key={property.id} className={`inline-flex shrink-0${phoneHidden}`}>
-                      <PropertyKindMark kind={property.kind} size={24} />
-                    </span>
-                  );
-                })}
-                {socialProperties.length > 6 ? (
-                  <button type="button" onClick={() => setTab("social")} className="shrink-0 type-meta tabular-nums text-muted-foreground hover:text-foreground sm:hidden">
-                    +{socialProperties.length - 6}
-                  </button>
-                ) : null}
-                {socialProperties.length > 8 ? (
-                  <button type="button" onClick={() => setTab("social")} className="hidden shrink-0 type-meta tabular-nums text-muted-foreground hover:text-foreground sm:inline">
-                    +{socialProperties.length - 8}
-                  </button>
-                ) : null}
-              </div>
+              {/* One line of who the brand is; the accounts themselves are rows on the Overview, never icons here. */}
+              <p className="mt-2 h-6 min-w-0 truncate type-secondary leading-6 text-muted-foreground" title={current.description ?? undefined}>
+                {current.description ?? ""}
+              </p>
             </div>
           </section>
           {sharing ? (
@@ -1129,61 +1128,84 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
           </nav>
 
           {tab === "overview" ? (
-            <div className="grid items-start gap-3 lg:grid-cols-3">
-              <div className="grid min-w-0 gap-3 lg:col-span-2">
-                <BrandOverviewAbout
-                  facts={factRows}
-                  description={current.description}
-                  industry={current.industry}
-                  websiteUrl={publicWebsiteUrl}
-                  canEdit={canEdit}
-                  onAdd={() => setFactEditor({ open: true, fact: null })}
-                />
-                {/* Products & services: a one-line summary here; the grouped table lives on its own page. */}
-                <SectionCard
-                  title="Products & services"
-                  anchor="products-and-services"
-                  className="scroll-mt-24"
-                  action={{ label: "Open list", href: marketingRoutes.brandOfferings(brandId) }}
-                >
-                  <BrandOfferingsSummary
-                    brand={{ id: current.id, name: current.name, organizationId: current.organization_id }}
+            <div className="grid gap-3">
+              <BrandOverviewKpis
+                brandId={current.id}
+                brandSeg={brandSeg}
+                siteIds={websiteSites.map((site) => site.id)}
+                accounts={socialAccounts.data ?? []}
+                accountsLoading={socialAccounts.isLoading}
+                competitors={(parseBrandProfile(current.profile).competitors ?? []).length}
+                tabHref={tabHref}
+              />
+              <div className="grid items-start gap-3 lg:grid-cols-3">
+                <div className="grid min-w-0 gap-3 lg:col-span-2">
+                  <BrandOverviewAccounts
+                    brandId={current.id}
+                    brandSeg={brandSeg}
+                    organizationId={current.organization_id}
+                    accounts={socialAccounts.data ?? []}
+                    loading={socialAccounts.isLoading}
+                    expectedRows={socialProperties.length}
+                    error={socialAccounts.isError ? socialAccounts.error : undefined}
+                    onRetry={() => void socialAccounts.refetch()}
+                    canEdit={canEdit}
+                    allHref={tabHref("social")}
+                    onAdd={() => setPropertyEditor({ open: true, property: null })}
                   />
-                </SectionCard>
-
-                <BrandOverviewFacts
-                  title={overviewCopy.factsTitle}
-                  total={factRows.length}
-                  groups={factGroups.map(([kind, groupFacts]) => ({
-                    kind,
-                    count: foldFacts(groupFacts).length,
-                    icon: FACT_KIND_ICONS[kind],
-                    tone: FACT_CHIP_TONE[factTone(kind)],
-                  }))}
-                  onOpen={() => setTab("facts")}
-                />
-              </div>
-              <div className="grid min-w-0 gap-3">
-                <BrandOverviewContact facts={factRows} websiteUrl={publicWebsiteUrl} onOpen={() => setTab("facts")} />
-                <BrandOverviewWebsites
-                  brandId={brandId}
-                  sites={websiteSites}
-                  publicWebsiteUrl={publicWebsiteUrl}
-                  onOpen={() => setTab("web")}
-                />
-                <BrandOverviewSocial properties={socialProperties} onOpen={() => setTab("social")} />
-                <BrandOverviewAssets
-                  total={assetRows.length}
-                  assets={sortedAssets.map((asset) => ({
-                    id: asset.id,
-                    preview: assetPreviewUrl(asset),
-                    color: assetColorValue(asset),
-                    label: isBrandAssetKind(asset.kind)
-                      ? BRAND_ASSET_KIND_LABELS[asset.kind]
-                      : (humanizeIdentifier(asset.kind) || asset.kind),
-                  }))}
-                  onOpen={() => setTab("assets")}
-                />
+                  <BrandOverviewKnown
+                    brandId={current.id}
+                    brandSeg={brandSeg}
+                    organizationId={current.organization_id}
+                    profile={parseBrandProfile(current.profile)}
+                    personas={personas.data ?? []}
+                  />
+                  <BrandOverviewAbout
+                    facts={factRows}
+                    description={current.description}
+                    industry={current.industry}
+                    websiteUrl={publicWebsiteUrl}
+                    canEdit={canEdit}
+                    onAdd={() => setFactEditor({ open: true, fact: null })}
+                  />
+                  <BrandOverviewFacts
+                    title={overviewCopy.factsTitle}
+                    total={factRows.length}
+                    groups={factGroups.map(([kind, groupFacts]) => ({
+                      kind,
+                      count: foldFacts(groupFacts).length,
+                      icon: FACT_KIND_ICONS[kind],
+                      tone: FACT_CHIP_TONE[factTone(kind)],
+                    }))}
+                    onOpen={() => setTab("facts")}
+                  />
+                </div>
+                <div className="grid min-w-0 gap-3">
+                  <BrandOverviewActions
+                    brandId={current.id}
+                    brandSeg={brandSeg}
+                    organizationId={current.organization_id}
+                    canEdit={canEdit}
+                    pending={pending.isLoading ? null : (pending.data ?? 0)}
+                    onAddFact={() => setFactEditor({ open: true, fact: null })}
+                    onAddAccount={() => setPropertyEditor({ open: true, property: null })}
+                    onOpenActivity={() => setTab("activity")}
+                  />
+                  <BrandOverviewLook
+                    logos={logoAssets}
+                    colors={brandColors}
+                    fonts={brandFonts}
+                    total={assetRows.length}
+                    onOpen={() => setTab("assets")}
+                  />
+                  <BrandOverviewContact facts={factRows} websiteUrl={publicWebsiteUrl} onOpen={() => setTab("facts")} />
+                  <BrandOverviewWebsites
+                    brandId={brandId}
+                    sites={websiteSites}
+                    publicWebsiteUrl={publicWebsiteUrl}
+                    onOpen={() => setTab("web")}
+                  />
+                </div>
               </div>
             </div>
           ) : null}
