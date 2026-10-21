@@ -59,6 +59,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "@/lib/toast";
+import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { useBrandSocialAccounts } from "@/features/marketing/social/hooks";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { webCopy } from "@/features/marketing/lib/copy-payloads";
@@ -609,7 +610,8 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
     if (next === "overview") params.delete("tab");
     else params.set("tab", next);
     const query = params.toString();
-    router.replace(`${pathname}${query ? `?${query}` : ""}`, { scroll: false });
+    // Query state, not a new page: change the address without a navigation (useSearchParams follows).
+    replaceAddressWithoutNavigating(`${pathname}${query ? `?${query}` : ""}`);
   };
 
   const brand = useBrand(brandId);

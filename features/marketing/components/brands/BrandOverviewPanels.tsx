@@ -91,6 +91,9 @@ function followerDelta(accounts: readonly AccountRow[]): number | null {
 }
 
 function Delta({ value, suffix }: { value: number; suffix: string }) {
+  if (Math.abs(value) < (suffix === "%" ? 0.0005 : 0.5)) {
+    return <span className="text-muted-foreground">No change {suffix === "%" ? "vs prior 28d" : suffix}</span>;
+  }
   const tone = value > 0 ? "text-success-ink" : value < 0 ? "text-destructive-ink" : "text-muted-foreground";
   return (
     <span className={tone}>
@@ -261,8 +264,9 @@ function AccountAvatar({ account }: { account: AccountRow }) {
   return <PlatformMark platform={account.platform} size={32} />;
 }
 
-/** The account table's one column template (name, followers, 30d, posts, last post, action). */
+/** The account table's column template (name, followers, 30d, posts, last post, action); 30d only when any account has it. */
 const ACCOUNT_GRID = "sm:grid sm:grid-cols-[minmax(0,1fr)_4.5rem_4rem_4rem_5.5rem_2rem] sm:items-center sm:gap-3";
+const ACCOUNT_GRID_NO_GROWTH = "sm:grid sm:grid-cols-[minmax(0,1fr)_4.5rem_4rem_5.5rem_2rem] sm:items-center sm:gap-3";
 
 export function BrandOverviewAccounts({
   brandId,
@@ -300,6 +304,8 @@ export function BrandOverviewAccounts({
   const posts = accounts.reduce((sum, a) => sum + a.postsTracked, 0);
   const lastPost = accounts.map((a) => a.lastPostAt).filter((d): d is string => Boolean(d)).sort().at(-1) ?? null;
   const holdRows = Math.min(ACCOUNT_PREVIEW, Math.max(1, expectedRows));
+  const hasGrowth = accounts.some((a) => a.growth !== null);
+  const grid = hasGrowth ? ACCOUNT_GRID : ACCOUNT_GRID_NO_GROWTH;
 
   return (
     <SectionCard
@@ -344,10 +350,10 @@ export function BrandOverviewAccounts({
         </div>
       ) : (
         <div>
-          <div className={`hidden border-b border-border px-3 py-1.5 type-label ${ACCOUNT_GRID}`} aria-hidden="true">
+          <div className={`hidden border-b border-border px-3 py-1.5 type-label ${grid}`} aria-hidden="true">
             <span>Account</span>
             <span className="text-right">Followers</span>
-            <span className="text-right">30d</span>
+            {hasGrowth ? <span className="text-right">30d</span> : null}
             <span className="text-right">Posts</span>
             <span className="text-right">Last post</span>
             <span />
@@ -364,8 +370,8 @@ export function BrandOverviewAccounts({
               const canTrack = canEdit && trackableOwn(a);
               const canRefresh = canEdit && Boolean(a.trackedAccountId && a.profileId);
               return (
-                <li key={a.rowId} className={`flex min-h-[52px] flex-col gap-1 px-3 py-2 ${ACCOUNT_GRID}`}>
-                  <div className="flex min-w-0 items-center gap-2.5">
+                <li key={a.rowId} className={`flex min-h-[52px] flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2 ${grid}`}>
+                  <div className="flex min-w-0 flex-1 items-center gap-2.5">
                     {href ? (
                       <Link prefetch={false} href={href} className="shrink-0" data-clickable="" aria-label={labels.primary}>
                         <AccountAvatar account={a} />
@@ -396,25 +402,27 @@ export function BrandOverviewAccounts({
                     </span>
                   </div>
                   {/* Phone: the numbers sit on one line under the name. Wider: their own columns. */}
-                  <span className="flex flex-wrap gap-x-4 type-meta tabular-nums text-muted-foreground sm:contents">
+                  <span className="order-last flex w-full flex-wrap gap-x-4 pl-[42px] type-meta tabular-nums text-muted-foreground sm:contents">
                     <span className="sm:text-right sm:type-body sm:text-foreground">
                       <span className="sm:hidden">Followers </span>
                       {formatCompact(a.followers)}
                     </span>
-                    <span className="sm:text-right" title={a.growthNote || undefined}>
-                      <span className="sm:hidden">30d </span>
-                      {formatGrowth(a.growth)}
-                    </span>
+                    {hasGrowth ? (
+                      <span className="sm:text-right" title={a.growthNote || undefined}>
+                        <span className="sm:hidden">30d </span>
+                        {formatGrowth(a.growth)}
+                      </span>
+                    ) : null}
                     <span className="sm:text-right">
                       <span className="sm:hidden">Posts </span>
                       {a.postsTracked.toLocaleString()}
                     </span>
                     <span className="whitespace-nowrap sm:text-right" title={a.lastPostAt ?? undefined}>
-                      <span className="sm:hidden">Last </span>
+                      {a.lastPostAt ? <span className="sm:hidden">Last </span> : null}
                       {lastPostLabel(a.lastPostAt, a.postsTracked)}
                     </span>
                   </span>
-                  <span className="hidden justify-end sm:flex">
+                  <span className="flex shrink-0 justify-end">
                     {canTrack ? (
                       <Button
                         variant="quiet"
@@ -439,12 +447,15 @@ export function BrandOverviewAccounts({
               );
             })}
           </ul>
-          <div className={`flex flex-wrap gap-x-4 border-t border-border bg-muted/40 px-3 py-1.5 type-meta tabular-nums text-muted-foreground ${ACCOUNT_GRID}`}>
+          <div className={`flex flex-wrap gap-x-4 border-t border-border bg-muted/40 px-3 py-1.5 type-meta tabular-nums text-muted-foreground ${grid}`}>
             <span className="font-medium text-foreground">
               Total · {accounts.length} account{accounts.length === 1 ? "" : "s"}
             </span>
-            <span className="font-medium text-foreground sm:text-right">{formatCompact(followers)}</span>
-            <span className="max-sm:hidden" />
+            <span className="font-medium text-foreground sm:text-right">
+              {formatCompact(followers)}
+              <span className="font-normal text-muted-foreground sm:hidden"> followers</span>
+            </span>
+            {hasGrowth ? <span className="max-sm:hidden" /> : null}
             <span className="sm:text-right">{posts.toLocaleString()} posts</span>
             <span className="whitespace-nowrap sm:text-right">{lastPost ? lastPostLabel(lastPost, posts) : "—"}</span>
             <span className="max-sm:hidden" />
