@@ -1088,7 +1088,6 @@
   "window:features/window-panels/windows/rag/RagAiCopyWindow.tsx",
   "window:features/window-panels/windows/research/ResearchContextPreviewWindow.tsx",
   "window:features/window-panels/windows/sandboxes/SandboxManagementWindow.tsx",
-  "window:features/window-panels/windows/scopes/SetContextValueWindow.tsx",
   "window:features/window-panels/windows/search-review/SearchReviewWindow.tsx",
   "window:features/window-panels/windows/seo/KeywordResearchWindow.tsx",
   "window:features/window-panels/windows/seo/KeywordWindow.tsx",
