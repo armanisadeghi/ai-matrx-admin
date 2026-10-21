@@ -252,14 +252,11 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
       };
 
       const newHistory = [...navigationHistory, step];
-      const newPaths = nextNode.action
-        ? new Set([...completedPaths, nextNode.id])
-        : completedPaths;
 
       setNavigationHistory(newHistory);
       setCurrentNode(nextNode);
-      if (nextNode.action) setCompletedPaths(newPaths);
-      emitState(nextNode, newHistory, newPaths);
+      // Reaching an action is not completing it: only "Mark as Completed" adds to the count.
+      emitState(nextNode, newHistory, completedPaths);
     }
   };
 
