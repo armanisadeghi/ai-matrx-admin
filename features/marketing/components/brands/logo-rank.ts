@@ -41,7 +41,8 @@ export function logoScore(url: string, kind: string): number {
   if (/\.svg(\?|$)/i.test(url)) score += 10;
   if (kind === "logo" || kind === "wordmark" || kind === "logo_dark") score += 5;
   if (kind === "headshot") score -= 5;
-  if (SOCIAL_AVATAR_HOST.test(host)) score -= 8;
+  // A social avatar is never ahead of a mark from the brand's own site, even a small one.
+  if (SOCIAL_AVATAR_HOST.test(host)) score -= 30;
   if (/\.ico(\?|$)/i.test(url)) score -= 10;
   const size = statedSize(url);
   if (size !== null) score += size <= 32 ? -15 : size <= 64 ? -5 : Math.min(10, Math.log2(size / 64) * 3);
@@ -118,4 +119,52 @@ export function pickHeroLogo(brandLogoUrl: string | null | undefined, assets: re
   if (brandLogoUrl && !isBannerUrl(brandLogoUrl)) return brandLogoUrl;
   const best = rankLogos(assets.filter((a) => a.kind !== "favicon" && !isBannerUrl(a.url)))[0];
   return best?.url ?? null;
+}
+
+/** A property as far as avatar provenance needs it. */
+export interface OwnedAccount {
+  kind: string;
+  url: string | null;
+  handle: string | null;
+  owner_kind: string | null;
+}
+
+/** An asset as far as avatar provenance needs it. */
+export interface AvatarProvenanceAsset {
+  id: string;
+  source: string | null;
+  confirmed_by: string | null;
+  notes: string | null;
+}
+
+// Smart Add writes "Smart Add enrich · <platform> photo · <account url>" on a profile picture it saved as a logo.
+const AVATAR_NOTE = /^Smart Add (?:enrich|validation) · ([a-z0-9_]+) photo · (\S+)/i;
+
+function accountHandle(url: string): string {
+  const path = url.replace(/^https?:\/\/(www\.)?[^/]+\/?/i, "").split(/[?#]/)[0] ?? "";
+  const parts = path.split("/").filter(Boolean);
+  const marker = parts.findIndex((p) => ["in", "pub", "user", "c", "channel", "company"].includes(p.toLowerCase()));
+  return (marker >= 0 ? (parts[marker + 1] ?? "") : (parts[0] ?? "")).replace(/^@/, "").toLowerCase();
+}
+
+/**
+ * Ids of the discovered logo assets that are a PERSON's profile picture: Smart Add noted the account the photo came
+ * from, and that account is a property owned by a person (web.property.owner_kind = 'person'). A person's headshot
+ * is never the brand's mark. Only unconfirmed-by-a-person discovered rows qualify; uploads and confirmed assets never.
+ */
+export function personAvatarAssetIds(assets: readonly AvatarProvenanceAsset[], properties: readonly OwnedAccount[]): Set<string> {
+  const personal = properties
+    .filter((p) => p.owner_kind === "person")
+    .map((p) => ({ kind: p.kind.toLowerCase(), handle: (p.handle || (p.url ? accountHandle(p.url) : "")).replace(/^@/, "").toLowerCase() }))
+    .filter((p) => p.handle);
+  const ids = new Set<string>();
+  for (const asset of assets) {
+    if (asset.source !== "discovered" || asset.confirmed_by) continue;
+    const note = asset.notes?.match(AVATAR_NOTE);
+    if (!note) continue;
+    const platform = note[1]!.toLowerCase();
+    const handle = accountHandle(note[2]!);
+    if (personal.some((p) => p.kind === platform && p.handle === handle)) ids.add(asset.id);
+  }
+  return ids;
 }

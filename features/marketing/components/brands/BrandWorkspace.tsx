@@ -84,7 +84,7 @@ import { BusinessFactEditorDialog } from "@/features/marketing/components/brands
 import { PropertyEditorDialog } from "@/features/marketing/components/brands/PropertyEditorDialog";
 import { SiteEditorDialog } from "@/features/marketing/components/sites/SiteEditorDialog";
 import { BrandAssetGallery } from "@/features/marketing/components/brands/BrandAssetGallery";
-import { isBannerUrl, pickHeroLogo } from "@/features/marketing/components/brands/logo-rank";
+import { isBannerUrl, personAvatarAssetIds, pickHeroLogo } from "@/features/marketing/components/brands/logo-rank";
 import {
   BRAND_HERO_FRAME,
   BrandHomeSkeleton,
@@ -703,6 +703,8 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
     null;
   const factRows = facts.data ?? [];
   const assetRows = assets.data ?? [];
+  // A person's profile picture that enrichment saved as a logo is never the brand's mark.
+  const personAvatars = personAvatarAssetIds(assetRows, properties.data ?? []);
 
   // The brand's best identity marks: explicit brand URLs first, then the
   // confirmed asset library — a brand with confirmed logos never shows a
@@ -714,7 +716,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
       pickHeroLogo(
         current.logo_url,
         assetRows
-          .filter((asset) => ["logo", "logo_dark", "wordmark", "headshot"].includes(asset.kind))
+          .filter((asset) => ["logo", "logo_dark", "wordmark", "headshot"].includes(asset.kind) && !personAvatars.has(asset.id))
           .flatMap((asset) => {
             const url = assetPreviewUrl(asset);
             return url && !assetImageExpired(asset) ? [{ url, kind: asset.kind, fileId: asset.file_id }] : [];
@@ -751,7 +753,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   const LOGO_KINDS: readonly string[] = ["logo", "logo_dark", "wordmark", "favicon", "headshot"];
   // A sharing banner (og:image / twitter card) is never a mark, so Brand look never offers one.
   const logoAssets = sortedAssets
-    .filter((asset) => LOGO_KINDS.includes(asset.kind) && assetPreviewUrl(asset) && !isBannerUrl(asset.source_url))
+    .filter((asset) => LOGO_KINDS.includes(asset.kind) && assetPreviewUrl(asset) && !isBannerUrl(asset.source_url) && !personAvatars.has(asset.id))
     .map(toOverviewAsset);
 
   // Surface scope — assembled at trigger time from what the cockpit already
