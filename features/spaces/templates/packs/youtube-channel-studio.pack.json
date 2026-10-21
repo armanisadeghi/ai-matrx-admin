@@ -1,0 +1,4229 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0580",
+  "version": 1,
+  "title": "YouTube Channel Studio",
+  "description": "Run a channel like a studio: videos from idea to upload, sponsors, shoots and payouts.",
+  "forWho": "YouTube creators and small channel teams",
+  "icon": {
+    "emoji": "🎬"
+  },
+  "cover": {
+    "url": "gallery:media-ring-light-microphone-desk-setup",
+    "offsetY": 50
+  },
+  "category": "media",
+  "tags": [
+    "youtube",
+    "video",
+    "creator",
+    "channel",
+    "sponsorships",
+    "vlog"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-youtube-channel-studio",
+    "catalogueId": "SP0580",
+    "useCase": "The host of Hollow Oak Workshop uses this to see which videos are stuck, which sponsor reads are due and what the channel earned.",
+    "industry": "media_creators",
+    "vertical": "YouTube channel",
+    "job": "content",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Hollow Oak Workshop",
+      "describes": "A five-person woodworking channel publishing a long build or tool test every week plus Shorts, funded by ads, members and sponsor reads.",
+      "address": {
+        "line1": "41 Fernhollow Road",
+        "city": "Asheville",
+        "region": "NC",
+        "postalCode": "28801",
+        "country": "US"
+      },
+      "phone": "(828) 555-0170",
+      "website": "hollowoakworkshop.net",
+      "email": "studio@hollowoakworkshop.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-youtube-channel-studio",
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Teodora Brannigan",
+              "role": "Host and owner",
+              "work_email": "teodora@hollowoakworkshop.net",
+              "mobile": "(828) 555-0141",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Callum Achebe",
+              "role": "Lead editor",
+              "work_email": "callum@hollowoakworkshop.net",
+              "mobile": "(828) 555-0142",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Priya Lindqvist",
+              "role": "Producer",
+              "work_email": "priya@hollowoakworkshop.net",
+              "mobile": "(828) 555-0143",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Hollis Mbeki",
+              "role": "Thumbnail designer",
+              "work_email": "hollis@hollowoakworkshop.net",
+              "mobile": "(828) 555-0144",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Wren Castellano",
+              "role": "Partnerships manager",
+              "work_email": "wren@hollowoakworkshop.net",
+              "mobile": "(828) 555-0145",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "sponsor_paid",
+        "table": "sponsor",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "video_published",
+        "table": "video",
+        "name": "Mark published",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Published"
+          },
+          {
+            "field": "published_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "video_take",
+        "table": "video",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "shoot_wrapped",
+        "table": "shoot_day",
+        "name": "Mark wrapped",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Wrapped"
+          },
+          {
+            "field": "wrapped_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "payout_received",
+        "table": "payout",
+        "name": "Mark received",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Received"
+          },
+          {
+            "field": "received_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "YouTube Channel Studio assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "video",
+          "describes": "Every video from idea to upload: who edits it, when it goes live and how it performed in its first 28 days."
+        },
+        {
+          "name": "related_tables",
+          "table": "sponsor",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many videos are in editing right now?",
+        "whyItMatters": "The editor's queue decides which upload slips next.",
+        "expect": {
+          "table": "video",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Editing"
+          },
+          "answer": 2,
+          "unit": "videos"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open videos.",
+        "action": {
+          "kind": "open",
+          "surface": "video_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "video_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open sponsors.",
+        "action": {
+          "kind": "open",
+          "surface": "sponsor_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "sponsor_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open shoot days.",
+        "action": {
+          "kind": "open",
+          "surface": "shoot_day_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "shoot_day_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-21",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "hollowoakworkshop.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Fernhollow Road"
+      ]
+    },
+    "version": 1,
+    "tables": [
+      {
+        "token": "sponsor",
+        "name": "Sponsors",
+        "labelSingular": "Sponsor",
+        "labelPlural": "Sponsors",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "handshake",
+        "titleField": "brand",
+        "describes": "Brand deals from first pitch to paid, with the fee, the read and what it earned per thousand views.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Sponsor brief",
+            "values": {
+              "status": "Pitched"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The brand"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What they sell, who buys it, and whether we would use it in the shop without being paid."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Must-say points"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Product name said the way the brand says it"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "One claim we can show on camera"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Link and code in the first line of the description"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Never"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "No claims we have not tested"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "No read inside the first 60 seconds of a build"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Money"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Fee, usage term, exclusivity and when the invoice can go out."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "brand",
+            "label": "Brand",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Pitched",
+            "choices": [
+              "Pitched",
+              "Negotiating",
+              "Contracted",
+              "Script review",
+              "Live",
+              "Invoiced",
+              "Paid",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Pitched": "slate",
+              "Negotiating": "blue",
+              "Contracted": "violet",
+              "Script review": "amber",
+              "Live": "teal",
+              "Invoiced": "orange",
+              "Paid": "green",
+              "Declined": "red"
+            },
+            "statusGroups": {
+              "Pitched": "todo",
+              "Negotiating": "in_progress",
+              "Contracted": "in_progress",
+              "Script review": "in_progress",
+              "Live": "in_progress",
+              "Invoiced": "in_progress",
+              "Paid": "done",
+              "Declined": "done"
+            }
+          },
+          {
+            "key": "deliverable",
+            "label": "Deliverable",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "60-second integrated read",
+              "Dedicated video",
+              "Short mention",
+              "Pinned link only"
+            ],
+            "choiceColors": {
+              "60-second integrated read": "blue",
+              "Dedicated video": "violet",
+              "Short mention": "teal",
+              "Pinned link only": "slate"
+            }
+          },
+          {
+            "key": "fee",
+            "label": "Fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "usage",
+            "label": "Usage rights",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Organic only",
+              "30-day paid usage",
+              "90-day paid usage"
+            ],
+            "choiceColors": {
+              "Organic only": "slate",
+              "30-day paid usage": "amber",
+              "90-day paid usage": "orange"
+            },
+            "default": "Organic only"
+          },
+          {
+            "key": "exclusive",
+            "label": "Category exclusivity",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "description": "No competing brand in the same category for the contract term."
+          },
+          {
+            "key": "contact",
+            "label": "Contact",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Contact email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "draft_due",
+            "label": "Script draft due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "videos_live",
+            "label": "Videos published",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "videos",
+            "pick": "video_title",
+            "agg": "count",
+            "filter": {
+              "status": "Published"
+            }
+          },
+          {
+            "key": "views_sponsored",
+            "label": "Views on sponsored videos",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "videos",
+            "pick": "views_28d",
+            "agg": "sum",
+            "filter": {
+              "status": "Published"
+            }
+          },
+          {
+            "key": "cpm",
+            "label": "Effective CPM (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Stage} = \"Declined\", \"\", IF({Views on sponsored videos} > 0, ROUND({Fee (USD)} / {Views on sponsored videos} * 1000, 2), \"\"))"
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "sponsor_paid"
+            }
+          },
+          {
+            "key": "mail_btn",
+            "label": "Email contact",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            }
+          },
+          {
+            "key": "add_video_btn",
+            "label": "New sponsored video",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "video",
+              "template": "Video plan",
+              "prefill": {
+                "sponsor": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "spon-1",
+            "values": {
+              "brand": "Grainline Clamps",
+              "status": "Paid",
+              "deliverable": "60-second integrated read",
+              "fee": 4200,
+              "usage": "Organic only",
+              "exclusive": true,
+              "contact": "Marta Szabo",
+              "email": "grainline.partners@inbox-mail.net",
+              "draft_due": "@today-44d",
+              "paid_on": "@today-12d"
+            }
+          },
+          {
+            "key": "spon-2",
+            "values": {
+              "brand": "Northbend Dust Systems",
+              "status": "Invoiced",
+              "deliverable": "Dedicated video",
+              "fee": 8500,
+              "usage": "30-day paid usage",
+              "exclusive": true,
+              "contact": "Femi Adeyemi",
+              "email": "northbend.creators@inbox-mail.net",
+              "draft_due": "@today-30d"
+            }
+          },
+          {
+            "key": "spon-3",
+            "values": {
+              "brand": "Ridgeway Finishing Oils",
+              "status": "Live",
+              "deliverable": "60-second integrated read",
+              "fee": 3200,
+              "usage": "Organic only",
+              "exclusive": false,
+              "contact": "Lena Fairweather",
+              "email": "ridgeway.collabs@inbox-mail.net",
+              "draft_due": "@today-15d"
+            }
+          },
+          {
+            "key": "spon-4",
+            "values": {
+              "brand": "Slatehouse Saw Blades",
+              "status": "Script review",
+              "deliverable": "60-second integrated read",
+              "fee": 3600,
+              "usage": "Organic only",
+              "exclusive": false,
+              "contact": "Gus Halvorsen",
+              "email": "slatehouse.media@inbox-mail.net",
+              "draft_due": "@today+2d"
+            }
+          },
+          {
+            "key": "spon-5",
+            "values": {
+              "brand": "Copperleaf Workwear",
+              "status": "Contracted",
+              "deliverable": "Short mention",
+              "fee": 1500,
+              "usage": "90-day paid usage",
+              "exclusive": false,
+              "contact": "Ines Barragán",
+              "email": "copperleaf.social@inbox-mail.net",
+              "draft_due": "@today+12d"
+            }
+          },
+          {
+            "key": "spon-6",
+            "values": {
+              "brand": "Tallpine Lumber Co.",
+              "status": "Negotiating",
+              "deliverable": "Dedicated video",
+              "fee": 7800,
+              "usage": "30-day paid usage",
+              "exclusive": true,
+              "contact": "Rory Delacroix",
+              "email": "tallpine.marketing@inbox-mail.net"
+            }
+          },
+          {
+            "key": "spon-7",
+            "values": {
+              "brand": "Fieldcraft Rulers",
+              "status": "Pitched",
+              "deliverable": "60-second integrated read",
+              "fee": 2800,
+              "usage": "Organic only",
+              "exclusive": false,
+              "contact": "Yuki Hartmann",
+              "email": "fieldcraft.hello@inbox-mail.net"
+            }
+          },
+          {
+            "key": "spon-8",
+            "values": {
+              "brand": "Brightline Shop Lights",
+              "status": "Declined",
+              "deliverable": "60-second integrated read",
+              "fee": 3000,
+              "usage": "Organic only",
+              "exclusive": false,
+              "contact": "Dev Raman",
+              "email": "brightline.pr@inbox-mail.net"
+            }
+          },
+          {
+            "key": "spon-9",
+            "values": {
+              "brand": "Kestrel Router Bits",
+              "status": "Paid",
+              "deliverable": "60-second integrated read",
+              "fee": 3800,
+              "usage": "Organic only",
+              "exclusive": false,
+              "contact": "Agnes Moreau",
+              "email": "kestrel.partners@inbox-mail.net",
+              "draft_due": "@today-66d",
+              "paid_on": "@today-38d"
+            }
+          }
+        ],
+        "datesIndependent": "The draft date is agreed in the contract; the paid date is stamped when the money lands and has no fixed order with it."
+      },
+      {
+        "token": "video",
+        "name": "Videos",
+        "labelSingular": "Video",
+        "labelPlural": "Videos",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clapperboard",
+        "titleField": "video_title",
+        "describes": "Every video from idea to upload: who edits it, when it goes live and how it performed in its first 28 days.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Published"
+            ],
+            "filled": [
+              "published_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Video plan",
+            "values": {
+              "status": "Idea",
+              "format": "Long-form",
+              "video_title": "New video"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Promise"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One sentence: what the viewer will be able to do or know by the end."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Hook (first 30 seconds)"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Show the finished piece or the problem first. No intro, no channel name."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Outline"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Problem and finished result"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Materials and cut list"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Build steps"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Mistake we made and the fix"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Payoff shot"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "B-roll to capture"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Wide of the shop at the start"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Close-ups of every joint"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Slow pan of the finished piece in daylight"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Packaging"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Three title options written"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Two thumbnails mocked up"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Chapters and links in the description"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Sponsor read placed after the first build step"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "video_title",
+            "label": "Video title",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Idea",
+            "choices": [
+              "Idea",
+              "Scripting",
+              "Filming",
+              "Editing",
+              "Packaging",
+              "Scheduled",
+              "Published",
+              "Shelved"
+            ],
+            "choiceColors": {
+              "Idea": "slate",
+              "Scripting": "blue",
+              "Filming": "violet",
+              "Editing": "orange",
+              "Packaging": "amber",
+              "Scheduled": "teal",
+              "Published": "green",
+              "Shelved": "red"
+            },
+            "statusGroups": {
+              "Idea": "todo",
+              "Scripting": "in_progress",
+              "Filming": "in_progress",
+              "Editing": "in_progress",
+              "Packaging": "in_progress",
+              "Scheduled": "in_progress",
+              "Published": "done",
+              "Shelved": "done"
+            }
+          },
+          {
+            "key": "format",
+            "label": "Format",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Long-form",
+              "Short",
+              "Live stream"
+            ],
+            "choiceColors": {
+              "Long-form": "blue",
+              "Short": "pink",
+              "Live stream": "violet"
+            },
+            "default": "Long-form"
+          },
+          {
+            "key": "series",
+            "label": "Series",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Shop builds",
+              "Tool tests",
+              "Beginner basics",
+              "Restorations"
+            ],
+            "choiceColors": {
+              "Shop builds": "orange",
+              "Tool tests": "blue",
+              "Beginner basics": "green",
+              "Restorations": "yellow"
+            }
+          },
+          {
+            "key": "shoot",
+            "label": "Shoot day",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "shoot_day",
+            "relationMax": 1
+          },
+          {
+            "key": "sponsor",
+            "label": "Sponsor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "sponsor",
+            "relationMax": 1
+          },
+          {
+            "key": "editor",
+            "label": "Editor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "publish_on",
+            "label": "Publish date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "published_on",
+            "label": "Published on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "length_min",
+            "label": "Length (minutes)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 240
+              }
+            ]
+          },
+          {
+            "key": "views_28d",
+            "label": "Views, first 28 days",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000000
+              }
+            ]
+          },
+          {
+            "key": "ctr",
+            "label": "Click-through rate (%)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30
+              }
+            ]
+          },
+          {
+            "key": "avg_view_pct",
+            "label": "Average viewed (%)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "ad_revenue",
+            "label": "Ad revenue, 28 days (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "video_url",
+            "label": "Video link",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "thumb_ok",
+            "label": "Thumbnail approved",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "rpm",
+            "label": "RPM (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Views, first 28 days} > 0, ROUND({Ad revenue, 28 days (USD)} / {Views, first 28 days} * 1000, 2), \"\")"
+          },
+          {
+            "key": "packaging",
+            "label": "Packaging check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(AND({Stage} = \"Published\", {Format} = \"Long-form\"), IF({Click-through rate (%)} >= 6, \"Strong click\", IF({Click-through rate (%)} >= 4, \"Average click\", \"Rework title\")), \"\")"
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pub_btn",
+            "label": "Mark published",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "video_published"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "video_take"
+            }
+          },
+          {
+            "key": "watch_btn",
+            "label": "Watch",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{video_url}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "vide-1",
+            "values": {
+              "video_title": "Building a split-top bench in nine days",
+              "status": "Published",
+              "format": "Long-form",
+              "series": "Shop builds",
+              "shoot": "shoo-1",
+              "sponsor": "spon-1",
+              "editor": "tm-2",
+              "publish_on": "@today-34d",
+              "published_on": "@today-34d",
+              "length_min": 31,
+              "views_28d": 212400,
+              "ctr": 6.8,
+              "avg_view_pct": 41,
+              "ad_revenue": 2230,
+              "video_url": "https://video.hollowoakworkshop.net/split-top-bench",
+              "thumb_ok": true
+            }
+          },
+          {
+            "key": "vide-2",
+            "values": {
+              "video_title": "Is a budget track saw any good?",
+              "status": "Published",
+              "format": "Long-form",
+              "series": "Tool tests",
+              "shoot": "shoo-2",
+              "editor": "tm-2",
+              "publish_on": "@today-27d",
+              "published_on": "@today-27d",
+              "length_min": 18,
+              "views_28d": 286900,
+              "ctr": 8.1,
+              "avg_view_pct": 52,
+              "ad_revenue": 2640,
+              "video_url": "https://video.hollowoakworkshop.net/budget-track-saw",
+              "thumb_ok": true
+            }
+          },
+          {
+            "key": "vide-3",
+            "values": {
+              "video_title": "Dust collection for a one-car garage shop",
+              "status": "Published",
+              "format": "Long-form",
+              "series": "Shop builds",
+              "shoot": "shoo-2",
+              "sponsor": "spon-2",
+              "editor": "tm-2",
+              "publish_on": "@today-20d",
+              "published_on": "@today-20d",
+              "length_min": 24,
+              "views_28d": 168900,
+              "ctr": 5.9,
+              "avg_view_pct": 47,
+              "ad_revenue": 1690,
+              "video_url": "https://video.hollowoakworkshop.net/garage-dust-collection",
+              "thumb_ok": true
+            }
+          },
+          {
+            "key": "vide-4",
+            "values": {
+              "video_title": "Five joints every beginner should cut first",
+              "status": "Published",
+              "format": "Long-form",
+              "series": "Beginner basics",
+              "shoot": "shoo-3",
+              "editor": "tm-2",
+              "publish_on": "@today-13d",
+              "published_on": "@today-13d",
+              "length_min": 16,
+              "views_28d": 141300,
+              "ctr": 5.2,
+              "avg_view_pct": 55,
+              "ad_revenue": 1330,
+              "video_url": "https://video.hollowoakworkshop.net/five-joints",
+              "thumb_ok": true
+            }
+          },
+          {
+            "key": "vide-5",
+            "values": {
+              "video_title": "Refinishing a 1950s walnut dresser",
+              "status": "Published",
+              "format": "Long-form",
+              "series": "Restorations",
+              "shoot": "shoo-3",
+              "sponsor": "spon-3",
+              "editor": "tm-2",
+              "publish_on": "@today-6d",
+              "published_on": "@today-6d",
+              "length_min": 27,
+              "views_28d": 74300,
+              "ctr": 4.6,
+              "avg_view_pct": 44,
+              "ad_revenue": 760,
+              "video_url": "https://video.hollowoakworkshop.net/walnut-dresser",
+              "thumb_ok": true
+            }
+          },
+          {
+            "key": "vide-6",
+            "values": {
+              "video_title": "Sharpening a hand plane in sixty seconds",
+              "status": "Published",
+              "format": "Short",
+              "series": "Beginner basics",
+              "shoot": "shoo-3",
+              "editor": "tm-4",
+              "publish_on": "@today-9d",
+              "published_on": "@today-9d",
+              "length_min": 1,
+              "views_28d": 402000,
+              "avg_view_pct": 78,
+              "ad_revenue": 96,
+              "video_url": "https://video.hollowoakworkshop.net/plane-short",
+              "thumb_ok": true
+            }
+          },
+          {
+            "key": "vide-7",
+            "values": {
+              "video_title": "Card scrapers, the cheapest finish upgrade",
+              "status": "Published",
+              "format": "Short",
+              "series": "Beginner basics",
+              "shoot": "shoo-2",
+              "editor": "tm-4",
+              "publish_on": "@today-16d",
+              "published_on": "@today-16d",
+              "length_min": 1,
+              "views_28d": 318000,
+              "avg_view_pct": 74,
+              "ad_revenue": 70,
+              "video_url": "https://video.hollowoakworkshop.net/card-scraper-short",
+              "thumb_ok": true
+            }
+          },
+          {
+            "key": "vide-8",
+            "values": {
+              "video_title": "Router table from one sheet of plywood",
+              "status": "Scheduled",
+              "format": "Long-form",
+              "series": "Shop builds",
+              "shoot": "shoo-4",
+              "editor": "tm-2",
+              "publish_on": "@today+1d",
+              "length_min": 22,
+              "thumb_ok": true
+            }
+          },
+          {
+            "key": "vide-9",
+            "values": {
+              "video_title": "Cutting dovetails by hand, slowly",
+              "status": "Packaging",
+              "format": "Long-form",
+              "series": "Beginner basics",
+              "shoot": "shoo-4",
+              "editor": "tm-2",
+              "publish_on": "@today",
+              "length_min": 19,
+              "thumb_ok": false
+            }
+          },
+          {
+            "key": "vide-10",
+            "values": {
+              "video_title": "Restoring a rusty jack plane",
+              "status": "Editing",
+              "format": "Long-form",
+              "series": "Restorations",
+              "shoot": "shoo-4",
+              "sponsor": "spon-4",
+              "editor": "tm-2",
+              "publish_on": "@today+6d",
+              "length_min": 21,
+              "thumb_ok": false
+            }
+          },
+          {
+            "key": "vide-11",
+            "values": {
+              "video_title": "Shop tour: one year in",
+              "status": "Editing",
+              "format": "Long-form",
+              "series": "Shop builds",
+              "shoot": "shoo-4",
+              "editor": "tm-4",
+              "publish_on": "@today-3d",
+              "length_min": 14,
+              "thumb_ok": false
+            }
+          },
+          {
+            "key": "vide-12",
+            "values": {
+              "video_title": "Hollow-chisel mortiser, worth the space?",
+              "status": "Filming",
+              "format": "Long-form",
+              "series": "Tool tests",
+              "shoot": "shoo-5",
+              "editor": "tm-2",
+              "publish_on": "@today+11d",
+              "thumb_ok": false
+            }
+          },
+          {
+            "key": "vide-13",
+            "values": {
+              "video_title": "The shop apron pocket that holds a pencil",
+              "status": "Filming",
+              "format": "Short",
+              "series": "Beginner basics",
+              "shoot": "shoo-5",
+              "sponsor": "spon-5",
+              "editor": "tm-4",
+              "publish_on": "@today+9d",
+              "length_min": 1,
+              "thumb_ok": false
+            }
+          },
+          {
+            "key": "vide-14",
+            "values": {
+              "video_title": "Building a cedar bench for the lake cabin",
+              "status": "Scripting",
+              "format": "Long-form",
+              "series": "Shop builds",
+              "shoot": "shoo-6",
+              "editor": "tm-2",
+              "publish_on": "@today+18d",
+              "thumb_ok": false
+            }
+          },
+          {
+            "key": "vide-15",
+            "values": {
+              "video_title": "Live: your glue-up questions answered",
+              "status": "Scheduled",
+              "format": "Live stream",
+              "series": "Beginner basics",
+              "publish_on": "@today+5d",
+              "length_min": 60,
+              "thumb_ok": true
+            }
+          },
+          {
+            "key": "vide-16",
+            "values": {
+              "video_title": "Epoxy river table, the honest costs",
+              "status": "Idea",
+              "format": "Long-form",
+              "series": "Shop builds",
+              "thumb_ok": false
+            }
+          },
+          {
+            "key": "vide-17",
+            "values": {
+              "video_title": "Japanese pull saws against Western saws",
+              "status": "Idea",
+              "format": "Long-form",
+              "series": "Tool tests",
+              "thumb_ok": false
+            }
+          },
+          {
+            "key": "vide-18",
+            "values": {
+              "video_title": "Fixing a wobbly kitchen chair",
+              "status": "Shelved",
+              "format": "Long-form",
+              "series": "Restorations",
+              "thumb_ok": false
+            }
+          }
+        ],
+        "independentOf": {
+          "shoot": "Either record can be created or change status before the other.",
+          "sponsor": "Either record can be created or change status before the other.",
+          "editor": "Either record can be created or change status before the other."
+        },
+        "datesIndependent": "The publish date is the plan; the published date is stamped when the video actually goes live, earlier or later."
+      },
+      {
+        "token": "shoot_day",
+        "name": "Shoot days",
+        "labelSingular": "Shoot day",
+        "labelPlural": "Shoot days",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "camera",
+        "titleField": "shoot_title",
+        "describes": "Filming days with the location, call time and crew, and how many videos each day feeds.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Wrapped"
+            ],
+            "filled": [
+              "wrapped_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Shot list",
+            "values": {
+              "status": "Planned"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before call time"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Batteries charged and cards formatted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Lav and shotgun mic tested"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Shop swept, lumber stacked out of frame"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Shots"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Opening finished-piece shot"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Top-down of every layout line"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Close-up of each cut"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Talking head for the intro and the mistake"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Wrap"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Cards copied twice before formatting"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Notes for the editor on what went wrong on camera"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "shoot_title",
+            "label": "Shoot",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Planned",
+            "choices": [
+              "Planned",
+              "Confirmed",
+              "Wrapped",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Confirmed": "blue",
+              "Wrapped": "green",
+              "Cancelled": "red"
+            },
+            "statusGroups": {
+              "Planned": "todo",
+              "Confirmed": "todo",
+              "Wrapped": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "shoot_on",
+            "label": "Call time",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "location",
+            "label": "Location",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Main shop",
+              "Finishing room",
+              "On location"
+            ],
+            "choiceColors": {
+              "Main shop": "orange",
+              "Finishing room": "teal",
+              "On location": "violet"
+            },
+            "default": "Main shop"
+          },
+          {
+            "key": "crew_size",
+            "label": "Crew on set",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 10
+              }
+            ]
+          },
+          {
+            "key": "producer",
+            "label": "Producer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "wrapped_on",
+            "label": "Wrapped on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "video_count",
+            "label": "Videos filmed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "videos",
+            "pick": "video_title",
+            "agg": "count"
+          },
+          {
+            "key": "planned_minutes",
+            "label": "Planned minutes",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "videos",
+            "pick": "length_min",
+            "agg": "sum"
+          },
+          {
+            "key": "wrap_btn",
+            "label": "Mark wrapped",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "shoot_wrapped"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "shoo-1",
+            "values": {
+              "shoot_title": "Split-top bench build, days one to three",
+              "status": "Wrapped",
+              "shoot_on": "@today-48d 07:30",
+              "location": "Main shop",
+              "crew_size": 2,
+              "producer": "tm-3",
+              "wrapped_on": "@today-46d"
+            }
+          },
+          {
+            "key": "shoo-2",
+            "values": {
+              "shoot_title": "Track saw and dust collector tests",
+              "status": "Wrapped",
+              "shoot_on": "@today-36d 08:00",
+              "location": "Main shop",
+              "crew_size": 2,
+              "producer": "tm-3",
+              "wrapped_on": "@today-36d"
+            }
+          },
+          {
+            "key": "shoo-3",
+            "values": {
+              "shoot_title": "Dresser refinish and joint basics",
+              "status": "Wrapped",
+              "shoot_on": "@today-22d 09:00",
+              "location": "Finishing room",
+              "crew_size": 2,
+              "producer": "tm-3",
+              "wrapped_on": "@today-22d"
+            }
+          },
+          {
+            "key": "shoo-4",
+            "values": {
+              "shoot_title": "Router table, dovetails and plane restore",
+              "status": "Wrapped",
+              "shoot_on": "@today-10d 07:30",
+              "location": "Main shop",
+              "crew_size": 3,
+              "producer": "tm-3",
+              "wrapped_on": "@today-9d"
+            }
+          },
+          {
+            "key": "shoo-5",
+            "values": {
+              "shoot_title": "Mortiser test and apron short",
+              "status": "Confirmed",
+              "shoot_on": "@today+1d 08:00",
+              "location": "Main shop",
+              "crew_size": 2,
+              "producer": "tm-3"
+            }
+          },
+          {
+            "key": "shoo-6",
+            "values": {
+              "shoot_title": "Cedar bench at the lake cabin",
+              "status": "Planned",
+              "shoot_on": "@today+8d 06:45",
+              "location": "On location",
+              "crew_size": 3,
+              "producer": "tm-3"
+            }
+          },
+          {
+            "key": "shoo-7",
+            "values": {
+              "shoot_title": "Lumber yard B-roll",
+              "status": "Cancelled",
+              "shoot_on": "@today-15d 10:00",
+              "location": "On location",
+              "crew_size": 1,
+              "producer": "tm-3"
+            }
+          }
+        ],
+        "independentOf": {
+          "producer": "Either record can be created or change status before the other."
+        },
+        "datesIndependent": "The shoot date is booked ahead; the wrapped date is stamped when the last shot is in, which can run a day over."
+      },
+      {
+        "token": "payout",
+        "name": "Payouts",
+        "labelSingular": "Payout",
+        "labelPlural": "Payouts",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wallet",
+        "titleField": "payout_name",
+        "describes": "Money the channel earns outside sponsor deals: ad revenue, members, affiliate links, merch and tips.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Received"
+            ],
+            "filled": [
+              "received_on"
+            ]
+          }
+        ],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "payout_name",
+            "label": "Payout",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Expected",
+            "choices": [
+              "Expected",
+              "Received"
+            ],
+            "choiceColors": {
+              "Expected": "blue",
+              "Received": "green"
+            },
+            "statusGroups": {
+              "Expected": "todo",
+              "Received": "done"
+            }
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Ad revenue",
+              "Channel memberships",
+              "Affiliate links",
+              "Merch store",
+              "Viewer tips"
+            ],
+            "choiceColors": {
+              "Ad revenue": "blue",
+              "Channel memberships": "violet",
+              "Affiliate links": "teal",
+              "Merch store": "orange",
+              "Viewer tips": "pink"
+            }
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "expected_on",
+            "label": "Expected on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "received_on",
+            "label": "Received on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "recv_btn",
+            "label": "Mark received",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "payout_received"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "payo-1",
+            "values": {
+              "payout_name": "Ad revenue payout #41",
+              "status": "Received",
+              "source": "Ad revenue",
+              "amount": 7420,
+              "expected_on": "@today-50d",
+              "received_on": "@today-49d"
+            }
+          },
+          {
+            "key": "payo-2",
+            "values": {
+              "payout_name": "Ad revenue payout #42",
+              "status": "Received",
+              "source": "Ad revenue",
+              "amount": 8160,
+              "expected_on": "@today-20d",
+              "received_on": "@today-19d"
+            }
+          },
+          {
+            "key": "payo-3",
+            "values": {
+              "payout_name": "Ad revenue payout #43",
+              "status": "Expected",
+              "source": "Ad revenue",
+              "amount": 8390,
+              "expected_on": "@today+10d"
+            }
+          },
+          {
+            "key": "payo-4",
+            "values": {
+              "payout_name": "Channel memberships payout #18",
+              "status": "Received",
+              "source": "Channel memberships",
+              "amount": 1240,
+              "expected_on": "@today-20d",
+              "received_on": "@today-19d"
+            }
+          },
+          {
+            "key": "payo-5",
+            "values": {
+              "payout_name": "Channel memberships payout #19",
+              "status": "Expected",
+              "source": "Channel memberships",
+              "amount": 1310,
+              "expected_on": "@today+10d"
+            }
+          },
+          {
+            "key": "payo-6",
+            "values": {
+              "payout_name": "Affiliate links, tool retailer",
+              "status": "Received",
+              "source": "Affiliate links",
+              "amount": 960,
+              "expected_on": "@today-14d",
+              "received_on": "@today-12d"
+            }
+          },
+          {
+            "key": "payo-7",
+            "values": {
+              "payout_name": "Affiliate links, lumber supplier",
+              "status": "Expected",
+              "source": "Affiliate links",
+              "amount": 410,
+              "expected_on": "@today+16d"
+            }
+          },
+          {
+            "key": "payo-8",
+            "values": {
+              "payout_name": "Merch drop: canvas shop aprons",
+              "status": "Received",
+              "source": "Merch store",
+              "amount": 2380,
+              "expected_on": "@today-30d",
+              "received_on": "@today-27d"
+            }
+          },
+          {
+            "key": "payo-9",
+            "values": {
+              "payout_name": "Viewer tips on the bench build",
+              "status": "Received",
+              "source": "Viewer tips",
+              "amount": 185,
+              "expected_on": "@today-20d",
+              "received_on": "@today-19d"
+            }
+          }
+        ],
+        "datesIndependent": "Platforms pay on their own calendar; a payout can land a day or two before or after the expected date."
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each video is filmed on one shoot day.",
+        "fromTable": "video",
+        "fromField": "shoot",
+        "toTable": "shoot_day",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "videos"
+      },
+      {
+        "describes": "A video carries at most one sponsor read.",
+        "fromTable": "video",
+        "fromField": "sponsor",
+        "toTable": "sponsor",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "videos"
+      },
+      {
+        "describes": "Each video has one editor.",
+        "fromTable": "video",
+        "fromField": "editor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "videos_edited"
+      },
+      {
+        "describes": "Each shoot day has one producer.",
+        "fromTable": "shoot_day",
+        "fromField": "producer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "shoots_produced"
+      }
+    ],
+    "views": [
+      {
+        "token": "all_sponsor",
+        "name": "All sponsors",
+        "table": "sponsor",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "sponsor_board",
+        "name": "Sponsors board",
+        "table": "sponsor",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "sponsor_drafts",
+        "name": "Drafts due in 14 days",
+        "table": "sponsor",
+        "kind": "grid",
+        "within": {
+          "draft_due": {
+            "relative": "next_days",
+            "n": 14
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Contracted",
+            "Script review"
+          ]
+        }
+      },
+      {
+        "token": "sponsor_owed",
+        "name": "Awaiting payment",
+        "table": "sponsor",
+        "kind": "grid",
+        "anyOf": {
+          "status": [
+            "Live",
+            "Invoiced"
+          ]
+        }
+      },
+      {
+        "token": "all_video",
+        "name": "All videos",
+        "table": "video",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "video_board",
+        "name": "Videos board",
+        "table": "video",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "video_cal",
+        "name": "Videos calendar",
+        "table": "video",
+        "kind": "calendar",
+        "dateField": "publish_on",
+        "allDay": true
+      },
+      {
+        "token": "video_over",
+        "name": "Overdue",
+        "table": "video",
+        "kind": "grid",
+        "within": {
+          "publish_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Scripting",
+            "Filming",
+            "Editing",
+            "Packaging",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "video_week",
+        "name": "Publishing this week",
+        "table": "video",
+        "kind": "grid",
+        "within": {
+          "publish_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Scripting",
+            "Filming",
+            "Editing",
+            "Packaging",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "video_next14",
+        "name": "Next 14 days",
+        "table": "video",
+        "kind": "grid",
+        "within": {
+          "publish_on": {
+            "relative": "next_days",
+            "n": 14
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Scripting",
+            "Filming",
+            "Editing",
+            "Packaging",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "video_recent",
+        "name": "Published in the last 30 days",
+        "table": "video",
+        "kind": "grid",
+        "within": {
+          "published_on": {
+            "relative": "past_days",
+            "n": 30
+          }
+        },
+        "filters": {
+          "status": "Published"
+        }
+      },
+      {
+        "token": "video_mine",
+        "name": "My videos",
+        "table": "video",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_shoot_day",
+        "name": "All shoot days",
+        "table": "shoot_day",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "shoot_day_board",
+        "name": "Shoot days board",
+        "table": "shoot_day",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "shoot_day_cal",
+        "name": "Shoot days calendar",
+        "table": "shoot_day",
+        "kind": "calendar",
+        "dateField": "shoot_on",
+        "allDay": true
+      },
+      {
+        "token": "shoot_day_soon",
+        "name": "Coming up in 14 days",
+        "table": "shoot_day",
+        "kind": "grid",
+        "within": {
+          "shoot_on": {
+            "relative": "next_days",
+            "n": 14
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "all_payout",
+        "name": "All payouts",
+        "table": "payout",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "payout_board",
+        "name": "Payouts board",
+        "table": "payout",
+        "kind": "kanban",
+        "groupBy": "source"
+      },
+      {
+        "token": "payout_due",
+        "name": "Expected in 30 days",
+        "table": "payout",
+        "kind": "grid",
+        "within": {
+          "expected_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "filters": {
+          "status": "Expected"
+        }
+      }
+    ],
+    "forms": [
+      {
+        "token": "video_pitch",
+        "name": "Pitch a video",
+        "describes": "How anyone on the team adds a video idea.",
+        "audience": "staff",
+        "table": "video",
+        "fields": [
+          {
+            "fieldKey": "video_title",
+            "ask": "What is the working title?",
+            "required": true
+          },
+          {
+            "fieldKey": "format",
+            "ask": "Long-form, Short or live?"
+          },
+          {
+            "fieldKey": "series",
+            "ask": "Which series does it belong to?"
+          }
+        ],
+        "submitLabel": "Add the idea",
+        "confirmation": "Thanks. It is on the board as an Idea."
+      }
+    ]
+  },
+  "pages": [
+    {
+      "key": "youtube-channel-studio",
+      "parent": null,
+      "title": "YouTube Channel Studio",
+      "icon": {
+        "emoji": "🎬"
+      },
+      "cover": {
+        "url": "gallery:media-ring-light-microphone-desk-setup",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The weekly loop: pick ideas, book a shoot day, edit, package, publish. Videos move left to right on the board; Mark published stamps the real upload date. Sponsor deals live in Sponsors, and the Dashboard shows late uploads, drafts due and brands that still owe money."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:packaging"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:sponsor-reads"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sponsors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Brand deals from first pitch to paid, with the fee, the read and what it earned per thousand views."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sponsor",
+              "view": "sponsor_board"
+            },
+            "inline": true,
+            "title": "Sponsors",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "spon-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "usage",
+                  "exclusive",
+                  "contact",
+                  "email",
+                  "paid_on",
+                  "videos_live",
+                  "views_sponsored",
+                  "cpm",
+                  "paid_btn",
+                  "mail_btn",
+                  "add_video_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "spon-t",
+                "name": "All sponsors",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "spon-drafts",
+                "name": "Drafts due in 14 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "draft_due": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Contracted",
+                    "Script review"
+                  ]
+                }
+              },
+              {
+                "id": "spon-owed",
+                "name": "Awaiting payment",
+                "layout": "list",
+                "icon": "Receipt",
+                "anyOf": {
+                  "status": [
+                    "Live",
+                    "Invoiced"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "spon-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Videos"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every video from idea to upload: who edits it, when it goes live and how it performed in its first 28 days."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "video",
+              "view": "video_board"
+            },
+            "inline": true,
+            "title": "Videos",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vide-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "shoot",
+                  "sponsor",
+                  "editor",
+                  "published_on",
+                  "length_min",
+                  "views_28d",
+                  "ctr",
+                  "avg_view_pct",
+                  "ad_revenue",
+                  "video_url",
+                  "thumb_ok",
+                  "rpm",
+                  "packaging",
+                  "assigned_to",
+                  "pub_btn",
+                  "take_btn",
+                  "watch_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "vide-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "publish_on",
+                "hiddenFields": [
+                  "status",
+                  "shoot",
+                  "sponsor",
+                  "editor",
+                  "published_on",
+                  "length_min",
+                  "views_28d",
+                  "ctr",
+                  "avg_view_pct",
+                  "ad_revenue",
+                  "video_url",
+                  "thumb_ok",
+                  "rpm",
+                  "packaging",
+                  "assigned_to",
+                  "pub_btn",
+                  "take_btn",
+                  "watch_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "vide-t",
+                "name": "All videos",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "vide-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "publish_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Scripting",
+                    "Filming",
+                    "Editing",
+                    "Packaging",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "vide-week",
+                "name": "Publishing this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "publish_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Scripting",
+                    "Filming",
+                    "Editing",
+                    "Packaging",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "vide-next14",
+                "name": "Next 14 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "publish_on": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Scripting",
+                    "Filming",
+                    "Editing",
+                    "Packaging",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "vide-recent",
+                "name": "Published in the last 30 days",
+                "layout": "list",
+                "icon": "TrendingUp",
+                "within": {
+                  "published_on": {
+                    "relative": "past_days",
+                    "n": 30
+                  }
+                },
+                "filters": {
+                  "status": "Published"
+                }
+              },
+              {
+                "id": "vide-mine",
+                "name": "My videos",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "vide-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Shoot days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Filming days with the location, call time and crew, and how many videos each day feeds."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shoot_day",
+              "view": "shoot_day_board"
+            },
+            "inline": true,
+            "title": "Shoot days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "shoo-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "crew_size",
+                  "producer",
+                  "wrapped_on",
+                  "video_count",
+                  "planned_minutes",
+                  "wrap_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "shoo-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "shoot_on",
+                "hiddenFields": [
+                  "status",
+                  "crew_size",
+                  "producer",
+                  "wrapped_on",
+                  "video_count",
+                  "planned_minutes",
+                  "wrap_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "shoo-t",
+                "name": "All shoot days",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "shoo-soon",
+                "name": "Coming up in 14 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "shoot_on": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "shoo-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Payouts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Money the channel earns outside sponsor deals: ad revenue, members, affiliate links, merch and tips."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "payout",
+              "view": "payout_board"
+            },
+            "inline": true,
+            "title": "Payouts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "payo-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "source",
+                "hiddenFields": [
+                  "received_on",
+                  "recv_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "payo-t",
+                "name": "All payouts",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "payo-due",
+                "name": "Expected in 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "expected_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "filters": {
+                  "status": "Expected"
+                }
+              }
+            ],
+            "activeViewId": "payo-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "youtube-channel-studio",
+      "title": "Start here: how the channel runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "One video a week, one or two Shorts, and every sponsor read on time. This page explains where each piece lives and the order the team works in."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday:",
+              "bold": true
+            },
+            {
+              "text": " the host and producer pick the next shoot from the Idea column of Videos and write the promise for each one."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Shoot day:",
+              "bold": true
+            },
+            {
+              "text": " everything filmed that day links to its row in Shoot days, so the planned minutes add up and the producer can see if the day is overbooked."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Editing:",
+              "bold": true
+            },
+            {
+              "text": " the editor moves the video to Editing and then Packaging once the cut is locked. Packaging means title, thumbnail, chapters and description, nothing else."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Upload:",
+              "bold": true
+            },
+            {
+              "text": " set the Publish date, upload as scheduled, and press "
+            },
+            {
+              "text": "Mark published",
+              "bold": true
+            },
+            {
+              "text": " the day it goes live. That stamps the real date, which can differ from the plan."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Day 28:",
+              "bold": true
+            },
+            {
+              "text": " fill in views, click-through rate, average viewed and ad revenue from the channel analytics. RPM and the Packaging check fill themselves."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who owns what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Area"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lives in"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "What we film next"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Host and producer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Videos, Idea and Scripting"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Shoot logistics"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Producer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shoot days"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "The cut and the upload"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lead editor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Videos, Editing to Scheduled"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Thumbnails"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Thumbnail designer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Videos, Packaging"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Brand deals and invoices"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Partnerships manager"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sponsors"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Platform money"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Host"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Payouts"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules that keep the channel healthy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A video without a promise sentence does not get a shoot day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Shorts come from footage already shot for a long video; they never get their own shoot."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A sponsor is linked to a video only once the contract is signed, so the Effective CPM reads true."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "youtube-channel-studio",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "What the channel needs from you this week: videos past their publish date, sponsor drafts coming due, and money still owed by brands. Views and RPM are from each video's first 28 days."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "video",
+                      "view": "all_video"
+                    },
+                    "inline": true,
+                    "title": "Videos",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-videos-by-stage",
+                        "name": "Videos by stage",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "c-videos-by-stage"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "video",
+                      "view": "all_video"
+                    },
+                    "inline": true,
+                    "title": "Videos",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-views-by-series",
+                        "name": "Views by series",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "series",
+                          "op": "sum",
+                          "field": "views_28d"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "c-views-by-series"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "payout",
+                      "view": "all_payout"
+                    },
+                    "inline": true,
+                    "title": "Payouts",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-payouts-by-source",
+                        "name": "Payouts by source",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "source",
+                          "op": "sum",
+                          "field": "amount"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "c-payouts-by-source"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Past their publish date"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "video",
+              "view": "all_video"
+            },
+            "inline": true,
+            "title": "Videos",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-late-videos",
+                "name": "Late videos",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "publish_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Scripting",
+                    "Filming",
+                    "Editing",
+                    "Packaging",
+                    "Scheduled"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "l-late-videos"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Going live this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "video",
+              "view": "all_video"
+            },
+            "inline": true,
+            "title": "Videos",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-this-week-s-uploads",
+                "name": "This week's uploads",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "publish_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Scripting",
+                    "Filming",
+                    "Editing",
+                    "Packaging",
+                    "Scheduled"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "l-this-week-s-uploads"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My videos"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "video",
+              "view": "all_video"
+            },
+            "inline": true,
+            "title": "Videos",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-assigned-to-me",
+                "name": "Assigned to me",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "l-assigned-to-me"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sponsor drafts due"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sponsor",
+              "view": "all_sponsor"
+            },
+            "inline": true,
+            "title": "Sponsors",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-drafts-due-soon",
+                "name": "Drafts due soon",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "draft_due": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Contracted",
+                    "Script review"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "l-drafts-due-soon"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Brands that still owe us"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sponsor",
+              "view": "all_sponsor"
+            },
+            "inline": true,
+            "title": "Sponsors",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-sponsor-money-owed",
+                "name": "Sponsor money owed",
+                "layout": "list",
+                "icon": "Table",
+                "anyOf": {
+                  "status": [
+                    "Live",
+                    "Invoiced"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "l-sponsor-money-owed"
+          }
+        }
+      ]
+    },
+    {
+      "key": "packaging",
+      "parent": "youtube-channel-studio",
+      "title": "Packaging a video: title, thumbnail, first 30 seconds",
+      "icon": {
+        "emoji": "🖼️"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Packaging is the step between a locked cut and the upload. A strong video with weak packaging dies in the first two days, because nobody clicks it. Give it its own stage on the board and its own owner."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Start from the promise"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every video row has a promise sentence in its plan. The title and the thumbnail are two different ways of saying that promise, and they must not repeat each other. If the title says what was built, the thumbnail shows the surprising part: the crack in the slab, the price tag, the before and after."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Titles"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write three titles before anyone opens the thumbnail file. One plain, one with a number or a cost, one with a question."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Keep the meaning in the first 45 characters; phones cut the rest."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Never promise something the video does not show in the first two minutes. Viewers leave, and average viewed drops."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Thumbnails"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "One subject, readable at the size of a postage stamp. Check it on a phone, not the editing monitor."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Three words at most on the image, and never the same words as the title."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The designer mocks up two versions; the host picks one and ticks "
+            },
+            {
+              "text": "Thumbnail approved",
+              "bold": true
+            },
+            {
+              "text": ". Nothing moves to Scheduled without that tick."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The first 30 seconds"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open on the finished piece or the problem, then say what the viewer will get. Channel name, sponsor read and shop tour all come later. The sponsor read sits after the first build step, never in the opening."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the results at day 28"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Click-through rate"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Packaging check"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "6% or more"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Strong click"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reuse the thumbnail style for the series"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "4% to 6%"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Average click"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Try a second thumbnail on the next upload in the series"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Under 4%"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rework title"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Change the title and thumbnail now; older videos can recover"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Shorts and live streams skip the check, because their views come from the feed, not from a click on a thumbnail. Look at RPM beside it: a tool test with a lower click rate but a high RPM can still be the better video for the business."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Worked example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The budget track saw test went out with the title in plain words and a thumbnail showing the price tag beside a perfect cut. It clicked at 8.1%, the best of the quarter, so the next tool test copies that layout: object, price, proof."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sponsor-reads",
+      "parent": "youtube-channel-studio",
+      "title": "Sponsor reads, from pitch to payment",
+      "icon": {
+        "emoji": "🤝"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Sponsor money keeps the shop running between ad payouts, but one bad read costs more trust than it earns. This is how the partnerships manager takes a deal from first email to paid."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "1. Pitched and Negotiating"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every brand that writes in or that we approach gets a row in Sponsors with the Brand sponsor brief filled in. The first question is always whether we would use the product in the shop if nobody paid us. If not, mark it Declined and say so politely."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "During negotiation, settle four things and write them on the row: the "
+            },
+            {
+              "text": "Deliverable",
+              "bold": true
+            },
+            {
+              "text": " (an integrated read, a dedicated video or a short mention), the "
+            },
+            {
+              "text": "Fee",
+              "bold": true
+            },
+            {
+              "text": ", the "
+            },
+            {
+              "text": "Usage rights",
+              "bold": true
+            },
+            {
+              "text": " (whether the brand may run our clip as a paid ad and for how long) and "
+            },
+            {
+              "text": "Category exclusivity",
+              "bold": true
+            },
+            {
+              "text": ". Paid usage and exclusivity are worth extra; price them separately rather than giving them away."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "2. Contracted and Script review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Once the contract is signed, press "
+            },
+            {
+              "text": "New sponsored video",
+              "bold": true
+            },
+            {
+              "text": " on the sponsor row. It opens a video plan already linked to the brand."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the "
+            },
+            {
+              "text": "Script draft due",
+              "bold": true
+            },
+            {
+              "text": " date. Most brands want the read script about a week before filming."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the read, not the whole video script. Brands approve their 60 seconds; they never approve our opinions about their competitors."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "3. Live and Invoiced"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When the video goes live, the sponsor moves to Live. Send the invoice with the live link the same day and move it to Invoiced. The Awaiting payment view on the dashboard shows every brand in Live or Invoiced, so nothing waits quietly for 60 days."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "4. Paid"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": " when the money lands. It stamps the date, which shows which brands pay on time when it is renewal season."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Is a deal worth it?"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The "
+            },
+            {
+              "text": "Effective CPM",
+              "bold": true
+            },
+            {
+              "text": " divides the fee by the views the sponsored videos earned in their first 28 days, times a thousand. Compare it with the channel's ad RPM:"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Effective CPM"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Read it as"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Under 15 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Underpriced; ask for more on renewal"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "15 to 35 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A fair deal for a woodworking audience"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Over 35 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A strong partner; offer them first refusal on the next series"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A dedicated video usually shows a lower CPM than a read, because the whole video is theirs; price it at two to three times a read."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
