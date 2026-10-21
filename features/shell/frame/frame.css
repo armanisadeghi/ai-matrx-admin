@@ -25,6 +25,7 @@
 
   /* ── PROPOSED surfaces (frame-only until approved) ── */
   --matrx-frame-canvas: 240 5% 96.5%; /* the app background the sidebar sits on */
+  --matrx-frame-well: 240 5% 96.5%; /* a recessed area inside the sheet (the grid's favorites card) */
   --matrx-frame-sheet: 0 0% 100%; /* the content sheet */
   --matrx-frame-hairline: 240 5% 90%; /* the sheet edge and every rule inside it */
 
@@ -51,6 +52,7 @@
 .dark [data-matrx-frame],
 [data-matrx-frame].dark {
   --matrx-frame-canvas: 240 5% 6.5%;
+  --matrx-frame-well: 240 5% 12%;
   --matrx-frame-sheet: 240 5% 9%;
   --matrx-frame-hairline: 240 4% 17%;
 
@@ -67,6 +69,25 @@
   --matrx-frame-gutter: 16px;
   --matrx-frame-inset: 0px;
   --matrx-frame-radius: 0px;
+}
+
+/* ── the owner's layout comparisons (2026-10-21; AppFrame FrameSpace / FrameSidebarColor) ── */
+/* Flush: no outer gap and square outer edges; the sheet meets the window and the sidebar. */
+[data-matrx-frame][data-space="flush"] {
+  --matrx-frame-inset: 0px;
+  --matrx-frame-radius: 0px;
+}
+[data-matrx-frame][data-space="flush"] .mf-sheet {
+  border-width: 0;
+}
+/* Same: the sidebar and the page are one color, split by one hairline. Declared after the dark
+   block so it wins in both themes; the value follows each theme's sheet. */
+[data-matrx-frame][data-sidebar-color="same"],
+.dark [data-matrx-frame][data-sidebar-color="same"] {
+  --matrx-frame-canvas: var(--matrx-frame-sheet);
+}
+[data-matrx-frame][data-space="flush"][data-sidebar-color="same"][data-sidebar-shown] .mf-sheet {
+  border-left-width: 1px;
 }
 
 /* ── surfaces ── */
@@ -161,7 +182,7 @@
   content: "";
   position: absolute;
   inset-block: 0;
-  left: 2px;
+  left: 3px;
   width: 2px;
   background: transparent;
   transition: background-color 120ms;
@@ -226,7 +247,7 @@
 
 /* THE APP GRID (Google-tight): the favorites card, the 12px one-line names, look B's family rule. */
 [data-matrx-frame] .mf-grid-card {
-  background: hsl(var(--matrx-frame-canvas));
+  background: hsl(var(--matrx-frame-well));
   border-radius: 16px;
 }
 [data-matrx-frame] .mf-grid-name {

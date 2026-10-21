@@ -10,6 +10,7 @@ import { Component, Suspense, createElement, lazy, useMemo, useState } from "rea
 import type { ComponentType, KeyboardEvent, LazyExoticComponent, PointerEvent, ReactNode } from "react";
 import { ArrowUp, Mic, Shapes, Webhook, X } from "lucide-react";
 import { holdDragCursor } from "@ai-matrx/design-system";
+import { cn } from "@ai-matrx/design-system/cn";
 import { Button, EmptyState, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import type { FrameModuleLoader } from "./types";
 
@@ -149,6 +150,7 @@ export function PanelResizeHandle({
   min,
   max,
   snapBelow,
+  edge = "left",
   onResize,
   onDragChange,
   onCommit,
@@ -159,6 +161,8 @@ export function PanelResizeHandle({
   min: number;
   max: number;
   snapBelow: number;
+  /** Which edge of its panel the handle sits on: `left` (the side chat) or `right` (the sidebar). */
+  edge?: "left" | "right";
   onResize: (width: number) => void;
   onDragChange: (dragging: boolean) => void;
   onCommit: (width: number) => void;
@@ -179,7 +183,8 @@ export function PanelResizeHandle({
     onDragChange(true);
     const move = (ev: globalThis.PointerEvent) => {
       // The handle sits on the panel's LEFT edge: moving left widens the panel.
-      raw = startW + (startX - ev.clientX);
+      // On a LEFT edge moving left widens the panel; on a RIGHT edge moving right does.
+      raw = startW + (edge === "left" ? startX - ev.clientX : ev.clientX - startX);
       last = clamp(raw);
       onResize(last);
     };
@@ -203,8 +208,10 @@ export function PanelResizeHandle({
   function onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
     const step = e.shiftKey ? 64 : 16;
     let next: number | null = null;
-    if (e.key === "ArrowLeft") next = clamp(width + step);
-    else if (e.key === "ArrowRight") next = clamp(width - step);
+    const grow = edge === "left" ? "ArrowLeft" : "ArrowRight";
+    const shrink = edge === "left" ? "ArrowRight" : "ArrowLeft";
+    if (e.key === grow) next = clamp(width + step);
+    else if (e.key === shrink) next = clamp(width - step);
     else if (e.key === "Home") next = min;
     else if (e.key === "End") next = max;
     if (next === null) return;
@@ -224,7 +231,11 @@ export function PanelResizeHandle({
       tabIndex={0}
       onPointerDown={onPointerDown}
       onKeyDown={onKeyDown}
-      className="mf-resize-handle absolute inset-y-0 -left-[3px] z-10 w-[6px] touch-none outline-none"
+      data-edge={edge}
+      className={cn(
+        "mf-resize-handle absolute inset-y-0 z-10 w-2 touch-none outline-none",
+        edge === "left" ? "-left-1" : "-right-1",
+      )}
     />
   );
 }

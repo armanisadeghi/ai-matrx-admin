@@ -9,7 +9,7 @@ import { Check } from "lucide-react";
 import { Button, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { AppFrame } from "@/features/shell/frame/AppFrame";
-import type { FrameHeaderEdge } from "@/features/shell/frame/AppFrame";
+import type { FrameHeaderEdge, FrameSidebarColor, FrameSpace } from "@/features/shell/frame/AppFrame";
 import type { FrameGridLook } from "@/features/shell/frame/AppGrid";
 import { PRODUCTS, PRODUCT_FAMILIES, productById } from "@/features/shell/frame/products";
 import { defaultPageActions, placeholderHeaderTools } from "@/features/shell/frame/SheetHeader";
@@ -91,6 +91,8 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
   const loaded = useLoadedModules();
   const [headerEdge, setHeaderEdge] = useState<FrameHeaderEdge>("fade");
   const [gridLook, setGridLook] = useState<FrameGridLook>("A");
+  const [space, setSpace] = useState<FrameSpace>("inset");
+  const [sidebarColor, setSidebarColor] = useState<FrameSidebarColor>("contrast");
   const [favorites, setFavorites] = useState<string[]>([
     "chat",
     "memory",
@@ -324,6 +326,24 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             { value: "C", label: "Grid C" },
           ]}
         />
+        <SegmentedControl<FrameSpace>
+          aria-label="Space around"
+          value={space}
+          onValueChange={setSpace}
+          data={[
+            { value: "inset", label: "Inset" },
+            { value: "flush", label: "Flush" },
+          ]}
+        />
+        <SegmentedControl<FrameSidebarColor>
+          aria-label="Sidebar color"
+          value={sidebarColor}
+          onValueChange={setSidebarColor}
+          data={[
+            { value: "contrast", label: "Contrast" },
+            { value: "same", label: "Same" },
+          ]}
+        />
         <SegmentedControl<FrameHeaderEdge>
           aria-label="Header edge"
           value={headerEdge}
@@ -389,6 +409,8 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             onSideChatAddress={(search) => replaceAddressWithoutNavigating(`${window.location.pathname}${search}`)}
             headerEdge={headerEdge}
             gridLook={gridLook}
+            space={space}
+            sidebarColor={sidebarColor}
             loadCompanion={loadSampleCompanion}
             loadCanvas={loadSampleCanvas}
             status={

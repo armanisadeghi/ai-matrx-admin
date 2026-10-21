@@ -143,6 +143,13 @@ Crumbs are data (`FrameCrumb`); the frame renders them.
     brings it back by closing the canvas (then the side chat, if still needed).
 - **Drawer:** while open, the sheet is inert and Tab stays inside the drawer. Esc closes it from
   anywhere, unless a popover is open, and focus returns to the control that opened it.
+- **Sidebar width** (owner, 2026-10-21): drag its right edge (a hover-only 2px line on an 8px
+  grab strip) or use the arrow keys; 200 to 400px, 244 by default, remembered per device
+  (`matrx-frame:sidebar-width`); dragging 80px past the minimum snaps it shut.
+- **Space around / sidebar color** (owner's comparisons, playground switches until he picks):
+  `space` `inset` (the gap around the sheet) or `flush` (no outer gap, square outer edges);
+  `sidebarColor` `contrast` (darker app background) or `same` (one color, one hairline). Both
+  work together and in dark mode.
 - **Motion:** panels slide on `--matrx-motion-duration-panel` / `--matrx-motion-ease-panel`.
 
 ## The color proposal (frame-only until approved)
@@ -179,6 +186,9 @@ the canvas and the ask bar, the per-page memory and the link, the forms and canv
 ownership attributes, and no `className`/`style` on any exported props type.
 
 ## Change log
+
+- 2026-10-21 (round 9): the sidebar resizes (snap shut, remembered); Inset | Flush and
+  Contrast | Same switches; the grid's favorites card gets its own `--matrx-frame-well` token.
 
 - 2026-10-20 (round 8): the app grid rebuilt Google-tight (card, one grid, no headings, no
   repeats, 32px whole-pixel glyphs), with the A | B | C bake-off.

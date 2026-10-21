@@ -573,3 +573,67 @@ describe("the app grid is Google-tight (owner, 2026-10-20 fourth round)", () => 
     expect(marks[0].querySelector("svg")!.getAttribute("width")).toBe("24");
   });
 });
+
+describe("the sidebar resizes (owner, 2026-10-21)", () => {
+  const handle = () => q<HTMLElement>('[role="separator"][aria-label="Resize sidebar"]')!;
+  const sidebarBox = () => q<HTMLElement>('[data-mf-region="sidebar"]')!;
+  // jsdom has no pointer capture or PointerEvent: React's onPointerDown listens to the event TYPE.
+  const pointer = (el: HTMLElement, type: string, clientX: number) =>
+    el.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, clientX, button: 0 }));
+  beforeAll(() => {
+    Element.prototype.setPointerCapture ??= function setPointerCapture() {};
+  });
+
+  it("244 by default; drag widens it within 200–400, remembered on this device, no motion while dragging", async () => {
+    localStorage.clear();
+    mount(base({ form: "desktop" }));
+    await flush();
+    expect(sidebarBox().style.width).toBe("244px");
+    const h = handle();
+    act(() => pointer(h, "pointerdown", 244));
+    expect(frame().hasAttribute("data-dragging")).toBe(true);
+    act(() => pointer(h, "pointermove", 300));
+    expect(sidebarBox().style.width).toBe("300px");
+    act(() => pointer(h, "pointermove", 900));
+    expect(sidebarBox().style.width).toBe("400px");
+    act(() => pointer(h, "pointerup", 900));
+    expect(frame().hasAttribute("data-dragging")).toBe(false);
+    expect(localStorage.getItem("matrx-frame:sidebar-width")).toBe("400");
+  });
+
+  it("dragging past the minimum snaps it shut and keeps the remembered width", async () => {
+    localStorage.clear();
+    mount(base({ form: "desktop" }));
+    await flush();
+    const h = handle();
+    act(() => pointer(h, "pointerdown", 244));
+    act(() => pointer(h, "pointermove", 60));
+    act(() => pointer(h, "pointerup", 60));
+    expect(sidebarBox().style.width).toBe("0px");
+    expect(sidebarBox().hasAttribute("inert")).toBe(true);
+    expect(localStorage.getItem("matrx-frame:sidebar-width")).toBeNull();
+  });
+
+  it("the arrow keys resize it too", async () => {
+    localStorage.clear();
+    mount(base({ form: "desktop" }));
+    await flush();
+    act(() => {
+      handle().dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true, cancelable: true }));
+    });
+    expect(sidebarBox().style.width).toBe("260px");
+  });
+});
+
+describe("space around and sidebar color (owner's comparisons, 2026-10-21)", () => {
+  it("the frame says which it is, and the CSS has both answers in both themes", () => {
+    mount(base({ form: "desktop", space: "flush", sidebarColor: "same" }));
+    expect(frame().getAttribute("data-space")).toBe("flush");
+    expect(frame().getAttribute("data-sidebar-color")).toBe("same");
+    const css = readFileSync(join(__dirname, "..", "frame.css"), "utf8");
+    expect(css).toMatch(/\[data-space="flush"\] \{\s*--matrx-frame-inset: 0px;\s*--matrx-frame-radius: 0px;/);
+    expect(css).toMatch(/\.dark \[data-matrx-frame\]\[data-sidebar-color="same"\] \{\s*--matrx-frame-canvas: var\(--matrx-frame-sheet\)/);
+    // The "same" rule must come after the dark block, or dark mode keeps the contrast.
+    expect(css.indexOf('[data-sidebar-color="same"]')).toBeGreaterThan(css.indexOf(".dark [data-matrx-frame],"));
+  });
+});
