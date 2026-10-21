@@ -27,6 +27,29 @@ function captured(over: Partial<CapturedError>): CapturedError {
 }
 
 describe("classifyTier", () => {
+  it("shows a handled window-restore warning as a dot, and keeps a window-restore error red", () => {
+    const warning = classifyTier(
+      captured({
+        source: "runtime-exception",
+        name: "overlays:overlay-persistence",
+        level: "warning",
+        message: "[overlays/persistence:preservation-disabled] Ignored notesWindow: its definition does not preserve windows.",
+      }),
+    );
+    expect(warning.tier).toBe("orange");
+    expect(warning.ruleId).toBe("overlay-persistence-warning");
+
+    const error = classifyTier(
+      captured({
+        source: "runtime-exception",
+        name: "overlays:overlay-persistence",
+        level: "error",
+        message: "[overlays/persistence:workspace-too-large] Window workspace exceeded 40 sessions.",
+      }),
+    );
+    expect(error.tier).toBe("red");
+  });
+
   it("keeps Next's canceled superseded navigation transition out of the durable queue", () => {
     const c = classifyTier(
       captured({

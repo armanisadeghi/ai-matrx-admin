@@ -119,6 +119,19 @@ export const DOWNGRADE_RULES: DowngradeRule[] = [
       level: "warn",
     },
   },
+  {
+    id: "overlay-persistence-warning",
+    tier: "orange",
+    persist: false,
+    reason:
+      "The window system (@ai-matrx/summon persistence) skipped something it handled on restore: saved window data that is no longer JSON, a window whose definition stopped preserving, a session missing a required key. Nothing the person can act on; shown as a dot. Real failures (level error) stay red.",
+    addedAt: "2026-10-21",
+    match: {
+      source: "runtime-exception",
+      name: "overlays:overlay-persistence",
+      level: "warning",
+    },
+  },
   // ══════════════════════════════════════════════════════════════════════
   // CRITICAL ESCALATIONS / KNOWN-ERROR TRANSLATIONS — keep these FIRST.
   // Rules are first-match-wins, so a `tier: "red"` rule at the top acts as a

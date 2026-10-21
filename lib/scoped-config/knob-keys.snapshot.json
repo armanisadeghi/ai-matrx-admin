@@ -792,6 +792,7 @@
 ["agent_factory","representative_min_sources"],
 ["agent_factory","schema_refresh_case_cap"],
 ["agent_factory","send_back_limit"],
+["agent_factory","studio_build_engine"],
 ["agent_factory","tool_job_min_tier"],
 ["agent_impact","auto_advance_green"],
 ["agent_impact","max_agent_ids"],

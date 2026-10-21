@@ -442,8 +442,14 @@ export interface BatchDecisionResult {
 }
 
 /** One run_approval_decide per row (each permission-checked server-side); never throws for a row. */
-export async function decideSpendApprovalsBatch(ids: string[], decision: ApprovalDecision): Promise<BatchDecisionResult> {
-  const settled = await Promise.allSettled(ids.map((id) => decideSpendApproval(id, decision, { note: "Batch decision" })));
+export async function decideSpendApprovalsBatch(
+  ids: string[],
+  decision: ApprovalDecision,
+  fields: { expiresAt?: string | null } = {},
+): Promise<BatchDecisionResult> {
+  const settled = await Promise.allSettled(
+    ids.map((id) => decideSpendApproval(id, decision, { note: "Batch decision", expiresAt: fields.expiresAt ?? null })),
+  );
   const out: BatchDecisionResult = { ok: [], failed: [] };
   settled.forEach((s, i) => {
     if (s.status === "fulfilled") out.ok.push(ids[i]);

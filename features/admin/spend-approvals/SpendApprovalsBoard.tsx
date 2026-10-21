@@ -152,6 +152,36 @@ export function HistoryList({ id }: { id: string }) {
   );
 }
 
+// Every decision a row can take in bulk: the same set as the row's own actions (minus History).
+type BulkDecision = "approve" | "approve_temporary" | "reject" | "reopen" | "reset";
+const BULK_ACTIONS: { decision: BulkDecision; label: string; icon: typeof Check }[] = [
+  { decision: "approve", label: "Approve", icon: Check },
+  { decision: "approve_temporary", label: "Temporary", icon: CalendarClock },
+  { decision: "reject", label: "Reject", icon: X },
+  { decision: "reopen", label: "Reopen", icon: RotateCcw },
+  { decision: "reset", label: "Reset tracking", icon: TimerReset },
+];
+const BULK_NEXT_STATUS: Record<Exclude<BulkDecision, "reset">, ApprovalStatus> = {
+  approve: "approved",
+  approve_temporary: "temporary",
+  reject: "rejected",
+  reopen: "waiting",
+};
+const BULK_TITLE: Record<BulkDecision, string> = {
+  approve: "Approve",
+  approve_temporary: "Approve temporarily",
+  reject: "Reject",
+  reopen: "Reopen",
+  reset: "Reset tracking for",
+};
+const BULK_CONFIRM: Record<BulkDecision, string> = {
+  approve: "Approve",
+  approve_temporary: "Approve until",
+  reject: "Reject",
+  reopen: "Reopen",
+  reset: "Reset tracking",
+};
+
 export interface Pending {
   row: SpendApprovalRow;
   decision: ApprovalDecision | "history" | "reset";
@@ -395,8 +425,9 @@ export function SpendApprovalsBoard({
   const setStatus = (next: StatusFilter) => (subject ? setLocalStatus(next) : setUrlStatus(next));
   const [pending, setPending] = useState<Pending | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [bulk, setBulk] = useState<{ decision: "approve" | "reject" | "reset"; rows: SpendApprovalRow[] } | null>(null);
+  const [bulk, setBulk] = useState<{ decision: BulkDecision; rows: SpendApprovalRow[] } | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkUntil, setBulkUntil] = useState("");
 
   const own = subject ? rows.filter((r) => rowMatchesSubject(r, subject)) : rows;
   const activeRowId = activeSubject
@@ -432,13 +463,19 @@ export function SpendApprovalsBoard({
       setBulk(null);
       return;
     }
-    const next: ApprovalStatus = decision === "approve" ? "approved" : "rejected";
-    const before = new Map(targets.map((t) => [t.id, t.status]));
-    setRows((rs) => rs.map((x) => (before.has(x.id) ? { ...x, status: next, expires_at: null } : x)));
-    const res = await decideSpendApprovalsBatch(targets.map((t) => t.id), decision);
+    const expiresAt = decision === "approve_temporary" ? endOfLocalDayIso(bulkUntil) : null;
+    if (decision === "approve_temporary" && (expiresAt == null || Date.parse(expiresAt) <= Date.now())) {
+      setBulkBusy(false);
+      toast.error("Pick an expiry date after today");
+      return;
+    }
+    const next = BULK_NEXT_STATUS[decision];
+    const before = new Map(targets.map((t) => [t.id, { status: t.status, expires_at: t.expires_at }]));
+    setRows((rs) => rs.map((x) => (before.has(x.id) ? { ...x, status: next, expires_at: expiresAt } : x)));
+    const res = await decideSpendApprovalsBatch(targets.map((t) => t.id), decision, { expiresAt });
     if (res.failed.length) {
       const failed = new Set(res.failed.map((f) => f.id));
-      setRows((rs) => rs.map((x) => (failed.has(x.id) ? { ...x, status: before.get(x.id) ?? x.status } : x)));
+      setRows((rs) => rs.map((x) => (failed.has(x.id) ? { ...x, ...(before.get(x.id) ?? {}) } : x)));
       toast.error(`${res.failed.length} of ${targets.length} failed: ${res.failed[0].message}`);
     }
     if (res.ok.length) toast.success(`${APPROVAL_STATUS_LABEL[next]}: ${res.ok.length}`);
@@ -446,10 +483,15 @@ export function SpendApprovalsBoard({
     setBulkBusy(false);
     setBulk(null);
   };
-  const bulkTargets = (selected: SpendApprovalRow[], decision: "approve" | "reject" | "reset") =>
+  // The same "can this row take it" rule as the row's own action (rowActionDefs below).
+  const bulkTargets = (selected: SpendApprovalRow[], decision: BulkDecision) =>
     selected.filter(
-      (r) => r.can_decide && (decision === "reset" || r.status !== (decision === "approve" ? "approved" : "rejected")),
+      (r) => r.can_decide && (decision === "reset" || decision === "approve_temporary" || r.status !== BULK_NEXT_STATUS[decision]),
     );
+  const openBulk = (selected: SpendApprovalRow[], decision: BulkDecision) => {
+    if (decision === "approve_temporary") setBulkUntil(dateInputValue(knobs?.temporaryDefaultDays ?? 7));
+    setBulk({ decision, rows: bulkTargets(selected, decision) });
+  };
   const bulkMonthly = bulk ? bulk.rows.reduce((s, r) => s + (r.est_monthly_cost ?? 0), 0) : 0;
 
   const columns: MatrxColumnDef<SpendApprovalRow>[] = [
@@ -859,15 +901,16 @@ export function SpendApprovalsBoard({
             noun: "approval",
             actions: (selected) => (
               <>
-                <Button variant="outline" disabled={bulkBusy || !bulkTargets(selected, "approve").length} onClick={() => setBulk({ decision: "approve", rows: bulkTargets(selected, "approve") })}>
-                  <Check className="h-4 w-4" /> Approve selected
-                </Button>
-                <Button variant="outline" disabled={bulkBusy || !bulkTargets(selected, "reject").length} onClick={() => setBulk({ decision: "reject", rows: bulkTargets(selected, "reject") })}>
-                  <X className="h-4 w-4" /> Reject selected
-                </Button>
-                <Button variant="outline" disabled={bulkBusy || !bulkTargets(selected, "reset").length} onClick={() => setBulk({ decision: "reset", rows: bulkTargets(selected, "reset") })}>
-                  <TimerReset className="h-4 w-4" /> Reset tracking
-                </Button>
+                {BULK_ACTIONS.map(({ decision, label, icon: Icon }) => (
+                  <Button
+                    key={decision}
+                    variant="outline"
+                    disabled={bulkBusy || !bulkTargets(selected, decision).length}
+                    onClick={() => openBulk(selected, decision)}
+                  >
+                    <Icon className="h-4 w-4" /> {label}
+                  </Button>
+                ))}
               </>
             ),
           }}
@@ -927,21 +970,36 @@ export function SpendApprovalsBoard({
           open
           onOpenChange={(o) => !o && !bulkBusy && setBulk(null)}
           // read-gate-exempt: counts the rows the admin selected for this bulk action
-          title={
-            bulk.decision === "reset"
-              ? `Reset tracking for ${bulk.rows.length} ${bulk.rows.length === 1 ? "approval" : "approvals"}?`
-              : `${bulk.decision === "approve" ? "Approve" : "Reject"} ${bulk.rows.length} ${bulk.rows.length === 1 ? "approval" : "approvals"}?`
-          }
+          title={`${BULK_TITLE[bulk.decision]} ${bulk.rows.length} ${bulk.rows.length === 1 ? "approval" : "approvals"}?`}
           description={
             bulk.decision === "reset"
               ? "Runs since, avg, max and est./month restart from now. History is kept."
-              : `${cents(bulkMonthly)} a month combined.`
+              : bulk.decision === "reopen"
+                ? "Back to waiting."
+                : bulk.decision === "approve_temporary"
+                  ? `${cents(bulkMonthly)} a month combined. ${endOfLocalDayIso(bulkUntil) ? `${expiryLabel(endOfLocalDayIso(bulkUntil))}, then Rejected.` : ""}`
+                  : `${cents(bulkMonthly)} a month combined.`
           }
           variant={bulk.decision === "reject" ? "destructive" : "default"}
-          confirmLabel={bulk.decision === "approve" ? "Approve" : bulk.decision === "reject" ? "Reject" : "Reset tracking"}
+          confirmLabel={BULK_CONFIRM[bulk.decision]}
           cancelLabel="Cancel"
           busy={bulkBusy}
           onConfirm={decideBulk}
+          content={
+            bulk.decision === "approve_temporary" ? (
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-xs text-muted-foreground">Expires on</span>
+                {/* ui-exception: a date value, not prose */}
+                <input
+                  type="date"
+                  value={bulkUntil}
+                  min={dateInputValue(0)}
+                  onChange={(e) => setBulkUntil(e.target.value)}
+                  className="h-7 rounded-md border border-border bg-background px-2 text-sm"
+                />
+              </label>
+            ) : undefined
+          }
         />
       )}
       <DecisionDialog pending={pending} knobs={knobs} onClose={() => setPending(null)} onDone={reload} />

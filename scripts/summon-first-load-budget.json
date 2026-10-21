@@ -1,5 +1,5 @@
 {
-  "_doc": "Minified first-load bytes of @ai-matrx/summon + the app's overlay host/definitions per route (scripts/check-summon-first-load.mjs, needs a `build-lab/run.sh <label> --maps` build). Ratchet only down (--update). 2026-10-17: before the fix /notes 314879, /dashboard 314879, /pricing 287617; after 147337 / 144429 / 115998. W4 2026-10-17: definitions split from openers (<id>.definition.ts(x), read only by the lazy registry) and overlay-meta-index loaded on click: 45750 / 44148 / 43459.",
+  "_doc": "Minified first-load bytes of @ai-matrx/summon + the app's overlay host/definitions per route (scripts/check-summon-first-load.mjs, needs a `build-lab/run.sh <label> --maps` build). Ratchet only down (--update). 2026-10-17: before the fix /notes 314879, /dashboard 314879, /pricing 287617; after 147337 / 144429 / 115998. W4 2026-10-17: definitions split from openers (<id>.definition.ts(x), read only by the lazy registry) and overlay-meta-index loaded on click: 45750 / 44148 / 43459. G2 2026-10-18: boot code de-duplicated (one copy per route; global-error/not-found no longer import the error menu) and 16 boot openers lazy, measured on origin 6354f8d1e8d: 23113 / 23113 / 22473 (ae7c2a62a04 only lowered it further).",
   "forbidden": [
     "^summon/window/(WindowPanel|WindowSidebar|LayoutIcon|useWindowPanel|icons)",
     "^summon/window/(chrome|mobile|utils|tray/TrayChip)",
@@ -17,8 +17,8 @@
     "^app:features/overlays/definitions/overlay-meta-index"
   ],
   "routes": {
-    "(core)/notes": 45750,
-    "(core)/dashboard": 43687,
-    "(public)/pricing": 39886
+    "(core)/notes": 23113,
+    "(core)/dashboard": 23113,
+    "(public)/pricing": 22473
   }
 }
