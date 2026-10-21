@@ -291,3 +291,79 @@ it("outside an area where comments are on the row is absent", async () => {
   expect(window.getSelection()?.toString()).toBe("comments here");
   expect(commentRow().visible?.(openOn(liveRange()))).toBe(false);
 });
+
+// ── Review 5, G4: the CHAT ANSWER sequence (live 2026-10-21, chat a4794e8f) ──────────────────────
+// A chat answer is the record's content inside `RecordAnnotations`, followed by the message footer
+// (copy, timestamp …) OUTSIDE it. A triple-click selects the paragraph and, once the answer's menu
+// has opened, runs the range's end on into the footer's timestamp: live, select → plain → select
+// gave Present, Missing, Missing while the menu still read "Copy selection". The words were all the
+// answer's; the range's edge was not.
+import { RecordAnnotations } from "@/features/rich-document/annotations/RecordAnnotations";
+
+const ANSWER = "Green tea is a lightly processed tea known for its fresh taste.";
+async function mountChatAnswer() {
+  const registry = createActionRegistry({ ports });
+  await act(async () => {
+    root.render(
+      <AlchemyActionsProvider ports={ports} registry={registry}>
+        <div data-message-id="m-1">
+          <RecordAnnotations record={{ token: "message", id: "m-1", title: "Chat answer", body: ANSWER, contentVersion: 1 }}>
+            <div data-message-content="">
+              <p>{ANSWER}</p>
+            </div>
+          </RecordAnnotations>
+          {"\n\n"}
+          <div data-footer="">
+            {"\n\n"}
+            <span tabIndex={0} aria-label="October 21, 2026" title="October 21, 2026">4:32 AM</span>
+          </div>
+        </div>
+        <SelectionToolbarRoot />
+      </AlchemyActionsProvider>,
+    );
+  });
+  // RecordAnnotations loads its sidecar lazily.
+  for (let i = 0; i < 10 && !document.querySelector("[data-record-annotations]"); i++) await flush();
+  await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+  await flush(20);
+}
+/** A triple-click on the answer's paragraph: `overflow` = its end runs on into the footer's timestamp. */
+function tripleClick(overflow: boolean) {
+  const p = container.querySelector("[data-message-content] p")!;
+  const r = document.createRange();
+  r.setStart(p.firstChild!, 0);
+  if (overflow) r.setStart(p.firstChild!, 0), r.setEnd(container.querySelector("[data-footer] span")!, 0);
+  else r.setEnd(p.parentElement!.parentElement!, p.parentElement!.parentElement!.childNodes.length);
+  const s = window.getSelection()!;
+  s.removeAllRanges();
+  s.addRange(r);
+  document.dispatchEvent(new Event("selectionchange"));
+}
+
+it("a chat answer: select → plain → select (the second triple-click runs into the footer) offers Comment on every selected open", async () => {
+  await mountChatAnswer();
+  expect(document.querySelector("[data-record-annotations]")).not.toBeNull();
+  const opens: boolean[] = [];
+  // Open 1: a triple-click that ends inside the answer.
+  tripleClick(false);
+  opens.push(Boolean(commentRow().visible?.(rightClick())));
+  // Open 2: plain, nothing selected.
+  opens.push(Boolean(commentRow().visible?.(rightClick())));
+  // Open 3: the triple-click whose end landed on the footer's timestamp (the live shape).
+  tripleClick(true);
+  expect(window.getSelection()?.toString().trim()).toBe(ANSWER);
+  const third = rightClick();
+  opens.push(Boolean(commentRow().visible?.(third)));
+  // Open 4: plain again.
+  opens.push(Boolean(commentRow().visible?.(rightClick())));
+  expect(opens).toEqual([true, false, true, false]);
+  // Choosing Comment on open 3 opens the toolbar's composer on the answer's words.
+  await act(async () => {
+    await commentRow().run(third);
+  });
+  await act(async () => { await new Promise((r) => setTimeout(r, 400)); });
+  await flush(20);
+  expect(composer()).not.toBeNull();
+  expect(quoted()).toBe(ANSWER);
+  expect(toast.error).not.toHaveBeenCalled();
+});
