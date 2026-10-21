@@ -52,24 +52,32 @@ import { RunProgress, type ProgressRowIdentity } from "./components/RunProgress"
 
 export function ComparePage() {
   const organizationId = useComparisonOrganizationId();
-  const kinds = useComparisonKinds(organizationId);
   return (
     <>
       <RecordPageHeader backHref="/data" record={{ name: "Compare" }} />
       <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
         <div className="h-full overflow-y-auto bg-textured" data-matrx-page-scroll="">
-          <div className="mx-auto w-full max-w-5xl px-[var(--matrx-page-gutter,1rem)] pt-8 sm:pt-12">
-            {!organizationId || kinds.isLoading ? (
-              <RegionSkeleton shape="cards" count={4} aria-label="Loading" />
-            ) : kinds.error || !kinds.data ? (
-              <ReadFailure error={kinds.error} what="the comparison kinds" onRetry={() => void kinds.refetch()} />
-            ) : (
-              <CompareBody kinds={kinds.data} organizationId={organizationId} />
-            )}
-          </div>
+          <CompareSurface organizationId={organizationId} />
         </div>
       </div>
     </>
+  );
+}
+
+/** The compare workspace itself, in the organization it runs and bills in (a signed-out visitor's: their
+ *  guest workspace — features/comparison/public/GuestCompare.tsx). */
+export function CompareSurface({ organizationId }: { organizationId: string | null }) {
+  const kinds = useComparisonKinds(organizationId);
+  return (
+    <div className="mx-auto w-full max-w-5xl px-[var(--matrx-page-gutter,1rem)] pt-8 sm:pt-12">
+      {!organizationId || kinds.isLoading ? (
+        <RegionSkeleton shape="cards" count={4} aria-label="Loading" />
+      ) : kinds.error || !kinds.data ? (
+        <ReadFailure error={kinds.error} what="the comparison kinds" onRetry={() => void kinds.refetch()} />
+      ) : (
+        <CompareBody kinds={kinds.data} organizationId={organizationId} />
+      )}
+    </div>
   );
 }
 

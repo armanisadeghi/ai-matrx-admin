@@ -23,6 +23,7 @@ import { resolveRow, type ResolveCandidate } from "../discovery";
 import { useFacetKeys } from "../facet-choice";
 import type { KindKey } from "../parse-input";
 import { lookupItems, quoteComparison } from "../server";
+import { FreeAllowanceNote } from "@/features/entitlements/free-allowance/FreeAllowanceNote";
 import {
   MAX_ROWS, applyNear, editRow, foundMatches, needsSearch, newRow, pickCandidate, rowItem, withLookup, withResolve,
   type CompareRow,
@@ -150,6 +151,8 @@ export function Lineup({
             <span className="inline-flex items-center gap-2">Price unavailable
               <Button variant="quiet" onClick={() => void quote.refetch()} disabled={quote.isFetching}>Try again</Button></span>
           ) : <span className="inline-block h-4 w-40 animate-pulse rounded bg-muted align-middle" aria-label="Pricing" />}
+          {/* visitors and free accounts: "3 free today" / "Sign up free for more" (paid: nothing) */}
+          <span className="ml-3 inline-block"><FreeAllowanceNote feature="comparison.run" organizationId={organizationId} /></span>
         </div>
         <Button variant="primary" hero={!dense} disabled={matched.length < 2 || busy || starting || !quote.data}
           data-compare-confirm-button="" onClick={() => onCompare(matched)}>

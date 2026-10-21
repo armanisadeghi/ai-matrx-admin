@@ -11,6 +11,7 @@ import { createGuestSessionEnsurer, type GuestSessionAnswer } from "@ai-matrx/au
 import { BACKEND_URLS } from "@/lib/api/endpoints";
 import { getFingerprint } from "@/lib/services/fingerprint-service";
 import { guestSupabase } from "@/lib/guest/guest-supabase-client";
+import { fetchWithGuestChallenge } from "@/lib/guest/turnstile";
 
 export type { GuestSessionAnswer };
 
@@ -25,4 +26,6 @@ export const ensureGuestSession = createGuestSessionEnsurer({
   },
   serverBaseUrl: BACKEND_URLS.production,
   getFingerprint,
+  // the invisible human check rides the mint (FREE-ALLOWANCE.md §5); a returning guest never mints
+  fetch: fetchWithGuestChallenge((...args) => fetch(...args)),
 });
