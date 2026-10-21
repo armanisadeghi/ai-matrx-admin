@@ -370,31 +370,31 @@ it("a chat answer: select → plain → select (the second triple-click runs int
 
 // ── Review 6, H1: the answer's paragraph is followed by an XML SECTION (live 2026-10-21, chat
 // 758ab522: select → plain → select gave Present, Missing, Missing, Missing). The answer is drawn by
-// the REAL renderer (split → BlockRenderer: prose frames and the shared section container). Once the
+// the REAL package pieces an answer draws (the prose frame, with the `<style>` it puts inside the
+// content, and THE shared section container, empty and not). Once the
 // menu has opened, a triple-click on the paragraph ends at offset 0 of the NEXT section's first
 // line, so the range crosses the empty section's header ("info · empty"), the next header ("info")
 // and the `<style>` a prose frame drew inside the content. None of that is text the person or the
 // model wrote; judged by it, the passage could not be pinned and Comment vanished.
-// The real block renderer registers the app's host bindings, whose import graph reaches the
-// associations store; nothing here writes an association.
-jest.mock("@/features/scopes/service/associationsService", () => ({ associationsService: {} }));
-import { BlockRenderer } from "@ai-matrx/rich-content/display/chat-markdown/block-registry/BlockRenderer";
-import { splitContentIntoBlocksV2 } from "@ai-matrx/rich-content/display/markdown-classification/processors/utils/content-splitter-v2";
+import BasicMarkdownContent from "@ai-matrx/rich-content/display/chat-markdown/BasicMarkdownContent";
+import { XmlSectionFrame } from "@ai-matrx/rich-content/display/blocks/xml/XmlSectionFrame";
 
 const PROSE = "Green tea is a calm drink with a mild grassy taste.";
 const SECTIONED = `${PROSE}\n\n<info>\n\n</info>\n\n<info>\ntest\n</info>\n\nBlack tea is stronger.`;
 async function mountSectionedAnswer() {
   const registry = createActionRegistry({ ports });
-  const blocks = splitContentIntoBlocksV2(SECTIONED);
   await act(async () => {
     root.render(
       <AlchemyActionsProvider ports={ports} registry={registry}>
         <div data-message-id="m-2">
           <RecordAnnotations record={{ token: "message", id: "m-2", title: "Chat answer", body: SECTIONED, contentVersion: 1 }}>
             <div data-message-content="">
-              {blocks.map((block, index) => (
-                <BlockRenderer key={index} block={block as never} index={index} handleOpenEditor={() => {}} />
-              ))}
+              <BasicMarkdownContent content={PROSE} />
+              <XmlSectionFrame tag="info" empty source={"<info>\n\n</info>"} />
+              <XmlSectionFrame tag="info" empty={false} source={"<info>\ntest\n</info>"}>
+                <BasicMarkdownContent content="test" />
+              </XmlSectionFrame>
+              <BasicMarkdownContent content="Black tea is stronger." />
             </div>
           </RecordAnnotations>
           <div data-footer="">
@@ -424,8 +424,9 @@ function tripleClickIntoNextSection() {
 
 it("a chat answer whose paragraph is followed by an XML section: select → plain → select … offers Comment on every selected open", async () => {
   await mountSectionedAnswer();
-  // The real renderer drew the shape the live answer has.
+  // The shape the live answer has: a prose frame's <style> inside the content, two sections.
   expect(container.querySelectorAll("[data-message-content] [data-xml-section-container]").length).toBe(2);
+  expect(container.querySelector("[data-message-content] style")).not.toBeNull();
   const opens: boolean[] = [];
   let last: RichDocumentActionContext | null = null;
   for (let i = 0; i < 3; i++) {
