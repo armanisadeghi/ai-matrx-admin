@@ -804,6 +804,10 @@ export type Database = {
         Returns: Json
       }
       user_security: { Args: { p_user: string }; Returns: Json }
+      user_sign_ins: {
+        Args: { p_before?: string; p_limit?: number; p_user: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
@@ -42035,6 +42039,18 @@ export type Database = {
         Returns: Json
       }
       _formula_literal_normalised: { Args: { p_expr: Json }; Returns: Json }
+      _formula_value_then: {
+        Args: {
+          p_field_data: Json
+          p_organization_id: string
+          p_record_id: string
+          p_values: Json
+        }
+        Returns: {
+          answer: Json
+          refusal: string
+        }[]
+      }
       _fx_arr: { Args: { p_v: Json }; Returns: Json }
       _fx_autonumber: {
         Args: {
@@ -45027,6 +45043,7 @@ export type Database = {
         }
         Returns: Json
       }
+      enrich_refill_due_tick: { Args: never; Returns: Json }
       enrich_run_class: { Args: never; Returns: string }
       enrich_runs: {
         Args: {
@@ -45840,6 +45857,24 @@ export type Database = {
       formula_field_keys: {
         Args: { p_expr: Json; p_organization_id: string }
         Returns: string[]
+      }
+      formula_history: {
+        Args: {
+          p_field_key: string
+          p_limit?: number
+          p_organization_id: string
+          p_record_id: string
+        }
+        Returns: {
+          actor: Json
+          cause: string
+          formula_text: string
+          formula_version: number
+          occurred_at: string
+          record_version: number
+          refused: string
+          value: Json
+        }[]
       }
       formula_node_kinds: {
         Args: never
@@ -87654,6 +87689,104 @@ export type Database = {
           },
         ]
       }
+      sign_in_event: {
+        Row: {
+          aal: string | null
+          created_at: string
+          created_by: string | null
+          factor_id: string | null
+          id: string
+          ip: unknown
+          metadata: Json
+          method: string | null
+          oauth_client_id: string | null
+          organization_id: string
+          person_id: string
+          provider: string | null
+          session_id: string | null
+          signed_in_at: string
+          test_expires_at: string | null
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string | null
+          user_agent: string | null
+          version: number
+        }
+        Insert: {
+          aal?: string | null
+          created_at?: string
+          created_by?: string | null
+          factor_id?: string | null
+          id?: string
+          ip?: unknown
+          metadata?: Json
+          method?: string | null
+          oauth_client_id?: string | null
+          organization_id: string
+          person_id: string
+          provider?: string | null
+          session_id?: string | null
+          signed_in_at: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          user_agent?: string | null
+          version?: number
+        }
+        Update: {
+          aal?: string | null
+          created_at?: string
+          created_by?: string | null
+          factor_id?: string | null
+          id?: string
+          ip?: unknown
+          metadata?: Json
+          method?: string | null
+          oauth_client_id?: string | null
+          organization_id?: string
+          person_id?: string
+          provider?: string | null
+          session_id?: string | null
+          signed_in_at?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          user_agent?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sign_in_event_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sign_in_event_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sign_in_event_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sign_in_event_user_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       superseded_policy: {
         Row: {
           id: string
@@ -92556,6 +92689,7 @@ export type Database = {
           metadata: Json
           offered_values: Json
           organization_id: string
+          proof: Json | null
           provision_key: string
           published_to_web: boolean
           published_to_web_at: string | null
@@ -92581,6 +92715,7 @@ export type Database = {
           metadata?: Json
           offered_values?: Json
           organization_id: string
+          proof?: Json | null
           provision_key: string
           published_to_web?: boolean
           published_to_web_at?: string | null
@@ -92606,6 +92741,7 @@ export type Database = {
           metadata?: Json
           offered_values?: Json
           organization_id?: string
+          proof?: Json | null
           provision_key?: string
           published_to_web?: boolean
           published_to_web_at?: string | null
@@ -139711,6 +139847,15 @@ export type Database = {
       }
     }
     Functions: {
+      __offering_mint_conformance: {
+        Args: never
+        Returns: {
+          check_key: string
+          detail: Json
+          ok: boolean
+          severity: string
+        }[]
+      }
       _archive_tenant: { Args: { p_organization_id: string }; Returns: string }
       _ensure_site_dimension: {
         Args: {
@@ -148094,6 +148239,10 @@ export type Database = {
         }
         Returns: Json
       }
+      battle_set_note: {
+        Args: { p_note: string; p_org: string }
+        Returns: undefined
+      }
       catalog_cache_get: { Args: { p_key: string }; Returns: Json }
       catalog_cache_note_hit: { Args: { p_id: string }; Returns: undefined }
       catalog_cache_put: { Args: { p: Json }; Returns: Json }
@@ -148217,6 +148366,10 @@ export type Database = {
           p_slug: string
           p_to: string
         }
+        Returns: Json
+      }
+      reconcile_mcp_server_provisioning: {
+        Args: { p_slug?: string }
         Returns: Json
       }
       tool_reliability: { Args: { p_tool_ids: string[] }; Returns: Json }
@@ -150754,6 +150907,162 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           version?: number
+        }
+        Relationships: []
+      }
+      desktop_app_account: {
+        Row: {
+          account_id: string
+          app_key: string
+          created_at: string
+          created_by: string | null
+          email: string | null
+          first_seen_at: string | null
+          id: string
+          last_seen_at: string | null
+          last_seen_device_id: string | null
+          metadata: Json
+          organization_id: string
+          plan: string | null
+          provider_orgs: string[]
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          account_id: string
+          app_key: string
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          first_seen_at?: string | null
+          id?: string
+          last_seen_at?: string | null
+          last_seen_device_id?: string | null
+          metadata?: Json
+          organization_id: string
+          plan?: string | null
+          provider_orgs?: string[]
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          account_id?: string
+          app_key?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          first_seen_at?: string | null
+          id?: string
+          last_seen_at?: string | null
+          last_seen_device_id?: string | null
+          metadata?: Json
+          organization_id?: string
+          plan?: string | null
+          provider_orgs?: string[]
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Relationships: []
+      }
+      desktop_app_instance: {
+        Row: {
+          account_email: string | null
+          account_id: string | null
+          app_key: string
+          created_at: string
+          created_by: string | null
+          device_id: string
+          folder_label: string | null
+          id: string
+          instance_key: string
+          is_main: boolean
+          last_seen_at: string | null
+          metadata: Json
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        Insert: {
+          account_email?: string | null
+          account_id?: string | null
+          app_key: string
+          created_at?: string
+          created_by?: string | null
+          device_id: string
+          folder_label?: string | null
+          id?: string
+          instance_key: string
+          is_main?: boolean
+          last_seen_at?: string | null
+          metadata?: Json
+          organization_id: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
+        }
+        Update: {
+          account_email?: string | null
+          account_id?: string | null
+          app_key?: string
+          created_at?: string
+          created_by?: string | null
+          device_id?: string
+          folder_label?: string | null
+          id?: string
+          instance_key?: string
+          is_main?: boolean
+          last_seen_at?: string | null
+          metadata?: Json
+          organization_id?: string
+          published_to_web?: boolean
+          published_to_web_at?: string | null
+          published_to_web_by?: string | null
+          shown_to?: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          visibility?: Database["platform"]["Enums"]["visibility"]
         }
         Relationships: []
       }

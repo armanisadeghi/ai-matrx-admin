@@ -22,6 +22,7 @@
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useState } from "react";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { AlertOctagon, Copy, Download, RefreshCw, RotateCw } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
@@ -129,31 +130,31 @@ export function NoteSaveFailureBanner({ noteId }: NoteSaveFailureBannerProps) {
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-          <button
+          <ControlButton
             type="button"
+            variant="danger"
             onClick={handleRetry}
             disabled={retrying}
-            className="inline-flex items-center gap-1 rounded-md bg-destructive px-2.5 py-1 text-xs font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-60 cursor-pointer"
+            icon={<RotateCw className={retrying ? "animate-spin" : ""} />}
           >
-            <RotateCw className={`h-3.5 w-3.5 ${retrying ? "animate-spin" : ""}`} />
             {retrying ? "Retrying…" : "Try saving again"}
-          </button>
-          <button
+          </ControlButton>
+          <ControlButton
             type="button"
+            variant="outline"
             onClick={handleCopy}
-            className="inline-flex items-center gap-1 rounded-md border border-destructive/40 px-2.5 py-1 text-xs font-medium text-destructive-ink transition-colors hover:bg-destructive/15 cursor-pointer"
+            icon={<Copy />}
           >
-            <Copy className="h-3.5 w-3.5" />
             Copy text
-          </button>
-          <button
+          </ControlButton>
+          <ControlButton
             type="button"
+            variant="outline"
             onClick={handleDownload}
-            className="inline-flex items-center gap-1 rounded-md border border-destructive/40 px-2.5 py-1 text-xs font-medium text-destructive-ink transition-colors hover:bg-destructive/15 cursor-pointer"
+            icon={<Download />}
           >
-            <Download className="h-3.5 w-3.5" />
             Download
-          </button>
+          </ControlButton>
           <button
             type="button"
             onClick={() => window.location.reload()}

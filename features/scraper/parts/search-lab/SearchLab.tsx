@@ -830,8 +830,9 @@ function EngineInspector({ run }: { run: KeywordEngineRun }) {
 
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-card">
-      <div className="border-b border-border/60 px-2 pt-1">
+      <div className="border-b border-border/60 pt-1">
         <Tabs
+          inset
           aria-label="Inspector"
           value={tab}
           onValueChange={setTab}

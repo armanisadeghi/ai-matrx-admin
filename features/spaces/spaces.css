@@ -6,10 +6,12 @@
  * their text 94.6% of Notion's nominal 40px / 16px at this geometry. Colors: the ten content colors are a palette the writer picks (Notion's values,
  * stepped for dark); every chrome color comes from our semantic tokens. */
 
-/* On the page root AND on <html> while Spaces is open: menus, the phone drawer and popovers portal
- * to <body>, outside .spaces-root, and must read the same palette and the app's (not the OS's) theme. */
+/* On the page root AND on <html>: menus, the phone drawer and popovers portal to <body>, outside
+ * .spaces-root, and must read the same palette and the app's (not the OS's) theme. Always on <html>
+ * (only Spaces reads these names): `:root:has(.spaces-root)` re-checked the whole page on every DOM
+ * insertion (check:page-wide-has). */
 .spaces-root,
-:root:has(.spaces-root) {
+:root {
   --spaces-font-default: inherit;
   --spaces-font-serif: ui-serif, Georgia, Cambria, "Times New Roman", serif;
   --spaces-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -70,7 +72,7 @@
 }
 
 .dark .spaces-root,
-:root.dark:has(.spaces-root) {
+:root.dark {
   --spaces-row-dot: rgb(196 196 196 / 0.85);
   --spaces-accent: #3b95ec;
   --spaces-accent-hover: #2a82d8;

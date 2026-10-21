@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import React from "react";
 import { Copy, CheckCircle2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -59,26 +60,7 @@ export function CustomCopyTab({ state, actions }: HtmlPreviewTabProps) {
         </div>
 
         <div className="text-center">
-          <button
-            onClick={actions.handleCopyCustom}
-            className={`inline-flex items-center gap-3 px-6 py-3 text-sm font-medium rounded-lg transition-colors ${
-              state.copiedCustom
-                ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
-            }`}
-          >
-            {state.copiedCustom ? (
-              <>
-                <CheckCircle2 size={18} />
-                Copied to Clipboard!
-              </>
-            ) : (
-              <>
-                <Copy size={18} />
-                Copy Custom HTML
-              </>
-            )}
-          </button>
+          <ControlButton variant={state.copiedCustom ? "success" : "primary"} onClick={actions.handleCopyCustom} icon={state.copiedCustom ? <CheckCircle2 size={18} /> : <Copy size={18} />}>{state.copiedCustom ? "Copied to Clipboard!" : "Copy Custom HTML"}</ControlButton>
 
           {!state.includeBulletStyles && !state.includeDecorativeLineBreaks && (
             <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">

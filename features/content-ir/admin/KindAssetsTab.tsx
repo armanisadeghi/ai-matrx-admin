@@ -546,7 +546,7 @@ export default function KindAssetsTab({
       </ListSection>
 
       {/* Components */}
-      <section className="rounded-md border border-border bg-card">
+      <section>
         <MatrxDataTable<KindComponentAssetRow>
           data={componentRows}
           columns={componentColumns}
@@ -589,7 +589,7 @@ export default function KindAssetsTab({
       </section>
 
       {/* Surfaces */}
-      <section className="rounded-md border border-border bg-card">
+      <section>
         <MatrxDataTable<KindDetailData["surfaces"][number]>
           data={detail.surfaces}
           columns={surfaceColumns}

@@ -291,6 +291,11 @@ export interface DrillExplorerProps {
    * question and its answer at read time (`drillExplorerScope.ts`), as the old Spend Explorer did.
    */
   surfaceName?: string | undefined;
+  /**
+   * WHAT THE EXPLORER SHOWS, for the host's Copy for AI: called with the open question and its answers
+   * each time they change (the same facts the Explain button hands its agent).
+   */
+  onShown?: ((shown: DrillExplorerShown) => void) | undefined;
   /** More controls for the header row (an "Old usage page" link). */
   headerExtras?: ReactNode;
   /** A data attribute on the root, so a host's walk can find its mount. */
@@ -305,4 +310,16 @@ export interface DrillExplorerBase {
   label: string;
   /** The value's words ("Acme Dental"). */
   valueLabel: string;
+}
+
+/** What a DrillExplorer has on screen (`onShown`): the question, its answers and the words around them. */
+export interface DrillExplorerShown {
+  title: string;
+  question: MatrxDrillQuestion;
+  answers: unknown;
+  whole: unknown;
+  range: unknown;
+  countedThrough: string | null;
+  says: unknown;
+  conditions: string[];
 }

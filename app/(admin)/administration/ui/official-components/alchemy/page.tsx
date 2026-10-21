@@ -307,7 +307,7 @@ function AlchemyExamples() {
                   </span>
                 </div>
               </div>
-              <div className="max-h-[28rem] overflow-auto rounded-md border">
+              <div className="max-h-[28rem] overflow-auto">
                 <MatrxDataTable
                   data={visibleRows}
                   toolbar={{ title: "Sample content records" }}

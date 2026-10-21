@@ -395,7 +395,7 @@ export function OverviewContent({ kpis }: { kpis: CxOverviewKpis }) {
 
         {/* Tool Usage */}
         {kpis.tool_usage.length > 0 && (
-          <div className="border border-border rounded-md p-3 bg-card space-y-2">
+          <div className="space-y-2">
             <h3 className="text-xs font-medium text-muted-foreground">
               Tool Usage
             </h3>

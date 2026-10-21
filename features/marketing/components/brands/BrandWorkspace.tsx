@@ -1130,9 +1130,10 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
               flush under the shell header with no strip of scrolling content above it. */}
           <nav
             aria-label="Brand sections"
-            className="sticky -top-2 z-10 flex min-w-0 items-end sm:-top-3 gap-2 overflow-x-auto rounded-lg border border-border bg-card px-2"
+            className="sticky -top-2 z-10 flex min-w-0 items-end sm:-top-3 gap-2 overflow-x-auto rounded-lg border border-border bg-card"
           >
             <Tabs
+              inset
               value={tab}
               onValueChange={setTab}
               rule={false}

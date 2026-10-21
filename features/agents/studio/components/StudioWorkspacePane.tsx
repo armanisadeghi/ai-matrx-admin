@@ -19,6 +19,8 @@ import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { VariableChip } from "@ai-matrx/rich-content/display/chat-markdown/matrx-variables/VariableChip";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { toast } from "@/lib/toast";
+import { ProTextarea } from "@/components/official/ProTextarea";
+import { STUDIO_SURFACE_NAME } from "../workspace-api";
 import {
   editWorkspace,
   keepSuggestedInput,
@@ -66,8 +68,10 @@ function QuietText({
   // The person's draft owns the field while it is focused/unsaved; echoes and assistant writes never clobber it.
   const field = useDraftField(value, onChange);
   return (
-    <textarea
+    <ProTextarea
       rows={1}
+      autoGrow
+      surfaceName={STUDIO_SURFACE_NAME}
       value={field.text}
       aria-label={label}
       placeholder="Not set yet"

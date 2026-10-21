@@ -360,13 +360,13 @@ export function ResultRow({
           {!compact && (date || menu) ? (
             // Linear: the date holds the right edge; the row menu takes its place on hover or
             // keyboard focus, so every row's right edge lines up with the count above.
-            <div className="relative flex shrink-0 items-center justify-end self-center">
+            <div data-hub-row-end="" className="relative flex shrink-0 items-center justify-end self-center">
               {date ? (
                 <time
                   dateTime={when ?? undefined}
                   className={cn(
                     "text-xs tabular-nums text-muted-foreground",
-                    menu && "group-hover:invisible group-focus-within:invisible [:has([data-state=open])>&]:invisible",
+                    menu && "group-hover:invisible group-focus-within:invisible [[data-hub-row-end]:has([data-state=open])>&]:invisible",
                   )}
                 >
                   {date}

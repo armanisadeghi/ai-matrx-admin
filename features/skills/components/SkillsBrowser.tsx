@@ -131,7 +131,7 @@ export function SkillsBrowser({
     >
     <div className="flex flex-col h-full min-h-0">
       {/* Filter / actions bar — wraps on a narrow pane: search keeps a usable width. */}
-      <ControlRow className="px-4 py-2 shrink-0 border-b border-border/60">
+      <ControlRow className="px-4 py-2 shrink-0">
         <SearchField
           value={search}
           onChange={(e) => setSearch(e.target.value)}

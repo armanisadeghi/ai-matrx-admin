@@ -688,7 +688,7 @@ export function SiteKeywordPerformanceWorkspace() {
         }}
         extraSections={[keywordSection]}
       >
-      <section className="min-h-[36rem] rounded-lg border border-border bg-card p-2">
+      <section className="min-h-[36rem]">
         <MatrxDataTable<SiteKeywordPerformanceRow>
           data={rows}
           columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (row) => (

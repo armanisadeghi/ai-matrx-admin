@@ -124,7 +124,7 @@ function BucketPanel({
   }
 
   return (
-    <section className="min-w-0 flex-1 rounded-md border border-border p-3">
+    <section className="min-w-0 flex-1">
       <MatrxDataTable
         urlState={{
           id: `chooser-${keyHeader.toLowerCase()}`,

@@ -8,8 +8,9 @@
 //
 // Doors: the SQL returns {type,id,user_id?,href?}; `activityRecordHref` maps each type to its ONE
 // canonical address (no route strings in SQL). Rows show titles and statuses only, never content
-// bodies (owner ruling 2026-10-18; migration 20261018140000). Types with no record page yet
-// (background agent jobs, texts with no chat conversation, raw app_log rows without one) return null.
+// bodies (owner ruling 2026-10-18; migration 20261018140000). Background agent jobs (agent_run) and
+// app_log rows have no record page: the row opens THE Peek instead (ActivityRecordDoor). Texts with no
+// chat conversation return null.
 
 import { createClient } from "@/utils/supabase/client";
 import { isJsonObject } from "@/types/json";
@@ -258,8 +259,8 @@ export function activityRecordHref(
       return id ? feedbackHref(id) : null;
     case "notification":
       return record.href && record.href.startsWith("/") ? record.href : null;
-    case "auth_session":
-      // A live sign-in session is listed on the person's Security tab (once that tab is built).
+    case "sign_in_event":
+      // A recorded sign-in is listed in the person's Security tab (Sign-in history).
       return isVisibleUserTab("security") ? userRecordHref(personId, "security") : null;
     case "billing":
     case "coupon":

@@ -162,7 +162,7 @@ export function ProblemsPanel({
   }));
 
   return (
-    <section className="flex flex-col gap-2 rounded-md border border-border bg-card p-3">
+    <section className="flex flex-col gap-2">
       <MatrxDataTable
         urlState={{ id: "relationship-problems", selectedRow: false }}
         data={rows}

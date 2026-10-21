@@ -160,8 +160,9 @@ export function SharedSheetView({ sheets }: { sheets: GridSheet[] }) {
       <div className="max-h-[70dvh] overflow-auto scrollbar-thin" tabIndex={0} role="region" aria-label={sheet.name}>
         <SheetGrid key={sheet.id} sheet={sheet} />
       </div>
-      <div className="flex items-center gap-2 border-t border-border bg-muted/50 px-2">
+      <div className="flex items-center gap-2 border-t border-border bg-muted/50 pr-2">
         <Tabs
+          inset
           aria-label="Sheets"
           value={sheet.id}
           onValueChange={setActive}
