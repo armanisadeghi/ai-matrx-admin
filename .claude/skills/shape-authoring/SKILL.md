@@ -2,7 +2,7 @@
 name: shape-authoring
 subject: architecture/content-ir
 description: "The complete rules for writing or editing a shape's component (kind component). Use when creating, editing, patching or fixing a kind component, calling any kindcomp_* tool, or when a shape renders empty, broken, cropped, cramped or ugly."
-attach_with_tools: [kindcomp_get_context, kindcomp_create_component, kindcomp_update_code, kindcomp_patch_code, kindcomp_get_code, kindcomp_update_settings, kindcomp_resolve_incident, kind_create]
+attach_with_tools: [kindcomp_get_context, kindcomp_create_component, kindcomp_update_code, kindcomp_patch_code, kindcomp_get_code, kindcomp_update_settings, kindcomp_resolve_incident, kindcomp_preview, kind_create]
 ---
 
 <!-- SYNCED COPY — do not edit here.
@@ -61,6 +61,9 @@ Each block below is the single home of its rule. To change a rule, change its bl
 4. A save can be REFUSED with a sentence (unknown import, banned global, no `data` read). Fix
    exactly what it names and save again — never work around it.
 5. Fixing a crash: read the incident from step 1, fix, save, then `kindcomp_resolve_incident`.
+6. Every save comes back with screenshots (light and dark, desktop and phone) and findings. Read the
+   screenshots; fix what the findings name, save again. `kindcomp_preview` shows other data, one
+   theme or width, the sandbox frame, or a streaming replay.
 </workflow>
 
 <props_contract>
@@ -90,6 +93,11 @@ Kit (use FIRST — see <kit>):
 "@/components/kind-kit/StreamingSkeleton"
 "@/components/kind-kit/KindActionButton"
 "@/components/kind-kit/KindImage"
+"@/components/kind-kit/KindFile"
+"@/components/kind-kit/KindVideo"
+"@/components/kind-kit/KindAudio"
+"@/components/kind-kit/KindEmbed"
+"@/components/kind-kit/KindLocale"
 
 Copy:
 "@/components/agent-copy/CopyButtons"
@@ -179,7 +187,7 @@ grid, sortable list, chip list, skeleton, action button or image is a defect.
   add input), `addPlaceholder?`. KeywordChip: `label`, `meta?`, `selected?`, `onSelect?`,
   `onRemove?`, `tone?: 'default'|'primary'|'muted'`.
 - `StreamingSkeleton`, `useStreamingValue`, `streamList`, `streamText` — see <streaming>.
-- `KindActionButton` — see <actions>. `KindImage` — see <media>.
+- `KindActionButton` — see <actions>. `KindImage`, `KindFile`, `KindVideo`, `KindAudio`, `KindEmbed`, `useKindLocale` — see <media>.
 
 Import each by its exact path with the named export: `import { KindPanel } from "@/components/kind-kit/KindPanel"`.
 </kit>
@@ -206,6 +214,9 @@ show `error` small beside the control that caused it.
 | `save_item_state` | keeps a person's pick or edit | `{ patch: { key: value } }` (`null` deletes a key) |
 | `open_file` | opens a saved file in the platform viewer | `{ file_id }` |
 | `share_file` | opens the share window for a saved file | `{ file_id }` |
+| `download` | saves a file to the reader's device | `{ filename, content, mime? }` (text you built) or `{ filename, base64, mime? }` or `{ file_id }` |
+| `print` | opens the platform print window | `{ title, markdown }` or `{ title, html }` |
+| `fetch_image` | an image's bytes (`KindImage` and `KindFile` call it for you) | `{ url }` or `{ file_id }` |
 | `apply_surface_write` | writes a value into the page around the shape | `{ target, value }` |
 | `list_surface_write_targets` | which page fields accept writes | `{}` |
 
@@ -239,13 +250,28 @@ Platform image shortcuts: `c70e1694-9b84-4843-9999-cb5471478bb4` (idea → image
 </actions>
 
 <media>
-- A saved image (an `itemState` value with `file_id`) renders ONLY with
-  `<KindImage image={ref} alt="…" runAction={runAction} pending={busy && !ref} maxHeight={480} />`.
-  It shows the whole image at its real proportions (never cropped), with expand and share.
-  Never a bare `<img>` for it, and never build a URL from a `file_id`.
+- Every image renders with `<KindImage image={ref} alt="…" runAction={runAction} pending={busy && !ref} maxHeight={480} />`.
+  `ref` is a saved image (an `itemState` value with `file_id`) or a web address (`"https://…"` or `{ url }`).
+  It shows the whole image at its real proportions (never cropped), with expand (and share for a saved file).
+  Never a bare `<img>` for either, and never build a URL from a `file_id`.
 - Images inside `data` as `data:` URIs and inline `<svg>` render normally.
-- Images from other websites do not load. Do not reference them.
+- Any other saved file (PDF, document, sheet, archive…): `<KindFile file={{ file_id, name, mime_type, size }} runAction={runAction} />`
+  — a compact card with its type (an image shows a thumbnail), name, size, Open / Download / Share. `hide={["share"]}` drops buttons.
+- A file the shape builds (CSV, Markdown, JSON): `runAction("download", { filename: "rows.csv", content })`, or a
+  `CopyButtons export` item. Printing: `runAction("print", { title, markdown })`.
 - Never save a `src`, URL or download link into item state — only the ref.
+- Video: `<KindVideo video={ref} title="…" runAction={runAction} maxHeight={480} />`; audio:
+  `<KindAudio audio={ref} title="…" runAction={runAction} />`. `ref` is `{ file_id, mime_type, width?, height?, duration? }`
+  (a saved file) or a web address string / `{ url }`. Whole video at its real aspect, never cropped. In the frame a saved file
+  shows a poster card and downloads nothing until Play; a web address opens the platform player in a window.
+  Never a bare `<video>` / `<audio>` / `<source>`.
+- Embeds (YouTube, Vimeo, Loom, Google Maps, Figma): `<KindEmbed url={link} title="…" runAction={runAction} />`. Never an
+  `<iframe>` — the frame cannot open one; its Play opens the real embed in a window. Any other link becomes an Open card.
+- The reader's language and time zone: `const { locale, timeZone, dir } = useKindLocale();` then
+  `new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone })`, `Intl.NumberFormat(locale, …)`,
+  `Intl.RelativeTimeFormat(locale)` (date-fns: pass the matching locale). Never hard-code `"en-US"` or UTC. The frame's
+  `<html lang dir>` already follows the reader, so flow and alignment mirror for right-to-left languages; use logical
+  classes (`ms-*`, `ps-*`, `text-start`) instead of left/right.
 </media>
 
 <links>
@@ -264,8 +290,8 @@ A shape may run inside a sealed frame. Write every component so it works there:
   screen classes (`sm:`, `md:`, `lg:`).
 - Dialogs, popovers, menus and tooltips work but are clipped to the shape's box. Anything that
   needs the whole screen goes behind an action.
-- No `alert`, `confirm`, `prompt`, `window.open`, `window.print` — use dialogs, the kit's
-  `confirm`, and actions.
+- No `alert`, `confirm`, `prompt`, `window.open`, `window.print` — refused at save. Use dialogs,
+  `KindActionButton confirm`, `<a href>`, and the `print` / `download` actions.
 - The frame never scrolls; long content scrolls inside a panel (`max-h-* overflow-y-auto`).
 </frame_rules>
 
