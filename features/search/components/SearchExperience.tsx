@@ -703,8 +703,9 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
     ...moreOptions.filter((t) => t.value === activeTab),
   ];
   const tabRow = (
-    <div className="flex min-h-10 min-w-0 items-center gap-x-1">
-      <div className="min-w-0 shrink overflow-x-auto scrollbar-none">
+    // One row that scrolls sideways on a phone, Google's way — More and Tools ride along.
+    <div className="flex min-h-10 min-w-0 items-center gap-x-1 overflow-x-auto scrollbar-none">
+      <div className="shrink-0">
         <Tabs
           aria-label="Result type"
           className="overflow-visible"

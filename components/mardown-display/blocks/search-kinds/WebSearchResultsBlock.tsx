@@ -197,7 +197,7 @@ export default function WebSearchResultsBlock({
                 target="_blank"
                 rel="noopener"
                 title={term}
-                className="flex h-12 min-w-0 items-center gap-3 rounded-full bg-muted px-4 text-sm text-foreground transition-colors hover:bg-muted-foreground/15"
+                className="flex h-12 min-w-0 items-center gap-3 rounded-xl bg-muted px-4 text-sm text-foreground transition-colors hover:bg-muted-foreground/15"
               >
                 <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <span className="truncate">{term}</span>
