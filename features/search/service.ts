@@ -100,6 +100,19 @@ export function optionsBody(options: SearchRequestOptions): Record<string, unkno
   return body;
 }
 
+/** The engine answered and there is nothing to show — an empty result, not a failure. */
+export class SearchEmptyError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "SearchEmptyError";
+  }
+}
+
+export function searchErrorFrom(e: { error_type?: string; user_message?: string; message?: string }): Error {
+  const text = e.user_message || e.message || "The search failed.";
+  return e.error_type === "no_results" ? new SearchEmptyError(text) : new Error(text);
+}
+
 export interface RunSearchArgs {
   /** Transport — `useBackendApi().post`, so auth/request-id/error capture stay centralized. */
   post: (
@@ -157,7 +170,7 @@ export async function runKindSearch({
         }
       },
       onError: (e) => {
-        throw new Error(e.user_message || e.message || "The search failed.");
+        throw searchErrorFrom(e as { error_type?: string; user_message?: string; message?: string });
       },
     },
     signal,
@@ -253,7 +266,7 @@ export async function runSearchDoor({
         };
       },
       onError: (e) => {
-        throw new Error(e.user_message || e.message || "The search failed.");
+        throw searchErrorFrom(e as { error_type?: string; user_message?: string; message?: string });
       },
     },
     signal,

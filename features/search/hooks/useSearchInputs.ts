@@ -36,6 +36,9 @@ import { inputModeOf, understandInput } from "@/features/search/input-understand
 /** Posts fetched with a profile — a cap, since each record costs points. */
 export const PROFILE_POST_COUNT = 10;
 
+export const GUEST_ACCOUNT_MESSAGE = "Looking up accounts needs a free account.";
+export const GUEST_IMAGE_MESSAGE = "Searching by image needs a free account.";
+
 export type DoorPhase = "working" | "done" | "error";
 
 export type SearchSpecialView =
@@ -78,7 +81,7 @@ export interface UseSearchInputsReturn {
 
 export function useSearchInputs(
   form: UseScraperKeywordSearchFormReturn,
-  hooks: { onSubmitted?: (query: string) => void } = {},
+  hooks: { onSubmitted?: (query: string) => void; guest?: boolean } = {},
 ): UseSearchInputsReturn {
   const { post } = useBackendApi();
   const { upload } = useFileUpload();
@@ -112,6 +115,12 @@ export function useSearchInputs(
   ) => {
     const c = fresh();
     form.reset();
+    // Account lookups are for people with an account: a visitor is told so at once, never sent to a door
+    // that would refuse with developer words.
+    if (hooks.guest) {
+      setSpecial({ type: "profile", platform, handle, url, phase: "error", outcome: null, error: GUEST_ACCOUNT_MESSAGE });
+      return;
+    }
     setSpecial({
       type: "profile",
       platform,
@@ -166,6 +175,10 @@ export function useSearchInputs(
   ) => {
     const c = fresh();
     form.reset();
+    if (hooks.guest) {
+      setSpecial({ type: "image", previewUrl, name, phase: "error", outcome: null, error: GUEST_IMAGE_MESSAGE });
+      return;
+    }
     setSpecial({
       type: "image",
       previewUrl,

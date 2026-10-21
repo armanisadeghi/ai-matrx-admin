@@ -27,6 +27,7 @@ import { useGeolocation } from "@/hooks/brokers/useGeolocation";
 import {
   runKindSearch,
   runSearchDoor,
+  SearchEmptyError,
   SEARCH_DOORS,
   socialDoorBody,
 } from "@/features/search/service";
@@ -98,6 +99,8 @@ export interface KeywordEngineRun {
   phase: SearchPhase;
   outcome: SearchOutcome | null;
   error: string | null;
+  /** The engine answered "nothing" (an empty result, not a failure): the plain sentence to show. */
+  empty?: string | null;
   /** Whether this run asked for the raw provider payload. */
   includedRaw: boolean;
 }
@@ -532,6 +535,10 @@ export function useScraperKeywordSearchForm(
           if (!controller.signal.aborted) patchRun(provider, { phase: "done" });
         } catch (err: unknown) {
           if (controller.signal.aborted) return;
+          if (err instanceof SearchEmptyError) {
+            patchRun(provider, { phase: "done", empty: err.message });
+            return;
+          }
           const message =
             err instanceof Error && err.message
               ? err.message
