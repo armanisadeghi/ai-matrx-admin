@@ -46,6 +46,8 @@ type ConversationSeed =
       /** The row's own organization — an agent-less room resolves its mandate there. */
       organizationId: string | null;
       agentName: string | null;
+      /** The conversation's own title, so the header names it on first paint (null = untitled). */
+      title: string | null;
       /**
        * The box this conversation is bound to, read in the SAME round-trip that
        * resolves the agent. It reaches Redux before the bundle RPC does, so the
@@ -68,7 +70,7 @@ async function resolveConversationSeed(
     .schema("chat")
     .from("conversation")
     .select(
-      "initial_agent_id, organization_id, sandbox_instance_id, app_instance_id, metadata",
+      "initial_agent_id, organization_id, title, sandbox_instance_id, app_instance_id, metadata",
     )
     .eq("id", conversationId)
     .is("deleted_at", null)
@@ -87,13 +89,14 @@ async function resolveConversationSeed(
   const sandboxBinding = conversationSandboxBindingFromRow(data);
   const agentId = (data.initial_agent_id as string | null) ?? null;
   const organizationId = (data.organization_id as string | null) ?? null;
+  const title = (data.title as string | null) ?? null;
   if (!agentId)
-    return { kind: "ok", agentId: null, agentName: null, organizationId, sandboxBinding };
+    return { kind: "ok", agentId: null, agentName: null, title, organizationId, sandboxBinding };
   // `chat.conversation` has no FK on `initial_agent_id`, so the agent name
   // cannot be a PostgREST embed — resolve it with a separate lookup against
   // the canonical `agent.definition` table.
   const agentName = await resolveAgentName(supabase, agentId);
-  return { kind: "ok", agentId, agentName, organizationId, sandboxBinding };
+  return { kind: "ok", agentId, agentName, title, organizationId, sandboxBinding };
 }
 
 async function resolveAgentName(
@@ -166,6 +169,7 @@ async function ChatConversationSeeded({
       <ChatRunHeader
         activeAgentId={display?.agentId ?? undefined}
         initialAgentName={display?.agentName ?? undefined}
+        initialConversationTitle={seed.title}
         conversationId={conversationId}
         composerMode={{ initialMode }}
       />
