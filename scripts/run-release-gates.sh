@@ -1054,6 +1054,9 @@ if $STRICT; then
         # file outside providers/google-provider/ naming a raw provider
         # authorization primitive. Static, offline, no credentials.
         "Google authorization windows (a raw provider call bypassing the one-window gate)|pnpm check:google-auth-gate"
+        # Google's chat tool names (bundle:list_google, google_workspace, google_email_send) still exist
+        # in the live registry; a server rename would silently turn off the Google switch in chat (2026-10-20).
+        "Google chat tool names (a renamed server tool silently disables Google in chat)|pnpm check:google-chat-tools"
         # ONE REQUEST PIPELINE TO THE PYTHON SERVER (P9c, 2026-10-02). Every
         # server call rides @ai-matrx/api through the host doors
         # (lib/python-client, callApi, matrx-transport, stream-parser); a file
@@ -1841,6 +1844,9 @@ else
         # file outside providers/google-provider/ naming a raw provider
         # authorization primitive. Static, offline, no credentials.
         "Google authorization windows (a raw provider call bypassing the one-window gate)|pnpm check:google-auth-gate"
+        # Google's chat tool names (bundle:list_google, google_workspace, google_email_send) still exist
+        # in the live registry; a server rename would silently turn off the Google switch in chat (2026-10-20).
+        "Google chat tool names (a renamed server tool silently disables Google in chat)|pnpm check:google-chat-tools"
         # ONE REQUEST PIPELINE TO THE PYTHON SERVER (P9c, 2026-10-02). Every
         # server call rides @ai-matrx/api through the host doors
         # (lib/python-client, callApi, matrx-transport, stream-parser); a file
