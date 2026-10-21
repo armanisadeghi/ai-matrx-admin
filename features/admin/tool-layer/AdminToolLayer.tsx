@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, RefreshCw } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
@@ -10,6 +10,7 @@ import { Spinner } from "@/components/ui/loaders/Spinner";
 import { toast } from "@/lib/toast";
 import { plainLoadError } from "@/features/admin/tool-control/words";
 import { extractErrorMessage } from "@/utils/errors";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatRelativeTime } from "@/utils/datetime";
 import { formatAdminUsd } from "@/components/cost/formatAdminCost";
 import {
@@ -59,13 +60,16 @@ export function AdminToolLayer({ toolId }: { toolId: string }) {
   const queryClient = useQueryClient();
   const detail = useQuery({ queryKey: [...KEY, "detail", toolId], queryFn: () => loadToolDetail(toolId) });
   const pricing = useQuery({ queryKey: [...KEY, "pricing", toolId], queryFn: () => loadToolPricing(toolId) });
-  const [order, setOrder] = useState<string[] | null>(null);
+  // a local reorder, tied to the saved order it was made on: a new saved order drops it
+  const [draft, setDraft] = useState<{ base: string; ids: string[] } | null>(null);
   const [why, setWhy] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
 
   const endpoints = useMemo(() => (detail.data?.endpoints ?? []).filter((e) => e.state !== "retired").sort(byPriority), [detail.data]);
   const savedIds = useMemo(() => endpoints.map((e) => e.id), [endpoints]);
-  useEffect(() => setOrder(null), [savedIds.join(",")]);
+  const savedKey = savedIds.join(",");
+  const order = draft && draft.base === savedKey ? draft.ids : null;
+  const setOrder = (next: string[] | null) => setDraft(next ? { base: savedKey, ids: next } : null);
   const ids = order ?? savedIds;
   const dirty = order !== null && order.join(",") !== savedIds.join(",");
   const byId = new Map(endpoints.map((e) => [e.id, e]));
@@ -163,7 +167,12 @@ export function AdminToolLayer({ toolId }: { toolId: string }) {
         </div>
       </header>
 
-      {error ? <p className="px-3 py-2 text-sm text-destructive">{plainLoadError(error, extractErrorMessage(error), "The source list")}</p> : null}
+      {error ? (
+        <p className="px-3 py-2 text-sm text-destructive">
+          {plainLoadError(error, extractErrorMessage(error), "The source list")}{" "}
+          <ErrorAlchemyMenu error={extractErrorMessage(error)} operation="Load the source list" />
+        </p>
+      ) : null}
       {loading ? <p className="px-3 py-2 text-sm text-muted-foreground">Loading…</p> : null}
 
       <div className="overflow-x-auto">
