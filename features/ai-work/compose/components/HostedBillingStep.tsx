@@ -378,7 +378,7 @@ export function HostedBillingStep({
             <div className="flex flex-wrap items-center gap-2">
               <span className="flex items-center gap-1.5 type-secondary text-muted-foreground">
                 <Spinner size="xs" className="text-current" />
-                Starting your sandbox can take a minute or two
+                Starting your sandbox can take up to about 4 minutes
               </span>
               <Button
                 icon={<X />}
@@ -414,7 +414,7 @@ export function HostedBillingStep({
               </Button>
               {busy === "starting" && (
                 <span className="type-secondary text-muted-foreground">
-                  Starting your sandbox can take a minute or two
+                  Starting your sandbox can take up to about 4 minutes
                 </span>
               )}
             </div>

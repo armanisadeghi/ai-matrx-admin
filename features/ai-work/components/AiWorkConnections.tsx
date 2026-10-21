@@ -4,7 +4,8 @@
  * /work/connections — "Connections and sync". Tables, never cards (owner, 2026-10-16): the same
  * Instances and Accounts tables as Matrx 2's Code › Desktop apps (read from the person's computer
  * over the relay), then what has been synced into AI Matrx, which organization each coding project
- * saves to, and the cloud accounts that deliver messages. Every table sorts and filters on every
+ * saves to. Whether messages reach each Claude account's cloud
+ * sessions is a column and an action on that account's own row, never a second list. Every table sorts and filters on every
  * column; everything else about a row is in its details panel.
  */
 
@@ -34,12 +35,14 @@ import { SyncStatePanel } from "@/features/ai-work/conversations/components/Sync
 import { MATRX_LOCAL_DOWNLOAD_PATH } from "@/features/matrx-local-download/release";
 import { CodingProjectOrganizations } from "@/features/ai-work/components/CodingProjectOrganizations";
 import { CodingAppsSection } from "@/features/ai-work/components/connections/CodingAppsSection";
-import { ClaudeAccountsPanel } from "./ClaudeAccountsPanel";
+import { useClaudeCloudDelivery } from "@/features/ai-work/components/connections/ClaudeCloudDelivery";
 import { CursorAccountsPanel } from "./CursorAccountsPanel";
 import { SandboxCapacityList } from "./SandboxCapacityList";
 
 export function AiWorkConnections() {
   const { sessions, loading, error, checkedAtMs, refresh } = useCodingSessions();
+  // Claude cloud delivery lives ON the Claude account rows (Coding apps › Accounts), one place.
+  const cloud = useClaudeCloudDelivery();
 
   // Derived from the bindings this page already loaded — no second read, and
   // no chance of disagreeing with the delivery facts rendered below.
@@ -146,14 +149,13 @@ export function AiWorkConnections() {
         />
 
         {/* The same Instances and Accounts tables as Matrx 2's Code › Desktop apps. */}
-        <CodingAppsSection />
+        <CodingAppsSection cloud={cloud} />
 
         {/* What has actually been delivered into AI Matrx, per provider account. */}
         <SyncStatePanel />
 
         <CodingProjectOrganizations />
 
-        <ClaudeAccountsPanel />
         <CursorAccountsPanel />
 
         <section aria-label="Hosted sessions and history" className="space-y-2">

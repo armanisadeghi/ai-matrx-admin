@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
  * "Coding apps" on /work/connections — the same two tables as Matrx 2's Code › Desktop apps:
@@ -16,7 +17,7 @@
 import { Fact } from "@/features/ai-work/components/connections/Fact";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Gauge, Info, Monitor, RotateCw } from "lucide-react";
+import { Cloud, Gauge, Info, Monitor, Plus, RotateCw } from "lucide-react";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { isDesktopProtocolError, type AppAccount, type AppInstance } from "@ai-matrx/desktop-protocol";
 import type { DesktopClient } from "@ai-matrx/desktop-protocol/client";
@@ -30,6 +31,18 @@ import { supabase } from "@/utils/supabase/client";
 import { useNow } from "@/hooks/useNow";
 import { getAccessTokenOrNull } from "@/lib/python-client";
 import { useDeviceClient } from "@/features/files/devices/console/useDeviceClient";
+import { resolveBaseUrl } from "@/lib/python-client";
+import { CloudSetupDialog } from "@/features/ai-work/components/connections/CloudSetupDialog";
+import { ClaudeCloudSignIn, type ClaudeCloudDelivery } from "@/features/ai-work/components/connections/ClaudeCloudDelivery";
+import {
+  cloudActionLabel,
+  cloudDeliveryFor,
+  cloudDeliveryWords,
+  cloudRowFor,
+  unmatchedCloudRows,
+  type CloudAccountRow,
+  type CloudDeliveryState,
+} from "@/features/ai-work/lib/claudeCloudDelivery";
 import { listChooserComputers, type ChooserComputer } from "@/features/ai-work/lib/computerChooser";
 import {
   APP_KEYS,
@@ -72,7 +85,7 @@ type ComputersRead =
   | { state: "failed"; reason: string };
 
 /** The section: which computer, then its two tables. */
-export function CodingAppsSection() {
+export function CodingAppsSection({ cloud = null }: { cloud?: ClaudeCloudDelivery | null } = {}) {
   const [list, setList] = useState<ComputersRead>({ state: "loading" });
   const [chosen, setChosen] = useState<string | null>(null);
 
@@ -114,7 +127,7 @@ export function CodingAppsSection() {
       />
     ) : null;
 
-  if (current) return <ConnectedApps key={current.device.id} computer={current} picker={picker} />;
+  if (current) return <ConnectedApps key={current.device.id} computer={current} picker={picker} cloud={cloud} />;
 
   const why =
     list.state === "loading"
@@ -144,6 +157,7 @@ export function CodingAppsSection() {
       action={null}
       onRefresh={null}
       onDone={() => undefined}
+      cloud={cloud}
       picker={
         computers.length ? (
           <Button asChild variant="quiet">
@@ -163,7 +177,7 @@ function useAppReads(client: DesktopClient, live: boolean, app: string) {
   return { app, instances, accounts, chats };
 }
 
-function ConnectedApps({ computer, picker }: { computer: ChooserComputer; picker: React.ReactNode }) {
+function ConnectedApps({ computer, picker, cloud }: { computer: ChooserComputer; picker: React.ReactNode; cloud: ClaudeCloudDelivery | null }) {
   const { client, state, status } = useDeviceClient(computer.device.id);
   const nowMs = useNow();
   const live = state.status === "open";
@@ -237,6 +251,7 @@ function ConnectedApps({ computer, picker }: { computer: ChooserComputer; picker
       onRefresh={refreshAll}
       onDone={refetch}
       picker={picker}
+      cloud={cloud}
     />
   );
 }
@@ -263,7 +278,37 @@ export interface AppsTablesProps {
   onRefresh: (() => Promise<unknown>) | null;
   onDone: () => void;
   picker: React.ReactNode;
+  /** Claude cloud delivery, drawn on the Claude account rows; absent in tests that do not need it. */
+  cloud?: ClaudeCloudDelivery | null;
 }
+
+/** A connected cloud account this computer has not seen, as an Accounts row (no reading of its own). */
+function cloudOnlyAccount(row: CloudAccountRow): AppAccount {
+  return {
+    app_key: "claude",
+    account_id: `cloud:${row.id}`,
+    email: row.email ?? (row.label.includes("@") ? row.label : null),
+    plan: null,
+    orgs: [],
+    weekly: null,
+    weekly_reset_since: false,
+    weekly_resets_at_ms: null,
+    weekly_reset_source: null,
+    five_hour: null,
+    five_hour_reset_since: false,
+    five_hour_resets_at_ms: null,
+    extra_usage: null,
+    credits: null,
+    read_at_ms: null,
+    read_in: null,
+    instances: [],
+    first_seen_ms: null,
+    last_seen_ms: null,
+    missing: [],
+  };
+}
+
+const CLAUDE_CONNECTORS_URL = "https://claude.ai/settings/connectors";
 
 function ToneWord({ tone, word, label }: { tone: "success" | "neutral" | "danger" | "warning"; word: string; label?: string }) {
   return (
@@ -301,11 +346,43 @@ export function AppsTables(p: AppsTablesProps) {
   const now = useNow();
   const busy = (action?.busy ?? false) || refreshBusy;
   const off = p.client === null || action === null;
+  const [setupOpen, setSetupOpen] = useState(false);
 
-  const byId = new Map(p.accounts.map((a) => [acctKey(a), a]));
+  // Cloud delivery is a fact about these same accounts: matched by email onto the Claude rows, and a
+  // connected cloud account this computer has not seen still gets a row of its own.
+  const cloud = p.cloud ?? null;
+  const cloudRows = cloud?.rows ?? [];
+  const accounts = [
+    ...p.accounts,
+    ...unmatchedCloudRows(p.accounts.filter((a) => a.app_key === "claude").map((a) => a.email), cloudRows).map(cloudOnlyAccount),
+  ];
+  const cloudOnly = (a: AppAccount) => a.account_id.startsWith("cloud:");
+  const running = cloud?.running ? { forEmail: cloud.running.forEmail, step: cloud.running.step } : null;
+  const cloudOf = (a: AppAccount): CloudDeliveryState | null => (a.app_key === "claude" && cloud ? cloudDeliveryFor(a.email, cloudRows, running) : null);
+  const signInBusy = Boolean(cloud && (cloud.running || cloud.resuming));
+  const deliverWhy = (a: AppAccount, st: CloudDeliveryState | null): string | null =>
+    a.app_key !== "claude"
+      ? "Cloud sessions are Claude's"
+      : !cloud || cloud.rows === null
+        ? "Reading your cloud accounts…"
+        : st?.kind === "ready"
+          ? null
+          : !a.email
+            ? "Its email is not known yet"
+            : signInBusy && st?.kind !== "in_progress"
+              ? "Another sign-in is running; finish or cancel it first"
+              : null;
+  const deliver = (a: AppAccount) => cloud?.start(a.email);
+  const stopDelivering = (a: AppAccount) => {
+    const row = cloud ? cloudRowFor(a.email, cloudRows) : null;
+    if (row && cloud) cloud.signOut(row);
+  };
+  const connectorUrl = `${resolveBaseUrl().replace(/\/$/, "")}/api/matrx-mcp`;
+
+  const byId = new Map(accounts.map((a) => [acctKey(a), a]));
   const accountOf = (i: AppInstance) => (i.account_id ? byId.get(`${i.app_key}:${i.account_id}`) : undefined);
-  const ranks = nextRanks(p.accounts);
-  const nextOrder = new Map([...p.accounts].sort(compareNext).map((a, n) => [acctKey(a), n]));
+  const ranks = nextRanks(accounts);
+  const nextOrder = new Map([...accounts].sort(compareNext).map((a, n) => [acctKey(a), n]));
   const stale = (a: AppAccount) => a.read_at_ms !== null && now - a.read_at_ms > STALE_MIN * 60_000;
   const chatsOf = (i: AppInstance) => (READS_CHATS.has(i.app_key) ? chatCount(p.chats.get(i.app_key), i.key) : -1);
   const awayOf = (i: AppInstance) => (READS_CHATS.has(i.app_key) ? awayCount(p.chats.get(i.app_key), i.key) : -1);
@@ -346,16 +423,26 @@ export function AppsTables(p: AppsTablesProps) {
   const acctActions = (a: AppAccount, openDetail: () => void): MatrxTableIconAction[] => {
     const r = readerOf(a);
     const why = usageWhy(a.app_key, r);
+    const st = cloudOf(a);
+    const dWhy = deliverWhy(a, st);
     return [
       { id: "open", icon: Monitor, label: off ? `Open (${offWhy})` : r ? (r.running ? `Bring ${r.key} to the front` : `Open ${r.key}, where it is signed in`) : "Open (no instance is signed into it)", onClick: () => r && open(r), disabled: off || busy || !r || !canOpen(r) },
       { id: "usage", icon: Gauge, label: off ? `Read usage (${offWhy})` : why ? `Read usage (${why})` : `Read its usage now in ${r?.key ?? ""}`, onClick: () => r && refreshUsage(r), disabled: off || busy || why !== null },
+      {
+        id: "cloud",
+        icon: Cloud,
+        label: dWhy ? `Deliver to cloud sessions (${dWhy})` : st ? cloudActionLabel(st, accountName(a)) : "Deliver to cloud sessions",
+        onClick: () => deliver(a),
+        disabled: dWhy !== null || st === null || st.kind === "ready" || st.kind === "in_progress",
+        loading: st?.kind === "in_progress",
+      },
       { id: "info", icon: Info, label: `Everything about ${accountName(a)}`, onClick: openDetail },
     ];
   };
 
   const appOk = (k: string) => app === "all" || k === app;
   const shownInstances = p.instances.filter((i) => appOk(i.app_key));
-  const shownAccounts = p.accounts.filter((a) => appOk(a.app_key));
+  const shownAccounts = accounts.filter((a) => appOk(a.app_key));
   const multi = app === "all";
   // A column no app shown can fill is left out (an app that keeps no usage shows no usage columns).
   // As the desktop: Weekly on Instances when a shown app reads accounts; the Accounts usage columns
@@ -363,6 +450,7 @@ export function AppsTables(p: AppsTablesProps) {
   const usageShown = multi || READS_ACCOUNTS.has(app);
   const chatsShown = multi || READS_CHATS.has(app);
   const accountsShown = multi || READS_ACCOUNTS.has(app);
+  const cloudShown = cloud !== null && (multi || app === "claude");
   const acctUsageShown = shownAccounts.some((a) => a.read_at_ms !== null);
   const extraShown = shownAccounts.some((a) => a.app_key === "claude");
   const creditsShown = shownAccounts.some((a) => a.credits !== null || a.app_key === "codex");
@@ -378,7 +466,7 @@ export function AppsTables(p: AppsTablesProps) {
 
   const instColumns: MatrxColumnDef<AppInstance>[] = [
     ...(multi ? [appColumn<AppInstance>()] : []),
-    { id: "instance", header: "Instance", accessorFn: (i) => (i.main ? `${i.key} (main)` : i.key), sortValue: (i) => `${i.main ? 0 : 1}${i.key.toLowerCase()}`, filter: "text", width: 170, cell: (i) => <span className="truncate font-medium">{i.key}</span> },
+    { id: "instance", header: "Instance", accessorFn: (i) => (i.main ? `${i.key} (main)` : i.key), sortValue: (i) => `${i.main ? 0 : 1}${i.key.toLowerCase()}`, filter: "text", width: 170, cell: (i) => <span className="truncate font-medium">{humanizeIdentifier(i.key)}</span> },
     { id: "status", header: "Status", accessorFn: (i) => statusWords(i).word, sortValue: (i) => statusWords(i).order, filter: "select", width: 140, cell: (i) => <ToneWord {...statusWords(i)} /> },
     { id: "account", header: "Account", accessorFn: (i) => instanceAccount(i) ?? "", filter: "text", width: 220, cell: (i) => <span className={`truncate ${i.account ? "" : "text-muted-foreground"}`} title={instanceAccount(i) ?? undefined}>{instanceAccount(i) ?? "—"}</span> },
     { id: "meant_for", header: "Kept for", accessorFn: (i) => i.meant_for ?? "", filter: "text", width: 200, hidden: true },
@@ -444,8 +532,62 @@ export function AppsTables(p: AppsTablesProps) {
     },
         ] satisfies MatrxColumnDef<AppAccount>[])
       : []),
-    { id: "instances", header: "Instances", accessorFn: (a) => a.instances.length, filter: "number", width: 96, align: "right" },
+    { id: "instances", header: "Instances", accessorFn: (a) => (cloudOnly(a) ? null : a.instances.length), filter: "number", width: 96, align: "right", cell: (a) => (cloudOnly(a) ? <span className="text-muted-foreground" title="Not seen on this computer">—</span> : a.instances.length) },
+    ...(cloudShown
+      ? ([
+          {
+            id: "cloud",
+            header: "Cloud sessions",
+            accessorFn: (a) => {
+              const st = cloudOf(a);
+              return st ? cloudDeliveryWords(st).word : "";
+            },
+            sortValue: (a) => {
+              const st = cloudOf(a);
+              return st ? cloudDeliveryWords(st).order : 99;
+            },
+            filter: "select",
+            width: 170,
+            cell: (a) => {
+              const st = cloudOf(a);
+              if (!st) return <span className="text-muted-foreground">—</span>;
+              const w = cloudDeliveryWords(st);
+              return <ToneWord tone={w.tone} word={w.word} label={`Cloud sessions: ${w.word}`} />;
+            },
+          },
+        ] satisfies MatrxColumnDef<AppAccount>[])
+      : []),
   ];
+
+  const acctMenu = (a: AppAccount) => {
+    const st = cloudOf(a);
+    if (!st) return [];
+    const dWhy = deliverWhy(a, st);
+    const row = cloudRowFor(a.email, cloudRows);
+    return [
+      {
+        id: "cloud",
+        title: "Cloud sessions",
+        primary: true,
+        items: [
+          {
+            id: "deliver",
+            label: `Deliver to ${accountName(a)}'s cloud sessions`,
+            disabledReason: st.kind === "ready" ? "Already delivering" : st.kind === "in_progress" ? "Signing in now" : (dWhy ?? undefined),
+            onSelect: () => deliver(a),
+          },
+          {
+            id: "stop",
+            label: "Stop delivering to its cloud sessions",
+            destructive: true,
+            separatorBefore: true,
+            disabledReason: st.kind !== "ready" || !row?.slot ? "Not delivering now" : undefined,
+            onSelect: () => stopDelivering(a),
+          },
+        ],
+      },
+    ];
+  };
 
   const tabCount = (k: string) => (p.readingInstances && !p.instances.length ? null : p.instances.filter((i) => i.app_key === k).length);
   const updated = p.client ? (p.refreshing || refreshBusy ? "Reading…" : updatedWords(p.asOfMs, now)) : null;
@@ -506,6 +648,10 @@ export function AppsTables(p: AppsTablesProps) {
         emptyState={{ title: p.client ? (p.instances.length ? "No instances match" : "No coding apps found on this computer") : "No computer connected", description: p.client ? undefined : "Open Matrx 2 on your computer to see its coding apps here" }}
       />
 
+      <div id="claude-accounts" className="scroll-mt-20" />
+      {cloud ? <ClaudeCloudSignIn cloud={cloud} /> : null}
+      {cloud?.loadError ? <ErrorNotice message={`Couldn't read which accounts deliver to cloud sessions: ${cloud.loadError}`} size="inline" /> : null}
+
       {accountsShown ? (
         <MatrxDataTable<AppAccount>
           tableId="work/connections/accounts"
@@ -517,12 +663,45 @@ export function AppsTables(p: AppsTablesProps) {
           viewTabs={false}
           selection={false}
           defaultSort={{ id: "next", direction: "asc" }}
-          toolbar={{ title: "Accounts", searchPlaceholder: "Search accounts" }}
+          toolbar={{
+            title: "Accounts",
+            searchPlaceholder: "Search accounts",
+            actions: cloud ? (
+              <>
+                <Button variant="quiet" onClick={() => setSetupOpen(true)} title="Add AI Matrx to Claude so cloud sessions can send and read messages">
+                  Use in Claude
+                </Button>
+                <Button
+                  variant="outline"
+                  icon={<Plus />}
+                  onClick={() => cloud.start(null)}
+                  disabled={signInBusy || cloud.rows === null}
+                  title={signInBusy ? "Another sign-in is running" : "Deliver to a Claude account that is not listed here"}
+                >
+                  Another Claude account
+                </Button>
+              </>
+            ) : undefined,
+          }}
           rowActions={(a, controls) => acctActions(a, controls.openDetail)}
-          detail={{ title: (a) => accountName(a), description: (a) => `${appLabel(a.app_key)} · ${availability(a) === "available" ? `available, use ${ranks.get(acctKey(a)) === 1 ? "first" : `#${ranks.get(acctKey(a)) ?? ""}`}` : availability(a) === "unknown" ? "no usage reading yet" : "at its limit"}`, render: (a) => <AccountDetail a={a} stale={stale(a)} now={now} /> }}
-          isLoading={p.readingAccounts && !p.accounts.length}
-          read={{ status: p.accountsError ? "error" : p.readingAccounts && !p.accounts.length ? "loading" : "ready", error: p.accountsError ?? undefined, onRetry: p.onDone, what: "this computer's accounts" }}
-          emptyState={{ title: p.client ? (p.accounts.length ? "No accounts match" : "No accounts seen yet") : "No computer connected" }}
+          contextMenu={cloud ? { sections: (payload) => (payload.level === "row" || payload.level === "cell" ? acctMenu(payload.row) : []) } : undefined}
+          detail={{ title: (a) => accountName(a), description: (a) => (cloudOnly(a) ? "Claude · delivering to cloud sessions; not seen on this computer" : `${appLabel(a.app_key)} · ${availability(a) === "available" ? `available, use ${ranks.get(acctKey(a)) === 1 ? "first" : `#${ranks.get(acctKey(a)) ?? ""}`}` : availability(a) === "unknown" ? "no usage reading yet" : "at its limit"}`), render: (a) => <AccountDetail a={a} stale={stale(a)} now={now} cloud={cloudOf(a)} /> }}
+          isLoading={p.readingAccounts && !accounts.length}
+          read={{ status: p.accountsError ? "error" : p.readingAccounts && !accounts.length ? "loading" : "ready", error: p.accountsError ?? undefined, onRetry: p.onDone, what: "this computer's accounts" }}
+          emptyState={{ title: p.client ? (accounts.length ? "No accounts match" : "No accounts seen yet") : "No computer connected" }}
+        />
+      ) : null}
+
+      {cloud ? (
+        <CloudSetupDialog
+          open={setupOpen}
+          onOpenChange={setSetupOpen}
+          title="Use AI Matrx in Claude cloud sessions"
+          description="Once per Claude account, so its cloud sessions can send and read mail."
+          steps={["Open Claude connectors, signed in to each Claude account.", "Add custom connector, paste the address below, then Connect."]}
+          url={connectorUrl}
+          what="connector URL"
+          link={{ href: CLAUDE_CONNECTORS_URL, label: "Open Claude connectors" }}
         />
       ) : null}
 
@@ -572,7 +751,7 @@ function InstanceDetail({ i, account, chats, away, now }: { i: AppInstance; acco
 }
 
 /** Every fact about one account: who it is, its newest reading, where and when it was read, what is missing. */
-function AccountDetail({ a, stale, now }: { a: AppAccount; stale: boolean; now: number }) {
+function AccountDetail({ a, stale, now, cloud = null }: { a: AppAccount; stale: boolean; now: number; cloud?: CloudDeliveryState | null }) {
   const at = (ms: number | null) => (ms ? `${time(ms)} (${ago(ms, now)})` : null);
   const source = a.weekly_reset_source === "app" ? "the app itself" : a.weekly_reset_source === "usage_history" ? "a reset seen in its usage history" : a.weekly_reset_source ? "your list (not confirmed yet)" : null;
   return (
@@ -593,6 +772,12 @@ function AccountDetail({ a, stale, now }: { a: AppAccount; stale: boolean; now: 
       <Fact label="First seen" value={at(a.first_seen_ms)} empty="—" />
       <Fact label="Last seen" value={at(a.last_seen_ms)} empty="—" />
       <Fact label="Still missing" value={a.missing.length ? a.missing.join(", ") : "Nothing"} />
+      {cloud ? (
+        <>
+          <Fact label="Cloud sessions" value={cloudDeliveryWords(cloud).word} help="Whether messages reach this account's Claude cloud sessions (claude.ai/code)" />
+          <Fact label="Delivered by" value={cloud.kind === "ready" ? "Your cloud sandbox, signed in as this account (works while your computer is off)" : null} empty="Nothing yet: one sign-in from this row's cloud action" />
+        </>
+      ) : null}
     </div>
   );
 }
