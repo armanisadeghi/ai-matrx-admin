@@ -17,7 +17,6 @@ import {
 } from "@ai-matrx/chat/agents/redux/conversation-list/conversation-row-actions.thunks";
 import { getStore } from "@/lib/redux/store-singleton";
 import { bulkActionsFromRowVerbs } from "@/lib/entity-list/rowVerbs";
-import type { EntityBulkAction } from "@/lib/entity-list/selection";
 import type { ConversationBrowseRow } from "./types";
 
 /** Every conversation verb a person can do from a row menu that changes something. */
@@ -57,7 +56,7 @@ async function dispatchThunk(action: unknown, rejected: { match: (a: unknown) =>
   }
 }
 
-export const conversationBulkActions: EntityBulkAction<ConversationBrowseRow>[] = bulkActionsFromRowVerbs(
+export const conversationBulkActions = bulkActionsFromRowVerbs<(typeof CONVERSATION_BULK_VERBS)[number], ConversationBrowseRow>(
   CONVERSATION_BULK_VERBS,
   {
     archive: {

@@ -15,13 +15,24 @@ import "../messages-native.css";
  * badges, the ordering and the "load older" door are the package's.
  */
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMessagePins } from "../lib/useMessagePins";
 import { ConversationList, useConversations } from "@ai-matrx/messaging/react";
 import type { ConversationSummary } from "@ai-matrx/messaging/react";
+import { asConversationId } from "@ai-matrx/messaging";
 import { cn } from "@/lib/utils";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";
+import { Button } from "@/components/ui/button";
+import { ListChecks } from "lucide-react";
+import { RowSelectionBar } from "@/lib/entity-list/RowSelectionBar";
+import {
+  setSelecting,
+  toggleConversation,
+  useConversationRowSelection,
+  useConversationSelectionState,
+} from "../lib/conversationSelection";
+import { conversationBulkActions } from "../lib/conversationBulkActions";
 import { NewConversationDialog } from "./NewConversationDialog";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
 import {
@@ -56,6 +67,18 @@ export function ConversationListPane({
     useState<ConversationSummary | null>(null);
   const menuRef = useRef<ConversationSummary | null>(null);
   const [ownDialogOpen, setOwnDialogOpen] = useState(false);
+  // Select mode: a click on a row ticks it, and the bar carries the row menu's verbs (conversationBulkActions.ts).
+  const { selecting } = useConversationSelectionState();
+  // Leaving the pane ends Select mode, so the next visit never opens with stale ticks.
+  useEffect(() => () => setSelecting(false), []);
+  const ticked = useConversationRowSelection(conversations, (item) => item.conversation.id);
+  const bulkActions = conversationBulkActions({
+    markRead: (id) => markRead(asConversationId(id)),
+    markUnread: (id) => markUnread(asConversationId(id)),
+    setMuted: (id, muted) => setMuted(asConversationId(id), muted),
+    setArchived: (id, archived) => setArchived(asConversationId(id), archived),
+    pins,
+  });
 
   return (
     <NonEditableContextMenu
@@ -95,11 +118,36 @@ export function ConversationListPane({
     >
       {/* `asChild` needs a real DOM element to hang the handler on. */}
       <div className={cn("messages-native flex min-h-0 flex-col", className)}>
+        <div className="flex min-h-9 items-center justify-end px-2">
+          {selecting ? (
+            <div className="min-w-0 flex-1">
+              <RowSelectionBar
+                selection={ticked}
+                idOf={(item) => item.conversation.id}
+                actions={bulkActions}
+                noun="conversation"
+                plural="conversations"
+                compact
+                onRefresh={() => {}}
+              />
+            </div>
+          ) : null}
+          <Button
+            variant="quiet"
+            icon={<ListChecks />}
+            aria-pressed={selecting}
+            onClick={() => setSelecting(!selecting)}
+          >
+            {selecting ? "Done" : "Select"}
+          </Button>
+        </div>
         <ConversationList
           pinnedConversationIds={pins}
           onTogglePin={toggle}
           className="min-h-0 flex-1"
-          {...(onSelect ? { onSelect } : {})}
+          {...(selecting || onSelect
+            ? { onSelect: (id: string) => (selecting ? toggleConversation(id) : onSelect?.(id)) }
+            : {})}
           onNewConversation={
             onNewConversation ?? (() => setOwnDialogOpen(true))
           }

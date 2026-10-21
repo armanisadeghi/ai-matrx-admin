@@ -31,6 +31,8 @@ import {
   type WarRoomThreadMenuRow,
 } from "@/features/war-room/lib/thread-actions";
 import type { ReadOutcome } from "@ai-matrx/design-system";
+import { threadBulkActions } from "@/features/war-room/lib/threadBulkActions";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 
 // context-menu-exempt: surfaceName — the registered matrx-user/war-room surface declares 17 per-ROOM values a cross-room table cannot emit; naming it would hand bound agents empty values
 
@@ -181,6 +183,16 @@ export function WarRoomThreadsTable({
   // the menu content mounts.
   const [menuRow, setMenuRow] = useState<WarRoomThreadMenuRow | null>(null);
   const threadSection = useWarRoomThreadMenuSection(menuRow);
+  // The ticked threads take Pin / Unpin / Move / Also add to room (threadBulkActions.ts).
+  const bulk = useTableBulkSelection<ThreadTableRow>({
+    noun: "thread",
+    rows,
+    getRowId: (row) => row.id,
+    getRowName: (row) => row.title,
+    actions: threadBulkActions(),
+    standardBulkActions: false,
+    onRefresh: () => {},
+  });
 
   const columns = useMemo<MatrxColumnDef<ThreadTableRow>[]>(
     () => [
@@ -296,6 +308,7 @@ export function WarRoomThreadsTable({
           data={rows}
           columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (row) => <OpenThreadAction row={row} /> }]}
           getRowId={(row) => row.id}
+          selection={bulk.selection}
           isLoading={isLoading}
           toolbar={{
             search: true,

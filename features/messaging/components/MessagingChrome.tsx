@@ -29,6 +29,11 @@ import type {
   ConversationRowWrapperProps,
   MessageWrapperProps,
 } from "@ai-matrx/messaging/react";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  toggleConversation,
+  useConversationSelectionState,
+} from "@/features/messaging/lib/conversationSelection";
 import { useOpeningConversationId } from "@/features/messaging/lib/openConversation";
 
 const loadChrome = () => import("./MessagingChromeImpl");
@@ -77,13 +82,23 @@ export function MessagingConversationRowChrome({
   // The row whose thread route is on its way says so (messages-native.css),
   // so a click on a slow server never reads as a dead click.
   const opening = useOpeningConversationId() === conversation.conversation.id;
+  // While the pane is in Select mode each row grows a checkbox (the ticks are `conversationSelection.ts`).
+  const { selecting, ids } = useConversationSelectionState();
+  const id = conversation.conversation.id;
   return (
     <div
-      data-conversation-id={conversation.conversation.id}
+      data-conversation-id={id}
       {...(opening ? { "data-opening": "", "aria-busy": true } : {})}
-      className="contents"
+      className={selecting ? "flex items-center gap-2 pl-2" : "contents"}
     >
-      {children}
+      {selecting ? (
+        <Checkbox
+          checked={ids.has(id)}
+          onCheckedChange={() => toggleConversation(id)}
+          aria-label={`Select ${conversation.displayName || "conversation"}`}
+        />
+      ) : null}
+      {selecting ? <div className="min-w-0 flex-1">{children}</div> : children}
     </div>
   );
 }
