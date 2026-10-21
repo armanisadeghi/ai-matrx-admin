@@ -64,6 +64,9 @@ two doors and the product words (Arman, 2026-10-20). Google is not an MCP server
   menu row flips (`useChatConnectorSwitch`). It re-reads the catalog + Google inventory as it closes and
   when the tab is shown again. The directory's search is the chat package's `connector-search` (one
   matcher, no twin).
+- The directory's featured tile status pill (Connect / Connected / Needs attention) carries `matrx-glyph-trim`, so its
+  glyph's own air is trimmed and the pill's ink balances (the dev tap-target guard read 10px vs 8px untrimmed).
+  A folded catalog row's products stay searchable on the card it folds into (`provider-folds.ts`).
 - Google's chat tool names (`GOOGLE_CHAT_TOOL_NAMES`) are the server's: `pnpm check:google-chat-tools[:strict]`
   asks the live registry, `google-chat-tool-names-are-the-servers.test.ts` reads the server source.
 
