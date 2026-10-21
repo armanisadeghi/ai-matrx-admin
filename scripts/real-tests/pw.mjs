@@ -87,7 +87,8 @@ const browser = await connectOwn();
 if (!browser) { console.error(`run ${run} has no browser of its own running; use: node pw.mjs ${run} start`); process.exit(1); }
 const ctx = browser.contexts()[0];
 const page = ctx.pages().find((p) => !p.url().startsWith("devtools")) ?? (await ctx.newPage());
-await page.setViewportSize({ width: 1440, height: 900 });
+// Only when not already 1440x900: re-applying fires a resize every command, and open menus close on resize.
+if (JSON.stringify(await page.evaluate(() => [innerWidth, innerHeight]).catch(() => null)) !== "[1440,900]") await page.setViewportSize({ width: 1440, height: 900 });
 const errFile = path.join(dir, "console.json");
 await page.exposeBinding?.("__noop", () => {}).catch(() => {});
 await page.evaluate(() => {
