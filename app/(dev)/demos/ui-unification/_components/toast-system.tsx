@@ -403,7 +403,9 @@ export function SmartToastCard({
       ) : (
         messageNode
       )}
-      <div data-toast-controls="" className="flex shrink-0 flex-nowrap items-center">
+      {/* Narrow: the icon pair tucks against the text — a 38px tap box's own inset already
+          separates them, so the column gap read as wasted space at 240px (Arman 2026-10-21). */}
+      <div data-toast-controls="" className={cn("flex shrink-0 flex-nowrap items-center", narrow && "-ml-2.5")}>
         {!folded && detail && (
           <TapTargetButtonTransparent
             icon={<ChevronDown />}
