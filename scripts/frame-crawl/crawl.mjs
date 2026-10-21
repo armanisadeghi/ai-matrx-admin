@@ -198,6 +198,16 @@ const MEASURE = () => {
 // ───────────────────────────── one page load ─────────────────────────────
 const slug = (s) => s.replace(/^\//, "").replace(/[^A-Za-z0-9._-]+/g, "_").slice(0, 120) || "root";
 
+async function settled(page, fn) {
+  for (let i = 0; ; i++) {
+    try { return await page.evaluate(fn); } catch (e) {
+      if (i >= 4 || !/context was destroyed|navigation/i.test(String(e.message))) throw e;
+      await page.waitForLoadState("load", { timeout: 30000 }).catch(() => {});
+      await sleep(1000);
+    }
+  }
+}
+
 async function loadAndMeasure(ctx, url, shotPath) {
   const page = await ctx.newPage();
   const consoleErrors = [];
@@ -220,7 +230,8 @@ async function loadAndMeasure(ctx, url, shotPath) {
     row.loadMs = Date.now() - t0;
     // stable = no DOM mutation for 800 ms AND at least 2 s after load (the CLS window); capped at 20 s
     for (;;) {
-      const { quiet, since } = await page.evaluate(() => ({ quiet: performance.now() - window.__f.lastMut, since: performance.now() - (window.__f.loadAt || performance.now()) }));
+      // a page that redirects client-side destroys the context mid-probe: wait for the move, then look again
+      const { quiet, since } = await settled(page, () => ({ quiet: performance.now() - window.__f.lastMut, since: performance.now() - (window.__f.loadAt || performance.now()) }));
       if ((quiet > 800 && since > 2000) || Date.now() - t0 > 20000) break;
       await sleep(250);
     }
@@ -230,7 +241,7 @@ async function loadAndMeasure(ctx, url, shotPath) {
     } catch (e) {
       row.screenshotError = String(e.message).slice(0, 80);
     }
-    Object.assign(row, await page.evaluate(MEASURE));
+    Object.assign(row, await settled(page, MEASURE));
     row.finalUrl = page.url().replace(ORIGIN, "");
   } catch (e) {
     row.navError = String(e.message).split("\n")[0].slice(0, 200);
