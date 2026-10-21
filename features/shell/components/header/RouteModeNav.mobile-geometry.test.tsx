@@ -95,7 +95,7 @@ describe("RouteModeNav mobile menu geometry", () => {
     document.querySelector("[data-route-mode-nav-test]")?.remove();
   });
 
-  it("keeps the collapsed mobile Switch view control at the 44px touch minimum", () => {
+  it("draws the collapsed mobile Switch view control as the canonical outline control (44px touch area via the package)", () => {
     act(() => {
       root.render(
         <RouteModeNav
@@ -111,7 +111,9 @@ describe("RouteModeNav mobile menu geometry", () => {
       'button[aria-label="Switch view"]',
     );
     expect(trigger).not.toBeNull();
-    expect(trigger?.classList.contains("min-h-11")).toBe(true);
-    expect(Number.parseFloat(getComputedStyle(trigger!).minHeight)).toBeGreaterThanOrEqual(44);
+    // The canonical control (Arman 2026-10-21): its invisible 44px coarse-pointer hit area is the
+    // package's (controls-geometry.test.tsx), so the layout never grows past 28px.
+    expect(trigger?.classList.contains("matrx-control")).toBe(true);
+    expect(trigger?.getAttribute("data-variant")).toBe("outline");
   });
 });
