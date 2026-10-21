@@ -66,7 +66,7 @@ const EXCLUDE: RegExp[] = [
   /^scripts\/offering-topic-refs-baseline\.json$/,
   /^scripts\/check-offering-topic-refs\.ts$/,
   // The cutover's own guards name the legacy relations in order to test them.
-  /^scripts\/check-offering-(tenancy|resolver-equivalence)\.ts$/,
+  /^scripts\/check-offering-(tenancy|resolver-equivalence|mint-sources)\.ts$/,
   /\.(png|jpg|svg|ico|lock)$/,
 ];
 
