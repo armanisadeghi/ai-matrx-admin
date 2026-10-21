@@ -68,7 +68,11 @@ describe("the header right set", () => {
       expect(text).not.toContain("CanvasShellHeaderToggle");
       expect(text).not.toContain("CanvasPanePutAwayToggle");
     }
-    expect(read("components/matrx/PublicHeader.tsx")).toContain("<CanvasToggle");
+    // The public header loads its heavier controls as islands (features/public-shell/publicTier.ts);
+    // the Canvas toggle lives there and the header mounts the islands.
+    expect(read("components/matrx/PublicHeader.tsx")).toContain("<PublicHeaderIslands");
+    expect(read("features/public-shell/PublicHeaderIslands.tsx")).toContain("PublicHeaderFullIslands");
+    expect(read("features/public-shell/PublicHeaderFullIslands.tsx")).toContain("<CanvasToggle");
   });
 
   it("renders the set touching — no gap, padding or margin on its wrapper", () => {
