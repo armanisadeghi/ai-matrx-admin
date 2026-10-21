@@ -32,23 +32,23 @@
  ],
  "stats": {
   "nodes": 1572,
-  "edges": 7797,
+  "edges": 8235,
   "edgesByKind": {
    "config": 2494,
    "push": 584,
-   "link": 2874,
-   "admin-map": 417,
-   "layout": 573,
+   "link": 3253,
+   "admin-map": 422,
+   "layout": 584,
    "menu": 306,
-   "sidebar": 525,
+   "sidebar": 568,
    "tab": 24
   },
-  "syntheticNodes": 151,
+  "syntheticNodes": 153,
   "menuEdges": 306,
-  "reachableFromMenu": 770,
+  "reachableFromMenu": 833,
   "reachableOnlyViaAdminMap": 6,
-  "stranded": 796,
-  "unreachableFromMenu": 802
+  "stranded": 733,
+  "unreachableFromMenu": 739
  },
  "warnings": [],
  "summaryBySegment": {
@@ -72,9 +72,9 @@
   },
   "administration": {
    "pages": 309,
-   "reachable": 66,
+   "reachable": 95,
    "reachableOnlyViaAdminMap": 2,
-   "stranded": 241
+   "stranded": 212
   },
   "agent-connections": {
    "pages": 15,
@@ -132,9 +132,9 @@
   },
   "b": {
    "pages": 2,
-   "reachable": 0,
+   "reachable": 1,
    "reachableOnlyViaAdminMap": 0,
-   "stranded": 2
+   "stranded": 1
   },
   "board": {
    "pages": 4,
@@ -198,9 +198,9 @@
   },
   "commerce": {
    "pages": 19,
-   "reachable": 11,
+   "reachable": 12,
    "reachableOnlyViaAdminMap": 0,
-   "stranded": 8
+   "stranded": 7
   },
   "compare": {
    "pages": 11,
@@ -312,9 +312,9 @@
   },
   "education": {
    "pages": 109,
-   "reachable": 72,
+   "reachable": 81,
    "reachableOnlyViaAdminMap": 0,
-   "stranded": 37
+   "stranded": 28
   },
   "error": {
    "pages": 1,
@@ -324,9 +324,9 @@
   },
   "esign": {
    "pages": 6,
-   "reachable": 4,
+   "reachable": 5,
    "reachableOnlyViaAdminMap": 0,
-   "stranded": 2
+   "stranded": 1
   },
   "exports": {
    "pages": 3,
@@ -528,9 +528,9 @@
   },
   "marketing": {
    "pages": 244,
-   "reachable": 123,
+   "reachable": 134,
    "reachableOnlyViaAdminMap": 0,
-   "stranded": 121
+   "stranded": 110
   },
   "masterwork": {
    "pages": 29,
@@ -648,9 +648,9 @@
   },
   "pick-lists": {
    "pages": 3,
-   "reachable": 1,
+   "reachable": 2,
    "reachableOnlyViaAdminMap": 0,
-   "stranded": 2
+   "stranded": 1
   },
   "podcast": {
    "pages": 28,
@@ -750,9 +750,9 @@
   },
   "research": {
    "pages": 30,
-   "reachable": 11,
+   "reachable": 15,
    "reachableOnlyViaAdminMap": 0,
-   "stranded": 19
+   "stranded": 15
   },
   "reset-password": {
    "pages": 1,
@@ -840,9 +840,9 @@
   },
   "shapes": {
    "pages": 18,
-   "reachable": 4,
+   "reachable": 6,
    "reachableOnlyViaAdminMap": 0,
-   "stranded": 14
+   "stranded": 12
   },
   "sign": {
    "pages": 1,
@@ -924,9 +924,9 @@
   },
   "templates": {
    "pages": 7,
-   "reachable": 2,
+   "reachable": 6,
    "reachableOnlyViaAdminMap": 0,
-   "stranded": 5
+   "stranded": 1
   },
   "terms-and-conditions": {
    "pages": 1,
@@ -1213,6 +1213,17 @@
    "hostCount": 4,
    "appDirs": [
     "app/(admin)/administration/hr"
+   ]
+  },
+  {
+   "id": "layout:/administration/users/[id]@app/(admin)/administration/users/[id]",
+   "kind": "layout",
+   "files": [
+    "app/(admin)/administration/users/[id]/layout.tsx"
+   ],
+   "hostCount": 1,
+   "appDirs": [
+    "app/(admin)/administration/users/[id]"
    ]
   },
   {
@@ -2139,6 +2150,17 @@
    ]
   },
   {
+   "id": "sidebar:app-(core)/ResearchTopicShell",
+   "kind": "sidebar",
+   "files": [
+    "app/(core)/research/topics/[topicId]/ResearchTopicShell.tsx"
+   ],
+   "hostCount": 25,
+   "appDirs": [
+    "app/(core)/research/topics/[topicId]"
+   ]
+  },
+  {
    "id": "sidebar:commerce-review/StoreConnectShell",
    "kind": "sidebar",
    "files": [
@@ -2978,7 +3000,7 @@
    "inboundPages": 2,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 1,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -3028,7 +3050,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 7,
+   "outbound": 8,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -3049,8 +3071,8 @@
    "menuLabels": [],
    "title": "Agent Factory build | Admin",
    "titleSource": "metadata",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 6,
+   "inboundPages": 6,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
    "outbound": 8,
@@ -3061,7 +3083,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -3199,8 +3221,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 3,
-   "inboundPages": 3,
+   "inbound": 4,
+   "inboundPages": 4,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
    "outbound": 1,
@@ -3530,8 +3552,8 @@
    "menuLabels": [],
    "title": "View | System Agents",
    "titleSource": "metadata",
-   "inbound": 1,
-   "inboundPages": 0,
+   "inbound": 3,
+   "inboundPages": 2,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
    "outbound": 3,
@@ -3586,8 +3608,8 @@
    "menuLabels": [],
    "title": "System Agent Builder | Admin",
    "titleSource": "metadata",
-   "inbound": 1,
-   "inboundPages": 0,
+   "inbound": 2,
+   "inboundPages": 1,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
    "outbound": 0,
@@ -3703,7 +3725,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 9,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -3783,8 +3805,8 @@
    "menuLabels": [],
    "title": "Edit Shortcut | System Agents",
    "titleSource": "metadata",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 1,
+   "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
    "outbound": 0,
@@ -3798,7 +3820,7 @@
     "sidebar:shell",
     "tabs:agents/mode-bar-system"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -3871,7 +3893,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 2,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 1,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -3924,8 +3946,8 @@
    "menuLabels": [],
    "title": "System Agent Tests | Admin",
    "titleSource": "metadata",
-   "inbound": 1,
-   "inboundPages": 0,
+   "inbound": 2,
+   "inboundPages": 1,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
    "outbound": 2,
@@ -4174,7 +4196,7 @@
    "inboundPages": 2,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 4,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -4417,7 +4439,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 1,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -4438,8 +4460,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 1,
+   "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
    "outbound": 1,
@@ -4468,7 +4490,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 1,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -5113,7 +5135,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 2,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -5136,11 +5158,11 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 2,
-   "inboundPages": 1,
+   "inbound": 6,
+   "inboundPages": 5,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 2,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -5163,11 +5185,11 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 2,
-   "inboundPages": 1,
+   "inbound": 6,
+   "inboundPages": 5,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 1,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -5194,7 +5216,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 2,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -5221,7 +5243,7 @@
    "inboundPages": 1,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 2,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -5337,7 +5359,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -5364,7 +5386,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -5418,7 +5440,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -5445,7 +5467,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -5472,7 +5494,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -5499,7 +5521,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -5526,7 +5548,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -5580,7 +5602,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -5607,7 +5629,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -5620,8 +5642,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 1,
-   "inboundPages": 1,
+   "inbound": 2,
+   "inboundPages": 2,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
    "outbound": 6,
@@ -5634,7 +5656,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -5661,7 +5683,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -5688,7 +5710,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -5914,7 +5936,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -5931,7 +5953,7 @@
    "inboundPages": 2,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 2,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -5939,7 +5961,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -5952,8 +5974,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 1,
+   "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
    "outbound": 1,
@@ -5964,7 +5986,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -7783,7 +7805,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 11,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -7805,11 +7827,11 @@
    "menuLabels": [],
    "title": "Mandate",
    "titleSource": "metadata",
-   "inbound": 7,
-   "inboundPages": 7,
+   "inbound": 21,
+   "inboundPages": 21,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 5,
+   "outbound": 13,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -7859,7 +7881,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 9,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -7880,8 +7902,8 @@
    "menuLabels": [],
    "title": "Mandate storage — advanced",
    "titleSource": "metadata",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 15,
+   "inboundPages": 15,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
    "outbound": 0,
@@ -7892,7 +7914,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -7905,11 +7927,11 @@
    "menuLabels": [],
    "title": "Mandate numbers | Mandates | Intelligence",
    "titleSource": "metadata",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 14,
+   "inboundPages": 14,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 8,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -7917,7 +7939,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -7930,11 +7952,11 @@
    "menuLabels": [],
    "title": "Mandate health | Mandates | Intelligence",
    "titleSource": "metadata",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 14,
+   "inboundPages": 14,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 8,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -7943,7 +7965,7 @@
     "sidebar:lib-entity-list/EntityScopeTabs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -7956,8 +7978,8 @@
    "menuLabels": [],
    "title": "New mandate",
    "titleSource": "metadata",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 15,
+   "inboundPages": 15,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
    "outbound": 2,
@@ -7968,7 +7990,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -7981,8 +8003,8 @@
    "menuLabels": [],
    "title": "Mandate references | Mandates | Intelligence",
    "titleSource": "metadata",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 15,
+   "inboundPages": 15,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
    "outbound": 1,
@@ -7993,7 +8015,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -8006,11 +8028,11 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 14,
+   "inboundPages": 14,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 10,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -8019,7 +8041,7 @@
     "sidebar:lib-entity-list/EntityScopeTabs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -8036,7 +8058,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 5,
+   "outbound": 14,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -8057,11 +8079,11 @@
    "menuLabels": [],
    "title": "Unconverted AI calls | Mandates | Intelligence",
    "titleSource": "metadata",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 14,
+   "inboundPages": 14,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 8,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -8070,7 +8092,7 @@
     "sidebar:lib-entity-list/EntityScopeTabs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -8083,8 +8105,8 @@
    "menuLabels": [],
    "title": "Mandate window",
    "titleSource": "metadata",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 15,
+   "inboundPages": 15,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
    "outbound": 0,
@@ -8095,7 +8117,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -8512,7 +8534,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 6,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -8712,7 +8734,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 9,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
@@ -9914,21 +9936,22 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
+   "inbound": 2,
    "inboundPages": 0,
-   "inboundSynthetic": 0,
+   "inboundSynthetic": 2,
    "inboundAdminMap": 0,
    "outbound": 0,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(admin)",
+    "layout:/administration/users/[id]@app/(admin)/administration/users/[id]",
     "layout:/administration/users@app/(admin)/administration/users",
     "layout:/administration@app/(admin)/administration",
     "sidebar:admin/AdminSectionShell",
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -9970,9 +9993,9 @@
    ],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 3,
+   "inbound": 5,
    "inboundPages": 0,
-   "inboundSynthetic": 3,
+   "inboundSynthetic": 5,
    "inboundAdminMap": 0,
    "outbound": 0,
    "outboundAdminMap": 0,
@@ -10011,7 +10034,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -10132,9 +10155,9 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 1,
+   "inbound": 3,
    "inboundPages": 0,
-   "inboundSynthetic": 1,
+   "inboundSynthetic": 3,
    "inboundAdminMap": 0,
    "outbound": 0,
    "outboundAdminMap": 0,
@@ -10633,8 +10656,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 2,
-   "inboundPages": 2,
+   "inbound": 4,
+   "inboundPages": 4,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
    "outbound": 2,
@@ -10645,7 +10668,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -10871,7 +10894,7 @@
     "sidebar:app-(admin)/AdminBreadcrumbs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -11551,7 +11574,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 9,
    "outboundAdminMap": 0,
    "hostedBy": [
     "sidebar:shell",
@@ -12409,7 +12432,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 3,
+   "outbound": 4,
    "outboundAdminMap": 0,
    "hostedBy": [
     "sidebar:shell"
@@ -12635,7 +12658,7 @@
    "inboundPages": 3,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 3,
+   "outbound": 4,
    "outboundAdminMap": 0,
    "hostedBy": [
     "sidebar:shell"
@@ -12703,7 +12726,7 @@
    "inboundPages": 8,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 6,
+   "outbound": 7,
    "outboundAdminMap": 0,
    "hostedBy": [
     "sidebar:shell"
@@ -12725,7 +12748,7 @@
    "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 3,
+   "outbound": 4,
    "outboundAdminMap": 0,
    "hostedBy": [
     "sidebar:shell"
@@ -12747,7 +12770,7 @@
    "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 3,
+   "outbound": 4,
    "outboundAdminMap": 0,
    "hostedBy": [
     "sidebar:shell"
@@ -13700,7 +13723,7 @@
     "layout:/b@app/(link)/b",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -14105,11 +14128,11 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 2,
-   "inboundPages": 2,
+   "inbound": 3,
+   "inboundPages": 3,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 2,
+   "outbound": 3,
    "outboundAdminMap": 0,
    "hostedBy": [
     "sidebar:shell"
@@ -14149,11 +14172,11 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 2,
-   "inboundPages": 2,
+   "inbound": 3,
+   "inboundPages": 3,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 2,
+   "outbound": 3,
    "outboundAdminMap": 0,
    "hostedBy": [
     "sidebar:shell"
@@ -15076,7 +15099,7 @@
    "inboundPages": 16,
    "inboundSynthetic": 2,
    "inboundAdminMap": 1,
-   "outbound": 1,
+   "outbound": 2,
    "outboundAdminMap": 0,
    "hostedBy": [
     "sidebar:lib-entity-list/EntityScopeTabs",
@@ -15095,8 +15118,8 @@
    "menuLabels": [],
    "title": "Certify a printer",
    "titleSource": "createRouteMetadata",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 1,
+   "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
    "outbound": 0,
@@ -15104,7 +15127,7 @@
    "hostedBy": [
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -15570,7 +15593,7 @@
    "inboundPages": 26,
    "inboundSynthetic": 2,
    "inboundAdminMap": 1,
-   "outbound": 6,
+   "outbound": 7,
    "outboundAdminMap": 0,
    "hostedBy": [
     "sidebar:lib-entity-list/EntityScopeTabs",
@@ -15682,8 +15705,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 1,
-   "inboundPages": 1,
+   "inbound": 2,
+   "inboundPages": 2,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
    "outbound": 7,
@@ -17076,7 +17099,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 2,
+   "outbound": 3,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/education@app/(core)/education",
@@ -17278,7 +17301,7 @@
    "inboundPages": 2,
    "inboundSynthetic": 1,
    "inboundAdminMap": 1,
-   "outbound": 9,
+   "outbound": 10,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/education@app/(core)/education",
@@ -17376,7 +17399,7 @@
    "inboundPages": 22,
    "inboundSynthetic": 1,
    "inboundAdminMap": 1,
-   "outbound": 8,
+   "outbound": 10,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/education@app/(core)/education",
@@ -17419,11 +17442,11 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 9,
-   "inboundPages": 9,
+   "inbound": 21,
+   "inboundPages": 21,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
-   "outbound": 14,
+   "outbound": 21,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/education@app/(core)/education",
@@ -17442,17 +17465,17 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 1,
+   "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 1,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/education@app/(core)/education",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -17465,17 +17488,17 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 1,
+   "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 2,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/education@app/(core)/education",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -17488,17 +17511,17 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 1,
+   "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 2,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/education@app/(core)/education",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -17511,18 +17534,18 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 2,
+   "inboundPages": 2,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 7,
+   "outbound": 10,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/education@app/(core)/education",
     "sidebar:lib-entity-list/EntityScopeTabs",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -17535,17 +17558,17 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 2,
+   "inboundPages": 2,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 2,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/education@app/(core)/education",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -17558,17 +17581,17 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 1,
+   "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 2,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/education@app/(core)/education",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -17581,17 +17604,17 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 1,
+   "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 2,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/education@app/(core)/education",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -17723,7 +17746,7 @@
    "inboundPages": 2,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 2,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/education@app/(core)/education",
@@ -17742,8 +17765,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 2,
-   "inboundPages": 2,
+   "inbound": 3,
+   "inboundPages": 3,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
    "outbound": 0,
@@ -17789,17 +17812,17 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 1,
+   "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 3,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/education@app/(core)/education",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -17819,7 +17842,7 @@
    "inboundPages": 4,
    "inboundSynthetic": 1,
    "inboundAdminMap": 1,
-   "outbound": 7,
+   "outbound": 11,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/education@app/(core)/education",
@@ -17841,11 +17864,11 @@
    ],
    "title": "Host a Game — Study Games",
    "titleSource": "metadata",
-   "inbound": 2,
-   "inboundPages": 0,
+   "inbound": 4,
+   "inboundPages": 2,
    "inboundSynthetic": 2,
    "inboundAdminMap": 1,
-   "outbound": 2,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/education@app/(core)/education",
@@ -17867,11 +17890,11 @@
    ],
    "title": "Join a Game — Study Games",
    "titleSource": "metadata",
-   "inbound": 3,
-   "inboundPages": 1,
+   "inbound": 5,
+   "inboundPages": 3,
    "inboundSynthetic": 2,
    "inboundAdminMap": 1,
-   "outbound": 1,
+   "outbound": 4,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/education@app/(core)/education",
@@ -17890,8 +17913,8 @@
    "menuLabels": [],
    "title": "Live Game — Study Games",
    "titleSource": "metadata",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 3,
+   "inboundPages": 3,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
    "outbound": 2,
@@ -17900,7 +17923,7 @@
     "layout:/education@app/(core)/education",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -17916,8 +17939,8 @@
    ],
    "title": "Solo Arcade — Study Games",
    "titleSource": "metadata",
-   "inbound": 2,
-   "inboundPages": 0,
+   "inbound": 5,
+   "inboundPages": 3,
    "inboundSynthetic": 2,
    "inboundAdminMap": 1,
    "outbound": 3,
@@ -19502,8 +19525,8 @@
    "menuLabels": [],
    "title": "Envelope",
    "titleSource": "metadata",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 2,
+   "inboundPages": 2,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
    "outbound": 3,
@@ -19512,7 +19535,7 @@
     "layout:/esign@app/(core)/esign",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -19531,7 +19554,7 @@
    "inboundPages": 3,
    "inboundSynthetic": 2,
    "inboundAdminMap": 0,
-   "outbound": 2,
+   "outbound": 3,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/esign@app/(core)/esign",
@@ -19603,7 +19626,7 @@
    "inboundPages": 3,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 2,
+   "outbound": 3,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/esign@app/(core)/esign",
@@ -23659,9 +23682,9 @@
    "menuLabels": [],
    "title": "Extraction dataset",
    "titleSource": "metadata",
-   "inbound": 5,
+   "inbound": 6,
    "inboundPages": 5,
-   "inboundSynthetic": 0,
+   "inboundSynthetic": 1,
    "inboundAdminMap": 1,
    "outbound": 1,
    "outboundAdminMap": 0,
@@ -23930,9 +23953,9 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 5,
+   "inbound": 6,
    "inboundPages": 3,
-   "inboundSynthetic": 2,
+   "inboundSynthetic": 3,
    "inboundAdminMap": 0,
    "outbound": 4,
    "outboundAdminMap": 0,
@@ -24633,7 +24656,7 @@
    "inboundPages": 23,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 3,
+   "outbound": 12,
    "outboundAdminMap": 0,
    "hostedBy": [
     "sidebar:shell"
@@ -24727,7 +24750,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 6,
+   "outbound": 15,
    "outboundAdminMap": 0,
    "hostedBy": [
     "sidebar:shell"
@@ -24918,7 +24941,7 @@
    "inboundPages": 25,
    "inboundSynthetic": 7,
    "inboundAdminMap": 1,
-   "outbound": 23,
+   "outbound": 27,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -24968,7 +24991,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 1,
    "inboundAdminMap": 1,
-   "outbound": 5,
+   "outbound": 8,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25218,7 +25241,7 @@
    "inboundPages": 2,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
-   "outbound": 15,
+   "outbound": 16,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25243,7 +25266,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
-   "outbound": 15,
+   "outbound": 16,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25268,7 +25291,7 @@
    "inboundPages": 14,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 14,
+   "outbound": 15,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25293,7 +25316,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
-   "outbound": 15,
+   "outbound": 16,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25318,7 +25341,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
-   "outbound": 15,
+   "outbound": 16,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25343,7 +25366,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
-   "outbound": 15,
+   "outbound": 16,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25368,7 +25391,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
-   "outbound": 15,
+   "outbound": 16,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25443,7 +25466,7 @@
    "inboundPages": 21,
    "inboundSynthetic": 2,
    "inboundAdminMap": 1,
-   "outbound": 5,
+   "outbound": 13,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25464,9 +25487,9 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
-   "inboundSynthetic": 0,
+   "inbound": 3,
+   "inboundPages": 2,
+   "inboundSynthetic": 1,
    "inboundAdminMap": 1,
    "outbound": 2,
    "outboundAdminMap": 0,
@@ -25476,7 +25499,7 @@
     "sidebar:marketing/brand-sections",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -25489,9 +25512,9 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
-   "inboundSynthetic": 0,
+   "inbound": 2,
+   "inboundPages": 1,
+   "inboundSynthetic": 1,
    "inboundAdminMap": 1,
    "outbound": 2,
    "outboundAdminMap": 0,
@@ -25501,7 +25524,7 @@
     "sidebar:marketing/brand-sections",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -25514,9 +25537,9 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 6,
-   "inboundPages": 6,
-   "inboundSynthetic": 0,
+   "inbound": 8,
+   "inboundPages": 7,
+   "inboundSynthetic": 1,
    "inboundAdminMap": 1,
    "outbound": 7,
    "outboundAdminMap": 0,
@@ -25539,9 +25562,9 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
-   "inboundSynthetic": 0,
+   "inbound": 2,
+   "inboundPages": 1,
+   "inboundSynthetic": 1,
    "inboundAdminMap": 1,
    "outbound": 12,
    "outboundAdminMap": 0,
@@ -25551,7 +25574,7 @@
     "sidebar:marketing/brand-sections",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -25568,7 +25591,7 @@
    "inboundPages": 5,
    "inboundSynthetic": 1,
    "inboundAdminMap": 1,
-   "outbound": 4,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25594,7 +25617,7 @@
    "inboundPages": 4,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
-   "outbound": 4,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25620,7 +25643,7 @@
    "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
-   "outbound": 4,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25646,7 +25669,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
-   "outbound": 4,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25668,9 +25691,9 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
-   "inboundSynthetic": 0,
+   "inbound": 2,
+   "inboundPages": 1,
+   "inboundSynthetic": 1,
    "inboundAdminMap": 1,
    "outbound": 2,
    "outboundAdminMap": 0,
@@ -25680,7 +25703,7 @@
     "sidebar:marketing/brand-sections",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -25693,9 +25716,9 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 12,
-   "inboundPages": 12,
-   "inboundSynthetic": 0,
+   "inbound": 14,
+   "inboundPages": 13,
+   "inboundSynthetic": 1,
    "inboundAdminMap": 1,
    "outbound": 5,
    "outboundAdminMap": 0,
@@ -25718,9 +25741,9 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
-   "inboundSynthetic": 0,
+   "inbound": 17,
+   "inboundPages": 16,
+   "inboundSynthetic": 1,
    "inboundAdminMap": 0,
    "outbound": 4,
    "outboundAdminMap": 0,
@@ -25730,7 +25753,7 @@
     "sidebar:marketing/brand-sections",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -25743,9 +25766,9 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
-   "inboundSynthetic": 0,
+   "inbound": 4,
+   "inboundPages": 3,
+   "inboundSynthetic": 1,
    "inboundAdminMap": 0,
    "outbound": 3,
    "outboundAdminMap": 0,
@@ -25755,7 +25778,7 @@
     "sidebar:marketing/brand-sections",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -25847,7 +25870,7 @@
    "inboundPages": 15,
    "inboundSynthetic": 2,
    "inboundAdminMap": 1,
-   "outbound": 11,
+   "outbound": 12,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25893,11 +25916,11 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 1,
+   "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 12,
+   "outbound": 13,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25905,7 +25928,7 @@
     "sidebar:marketing/brand-sections",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -25922,7 +25945,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 12,
+   "outbound": 13,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25947,7 +25970,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 12,
+   "outbound": 13,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25972,7 +25995,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 12,
+   "outbound": 13,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -25997,7 +26020,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 12,
+   "outbound": 13,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -26022,7 +26045,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 12,
+   "outbound": 13,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -26373,8 +26396,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 2,
-   "inboundPages": 1,
+   "inbound": 3,
+   "inboundPages": 2,
    "inboundSynthetic": 1,
    "inboundAdminMap": 1,
    "outbound": 3,
@@ -26424,8 +26447,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 1,
+   "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
    "outbound": 5,
@@ -26436,7 +26459,7 @@
     "sidebar:marketing/brand-sections",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -26551,8 +26574,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 8,
+   "inboundPages": 8,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
    "outbound": 0,
@@ -26565,7 +26588,7 @@
     "sidebar:marketing/seo-sections",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -27176,7 +27199,7 @@
    "inboundPages": 1,
    "inboundSynthetic": 1,
    "inboundAdminMap": 1,
-   "outbound": 4,
+   "outbound": 6,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing/[brandId]/seo/[siteId]@app/(core)/marketing/[brandId]/seo/[siteId]",
@@ -27203,7 +27226,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 4,
+   "outbound": 6,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing/[brandId]/seo/[siteId]@app/(core)/marketing/[brandId]/seo/[siteId]",
@@ -27230,7 +27253,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
-   "outbound": 8,
+   "outbound": 11,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing/[brandId]/seo/[siteId]@app/(core)/marketing/[brandId]/seo/[siteId]",
@@ -27365,7 +27388,7 @@
    "inboundPages": 6,
    "inboundSynthetic": 1,
    "inboundAdminMap": 1,
-   "outbound": 11,
+   "outbound": 15,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing/[brandId]/seo/[siteId]@app/(core)/marketing/[brandId]/seo/[siteId]",
@@ -27393,7 +27416,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
-   "outbound": 12,
+   "outbound": 16,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing/[brandId]/seo/[siteId]@app/(core)/marketing/[brandId]/seo/[siteId]",
@@ -27471,8 +27494,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 2,
-   "inboundPages": 2,
+   "inbound": 5,
+   "inboundPages": 5,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
    "outbound": 4,
@@ -27498,8 +27521,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 2,
-   "inboundPages": 2,
+   "inbound": 5,
+   "inboundPages": 5,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
    "outbound": 3,
@@ -27525,8 +27548,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 2,
-   "inboundPages": 2,
+   "inbound": 5,
+   "inboundPages": 5,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
    "outbound": 6,
@@ -27583,7 +27606,7 @@
    "inboundPages": 17,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
-   "outbound": 11,
+   "outbound": 15,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing/[brandId]/seo/[siteId]@app/(core)/marketing/[brandId]/seo/[siteId]",
@@ -27723,7 +27746,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 1,
    "inboundAdminMap": 1,
-   "outbound": 4,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing/[brandId]/seo/[siteId]@app/(core)/marketing/[brandId]/seo/[siteId]",
@@ -27804,7 +27827,7 @@
    "inboundPages": 6,
    "inboundSynthetic": 1,
    "inboundAdminMap": 1,
-   "outbound": 14,
+   "outbound": 15,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing/[brandId]/seo/[siteId]@app/(core)/marketing/[brandId]/seo/[siteId]",
@@ -27831,7 +27854,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 15,
+   "outbound": 16,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing/[brandId]/seo/[siteId]@app/(core)/marketing/[brandId]/seo/[siteId]",
@@ -27858,7 +27881,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 15,
+   "outbound": 16,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing/[brandId]/seo/[siteId]@app/(core)/marketing/[brandId]/seo/[siteId]",
@@ -27885,7 +27908,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 15,
+   "outbound": 16,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing/[brandId]/seo/[siteId]@app/(core)/marketing/[brandId]/seo/[siteId]",
@@ -27912,7 +27935,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 15,
+   "outbound": 16,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing/[brandId]/seo/[siteId]@app/(core)/marketing/[brandId]/seo/[siteId]",
@@ -27991,7 +28014,7 @@
    "inboundPages": 27,
    "inboundSynthetic": 1,
    "inboundAdminMap": 1,
-   "outbound": 0,
+   "outbound": 1,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -28013,8 +28036,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 9,
-   "inboundPages": 9,
+   "inbound": 10,
+   "inboundPages": 10,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
    "outbound": 5,
@@ -28039,8 +28062,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 2,
-   "inboundPages": 1,
+   "inbound": 7,
+   "inboundPages": 6,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
    "outbound": 0,
@@ -28091,11 +28114,11 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 1,
-   "inboundPages": 0,
+   "inbound": 2,
+   "inboundPages": 1,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
-   "outbound": 4,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -28117,8 +28140,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 1,
-   "inboundPages": 0,
+   "inbound": 4,
+   "inboundPages": 3,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
    "outbound": 1,
@@ -28247,11 +28270,11 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 1,
-   "inboundPages": 0,
+   "inbound": 4,
+   "inboundPages": 3,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 2,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -28277,7 +28300,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 2,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -28303,7 +28326,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 2,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -28329,7 +28352,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 3,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -28404,8 +28427,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 30,
-   "inboundPages": 30,
+   "inbound": 36,
+   "inboundPages": 36,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
    "outbound": 0,
@@ -28458,8 +28481,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 24,
-   "inboundPages": 7,
+   "inbound": 26,
+   "inboundPages": 9,
    "inboundSynthetic": 17,
    "inboundAdminMap": 1,
    "outbound": 4,
@@ -28681,8 +28704,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 1,
-   "inboundPages": 0,
+   "inbound": 5,
+   "inboundPages": 4,
    "inboundSynthetic": 1,
    "inboundAdminMap": 1,
    "outbound": 6,
@@ -28765,8 +28788,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 23,
-   "inboundPages": 22,
+   "inbound": 24,
+   "inboundPages": 23,
    "inboundSynthetic": 1,
    "inboundAdminMap": 1,
    "outbound": 3,
@@ -28877,7 +28900,7 @@
    "inboundPages": 1,
    "inboundSynthetic": 1,
    "inboundAdminMap": 1,
-   "outbound": 11,
+   "outbound": 12,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing/[brandId]/websites/[siteId]@app/(core)/marketing/[brandId]/websites/[siteId]",
@@ -28904,7 +28927,7 @@
    "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
-   "outbound": 11,
+   "outbound": 12,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing/[brandId]/websites/[siteId]@app/(core)/marketing/[brandId]/websites/[siteId]",
@@ -28931,7 +28954,7 @@
    "inboundPages": 10,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
-   "outbound": 11,
+   "outbound": 12,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing/[brandId]/websites/[siteId]@app/(core)/marketing/[brandId]/websites/[siteId]",
@@ -28958,7 +28981,7 @@
    "inboundPages": 20,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
-   "outbound": 10,
+   "outbound": 11,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing/[brandId]/websites/[siteId]@app/(core)/marketing/[brandId]/websites/[siteId]",
@@ -29322,9 +29345,9 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 4,
-   "inboundPages": 4,
-   "inboundSynthetic": 0,
+   "inbound": 10,
+   "inboundPages": 5,
+   "inboundSynthetic": 5,
    "inboundAdminMap": 1,
    "outbound": 1,
    "outboundAdminMap": 0,
@@ -29439,9 +29462,9 @@
    "menuLabels": [],
    "title": "Enrich with Smart Add",
    "titleSource": "metadata",
-   "inbound": 4,
-   "inboundPages": 4,
-   "inboundSynthetic": 0,
+   "inbound": 10,
+   "inboundPages": 5,
+   "inboundSynthetic": 5,
    "inboundAdminMap": 0,
    "outbound": 0,
    "outboundAdminMap": 0,
@@ -29463,9 +29486,9 @@
    "menuLabels": [],
    "title": "Smart Add",
    "titleSource": "metadata",
-   "inbound": 4,
-   "inboundPages": 4,
-   "inboundSynthetic": 0,
+   "inbound": 10,
+   "inboundPages": 5,
+   "inboundSynthetic": 5,
    "inboundAdminMap": 0,
    "outbound": 0,
    "outboundAdminMap": 0,
@@ -29511,9 +29534,9 @@
    "menuLabels": [],
    "title": "Validate with Smart Add",
    "titleSource": "metadata",
-   "inbound": 0,
-   "inboundPages": 0,
-   "inboundSynthetic": 0,
+   "inbound": 6,
+   "inboundPages": 1,
+   "inboundSynthetic": 5,
    "inboundAdminMap": 0,
    "outbound": 0,
    "outboundAdminMap": 0,
@@ -29522,7 +29545,7 @@
     "layout:/marketing@app/(core)/marketing",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -29539,7 +29562,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
-   "outbound": 2,
+   "outbound": 3,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -29700,7 +29723,7 @@
    "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 2,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/marketing@app/(core)/marketing",
@@ -29936,7 +29959,7 @@
     "layout:/marketing@app/(core)/marketing",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -30305,8 +30328,8 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 2,
+   "inboundPages": 2,
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
    "outbound": 2,
@@ -32349,7 +32372,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 1,
    "inboundAdminMap": 0,
-   "outbound": 3,
+   "outbound": 4,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/messenger@app/(core)/messenger",
@@ -32370,9 +32393,9 @@
    ],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 1,
-   "inboundPages": 0,
-   "inboundSynthetic": 1,
+   "inbound": 4,
+   "inboundPages": 1,
+   "inboundSynthetic": 3,
    "inboundAdminMap": 0,
    "outbound": 1,
    "outboundAdminMap": 0,
@@ -32617,9 +32640,9 @@
    "menuLabels": [],
    "title": "Opening",
    "titleSource": "metadata",
-   "inbound": 85,
+   "inbound": 91,
    "inboundPages": 83,
-   "inboundSynthetic": 2,
+   "inboundSynthetic": 8,
    "inboundAdminMap": 0,
    "outbound": 3,
    "outboundAdminMap": 0,
@@ -33136,7 +33159,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 5,
+   "outbound": 14,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/organizations/[orgId]@app/(core)/organizations/[orgId]",
@@ -33814,7 +33837,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 3,
+   "outbound": 12,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/organizations/[orgId]@app/(core)/organizations/[orgId]",
@@ -34195,7 +34218,7 @@
    "hostedBy": [
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -36310,9 +36333,9 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 10,
-   "inboundPages": 10,
-   "inboundSynthetic": 0,
+   "inbound": 13,
+   "inboundPages": 12,
+   "inboundSynthetic": 1,
    "inboundAdminMap": 0,
    "outbound": 5,
    "outboundAdminMap": 0,
@@ -36478,9 +36501,9 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 3,
-   "inboundPages": 3,
-   "inboundSynthetic": 0,
+   "inbound": 6,
+   "inboundPages": 5,
+   "inboundSynthetic": 1,
    "inboundAdminMap": 0,
    "outbound": 0,
    "outboundAdminMap": 0,
@@ -36526,9 +36549,9 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
-   "inboundSynthetic": 0,
+   "inbound": 3,
+   "inboundPages": 2,
+   "inboundSynthetic": 1,
    "inboundAdminMap": 0,
    "outbound": 0,
    "outboundAdminMap": 0,
@@ -36537,7 +36560,7 @@
     "sidebar:app-(core)/ResearchTopicShell",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -36574,9 +36597,9 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
-   "inboundSynthetic": 0,
+   "inbound": 3,
+   "inboundPages": 2,
+   "inboundSynthetic": 1,
    "inboundAdminMap": 0,
    "outbound": 2,
    "outboundAdminMap": 0,
@@ -36585,7 +36608,7 @@
     "sidebar:app-(core)/ResearchTopicShell",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -36609,7 +36632,7 @@
     "sidebar:app-(core)/ResearchTopicShell",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -36698,7 +36721,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/research/topics/[topicId]@app/(core)/research/topics/[topicId]",
@@ -36722,7 +36745,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 2,
+   "outbound": 4,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/research/topics/[topicId]@app/(core)/research/topics/[topicId]",
@@ -36766,9 +36789,9 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 8,
-   "inboundPages": 8,
-   "inboundSynthetic": 0,
+   "inbound": 11,
+   "inboundPages": 10,
+   "inboundSynthetic": 1,
    "inboundAdminMap": 0,
    "outbound": 4,
    "outboundAdminMap": 0,
@@ -36794,14 +36817,14 @@
    "inboundPages": 2,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/research/topics/[topicId]@app/(core)/research/topics/[topicId]",
     "sidebar:app-(core)/ResearchTopicShell",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -36842,7 +36865,7 @@
    "inboundPages": 2,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 1,
+   "outbound": 6,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/research/topics/[topicId]@app/(core)/research/topics/[topicId]",
@@ -36985,7 +37008,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 166,
+   "outbound": 167,
    "outboundAdminMap": 0,
    "hostedBy": [
     "sidebar:shell"
@@ -37172,7 +37195,7 @@
    "inboundPages": 6,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 5,
+   "outbound": 6,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/schedules@app/(core)/schedules",
@@ -37872,11 +37895,11 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 10,
-   "inboundPages": 10,
-   "inboundSynthetic": 0,
-   "inboundAdminMap": 0,
-   "outbound": 0,
+   "inbound": 25,
+   "inboundPages": 24,
+   "inboundSynthetic": 1,
+   "inboundAdminMap": 1,
+   "outbound": 4,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/shapes@app/(core)/shapes/(workspace)",
@@ -37899,7 +37922,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/shapes@app/(core)/shapes/(workspace)",
@@ -37922,7 +37945,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/shapes@app/(core)/shapes/(workspace)",
@@ -37945,7 +37968,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/shapes@app/(core)/shapes/(workspace)",
@@ -37968,7 +37991,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/shapes@app/(core)/shapes/(workspace)",
@@ -37991,7 +38014,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/shapes@app/(core)/shapes/(workspace)",
@@ -38014,7 +38037,7 @@
    "inboundPages": 1,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/shapes@app/(core)/shapes/(workspace)",
@@ -38037,7 +38060,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/shapes@app/(core)/shapes/(workspace)",
@@ -38061,7 +38084,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/shapes@app/(core)/shapes/(workspace)",
@@ -38084,7 +38107,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 5,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/shapes@app/(core)/shapes/(workspace)",
@@ -38108,7 +38131,7 @@
    "inboundSynthetic": 0,
    "inboundAdminMap": 1,
    "outbound": 0,
-   "outboundAdminMap": 3,
+   "outboundAdminMap": 8,
    "hostedBy": [
     "layout:/shapes@app/(core)/shapes/(workspace)",
     "sidebar:shell"
@@ -38128,11 +38151,11 @@
    ],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 3,
-   "inboundPages": 2,
-   "inboundSynthetic": 1,
-   "inboundAdminMap": 0,
-   "outbound": 0,
+   "inbound": 17,
+   "inboundPages": 15,
+   "inboundSynthetic": 2,
+   "inboundAdminMap": 1,
+   "outbound": 4,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/shapes@app/(core)/shapes/(workspace)",
@@ -38175,17 +38198,17 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 1,
-   "inboundPages": 1,
-   "inboundSynthetic": 0,
-   "inboundAdminMap": 0,
+   "inbound": 17,
+   "inboundPages": 16,
+   "inboundSynthetic": 1,
+   "inboundAdminMap": 1,
    "outbound": 4,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/shapes@app/(core)/shapes/(workspace)",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -38198,11 +38221,11 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 1,
-   "inboundPages": 1,
-   "inboundSynthetic": 0,
-   "inboundAdminMap": 0,
-   "outbound": 1,
+   "inbound": 16,
+   "inboundPages": 15,
+   "inboundSynthetic": 1,
+   "inboundAdminMap": 1,
+   "outbound": 4,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/shapes@app/(core)/shapes/(workspace)",
@@ -38221,17 +38244,17 @@
    "menuLabels": [],
    "title": "Shape Playground",
    "titleSource": "metadata",
-   "inbound": 0,
-   "inboundPages": 0,
-   "inboundSynthetic": 0,
-   "inboundAdminMap": 0,
-   "outbound": 0,
+   "inbound": 15,
+   "inboundPages": 14,
+   "inboundSynthetic": 1,
+   "inboundAdminMap": 1,
+   "outbound": 4,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/shapes@app/(core)/shapes/(workspace)",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -38909,7 +38932,7 @@
    "inboundPages": 2,
    "inboundSynthetic": 3,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 4,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(public)",
@@ -38928,17 +38951,17 @@
    "menuLabels": [],
    "title": "This template did not load",
    "titleSource": "h1",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 6,
+   "inboundPages": 6,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 5,
+   "outbound": 8,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(public)",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -38957,7 +38980,7 @@
    "inboundPages": 1,
    "inboundSynthetic": 2,
    "inboundAdminMap": 1,
-   "outbound": 15,
+   "outbound": 19,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(public)",
@@ -38976,17 +38999,17 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 6,
+   "inboundPages": 6,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 3,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(public)",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -38999,17 +39022,17 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 6,
+   "inboundPages": 6,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 3,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(public)",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -39022,17 +39045,17 @@
    "menuLabels": [],
    "title": null,
    "titleSource": "unknown",
-   "inbound": 0,
-   "inboundPages": 0,
+   "inbound": 6,
+   "inboundPages": 6,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 3,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(public)",
     "sidebar:shell"
    ],
-   "reachableFromMenu": false,
+   "reachableFromMenu": true,
    "reachableOnlyViaAdminMap": false
   },
   {
@@ -39049,7 +39072,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 0,
    "inboundAdminMap": 0,
-   "outbound": 0,
+   "outbound": 4,
    "outboundAdminMap": 0,
    "hostedBy": [
     "layout:/@app/(public)",
@@ -40208,7 +40231,7 @@
    "inboundPages": 0,
    "inboundSynthetic": 2,
    "inboundAdminMap": 0,
-   "outbound": 18,
+   "outbound": 22,
    "outboundAdminMap": 0,
    "hostedBy": [
     "sidebar:shell"
@@ -41336,11 +41359,25 @@
    "via": "app/(admin)/administration/AdminDashboardClient.tsx (depth 1)"
   },
   {
+   "from": "/administration/agents/bundles",
+   "to": "/administration/agents/mcp-tools/[toolId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/tool-registry/doors.ts (depth 2)"
+  },
+  {
    "from": "/administration/agents/executor-surfaces",
    "to": "/administration/agents/mcp-tools/[toolId]",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/tool-registry/shared/ToolSearchDialog.tsx (depth 4)"
+  },
+  {
+   "from": "/administration/agents/factory",
+   "to": "/administration/agents/factory/[buildId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/agents/factory/components/FactoryBuildsPage.tsx (depth 1)"
   },
   {
    "from": "/administration/agents/factory",
@@ -41473,7 +41510,7 @@
    "to": "/administration/agents/mcp-tools/[toolId]",
    "kind": "link",
    "confidence": "pattern",
-   "via": "features/tool-registry/mcp-admin/components/AddMcpServerDialog.tsx (depth 2)"
+   "via": "features/tool-registry/doors.ts (depth 2)"
   },
   {
    "from": "/administration/agents/mcp-tools/[toolId]",
@@ -41658,6 +41695,69 @@
    "via": "features/organizations/components/OrganizationRequiredNotice.tsx (depth 2)"
   },
   {
+   "from": "/administration/agents/system-agents/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/[mandateKey]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/agents/system-agents/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/advanced",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/agents/system-agents/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/dashboard",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/agents/system-agents/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/health",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/agents/system-agents/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/agents/system-agents/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/references",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/agents/system-agents/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/support",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/agents/system-agents/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/unconverted",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/agents/system-agents/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/window",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
    "from": "/administration/agents/system-agents/agents/[id]/samples",
    "to": "/agents/go/[...slug]",
    "kind": "link",
@@ -41670,6 +41770,13 @@
    "kind": "link",
    "confidence": "pattern",
    "via": "features/agents/components/samples/LoadFromLibraryDialog.tsx (depth 2)"
+  },
+  {
+   "from": "/administration/agents/system-agents/agents/[id]/surfaces",
+   "to": "/administration/agents/system-agents/agents/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "app/(admin)/administration/agents/system-agents/agents/[id]/surfaces/page.tsx"
   },
   {
    "from": "/administration/agents/system-agents/agents/[id]/test",
@@ -41705,6 +41812,27 @@
    "kind": "push",
    "confidence": "exact",
    "via": "app/(admin)/administration/agents/system-agents/apps/page.tsx"
+  },
+  {
+   "from": "/administration/agents/system-agents/lineage",
+   "to": "/administration/agents/system-agents/agents/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/agents/components/agent-listings/AgentLineageTree.tsx (depth 1)"
+  },
+  {
+   "from": "/administration/agents/system-agents/lineage",
+   "to": "/administration/agents/system-agents/agents/[id]/build",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/agents/components/agent-listings/AgentLineageTree.tsx (depth 1)"
+  },
+  {
+   "from": "/administration/agents/system-agents/lineage",
+   "to": "/administration/agents/system-agents/agents/[id]/shortcuts/[shortcutId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/agents/components/agent-listings/AgentLineageTree.tsx (depth 1)"
   },
   {
    "from": "/administration/agents/system-agents/lineage",
@@ -41756,11 +41884,25 @@
    "via": "app/(admin)/administration/agents/system-agents/shortcuts/lineage/page.tsx"
   },
   {
+   "from": "/administration/agents/tests",
+   "to": "/administration/agents/system-agents/agents/[id]/test",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/agent-tests/components/AgentTestsPlatformPage.tsx (depth 1)"
+  },
+  {
    "from": "/administration/agents/tool-control",
    "to": "/organizations",
    "kind": "link",
    "confidence": "exact",
    "via": "features/organizations/components/OrganizationRequiredNotice.tsx (depth 4)"
+  },
+  {
+   "from": "/administration/agents/tool-control/alerts/[id]",
+   "to": "/administration/agents/tool-control",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/admin/attention/sources/tool-health.ts (depth 2)"
   },
   {
    "from": "/administration/ai/ai-models",
@@ -41872,14 +42014,14 @@
    "to": "/administration/applications/catalogs",
    "kind": "link",
    "confidence": "exact",
-   "via": "features/admin/applications/overview/components/ApplicationsOverview.tsx (depth 1)"
+   "via": "features/admin/applications/constants.ts (depth 1)"
   },
   {
    "from": "/administration/applications",
    "to": "/administration/applications/configuration",
    "kind": "link",
    "confidence": "exact",
-   "via": "features/admin/applications/overview/components/ApplicationsOverview.tsx (depth 1)"
+   "via": "features/admin/applications/constants.ts (depth 1)"
   },
   {
    "from": "/administration/applications",
@@ -41889,11 +42031,67 @@
    "via": "features/admin/applications/overview/components/ApplicationsOverview.tsx (depth 1)"
   },
   {
+   "from": "/administration/applications/attestation",
+   "to": "/administration/applications/catalogs",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/admin/applications/constants.ts (depth 3)"
+  },
+  {
+   "from": "/administration/applications/attestation",
+   "to": "/administration/applications/configuration",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/admin/applications/constants.ts (depth 3)"
+  },
+  {
    "from": "/administration/applications/catalogs",
    "to": "/administration/ai/ai-models/discovery",
    "kind": "link",
    "confidence": "exact",
    "via": "features/admin/applications/catalogs/components/UnifiedModelKindTable.tsx (depth 2)"
+  },
+  {
+   "from": "/administration/applications/catalogs",
+   "to": "/administration/applications/configuration",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/admin/applications/constants.ts (depth 2)"
+  },
+  {
+   "from": "/administration/applications/configuration",
+   "to": "/administration/applications/catalogs",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/admin/applications/constants.ts (depth 2)"
+  },
+  {
+   "from": "/administration/applications/history",
+   "to": "/administration/applications/catalogs",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/admin/applications/constants.ts (depth 2)"
+  },
+  {
+   "from": "/administration/applications/history",
+   "to": "/administration/applications/configuration",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/admin/applications/constants.ts (depth 2)"
+  },
+  {
+   "from": "/administration/applications/installations",
+   "to": "/administration/applications/catalogs",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/admin/applications/constants.ts (depth 1)"
+  },
+  {
+   "from": "/administration/applications/installations",
+   "to": "/administration/applications/configuration",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/admin/applications/constants.ts (depth 1)"
   },
   {
    "from": "/administration/automation/scheduling",
@@ -42132,6 +42330,13 @@
    "kind": "config",
    "confidence": "exact",
    "via": "app/(admin)/administration/billing/alarms/page.tsx"
+  },
+  {
+   "from": "/administration/billing/alarms",
+   "to": "/administration/billing/alarms/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/admin/spend-alarms/spendAlarms.ts (depth 2)"
   },
   {
    "from": "/administration/billing/alarms/[id]",
@@ -43304,10 +43509,136 @@
   },
   {
    "from": "/administration/intelligence/mandates",
+   "to": "/administration/intelligence/mandates/[mandateKey]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates",
+   "to": "/administration/intelligence/mandates/advanced",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates",
+   "to": "/administration/intelligence/mandates/dashboard",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates",
+   "to": "/administration/intelligence/mandates/health",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates",
+   "to": "/administration/intelligence/mandates/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates",
+   "to": "/administration/intelligence/mandates/references",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates",
+   "to": "/administration/intelligence/mandates/support",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates",
+   "to": "/administration/intelligence/mandates/unconverted",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates",
+   "to": "/administration/intelligence/mandates/window",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates",
+   "to": "/administration/utilities/kind-registry/[kind]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/mandates/admin/mandate-contract-cells.tsx (depth 4)"
+  },
+  {
+   "from": "/administration/intelligence/mandates",
    "to": "/mandates/[mandateKey]",
    "kind": "config",
    "confidence": "pattern",
    "via": "features/mandates/coverage.ts (depth 4)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/advanced",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/dashboard",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/health",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/references",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/support",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/unconverted",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/window",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
   },
   {
    "from": "/administration/intelligence/mandates/[mandateKey]",
@@ -43359,6 +43690,181 @@
    "via": "app/(admin)/administration/intelligence/mandates/[mandateKey]/approvals/page.tsx"
   },
   {
+   "from": "/administration/intelligence/mandates/[mandateKey]/overrides",
+   "to": "/administration/intelligence/mandates/[mandateKey]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/[mandateKey]/overrides",
+   "to": "/administration/intelligence/mandates/advanced",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/[mandateKey]/overrides",
+   "to": "/administration/intelligence/mandates/dashboard",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/[mandateKey]/overrides",
+   "to": "/administration/intelligence/mandates/health",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/[mandateKey]/overrides",
+   "to": "/administration/intelligence/mandates/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/[mandateKey]/overrides",
+   "to": "/administration/intelligence/mandates/references",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/[mandateKey]/overrides",
+   "to": "/administration/intelligence/mandates/support",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/[mandateKey]/overrides",
+   "to": "/administration/intelligence/mandates/unconverted",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/[mandateKey]/overrides",
+   "to": "/administration/intelligence/mandates/window",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/dashboard",
+   "to": "/administration/intelligence/mandates/[mandateKey]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/dashboard",
+   "to": "/administration/intelligence/mandates/advanced",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/dashboard",
+   "to": "/administration/intelligence/mandates/health",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/dashboard",
+   "to": "/administration/intelligence/mandates/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/dashboard",
+   "to": "/administration/intelligence/mandates/references",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/dashboard",
+   "to": "/administration/intelligence/mandates/support",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/dashboard",
+   "to": "/administration/intelligence/mandates/unconverted",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/dashboard",
+   "to": "/administration/intelligence/mandates/window",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/health",
+   "to": "/administration/intelligence/mandates/[mandateKey]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/health",
+   "to": "/administration/intelligence/mandates/advanced",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/health",
+   "to": "/administration/intelligence/mandates/dashboard",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/health",
+   "to": "/administration/intelligence/mandates/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/health",
+   "to": "/administration/intelligence/mandates/references",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/health",
+   "to": "/administration/intelligence/mandates/support",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/health",
+   "to": "/administration/intelligence/mandates/unconverted",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/health",
+   "to": "/administration/intelligence/mandates/window",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
    "from": "/administration/intelligence/mandates/new",
    "to": "/shapes",
    "kind": "config",
@@ -43381,10 +43887,136 @@
   },
   {
    "from": "/administration/intelligence/mandates/support",
+   "to": "/administration/intelligence/mandates/[mandateKey]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support",
+   "to": "/administration/intelligence/mandates/advanced",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support",
+   "to": "/administration/intelligence/mandates/dashboard",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support",
+   "to": "/administration/intelligence/mandates/health",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support",
+   "to": "/administration/intelligence/mandates/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support",
+   "to": "/administration/intelligence/mandates/references",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support",
+   "to": "/administration/intelligence/mandates/unconverted",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support",
+   "to": "/administration/intelligence/mandates/window",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support",
+   "to": "/administration/utilities/kind-registry/[kind]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/mandates/admin/mandate-contract-cells.tsx (depth 4)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support",
    "to": "/mandates/[mandateKey]",
    "kind": "config",
    "confidence": "pattern",
    "via": "features/mandates/coverage.ts (depth 4)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support/[mandateId]",
+   "to": "/administration/intelligence/mandates/[mandateKey]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/mandates/admin-routes.ts (depth 1)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support/[mandateId]",
+   "to": "/administration/intelligence/mandates/advanced",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 1)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support/[mandateId]",
+   "to": "/administration/intelligence/mandates/dashboard",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 1)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support/[mandateId]",
+   "to": "/administration/intelligence/mandates/health",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 1)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support/[mandateId]",
+   "to": "/administration/intelligence/mandates/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 1)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support/[mandateId]",
+   "to": "/administration/intelligence/mandates/references",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 1)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support/[mandateId]",
+   "to": "/administration/intelligence/mandates/support",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 1)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support/[mandateId]",
+   "to": "/administration/intelligence/mandates/unconverted",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 1)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/support/[mandateId]",
+   "to": "/administration/intelligence/mandates/window",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 1)"
   },
   {
    "from": "/administration/intelligence/mandates/support/[mandateId]",
@@ -43427,6 +44059,62 @@
    "kind": "link",
    "confidence": "pattern",
    "via": "features/mandates/record-next/MandateTryPanel.tsx (depth 3)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/unconverted",
+   "to": "/administration/intelligence/mandates/[mandateKey]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/unconverted",
+   "to": "/administration/intelligence/mandates/advanced",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/unconverted",
+   "to": "/administration/intelligence/mandates/dashboard",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/unconverted",
+   "to": "/administration/intelligence/mandates/health",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/unconverted",
+   "to": "/administration/intelligence/mandates/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/unconverted",
+   "to": "/administration/intelligence/mandates/references",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/unconverted",
+   "to": "/administration/intelligence/mandates/support",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/intelligence/mandates/unconverted",
+   "to": "/administration/intelligence/mandates/window",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
   },
   {
    "from": "/administration/intelligence/memory-lab",
@@ -43507,10 +44195,45 @@
   },
   {
    "from": "/administration/knowledge/research-system",
+   "to": "/research/topics/[topicId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/research/service/research-endpoints.ts (depth 3)"
+  },
+  {
+   "from": "/administration/knowledge/research-system",
    "to": "/research/topics/[topicId]/agents",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/research/admin/ProjectsOverview.tsx (depth 1)"
+  },
+  {
+   "from": "/administration/knowledge/research-system",
+   "to": "/research/topics/[topicId]/document",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/research/service/research-endpoints.ts (depth 3)"
+  },
+  {
+   "from": "/administration/knowledge/research-system",
+   "to": "/research/topics/[topicId]/experts",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/research/service/research-endpoints.ts (depth 3)"
+  },
+  {
+   "from": "/administration/knowledge/research-system",
+   "to": "/research/topics/[topicId]/keywords",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/research/service/research-endpoints.ts (depth 3)"
+  },
+  {
+   "from": "/administration/knowledge/research-system",
+   "to": "/research/topics/[topicId]/sources/[sourceId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/research/service/research-endpoints.ts (depth 3)"
   },
   {
    "from": "/administration/knowledge/search-lab",
@@ -43602,6 +44325,69 @@
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/search-console/components/FilterBar.tsx (depth 4)"
+  },
+  {
+   "from": "/administration/marketing/seo-operations",
+   "to": "/administration/intelligence/mandates/[mandateKey]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/marketing/seo-operations",
+   "to": "/administration/intelligence/mandates/advanced",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/marketing/seo-operations",
+   "to": "/administration/intelligence/mandates/dashboard",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/marketing/seo-operations",
+   "to": "/administration/intelligence/mandates/health",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/marketing/seo-operations",
+   "to": "/administration/intelligence/mandates/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/marketing/seo-operations",
+   "to": "/administration/intelligence/mandates/references",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/marketing/seo-operations",
+   "to": "/administration/intelligence/mandates/support",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/marketing/seo-operations",
+   "to": "/administration/intelligence/mandates/unconverted",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/administration/marketing/seo-operations",
+   "to": "/administration/intelligence/mandates/window",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
   },
   {
    "from": "/administration/preview",
@@ -44225,6 +45011,69 @@
    "kind": "link",
    "confidence": "exact",
    "via": "features/organizations/components/OrganizationRequiredNotice.tsx (depth 2)"
+  },
+  {
+   "from": "/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/[mandateKey]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/advanced",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/dashboard",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/health",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/references",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/support",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/unconverted",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/agents/[id]/runs",
+   "to": "/administration/intelligence/mandates/window",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
   },
   {
    "from": "/agents/[id]/shortcuts/[shortcutId]",
@@ -46160,6 +47009,13 @@
   },
   {
    "from": "/agents/builds/[buildId]",
+   "to": "/administration/agents/factory/[buildId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/agents/factory/components/BuildProgress.tsx (depth 2)"
+  },
+  {
+   "from": "/agents/builds/[buildId]",
    "to": "/administration/intelligence/mandates/[mandateKey]",
    "kind": "link",
    "confidence": "pattern",
@@ -46349,6 +47205,13 @@
   },
   {
    "from": "/agents/new/generate",
+   "to": "/administration/agents/factory/[buildId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/agents/factory/components/BuildProgress.tsx (depth 2)"
+  },
+  {
+   "from": "/agents/new/generate",
    "to": "/administration/intelligence/mandates/[mandateKey]",
    "kind": "link",
    "confidence": "pattern",
@@ -46381,6 +47244,13 @@
    "kind": "link",
    "confidence": "exact",
    "via": "features/organizations/components/OrganizationRequiredNotice.tsx (depth 2)"
+  },
+  {
+   "from": "/agents/new/studio",
+   "to": "/administration/agents/factory/[buildId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/agents/factory/components/BuildProgress.tsx (depth 2)"
   },
   {
    "from": "/agents/new/studio",
@@ -46426,6 +47296,13 @@
   },
   {
    "from": "/agents/new/studio/from-claude",
+   "to": "/administration/agents/factory/[buildId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/agents/factory/components/BuildProgress.tsx (depth 3)"
+  },
+  {
+   "from": "/agents/new/studio/from-claude",
    "to": "/administration/intelligence/mandates/[mandateKey]",
    "kind": "link",
    "confidence": "pattern",
@@ -46444,6 +47321,13 @@
    "kind": "push",
    "confidence": "exact",
    "via": "features/agents/studio/bring-over/BringOverFrame.tsx (depth 2)"
+  },
+  {
+   "from": "/agents/new/studio/with-claude-code",
+   "to": "/administration/agents/factory/[buildId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/agents/factory/components/BuildProgress.tsx (depth 3)"
   },
   {
    "from": "/agents/new/studio/with-claude-code",
@@ -47707,6 +48591,13 @@
   },
   {
    "from": "/chat/message-templates/[id]",
+   "to": "/chat/message-templates/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/message-templates/components/TemplateViewPage.tsx (depth 1)"
+  },
+  {
+   "from": "/chat/message-templates/[id]",
    "to": "/data/[tableId]",
    "kind": "push",
    "confidence": "pattern",
@@ -47732,6 +48623,13 @@
    "kind": "push",
    "confidence": "pattern",
    "via": "app/(core)/chat/message-templates/edit/[id]/page.tsx"
+  },
+  {
+   "from": "/chat/message-templates/new",
+   "to": "/chat/message-templates/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/message-templates/components/TemplateViewPage.tsx (depth 1)"
   },
   {
    "from": "/chat/message-templates/new",
@@ -48663,6 +49561,13 @@
    "kind": "link",
    "confidence": "exact",
    "via": "features/commerce-intake/labels/printers/components/PrinterCertificationNotice.tsx (depth 3)"
+  },
+  {
+   "from": "/commerce/labels/printers",
+   "to": "/commerce/labels/printers/certify",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/commerce-intake/labels/printers/types.ts (depth 3)"
   },
   {
    "from": "/commerce/labels/printers",
@@ -49909,6 +50814,13 @@
    "kind": "link",
    "confidence": "exact",
    "via": "features/crm/components/CrmListPage.tsx (depth 1)"
+  },
+  {
+   "from": "/crm",
+   "to": "/crm/deals/[dealId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/crm/routes.ts (depth 2)"
   },
   {
    "from": "/crm",
@@ -52138,6 +53050,13 @@
   },
   {
    "from": "/education/classes/[classId]/tests/[testId]/study",
+   "to": "/education/flashcards/[setId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/editor/EditSetView.tsx (depth 4)"
+  },
+  {
+   "from": "/education/classes/[classId]/tests/[testId]/study",
    "to": "/education/tutor",
    "kind": "link",
    "confidence": "exact",
@@ -52275,6 +53194,13 @@
    "kind": "push",
    "confidence": "exact",
    "via": "features/education/study/analytics/components/StudyAnalyticsView.tsx (depth 2)"
+  },
+  {
+   "from": "/education/fastfire",
+   "to": "/education/flashcards/[setId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/fast-fire/components/FastFireSurface.tsx (depth 2)"
   },
   {
    "from": "/education/fastfire",
@@ -52418,6 +53344,20 @@
   },
   {
    "from": "/education/flashcards",
+   "to": "/education/flashcards/[setId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/routes.ts (depth 3)"
+  },
+  {
+   "from": "/education/flashcards",
+   "to": "/education/flashcards/[setId]/study",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/routes.ts (depth 3)"
+  },
+  {
+   "from": "/education/flashcards",
    "to": "/education/kits",
    "kind": "config",
    "confidence": "exact",
@@ -52499,6 +53439,55 @@
    "kind": "link",
    "confidence": "exact",
    "via": "features/education/classes/components/ClassPicker.tsx (depth 2)"
+  },
+  {
+   "from": "/education/flashcards/[setId]",
+   "to": "/education/flashcards/[setId]/edit",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/set-detail/SetDetailView.tsx (depth 1)"
+  },
+  {
+   "from": "/education/flashcards/[setId]",
+   "to": "/education/flashcards/[setId]/learn",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/set-detail/SetDetailView.tsx (depth 1)"
+  },
+  {
+   "from": "/education/flashcards/[setId]",
+   "to": "/education/flashcards/[setId]/match",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/set-detail/SetDetailView.tsx (depth 1)"
+  },
+  {
+   "from": "/education/flashcards/[setId]",
+   "to": "/education/flashcards/[setId]/sessions",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/set-detail/SetDetailView.tsx (depth 1)"
+  },
+  {
+   "from": "/education/flashcards/[setId]",
+   "to": "/education/flashcards/[setId]/study",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/set-detail/SetDetailView.tsx (depth 1)"
+  },
+  {
+   "from": "/education/flashcards/[setId]",
+   "to": "/education/flashcards/[setId]/test",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/set-detail/SetDetailView.tsx (depth 1)"
+  },
+  {
+   "from": "/education/flashcards/[setId]",
+   "to": "/education/flashcards/[setId]/write",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/set-detail/SetDetailView.tsx (depth 1)"
   },
   {
    "from": "/education/flashcards/[setId]",
@@ -52585,6 +53574,20 @@
    "via": "features/sharing/components/DuplicateToEditButton.tsx (depth 2)"
   },
   {
+   "from": "/education/flashcards/[setId]/edit",
+   "to": "/education/flashcards/[setId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/editor/EditSetView.tsx (depth 1)"
+  },
+  {
+   "from": "/education/flashcards/[setId]/learn",
+   "to": "/education/flashcards/[setId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/study/LearnSurface.tsx (depth 1)"
+  },
+  {
    "from": "/education/flashcards/[setId]/learn",
    "to": "/education/tutor",
    "kind": "link",
@@ -52593,10 +53596,38 @@
   },
   {
    "from": "/education/flashcards/[setId]/match",
+   "to": "/education/flashcards/[setId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/study/MatchSurface.tsx (depth 1)"
+  },
+  {
+   "from": "/education/flashcards/[setId]/match",
    "to": "/education/tutor",
    "kind": "link",
    "confidence": "exact",
    "via": "features/education/tutor/components/AskTutorButton.tsx (depth 2)"
+  },
+  {
+   "from": "/education/flashcards/[setId]/sessions",
+   "to": "/education/flashcards/[setId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/set-detail/DeckProgressView.tsx (depth 1)"
+  },
+  {
+   "from": "/education/flashcards/[setId]/sessions",
+   "to": "/education/flashcards/sessions",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/flashcards/components/set-detail/DeckProgressView.tsx (depth 1)"
+  },
+  {
+   "from": "/education/flashcards/[setId]/sessions",
+   "to": "/education/flashcards/weak-areas",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/flashcards/components/set-detail/DeckProgressView.tsx (depth 1)"
   },
   {
    "from": "/education/flashcards/[setId]/sessions",
@@ -52649,6 +53680,13 @@
   },
   {
    "from": "/education/flashcards/[setId]/study",
+   "to": "/education/flashcards/[setId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/editor/EditSetView.tsx (depth 4)"
+  },
+  {
+   "from": "/education/flashcards/[setId]/study",
    "to": "/education/tutor",
    "kind": "link",
    "confidence": "exact",
@@ -52656,10 +53694,24 @@
   },
   {
    "from": "/education/flashcards/[setId]/test",
+   "to": "/education/flashcards/[setId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/study/TestSurface.tsx (depth 1)"
+  },
+  {
+   "from": "/education/flashcards/[setId]/test",
    "to": "/education/tutor",
    "kind": "link",
    "confidence": "exact",
    "via": "features/education/tutor/components/AskTutorButton.tsx (depth 2)"
+  },
+  {
+   "from": "/education/flashcards/[setId]/write",
+   "to": "/education/flashcards/[setId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/study/WriteSurface.tsx (depth 1)"
   },
   {
    "from": "/education/flashcards/[setId]/write",
@@ -52681,6 +53733,13 @@
    "kind": "config",
    "confidence": "pattern",
    "via": "features/flashcards/data/generateDeckFromSources.ts (depth 2)"
+  },
+  {
+   "from": "/education/flashcards/new",
+   "to": "/education/flashcards/[setId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/create/CreateDeckPage.tsx (depth 1)"
   },
   {
    "from": "/education/flashcards/new",
@@ -52747,6 +53806,13 @@
   },
   {
    "from": "/education/flashcards/review",
+   "to": "/education/flashcards/[setId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/editor/EditSetView.tsx (depth 4)"
+  },
+  {
+   "from": "/education/flashcards/review",
    "to": "/education/tutor",
    "kind": "link",
    "confidence": "exact",
@@ -52754,10 +53820,52 @@
   },
   {
    "from": "/education/flashcards/weak-areas",
+   "to": "/education/flashcards/[setId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/editor/EditSetView.tsx (depth 4)"
+  },
+  {
+   "from": "/education/flashcards/weak-areas",
+   "to": "/education/flashcards/[setId]/sessions",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/flashcards/components/study/WeakAreaDrillSurface.tsx (depth 1)"
+  },
+  {
+   "from": "/education/flashcards/weak-areas",
    "to": "/education/tutor",
    "kind": "link",
    "confidence": "exact",
    "via": "features/education/tutor/components/AskTutorButton.tsx (depth 3)"
+  },
+  {
+   "from": "/education/game",
+   "to": "/education/game/host",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/education/engage/constants.ts (depth 2)"
+  },
+  {
+   "from": "/education/game",
+   "to": "/education/game/join",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/education/engage/constants.ts (depth 2)"
+  },
+  {
+   "from": "/education/game",
+   "to": "/education/game/play/[roomId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/education/engage/constants.ts (depth 2)"
+  },
+  {
+   "from": "/education/game",
+   "to": "/education/game/solo",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/education/engage/constants.ts (depth 2)"
   },
   {
    "from": "/education/game",
@@ -52823,11 +53931,53 @@
    "via": "features/education/engage/components/lobby/HostSetupImpl.tsx (depth 1)"
   },
   {
+   "from": "/education/game/host",
+   "to": "/education/game/join",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/education/engage/constants.ts (depth 2)"
+  },
+  {
+   "from": "/education/game/host",
+   "to": "/education/game/play/[roomId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/education/engage/constants.ts (depth 2)"
+  },
+  {
+   "from": "/education/game/host",
+   "to": "/education/game/solo",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/education/engage/constants.ts (depth 2)"
+  },
+  {
    "from": "/education/game/join",
    "to": "/education/game",
    "kind": "push",
    "confidence": "exact",
    "via": "features/education/engage/components/lobby/JoinRoomImpl.tsx (depth 1)"
+  },
+  {
+   "from": "/education/game/join",
+   "to": "/education/game/host",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/education/engage/constants.ts (depth 2)"
+  },
+  {
+   "from": "/education/game/join",
+   "to": "/education/game/play/[roomId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/education/engage/constants.ts (depth 2)"
+  },
+  {
+   "from": "/education/game/join",
+   "to": "/education/game/solo",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/education/engage/constants.ts (depth 2)"
   },
   {
    "from": "/education/game/play/[roomId]",
@@ -54959,6 +56109,13 @@
   },
   {
    "from": "/esign/new",
+   "to": "/esign/[envelopeId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/esign/editor/components/EditorHost.tsx (depth 1)"
+  },
+  {
+   "from": "/esign/new",
    "to": "/esign/templates/[templateId]",
    "kind": "push",
    "confidence": "pattern",
@@ -54984,6 +56141,13 @@
    "kind": "config",
    "confidence": "exact",
    "via": "features/esign/envelopes/EnvelopeDetail.tsx (depth 2)"
+  },
+  {
+   "from": "/esign/templates/[templateId]",
+   "to": "/esign/[envelopeId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/esign/editor/components/EditorHost.tsx (depth 1)"
   },
   {
    "from": "/esign/templates/[templateId]",
@@ -59433,6 +60597,13 @@
   {
    "from": "/knowledge/extractions",
    "to": "/knowledge/extractions/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/page-extraction/data-review/constants.ts (depth 2)"
+  },
+  {
+   "from": "/knowledge/extractions",
+   "to": "/knowledge/extractions/[id]",
    "kind": "push",
    "confidence": "pattern",
    "via": "features/page-extraction/data-review/ExtractionCatalogClient.tsx (depth 1)"
@@ -61532,6 +62703,69 @@
   },
   {
    "from": "/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/[mandateKey]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/advanced",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/dashboard",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/health",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/references",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/support",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/unconverted",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/window",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/mandates/[mandateKey]",
    "to": "/agents",
    "kind": "push",
    "confidence": "exact",
@@ -61578,6 +62812,69 @@
    "kind": "link",
    "confidence": "pattern",
    "via": "features/mandates/workspace/TriadSections.tsx (depth 2)"
+  },
+  {
+   "from": "/mandates/record-preview/[mandateKey]",
+   "to": "/administration/intelligence/mandates/[mandateKey]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/mandates/record-preview/[mandateKey]",
+   "to": "/administration/intelligence/mandates/advanced",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/mandates/record-preview/[mandateKey]",
+   "to": "/administration/intelligence/mandates/dashboard",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/mandates/record-preview/[mandateKey]",
+   "to": "/administration/intelligence/mandates/health",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/mandates/record-preview/[mandateKey]",
+   "to": "/administration/intelligence/mandates/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/mandates/record-preview/[mandateKey]",
+   "to": "/administration/intelligence/mandates/references",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/mandates/record-preview/[mandateKey]",
+   "to": "/administration/intelligence/mandates/support",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/mandates/record-preview/[mandateKey]",
+   "to": "/administration/intelligence/mandates/unconverted",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/mandates/record-preview/[mandateKey]",
+   "to": "/administration/intelligence/mandates/window",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
   },
   {
    "from": "/mandates/record-preview/[mandateKey]",
@@ -61889,6 +63186,13 @@
   },
   {
    "from": "/marketing/[brandId]",
+   "to": "/marketing/[brandId]/identity/audience",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/components/brands/BrandOverviewPanels.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]",
    "to": "/marketing/[brandId]/identity/media",
    "kind": "link",
    "confidence": "pattern",
@@ -61897,6 +63201,20 @@
   {
    "from": "/marketing/[brandId]",
    "to": "/marketing/[brandId]/identity/media/generate",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/components/brands/BrandOverviewPanels.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]",
+   "to": "/marketing/[brandId]/identity/strategy",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/components/brands/BrandOverviewPanels.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]",
+   "to": "/marketing/[brandId]/identity/voice",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/components/brands/BrandOverviewPanels.tsx (depth 2)"
@@ -61932,6 +63250,13 @@
   {
    "from": "/marketing/[brandId]",
    "to": "/marketing/[brandId]/socials",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/components/brands/BrandBackgroundWork.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]",
+   "to": "/marketing/[brandId]/socials/accounts",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/components/brands/BrandBackgroundWork.tsx (depth 2)"
@@ -62187,6 +63512,27 @@
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/components/shared/NoWebsiteState.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]/analytics",
+   "to": "/marketing/[brandId]/socials/accounts",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/social/components/SocialAnalyticsPanel.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/analytics",
+   "to": "/marketing/[brandId]/socials/kpis",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/social/components/SocialAnalyticsPanel.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/analytics",
+   "to": "/marketing/[brandId]/socials/outliers",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/social/components/SocialAnalyticsPanel.tsx (depth 1)"
   },
   {
    "from": "/marketing/[brandId]/analytics",
@@ -62666,6 +64012,13 @@
   },
   {
    "from": "/marketing/[brandId]/content/plan/[siteId]",
+   "to": "/marketing/[brandId]/identity/strategy",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 3)"
+  },
+  {
+   "from": "/marketing/[brandId]/content/plan/[siteId]",
    "to": "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
    "kind": "link",
    "confidence": "pattern",
@@ -62778,6 +64131,13 @@
   },
   {
    "from": "/marketing/[brandId]/content/plan/[siteId]/ai-runs",
+   "to": "/marketing/[brandId]/identity/strategy",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 3)"
+  },
+  {
+   "from": "/marketing/[brandId]/content/plan/[siteId]/ai-runs",
    "to": "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
    "kind": "link",
    "confidence": "pattern",
@@ -62877,6 +64237,13 @@
   {
    "from": "/marketing/[brandId]/content/plan/[siteId]/brief",
    "to": "/marketing/[brandId]/identity",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 3)"
+  },
+  {
+   "from": "/marketing/[brandId]/content/plan/[siteId]/brief",
+   "to": "/marketing/[brandId]/identity/strategy",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 3)"
@@ -62995,6 +64362,13 @@
   },
   {
    "from": "/marketing/[brandId]/content/plan/[siteId]/entities",
+   "to": "/marketing/[brandId]/identity/strategy",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 3)"
+  },
+  {
+   "from": "/marketing/[brandId]/content/plan/[siteId]/entities",
    "to": "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
    "kind": "link",
    "confidence": "pattern",
@@ -63107,6 +64481,13 @@
   },
   {
    "from": "/marketing/[brandId]/content/plan/[siteId]/map",
+   "to": "/marketing/[brandId]/identity/strategy",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 3)"
+  },
+  {
+   "from": "/marketing/[brandId]/content/plan/[siteId]/map",
    "to": "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
    "kind": "link",
    "confidence": "pattern",
@@ -63219,6 +64600,13 @@
   },
   {
    "from": "/marketing/[brandId]/content/plan/[siteId]/setup",
+   "to": "/marketing/[brandId]/identity/strategy",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 3)"
+  },
+  {
+   "from": "/marketing/[brandId]/content/plan/[siteId]/setup",
    "to": "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
    "kind": "link",
    "confidence": "pattern",
@@ -63325,6 +64713,13 @@
   {
    "from": "/marketing/[brandId]/content/plan/[siteId]/table",
    "to": "/marketing/[brandId]/identity",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 3)"
+  },
+  {
+   "from": "/marketing/[brandId]/content/plan/[siteId]/table",
+   "to": "/marketing/[brandId]/identity/strategy",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 3)"
@@ -63576,6 +64971,34 @@
   },
   {
    "from": "/marketing/[brandId]/identity",
+   "to": "/marketing/[brandId]/identity/audience",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "app/(core)/marketing/[brandId]/identity/page.tsx"
+  },
+  {
+   "from": "/marketing/[brandId]/identity",
+   "to": "/marketing/[brandId]/identity/claims",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "app/(core)/marketing/[brandId]/identity/page.tsx"
+  },
+  {
+   "from": "/marketing/[brandId]/identity",
+   "to": "/marketing/[brandId]/identity/guidelines",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "app/(core)/marketing/[brandId]/identity/page.tsx"
+  },
+  {
+   "from": "/marketing/[brandId]/identity",
+   "to": "/marketing/[brandId]/identity/knowledge",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "app/(core)/marketing/[brandId]/identity/page.tsx"
+  },
+  {
+   "from": "/marketing/[brandId]/identity",
    "to": "/marketing/[brandId]/identity/media",
    "kind": "link",
    "confidence": "pattern",
@@ -63584,6 +65007,34 @@
   {
    "from": "/marketing/[brandId]/identity",
    "to": "/marketing/[brandId]/identity/media/research",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "app/(core)/marketing/[brandId]/identity/page.tsx"
+  },
+  {
+   "from": "/marketing/[brandId]/identity",
+   "to": "/marketing/[brandId]/identity/messaging",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "app/(core)/marketing/[brandId]/identity/page.tsx"
+  },
+  {
+   "from": "/marketing/[brandId]/identity",
+   "to": "/marketing/[brandId]/identity/offerings",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "app/(core)/marketing/[brandId]/identity/page.tsx"
+  },
+  {
+   "from": "/marketing/[brandId]/identity",
+   "to": "/marketing/[brandId]/identity/strategy",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "app/(core)/marketing/[brandId]/identity/page.tsx"
+  },
+  {
+   "from": "/marketing/[brandId]/identity",
+   "to": "/marketing/[brandId]/identity/voice",
    "kind": "link",
    "confidence": "pattern",
    "via": "app/(core)/marketing/[brandId]/identity/page.tsx"
@@ -63779,6 +65230,13 @@
   },
   {
    "from": "/marketing/[brandId]/identity/media",
+   "to": "/marketing/[brandId]/websites/[siteId]/media",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/components/brands/BrandAssetsWorkspace.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/identity/media",
    "to": "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
    "kind": "link",
    "confidence": "pattern",
@@ -63807,6 +65265,13 @@
   },
   {
    "from": "/marketing/[brandId]/identity/media/generate",
+   "to": "/marketing/[brandId]/websites/[siteId]/media",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/components/brands/BrandAssetsWorkspace.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/identity/media/generate",
    "to": "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
    "kind": "link",
    "confidence": "pattern",
@@ -63829,6 +65294,13 @@
   {
    "from": "/marketing/[brandId]/identity/media/research",
    "to": "/marketing/[brandId]/websites/[siteId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/components/brands/BrandAssetsWorkspace.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/identity/media/research",
+   "to": "/marketing/[brandId]/websites/[siteId]/media",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/components/brands/BrandAssetsWorkspace.tsx (depth 1)"
@@ -63857,6 +65329,13 @@
   {
    "from": "/marketing/[brandId]/identity/media/sources",
    "to": "/marketing/[brandId]/websites/[siteId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/components/brands/BrandAssetsWorkspace.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/identity/media/sources",
+   "to": "/marketing/[brandId]/websites/[siteId]/media",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/components/brands/BrandAssetsWorkspace.tsx (depth 1)"
@@ -64066,6 +65545,13 @@
   },
   {
    "from": "/marketing/[brandId]/intelligence/competitors",
+   "to": "/marketing/[brandId]/identity/strategy",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 4)"
+  },
+  {
+   "from": "/marketing/[brandId]/intelligence/competitors",
    "to": "/marketing/[brandId]/socials",
    "kind": "link",
    "confidence": "pattern",
@@ -64150,6 +65636,13 @@
   },
   {
    "from": "/marketing/[brandId]/intelligence/competitors/competitors",
+   "to": "/marketing/[brandId]/identity/strategy",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 4)"
+  },
+  {
+   "from": "/marketing/[brandId]/intelligence/competitors/competitors",
    "to": "/marketing/[brandId]/intelligence/competitors",
    "kind": "link",
    "confidence": "pattern",
@@ -64234,6 +65727,13 @@
   },
   {
    "from": "/marketing/[brandId]/intelligence/competitors/evidence",
+   "to": "/marketing/[brandId]/identity/strategy",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 4)"
+  },
+  {
+   "from": "/marketing/[brandId]/intelligence/competitors/evidence",
    "to": "/marketing/[brandId]/intelligence/competitors",
    "kind": "link",
    "confidence": "pattern",
@@ -64318,6 +65818,13 @@
   },
   {
    "from": "/marketing/[brandId]/intelligence/competitors/history",
+   "to": "/marketing/[brandId]/identity/strategy",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 4)"
+  },
+  {
+   "from": "/marketing/[brandId]/intelligence/competitors/history",
    "to": "/marketing/[brandId]/intelligence/competitors",
    "kind": "link",
    "confidence": "pattern",
@@ -64396,6 +65903,13 @@
   {
    "from": "/marketing/[brandId]/intelligence/competitors/opportunities",
    "to": "/marketing/[brandId]/identity",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 4)"
+  },
+  {
+   "from": "/marketing/[brandId]/intelligence/competitors/opportunities",
+   "to": "/marketing/[brandId]/identity/strategy",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 4)"
@@ -64480,6 +65994,13 @@
   {
    "from": "/marketing/[brandId]/intelligence/competitors/review",
    "to": "/marketing/[brandId]/identity",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 4)"
+  },
+  {
+   "from": "/marketing/[brandId]/intelligence/competitors/review",
+   "to": "/marketing/[brandId]/identity/strategy",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 4)"
@@ -64564,6 +66085,13 @@
   {
    "from": "/marketing/[brandId]/intelligence/competitors/run",
    "to": "/marketing/[brandId]/identity",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 4)"
+  },
+  {
+   "from": "/marketing/[brandId]/intelligence/competitors/run",
+   "to": "/marketing/[brandId]/identity/strategy",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/strategy/components/StrategyBriefWorkspace.tsx (depth 4)"
@@ -66831,6 +68359,20 @@
   },
   {
    "from": "/marketing/[brandId]/seo/[siteId]/changes",
+   "to": "/marketing/[brandId]/websites/[siteId]/[...rest]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/change-tracking/SeoChangeTrackingWorkspace.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/changes",
+   "to": "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/change-tracking/SeoChangeTrackingWorkspace.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/changes",
    "to": "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
    "kind": "link",
    "confidence": "pattern",
@@ -66853,6 +68395,20 @@
   {
    "from": "/marketing/[brandId]/seo/[siteId]/changes/untracked",
    "to": "/marketing/[brandId]/websites/[siteId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/change-tracking/SeoChangeTrackingWorkspace.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/changes/untracked",
+   "to": "/marketing/[brandId]/websites/[siteId]/[...rest]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/change-tracking/SeoChangeTrackingWorkspace.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/changes/untracked",
+   "to": "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/change-tracking/SeoChangeTrackingWorkspace.tsx (depth 1)"
@@ -66887,6 +68443,13 @@
   },
   {
    "from": "/marketing/[brandId]/seo/[siteId]/context",
+   "to": "/marketing/[brandId]/identity/voice",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/seo/site-context/SiteContextWorkspace.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/context",
    "to": "/marketing/[brandId]/intelligence/competitors",
    "kind": "link",
    "confidence": "pattern",
@@ -66894,7 +68457,21 @@
   },
   {
    "from": "/marketing/[brandId]/seo/[siteId]/context",
+   "to": "/marketing/[brandId]/intelligence/competitors/competitors",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/seo/site-context/SiteContextWorkspace.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/context",
    "to": "/marketing/[brandId]/planning/initiatives",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/seo/site-context/SiteContextWorkspace.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/context",
+   "to": "/marketing/[brandId]/planning/initiatives/[id]",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/seo/site-context/SiteContextWorkspace.tsx (depth 1)"
@@ -67104,10 +68681,38 @@
   },
   {
    "from": "/marketing/[brandId]/seo/[siteId]/keywords",
+   "to": "/marketing/[brandId]/seo/[siteId]/[...rest]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/seo/value-system/KeywordStartHere.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/keywords",
    "to": "/marketing/[brandId]/seo/[siteId]/keywords/value",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/search-console/components/FilterBar.tsx (depth 4)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/keywords",
+   "to": "/marketing/[brandId]/seo/[siteId]/keywords/value/dimensions",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/seo/value-system/KeywordStartHere.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/keywords",
+   "to": "/marketing/[brandId]/seo/[siteId]/keywords/value/packs",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/seo/value-system/KeywordStartHere.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/keywords",
+   "to": "/marketing/[brandId]/seo/[siteId]/keywords/value/rules",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/seo/value-system/KeywordStartHere.tsx (depth 2)"
   },
   {
    "from": "/marketing/[brandId]/seo/[siteId]/keywords",
@@ -67181,6 +68786,13 @@
   },
   {
    "from": "/marketing/[brandId]/seo/[siteId]/keywords/performance",
+   "to": "/marketing/[brandId]/seo/[siteId]/[...rest]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/seo/value-system/KeywordStartHere.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/keywords/performance",
    "to": "/marketing/[brandId]/seo/[siteId]/keywords",
    "kind": "link",
    "confidence": "pattern",
@@ -67192,6 +68804,27 @@
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/search-console/components/FilterBar.tsx (depth 4)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/keywords/performance",
+   "to": "/marketing/[brandId]/seo/[siteId]/keywords/value/dimensions",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/seo/value-system/KeywordStartHere.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/keywords/performance",
+   "to": "/marketing/[brandId]/seo/[siteId]/keywords/value/packs",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/seo/value-system/KeywordStartHere.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/keywords/performance",
+   "to": "/marketing/[brandId]/seo/[siteId]/keywords/value/rules",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/seo/value-system/KeywordStartHere.tsx (depth 2)"
   },
   {
    "from": "/marketing/[brandId]/seo/[siteId]/keywords/performance",
@@ -67447,6 +69080,13 @@
   },
   {
    "from": "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+   "to": "/marketing/[brandId]/seo/[siteId]/[...rest]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/seo/value-system/KeywordStartHere.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
    "to": "/marketing/[brandId]/seo/[siteId]/keywords",
    "kind": "link",
    "confidence": "pattern",
@@ -67458,6 +69098,27 @@
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/search-console/components/FilterBar.tsx (depth 4)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+   "to": "/marketing/[brandId]/seo/[siteId]/keywords/value/dimensions",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/seo/value-system/KeywordStartHere.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+   "to": "/marketing/[brandId]/seo/[siteId]/keywords/value/packs",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/seo/value-system/KeywordStartHere.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+   "to": "/marketing/[brandId]/seo/[siteId]/keywords/value/rules",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/seo/value-system/KeywordStartHere.tsx (depth 2)"
   },
   {
    "from": "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
@@ -67671,6 +69332,13 @@
   },
   {
    "from": "/marketing/[brandId]/seo/[siteId]/performance",
+   "to": "/marketing/[brandId]/websites/[siteId]/pages",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/components/performance/SitePerformanceWorkspace.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/performance",
    "to": "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
    "kind": "link",
    "confidence": "pattern",
@@ -67727,6 +69395,13 @@
   },
   {
    "from": "/marketing/[brandId]/seo/[siteId]/search-console",
+   "to": "/marketing/[brandId]/seo/[siteId]/[...rest]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/search-console/components/SiteSearchConsolePage.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/search-console",
    "to": "/marketing/[brandId]/seo/[siteId]/keywords/value",
    "kind": "link",
    "confidence": "pattern",
@@ -67822,6 +69497,13 @@
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/search-console/components/FilterBar.tsx (depth 4)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/search-console/digs",
+   "to": "/marketing/[brandId]/seo/[siteId]/[...rest]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/search-console/components/SiteSearchConsolePage.tsx (depth 1)"
   },
   {
    "from": "/marketing/[brandId]/seo/[siteId]/search-console/digs",
@@ -67927,6 +69609,13 @@
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/search-console/components/FilterBar.tsx (depth 4)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/search-console/insights",
+   "to": "/marketing/[brandId]/seo/[siteId]/[...rest]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/search-console/components/SiteSearchConsolePage.tsx (depth 1)"
   },
   {
    "from": "/marketing/[brandId]/seo/[siteId]/search-console/insights",
@@ -68032,6 +69721,13 @@
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/search-console/components/FilterBar.tsx (depth 4)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/search-console/new-pages",
+   "to": "/marketing/[brandId]/seo/[siteId]/[...rest]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/search-console/components/SiteSearchConsolePage.tsx (depth 1)"
   },
   {
    "from": "/marketing/[brandId]/seo/[siteId]/search-console/new-pages",
@@ -68137,6 +69833,13 @@
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/search-console/components/FilterBar.tsx (depth 4)"
+  },
+  {
+   "from": "/marketing/[brandId]/seo/[siteId]/search-console/watchlist",
+   "to": "/marketing/[brandId]/seo/[siteId]/[...rest]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/search-console/components/SiteSearchConsolePage.tsx (depth 1)"
   },
   {
    "from": "/marketing/[brandId]/seo/[siteId]/search-console/watchlist",
@@ -68249,6 +69952,13 @@
    "kind": "link",
    "confidence": "exact",
    "via": "features/marketing/components/shared/RecordUnavailableNotice.tsx (depth 3)"
+  },
+  {
+   "from": "/marketing/[brandId]/socials",
+   "to": "/marketing/[brandId]/socials/accounts",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "app/(core)/marketing/[brandId]/socials/page.tsx"
   },
   {
    "from": "/marketing/[brandId]/socials/[platform]/[accountId]",
@@ -68310,6 +70020,13 @@
    "from": "/marketing/[brandId]/socials/kpis",
    "to": "/marketing/[brandId]/socials/[platform]/[accountId]",
    "kind": "push",
+   "confidence": "pattern",
+   "via": "features/marketing/social/components/KpisTab.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/socials/kpis",
+   "to": "/marketing/[brandId]/socials/accounts",
+   "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/social/components/KpisTab.tsx (depth 1)"
   },
@@ -68391,8 +70108,22 @@
    "via": "features/marketing/social/components/VideosTab.tsx (depth 1)"
   },
   {
+   "from": "/marketing/[brandId]/socials/videos",
+   "to": "/marketing/[brandId]/socials/outliers",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/social/components/VideosTab.tsx (depth 1)"
+  },
+  {
    "from": "/marketing/[brandId]/socials/videos/[projectId]",
    "to": "/marketing/[brandId]/socials",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/social/components/video/VideoProjectStudio.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/socials/videos/[projectId]",
+   "to": "/marketing/[brandId]/socials/videos",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/social/components/video/VideoProjectStudio.tsx (depth 1)"
@@ -68405,8 +70136,29 @@
    "via": "features/marketing/social/components/video/VideoFormatNew.tsx (depth 1)"
   },
   {
+   "from": "/marketing/[brandId]/socials/videos/formats",
+   "to": "/marketing/[brandId]/socials/videos",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/social/components/video/VideoFormatNew.tsx (depth 1)"
+  },
+  {
    "from": "/marketing/[brandId]/socials/videos/new",
    "to": "/marketing/[brandId]/socials",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/social/components/video/VideoCloneNew.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/socials/videos/new",
+   "to": "/marketing/[brandId]/socials/outliers",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/social/components/video/VideoCloneNew.tsx (depth 1)"
+  },
+  {
+   "from": "/marketing/[brandId]/socials/videos/new",
+   "to": "/marketing/[brandId]/socials/videos",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/social/components/video/VideoCloneNew.tsx (depth 1)"
@@ -69337,6 +71089,13 @@
   },
   {
    "from": "/marketing/[brandId]/websites/[siteId]/settings",
+   "to": "/marketing/[brandId]/websites/[siteId]/[...rest]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/search-console/intake/SiteIntakeWizard.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]/websites/[siteId]/settings",
    "to": "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
    "kind": "link",
    "confidence": "pattern",
@@ -69414,6 +71173,13 @@
   },
   {
    "from": "/marketing/[brandId]/websites/[siteId]/settings/access",
+   "to": "/marketing/[brandId]/websites/[siteId]/[...rest]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/search-console/intake/SiteIntakeWizard.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]/websites/[siteId]/settings/access",
    "to": "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
    "kind": "link",
    "confidence": "pattern",
@@ -69491,6 +71257,13 @@
   },
   {
    "from": "/marketing/[brandId]/websites/[siteId]/settings/intake",
+   "to": "/marketing/[brandId]/websites/[siteId]/[...rest]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/search-console/intake/SiteIntakeWizard.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]/websites/[siteId]/settings/intake",
    "to": "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
    "kind": "link",
    "confidence": "pattern",
@@ -69562,6 +71335,13 @@
   {
    "from": "/marketing/[brandId]/websites/[siteId]/settings/integrations",
    "to": "/marketing/[brandId]/websites/[siteId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/search-console/intake/SiteIntakeWizard.tsx (depth 2)"
+  },
+  {
+   "from": "/marketing/[brandId]/websites/[siteId]/settings/integrations",
+   "to": "/marketing/[brandId]/websites/[siteId]/[...rest]",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/search-console/intake/SiteIntakeWizard.tsx (depth 2)"
@@ -70968,6 +72748,13 @@
   },
   {
    "from": "/marketing/calendar",
+   "to": "/marketing/[brandId]/planning/calendar",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "app/(core)/marketing/calendar/page.tsx"
+  },
+  {
+   "from": "/marketing/calendar",
    "to": "/marketing/brands",
    "kind": "link",
    "confidence": "exact",
@@ -71032,6 +72819,13 @@
   {
    "from": "/marketing/connections/google/read-only",
    "to": "/marketing/operations/connections/google",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "app/(core)/marketing/connections/google/read-only/page.tsx"
+  },
+  {
+   "from": "/marketing/connections/google/read-only",
+   "to": "/marketing/operations/connections/google/read-only",
    "kind": "link",
    "confidence": "exact",
    "via": "app/(core)/marketing/connections/google/read-only/page.tsx"
@@ -75266,6 +77060,13 @@
   },
   {
    "from": "/messenger",
+   "to": "/messenger/agents",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/messaging/messenger/messenger-route.ts (depth 1)"
+  },
+  {
+   "from": "/messenger",
    "to": "/organizations",
    "kind": "link",
    "confidence": "exact",
@@ -75571,6 +77372,69 @@
    "kind": "link",
    "confidence": "pattern",
    "via": "app/(core)/organizations/[orgId]/hr/page.tsx"
+  },
+  {
+   "from": "/organizations/[orgId]/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/[mandateKey]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/organizations/[orgId]/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/advanced",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/organizations/[orgId]/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/dashboard",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/organizations/[orgId]/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/health",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/organizations/[orgId]/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/organizations/[orgId]/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/references",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/organizations/[orgId]/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/support",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/organizations/[orgId]/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/unconverted",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
+  },
+  {
+   "from": "/organizations/[orgId]/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/window",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 3)"
   },
   {
    "from": "/organizations/[orgId]/mandates/[mandateKey]",
@@ -76075,6 +77939,69 @@
    "kind": "config",
    "confidence": "pattern",
    "via": "app/(core)/organizations/[orgId]/settings/mandates/page.tsx"
+  },
+  {
+   "from": "/organizations/[orgId]/settings/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/[mandateKey]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/organizations/[orgId]/settings/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/advanced",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/organizations/[orgId]/settings/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/dashboard",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/organizations/[orgId]/settings/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/health",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/organizations/[orgId]/settings/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/organizations/[orgId]/settings/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/references",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/organizations/[orgId]/settings/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/support",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/organizations/[orgId]/settings/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/unconverted",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
+  },
+  {
+   "from": "/organizations/[orgId]/settings/mandates/[mandateKey]",
+   "to": "/administration/intelligence/mandates/window",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/mandates/admin-routes.ts (depth 2)"
   },
   {
    "from": "/organizations/[orgId]/settings/mandates/[mandateKey]",
@@ -80501,8 +82428,57 @@
    "via": "features/research/components/outputs/OutputsStudio.tsx (depth 1)"
   },
   {
+   "from": "/research/topics/[topicId]/settings",
+   "to": "/research/topics/[topicId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/research/service/research-endpoints.ts (depth 4)"
+  },
+  {
+   "from": "/research/topics/[topicId]/settings",
+   "to": "/research/topics/[topicId]/document",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/research/service/research-endpoints.ts (depth 4)"
+  },
+  {
+   "from": "/research/topics/[topicId]/settings",
+   "to": "/research/topics/[topicId]/experts",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/research/service/research-endpoints.ts (depth 4)"
+  },
+  {
+   "from": "/research/topics/[topicId]/settings",
+   "to": "/research/topics/[topicId]/keywords",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/research/service/research-endpoints.ts (depth 4)"
+  },
+  {
+   "from": "/research/topics/[topicId]/settings",
+   "to": "/research/topics/[topicId]/sources/[sourceId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/research/service/research-endpoints.ts (depth 4)"
+  },
+  {
    "from": "/research/topics/[topicId]/social",
    "to": "/marketing/[brandId]/socials",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/research/components/social/TopicSocial.tsx (depth 1)"
+  },
+  {
+   "from": "/research/topics/[topicId]/social",
+   "to": "/marketing/[brandId]/socials/[platform]/[accountId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/research/components/social/TopicSocial.tsx (depth 1)"
+  },
+  {
+   "from": "/research/topics/[topicId]/social",
+   "to": "/marketing/[brandId]/socials/accounts",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/research/components/social/TopicSocial.tsx (depth 1)"
@@ -80550,6 +82526,41 @@
    "via": "features/research/components/sources/SourceDetail.tsx (depth 1)"
   },
   {
+   "from": "/research/topics/[topicId]/synthesis",
+   "to": "/shapes/[kind]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 4)"
+  },
+  {
+   "from": "/research/topics/[topicId]/synthesis",
+   "to": "/shapes/all",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 4)"
+  },
+  {
+   "from": "/research/topics/[topicId]/synthesis",
+   "to": "/shapes/instances/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 4)"
+  },
+  {
+   "from": "/research/topics/[topicId]/synthesis",
+   "to": "/shapes/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 4)"
+  },
+  {
+   "from": "/research/topics/[topicId]/synthesis",
+   "to": "/shapes/playground",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 4)"
+  },
+  {
    "from": "/research/topics/[topicId]/tags",
    "to": "/research/topics/[topicId]/tags/[tagId]",
    "kind": "link",
@@ -80562,6 +82573,41 @@
    "kind": "link",
    "confidence": "pattern",
    "via": "features/research/components/consolidation/ConsolidationView.tsx (depth 1)"
+  },
+  {
+   "from": "/research/topics/[topicId]/tags/[tagId]",
+   "to": "/shapes/[kind]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 4)"
+  },
+  {
+   "from": "/research/topics/[topicId]/tags/[tagId]",
+   "to": "/shapes/all",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 4)"
+  },
+  {
+   "from": "/research/topics/[topicId]/tags/[tagId]",
+   "to": "/shapes/instances/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 4)"
+  },
+  {
+   "from": "/research/topics/[topicId]/tags/[tagId]",
+   "to": "/shapes/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 4)"
+  },
+  {
+   "from": "/research/topics/[topicId]/tags/[tagId]",
+   "to": "/shapes/playground",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 4)"
   },
   {
    "from": "/research/topics/[topicId]/tasks",
@@ -81293,6 +83339,13 @@
   },
   {
    "from": "/review/page-cleanup",
+   "to": "/marketing/operations/connections/google/read-only",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/admin/page-cleanup/page-cleanup-rows.ts (depth 2)"
+  },
+  {
+   "from": "/review/page-cleanup",
    "to": "/marketing/operations/data-quality",
    "kind": "link",
    "confidence": "exact",
@@ -81878,6 +83931,13 @@
    "kind": "link",
    "confidence": "exact",
    "via": "app/(core)/schedules/page.tsx"
+  },
+  {
+   "from": "/schedules/[id]",
+   "to": "/administration/automation/scheduling/tasks/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/scheduling/constants/routes.ts (depth 2)"
   },
   {
    "from": "/schedules/[id]",
@@ -82496,6 +84556,349 @@
    "via": "features/auth/components/module-landing/landings/directory.ts (depth 3)"
   },
   {
+   "from": "/shapes/[kind]",
+   "to": "/shapes/all",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]",
+   "to": "/shapes/instances/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]",
+   "to": "/shapes/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]",
+   "to": "/shapes/playground",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/examples",
+   "to": "/shapes/[kind]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/examples",
+   "to": "/shapes/all",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/examples",
+   "to": "/shapes/instances/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/examples",
+   "to": "/shapes/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/examples",
+   "to": "/shapes/playground",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/gate",
+   "to": "/shapes/[kind]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/gate",
+   "to": "/shapes/all",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/gate",
+   "to": "/shapes/instances/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/gate",
+   "to": "/shapes/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/gate",
+   "to": "/shapes/playground",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/inputs",
+   "to": "/shapes/[kind]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/inputs",
+   "to": "/shapes/all",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/inputs",
+   "to": "/shapes/instances/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/inputs",
+   "to": "/shapes/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/inputs",
+   "to": "/shapes/playground",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/instances",
+   "to": "/shapes/[kind]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/instances",
+   "to": "/shapes/all",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/instances",
+   "to": "/shapes/instances/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/instances",
+   "to": "/shapes/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/instances",
+   "to": "/shapes/playground",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/schema",
+   "to": "/shapes/[kind]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/schema",
+   "to": "/shapes/all",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/schema",
+   "to": "/shapes/instances/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/schema",
+   "to": "/shapes/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/schema",
+   "to": "/shapes/playground",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/stream",
+   "to": "/shapes/[kind]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/stream",
+   "to": "/shapes/all",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/stream",
+   "to": "/shapes/instances/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/stream",
+   "to": "/shapes/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/stream",
+   "to": "/shapes/playground",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/table",
+   "to": "/shapes/[kind]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/table",
+   "to": "/shapes/all",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/table",
+   "to": "/shapes/instances/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/table",
+   "to": "/shapes/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/table",
+   "to": "/shapes/playground",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/template",
+   "to": "/shapes/[kind]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/template",
+   "to": "/shapes/all",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/template",
+   "to": "/shapes/instances/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/template",
+   "to": "/shapes/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/template",
+   "to": "/shapes/playground",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/test",
+   "to": "/shapes/[kind]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/test",
+   "to": "/shapes/all",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/test",
+   "to": "/shapes/instances/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/test",
+   "to": "/shapes/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/[kind]/test",
+   "to": "/shapes/playground",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
    "from": "/shapes/admin",
    "to": "/",
    "kind": "admin-map",
@@ -82515,6 +84918,69 @@
    "kind": "admin-map",
    "confidence": "exact",
    "via": "app/(core)/shapes/(workspace)/admin/page.tsx"
+  },
+  {
+   "from": "/shapes/admin",
+   "to": "/shapes/[kind]",
+   "kind": "admin-map",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
+  },
+  {
+   "from": "/shapes/admin",
+   "to": "/shapes/all",
+   "kind": "admin-map",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
+  },
+  {
+   "from": "/shapes/admin",
+   "to": "/shapes/instances/[id]",
+   "kind": "admin-map",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
+  },
+  {
+   "from": "/shapes/admin",
+   "to": "/shapes/new",
+   "kind": "admin-map",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
+  },
+  {
+   "from": "/shapes/admin",
+   "to": "/shapes/playground",
+   "kind": "admin-map",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
+  },
+  {
+   "from": "/shapes/all",
+   "to": "/shapes/[kind]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/all",
+   "to": "/shapes/instances/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/all",
+   "to": "/shapes/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
+  },
+  {
+   "from": "/shapes/all",
+   "to": "/shapes/playground",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 2)"
   },
   {
    "from": "/shapes/instances/[id]",
@@ -82553,10 +85019,59 @@
   },
   {
    "from": "/shapes/new",
+   "to": "/shapes/[kind]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
+  },
+  {
+   "from": "/shapes/new",
    "to": "/shapes/all",
    "kind": "link",
    "confidence": "exact",
    "via": "features/content-ir/studio/components/NewShapeClient.tsx (depth 1)"
+  },
+  {
+   "from": "/shapes/new",
+   "to": "/shapes/instances/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
+  },
+  {
+   "from": "/shapes/new",
+   "to": "/shapes/playground",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
+  },
+  {
+   "from": "/shapes/playground",
+   "to": "/shapes/[kind]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
+  },
+  {
+   "from": "/shapes/playground",
+   "to": "/shapes/all",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
+  },
+  {
+   "from": "/shapes/playground",
+   "to": "/shapes/instances/[id]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
+  },
+  {
+   "from": "/shapes/playground",
+   "to": "/shapes/new",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
   },
   {
    "from": "/sign-out",
@@ -82958,6 +85473,34 @@
    "via": "app/(core)/tasks/new/page.tsx"
   },
   {
+   "from": "/templates",
+   "to": "/templates/[slug]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
+  },
+  {
+   "from": "/templates",
+   "to": "/templates/category/[industry]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
+  },
+  {
+   "from": "/templates",
+   "to": "/templates/job/[job]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
+  },
+  {
+   "from": "/templates",
+   "to": "/templates/workspaces",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
+  },
+  {
    "from": "/templates/[slug]",
    "to": "/agents/[id]",
    "kind": "link",
@@ -82998,6 +85541,27 @@
    "kind": "push",
    "confidence": "pattern",
    "via": "features/spaces/state/SpacesProvider.tsx (depth 3)"
+  },
+  {
+   "from": "/templates/[slug]",
+   "to": "/templates/category/[industry]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
+  },
+  {
+   "from": "/templates/[slug]",
+   "to": "/templates/job/[job]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
+  },
+  {
+   "from": "/templates/[slug]",
+   "to": "/templates/workspaces",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
   },
   {
    "from": "/templates/applets",
@@ -83092,6 +85656,34 @@
   },
   {
    "from": "/templates/applets",
+   "to": "/templates/[slug]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
+  },
+  {
+   "from": "/templates/applets",
+   "to": "/templates/category/[industry]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
+  },
+  {
+   "from": "/templates/applets",
+   "to": "/templates/job/[job]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
+  },
+  {
+   "from": "/templates/applets",
+   "to": "/templates/workspaces",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
+  },
+  {
+   "from": "/templates/applets",
    "to": "/terms-of-service",
    "kind": "config",
    "confidence": "exact",
@@ -83110,6 +85702,97 @@
    "kind": "config",
    "confidence": "exact",
    "via": "components/matrx/PublicFooter.tsx (depth 2)"
+  },
+  {
+   "from": "/templates/category/[industry]",
+   "to": "/templates/[slug]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
+  },
+  {
+   "from": "/templates/category/[industry]",
+   "to": "/templates/job/[job]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
+  },
+  {
+   "from": "/templates/category/[industry]",
+   "to": "/templates/workspaces",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
+  },
+  {
+   "from": "/templates/job/[job]",
+   "to": "/templates/[slug]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 2)"
+  },
+  {
+   "from": "/templates/job/[job]",
+   "to": "/templates/category/[industry]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 2)"
+  },
+  {
+   "from": "/templates/job/[job]",
+   "to": "/templates/workspaces",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/make/gallery/publicGallery.ts (depth 2)"
+  },
+  {
+   "from": "/templates/workspaces",
+   "to": "/templates/[slug]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
+  },
+  {
+   "from": "/templates/workspaces",
+   "to": "/templates/category/[industry]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
+  },
+  {
+   "from": "/templates/workspaces",
+   "to": "/templates/job/[job]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 1)"
+  },
+  {
+   "from": "/templates/workspaces/[category]",
+   "to": "/templates/[slug]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 2)"
+  },
+  {
+   "from": "/templates/workspaces/[category]",
+   "to": "/templates/category/[industry]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 2)"
+  },
+  {
+   "from": "/templates/workspaces/[category]",
+   "to": "/templates/job/[job]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/make/gallery/publicGallery.ts (depth 2)"
+  },
+  {
+   "from": "/templates/workspaces/[category]",
+   "to": "/templates/workspaces",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/make/gallery/publicGallery.ts (depth 2)"
   },
   {
    "from": "/terms-of-service",
@@ -84821,6 +87504,34 @@
   },
   {
    "from": "/welcome",
+   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 4)"
+  },
+  {
+   "from": "/welcome",
+   "to": "/marketing/brands/smart-add/enrich/[brandId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 4)"
+  },
+  {
+   "from": "/welcome",
+   "to": "/marketing/brands/smart-add/found",
+   "kind": "link",
+   "confidence": "exact",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 4)"
+  },
+  {
+   "from": "/welcome",
+   "to": "/marketing/brands/smart-add/validate/[brandId]",
+   "kind": "link",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 4)"
+  },
+  {
+   "from": "/welcome",
    "to": "/notes",
    "kind": "config",
    "confidence": "exact",
@@ -86528,6 +89239,27 @@
    "via": "app/(admin)/administration/hr/HrAdminLayoutClient.tsx (depth 1)"
   },
   {
+   "from": "layout:/administration/users/[id]@app/(admin)/administration/users/[id]",
+   "to": "/administration/users/[id]/[[...tab]]",
+   "kind": "layout",
+   "confidence": "pattern",
+   "via": "features/admin/users/record/userSurfaces.ts (depth 2)"
+  },
+  {
+   "from": "layout:/administration/users/[id]@app/(admin)/administration/users/[id]",
+   "to": "/administration/users/admins",
+   "kind": "layout",
+   "confidence": "exact",
+   "via": "features/admin/users/record/userSurfaces.ts (depth 2)"
+  },
+  {
+   "from": "layout:/administration/users/[id]@app/(admin)/administration/users/[id]",
+   "to": "/administration/users/email",
+   "kind": "layout",
+   "confidence": "exact",
+   "via": "features/admin/users/record/userSurfaces.ts (depth 2)"
+  },
+  {
    "from": "layout:/administration/users@app/(admin)/administration/users",
    "to": "/administration/usage",
    "kind": "layout",
@@ -87697,6 +90429,34 @@
    "via": "features/marketing/smart-add/SmartAddBrandPage.tsx (depth 1)"
   },
   {
+   "from": "layout:/marketing/brands/smart-add@app/(core)/marketing/brands/smart-add",
+   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "kind": "layout",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 3)"
+  },
+  {
+   "from": "layout:/marketing/brands/smart-add@app/(core)/marketing/brands/smart-add",
+   "to": "/marketing/brands/smart-add/enrich/[brandId]",
+   "kind": "layout",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 3)"
+  },
+  {
+   "from": "layout:/marketing/brands/smart-add@app/(core)/marketing/brands/smart-add",
+   "to": "/marketing/brands/smart-add/found",
+   "kind": "layout",
+   "confidence": "exact",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 3)"
+  },
+  {
+   "from": "layout:/marketing/brands/smart-add@app/(core)/marketing/brands/smart-add",
+   "to": "/marketing/brands/smart-add/validate/[brandId]",
+   "kind": "layout",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 3)"
+  },
+  {
    "from": "layout:/marketing/operations/connections@app/(core)/marketing/operations/connections",
    "to": "/marketing/operations/connections",
    "kind": "layout",
@@ -88209,6 +90969,13 @@
   },
   {
    "from": "layout:/messenger@app/(core)/messenger",
+   "to": "/messenger/agents",
+   "kind": "layout",
+   "confidence": "exact",
+   "via": "features/messaging/messenger/messenger-route.ts (depth 1)"
+  },
+  {
+   "from": "layout:/messenger@app/(core)/messenger",
    "to": "/notes",
    "kind": "layout",
    "confidence": "exact",
@@ -88500,6 +91267,27 @@
    "kind": "layout",
    "confidence": "exact",
    "via": "features/auth/components/module-landing/landings/directory.ts (depth 3)"
+  },
+  {
+   "from": "layout:/organizations/[orgId]/admin/users/[userId]@app/(core)/organizations/[orgId]/admin/users/[userId]",
+   "to": "/administration/users/[id]/[[...tab]]",
+   "kind": "layout",
+   "confidence": "pattern",
+   "via": "features/admin/users/record/userSurfaces.ts (depth 2)"
+  },
+  {
+   "from": "layout:/organizations/[orgId]/admin/users/[userId]@app/(core)/organizations/[orgId]/admin/users/[userId]",
+   "to": "/administration/users/admins",
+   "kind": "layout",
+   "confidence": "exact",
+   "via": "features/admin/users/record/userSurfaces.ts (depth 2)"
+  },
+  {
+   "from": "layout:/organizations/[orgId]/admin/users/[userId]@app/(core)/organizations/[orgId]/admin/users/[userId]",
+   "to": "/administration/users/email",
+   "kind": "layout",
+   "confidence": "exact",
+   "via": "features/admin/users/record/userSurfaces.ts (depth 2)"
   },
   {
    "from": "layout:/organizations/[orgId]/admin/users/[userId]@app/(core)/organizations/[orgId]/admin/users/[userId]",
@@ -92037,6 +94825,41 @@
    "via": "app/(admin)/administration/config.ts (depth 2)"
   },
   {
+   "from": "sidebar:app-(core)/ResearchTopicShell",
+   "to": "/research/topics/[topicId]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/research/service/research-endpoints.ts (depth 3)"
+  },
+  {
+   "from": "sidebar:app-(core)/ResearchTopicShell",
+   "to": "/research/topics/[topicId]/document",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/research/service/research-endpoints.ts (depth 3)"
+  },
+  {
+   "from": "sidebar:app-(core)/ResearchTopicShell",
+   "to": "/research/topics/[topicId]/experts",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/research/service/research-endpoints.ts (depth 3)"
+  },
+  {
+   "from": "sidebar:app-(core)/ResearchTopicShell",
+   "to": "/research/topics/[topicId]/keywords",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/research/service/research-endpoints.ts (depth 3)"
+  },
+  {
+   "from": "sidebar:app-(core)/ResearchTopicShell",
+   "to": "/research/topics/[topicId]/sources/[sourceId]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/research/service/research-endpoints.ts (depth 3)"
+  },
+  {
    "from": "sidebar:commerce-review/StoreConnectShell",
    "to": "/commerce/drafts",
    "kind": "sidebar",
@@ -92821,6 +95644,13 @@
    "via": "features/scopes/registry/entityRegistry.ts (depth 1)"
   },
   {
+   "from": "sidebar:knowledge/HubSidebar",
+   "to": "/o/[id]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "lib/deep-link/openPath.ts (depth 2)"
+  },
+  {
    "from": "sidebar:marketing/CrawlSubnav",
    "to": "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]",
    "kind": "sidebar",
@@ -92833,6 +95663,34 @@
    "kind": "sidebar",
    "confidence": "exact",
    "via": "features/marketing/components/shared/RecordUnavailableNotice.tsx (depth 2)"
+  },
+  {
+   "from": "sidebar:marketing/CrawlSubnav",
+   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 2)"
+  },
+  {
+   "from": "sidebar:marketing/CrawlSubnav",
+   "to": "/marketing/brands/smart-add/enrich/[brandId]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 2)"
+  },
+  {
+   "from": "sidebar:marketing/CrawlSubnav",
+   "to": "/marketing/brands/smart-add/found",
+   "kind": "sidebar",
+   "confidence": "exact",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 2)"
+  },
+  {
+   "from": "sidebar:marketing/CrawlSubnav",
+   "to": "/marketing/brands/smart-add/validate/[brandId]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 2)"
   },
   {
    "from": "sidebar:marketing/CrawlSubnav",
@@ -92871,7 +95729,63 @@
   },
   {
    "from": "sidebar:marketing/MarketingBrandCrumb",
+   "to": "/marketing/[brandId]/identity/audience",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/components/brand/MarketingBrandCrumb.tsx"
+  },
+  {
+   "from": "sidebar:marketing/MarketingBrandCrumb",
+   "to": "/marketing/[brandId]/identity/claims",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/components/brand/MarketingBrandCrumb.tsx"
+  },
+  {
+   "from": "sidebar:marketing/MarketingBrandCrumb",
+   "to": "/marketing/[brandId]/identity/guidelines",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/components/brand/MarketingBrandCrumb.tsx"
+  },
+  {
+   "from": "sidebar:marketing/MarketingBrandCrumb",
+   "to": "/marketing/[brandId]/identity/knowledge",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/components/brand/MarketingBrandCrumb.tsx"
+  },
+  {
+   "from": "sidebar:marketing/MarketingBrandCrumb",
    "to": "/marketing/[brandId]/identity/media",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/components/brand/MarketingBrandCrumb.tsx"
+  },
+  {
+   "from": "sidebar:marketing/MarketingBrandCrumb",
+   "to": "/marketing/[brandId]/identity/messaging",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/components/brand/MarketingBrandCrumb.tsx"
+  },
+  {
+   "from": "sidebar:marketing/MarketingBrandCrumb",
+   "to": "/marketing/[brandId]/identity/offerings",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/components/brand/MarketingBrandCrumb.tsx"
+  },
+  {
+   "from": "sidebar:marketing/MarketingBrandCrumb",
+   "to": "/marketing/[brandId]/identity/strategy",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/components/brand/MarketingBrandCrumb.tsx"
+  },
+  {
+   "from": "sidebar:marketing/MarketingBrandCrumb",
+   "to": "/marketing/[brandId]/identity/voice",
    "kind": "sidebar",
    "confidence": "pattern",
    "via": "features/marketing/components/brand/MarketingBrandCrumb.tsx"
@@ -92896,6 +95810,34 @@
    "kind": "sidebar",
    "confidence": "pattern",
    "via": "features/marketing/components/brand/MarketingBrandCrumb.tsx"
+  },
+  {
+   "from": "sidebar:marketing/MarketingBrandCrumb",
+   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 2)"
+  },
+  {
+   "from": "sidebar:marketing/MarketingBrandCrumb",
+   "to": "/marketing/brands/smart-add/enrich/[brandId]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 2)"
+  },
+  {
+   "from": "sidebar:marketing/MarketingBrandCrumb",
+   "to": "/marketing/brands/smart-add/found",
+   "kind": "sidebar",
+   "confidence": "exact",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 2)"
+  },
+  {
+   "from": "sidebar:marketing/MarketingBrandCrumb",
+   "to": "/marketing/brands/smart-add/validate/[brandId]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 2)"
   },
   {
    "from": "sidebar:marketing/SocialsShell",
@@ -92931,6 +95873,34 @@
    "kind": "sidebar",
    "confidence": "pattern",
    "via": "features/marketing/social/components/TrackAccountDialog.tsx (depth 1)"
+  },
+  {
+   "from": "sidebar:marketing/SocialsShell",
+   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 2)"
+  },
+  {
+   "from": "sidebar:marketing/SocialsShell",
+   "to": "/marketing/brands/smart-add/enrich/[brandId]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 2)"
+  },
+  {
+   "from": "sidebar:marketing/SocialsShell",
+   "to": "/marketing/brands/smart-add/found",
+   "kind": "sidebar",
+   "confidence": "exact",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 2)"
+  },
+  {
+   "from": "sidebar:marketing/SocialsShell",
+   "to": "/marketing/brands/smart-add/validate/[brandId]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 2)"
   },
   {
    "from": "sidebar:marketing/brand-sections",
@@ -93347,10 +96317,24 @@
   },
   {
    "from": "sidebar:pdf-extractor/PdfStudioShell",
+   "to": "/knowledge/sources/[id]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/source-studio/sourceStudioModel.ts (depth 3)"
+  },
+  {
+   "from": "sidebar:pdf-extractor/PdfStudioShell",
    "to": "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]",
    "kind": "sidebar",
    "confidence": "pattern",
    "via": "features/scopes/registry/entityRegistry.ts (depth 3)"
+  },
+  {
+   "from": "sidebar:pdf-extractor/PdfStudioShell",
+   "to": "/o/[id]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "lib/deep-link/openPath.ts (depth 4)"
   },
   {
    "from": "sidebar:pdf-extractor/PdfStudioShell",
@@ -94572,6 +97556,34 @@
   },
   {
    "from": "sidebar:shell",
+   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 3)"
+  },
+  {
+   "from": "sidebar:shell",
+   "to": "/marketing/brands/smart-add/enrich/[brandId]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 3)"
+  },
+  {
+   "from": "sidebar:shell",
+   "to": "/marketing/brands/smart-add/found",
+   "kind": "sidebar",
+   "confidence": "exact",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 3)"
+  },
+  {
+   "from": "sidebar:shell",
+   "to": "/marketing/brands/smart-add/validate/[brandId]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/marketing/smart-add/smartAddUrl.ts (depth 3)"
+  },
+  {
+   "from": "sidebar:shell",
    "to": "/marketing/keyword-research",
    "kind": "sidebar",
    "confidence": "exact",
@@ -94814,6 +97826,13 @@
    "kind": "sidebar",
    "confidence": "exact",
    "via": "features/shell/constants/nav-data.ts"
+  },
+  {
+   "from": "sidebar:shell",
+   "to": "/messenger/agents",
+   "kind": "sidebar",
+   "confidence": "exact",
+   "via": "features/messaging/messenger/messenger-route.ts (depth 1)"
   },
   {
    "from": "sidebar:shell",
@@ -95132,6 +98151,41 @@
   },
   {
    "from": "sidebar:shell",
+   "to": "/shapes/[kind]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
+  },
+  {
+   "from": "sidebar:shell",
+   "to": "/shapes/all",
+   "kind": "sidebar",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
+  },
+  {
+   "from": "sidebar:shell",
+   "to": "/shapes/instances/[id]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
+  },
+  {
+   "from": "sidebar:shell",
+   "to": "/shapes/new",
+   "kind": "sidebar",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
+  },
+  {
+   "from": "sidebar:shell",
+   "to": "/shapes/playground",
+   "kind": "sidebar",
+   "confidence": "exact",
+   "via": "features/content-ir/studio/constants.ts (depth 1)"
+  },
+  {
+   "from": "sidebar:shell",
    "to": "/spaces",
    "kind": "sidebar",
    "confidence": "exact",
@@ -95447,6 +98501,13 @@
   },
   {
    "from": "sidebar:surfaces/SurfacesAdminShell",
+   "to": "/knowledge/extractions/[id]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "features/page-extraction/data-review/constants.ts (depth 4)"
+  },
+  {
+   "from": "sidebar:surfaces/SurfacesAdminShell",
    "to": "/marketing/brands",
    "kind": "sidebar",
    "confidence": "exact",
@@ -95523,6 +98584,13 @@
    "via": "features/scopes/registry/entityRegistry.ts (depth 2)"
   },
   {
+   "from": "sidebar:transcripts/TranscriptsSidebar",
+   "to": "/o/[id]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "lib/deep-link/openPath.ts (depth 3)"
+  },
+  {
    "from": "sidebar:war-room/WarRoomShell",
    "to": "/documents/[id]",
    "kind": "sidebar",
@@ -95549,6 +98617,13 @@
    "kind": "sidebar",
    "confidence": "pattern",
    "via": "components/agent-copy/alchemy-door.ts (depth 3)"
+  },
+  {
+   "from": "sidebar:war-room/WarRoomShell",
+   "to": "/o/[id]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "lib/deep-link/openPath.ts (depth 4)"
   },
   {
    "from": "sidebar:war-room/WarRoomShell",
@@ -95593,11 +98668,25 @@
    "via": "features/scopes/registry/entityRegistry.ts (depth 1)"
   },
   {
+   "from": "sidebar:war-room/useThreadTabs",
+   "to": "/o/[id]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "lib/deep-link/openPath.ts (depth 2)"
+  },
+  {
    "from": "sidebar:workflow-runtime/WorkflowListTabs",
    "to": "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]",
    "kind": "sidebar",
    "confidence": "pattern",
    "via": "features/scopes/registry/entityRegistry.ts (depth 2)"
+  },
+  {
+   "from": "sidebar:workflow-runtime/WorkflowListTabs",
+   "to": "/o/[id]",
+   "kind": "sidebar",
+   "confidence": "pattern",
+   "via": "lib/deep-link/openPath.ts (depth 3)"
   },
   {
    "from": "tabs:agents/mode-bar",

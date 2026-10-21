@@ -288,6 +288,35 @@ function scanFile(file: string): FileInfo {
       links.push({ path: p, kind });
     }
   }
+  // `const identityPath = marketingRoutes.brandIdentity(x)` ... `${identityPath}/voice`: evaluate the alias
+  const aliases = new Map<string, string>();
+  for (const m of src.matchAll(/\b(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:(["'])(\/[^"'$]*)\2\s*[;\n]|([\w.]+)\s*\()/g)) {
+    if (m[3]) { aliases.set(m[1], m[3]); continue; }
+    if (!helperFns.has(m[4])) continue;
+    const parsed = parseCallArgs(src, m.index! + m[0].length);
+    const v = evalHelper(m[4], parsed ? parsed.map(argValue) : [HELPER_ARG, HELPER_ARG, HELPER_ARG, HELPER_ARG]);
+    if (v) aliases.set(m[1], v);
+  }
+  for (const m of src.matchAll(/`\$\{\s*([\w.]+)\s*(\()?/g)) {
+    let prefix: string | undefined;
+    let end: number;
+    if (m[2]) {
+      if (!helperFns.has(m[1])) continue;
+      const parsed = parseCallArgs(src, m.index! + m[0].length);
+      if (!parsed) continue;
+      prefix = evalHelper(m[1], parsed.map(argValue)) ?? undefined;
+      end = src.indexOf("}", src.indexOf(")", m.index! + m[0].length + parsed.join(",").length));
+    } else {
+      prefix = aliases.get(m[1]);
+      end = src.indexOf("}", m.index!);
+    }
+    if (!prefix || end < 0) continue;
+    const close = src.indexOf("`", end);
+    if (close < 0 || close - end > 160) continue;
+    const rest = src.slice(end + 1, close).replace(/\$\{[^}]*\}/g, PH);
+    if (rest && !rest.startsWith("/")) continue;
+    links.push({ path: prefix.split("?")[0] + rest, kind: "link" });
+  }
   if (!helperSourceFiles.has(rp(file))) {
     // helper names inside import statements are not uses
     const body = src.replace(/(?:^|\n)[ \t]*(?:import|export)\s+(?!type\b)[^"';]*?from\s*["'][^"']+["'];?/g, "\n");

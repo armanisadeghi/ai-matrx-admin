@@ -172,9 +172,14 @@ copy.
 
 ## Route link graph
 
-`pnpm route-flow` writes `features/shell/frame/route-flow.json` (deterministic, sorted): every page as a node (route, file, group, tree node + how found from `route-homes.tsv`, menu labels, best-effort title, inbound/outbound counts, `reachableFromMenu`) and an edge for every link found in a page file or anything it imports (depth 4): `link` (href), `push` (router.push/replace), `config` (href/path/url/to in objects), `layout` (a layout's links, credited to its section index page), `sidebar` (the brand/website/SEO section registries), `menu` (nav-data, from the synthetic `@menu` node). `exact` = a literal path; `pattern` = a template or dynamic-segment match. Regenerate after adding pages or links; script: `scripts/route-flow/extract.ts`.
+`pnpm route-flow` writes `features/shell/frame/route-flow.json` (deterministic, sorted): every page as a node (route, file, group, tree node, menu labels, title, `inbound`/`outbound`, `inboundPages`/`inboundSynthetic`/`inboundAdminMap`, `hostedBy`, `reachableFromMenu`, `reachableOnlyViaAdminMap`), `summaryBySegment` (per top route segment: pages, reachable, reachableOnlyViaAdminMap, stranded), the `synthetic` nodes and every edge.
 
-Blind spots: hrefs built by helpers other than `marketingRoutes` (HR, education, ...), slug concatenation, links in barrels' unused exports (over-reports), layouts that are not a section's index page, server `redirect()` targets, and links that live in the database.
+- **Page edges** come from the page file and the components it renders (depth 4). An import is followed only when its binding is rendered (`<X`), is data-named (`FOO_TABS`, `*Items`, `*Routes`…), or is a dynamic import; barrels (`index.ts`) are resolved to the file that defines the named export. Kinds: `link`, `push`, `config`.
+- **Shared navigation is never a page's link.** Menus are `menu:<product>` (kind `menu`); a shared sidebar, tab bar, shell or crumb (`features/shell/**`, files named `*Sidebar/*Tabs/*Shell/*Crumb/*Nav`) is `sidebar:<feature>/<Name>` (kind `sidebar`); a layout's links are `layout:<route>@<dir>` (kind `layout`); the agent mode bar is `tabs:agents/mode-bar*` (kind `tab`). Each synthetic node lists the pages that host it; a host page reached makes the node's targets reachable.
+- **`admin-map`** edges are links from `/<feature>/admin` maps, `/administration/documentation/**` and feature-map registries. `reachableFromMenu` ignores them; `reachableOnlyViaAdminMap` is what they alone reach.
+- **Route helpers are evaluated with the call site's literal arguments**: `marketingRoutes.*` and the HR module's `hr*Href` builders (call or bare reference), `const x = helper(...)` aliases used as `${x}/suffix`, and the agent mode bar from `@ai-matrx/chat`.
+
+Blind spots: hrefs from other helpers, slug concatenation, in-page tab state (competitors, SEO backlinks/search-console sub-views), server `redirect()` targets, links in the database.
 
 ## Tests
 
@@ -186,6 +191,8 @@ the canvas and the ask bar, the per-page memory and the link, the forms and canv
 ownership attributes, and no `className`/`style` on any exported props type.
 
 ## Change log
+
+- 2026-10-21: route link graph de-noised (synthetic menu/sidebar/layout/tab nodes, rendered-only imports, barrels resolved, admin-map edges, helper evaluation).
 
 - 2026-10-21 (round 9): the sidebar resizes (snap shut, remembered); Inset | Flush and
   Contrast | Same switches; the grid's favorites card gets its own `--matrx-frame-well` token.
