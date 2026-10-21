@@ -229,6 +229,13 @@ action items, summary). Rules:
   notes frame (`meetingNotesDocument`) in the organization new work is filed in
   (none chosen → the organization gate asks). It autosaves like `/board`, is
   listed in All boards and opens at `/board/<id>` (the header's open icon).
+  The database holds one live board per person per meeting (index
+  `boards_one_board_per_person_per_meeting`); `getMeetingBoard` creates with the
+  link in the same insert and re-reads the winner of a refused duplicate, so two
+  tabs never make two. The header carries a **Notes** button (flies to the
+  Meeting notes frame) and a **Live** badge while the room is in call; each
+  meeting-notes tile's "…" menu has **Send to Notes** (a new note holding the
+  part's reference).
   What a person adds is theirs alone — nobody else in the meeting sees it.
   A **guest** has no account: the same document is kept in this browser
   (`matrx.meet.board.v2.<meetingId>`, `useGuestMeetingBoard`).

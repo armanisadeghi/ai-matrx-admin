@@ -85,8 +85,8 @@ tiles on top of this foundation.
 | Working copy | One Redux working copy per record for notes, files and documents. Ref-counted views, one coalesced save, flush when the last view leaves, retry with backoff (offline-aware), permanent failures wait for the person, and a conflict choice (Keep mine / Take theirs / Merge) instead of a silent overwrite. Notes save to the database through this same path (one door). A document's Univer instance is parked and re-attached, so undo survives sleep; carets are kept per record | `lib/working-copy/*` (read its `FEATURE.md`); kinds in `features/notes/utils/noteLiveContent.ts`, `features/files/redux/working-copy.ts`, `features/documents/document-model/documentModels.ts` |
 | Focus | Automatic focus never takes the caret from a field the person is typing in (this was the "new note loses focus, keys land in the chat" bug). The Board claims the keyboard on load | `lib/dom/focus-guard.ts` (re-exports `@ai-matrx/chat/utils/dom/focus-guard`), `engine/claim-load-focus.ts` |
 | Containment | Inside a tile, the router opens other pages on the Board as a Page tile, or in a new tab with a toast. Document navigations started by a press in a tile are cancelled and re-routed (Navigation API). Each tile has its own error boundary, so one tile's crash stays in that tile | `engine/tile-navigation.tsx` (`TileNavigationBoundary`, `useTileNavigationGuard`, `BoardNavigationContext`), used in `components/BoardTile.tsx` and `components/BoardViewport.tsx`; `openOnBoard` in `home/UserBoard.tsx`; `__tests__/tile-navigation.test.tsx` |
-| Page tiles | Any app page as a tile: same-origin iframe; `<html data-board-embed>`, set by a boot script, hides the shell chrome; dedupe through `recordKeyOf` | `items/page-items.tsx`, `features/shell/components/BoardEmbedBootScript.tsx`, `styles/shell.css` §13d; `__tests__/page-items.test.ts` |
-| Meeting board | The meeting's board IS `UserBoard` over a saved `projects.boards` row (one per person per meeting, linked by `settings.meeting_id`), opened on a "Meeting notes" frame of five `meeting_part` tiles. Guests get the same document kept in the browser, filtered to guest-safe types | `features/meet/components/board/MeetingBoard.tsx`, `useGuestMeetingBoard.ts`, `features/board/items/meeting-items.tsx`, `persistence/boardsService.ts` (`getMeetingBoard`) |
+| Page tiles | Any app page as a tile: same-origin iframe; `<html data-board-embed>`, set by a boot script, hides the shell chrome; dedupe through `recordKeyOf`. The framed page's surface is the tile's surface (framed-surface bridge, 2026-10-21) | `items/page-items.tsx`, `embed/*`, `features/shell/components/BoardEmbedBootScript.tsx`, `styles/shell.css` §13d; `__tests__/page-items.test.ts`, `__tests__/page-tile-surface-bridge.test.tsx` |
+| Meeting board | The meeting's board IS `UserBoard` over a saved `projects.boards` row (one per person per meeting, linked by `settings.meeting_id` and held unique by index `boards_one_board_per_person_per_meeting`; header Notes jump, Live badge, tile "Send to Notes"), opened on a "Meeting notes" frame of five `meeting_part` tiles. Guests get the same document kept in the browser, filtered to guest-safe types | `features/meet/components/board/MeetingBoard.tsx`, `useGuestMeetingBoard.ts`, `features/board/items/meeting-items.tsx`, `persistence/boardsService.ts` (`getMeetingBoard`) |
 | Saving | Lazy document build; version-guarded save; keepalive flush on hide/pagehide; the newest edit is sent urgently beside a save already in flight; two tabs on one board merge per tile | `persistence/autosave.ts`, `persistence/useSavedBoard.ts`, `board/merge.ts` |
 | URL | A hash-only address write (`#cam=`) forwards Next's history state, so the router isn't woken | `lib/url-state/addressWithoutNavigating.ts`; `lib/url-state/__tests__/hashOnlyWrites.test.ts` |
 | CSS traps | (a) no `[style…]` attribute selector with a descendant part; (b) `::highlight()` rules only when annotations exist, scoped by root class | `styles/__tests__/no-style-attribute-descendant-selectors.test.ts`, `features/rich-document/annotations/__tests__/highlight-rules-scoped.test.ts` |
@@ -102,19 +102,6 @@ On the 100-stream stress board: 58 fps standing still, 21–24 fps panning (soft
 
 ### Partial
 
-- **"Anything can be added."** About 25 native item types plus Page tiles cover everything else.
-  Page tiles are a stopgap: the Board's AI agent sees a Page tile by its title only, because the
-  page's surface registers inside the iframe (`page-items.tsx`, `surface: { none: … }`). What's
-  left: either bridge the framed page's surface to the parent over `postMessage`, or turn the most
-  used pages into native item types.
-- **Meeting ↔ board link.** It works, but the link is a JSON key (`settings.meeting_id`) with no
-  database guarantee of one board per person per meeting. The Studio board already uses the stronger
-  pattern: a unique index `boards_one_studio_per_brand` over `settings.studio_brand_id`. Add the same
-  for meetings (a partial unique index on `(user, settings->>'meeting_id')` among live rows).
-  `getMeetingBoard` then becomes a refused-duplicate re-read like `getOrCreateStudioBoard`.
-- **Meeting board extras the owner saw as missing:** a jump to the meeting's notes, a live
-  indicator on the board, and throwing a tile up into Notes. None of these were found in
-  `MeetingBoard.tsx`.
 - **Scale proof.** The 10–15-page target was measured on 2026-10-02 only. Since then, shapes,
   sticky notes, social tiles, templates and the after-first-paint body mount have been added.
   Nothing has re-measured it since.
@@ -198,16 +185,10 @@ The camera is per viewer (localStorage plus `#cam=`), never saved to the board.
    menu-open p95, plus heap after 10 minutes. Compare with §2. Turn the run into a script with
    budgets so it can be re-run, and put it in `scripts/` next to `board-add-timing.mjs`. Treat any
    regression as a defect and find it with a CDP trace (recipe in §5).
-2. **Database guarantee for the meeting board.** Add a partial unique index like
-   `boards_one_studio_per_brand`, and make `getMeetingBoard` a create-or-reread. Run it on live as
-   admin@admin.com: it is a short DDL, and the clone is only for destructive or long-locking jobs.
-   Write no migration files; apply it through the Supabase MCP.
-3. **Meeting board extras:** jump to notes, live indicator, and throwing a tile up into Notes.
-   Use the existing `meeting_part` and notes primitives.
-4. **Page-tile agent bridge:** the framed page posts its surface (values and tools) to the parent
-   through `postMessage`. The Page item then declares a real surface, and the Board's agent can act
-   inside a Page tile.
-5. **A standing performance guard:** step 1's script with budgets, run nightly or before release.
+2. **Page-tile agent bridge: DONE 2026-10-21.** A Page tile carries its framed page's full surface
+   (values, write targets, client tools) to the Board's agent; see `FEATURE.md` "Page tiles carry
+   their page's full surface". Native tiles for the most used pages are still the better tile.
+3. **A standing performance guard:** step 1's script with budgets, run nightly or before release.
 
 ---
 

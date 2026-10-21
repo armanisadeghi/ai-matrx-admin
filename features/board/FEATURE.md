@@ -98,7 +98,7 @@ Closed 2026-10-04 (details in CHANGELOG.md): Board as its own menu item with eve
 3. **Caret following** is not built for plain `<textarea>`/`<input>` or Monaco.
 4. **Item leftovers.** Study kit: the agent sees the 25 most recent candidates, not a search. Scope: no `sleeps` opt-in yet; the new-scope type chooser does not show the organization. Projects carry no archived flag, so the Project picker has no archive reveal. Not agent-writable on a deck, as on its editor: visibility, class, delete, reorder.
 5. **Next batch of interactions.** Arman: "There are a lot more things like that" — ask him. A phone swipe from the left edge pans the Board in the browser emulator; a real iOS edge swipe is untested.
-6. **Small:** Files has no mobile host for `/files/f`; Page tiles show an embedded page's surface to agents by title only; only the data-tables, notes-editor and documents briefs were chosen with their features in mind.
+6. **Small:** Files has no mobile host for `/files/f`; only the data-tables, notes-editor and documents briefs were chosen with their features in mind.
 7. **Composer-chrome leftovers** (UNVERIFIED): the store reachable outside the viewport (Layers as a Properties tab), an insets callback for fit-to-view.
 8. **A tile size contract for kinds** (content-ir compact/tile variant with a scaled fallback).
 9. **Annotations on any tile** (one overlay generalising the PDF and image annotation layers).
@@ -144,7 +144,12 @@ drops it). Service + hook: `persistence/` (see The Board).
   `camera` column is read for old rows and copied by duplicate; nothing writes it.
 A meeting's board is the row whose `settings.meeting_id` is that meeting, per person
 (`getMeetingBoard`, `useSavedBoard({ meeting })`; created with the meeting's notes); a copy drops
-the link (`settingsForCopy`). It is outside the
+the link (`settingsForCopy`). The database holds it unique: index `boards_one_board_per_person_per_meeting`
+over `(created_by, settings->>'meeting_id')` among live rows (2026-10-21), so `getMeetingBoard` is a
+create-or-reread: the link goes in the same insert and a refused duplicate (23505) re-reads the winner,
+like `getOrCreateStudioBoard`. Extras in the meeting's header and tile menu: a Notes button flies to the
+"Meeting notes" frame (`UserBoard` `jumpToFrame`), a Live badge shows while the room is in call, and a
+meeting-notes tile's "…" menu has "Send to Notes" (`items/meeting-to-notes.ts`: a new note holding the part's reference). It is outside the
   version guard's fingerprint (`documentFingerprint`), so a pan in one tab never makes another tab's
   edit a conflict — it did, and the conflict stopped that tab's autosave.
 - **Saving is lazy and light.** `UserBoard` reports a BUILDER (`onChange(() => doc)`) on every store
@@ -178,6 +183,31 @@ Measured in this container (headless Chromium, software raster, dev build, 4 vCP
 standing still with 100 live streams 58 fps (was 21); panning with 100 live streams 21–24 fps (was
 7–8); panning when nothing streams 60 fps; the 12-tile board pans at 60 fps. Re-measure on real
 hardware with a production build before tuning further.
+
+## Scale bench (2026-10-21)
+
+`node scripts/board-scale-bench.mjs --live` (aimatrx.com, the test admin; drop `--live` for the shared
+preview after `pnpm preview:ready /board`). Headless Chromium, 1440×900, zoom 75%. It creates "Scale
+bench <date>" with 14 tiles over real records (3 long chats, a Test Reply chat that streams during the
+run, one more chat, a 25k-row table, a document, an 87k-character note, project, task, meeting, research
+topic, PDF, a /notes Page tile), measures, writes `tmp/board-scale-bench/*.json`, exits 1 on a miss and
+archives only the board and the conversation it made. Flags: `--idle-min N` (heap re-read after N idle
+minutes, default 10), `--profile` (CPU profile per gesture, top self time in the JSON), `--trace`
+(invalidation-tracking trace of one pan), `--keep`.
+
+Budgets (from 2026-10-02): pan / drag / resize / zoom frame p95 ≤ 20 ms; tile menu and Add menu open
+≤ 100 ms; no task over 200 ms while panning; heap growth over 10 idle minutes ≤ 15%; ≤ 2 requests in
+30 s idle.
+
+First live run, 2026-10-21 (before the fix below): pan p95 100 ms (longest task 498 ms), drag p95
+133 ms (160 tasks over 50 ms), resize 16.8, zoom 16.8, Add menu 102 ms, 0 idle requests, heap 482 MB,
+35k DOM nodes / 19k elements, all 14 bodies mounted; the trace showed no subtree invalidation storm
+(3) and UpdateLayoutTree at most 1,673 elements. Cause of the pan/drag misses: the admin error badge's
+lift pass (`floatingLiftFor` → hundreds of `elementsFromPoint`) ran on its 1 s backstop and on every
+scroll mid-gesture, ~2 s of main thread in a 2 s drag; the assists dock pass did the same once its
+settle timer fired between long frames. Fix: `lib/layout/page-motion.ts` — no placement pass while a
+pointer is held or a wheel/scroll is under way; a scroll asks for one pass once quiet. Guard:
+`features/admin/error-inspector/__tests__/badge-lift-never-runs-mid-gesture.test.tsx`.
 
 ## Arrange, far-zoom cards, item status (2026-10-04)
 
@@ -371,6 +401,7 @@ dormant; the host keeps them in an `ItemSurfaceIndex` (`BoardToolHost.itemSurfac
   `agentWrite` (`SurfaceToolCall`): same type check, anchored patch, value contract, `validate`,
   apply policy (ask → this call's approval card) and `surfaceWriteToolOutput` envelope as on the page.
 - A host without `itemSurfaces` (War Room, workflow boards) lists identity only.
+- **Page tiles carry their page's full surface (2026-10-21).** A Page tile (`items/page-items.tsx`, any app page in a same-origin iframe) declares `surface: { published }`: its surface is whatever the framed page publishes. The page side (`embed/BoardEmbedSurfaceBridge.tsx`, mounted in `DeferredIslands`, active only under `<html data-board-embed>`) puts a bridge on its window over its own surface registry and posts READY to the parent; the board side (`embed/FramedPageSurface.ts` in the Page body, inside the tile's `SurfaceActivity`) hears it, reads the bridge directly (same origin) and registers a proxy runtime under the page's own surface name: scope read live from the page, the page's write handlers (validate / apply / readCurrent / cost) and client tools forwarded into it. So `board_items`, `board_open_item` and `board_item_act` (and, while the tile is live, the surface chain and tool injection) see the page's real values, targets and tools; policy and approval cards run on the board, the page only validates and applies. Every window message is checked for origin and sender window (`embed/framed-surface-bridge.ts`). The tile follows the page as it navigates within itself (the page registry's changes re-publish); while the page is gone (asleep, reloading, navigated off-origin) the tile registers NO surface, so nothing it said before is answered as current: `board_open_item` waits for it to come back and otherwise says it did not mount, and `board_items` lists its dated last-known basics. Before it has spoken, the tile names the surface it last published in this tab, else the one whose manifest `urlPattern` matches its path (`expectedPageSurface`); `describe(...).loadsSurface` lets `board_open_item` wait for a page whose surface is not known yet. Guards: `__tests__/page-tile-surface-bridge.test.tsx` (values, a tool and a write run in the frame, origin and window enforced both ways, in-frame navigation, unload) and the `page` remount case (the surface comes back after hide/show and after a remount loads the page again).
 - **A live tile is introduced as one item of the Board.** When the stamped surface is mounted inside a host that declares `SurfaceManifest.hostLead`, `buildSurfaceChain` puts that sentence on the host level's first value (the `board_items` list rides in the same level): the agent reads the tile's surface, then "this is one item on the person's Board", then every item and how to reach it (`board_open_item` → `board_item_act`). Guard: `surface-chain.test.tsx`.
 - **Lines are context (a chat tile's own context; Arman, 2026-10-08, SI-06).** "We should have this on our board regardless and our context system would handle it instantly." A line (`BoardConnection`) between a tile and a chat tile, in either direction, makes that tile a **connected source** of that chat: the chat's context carries its FULL surface values (the same `declaredValues` a selected tile gets, even when the tile is the live one) plus the normal fair-share overview of everything else. Computed FOR the asking tile (`tools/tile-context.ts` `buildTileContext(tileId, host)`), so two chat tiles with different lines see different sets; the asking chat is not an item of its own context; no line = no entry. It is `boardItemsOverview` with rows marked `connected`: connected sources are measured OUTSIDE the basics budget and the 24,000 inline cap (they share `CONNECTED_FULL_TOTAL_CHARS` 60,000, floor `CONNECTED_FULL_FLOOR_CHARS` 2,000 each, ceiling `ITEM_VALUE_MAX_CHARS`), and everyone else's fair share is computed over the others alone. Delivery uses the chat column's existing named context entry (`CanvasChatColumn getCanvasContext` -> `setContextEntries`, key `board_connected_context`, the same door the shell chat uses for its page): `items/connected-sources.tsx` `useConnectedChatContext` writes it when a line is drawn, rewrites it in the capture phase of every pointerdown / Enter / focus in the chat (a note edited since is read fresh) and removes it when the last line goes, so a drawn or removed line is true on the next message. The board surface (`BoardSurface`) and so the sidebar board chat are untouched. A person draws a line with the **arrow tool, from one tile onto another** (an arrow that starts and ends on tiles is a connection, anywhere else a mark; `UserBoard.onCreate`); the agent draws it with `board_connect(from_id, to_id)` (both go through `board.connect`; guard `__tests__/board-connect-tool-feeds-chat.test.tsx`). A line touching a chat tile is drawn firmer in the primary tone (the dot already marks the `to` end). The chat tile header shows the connected sources as small chips inside the existing header action (count, plus up to two names when the tile is wide; click flies to the tile, x takes the line away). Guards: `__tests__/tile-context.test.ts` (full values of connected, none of unconnected, per-chat sets) and the connected cases of `__tests__/board-items-fair-share.test.ts`. Open: a chat tile's context is only as fresh as its last pointerdown/focus in the chat; a source edited while the chat is focused and unsent is re-read on the next pointerdown/Enter, not live.
 - **The person's view and selection are theirs while they work.** When a tile is interacting or full
