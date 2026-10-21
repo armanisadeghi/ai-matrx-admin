@@ -112,6 +112,8 @@ import { toast } from "@/components/ui/use-toast";
 import { toast as notice } from "@/lib/toast";
 
 import { fitZoomRatio } from "@ai-matrx/office/docs";
+import { useMacHomeEndKeys } from "@/features/documents/hooks/useMacHomeEndKeys";
+import { fitZoomToApply } from "@/features/documents/components/fitZoomPolicy";
 import { applyPageSetup, readPageSetup, type PageSetupApiLike } from "@ai-matrx/office/core/page-setup-apply";
 import { PageSetupDialog } from "@/features/documents/components/PageSetupDialog";
 import { setPreference } from "@/lib/redux/preferences/userPreferencesSlice";
@@ -298,6 +300,7 @@ export default function DocumentEditor({
   // teardown. Resolved per call so it never holds a disposed instance.
   const bodyReady = bootState === "ready" && unitId !== null;
   const canvasWrapperRef = useRef<HTMLDivElement | null>(null);
+  useMacHomeEndKeys(univerRef, bodyReady);
   const docComments = useDocComments({
     univer: univerRef.current,
     unitId,
@@ -369,14 +372,16 @@ export default function DocumentEditor({
   useEffect(() => {
     const container = containerRef.current;
     if (!container || bootState !== "ready" || unitId === null) return undefined;
+    let fitted = false;
     const apply = () => {
       const api = apiRef.current as unknown as {
         executeCommand?: (id: string, params?: unknown) => unknown;
       } | null;
-      void api?.executeCommand?.("doc.operation.set-zoom-ratio", {
-        unitId,
-        zoomRatio: fitZoomRatio(container.clientWidth, readPageSetupWidth(apiRef.current as unknown as PageSetupApiLike | null)),
-      });
+      // The comment rail and the outline narrow this stage on a desktop too: only a phone-sized window fits the page.
+      const zoomRatio = fitZoomToApply(window.innerWidth, fitted, fitZoomRatio(container.clientWidth, readPageSetupWidth(apiRef.current as unknown as PageSetupApiLike | null)));
+      if (zoomRatio === null) return;
+      fitted = zoomRatio !== 1;
+      void api?.executeCommand?.("doc.operation.set-zoom-ratio", { unitId, zoomRatio });
     };
     apply();
     const observer = new ResizeObserver(apply);
