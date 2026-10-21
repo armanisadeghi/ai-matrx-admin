@@ -168,7 +168,7 @@ export function BrandOverviewKpis({
     postProfileIds: accounts.map((a) => a.profileId).filter((id): id is string => Boolean(id)),
     siteIds,
     gscPeriods: gsc.periods,
-    gscReady: !gsc.isLoading && Boolean(gsc.rollup?.hasData),
+    gscReady: !gsc.isLoading,
   });
   const posts = accounts.reduce((sum, a) => sum + a.postsTracked, 0);
   const lastPost = accounts.map((a) => a.lastPostAt).filter((d): d is string => Boolean(d)).sort().at(-1) ?? null;
@@ -176,7 +176,7 @@ export function BrandOverviewKpis({
   const items = offerings.data ?? null;
   const confirmed = (items ?? []).filter((i) => i.status === "confirmed").length;
   const rivals = competitors.data ?? null;
-  const rollup = gsc.rollup;
+  const clicks = trends.clicks;
   const social = tabHref("social");
   // A hint shows only once its read has settled: never a false "connect" or "none" while loading.
   const settled = (loading: boolean, hint: ReactNode) => (loading ? undefined : hint);
@@ -226,19 +226,20 @@ export function BrandOverviewKpis({
       <KpiTile
         className="min-h-[76px]"
         label="Search clicks · 28d"
-        title="Google Search clicks to the brand's websites in the last 28 days."
-        loading={gsc.isLoading}
-        value={rollup?.hasData ? rollup.totalClicks.toLocaleString() : null}
-        trend={trends.clicks}
+        title="Every Google Search click to the brand's websites in the last 28 days, as Search Console counts it."
+        loading={trends.clicksLoading}
+        read={trends.clicksError ? { status: "error", error: trends.clicksError } : null}
+        value={clicks?.hasData ? clicks.total.toLocaleString() : null}
+        trend={clicks?.trend}
         href={tabHref("web")}
         hint={settled(
-          gsc.isLoading,
+          trends.clicksLoading,
           siteIds.length === 0 ? (
             <HintDoor href={tabHref("web")}>Add a website</HintDoor>
-          ) : !rollup?.hasData ? (
+          ) : !clicks?.hasData ? (
             <HintDoor href={marketingRoutes.connectionsGoogle()}>Connect Search Console</HintDoor>
-          ) : rollup.totalDeltaPct !== null ? (
-            <Delta value={rollup.totalDeltaPct} suffix="%" />
+          ) : clicks.deltaPct !== null ? (
+            <Delta value={clicks.deltaPct} suffix="%" />
           ) : (
             "No earlier period"
           ),

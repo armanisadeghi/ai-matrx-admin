@@ -7,7 +7,9 @@
  *   Summed per snapshot day; each account carries its latest known count forward (and its first
  *   count back), so an account read on a different day never shows as a jump or a dip.
  * - Posts per week: `social.post.posted_at` for those profiles, last 12 weeks, bucketed by week.
- * - Search clicks per day: `seo.gsc_perf_timeseries` for the rollup's own 28-day window, summed per day.
+ * - Search clicks: `seo.gsc_perf_timeseries` for the rollup's own 28-day window and the one before it,
+ *   summed per day. It is ALSO the KPI's number: the traffic-class rollup counts only clicks on queries
+ *   Google names (data-destruction 2026-10-21: 39 of 331), the Search Console total is every click.
  *   There is no multi-site timeseries RPC; a brand owns a handful of sites, read in one parallel batch.
  *
  * Every series is `null` when there is no real history (fewer than two points, or nothing in the
@@ -132,24 +134,54 @@ export function useBrandOverviewTrends({
   });
 
   const clicks = useQuery({
-    queryKey: ["marketing", "brand-overview", "click-trend", siteKey, gscPeriods.current.start, gscPeriods.current.end],
-    queryFn: async ({ signal }): Promise<TrendSeries | null> => {
-      const window: GscResolvedPeriods = { current: gscPeriods.current, compare: null };
-      const perSite = await Promise.all(siteIds.map((id) => getGscTimeseries(id, window, {}, signal)));
+    queryKey: [
+      "marketing", "brand-overview", "clicks", siteKey,
+      gscPeriods.current.start, gscPeriods.current.end, gscPeriods.compare?.start ?? null, gscPeriods.compare?.end ?? null,
+    ],
+    queryFn: async ({ signal }): Promise<SearchClicks> => {
+      const perSite = await Promise.all(siteIds.map((id) => getGscTimeseries(id, gscPeriods, {}, signal)));
       const byDay = new Map<string, number>();
+      let total = 0;
+      let compareTotal = 0;
+      let hasRows = false;
       for (const rows of perSite) {
         for (const r of rows) {
-          if (r.period !== "current") continue;
+          hasRows = true;
+          if (r.period !== "current") {
+            compareTotal += r.clicks ?? 0;
+            continue;
+          }
+          total += r.clicks ?? 0;
           byDay.set(r.day, (byDay.get(r.day) ?? 0) + (r.clicks ?? 0));
         }
       }
       const values = [...byDay.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([, v]) => v);
-      if (values.length < 2 || values.every((v) => v === 0)) return null;
-      return { values, period: `${values.length} days`, label: "Search clicks per day" };
+      // The KPI's own window, not the count of days that had rows.
+      const span = Math.round((Date.parse(gscPeriods.current.end) - Date.parse(gscPeriods.current.start)) / DAY) + 1;
+      return {
+        hasData: hasRows,
+        total,
+        deltaPct: gscPeriods.compare && compareTotal > 0 ? (total - compareTotal) / compareTotal : null,
+        trend: values.length >= 2 && values.some((v) => v > 0) ? { values, period: `${span} days`, label: "Search clicks per day" } : null,
+      };
     },
     enabled: siteIds.length > 0 && gscReady,
     staleTime: 5 * 60_000,
   });
 
-  return { followers: followers.data ?? null, posts: posts.data ?? null, clicks: clicks.data ?? null };
+  return {
+    followers: followers.data ?? null,
+    posts: posts.data ?? null,
+    /** Every Google Search click (the Search Console total), not only clicks on queries Google names. */
+    clicks: clicks.data ?? null,
+    clicksLoading: siteIds.length > 0 && (!gscReady || clicks.isPending),
+    clicksError: clicks.error,
+  };
+}
+
+export interface SearchClicks {
+  hasData: boolean;
+  total: number;
+  deltaPct: number | null;
+  trend: TrendSeries | null;
 }

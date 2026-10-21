@@ -78,13 +78,14 @@ export interface KpiTrend {
 const SPARK_W = 64;
 const SPARK_H = 20;
 
-/** The tile's history line: a filled area under the line, scaled min→max so small changes read. */
+/** The tile's history line: a filled area under the line, scaled from its low point. */
 function KpiSparkline({ trend, label }: { trend: KpiTrend; label: string }) {
   const n = trend.values.length;
   if (n < 2) return null;
   const min = Math.min(...trend.values);
   const max = Math.max(...trend.values);
-  const range = max - min || 1;
+  // A floor of 10% of the peak: a change of 11 on 3,700 stays a near-flat line, never a cliff.
+  const range = Math.max(max - min, Math.abs(max) * 0.1) || 1;
   const pts = trend.values
     .map((v, i) => `${((i / (n - 1)) * SPARK_W).toFixed(1)},${(SPARK_H - 2 - ((v - min) / range) * (SPARK_H - 4)).toFixed(1)}`)
     .join(" ");
