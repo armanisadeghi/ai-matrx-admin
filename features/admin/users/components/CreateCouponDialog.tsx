@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField, Input } from "@ai-matrx/design-system/controls";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/lib/toast";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
@@ -273,7 +273,7 @@ export function CreateCouponDialog({
               </label>
               <label className="block space-y-1 text-xs text-muted-foreground">
                 <span>Expires</span>
-                <Input type="date" value={expires} onChange={(e) => setExpires(e.target.value)} />
+                <DateField value={expires} aria-label="Expires" onValueChange={(v) => setExpires(v ?? "")} />
               </label>
             </div>
             {kind === "existing_account" && (

@@ -41,7 +41,7 @@ import {
 } from "@/components/ui/command";
 import { extractErrorMessage } from "@/utils/errors";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateField } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { cn } from "@/lib/utils";
@@ -480,10 +480,9 @@ export function EmploymentCard(props: Props) {
             </label>
             <label className="grid min-w-0 gap-0.5 text-xs text-muted-foreground">
               Start date
-              <Input
-                type="date"
+              <DateField
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onValueChange={(v) => setStartDate(v ?? "")}
                 className="w-full min-w-0 sm:w-36"
               />
             </label>

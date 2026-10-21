@@ -11,7 +11,7 @@
 import { useEffect, useState } from "react";
 import { CalendarClock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField, Input } from "@ai-matrx/design-system/controls";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
@@ -242,11 +242,13 @@ export function PlanGenerateForm({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Exam / target date">
-            <Input
-              type="date"
+            <DateField
               value={examDate}
-              min={todayIso()}
-              onChange={(e) => setExamDate(e.target.value)}
+              onValueChange={(v) => {
+                const next = v ?? "";
+                if (next && next < todayIso()) return;
+                setExamDate(next);
+              }}
             />
           </Field>
           <Field label={`Minutes per day: ${dailyMinutes}`}>

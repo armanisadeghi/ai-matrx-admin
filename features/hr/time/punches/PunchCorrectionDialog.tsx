@@ -29,7 +29,7 @@ import { useEffect, useState } from "react";
 import { BellRing, ShieldAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input, Select } from "@ai-matrx/design-system/controls";
+import { Select, TimeField } from "@ai-matrx/design-system/controls";
 import {
   Dialog,
   DialogContent,
@@ -223,11 +223,10 @@ export function PunchCorrectionDialog({
                 <label htmlFor="punch-replacement" className="block text-sm font-medium">
                   The corrected time
                 </label>
-                <Input
+                <TimeField
                   id="punch-replacement"
-                  type="time"
                   value={replacementTime}
-                  onChange={(event) => setReplacementTime(event.target.value)}
+                  onValueChange={(v) => setReplacementTime(v ?? "")}
                 />
                 <p className="text-[11px] text-muted-foreground">
                   In the punch&rsquo;s own time zone. Moving a punch to a different day is not a

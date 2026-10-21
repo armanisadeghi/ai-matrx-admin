@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Chip, ChipSet, Input } from "@ai-matrx/design-system/controls";
+import { Chip, ChipSet, DateField } from "@ai-matrx/design-system/controls";
 import type { ClassPart } from "../classParts";
 import type { ClassTest } from "../classTests";
 import type { TestInput } from "../hooks/useClassTests";
@@ -121,11 +121,10 @@ export function ClassTestDialog({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="class-test-date">Date</Label>
-            <Input
+            <DateField
               id="class-test-date"
-              type="date"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onValueChange={(v) => setDate(v ?? "")}
               className="w-44"
             />
           </div>

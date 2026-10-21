@@ -8,7 +8,7 @@
 
 "use client";
 
-import { Input, SegmentedControl } from "@ai-matrx/design-system/controls";
+import { SegmentedControl, DateField } from "@ai-matrx/design-system/controls";
 
 import {
   localDateString,
@@ -48,36 +48,34 @@ export function WindowPicker({
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <label className="flex items-center gap-1">
             <span>from</span>
-            <Input
-              type="date"
+            <DateField
               aria-label="From day"
               className="w-[9.5rem]"
-              max={today}
               value={fromDay ? localDateString(fromDay) : ""}
-              onChange={(e) =>
+              onValueChange={(v) => {
+                if (v && v > today) return;
                 onChange({
                   preset,
-                  fromDay: parseLocalDate(e.target.value),
+                  fromDay: parseLocalDate(v ?? ""),
                   toDay,
-                })
-              }
+                });
+              }}
             />
           </label>
           <label className="flex items-center gap-1">
             <span>to</span>
-            <Input
-              type="date"
+            <DateField
               aria-label="To day (inclusive)"
               className="w-[9.5rem]"
-              max={today}
               value={toDay ? localDateString(toDay) : ""}
-              onChange={(e) =>
+              onValueChange={(v) => {
+                if (v && v > today) return;
                 onChange({
                   preset,
                   fromDay,
-                  toDay: parseLocalDate(e.target.value),
-                })
-              }
+                  toDay: parseLocalDate(v ?? ""),
+                });
+              }}
             />
           </label>
           <span>(both days included)</span>

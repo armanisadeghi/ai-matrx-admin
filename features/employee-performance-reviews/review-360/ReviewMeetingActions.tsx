@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CalendarPlus, Eye, Users, Video } from "lucide-react";
-import { Button } from "@ai-matrx/design-system/controls";
+import { Button, DateTimeField } from "@ai-matrx/design-system/controls";
 import { asOrganizationId, asUserId, createMeetRepository, type MeetingRecord } from "@ai-matrx/meet";
 
 import { fetchHrEmployeeProfile } from "@/features/hr/service";
@@ -191,12 +191,10 @@ export function ReviewMeetingActions({
   if (!ready) return null;
   return (
     <div className="flex items-center gap-1">
-      <input
-        type="datetime-local"
+      <DateTimeField
         aria-label="Meeting time"
         value={when}
-        onChange={(e) => setWhen(e.target.value)}
-        className="h-8 rounded-md border border-border bg-background px-2 text-base md:text-sm"
+        onValueChange={(v) => setWhen(v ?? "")}
       />
       <Button variant="primary" icon={<CalendarPlus />} disabled={busy} onClick={() => void schedule()}>
         {busy ? "Scheduling…" : "Schedule meeting"}

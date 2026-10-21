@@ -24,7 +24,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateTimeField } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -134,13 +134,7 @@ export function CrisisIntakeForm({
           <Choice id="crisis-type" value={form.incident_type} options={INCIDENT_TYPES} onChange={(v) => set("incident_type", v)} />
         </Field>
         <Field id="crisis-first-known" label="When you first knew">
-          <Input
-            id="crisis-first-known"
-            type="datetime-local"
-            value={form.first_known_at}
-            onChange={(e) => set("first_known_at", e.target.value)}
-            disabled={disabled}
-          />
+          <DateTimeField id="crisis-first-known" value={form.first_known_at} onValueChange={(v) => set("first_known_at", v ?? "")} disabled={disabled} />
         </Field>
         <Field id="crisis-org" label="Organization name, exactly">
           <Input id="crisis-org" value={form.org_name} onChange={(e) => set("org_name", e.target.value)} disabled={disabled} />

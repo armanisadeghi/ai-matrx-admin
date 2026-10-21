@@ -49,7 +49,7 @@ import {
 import { EnhancedJsonViewer } from "@/components/ui/JsonComponents";
 import { EnhancedEditableJsonViewer } from "@/components/ui/JsonComponents/JsonEditor";
 import { downloadFile } from "@ai-matrx/kit/download";
-import { Select } from "@ai-matrx/design-system/controls";
+import { Select, DateTimeField } from "@ai-matrx/design-system/controls";
 // -------------------------------------------------------------------------
 // Inlined from the deleted `hooks/common/useLocalStorageManager.ts`.
 // Only consumer was this admin debugger, so the shared hook was deleted
@@ -1176,16 +1176,7 @@ const CookieManager = ({ storage }: { storage: UseLocalStorageManager }) => {
               </div>
               <div className="grid gap-2">
                 <Label>Expires</Label>
-                <Input
-                  type="datetime-local"
-                  value={newCookie.expires}
-                  onChange={(e) =>
-                    setNewCookie({
-                      ...newCookie,
-                      expires: e.target.value,
-                    })
-                  }
-                />
+                <DateTimeField aria-label="Expires" value={newCookie.expires} onValueChange={(v) => setNewCookie({ ...newCookie, expires: v ?? "" })} />
               </div>
               <div className="grid gap-2">
                 <Label>Path</Label>

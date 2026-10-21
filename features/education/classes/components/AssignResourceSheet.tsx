@@ -12,6 +12,7 @@
 import { CalendarClock } from "lucide-react";
 import { MatrxDynamicPanelHost } from "@/components/matrx/resizable/MatrxDynamicPanelHost";
 import { UniversalAssociationPicker } from "@ai-matrx/associations/react";
+import { DateField } from "@ai-matrx/design-system/controls";
 import type { EntityTypeToken } from "@ai-matrx/associations";
 import { ASSIGNABLE_TOKENS } from "../constants";
 import type { AssignableToken } from "../types";
@@ -57,12 +58,11 @@ export function AssignResourceSheet({
             <CalendarClock className="h-3.5 w-3.5 text-muted-foreground" />
             Due date (optional)
           </label>
-          <input
+          <DateField
             id="assign-due-date"
-            type="date"
             value={dueDate}
-            onChange={(e) => onDueDateChange(e.target.value)}
-            className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground [color-scheme:light] dark:[color-scheme:dark]"
+            onValueChange={(v) => onDueDateChange(v ?? "")}
+            className="w-full"
           />
           <p className="mt-1 text-xs text-muted-foreground">
             Applied to items you assign next. Clear it to assign with no due date.

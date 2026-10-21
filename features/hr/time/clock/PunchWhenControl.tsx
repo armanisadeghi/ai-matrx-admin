@@ -25,7 +25,7 @@
 import { CalendarClock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField, TimeField } from "@ai-matrx/design-system/controls";
 
 import { stampedZoneAbbreviation } from "./stampedTime";
 
@@ -90,24 +90,22 @@ export function PunchWhenControl({
             <label htmlFor="hr-punch-date" className="text-xs font-medium text-foreground">
               Date
             </label>
-            <Input
+            <DateField
               id="hr-punch-date"
-              type="date"
               value={value.localDate ?? ""}
               disabled={disabled}
-              onChange={(event) => onChange({ ...value, localDate: event.target.value })}
+              onValueChange={(v) => onChange({ ...value, localDate: v ?? "" })}
             />
           </div>
           <div className="flex min-w-32 flex-1 flex-col gap-1">
             <label htmlFor="hr-punch-time" className="text-xs font-medium text-foreground">
               Time
             </label>
-            <Input
+            <TimeField
               id="hr-punch-time"
-              type="time"
               value={value.localTime ?? ""}
               disabled={disabled}
-              onChange={(event) => onChange({ ...value, localTime: event.target.value })}
+              onValueChange={(v) => onChange({ ...value, localTime: v ?? "" })}
             />
           </div>
         </div>

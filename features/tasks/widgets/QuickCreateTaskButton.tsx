@@ -8,7 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@ai-matrx/design-system";
-import { Input, Select } from "@ai-matrx/design-system/controls";
+import { Input, Select, DateField } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
 import {
@@ -175,12 +175,7 @@ export default function QuickCreateTaskButton(props: QuickCreateTaskButtonProps)
                     { value: "low", label: "Low" },
                   ]}
                 />
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="h-7 bg-card border border-border rounded px-2 text-xs outline-none hover:border-foreground/30"
-                />
+                <DateField aria-label="Due date" value={dueDate} onValueChange={(v) => setDueDate(v ?? "")} />
               </div>
               <Select
                 value={projectId}

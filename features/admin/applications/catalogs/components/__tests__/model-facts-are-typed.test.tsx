@@ -63,8 +63,8 @@ describe("model facts keep their typed controls", () => {
 
   it("a z.enum fact is a choice list of the schema's options", async () => {
     const { root } = await open("ner_model", { tier: "base" });
-    const tier = q('[aria-label="tier"]')!;
-    expect(tier.getAttribute("data-fact-control")).toBe("choice");
+    const tier = q('[data-fact-control="choice"]')!;
+    expect(tier.querySelector('[aria-label="tier"]')).not.toBeNull();
     expect(tier.getAttribute("data-options")).toBe("edge,base,large,xxl");
     await act(async () => root.unmount());
   });

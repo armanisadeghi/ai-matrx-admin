@@ -39,7 +39,7 @@ import { AlertTriangle, CalendarClock, Download, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField, Input } from "@ai-matrx/design-system/controls";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
@@ -226,12 +226,15 @@ export function HrOrgChart() {
                 className="h-4 w-4 shrink-0 text-muted-foreground"
                 aria-hidden
               />
-              <Input
-                type="date"
+              <DateField
                 aria-label="Show the chart as it was on this date"
                 value={asOfParam ?? asOf ?? ""}
-                min={data?.earliest_known_on ?? undefined}
-                onChange={(event) => setAsOf(event.target.value || null)}
+                onValueChange={(v) => {
+                  const next = v || null;
+                  const min = data?.earliest_known_on;
+                  if (next && min && next < min) return;
+                  setAsOf(next);
+                }}
                 className="w-[10.5rem]"
               />
               {quickAsOfChips().map((chip) => (

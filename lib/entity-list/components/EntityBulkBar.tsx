@@ -25,7 +25,7 @@
 import { useState, type ReactNode } from "react";
 import { Loader2, X } from "lucide-react";
 import { TextInputDialog } from "@ai-matrx/design-system";
-import { Button, Select } from "@ai-matrx/design-system/controls";
+import { Button, DateField, Select } from "@ai-matrx/design-system/controls";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
@@ -285,14 +285,14 @@ function BulkAskDialog({
         <label className="flex flex-col gap-1 text-sm" data-entity-bulk-ask={ask.kind}>
           <span className="type-secondary text-muted-foreground">{ask.label}</span>
           {ask.kind === "date" ? (
-            // ui-exception: a date value, not prose
-            <input
-              type="date"
+            <DateField
               value={asking.value}
-              min={ask.min}
+              onValueChange={(v) => {
+                const next = v ?? "";
+                if (ask.min && next && next < ask.min) return;
+                onChange(next);
+              }}
               aria-label={ask.label}
-              onChange={(event) => onChange(event.target.value)}
-              className="h-7 rounded-md border border-border bg-background px-2 text-sm"
             />
           ) : (
             <Select<string>

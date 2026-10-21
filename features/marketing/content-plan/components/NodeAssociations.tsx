@@ -11,7 +11,7 @@ import { useMemo, useState } from "react";
 import { Plus, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateField } from "@ai-matrx/design-system/controls";
 import {
   Popover,
   PopoverContent,
@@ -416,10 +416,9 @@ function EntitySection({
         </div>
         {effectiveRole === "reviewed_by" ? (
           <div className="flex gap-1.5">
-            <Input
-              type="date"
+            <DateField
               value={reviewDate}
-              onChange={(event) => setReviewDate(event.target.value)}
+              onValueChange={(v) => setReviewDate(v ?? "")}
               className="w-40"
               aria-label="Review date"
             />

@@ -38,7 +38,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge, Chip, ChipSet, Input } from "@ai-matrx/design-system/controls";
+import { Badge, Chip, ChipSet, Input, DateField } from "@ai-matrx/design-system/controls";
 import {
   Select,
   SelectContent,
@@ -533,21 +533,23 @@ function FilterBar({
       </ChipSet>
 
       <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-        <Input
-          type="date"
+        <DateField
           aria-label="From day"
           value={filters.from ?? ""}
-          max={filters.to ?? undefined}
-          onChange={(e) => onChange({ ...filters, from: e.target.value || null })}
+          onValueChange={(v) => {
+            if (v && filters.to && v > filters.to) return;
+            onChange({ ...filters, from: v || null });
+          }}
           className="w-[128px]"
         />
         <span>to</span>
-        <Input
-          type="date"
+        <DateField
           aria-label="To day"
           value={filters.to ?? ""}
-          min={filters.from ?? undefined}
-          onChange={(e) => onChange({ ...filters, to: e.target.value || null })}
+          onValueChange={(v) => {
+            if (v && filters.from && v < filters.from) return;
+            onChange({ ...filters, to: v || null });
+          }}
           className="w-[128px]"
         />
       </div>

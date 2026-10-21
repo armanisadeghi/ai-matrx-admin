@@ -54,7 +54,7 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateField, TimeField } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -551,13 +551,11 @@ function PayGroupEditor({
           {isCreate ? "First period starts on" : "First period started on"}{" "}
           <span className="text-destructive">*</span>
         </Label>
-        <Input
+        <DateField
           id={`${uid}-first-start`}
-          type="date"
           value={firstStart}
           disabled={busy}
-          aria-invalid={invalidFor(refusal, "first_period_start_on")}
-          onChange={(e) => setFirstStart(e.target.value)}
+          onValueChange={(v) => setFirstStart(v ?? "")}
         />
         <p className="text-sm text-muted-foreground">
           Every weekly and every-two-weeks period is counted from this day, so moving it
@@ -594,12 +592,11 @@ function PayGroupEditor({
             <Label htmlFor={`${uid}-time`} className="text-sm font-medium">
               At
             </Label>
-            <Input
+            <TimeField
               id={`${uid}-time`}
-              type="time"
               value={workweekTime}
               disabled={busy}
-              onChange={(e) => setWorkweekTime(e.target.value)}
+              onValueChange={(v) => setWorkweekTime(v ?? "")}
             />
           </div>
         </div>

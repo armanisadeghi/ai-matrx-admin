@@ -42,7 +42,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   MatrxDataTable,
@@ -529,11 +529,10 @@ export function LeaveLedgerView({
               <Label htmlFor="leave-ledger-as-of" className="text-xs">
                 As of
               </Label>
-              <Input
+              <DateField
                 id="leave-ledger-as-of"
-                type="date"
-                value={asOf ?? ""}
-                onChange={(e) => onAsOfChange(e.target.value || null)}
+                value={asOf}
+                onValueChange={(v) => onAsOfChange(v || null)}
                 className="w-40"
               />
             </div>

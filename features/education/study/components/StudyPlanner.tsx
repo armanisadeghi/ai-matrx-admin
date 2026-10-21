@@ -43,7 +43,7 @@ import {
 import { toast } from "@/lib/toast";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField, Input } from "@ai-matrx/design-system/controls";
 import { Skeleton } from "@ai-matrx/design-system";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
@@ -216,12 +216,10 @@ export function StudyPlanner({
         <label className="text-xs font-medium text-muted-foreground">
           Target date (optional)
         </label>
-        <Input
-          type="date"
+        <DateField
+          aria-label="Target date"
           value={form.targetDate}
-          onChange={(e) =>
-            setForm((f) => ({ ...f, targetDate: e.target.value }))
-          }
+          onValueChange={(v) => setForm((f) => ({ ...f, targetDate: v ?? "" }))}
         />
       </div>
       <div className="flex flex-col gap-1">

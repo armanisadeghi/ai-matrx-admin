@@ -25,7 +25,7 @@ import { useId, useState } from "react";
 import { AlertTriangle, Loader2, ShieldAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateField } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -357,11 +357,10 @@ export function OrgLawRuleEditor({
           <Label htmlFor={`${uid}-from`} className="text-sm font-medium">
             In force from
           </Label>
-          <Input
+          <DateField
             id={`${uid}-from`}
-            type="date"
             value={effectiveFrom}
-            onChange={(event) => setEffectiveFrom(event.target.value)}
+            onValueChange={(v) => setEffectiveFrom(v ?? "")}
           />
           <p className="text-xs text-foreground">Empty means it starts today.</p>
         </div>

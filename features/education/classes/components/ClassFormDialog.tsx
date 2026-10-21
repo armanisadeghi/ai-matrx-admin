@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateField } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { AccessModeField } from "./AccessModeField";
 import { DEFAULT_ACCESS_MODE } from "../constants";
@@ -316,14 +316,7 @@ export function ClassFormDialog({
                       placeholder="Midterm"
                       className="flex-1"
                     />
-                    <Input
-                      type="date"
-                      value={exam.date}
-                      onChange={(e) =>
-                        patchExam(exam.id, { date: e.target.value })
-                      }
-                      className="w-40"
-                    />
+                    <DateField aria-label="Exam date" value={exam.date} onValueChange={(v) => patchExam(exam.id, { date: v ?? "" })} className="w-40" />
                     <Button
                       icon={<Trash2 />}
                       type="button"

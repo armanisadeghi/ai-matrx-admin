@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField } from "@ai-matrx/design-system/controls";
 import type {
   GscCompareMode,
   GscRangeKey,
@@ -115,21 +115,9 @@ export function RangeCompareControl({
 
       {customOpen ? (
         <div className="flex items-center gap-1 rounded-md border border-border bg-card p-0.5">
-          <Input
-            type="date"
-            value={draftFrom}
-            onChange={(e) => setDraftFrom(e.target.value)}
-            className="w-32"
-            aria-label="Start date"
-          />
+          <DateField value={draftFrom} onValueChange={(v) => setDraftFrom(v ?? "")} className="w-32" aria-label="Start date" />
           <span className="text-xs text-muted-foreground">→</span>
-          <Input
-            type="date"
-            value={draftTo}
-            onChange={(e) => setDraftTo(e.target.value)}
-            className="w-32"
-            aria-label="End date"
-          />
+          <DateField value={draftTo} onValueChange={(v) => setDraftTo(v ?? "")} className="w-32" aria-label="End date" />
           <Button
             icon={<Check />}
             variant="primary"

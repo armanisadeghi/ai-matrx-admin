@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, TimeField } from "@ai-matrx/design-system/controls";
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -283,24 +283,22 @@ export default function NotificationPreferences() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="start">Start Time</Label>
-                <Input
+                <TimeField
                   id="start"
-                  type="time"
                   value={preferences.quiet_hours_start}
-                  onChange={(e) =>
-                    setPreferences({ ...preferences, quiet_hours_start: e.target.value })
+                  onValueChange={(v) =>
+                    setPreferences({ ...preferences, quiet_hours_start: v ?? "" })
                   }
                   disabled={!preferences.quiet_hours_enabled}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="end">End Time</Label>
-                <Input
+                <TimeField
                   id="end"
-                  type="time"
                   value={preferences.quiet_hours_end}
-                  onChange={(e) =>
-                    setPreferences({ ...preferences, quiet_hours_end: e.target.value })
+                  onValueChange={(v) =>
+                    setPreferences({ ...preferences, quiet_hours_end: v ?? "" })
                   }
                   disabled={!preferences.quiet_hours_enabled}
                 />

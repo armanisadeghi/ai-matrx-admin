@@ -10,7 +10,7 @@
 
 import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 import { Repeat } from "lucide-react";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField } from "@ai-matrx/design-system/controls";
 import {
   Select,
   SelectContent,
@@ -246,20 +246,7 @@ export function RecurrenceEditor({
                 }
               />
               On
-              <Input
-                type="date"
-                value={value.ends.kind === "on" ? value.ends.date : ""}
-                min={start.date}
-                onChange={(e) =>
-                  set({ ends: { kind: "on", date: e.target.value } })
-                }
-                onFocus={() => {
-                  if (value.ends.kind !== "on")
-                    set({ ends: { kind: "on", date: start.date } });
-                }}
-                className="w-40"
-                aria-label="Ends on date"
-              />
+              <div className="contents" onFocus={() => { if (value.ends.kind !== "on") set({ ends: { kind: "on", date: start.date } }); }}><DateField value={value.ends.kind === "on" ? value.ends.date : ""} onValueChange={(v) => { if (v && v < start.date) return; set({ ends: { kind: "on", date: v ?? "" } }); }} className="w-40" aria-label="Ends on date" /></div>
             </label>
             <label className="flex flex-wrap items-center gap-2 text-sm">
               <input

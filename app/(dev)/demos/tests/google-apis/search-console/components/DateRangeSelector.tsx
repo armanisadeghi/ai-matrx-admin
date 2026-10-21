@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
+import { DateField } from "@ai-matrx/design-system/controls";
 
 interface DateRangeSelectorProps {
     startDate: string;
@@ -68,25 +69,31 @@ export function DateRangeSelector({ startDate, endDate, onChange }: DateRangeSel
                                 <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
                                     Start Date
                                 </label>
-                                <input
-                                    type="date"
+                                <DateField
                                     value={startDate}
-                                    max={endDate}
-                                    onChange={(e) => onChange({ startDate: e.target.value, endDate })}
-                                    className="w-full mt-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                    aria-label="Start Date"
+                                    className="w-full mt-1"
+                                    onValueChange={(v) => {
+                                        const next = v ?? "";
+                                        if (next && endDate && next > endDate) return;
+                                        onChange({ startDate: next, endDate });
+                                    }}
                                 />
                             </div>
                             <div>
                                 <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
                                     End Date
                                 </label>
-                                <input
-                                    type="date"
+                                <DateField
                                     value={endDate}
-                                    min={startDate}
-                                    max={getDateDaysAgo(1)}
-                                    onChange={(e) => onChange({ startDate, endDate: e.target.value })}
-                                    className="w-full mt-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                    aria-label="End Date"
+                                    className="w-full mt-1"
+                                    onValueChange={(v) => {
+                                        const next = v ?? "";
+                                        if (next && startDate && next < startDate) return;
+                                        if (next && next > getDateDaysAgo(1)) return;
+                                        onChange({ startDate, endDate: next });
+                                    }}
                                 />
                             </div>
                         </div>

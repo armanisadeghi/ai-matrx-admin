@@ -9,6 +9,7 @@
 import { useState } from "react";
 import { History, Loader2 } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
+import { DateTimeField } from "@ai-matrx/design-system/controls";
 import { storeDoors } from "@ai-matrx/records/core";
 
 import { supabase } from "@/utils/supabase/client";
@@ -52,13 +53,11 @@ export function WhoCouldSeeOn({ recordId }: { recordId: string }) {
         Who could see this on…
       </span>
       <div className="flex items-center gap-1">
-        <input
-          type="datetime-local"
+        <DateTimeField
           aria-label="Moment to ask about"
           value={at}
-          onChange={(e) => setAt(e.target.value)}
-          className="h-7 min-w-0 flex-1 rounded border border-border bg-transparent px-1.5 text-base"
-          data-who-could-see-at=""
+          onValueChange={(v) => setAt(v ?? "")}
+          className="min-w-0 flex-1"
         />
         <Button size="sm" variant="outline" className="h-7 px-2 text-xs" disabled={busy || at === ""} onClick={() => void ask()} data-who-could-see-ask="">
           {busy ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : null}

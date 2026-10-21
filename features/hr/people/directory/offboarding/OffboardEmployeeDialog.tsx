@@ -30,7 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateField } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -346,20 +346,18 @@ export function OffboardEmployeeDialog({
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="sep-last-day">Last day worked</Label>
-              <Input
+              <DateField
                 id="sep-last-day"
-                type="date"
                 value={lastDayWorked}
-                onChange={(e) => setLastDayWorked(e.target.value)}
+                onValueChange={(v) => setLastDayWorked(v ?? "")}
               />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="sep-term-date">Termination date</Label>
-              <Input
+              <DateField
                 id="sep-term-date"
-                type="date"
                 value={terminationDate}
-                onChange={(e) => setTerminationDate(e.target.value)}
+                onValueChange={(v) => setTerminationDate(v ?? "")}
               />
             </div>
           </div>

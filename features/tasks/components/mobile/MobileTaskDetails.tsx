@@ -24,7 +24,7 @@ import {
 } from "@/features/tasks/redux/thunks";
 import { invalidateAndRefetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField } from "@ai-matrx/design-system/controls";
 import { ProInput } from "@/components/official/ProInput";
 import { TaskDescriptionEditor } from "@/features/tasks/components/editor/TaskDescriptionEditor";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
@@ -651,13 +651,13 @@ export default function MobileTaskDetails({
                   <Calendar size={16} />
                   Due Date
                 </label>
-                <Input
-                  type="date"
+                <DateField
                   value={dueDate}
-                  onChange={(e) => {
-                    setDueDate(e.target.value);
+                  onValueChange={(v) => {
+                    setDueDate(v ?? "");
                     setIsDirty(true);
                   }}
+                  aria-label="Due Date"
                 />
               </div>
 
@@ -681,13 +681,13 @@ export default function MobileTaskDetails({
                   <CalendarArrowUp size={16} />
                   Start date
                 </label>
-                <Input
-                  type="date"
+                <DateField
                   value={startDate}
-                  onChange={(e) => {
-                    setStartDate(e.target.value);
+                  onValueChange={(v) => {
+                    setStartDate(v ?? "");
                     setIsDirty(true);
                   }}
+                  aria-label="Start date"
                 />
               </div>
 

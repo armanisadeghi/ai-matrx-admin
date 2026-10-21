@@ -8,7 +8,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@ai-matrx/design-system";
-import { Input } from "@ai-matrx/design-system";
+import { TimeField } from "@ai-matrx/design-system/controls";
 
 interface TimePickerProps {
     onChange: (time: string) => void;
@@ -61,10 +61,10 @@ export const TimePicker: React.FC<TimePickerProps> = ({
             </PopoverTrigger>
             <PopoverContent /* sizing: fixed — content already decides its own width; no fixed box to remove */ className="w-auto p-4" align="start">
                 <div className="flex flex-col space-y-2">
-                    <Input
-                        type="time"
+                    <TimeField
                         value={time}
-                        onChange={(e) => handleTimeChange(e.target.value)}
+                        onValueChange={(v) => handleTimeChange(v ?? "")}
+                        aria-label="Time"
                         className="w-full"
                     />
                     {!is24Hour && (

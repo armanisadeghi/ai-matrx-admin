@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateTimeField } from "@ai-matrx/design-system/controls";
 import { MatrxComparisonTable, type ComparisonRow } from "@ai-matrx/design-system/data-table";
 import {
   Select,
@@ -148,12 +148,11 @@ export function ConfigurationExport(props: {
               </SelectContent>
             </Select>
             {mode === "date" ? (
-              <Input
-                type="datetime-local"
+              <DateTimeField
                 aria-label="Moment to compare against"
                 className="w-56"
                 value={asOf}
-                onChange={(event) => setAsOf(event.target.value)}
+                onValueChange={(v) => setAsOf(v ?? "")}
               />
             ) : (
               <OrganizationChooser

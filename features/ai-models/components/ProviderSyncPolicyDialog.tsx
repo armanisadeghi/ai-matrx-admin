@@ -51,7 +51,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateField } from "@ai-matrx/design-system/controls";
 import { recordToast, toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import { aiModelService } from "@/features/ai-models/service";
@@ -188,11 +188,10 @@ export default function ProviderSyncPolicyDialog({
               Ignore models released before
             </label>
             <div className="flex items-center gap-2">
-              <Input
+              <DateField
                 id="sync-policy-cutoff"
-                type="date"
                 value={cutoff}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCutoff(e.target.value)}
+                onValueChange={(v) => setCutoff(v ?? "")}
                 className="w-44"
               />
               {cutoff && (

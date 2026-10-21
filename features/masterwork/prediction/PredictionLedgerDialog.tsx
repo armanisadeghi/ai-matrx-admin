@@ -51,7 +51,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateField } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { knobBool, knobInt } from "@/lib/knobs/featureKnobs";
@@ -558,11 +558,10 @@ export function PredictionLedgerDialog({
                 <Label htmlFor="pred-due">
                   When will you know how it turned out?
                 </Label>
-                <Input
+                <DateField
                   id="pred-due"
-                  type="date"
                   value={dueAt}
-                  onChange={(e) => setDueAt(e.target.value)}
+                  onValueChange={(v) => setDueAt(v ?? "")}
                 />
               </div>
 

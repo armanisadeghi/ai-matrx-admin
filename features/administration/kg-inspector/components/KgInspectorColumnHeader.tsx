@@ -4,7 +4,7 @@ import { ArrowUpDown, ChevronDown, ChevronUp, Filter } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField, Input } from "@ai-matrx/design-system/controls";
 import {
   Popover,
   PopoverContent,
@@ -143,22 +143,20 @@ function ColumnFilterPopover({
           <div className="space-y-2">
             <label className="block text-[10px] uppercase tracking-wide text-muted-foreground">
               From
-              <Input
-                type="date"
+              <DateField
                 value={value?.dateFrom ?? ""}
-                onChange={(e) =>
-                  onChange({ ...(value ?? {}), dateFrom: e.target.value })
+                onValueChange={(v) =>
+                  onChange({ ...(value ?? {}), dateFrom: v ?? "" })
                 }
                 className="mt-0.5"
               />
             </label>
             <label className="block text-[10px] uppercase tracking-wide text-muted-foreground">
               To
-              <Input
-                type="date"
+              <DateField
                 value={value?.dateTo ?? ""}
-                onChange={(e) =>
-                  onChange({ ...(value ?? {}), dateTo: e.target.value })
+                onValueChange={(v) =>
+                  onChange({ ...(value ?? {}), dateTo: v ?? "" })
                 }
                 className="mt-0.5"
               />

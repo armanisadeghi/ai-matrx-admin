@@ -18,7 +18,7 @@ import {
   type MeetingRecord,
   type MeetingRecordBundle,
 } from "@ai-matrx/meet/react";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -335,10 +335,9 @@ function CreateTaskDialog({
             <span className="text-xs font-medium text-muted-foreground">
               Due date
             </span>
-            <Input
-              type="date"
+            <DateField
               value={due}
-              onChange={(e) => setDue(e.target.value)}
+              onValueChange={(v) => setDue(v ?? "")}
               aria-label="Due date"
             />
           </label>

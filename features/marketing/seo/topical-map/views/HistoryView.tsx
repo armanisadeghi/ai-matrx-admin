@@ -33,7 +33,7 @@ import { useState } from "react";
 import { History, RotateCcw, AppWindow } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Select } from "@ai-matrx/design-system/controls";
+import { DateField, Select } from "@ai-matrx/design-system/controls";
 
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useOpenTopicalMapWindow } from "@/features/overlays/definitions/topicalMapWindow.overlay";
@@ -262,11 +262,9 @@ function HistoryFilterBar({
       </label>
       <label className="inline-flex items-center gap-1.5">
         <span className="text-muted-foreground">Since</span>
-        <input
-          type="date"
-          className="h-7 rounded-md border border-border bg-background px-1.5 text-xs"
-          value={filters.since ?? ""}
-          onChange={(event) => onChange({ ...filters, since: event.target.value || null })}
+        <DateField
+          value={filters.since}
+          onValueChange={(v) => onChange({ ...filters, since: v || null })}
         />
       </label>
       <span className="text-muted-foreground">

@@ -30,7 +30,7 @@ import Link from "next/link";
 import { Loader2, ShieldQuestion } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateField } from "@ai-matrx/design-system/controls";
 import {
   Select,
   SelectContent,
@@ -271,11 +271,7 @@ export function ProposePayChange({
         </Field>
 
         <Field label="Effective from">
-          <Input
-            type="date"
-            value={form.effective_from}
-            onChange={(e) => set({ effective_from: e.target.value })}
-          />
+          <DateField value={form.effective_from} onValueChange={(v) => set({ effective_from: v ?? "" })} />
         </Field>
 
         <Field label="Reason">

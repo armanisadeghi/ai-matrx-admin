@@ -27,7 +27,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, Info, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Chip, Input } from "@ai-matrx/design-system/controls";
+import { Chip, Input, TimeField } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -375,11 +375,10 @@ export function ScheduleCascadePanel({
               >
                 Time (UTC)
               </Label>
-              <Input
+              <TimeField
                 id="schedule-run-at"
-                type="time"
                 value={runAt}
-                onChange={(event) => setRunAt(event.target.value)}
+                onValueChange={(v) => setRunAt(v ?? "")}
               />
             </div>
           ) : null}
