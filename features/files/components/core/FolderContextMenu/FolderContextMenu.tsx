@@ -378,7 +378,7 @@ export function FolderContextMenu({
         />
       ) : null}
 
-      {!isVirtual ? (
+      {!isVirtual && shareOpen ? (
         <ShareLinkDialog
           open={shareOpen}
           onOpenChange={setShareOpen}
