@@ -39,8 +39,10 @@
 // Cache busting is event-driven, exactly as Arman described ("just like we have
 // with editing agents"): every write through `setKnobOverride` (same tab) and
 // the platform directive channel's `settings_changed` (other tabs, the server)
-// drops the snapshots, and the next read re-fetches one. The 60s TTL below is a
-// backstop for a missed directive, not the mechanism. A React face is
+// drops the snapshots, and the next read re-fetches one. The TTL below is a
+// backstop for a missed directive, not the mechanism; a tab coming back into
+// view also re-checks its held snapshots (`catchUpKnobsSinceBoot`, one etag
+// call each, answered "unchanged" for ~2 ms server-side). A React face is
 // `useEffectiveKnob` (useSyncExternalStore), so a control showing the value
 // re-renders the moment a write lands.
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
@@ -50,8 +52,25 @@ import { getWebDeviceId } from "./deviceId";
 import { defineClientKey } from "@/lib/sync/client-storage";
 import { noteKnobReadOnce } from "@/lib/config-attestation/readLedger";
 import { drainBootSeeds, STREAMED_KNOB_SEED_GLOBAL } from "@/lib/boot/bootSeedSlot";
+import {
+  applyKnobDefaultsPatch,
+  flattenKnobBuckets,
+  knobDefaultsAsk,
+  knobDefaultsFromAnswer,
+  knobDeltaPatch,
+  knobEtagFor,
+  KNOB_DEFAULTS_BUCKETED,
+  type KnobBuckets,
+  type KnobDefaults,
+} from "@ai-matrx/data/knobs";
 
-const TTL_MS = 60_000;
+// DB lane A (2026-10-21): was 60 s, and every tab re-asked every address once a minute — the
+// biggest browser cost on the database (41k calls / 5.7 h). Writes and directives invalidate; the
+// focus re-check below covers a tab that slept through one.
+export const KNOB_SNAPSHOT_TTL_MS = 10 * 60_000;
+/** A tab hidden at least this long re-checks its held snapshots when it becomes visible again. */
+export const KNOB_FOCUS_RECHECK_AFTER_MS = 60_000;
+const TTL_MS = KNOB_SNAPSHOT_TTL_MS;
 
 /**
  * Every registered knob, resolved for one (organization, user, scope address).
@@ -286,8 +305,14 @@ type PlatformRpc = (name: string, args: Record<string, unknown>) => Promise<RpcR
  * admin edits a default) and `platform.knob_snapshot_delta` carries only the keys this person's ladder
  * moves (about 0.5 kB) plus an etag. `resolved` below is `{...defaults, ...overrides}` — the exact map the
  * old call returned (proven equal per person by scripts/campaign-tests/knobsnapshot_equivalence.sql).
+ *
+ * DB LANE A2 (2026-10-21): every knob write used to move the one defaults version, so every tab re-read the
+ * whole ~200 kB map (97/min). The register now travels in 64 buckets by feature (`bucket → feature → key`,
+ * migrations/dblanea2_knob_register_ships_in_64_buckets.sql): the held copy's vector rides in `p_etag`, and a
+ * write answers with only the changed buckets, which replace the held ones whole (so a deleted key leaves).
+ * The helpers are `@ai-matrx/data/knobs`'s, shared with its `createKnobReader`.
  */
-type DefaultsEntry = { version: string; values: Record<string, unknown> };
+type DefaultsEntry = KnobDefaults;
 const storedDefaultsKey = defineClientKey({
   id: "knobs.defaults.v1",
   area: "local",
@@ -298,7 +323,10 @@ let defaultsCache: DefaultsEntry | null = null;
 let defaultsInFlight: Promise<DefaultsEntry> | null = null;
 
 /** What the last answer for an address was, kept ACROSS invalidations: the etag is a content hash, so a stale one is merely a miss. */
-const lastAnswers = new Map<string, { etag: string; resolved: Record<string, unknown> }>();
+const lastAnswers = new Map<
+  string,
+  { etag: string; resolved: Record<string, unknown>; overrides: Record<string, unknown>; defaultsVersion: string }
+>();
 
 /** What each held etag was asked with, so the catch-up below can ask the same question again. */
 const heldAsks = new Map<
@@ -306,14 +334,43 @@ const heldAsks = new Map<
   { organizationId: string | null; userId: string | null; scopes: readonly KnobScope[] | undefined; deviceId: string | null }
 >();
 
+/** Stored as buckets when held as buckets (the flat map is rebuilt on read, not stored twice). */
+type StoredDefaults = { version: string; vector?: string; buckets?: KnobBuckets; values?: Record<string, unknown> };
+
 function readStoredDefaults(): DefaultsEntry | null {
-  const parsed = storedDefaultsKey.getJSON<DefaultsEntry>();
-  return parsed && typeof parsed.version === "string" && parsed.values ? parsed : null;
+  const parsed = storedDefaultsKey.getJSON<StoredDefaults>();
+  if (!parsed || typeof parsed.version !== "string") return null;
+  if (parsed.buckets && parsed.vector) {
+    return { version: parsed.version, vector: parsed.vector, buckets: parsed.buckets, values: flattenKnobBuckets(parsed.buckets) };
+  }
+  return parsed.values ? { version: parsed.version, values: parsed.values } : null;
 }
 
 function storeDefaults(entry: DefaultsEntry): void {
   // Storage full or blocked: the in-memory copy still serves this tab.
-  storedDefaultsKey.setJSON(entry);
+  storedDefaultsKey.setJSON<StoredDefaults>(
+    entry.buckets && entry.vector
+      ? { version: entry.version, vector: entry.vector, buckets: entry.buckets }
+      : { version: entry.version, values: entry.values },
+  );
+}
+
+function keepDefaults(entry: DefaultsEntry): DefaultsEntry {
+  defaultsCache = entry;
+  storeDefaults(entry);
+  return entry;
+}
+
+/** One `knob_defaults` read: the held copy, a patched copy, a flat copy, or null for a patch it cannot apply. */
+async function askDefaults(rpc: PlatformRpc, held: DefaultsEntry | null, asked: string): Promise<DefaultsEntry | null> {
+  const { data, error } = await rpc("knob_defaults", { p_known_version: asked });
+  if (error) {
+    throw new Error(
+      `platform.knob_defaults could not answer: ${error.message}. Every setting on this screen is ` +
+        "falling back to its consumer's own default until it can.",
+    );
+  }
+  return knobDefaultsFromAnswer(held, asked, (data ?? {}) as Parameters<typeof knobDefaultsFromAnswer>[2]);
 }
 
 function platformRpc(supabase: ReturnType<typeof createClient>): PlatformRpc {
@@ -331,26 +388,20 @@ async function ensureDefaults(
     return defaultsCache;
   }
   if (defaultsInFlight) return defaultsInFlight;
-  const known = defaultsCache?.version ?? null;
   const run = (async () => {
     try {
-      const { data, error } = await rpc("knob_defaults", { p_known_version: known });
-      if (error) {
+      const held = defaultsCache;
+      // The held vector asks for only the buckets that moved; a cold browser asks for every bucket.
+      const next =
+        (await askDefaults(rpc, held, knobDefaultsAsk(held))) ??
+        (await askDefaults(rpc, null, KNOB_DEFAULTS_BUCKETED));
+      if (!next) {
         throw new Error(
-          `platform.knob_defaults could not answer: ${error.message}. Every setting on this screen is ` +
-            "falling back to its consumer's own default until it can.",
+          "platform.knob_defaults answered neither the register nor a whole set of buckets. Every setting " +
+            "on this screen is falling back to its consumer's own default until it can.",
         );
       }
-      const payload = (data ?? {}) as {
-        version?: string;
-        unchanged?: boolean;
-        defaults?: Record<string, unknown>;
-      };
-      if (payload.unchanged && defaultsCache) return defaultsCache;
-      const entry = { version: payload.version ?? "", values: payload.defaults ?? {} };
-      defaultsCache = entry;
-      storeDefaults(entry);
-      return entry;
+      return next === held ? next : keepDefaults(next);
     } finally {
       defaultsInFlight = null;
     }
@@ -403,7 +454,11 @@ async function fetchKnobSnapshot(
   const prior = lastAnswers.get(addr);
   // Start the defaults read beside the delta on a cold browser; it is skipped when the cache is warm.
   const warmDefaults = defaultsCache ?? readStoredDefaults();
+  if (warmDefaults && !defaultsCache) defaultsCache = warmDefaults;
   const defaultsEarly = warmDefaults ? null : ensureDefaults(rpc, null);
+  // The address's fingerprint with the vector the held defaults are at: a register write answers with
+  // only the buckets that moved since (`defaults_patch`), never the whole map.
+  const sentEtag = knobEtagFor(prior?.etag, warmDefaults);
   // Started beside the delta and awaited only on the path that needs it. When the delta throws first (no
   // session yet: both calls ride the anon role and answer 42501) nothing awaits this one, and its rejection
   // surfaced as an uncaught page error on every Applet page. The delta's own error is the one reported.
@@ -414,22 +469,31 @@ async function fetchKnobSnapshot(
     p_organization_id: organizationId ?? null,
     p_user_id: userId ?? undefined,
     p_scopes: buildScopes(deviceId, scopes),
-    p_etag: prior?.etag ?? undefined,
+    p_etag: sentEtag,
   });
   if (error) throw new Error(snapshotFailureSentence(organizationId, error));
-  const payload = (data ?? {}) as {
+  const payload = (data ?? {}) as Parameters<typeof knobDeltaPatch>[0] & {
     etag?: string;
-    defaults_version?: string;
     unchanged?: boolean;
     overrides?: Record<string, unknown>;
   };
-  if (payload.unchanged && prior && prior.etag === payload.etag) {
-    return { resolved: prior.resolved, stamp: payload.etag ?? null, at: Date.now() };
+  if (payload.unchanged && prior && sentEtag && payload.etag === sentEtag) {
+    // The defaults may have been patched under another address since this answer was built.
+    const held = defaultsCache;
+    const resolved =
+      held && held.version !== prior.defaultsVersion ? { ...held.values, ...prior.overrides } : prior.resolved;
+    lastAnswers.set(addr, { ...prior, etag: sentEtag, resolved, defaultsVersion: held?.version ?? prior.defaultsVersion });
+    return { resolved, stamp: sentEtag, at: Date.now() };
   }
-  const defaults = await (defaultsEarly ?? ensureDefaults(rpc, payload.defaults_version ?? null));
-  const resolved = { ...defaults.values, ...(payload.overrides ?? {}) };
+  const patch = knobDeltaPatch(payload, sentEtag);
+  const patched = patch ? applyKnobDefaultsPatch(defaultsCache, patch) : null;
+  const defaults = patched
+    ? keepDefaults(patched)
+    : await (defaultsEarly ?? ensureDefaults(rpc, payload.defaults_version ?? null));
+  const overrides = payload.overrides ?? {};
+  const resolved = { ...defaults.values, ...overrides };
   if (payload.etag) {
-    lastAnswers.set(addr, { etag: payload.etag, resolved });
+    lastAnswers.set(addr, { etag: payload.etag, resolved, overrides, defaultsVersion: defaults.version });
     heldAsks.set(addr, { organizationId, userId, scopes, deviceId });
   }
   return { resolved, stamp: payload.etag ?? null, at: Date.now() };
@@ -544,9 +608,10 @@ export function primeKnobSnapshot(seed: KnobSnapshotSeed): void {
   if (snapshots.has(id) || inFlight.has(id)) return;
   const askedAt = generation;
   const build = (defaults: DefaultsEntry): Snapshot => {
-    const resolved = { ...defaults.values, ...(seed.payload.overrides ?? {}) };
+    const overrides = seed.payload.overrides ?? {};
+    const resolved = { ...defaults.values, ...overrides };
     if (seed.payload.etag) {
-      lastAnswers.set(id, { etag: seed.payload.etag, resolved });
+      lastAnswers.set(id, { etag: seed.payload.etag, resolved, overrides, defaultsVersion: defaults.version });
       heldAsks.set(id, { organizationId: seed.organizationId, userId: seed.userId, scopes: undefined, deviceId: seed.deviceId });
     }
     return { resolved, stamp: seed.payload.etag ?? null, at: Date.now() };
@@ -590,6 +655,29 @@ if (typeof window !== "undefined") {
   registerDirectiveHandler("settings_changed", (payload) => {
     invalidateEffectiveKnob(`${payload.feature}.${payload.key}`);
   });
+  installFocusRecheck();
+}
+
+/**
+ * Refetch on focus, never a blind poll: a tab that was hidden for at least
+ * KNOB_FOCUS_RECHECK_AFTER_MS asks each held snapshot "unchanged?" once when it
+ * is shown again, and drops the caches only if one moved.
+ */
+function installFocusRecheck(): void {
+  let hiddenAt: number | null = document.visibilityState === "hidden" ? Date.now() : null;
+  const onVisibility = () => {
+    if (document.visibilityState === "hidden") {
+      hiddenAt = Date.now();
+      return;
+    }
+    const away = hiddenAt === null ? 0 : Date.now() - hiddenAt;
+    hiddenAt = null;
+    if (away < KNOB_FOCUS_RECHECK_AFTER_MS || isSignedOutVisitor()) return;
+    void catchUpKnobsSinceBoot().catch((error: unknown) => {
+      console.warn("[knob] re-check on return to the tab could not ask:", error);
+    });
+  };
+  document.addEventListener("visibilitychange", onVisibility);
 }
 
 /**
@@ -602,26 +690,43 @@ if (typeof window !== "undefined") {
 export async function catchUpKnobsSinceBoot(): Promise<boolean> {
   if (typeof window === "undefined") return false;
   const defaults = defaultsCache ?? readStoredDefaults();
+  if (defaults && !defaultsCache) defaultsCache = defaults;
   if (!defaults && heldAsks.size === 0) return false;
   const rpc = platformRpc(createClient());
   let moved = false;
-  if (defaults?.version) {
-    const { data, error } = await rpc("knob_defaults", { p_known_version: defaults.version });
-    if (!error && (data as { unchanged?: boolean } | null)?.unchanged !== true) moved = true;
+  // A held snapshot's etag carries the platform defaults' version (`k3.<inputs>.<defaults version>`,
+  // migration dblanea_knob_delta_unchanged_is_cheap): "unchanged" there means the defaults did not move
+  // either, so the full defaults read (~80 ms server-side) is asked only when no snapshot is held.
+  const holdsSnapshot = [...heldAsks.keys()].some((addr) => lastAnswers.has(addr));
+  if (defaults?.version && !holdsSnapshot) {
+    const asked = knobDefaultsAsk(defaults);
+    const { data, error } = await rpc("knob_defaults", { p_known_version: asked });
+    if (!error && (data as { unchanged?: boolean } | null)?.unchanged !== true) {
+      moved = true;
+      const next = knobDefaultsFromAnswer(defaults, asked, (data ?? {}) as Parameters<typeof knobDefaultsFromAnswer>[2]);
+      if (next && next !== defaults) keepDefaults(next);
+    }
   }
   for (const [addr, ask] of heldAsks) {
     if (moved) break;
     const prior = lastAnswers.get(addr);
     if (!prior) continue;
+    const sent = knobEtagFor(prior.etag, defaultsCache);
     const { data, error } = await rpc("knob_snapshot_delta", {
       p_organization_id: ask.organizationId ?? null,
       p_user_id: ask.userId ?? undefined,
       p_scopes: buildScopes(ask.deviceId, ask.scopes),
-      p_etag: prior.etag,
+      p_etag: sent,
     });
     if (error) continue;
-    const answer = (data ?? {}) as { unchanged?: boolean; etag?: string };
-    if (answer.unchanged !== true || answer.etag !== prior.etag) moved = true;
+    const answer = (data ?? {}) as Parameters<typeof knobDeltaPatch>[0] & { unchanged?: boolean; etag?: string };
+    if (answer.unchanged !== true || answer.etag !== sent) {
+      moved = true;
+      // Keep the buckets this answer carried, so the re-read after the drop asks for nothing again.
+      const patch = knobDeltaPatch(answer, sent);
+      const patched = patch ? applyKnobDefaultsPatch(defaultsCache, patch) : null;
+      if (patched) keepDefaults(patched);
+    }
   }
   if (moved) invalidateEffectiveKnob();
   return moved;

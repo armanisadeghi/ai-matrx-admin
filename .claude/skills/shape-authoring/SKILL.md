@@ -255,6 +255,7 @@ Platform image shortcuts: `c70e1694-9b84-4843-9999-cb5471478bb4` (idea → image
   It shows the whole image at its real proportions (never cropped), with expand (and share for a saved file).
   Never a bare `<img>` for either, and never build a URL from a `file_id`.
 - Images inside `data` as `data:` URIs and inline `<svg>` render normally.
+- A bare `<img>`/`<video>`/`<audio>`/`<iframe>` is converted to the kit piece automatically, but write the kit piece yourself.
 - Any other saved file (PDF, document, sheet, archive…): `<KindFile file={{ file_id, name, mime_type, size }} runAction={runAction} />`
   — a compact card with its type (an image shows a thumbnail), name, size, Open / Download / Share. `hide={["share"]}` drops buttons.
 - A file the shape builds (CSV, Markdown, JSON): `runAction("download", { filename: "rows.csv", content })`, or a

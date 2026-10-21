@@ -68,8 +68,7 @@ describe("the Data home's bulk verbs", () => {
 
   it("names the store's own sentence when one table refuses", async () => {
     const { by } = make({ archiveTable: jest.fn(async () => "Too big to archive in a batch.") });
-    await by("archive").run(sel([row({})]));
-    expect(JSON.stringify(warning.mock.calls)).toContain("Too big to archive in a batch.");
+    await expect(by("archive").run(sel([row({})]))).rejects.toThrow("Too big to archive in a batch.");
   });
 
   it("restore only fits archived rows the store will bring back", () => {
@@ -81,8 +80,9 @@ describe("the Data home's bulk verbs", () => {
 
   it("favorite flips only the rows that are not starred and names the cap refusals", async () => {
     const { deps, by } = make({ setStarred: jest.fn(() => ["table:o:t1"]) });
-    await by("favorite").run(sel([row({}), row({ id: "table:o:starred", name: "Done" })]));
+    await expect(
+      by("favorite").run(sel([row({}), row({ id: "table:o:starred", name: "Done" })])),
+    ).rejects.toThrow(/up to 500 favorites/);
     expect(deps.setStarred).toHaveBeenCalledWith(["table:o:t1"], true);
-    expect(JSON.stringify(warning.mock.calls)).toContain("up to");
   });
 });

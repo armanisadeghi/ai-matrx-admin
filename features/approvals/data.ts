@@ -445,7 +445,15 @@ export async function readProposalStatus({
   if (!userId || !proposalId) return { status: "unknown" };
   try {
     const assist = await getAssistById(userId, proposalId);
-    if (!assist) return { status: "unknown" };
+    if (!assist) {
+      // NOT AN ASSIST: it may be the record store's own approval (`store_change`). Its state is
+      // read from the store, so a decided held write reloads as "decided", never "could not
+      // confirm" (lane CLOSE2). Loaded on demand: the store client stays off the badge's path.
+      const { readStoreApprovalState } = await import("./store-door");
+      const state = await readStoreApprovalState(proposalId);
+      if (!state) return { status: "unknown" };
+      return state === "pending" ? { status: "pending" } : { status: "decided" };
+    }
     // An id that names one of this person's OTHER assists is not an approval
     // item, and calling it one would send the reader hunting through a queue it
     // was never in.

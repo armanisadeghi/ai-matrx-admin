@@ -27,11 +27,13 @@ function serve() {
         error: null,
       });
     }
+    // The live etag covers the platform defaults too (`k3.<inputs>.<defaults version>`).
+    const etag = `${serverEtag}.${serverDefaults}`;
     return Promise.resolve({
       data:
-        args.p_etag === serverEtag
-          ? { etag: serverEtag, defaults_version: serverDefaults, unchanged: true }
-          : { etag: serverEtag, defaults_version: serverDefaults, unchanged: false, overrides: { "a.b": 1 } },
+        args.p_etag === etag
+          ? { etag, defaults_version: serverDefaults, unchanged: true }
+          : { etag, defaults_version: serverDefaults, unchanged: false, overrides: { "a.b": 1 } },
       error: null,
     });
   };
