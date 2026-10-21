@@ -502,6 +502,39 @@ const scopesSlice = createSlice({
         error: action.payload.error,
       };
     },
+    // Bulk forms: ONE dispatch (one immer pass, one subscriber wake) per page of rows, not one per
+    // row. /files/all primed 3 x N single dispatches and froze the tab for ~10 s at boot.
+    entityScopesBulkPending(state, action: PayloadAction<{ keys: string[] }>) {
+      for (const key of action.payload.keys) {
+        const prev = state.entityScopesByKey[key];
+        state.entityScopesByKey[key] = {
+          status: "loading",
+          scope_ids: prev?.scope_ids ?? [],
+          fetchedAt: prev?.fetchedAt ?? null,
+          error: null,
+        };
+      }
+    },
+    entityScopesBulkFulfilled(
+      state,
+      action: PayloadAction<{ entries: { key: string; scope_ids: string[] }[] }>,
+    ) {
+      const fetchedAt = Date.now();
+      for (const { key, scope_ids } of action.payload.entries) {
+        state.entityScopesByKey[key] = { status: "ready", scope_ids, fetchedAt, error: null };
+      }
+    },
+    entityScopesBulkRejected(state, action: PayloadAction<{ keys: string[]; error: string }>) {
+      for (const key of action.payload.keys) {
+        const prev = state.entityScopesByKey[key];
+        state.entityScopesByKey[key] = {
+          status: "error",
+          scope_ids: prev?.scope_ids ?? [],
+          fetchedAt: prev?.fetchedAt ?? null,
+          error: action.payload.error,
+        };
+      }
+    },
     /** Authoritative write applied after a successful setEntityScopes mutation. */
     entityScopesUpdated(
       state,

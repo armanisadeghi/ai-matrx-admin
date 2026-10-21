@@ -110,15 +110,20 @@ export function ensureEntityScopesBulk(
       (id) => opts.refresh || byKey[`${entityType}:${id}`]?.status !== "ready",
     );
     if (wanted.length === 0) return;
-    for (const id of wanted) dispatch(scopesActions.entityScopesFetchPending({ key: `${entityType}:${id}` }));
+    const keyOf = (id: string) => `${entityType}:${id}`;
+    dispatch(scopesActions.entityScopesBulkPending({ keys: wanted.map(keyOf) }));
     const res = await scopesService.getEntityScopesBulk(
       entityType as Parameters<typeof scopesService.getEntityScopesBulk>[0],
       wanted,
     );
-    for (const id of wanted) {
-      const key = `${entityType}:${id}`;
-      if (!res.ok) dispatch(scopesActions.entityScopesFetchRejected({ key, error: res.error.message }));
-      else dispatch(scopesActions.entityScopesFetchFulfilled({ key, scope_ids: res.data.byEntity[id] ?? [] }));
+    if (!res.ok) {
+      dispatch(scopesActions.entityScopesBulkRejected({ keys: wanted.map(keyOf), error: res.error.message }));
+      return;
     }
+    dispatch(
+      scopesActions.entityScopesBulkFulfilled({
+        entries: wanted.map((id) => ({ key: keyOf(id), scope_ids: res.data.byEntity[id] ?? [] })),
+      }),
+    );
   };
 }
