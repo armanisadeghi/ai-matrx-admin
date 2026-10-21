@@ -25,7 +25,7 @@
 // 768px (see the `ios-mobile-first` skill), so there is no second layout here
 // and no `useIsMobile` branch to drift.
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Ban,
   Check,
@@ -544,7 +544,41 @@ function FirstAction({
  * The dialog's body. Mounted in the dialog AND as the Settings page content —
  * one component, two mounts (PLAN §2), so the two can never drift.
  */
-export function ConnectorConsentBody({
+export type ConnectorConsentRunner = ReturnType<typeof useGoogleConsentRunner>;
+
+const ConnectorConsentRunnerContext = createContext<ConnectorConsentRunner | null>(null);
+
+/** Explicit composition seam; ordinary mounts always use the live adapter. */
+export function ConnectorConsentRunnerProvider({
+  runner,
+  children,
+}: {
+  runner: ConnectorConsentRunner;
+  children: ReactNode;
+}) {
+  return (
+    <ConnectorConsentRunnerContext.Provider value={runner}>
+      {children}
+    </ConnectorConsentRunnerContext.Provider>
+  );
+}
+
+export function ConnectorConsentBody(props: ConnectorConsentBodyProps) {
+  const runner = useContext(ConnectorConsentRunnerContext);
+  return runner ? (
+    <ConnectorConsentContent {...props} runner={runner} />
+  ) : (
+    <LiveConnectorConsentBody {...props} />
+  );
+}
+
+function LiveConnectorConsentBody(props: ConnectorConsentBodyProps) {
+  const runner = useGoogleConsentRunner();
+  return <ConnectorConsentContent {...props} runner={runner} />;
+}
+
+function ConnectorConsentContent({
+  runner,
   provider,
   accounts,
   rollout,
@@ -560,7 +594,7 @@ export function ConnectorConsentBody({
   rowAnchorPrefix,
   searchFocus,
   onDone,
-}: ConnectorConsentBodyProps) {
+}: ConnectorConsentBodyProps & { runner: ConnectorConsentRunner }) {
   const organizations = useAppSelector(selectOrganizationsList);
   const activeOrganizationId = useAppSelector(selectOrganizationId);
   // The organization a first action's window writes into — the same value
@@ -571,8 +605,6 @@ export function ConnectorConsentBody({
   const firstActionContext: ConnectorFirstActionContext = {
     organizationId: activeOrganizationId,
   };
-  const runner = useGoogleConsentRunner();
-
   // D7: never "the first row the inventory returned" — the account this
   // surface is using, else the one holding the most live products.
   // The dialog may mount while inventory is loading. Preserve a caller's exact

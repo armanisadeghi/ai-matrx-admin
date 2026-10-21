@@ -213,6 +213,11 @@ where every item opens at the provider.
 
 ### (f) Google consent steps
 
+`ConnectorConsentRunnerProvider` composes an explicit runner around the same
+consent body for isolated transport fixtures. Ordinary mounts use the live
+adapter; never select a runner through a URL, environment switch or HTTP input.
+The injected path must not mount the live adapter or load its Google runtime.
+
 A mixed first connection asks for the normal Google products first and carries
 YouTube as `ConsentPlan.deferred`. Only a second, explicit press opens the
 focused `youtube_isolated` approval; a deferred product is never reported as
