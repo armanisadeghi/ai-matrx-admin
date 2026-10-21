@@ -119,8 +119,10 @@ import { cn } from "@/lib/utils";
 import {
   useConnectGoogle,
   useGoogleConnectionInventory,
+  useSharedSearchConsole,
   googleConnectionKeys,
 } from "@/features/marketing/google/hooks";
+import { withSharedSearchConsole } from "@/features/marketing/google/product-shares";
 import type {
   GoogleConnectionInventory,
   GoogleConnectionResource,
@@ -296,6 +298,16 @@ function SiteIntegrationsEditor({
     selectAdminFeature(s, "google.internal-review"),
   );
   const googleInventory = useGoogleConnectionInventory();
+  // Search Console properties other people shared with this person join the SC
+  // picker (and only it): the stand-in connection carries Search Console scope alone.
+  const sharedSearchConsole = useSharedSearchConsole();
+  const searchConsoleInventory = useMemo(
+    () =>
+      googleInventory.data
+        ? withSharedSearchConsole(googleInventory.data, sharedSearchConsole.data ?? [])
+        : googleInventory.data,
+    [googleInventory.data, sharedSearchConsole.data],
+  );
   const userId = useAppSelector(selectUserId);
   const [propertiesRefreshing, setPropertiesRefreshing] = useState(false);
   const connectGoogle = useConnectGoogle();
@@ -1188,7 +1200,7 @@ function SiteIntegrationsEditor({
                         true,
                       )}
                       connection={
-                        googleInventory.data?.connections.find(
+                        searchConsoleInventory?.connections.find(
                           (candidate) =>
                             candidate.id ===
                             draft.googleSearchConsole.credentialRef,
@@ -1224,8 +1236,18 @@ function SiteIntegrationsEditor({
                 issues={providerIssueMessages(visibleIssues, key)}
                 siteDomain={site.domain}
                 siteRootUrl={site.root_url}
-                connections={googleInventory.data?.connections ?? []}
-                resources={googleInventory.data?.resources ?? []}
+                connections={
+                  (key === "googleSearchConsole"
+                    ? searchConsoleInventory
+                    : googleInventory.data
+                  )?.connections ?? []
+                }
+                resources={
+                  (key === "googleSearchConsole"
+                    ? searchConsoleInventory
+                    : googleInventory.data
+                  )?.resources ?? []
+                }
                 dirty={
                   JSON.stringify(draft[key]) !== JSON.stringify(initial[key])
                 }

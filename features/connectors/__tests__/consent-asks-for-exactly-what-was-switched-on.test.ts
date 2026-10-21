@@ -86,6 +86,16 @@ describe("buildConsentPlan", () => {
     });
     expect(reading.request?.scopes).toContain(GSC);
     expect(reading.request?.scopes).not.toContain(GSC_WRITE);
+    // "Connect Google, Search Console only" (owner ruling 2026-10-20): identity plus
+    // webmasters.readonly and NOTHING else — no Gmail, Drive, Calendar.
+    expect([...(reading.request?.scopes ?? [])].sort()).toEqual(
+      [
+        "openid",
+        "email",
+        "profile",
+        GSC,
+      ].sort(),
+    );
 
     const management = buildConsentPlan({
       provider,

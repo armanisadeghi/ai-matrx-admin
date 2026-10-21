@@ -33,6 +33,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { GoogleSearchConsoleSharePanel } from "@/features/marketing/components/integrations/GoogleSearchConsoleSharePanel";
+import { GoogleServiceAccountConnect } from "@/features/marketing/components/integrations/GoogleServiceAccountConnect";
 import { useSiteOptions } from "@/features/marketing/data/hooks";
 import { parseSiteIntegrations } from "@/features/marketing/data/integrations-schema";
 import { useActiveOrganizationPicker } from "@/features/organizations/hooks/useActiveOrganizationPicker";
@@ -438,6 +440,9 @@ function MarketingConnectionsContent({ reviewMode }: { reviewMode: boolean }) {
                     Add shared account
                   </Button>
                 ) : null}
+                <GoogleServiceAccountConnect
+                  hasOrganization={Boolean(organizations.activeOrgId)}
+                />
                 <Button
                   icon={inventory.isFetching ? (
                     <Loader2 className="animate-spin" />
@@ -946,6 +951,9 @@ function ConnectionRow({
             ))}
           </dl>
         </details>
+        {usable && searchConsoleCount > 0 && connection.owner_user_id ? (
+          <GoogleSearchConsoleSharePanel connection={connection} />
+        ) : null}
       </div>
       <div className="flex shrink-0 items-center gap-1.5">
         <Button
