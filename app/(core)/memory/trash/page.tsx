@@ -1,3 +1,5 @@
+"use client";
+
 // /memory/trash — Memory › Forget & archive. The library trash (the same LibraryTrashTable
 // /knowledge/trash renders), with doors to that page and to Drive's trash.
 import { FolderX, Trash2 } from "lucide-react";

@@ -61,7 +61,6 @@ export const MEMORY_HUB_SECTIONS: MemoryHubSection[] = [
       { href: "/memory/everything", label: "Everything", hint: "Every item in one list", icon: FolderOpen },
       { href: "/memory/my-memory", label: "My memory", hint: "Notes every agent and sandbox can read", icon: UserRound },
       { href: "/memory/agent-memory", label: "Agent memories", hint: "What agents saved about you", icon: Brain },
-      { href: "/knowledge", label: "Knowledge overview", hint: "How the knowledge system works", icon: Shapes },
     ],
   },
   {
@@ -104,6 +103,7 @@ export const MEMORY_HUB_SECTIONS: MemoryHubSection[] = [
       { href: "/knowledge/flow", label: "Pipeline", hint: "How a source becomes searchable", icon: Workflow },
       { href: "/knowledge/repositories", label: "Repositories", hint: "Code repositories in search", icon: Code2 },
       { href: "/acquisition/blocks", label: "Acquisition blocks", hint: "The steps an ingestion run uses", icon: Boxes },
+      { href: "/knowledge", label: "Knowledge overview", hint: "How the knowledge system works", icon: Shapes },
     ],
   },
 ];

@@ -2,16 +2,13 @@
 
 // /memory/observational — the Memory Inspector (observational memory, per conversation)
 // given a route. Wraps the canonical ObservationalMemoryWindow (its own conversation
-// list + ObservationalMemoryCore): the page opens it while open, and
-// `?conversation=<id>` preselects one conversation.
+// list + ObservationalMemoryCore) instead of copying it; `?conversation=<id>` preselects
+// one conversation.
 
 import { Eye } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Button, EmptyState } from "@ai-matrx/design-system/controls";
-import {
-  ObservationalMemoryWindowController,
-  useOpenObservationalMemoryWindow,
-} from "@/features/overlays/definitions/observationalMemoryWindow.overlay";
+import { useOpenObservationalMemoryWindow } from "@/features/overlays/definitions/observationalMemoryWindow.overlay";
 import { MemoryPageFrame } from "./MemoryPageFrame";
 
 export function ObservationalMemoryPage() {
@@ -19,7 +16,6 @@ export function ObservationalMemoryPage() {
   const open = useOpenObservationalMemoryWindow();
   return (
     <MemoryPageFrame name="Memory inspector">
-      <ObservationalMemoryWindowController initialSelectedConversationId={conversationId} />
       <EmptyState
         icon={<Eye />}
         title="Memory inspector"

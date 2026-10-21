@@ -1,3 +1,5 @@
+"use client";
+
 // /memory/my-memory — your memory files (users.user_memory), the same MemoryManager the
 // Settings › AI › Memory tab renders; Settings keeps its tab.
 import { Suspense } from "react";
