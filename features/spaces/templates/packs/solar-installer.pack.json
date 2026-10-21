@@ -1,0 +1,4074 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0583",
+  "version": 1,
+  "title": "Solar Installer",
+  "description": "Leads to permission to operate: surveys, permits, installs, utility approvals and margin.",
+  "forWho": "Residential solar and battery installers",
+  "icon": {
+    "emoji": "☀️"
+  },
+  "cover": {
+    "url": "gallery:trades-solar-panels-on-roof",
+    "offsetY": 50
+  },
+  "category": "trades",
+  "tags": [
+    "solar",
+    "pv",
+    "installer",
+    "permits",
+    "battery",
+    "renewables"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-solar-installer",
+    "catalogueId": "SP0583",
+    "useCase": "The owner of Brightmesa Solar uses this to see which installs are stuck on a permit or the utility, and what each system earns.",
+    "industry": "construction_trades",
+    "vertical": "Solar installer",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Brightmesa Solar",
+      "describes": "A six-person residential solar company selling, designing and installing rooftop systems and home batteries, about eight installs a month.",
+      "address": {
+        "line1": "1840 Juniper Ridge Road",
+        "city": "Albuquerque",
+        "region": "NM",
+        "postalCode": "87110",
+        "country": "US"
+      },
+      "phone": "(505) 555-0190",
+      "website": "brightmesasolar.net",
+      "email": "projects@brightmesasolar.net",
+      "timezone": "America/Denver"
+    },
+    "cleanupTag": "use-case:spaces-solar-installer",
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Isadora Quintero",
+              "role": "Owner",
+              "work_email": "isadora@brightmesasolar.net",
+              "mobile": "(505) 555-0141",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Marcus Feldhaus",
+              "role": "Solar consultant",
+              "work_email": "marcus@brightmesasolar.net",
+              "mobile": "(505) 555-0142",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Anjali Ramaswamy",
+              "role": "Project coordinator",
+              "work_email": "anjali@brightmesasolar.net",
+              "mobile": "(505) 555-0143",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Tomas Okeke",
+              "role": "Install crew lead",
+              "work_email": "tomas@brightmesasolar.net",
+              "mobile": "(505) 555-0144",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Bridget Laughlin",
+              "role": "System designer",
+              "work_email": "bridget@brightmesasolar.net",
+              "mobile": "(505) 555-0145",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Caleb Yazzie",
+              "role": "Installer",
+              "work_email": "caleb@brightmesasolar.net",
+              "mobile": "(505) 555-0146",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "project_installed",
+        "table": "project",
+        "name": "Mark installed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Installed"
+          },
+          {
+            "field": "installed_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "project_pto",
+        "table": "project",
+        "name": "Mark PTO received",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "PTO received"
+          },
+          {
+            "field": "pto_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "project_take",
+        "table": "project",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "approval_ok",
+        "table": "approval",
+        "name": "Mark approved",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Approved"
+          },
+          {
+            "field": "approved_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Solar Installer assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "project",
+          "describes": "Each signed system from survey to permission to operate: size, price per watt, costs, margin and dates."
+        },
+        {
+          "name": "related_tables",
+          "table": "customer",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many projects are waiting on the utility for interconnection?",
+        "whyItMatters": "Customers cannot switch on until the utility approves.",
+        "expect": {
+          "table": "project",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Interconnection pending"
+          },
+          "answer": 1,
+          "unit": "projects"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open projects.",
+        "action": {
+          "kind": "open",
+          "surface": "project_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "project_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open homeowners.",
+        "action": {
+          "kind": "open",
+          "surface": "customer_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "customer_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open approvals.",
+        "action": {
+          "kind": "open",
+          "surface": "approval_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "approval_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-21",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "brightmesasolar.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Juniper Ridge Road"
+      ]
+    },
+    "version": 1,
+    "tables": [
+      {
+        "token": "customer",
+        "name": "Homeowners",
+        "labelSingular": "Homeowner",
+        "labelPlural": "Homeowners",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "house",
+        "titleField": "customer_name",
+        "describes": "Every household from first inquiry to signed, with their usage, roof and how they are paying.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "Site survey",
+            "values": {
+              "stage": "Site survey booked"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Roof"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Material, age and condition; photos of every plane"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Rafter size and spacing from the attic"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Pitch and azimuth of each usable plane"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Electrical"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Main panel brand, bus rating and main breaker"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Room for a backfeed breaker or a supply-side tap"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Meter location and clearance"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Shade"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Trees and chimneys noted with the season they shade"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Home"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Last 12 months of usage from the bill"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Plans for an EV, pool or heat pump"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "customer_name",
+            "label": "Homeowner",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "stage",
+            "label": "Sales stage",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New lead",
+              "Site survey booked",
+              "Proposal sent",
+              "Signed",
+              "Lost"
+            ],
+            "choiceColors": {
+              "New lead": "slate",
+              "Site survey booked": "blue",
+              "Proposal sent": "violet",
+              "Signed": "green",
+              "Lost": "red"
+            },
+            "default": "New lead"
+          },
+          {
+            "key": "utility",
+            "label": "Utility",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "City electric",
+              "Rural co-op"
+            ],
+            "choiceColors": {
+              "City electric": "blue",
+              "Rural co-op": "teal"
+            }
+          },
+          {
+            "key": "monthly_bill",
+            "label": "Average electric bill (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "annual_kwh",
+            "label": "Yearly usage (kWh)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "roof_type",
+            "label": "Roof",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Comp shingle",
+              "Concrete tile",
+              "Metal standing seam",
+              "Flat membrane"
+            ],
+            "choiceColors": {
+              "Comp shingle": "slate",
+              "Concrete tile": "orange",
+              "Metal standing seam": "blue",
+              "Flat membrane": "violet"
+            }
+          },
+          {
+            "key": "roof_age",
+            "label": "Roof age (years)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "key": "shading",
+            "label": "Shading",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "None",
+              "Light",
+              "Heavy"
+            ],
+            "choiceColors": {
+              "None": "green",
+              "Light": "yellow",
+              "Heavy": "red"
+            }
+          },
+          {
+            "key": "financing",
+            "label": "Paying by",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Cash",
+              "Solar loan",
+              "Home equity loan"
+            ],
+            "choiceColors": {
+              "Cash": "green",
+              "Solar loan": "blue",
+              "Home equity loan": "violet"
+            }
+          },
+          {
+            "key": "source",
+            "label": "Lead source",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Referral",
+              "Neighbor saw an install",
+              "Web inquiry",
+              "Home show"
+            ],
+            "choiceColors": {
+              "Referral": "green",
+              "Neighbor saw an install": "teal",
+              "Web inquiry": "blue",
+              "Home show": "orange"
+            }
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "consultant",
+            "label": "Consultant",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "project_count",
+            "label": "Projects",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "projects",
+            "pick": "project_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Cancelled"
+                ]
+              }
+            }
+          },
+          {
+            "key": "contract_total",
+            "label": "Contract value (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "projects",
+            "pick": "contract_price",
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Cancelled"
+                ]
+              }
+            }
+          },
+          {
+            "key": "add_project_btn",
+            "label": "Start project",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "project",
+              "template": "Install project",
+              "prefill": {
+                "customer": "@row"
+              }
+            }
+          },
+          {
+            "key": "call_btn",
+            "label": "Call",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "tel:{{phone}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "cust-1",
+            "values": {
+              "customer_name": "Quintana household",
+              "stage": "Signed",
+              "utility": "City electric",
+              "monthly_bill": 163,
+              "annual_kwh": 13500,
+              "roof_type": "Comp shingle",
+              "roof_age": 6,
+              "shading": "None",
+              "financing": "Solar loan",
+              "source": "Referral",
+              "phone": "(505) 555-0101",
+              "email": "quintana.home@inbox-mail.net",
+              "consultant": "tm-2"
+            }
+          },
+          {
+            "key": "cust-2",
+            "values": {
+              "customer_name": "Begay household",
+              "stage": "Signed",
+              "utility": "Rural co-op",
+              "monthly_bill": 116,
+              "annual_kwh": 9600,
+              "roof_type": "Metal standing seam",
+              "roof_age": 3,
+              "shading": "None",
+              "financing": "Cash",
+              "source": "Neighbor saw an install",
+              "phone": "(505) 555-0102",
+              "email": "begay.home@inbox-mail.net",
+              "consultant": "tm-2"
+            }
+          },
+          {
+            "key": "cust-3",
+            "values": {
+              "customer_name": "Haverford household",
+              "stage": "Signed",
+              "utility": "City electric",
+              "monthly_bill": 210,
+              "annual_kwh": 17400,
+              "roof_type": "Concrete tile",
+              "roof_age": 12,
+              "shading": "Light",
+              "financing": "Home equity loan",
+              "source": "Web inquiry",
+              "phone": "(505) 555-0103",
+              "email": "haverford.home@inbox-mail.net",
+              "consultant": "tm-2"
+            }
+          },
+          {
+            "key": "cust-4",
+            "values": {
+              "customer_name": "Mendelsohn household",
+              "stage": "Signed",
+              "utility": "City electric",
+              "monthly_bill": 115,
+              "annual_kwh": 9500,
+              "roof_type": "Comp shingle",
+              "roof_age": 9,
+              "shading": "Light",
+              "financing": "Cash",
+              "source": "Home show",
+              "phone": "(505) 555-0104",
+              "email": "mendelsohn.home@inbox-mail.net",
+              "consultant": "tm-2"
+            }
+          },
+          {
+            "key": "cust-5",
+            "values": {
+              "customer_name": "Archuleta household",
+              "stage": "Signed",
+              "utility": "City electric",
+              "monthly_bill": 181,
+              "annual_kwh": 15000,
+              "roof_type": "Comp shingle",
+              "roof_age": 4,
+              "shading": "None",
+              "financing": "Solar loan",
+              "source": "Referral",
+              "phone": "(505) 555-0105",
+              "email": "archuleta.home@inbox-mail.net",
+              "consultant": "tm-2"
+            }
+          },
+          {
+            "key": "cust-6",
+            "values": {
+              "customer_name": "Okwuosa household",
+              "stage": "Signed",
+              "utility": "Rural co-op",
+              "monthly_bill": 155,
+              "annual_kwh": 12800,
+              "roof_type": "Metal standing seam",
+              "roof_age": 7,
+              "shading": "None",
+              "financing": "Solar loan",
+              "source": "Web inquiry",
+              "phone": "(505) 555-0106",
+              "email": "okwuosa.home@inbox-mail.net",
+              "consultant": "tm-2"
+            }
+          },
+          {
+            "key": "cust-7",
+            "values": {
+              "customer_name": "Rinaldi household",
+              "stage": "Proposal sent",
+              "utility": "City electric",
+              "monthly_bill": 135,
+              "annual_kwh": 11200,
+              "roof_type": "Comp shingle",
+              "roof_age": 15,
+              "shading": "Light",
+              "financing": "Solar loan",
+              "source": "Web inquiry",
+              "phone": "(505) 555-0107",
+              "email": "rinaldi.home@inbox-mail.net",
+              "consultant": "tm-2"
+            }
+          },
+          {
+            "key": "cust-8",
+            "values": {
+              "customer_name": "Thibodeaux household",
+              "stage": "Site survey booked",
+              "utility": "City electric",
+              "monthly_bill": 170,
+              "annual_kwh": 14100,
+              "roof_type": "Concrete tile",
+              "roof_age": 8,
+              "shading": "None",
+              "source": "Neighbor saw an install",
+              "phone": "(505) 555-0108",
+              "email": "thibodeaux.home@inbox-mail.net",
+              "consultant": "tm-2"
+            }
+          },
+          {
+            "key": "cust-9",
+            "values": {
+              "customer_name": "Castellano-Reyes household",
+              "stage": "New lead",
+              "utility": "Rural co-op",
+              "monthly_bill": 126,
+              "annual_kwh": 10400,
+              "source": "Home show",
+              "phone": "(505) 555-0109",
+              "email": "castellano.reyes.home@inbox-mail.net"
+            }
+          },
+          {
+            "key": "cust-10",
+            "values": {
+              "customer_name": "Wexford household",
+              "stage": "Lost",
+              "utility": "City electric",
+              "monthly_bill": 120,
+              "annual_kwh": 9900,
+              "roof_type": "Comp shingle",
+              "roof_age": 22,
+              "shading": "Heavy",
+              "source": "Web inquiry",
+              "phone": "(505) 555-0110",
+              "email": "wexford.home@inbox-mail.net",
+              "consultant": "tm-2"
+            }
+          },
+          {
+            "key": "cust-11",
+            "values": {
+              "customer_name": "Valdez-Holm household",
+              "stage": "Signed",
+              "utility": "City electric",
+              "monthly_bill": 146,
+              "annual_kwh": 12100,
+              "roof_type": "Comp shingle",
+              "roof_age": 5,
+              "shading": "None",
+              "financing": "Cash",
+              "source": "Referral",
+              "phone": "(505) 555-0111",
+              "email": "valdez.holm.home@inbox-mail.net",
+              "consultant": "tm-2"
+            }
+          },
+          {
+            "key": "cust-12",
+            "values": {
+              "customer_name": "Pruett household",
+              "stage": "Lost",
+              "utility": "City electric",
+              "monthly_bill": 132,
+              "annual_kwh": 10900,
+              "roof_type": "Comp shingle",
+              "roof_age": 10,
+              "shading": "None",
+              "financing": "Solar loan",
+              "source": "Web inquiry",
+              "phone": "(505) 555-0112",
+              "email": "pruett.home@inbox-mail.net",
+              "consultant": "tm-2"
+            }
+          },
+          {
+            "key": "cust-13",
+            "values": {
+              "customer_name": "Lindgren-Baca household",
+              "stage": "Signed",
+              "utility": "City electric",
+              "monthly_bill": 100,
+              "annual_kwh": 8300,
+              "roof_type": "Flat membrane",
+              "roof_age": 6,
+              "shading": "None",
+              "financing": "Cash",
+              "source": "Referral",
+              "phone": "(505) 555-0113",
+              "email": "lindgren.baca.home@inbox-mail.net",
+              "consultant": "tm-2"
+            }
+          }
+        ],
+        "independentOf": {
+          "consultant": "Either record can be created or change status before the other."
+        }
+      },
+      {
+        "token": "project",
+        "name": "Install projects",
+        "labelSingular": "Project",
+        "labelPlural": "Projects",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "sun",
+        "titleField": "project_name",
+        "describes": "Each signed system from survey to permission to operate: size, price per watt, costs, margin and dates.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Installed",
+              "Inspection passed",
+              "Interconnection pending",
+              "PTO received"
+            ],
+            "filled": [
+              "installed_on"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "PTO received"
+            ],
+            "filled": [
+              "pto_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Install project",
+            "values": {
+              "status": "Survey and design",
+              "project_name": "New project"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Design"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Panel layout with fire setbacks from ridge and edges"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "String or microinverter plan"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Single-line diagram and placard drawings"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Paperwork"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Building permit packet"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Utility interconnection application"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "HOA approval if the home has one"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Install day"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Materials staged the day before"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Fall protection set before anyone is on the roof"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Every roof attachment flashed and sealed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "System commissioned and monitoring online"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Close-out"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Inspection booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Customer shown the app and the shutoff"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Do not switch on for export until PTO arrives"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "project_name",
+            "label": "Project",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Survey and design",
+            "choices": [
+              "Survey and design",
+              "Permit submitted",
+              "Permit approved",
+              "Install scheduled",
+              "Installed",
+              "Inspection passed",
+              "Interconnection pending",
+              "PTO received",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Survey and design": "slate",
+              "Permit submitted": "blue",
+              "Permit approved": "violet",
+              "Install scheduled": "teal",
+              "Installed": "orange",
+              "Inspection passed": "yellow",
+              "Interconnection pending": "amber",
+              "PTO received": "green",
+              "Cancelled": "red"
+            },
+            "statusGroups": {
+              "Survey and design": "todo",
+              "Permit submitted": "in_progress",
+              "Permit approved": "in_progress",
+              "Install scheduled": "in_progress",
+              "Installed": "in_progress",
+              "Inspection passed": "in_progress",
+              "Interconnection pending": "in_progress",
+              "PTO received": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "customer",
+            "label": "Homeowner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "crew_lead",
+            "label": "Crew lead",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "system_kw",
+            "label": "System size (kW)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "panels",
+            "label": "Panels",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 300
+              }
+            ]
+          },
+          {
+            "key": "battery",
+            "label": "Battery",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "None",
+              "One 13.5 kWh battery",
+              "Two batteries"
+            ],
+            "choiceColors": {
+              "None": "slate",
+              "One 13.5 kWh battery": "teal",
+              "Two batteries": "blue"
+            },
+            "default": "None"
+          },
+          {
+            "key": "contract_price",
+            "label": "Contract price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200000
+              }
+            ]
+          },
+          {
+            "key": "equipment_cost",
+            "label": "Equipment cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 150000
+              }
+            ]
+          },
+          {
+            "key": "labor_cost",
+            "label": "Labor cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "permit_fees",
+            "label": "Permit and utility fees (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ]
+          },
+          {
+            "key": "usage",
+            "label": "Yearly usage (kWh)",
+            "parityType": "lookup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "customer",
+            "pick": "annual_kwh"
+          },
+          {
+            "key": "ppw",
+            "label": "Price per watt (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({System size (kW)} > 0, ROUND({Contract price (USD)} / ({System size (kW)} * 1000), 2), \"\")"
+          },
+          {
+            "key": "production",
+            "label": "Estimated yearly production (kWh)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND({System size (kW)} * 1650, 0)"
+          },
+          {
+            "key": "offset",
+            "label": "Bill offset (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Yearly usage (kWh)} > 0, ROUND({System size (kW)} * 1650 / {Yearly usage (kWh)} * 100, 0), \"\")"
+          },
+          {
+            "key": "margin",
+            "label": "Margin (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Stage} = \"Cancelled\", \"\", {Contract price (USD)} - {Equipment cost (USD)} - {Labor cost (USD)} - {Permit and utility fees (USD)})"
+          },
+          {
+            "key": "margin_pct",
+            "label": "Margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Stage} = \"Cancelled\", \"\", IF({Contract price (USD)} > 0, ROUND({Margin (USD)} / {Contract price (USD)} * 100, 0), \"\"))"
+          },
+          {
+            "key": "open_approvals",
+            "label": "Approvals waiting",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "approvals",
+            "pick": "approval_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Submitted",
+                "Corrections requested"
+              ]
+            }
+          },
+          {
+            "key": "signed_on",
+            "label": "Signed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "install_on",
+            "label": "Install date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "installed_on",
+            "label": "Installed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "pto_on",
+            "label": "PTO received on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "assigned_to",
+            "label": "Coordinator",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "inst_btn",
+            "label": "Mark installed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "project_installed"
+            }
+          },
+          {
+            "key": "pto_btn",
+            "label": "Mark PTO received",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "project_pto"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "project_take"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "proj-1",
+            "values": {
+              "project_name": "Valdez-Holm 7.2 kW",
+              "status": "PTO received",
+              "customer": "cust-11",
+              "crew_lead": "tm-4",
+              "system_kw": 7.2,
+              "panels": 18,
+              "battery": "None",
+              "contract_price": 22700,
+              "equipment_cost": 9500,
+              "labor_cost": 3300,
+              "permit_fees": 750,
+              "signed_on": "@today-150d",
+              "install_on": "@today-75d",
+              "installed_on": "@today-74d",
+              "pto_on": "@today-30d"
+            }
+          },
+          {
+            "key": "proj-2",
+            "values": {
+              "project_name": "Quintana 8.4 kW",
+              "status": "Interconnection pending",
+              "customer": "cust-1",
+              "crew_lead": "tm-4",
+              "system_kw": 8.4,
+              "panels": 21,
+              "battery": "None",
+              "contract_price": 26500,
+              "equipment_cost": 11000,
+              "labor_cost": 3800,
+              "permit_fees": 800,
+              "signed_on": "@today-110d",
+              "install_on": "@today-40d",
+              "installed_on": "@today-40d"
+            }
+          },
+          {
+            "key": "proj-3",
+            "values": {
+              "project_name": "Begay 6.0 kW with battery",
+              "status": "Inspection passed",
+              "customer": "cust-2",
+              "crew_lead": "tm-4",
+              "system_kw": 6.0,
+              "panels": 15,
+              "battery": "One 13.5 kWh battery",
+              "contract_price": 31800,
+              "equipment_cost": 18900,
+              "labor_cost": 3900,
+              "permit_fees": 700,
+              "signed_on": "@today-95d",
+              "install_on": "@today-25d",
+              "installed_on": "@today-24d"
+            }
+          },
+          {
+            "key": "proj-4",
+            "values": {
+              "project_name": "Haverford 10.8 kW",
+              "status": "Install scheduled",
+              "customer": "cust-3",
+              "crew_lead": "tm-4",
+              "system_kw": 10.8,
+              "panels": 27,
+              "battery": "None",
+              "contract_price": 33500,
+              "equipment_cost": 14100,
+              "labor_cost": 4900,
+              "permit_fees": 900,
+              "signed_on": "@today-60d",
+              "install_on": "@today"
+            }
+          },
+          {
+            "key": "proj-5",
+            "values": {
+              "project_name": "Mendelsohn 5.6 kW",
+              "status": "Permit approved",
+              "customer": "cust-4",
+              "crew_lead": "tm-4",
+              "system_kw": 5.6,
+              "panels": 14,
+              "battery": "None",
+              "contract_price": 18200,
+              "equipment_cost": 7400,
+              "labor_cost": 2600,
+              "permit_fees": 650,
+              "signed_on": "@today-45d",
+              "install_on": "@today+9d"
+            }
+          },
+          {
+            "key": "proj-6",
+            "values": {
+              "project_name": "Archuleta 9.2 kW",
+              "status": "Permit submitted",
+              "customer": "cust-5",
+              "crew_lead": "tm-4",
+              "system_kw": 9.2,
+              "panels": 23,
+              "battery": "None",
+              "contract_price": 28600,
+              "equipment_cost": 12000,
+              "labor_cost": 4200,
+              "permit_fees": 850,
+              "signed_on": "@today-30d",
+              "install_on": "@today+24d"
+            }
+          },
+          {
+            "key": "proj-7",
+            "values": {
+              "project_name": "Okwuosa 7.6 kW with battery",
+              "status": "Survey and design",
+              "customer": "cust-6",
+              "crew_lead": "tm-4",
+              "system_kw": 7.6,
+              "panels": 19,
+              "battery": "One 13.5 kWh battery",
+              "contract_price": 36400,
+              "equipment_cost": 21800,
+              "labor_cost": 4600,
+              "permit_fees": 800,
+              "signed_on": "@today-12d",
+              "install_on": "@today+40d"
+            }
+          },
+          {
+            "key": "proj-8",
+            "values": {
+              "project_name": "Lindgren-Baca 4.8 kW",
+              "status": "Permit submitted",
+              "customer": "cust-13",
+              "crew_lead": "tm-4",
+              "system_kw": 4.8,
+              "panels": 12,
+              "battery": "None",
+              "contract_price": 16100,
+              "equipment_cost": 6400,
+              "labor_cost": 2300,
+              "permit_fees": 600,
+              "signed_on": "@today-50d",
+              "install_on": "@today-3d"
+            }
+          },
+          {
+            "key": "proj-9",
+            "values": {
+              "project_name": "Pruett 6.4 kW",
+              "status": "Cancelled",
+              "customer": "cust-12",
+              "system_kw": 6.4,
+              "panels": 16,
+              "battery": "None",
+              "contract_price": 20500,
+              "equipment_cost": 8400,
+              "labor_cost": 2900,
+              "permit_fees": 0,
+              "signed_on": "@today-40d"
+            }
+          }
+        ],
+        "independentOf": {
+          "customer": "Either record can be created or change status before the other.",
+          "crew_lead": "Either record can be created or change status before the other."
+        },
+        "before": [
+          [
+            "signed_on",
+            "install_on"
+          ],
+          [
+            "signed_on",
+            "installed_on"
+          ],
+          [
+            "installed_on",
+            "pto_on"
+          ]
+        ]
+      },
+      {
+        "token": "approval",
+        "name": "Permits and utility approvals",
+        "labelSingular": "Approval",
+        "labelPlural": "Approvals",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "stamp",
+        "titleField": "approval_name",
+        "describes": "Building permits, HOA approvals, inspections and the utility's interconnection, with who is waiting on whom.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Approved"
+            ],
+            "filled": [
+              "approved_on"
+            ]
+          }
+        ],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "approval_name",
+            "label": "Approval",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Not started",
+            "choices": [
+              "Not started",
+              "Submitted",
+              "Corrections requested",
+              "Approved",
+              "Rejected"
+            ],
+            "choiceColors": {
+              "Not started": "slate",
+              "Submitted": "blue",
+              "Corrections requested": "amber",
+              "Approved": "green",
+              "Rejected": "red"
+            },
+            "statusGroups": {
+              "Not started": "todo",
+              "Submitted": "in_progress",
+              "Corrections requested": "in_progress",
+              "Approved": "done",
+              "Rejected": "done"
+            }
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Building permit",
+              "HOA approval",
+              "Final inspection",
+              "Utility interconnection"
+            ],
+            "choiceColors": {
+              "Building permit": "blue",
+              "HOA approval": "violet",
+              "Final inspection": "orange",
+              "Utility interconnection": "teal"
+            }
+          },
+          {
+            "key": "agency",
+            "label": "Office",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "City building department",
+              "County permitting office",
+              "City electric utility",
+              "Rural electric co-op",
+              "Homeowners association"
+            ],
+            "choiceColors": {
+              "City building department": "blue",
+              "County permitting office": "violet",
+              "City electric utility": "teal",
+              "Rural electric co-op": "green",
+              "Homeowners association": "orange"
+            }
+          },
+          {
+            "key": "reference",
+            "label": "Reference number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "submitted_on",
+            "label": "Submitted on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "approved_on",
+            "label": "Approved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ok_btn",
+            "label": "Mark approved",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "approval_ok"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "appr-1",
+            "values": {
+              "approval_name": "Valdez-Holm building permit",
+              "status": "Approved",
+              "project": "proj-1",
+              "kind": "Building permit",
+              "agency": "City building department",
+              "reference": "BP-26-04417",
+              "submitted_on": "@today-120d",
+              "approved_on": "@today-106d"
+            }
+          },
+          {
+            "key": "appr-2",
+            "values": {
+              "approval_name": "Valdez-Holm final inspection",
+              "status": "Approved",
+              "project": "proj-1",
+              "kind": "Final inspection",
+              "agency": "City building department",
+              "reference": "BP-26-04417-F",
+              "submitted_on": "@today-72d",
+              "approved_on": "@today-68d"
+            }
+          },
+          {
+            "key": "appr-3",
+            "values": {
+              "approval_name": "Valdez-Holm interconnection",
+              "status": "Approved",
+              "project": "proj-1",
+              "kind": "Utility interconnection",
+              "agency": "City electric utility",
+              "reference": "IA-882310",
+              "submitted_on": "@today-67d",
+              "approved_on": "@today-30d"
+            }
+          },
+          {
+            "key": "appr-4",
+            "values": {
+              "approval_name": "Quintana building permit",
+              "status": "Approved",
+              "project": "proj-2",
+              "kind": "Building permit",
+              "agency": "City building department",
+              "reference": "BP-26-05102",
+              "submitted_on": "@today-90d",
+              "approved_on": "@today-71d"
+            }
+          },
+          {
+            "key": "appr-5",
+            "values": {
+              "approval_name": "Quintana final inspection",
+              "status": "Approved",
+              "project": "proj-2",
+              "kind": "Final inspection",
+              "agency": "City building department",
+              "reference": "BP-26-05102-F",
+              "submitted_on": "@today-38d",
+              "approved_on": "@today-35d"
+            }
+          },
+          {
+            "key": "appr-6",
+            "values": {
+              "approval_name": "Quintana interconnection",
+              "status": "Submitted",
+              "project": "proj-2",
+              "kind": "Utility interconnection",
+              "agency": "City electric utility",
+              "reference": "IA-884077",
+              "submitted_on": "@today-34d"
+            }
+          },
+          {
+            "key": "appr-7",
+            "values": {
+              "approval_name": "Begay building permit",
+              "status": "Approved",
+              "project": "proj-3",
+              "kind": "Building permit",
+              "agency": "County permitting office",
+              "reference": "CP-26-0388",
+              "submitted_on": "@today-80d",
+              "approved_on": "@today-52d"
+            }
+          },
+          {
+            "key": "appr-8",
+            "values": {
+              "approval_name": "Begay final inspection",
+              "status": "Approved",
+              "project": "proj-3",
+              "kind": "Final inspection",
+              "agency": "County permitting office",
+              "reference": "CP-26-0388-F",
+              "submitted_on": "@today-20d",
+              "approved_on": "@today-18d"
+            }
+          },
+          {
+            "key": "appr-9",
+            "values": {
+              "approval_name": "Begay interconnection",
+              "status": "Submitted",
+              "project": "proj-3",
+              "kind": "Utility interconnection",
+              "agency": "Rural electric co-op",
+              "reference": "CO-19214",
+              "submitted_on": "@today-17d"
+            }
+          },
+          {
+            "key": "appr-10",
+            "values": {
+              "approval_name": "Haverford HOA approval",
+              "status": "Approved",
+              "project": "proj-4",
+              "kind": "HOA approval",
+              "agency": "Homeowners association",
+              "reference": "ARC-112",
+              "submitted_on": "@today-52d",
+              "approved_on": "@today-38d"
+            }
+          },
+          {
+            "key": "appr-11",
+            "values": {
+              "approval_name": "Haverford building permit",
+              "status": "Approved",
+              "project": "proj-4",
+              "kind": "Building permit",
+              "agency": "City building department",
+              "reference": "BP-26-05790",
+              "submitted_on": "@today-40d",
+              "approved_on": "@today-21d"
+            }
+          },
+          {
+            "key": "appr-12",
+            "values": {
+              "approval_name": "Mendelsohn building permit",
+              "status": "Approved",
+              "project": "proj-5",
+              "kind": "Building permit",
+              "agency": "City building department",
+              "reference": "BP-26-06012",
+              "submitted_on": "@today-28d",
+              "approved_on": "@today-8d"
+            }
+          },
+          {
+            "key": "appr-13",
+            "values": {
+              "approval_name": "Archuleta building permit",
+              "status": "Submitted",
+              "project": "proj-6",
+              "kind": "Building permit",
+              "agency": "City building department",
+              "reference": "BP-26-06455",
+              "submitted_on": "@today-14d"
+            }
+          },
+          {
+            "key": "appr-14",
+            "values": {
+              "approval_name": "Lindgren-Baca building permit",
+              "status": "Corrections requested",
+              "project": "proj-8",
+              "kind": "Building permit",
+              "agency": "City building department",
+              "reference": "BP-26-05931",
+              "submitted_on": "@today-21d"
+            }
+          },
+          {
+            "key": "appr-15",
+            "values": {
+              "approval_name": "Okwuosa building permit",
+              "status": "Not started",
+              "project": "proj-7",
+              "kind": "Building permit",
+              "agency": "County permitting office"
+            }
+          }
+        ],
+        "independentOf": {
+          "project": "Either record can be created or change status before the other."
+        },
+        "before": [
+          [
+            "submitted_on",
+            "approved_on"
+          ]
+        ]
+      },
+      {
+        "token": "equipment",
+        "name": "Equipment stock",
+        "labelSingular": "Part",
+        "labelPlural": "Equipment",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "item_name",
+        "describes": "Panels, inverters, batteries and racking in the warehouse, what they cost and when to reorder.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "item_name",
+            "label": "Part",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Panels",
+              "Inverters",
+              "Batteries",
+              "Racking",
+              "Electrical"
+            ],
+            "choiceColors": {
+              "Panels": "blue",
+              "Inverters": "violet",
+              "Batteries": "teal",
+              "Racking": "orange",
+              "Electrical": "yellow"
+            }
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ]
+          },
+          {
+            "key": "unit_cost",
+            "label": "Unit cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "stock_value",
+            "label": "Stock value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{On hand} * {Unit cost (USD)}"
+          },
+          {
+            "key": "reorder",
+            "label": "Reorder check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} <= {Reorder at}, \"Reorder\", \"Stocked\")"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "equi-1",
+            "values": {
+              "item_name": "400 W mono panel, black frame",
+              "category": "Panels",
+              "on_hand": 96,
+              "reorder_at": 60,
+              "unit_cost": 168
+            }
+          },
+          {
+            "key": "equi-2",
+            "values": {
+              "item_name": "Microinverter, one per panel",
+              "category": "Inverters",
+              "on_hand": 88,
+              "reorder_at": 60,
+              "unit_cost": 142
+            }
+          },
+          {
+            "key": "equi-3",
+            "values": {
+              "item_name": "Rapid shutdown device",
+              "category": "Electrical",
+              "on_hand": 40,
+              "reorder_at": 30,
+              "unit_cost": 38
+            }
+          },
+          {
+            "key": "equi-4",
+            "values": {
+              "item_name": "13.5 kWh home battery",
+              "category": "Batteries",
+              "on_hand": 2,
+              "reorder_at": 2,
+              "unit_cost": 8900
+            }
+          },
+          {
+            "key": "equi-5",
+            "values": {
+              "item_name": "Aluminum rail, 14 ft",
+              "category": "Racking",
+              "on_hand": 54,
+              "reorder_at": 40,
+              "unit_cost": 61
+            }
+          },
+          {
+            "key": "equi-6",
+            "values": {
+              "item_name": "Flashed roof attachment",
+              "category": "Racking",
+              "on_hand": 210,
+              "reorder_at": 150,
+              "unit_cost": 9.5
+            }
+          },
+          {
+            "key": "equi-7",
+            "values": {
+              "item_name": "Tile roof hook",
+              "category": "Racking",
+              "on_hand": 36,
+              "reorder_at": 60,
+              "unit_cost": 14
+            }
+          },
+          {
+            "key": "equi-8",
+            "values": {
+              "item_name": "AC combiner panel",
+              "category": "Electrical",
+              "on_hand": 6,
+              "reorder_at": 4,
+              "unit_cost": 410
+            }
+          },
+          {
+            "key": "equi-9",
+            "values": {
+              "item_name": "10 AWG PV wire, 500 ft spool",
+              "category": "Electrical",
+              "on_hand": 5,
+              "reorder_at": 3,
+              "unit_cost": 185
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "The consultant who owns the sale.",
+        "fromTable": "customer",
+        "fromField": "consultant",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "homeowners"
+      },
+      {
+        "describes": "Each project is for one household.",
+        "fromTable": "project",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "projects"
+      },
+      {
+        "describes": "One crew lead runs the install.",
+        "fromTable": "project",
+        "fromField": "crew_lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "installs_led"
+      },
+      {
+        "describes": "Each approval belongs to one project.",
+        "fromTable": "approval",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "approvals"
+      }
+    ],
+    "views": [
+      {
+        "token": "all_customer",
+        "name": "All homeowners",
+        "table": "customer",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "customer_board",
+        "name": "Homeowners board",
+        "table": "customer",
+        "kind": "kanban",
+        "groupBy": "stage"
+      },
+      {
+        "token": "all_project",
+        "name": "All projects",
+        "table": "project",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "project_board",
+        "name": "Projects board",
+        "table": "project",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "project_cal",
+        "name": "Projects calendar",
+        "table": "project",
+        "kind": "calendar",
+        "dateField": "install_on",
+        "allDay": true
+      },
+      {
+        "token": "project_over",
+        "name": "Install date passed",
+        "table": "project",
+        "kind": "grid",
+        "within": {
+          "install_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Survey and design",
+            "Permit submitted",
+            "Permit approved",
+            "Install scheduled"
+          ]
+        }
+      },
+      {
+        "token": "project_week",
+        "name": "Installing this week",
+        "table": "project",
+        "kind": "grid",
+        "within": {
+          "install_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Survey and design",
+            "Permit submitted",
+            "Permit approved",
+            "Install scheduled"
+          ]
+        }
+      },
+      {
+        "token": "project_next30",
+        "name": "Next 30 days",
+        "table": "project",
+        "kind": "grid",
+        "within": {
+          "install_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Survey and design",
+            "Permit submitted",
+            "Permit approved",
+            "Install scheduled"
+          ]
+        }
+      },
+      {
+        "token": "project_mine",
+        "name": "My projects",
+        "table": "project",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_approval",
+        "name": "All approvals",
+        "table": "approval",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "approval_board",
+        "name": "Approvals board",
+        "table": "approval",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "approval_waiting",
+        "name": "Waiting on an office",
+        "table": "approval",
+        "kind": "grid",
+        "anyOf": {
+          "status": [
+            "Submitted",
+            "Corrections requested"
+          ]
+        }
+      },
+      {
+        "token": "approval_fix",
+        "name": "Corrections to send",
+        "table": "approval",
+        "kind": "grid",
+        "filters": {
+          "status": "Corrections requested"
+        }
+      },
+      {
+        "token": "all_equipment",
+        "name": "All equipment",
+        "table": "equipment",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "equipment_board",
+        "name": "Equipment board",
+        "table": "equipment",
+        "kind": "kanban",
+        "groupBy": "category"
+      }
+    ],
+    "forms": [
+      {
+        "token": "solar_inquiry",
+        "name": "Solar inquiry",
+        "describes": "How a homeowner asks for a quote.",
+        "audience": "staff",
+        "table": "customer",
+        "fields": [
+          {
+            "fieldKey": "customer_name",
+            "ask": "Your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Best phone number?"
+          },
+          {
+            "fieldKey": "monthly_bill",
+            "ask": "About how much is your electric bill a month?"
+          },
+          {
+            "fieldKey": "roof_type",
+            "ask": "What is your roof made of?"
+          }
+        ],
+        "submitLabel": "Request a quote",
+        "confirmation": "Thanks. A consultant will call to book a site survey."
+      }
+    ]
+  },
+  "pages": [
+    {
+      "key": "solar-installer",
+      "parent": null,
+      "title": "Solar Installer",
+      "icon": {
+        "emoji": "☀️"
+      },
+      "cover": {
+        "url": "gallery:trades-solar-panels-on-roof",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Homeowners become projects once they sign. Each project moves from survey to permission to operate; its permits and utility approvals sit underneath it. Start on the Dashboard: slipped installs and approvals waiting on an office come first."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:permit-to-pto"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:pricing-and-margin"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Homeowners"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every household from first inquiry to signed, with their usage, roof and how they are paying."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "customer",
+              "view": "customer_board"
+            },
+            "inline": true,
+            "title": "Homeowners",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cust-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage",
+                "hiddenFields": [
+                  "annual_kwh",
+                  "roof_type",
+                  "roof_age",
+                  "shading",
+                  "source",
+                  "phone",
+                  "email",
+                  "consultant",
+                  "project_count",
+                  "contract_total",
+                  "add_project_btn",
+                  "call_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "cust-t",
+                "name": "All homeowners",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cust-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Install projects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each signed system from survey to permission to operate: size, price per watt, costs, margin and dates."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "project_board"
+            },
+            "inline": true,
+            "title": "Install projects",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "proj-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "crew_lead",
+                  "panels",
+                  "battery",
+                  "contract_price",
+                  "equipment_cost",
+                  "labor_cost",
+                  "permit_fees",
+                  "usage",
+                  "ppw",
+                  "production",
+                  "offset",
+                  "margin",
+                  "margin_pct",
+                  "open_approvals",
+                  "signed_on",
+                  "installed_on",
+                  "pto_on",
+                  "assigned_to",
+                  "inst_btn",
+                  "pto_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "proj-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "install_on",
+                "hiddenFields": [
+                  "status",
+                  "crew_lead",
+                  "panels",
+                  "battery",
+                  "contract_price",
+                  "equipment_cost",
+                  "labor_cost",
+                  "permit_fees",
+                  "usage",
+                  "ppw",
+                  "production",
+                  "offset",
+                  "margin",
+                  "margin_pct",
+                  "open_approvals",
+                  "signed_on",
+                  "installed_on",
+                  "pto_on",
+                  "assigned_to",
+                  "inst_btn",
+                  "pto_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "proj-t",
+                "name": "All projects",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "proj-over",
+                "name": "Install date passed",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "install_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Survey and design",
+                    "Permit submitted",
+                    "Permit approved",
+                    "Install scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "proj-week",
+                "name": "Installing this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "install_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Survey and design",
+                    "Permit submitted",
+                    "Permit approved",
+                    "Install scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "proj-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "install_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Survey and design",
+                    "Permit submitted",
+                    "Permit approved",
+                    "Install scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "proj-mine",
+                "name": "My projects",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "proj-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Permits and utility approvals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Building permits, HOA approvals, inspections and the utility's interconnection, with who is waiting on whom."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "approval",
+              "view": "approval_board"
+            },
+            "inline": true,
+            "title": "Permits and utility approvals",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "appr-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "project",
+                  "reference",
+                  "approved_on",
+                  "ok_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "appr-t",
+                "name": "All approvals",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "appr-waiting",
+                "name": "Waiting on an office",
+                "layout": "list",
+                "icon": "Hourglass",
+                "anyOf": {
+                  "status": [
+                    "Submitted",
+                    "Corrections requested"
+                  ]
+                }
+              },
+              {
+                "id": "appr-fix",
+                "name": "Corrections to send",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "filters": {
+                  "status": "Corrections requested"
+                }
+              }
+            ],
+            "activeViewId": "appr-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Equipment stock"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Panels, inverters, batteries and racking in the warehouse, what they cost and when to reorder."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "equipment",
+              "view": "equipment_board"
+            },
+            "inline": true,
+            "title": "Equipment stock",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "equi-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category",
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_at",
+                  "stock_value",
+                  "reorder",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "equi-t",
+                "name": "All equipment",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "equi-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "solar-installer",
+      "title": "Start here: how a system gets built",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Homeowners holds every household from first call to signed. Install projects holds each signed system. Permits and utility approvals tracks every office we wait on. Equipment stock is the warehouse."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "From lead to project"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The consultant books a site survey and fills in the Site survey checklist on the homeowner's page."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Proposal sent, then Signed. Press "
+            },
+            {
+              "text": "Start project",
+              "bold": true
+            },
+            {
+              "text": " on the homeowner: the project opens with the install checklist."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The designer sizes the system to the household's yearly usage. "
+            },
+            {
+              "text": "Bill offset",
+              "bold": true
+            },
+            {
+              "text": " should land between 90% and 105%; much higher and the utility may push back."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "From project to power"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every project moves through the same stages. The coordinator owns the paperwork, the crew lead owns the roof."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stage"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Waiting on"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Usual time"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Survey and design"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Us"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "1 week"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Permit submitted"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Building department"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2 to 4 weeks"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Install scheduled"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Our crew"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "1 to 3 weeks"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Inspection passed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Inspector"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "a few days"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Interconnection pending"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The utility"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2 to 6 weeks"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark installed",
+              "bold": true
+            },
+            {
+              "text": " when the crew leaves a finished roof, and "
+            },
+            {
+              "text": "Mark PTO received",
+              "bold": true
+            },
+            {
+              "text": " when the utility's letter arrives. Only then may the customer switch the system on to export."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Anything waiting more than its usual time shows on the Dashboard, so the coordinator can call the office the same day."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "solar-installer",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Installs whose date passed while the permit is stuck, this week's roofs, approvals waiting on an office, and the margin on every system."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "project",
+                      "view": "all_project"
+                    },
+                    "inline": true,
+                    "title": "Install projects",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-projects-by-stage",
+                        "name": "Projects by stage",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "c-projects-by-stage"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "project",
+                      "view": "all_project"
+                    },
+                    "inline": true,
+                    "title": "Install projects",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-contract-value-by-ba",
+                        "name": "Contract value by battery",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "battery",
+                          "op": "sum",
+                          "field": "contract_price"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "c-contract-value-by-ba"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "approval",
+                      "view": "all_approval"
+                    },
+                    "inline": true,
+                    "title": "Permits and utility approvals",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-approvals-by-status",
+                        "name": "Approvals by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "c-approvals-by-status"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Install date passed"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "all_project"
+            },
+            "inline": true,
+            "title": "Install projects",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-slipped-installs",
+                "name": "Slipped installs",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "install_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Survey and design",
+                    "Permit submitted",
+                    "Permit approved",
+                    "Install scheduled"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "l-slipped-installs"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On a roof this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "all_project"
+            },
+            "inline": true,
+            "title": "Install projects",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-this-week-s-installs",
+                "name": "This week's installs",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "install_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Survey and design",
+                    "Permit submitted",
+                    "Permit approved",
+                    "Install scheduled"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "l-this-week-s-installs"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My projects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "all_project"
+            },
+            "inline": true,
+            "title": "Install projects",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-assigned-to-me",
+                "name": "Assigned to me",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "l-assigned-to-me"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Waiting on an office"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "approval",
+              "view": "all_approval"
+            },
+            "inline": true,
+            "title": "Permits and utility approvals",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-open-approvals",
+                "name": "Open approvals",
+                "layout": "list",
+                "icon": "Table",
+                "anyOf": {
+                  "status": [
+                    "Submitted",
+                    "Corrections requested"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "l-open-approvals"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Corrections to send back"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "approval",
+              "view": "all_approval"
+            },
+            "inline": true,
+            "title": "Permits and utility approvals",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-needs-corrections",
+                "name": "Needs corrections",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Corrections requested"
+                }
+              }
+            ],
+            "activeViewId": "l-needs-corrections"
+          }
+        }
+      ]
+    },
+    {
+      "key": "permit-to-pto",
+      "parent": "solar-installer",
+      "title": "From signed contract to permission to operate",
+      "icon": {
+        "emoji": "📜"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most solar delays are paperwork, not roofs. The coordinator's job is to make sure no project waits on us, only on an office, and that every wait is visible."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The building permit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Submit within five working days of the design being approved. The packet is the site plan, the panel layout with fire setbacks, the single-line diagram, the attachment spec and the structural letter if the roof needs one."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Make a row in Permits and utility approvals at "
+            },
+            {
+              "text": "Submitted",
+              "bold": true
+            },
+            {
+              "text": " with the office's reference number."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If the office sends corrections, move it to "
+            },
+            {
+              "text": "Corrections requested",
+              "bold": true
+            },
+            {
+              "text": " and answer within two working days. The Lindgren-Baca project shows the cost of waiting: the install date has already passed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark approved",
+              "bold": true
+            },
+            {
+              "text": " when the permit is issued. Only then book the crew."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "HOA approval"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Homes in an association need the architecture committee's approval before the install, sometimes before the permit. Ask on the site survey. Committees meet monthly; a missed meeting costs four weeks."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Install, then inspection"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "After the crew presses "
+            },
+            {
+              "text": "Mark installed",
+              "bold": true
+            },
+            {
+              "text": ", book the final inspection the same day. The inspector checks the attachments, the labels and placards, the rapid shutdown and the conduit. Keep the approved plan set in the garage for them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Interconnection and PTO"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The utility needs its own application, separate from the permit, and it only approves export once the inspection has passed. When the permission to operate letter arrives:"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark PTO received",
+              "bold": true
+            },
+            {
+              "text": " on the project."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Call the homeowner and walk them through switching the system on and reading the monitoring app."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check the first week's production against the estimate."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What good looks like"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Measure"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Target"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Signed to permit submitted"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 10 days"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Permit approved to installed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 21 days"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Installed to PTO"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 45 days"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Approvals waiting on us"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Zero"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If a project waits on an office longer than its usual time, call them. A polite call moves more permits than a second email."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "pricing-and-margin",
+      "parent": "solar-installer",
+      "title": "Pricing a system and reading the margin",
+      "icon": {
+        "emoji": "💵"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Price per watt is how homeowners compare quotes and how we check that a job is worth doing. This page explains the numbers on each project and the ranges we sell in."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Price per watt"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Contract price divided by the system size in watts. An 8.4 kW system sold for 26,500 USD is 3.15 USD per watt. Our cash and loan price sits between 3.05 and 3.30 for panels only; tile roofs and long conduit runs sit at the top of that range."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Batteries"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A battery adds about 12,000 to 14,000 USD to the contract and lowers the margin percentage, because the battery itself is most of the cost. Sell it for what it does, backup during outages and storing midday power for the evening, not as a profit line."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The costs on each project"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Equipment:",
+              "bold": true
+            },
+            {
+              "text": " panels, inverters, racking, wire, and the battery if there is one. Pull them from Equipment stock and reorder anything that drops to its reorder point."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Labor:",
+              "bold": true
+            },
+            {
+              "text": " crew hours at their loaded rate, plus the electrician's day for the panel work."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Permit and utility fees:",
+              "bold": true
+            },
+            {
+              "text": " building permit, plan review and any utility study fee."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Margin ranges"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "System"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Healthy margin"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Look again below"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Panels only"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "35% to 42%"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "30%"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "With a battery"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "22% to 28%"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "18%"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Begay and Okwuosa show the battery pattern: higher contracts, lower percentages, and still worth doing."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sizing honestly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Estimated production uses 1,650 kWh per installed kW a year, a fair figure for our high, sunny climate on a south or west roof. "
+            },
+            {
+              "text": "Bill offset",
+              "bold": true
+            },
+            {
+              "text": " compares that with the household's last twelve months. Size to 90% to 105%. Oversizing sells more panels but leaves the homeowner exporting power at a low credit, and that shows up in reviews a year later."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cancellations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A signed contract can be cancelled during the legal cooling-off period. Mark the project Cancelled; margin leaves its numbers blank so the dashboard stays honest."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
