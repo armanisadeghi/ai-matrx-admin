@@ -35,9 +35,27 @@ export const SUPPORT_SESSION_COOKIE = "matrx_support_session";
 export const SUPPORT_SESSION_START_PATH = "/auth/support-session";
 export const SUPPORT_SESSION_ENDED_PATH = "/auth/support-session/ended";
 
-export const SUPPORT_SESSION_LENGTHS = [15, 30, 60, 120] as const;
-export const SUPPORT_SESSION_DEFAULT_MINUTES = 30;
-export const SUPPORT_SESSION_EXTEND_MINUTES = 15;
+/**
+ * Every support-session number is a platform knob (feature `support_sessions`, Users & Access ›
+ * Limits & Knobs); nothing here carries a value of its own. Read with `useEffectiveKnob`.
+ */
+export const SUPPORT_SESSION_KNOBS = {
+  lengthChoices: { feature: "support_sessions", key: "length_choices" },
+  defaultMinutes: { feature: "support_sessions", key: "default_minutes" },
+  extendMinutes: { feature: "support_sessions", key: "extend_minutes" },
+} as const;
+
+/** A whole number of minutes, or null when the knob has not answered (never a stand-in value). */
+export function knobMinutes(raw: unknown): number | null {
+  return typeof raw === "number" && Number.isInteger(raw) && raw > 0 ? raw : null;
+}
+
+/** The offered lengths, or null when the knob has not answered or is malformed. */
+export function knobMinuteChoices(raw: unknown): number[] | null {
+  if (!Array.isArray(raw)) return null;
+  const choices = raw.map(knobMinutes);
+  return choices.length > 0 && choices.every((m): m is number => m !== null) ? choices : null;
+}
 
 export async function createSupportSession(args: {
   targetUserId: string;
