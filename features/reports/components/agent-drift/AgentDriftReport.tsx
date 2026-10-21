@@ -13,12 +13,12 @@
 
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { useTableUrlState } from "@ai-matrx/design-system/data-table/url-state";
 import { nextQueryState } from "@ai-matrx/design-system/data-table/query-control";
-import { buildDriftReportScope, parseReportDestination, reportViewPatch } from "../../surface-contract";
+import { buildDriftReportScope, parseReportDestination, reportViewPatch, reportViewKey, type ReportViewSnapshot } from "../../surface-contract";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useDriftReport } from "@/features/agents/hooks/useDriftReport";
@@ -51,6 +51,9 @@ export function AgentDriftReport({
     sort,
   );
   const { status, error, rows, adminRows, totals, refresh } = report;
+  const viewSnapshot = useRef<ReportViewSnapshot | null>(null);
+  const queryKey = reportViewKey(table.state);
+  const publishView = (agentIds: string[]) => { viewSnapshot.current = { queryKey, source: rows, agentIds }; };
 
   const onSort = (key: ReportSortKey) =>
     setSort((s) =>
@@ -90,6 +93,8 @@ export function AgentDriftReport({
             <ReportSkeleton />
           ) : (
             <RollupTable
+              key={queryKey}
+              onViewChange={publishView}
               mode={mode}
               rows={rows}
               adminRows={adminRows}
@@ -112,6 +117,8 @@ export function AgentDriftReport({
             <ReportSkeleton />
           ) : (
             <RollupTable
+              key={queryKey}
+              onViewChange={publishView}
               mode={mode}
               rows={rows}
               adminRows={adminRows}
@@ -139,7 +146,7 @@ export function AgentDriftReport({
 
   // The reports surface for the open report (user scope only: the admin variant is the admin
   // reporting surface's). Read at send time from what the report already holds.
-  const getScope = withScopeContributions("matrx-user/reports", () => buildDriftReportScope({ report, selected, table: table.state }));
+  const getScope = withScopeContributions("matrx-user/reports", () => buildDriftReportScope({ report, selected, table: table.state, view: viewSnapshot.current }));
   const parseView = (value: unknown) => {
     const patch = reportViewPatch.parse(value);
     if (patch.selected_agent_id && (status !== "succeeded" || !rows.some((row) => row.agentId === patch.selected_agent_id))) {

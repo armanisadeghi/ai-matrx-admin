@@ -41,7 +41,9 @@ A successfully loaded empty report has an empty findings array and zero count.
 `report_findings` contains one row per drifted agent in the loaded rollup.
 Each row includes agent id/name, current version and severity counts.
 It also includes usage and stale-pin counts.
-These rows precede the table's search, column filters and pagination.
+These rows follow the table's current search, filters and sort, before pagination.
+`report_page_findings` is the exact current page; `report_source_records` is the raw loaded read.
+`report_view_status` stays pending until query and source match the published table view.
 `report_table_query` records the active controls over those source rows.
 `report_totals` covers the successful report rollup, not just one table page.
 `report_overview` includes a compact preview of at most 25 source rows.

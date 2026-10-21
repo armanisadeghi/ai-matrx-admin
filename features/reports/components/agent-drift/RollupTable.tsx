@@ -7,6 +7,7 @@
 
 "use client";
 
+import { useEffect } from "react";
 import type { TableUrlState } from "@ai-matrx/design-system/data-table/url-state";
 import { DriftSeverityBadge } from "@/features/agents/components/usages/DriftSeverityBadge";
 import { DRIFT_SEVERITY_ORDER } from "@/features/agents/components/usages/severity";
@@ -38,6 +39,7 @@ interface RollupTableProps {
   onSort: (key: ReportSortKey) => void;
   summary?: RollupSummary;
   table?: TableUrlState;
+  onViewChange?: (agentIds: string[]) => void;
 }
 
 type CanonicalRollupRow = { agentId: string; agentName: string; currentVersion: number; usages: number; breaking: number; silent: number; stale: number; affectedUsers?: number };
@@ -51,9 +53,11 @@ export function RollupTable({
   sort,
   summary,
   table,
+  onViewChange,
 }: RollupTableProps) {
   const isAdmin = mode === "admin";
   const count = isAdmin ? adminRows.length : rows.length;
+  useEffect(() => { if (count === 0) onViewChange?.([]); }, [count, onViewChange]);
 
   if (count === 0) {
     return (
@@ -90,7 +94,7 @@ export function RollupTable({
           className="px-3 py-1.5"
         />
       ) : null}
-      <MatrxDataTable {...(table ? { query: { mode: "controlled-local" as const, state: table.state, onStateChange: table.onStateChange } } : { urlState: { id: `agent-drift-${mode}`, defaultSort: { id: sort.key === 'agentName' ? 'agent' : sort.key === 'totalUsages' ? 'usages' : sort.key === 'stalePins' ? 'stale' : sort.key, direction: sort.desc ? 'desc' as const : 'asc' as const } } })} data={canonicalRows} columns={columns} getRowId={(row) => row.agentId} pageSize={50} onRowOpen={(row) => onSelect(row.agentId)} tableStyle={oneRowTint(selectedAgentId)} toolbar={{ search: true, searchPlaceholder: 'Search agents…' }} detail={{ enabled: false }} />
+      <MatrxDataTable {...(table ? { query: { mode: "controlled-local" as const, state: table.state, onStateChange: table.onStateChange } } : { urlState: { id: `agent-drift-${mode}`, defaultSort: { id: sort.key === 'agentName' ? 'agent' : sort.key === 'totalUsages' ? 'usages' : sort.key === 'stalePins' ? 'stale' : sort.key, direction: sort.desc ? 'desc' as const : 'asc' as const } } })} onViewChange={onViewChange ? (view) => onViewChange(view.map((row) => row.agentId)) : undefined} data={canonicalRows} columns={columns} getRowId={(row) => row.agentId} pageSize={50} onRowOpen={(row) => onSelect(row.agentId)} tableStyle={oneRowTint(selectedAgentId)} toolbar={{ search: true, searchPlaceholder: 'Search agents…' }} detail={{ enabled: false }} />
     </>
   );
 }

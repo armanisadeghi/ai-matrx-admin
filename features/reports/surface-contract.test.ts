@@ -1,4 +1,4 @@
-import { buildDriftReportScope, parseReportDestination, reportViewPatch } from "./surface-contract";
+import { buildDriftReportScope, parseReportDestination, reportViewPatch, reportViewKey } from "./surface-contract";
 import { DRIFT_SEVERITY_ORDER } from "@/features/agents/components/usages/severity";
 import type { useDriftReport } from "@/features/agents/hooks/useDriftReport";
 
@@ -11,18 +11,34 @@ const table = { page: 1, pageSize: 50, search: "", anyOf: "", columnFilters: {},
 
 describe("report surface truth", () => {
   it.each(["idle", "loading", "failed"] as const)("omits stale findings and totals during %s", (status) => {
-    const scope = buildDriftReportScope({ report: { ...report, status }, selected: null, table });
+    const scope = buildDriftReportScope({ report: { ...report, status }, selected: null, table, view: null });
     expect(scope.report_findings).toBeUndefined();
     expect(scope.report_row_count).toBeUndefined();
     expect(scope.report_totals).toBeUndefined();
     expect(scope.report_overview).not.toContain("Live report agent");
   });
   it("publishes successful rows, matching totals, and a no-lookup overview", () => {
-    const scope = buildDriftReportScope({ report, selected: report.rows[0]?.agentId ?? null, table });
+    const scope = buildDriftReportScope({ report, selected: report.rows[0]?.agentId ?? null, table, view: { source: report.rows, queryKey: reportViewKey(table), agentIds: report.rows.map((row) => row.agentId) } });
     expect(scope.report_row_count).toBe(1);
     expect(scope.report_overview).toContain("Live report agent");
     expect(scope.report_totals).toMatchObject({ breaking: 2 });
     expect(scope.report_table_query).toEqual(table);
+  });
+  it("requires matching source/query snapshots and uses processed rows rather than raw rows", () => {
+    const view = { source: report.rows, queryKey: reportViewKey(table), agentIds: [] };
+    const filtered = buildDriftReportScope({ report, selected: null, table, view });
+    expect(filtered.report_row_count).toBe(0);
+    expect(filtered.report_page_findings).toEqual([]);
+    expect(filtered.report_source_records).toHaveLength(1);
+    expect(buildDriftReportScope({ report, selected: null, table: { ...table, search: "new" }, view }).report_findings).toBeUndefined();
+    expect(buildDriftReportScope({ report: { ...report, rows: [...report.rows] }, selected: null, table, view }).report_findings).toBeUndefined();
+  });
+  it("keeps processed row order and slices the exact rendered page", () => {
+    const rows = [...report.rows, ...report.rows.map((row) => ({ ...row, agentId: "d7c42e03-2d51-4df6-863d-cff5549083ae", agentName: "Second" }))];
+    const paged = { ...table, page: 2, pageSize: 1 };
+    const scope = buildDriftReportScope({ report: { ...report, rows }, selected: null, table: paged, view: { source: rows, queryKey: reportViewKey(paged), agentIds: rows.map((row) => row.agentId).reverse() } });
+    expect(scope.report_row_count).toBe(2);
+    expect(scope.report_page_findings).toEqual([expect.objectContaining({ agent_name: "Live report agent" })]);
   });
   it("refuses unknown report doors and malformed/mutation view writes", () => {
     expect(parseReportDestination("agent-drift").href).toBe("/reports/agent-drift");

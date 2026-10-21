@@ -74,7 +74,9 @@ The receipt names which records were changed and any partial list failure.
 
 `assist_quiet` and `assist_quiet_until` describe the global quiet preference.
 `assist_preferences_ready` must be true before changing it.
-`resume_assists` takes boolean true and asks the person before saving.
+`resume_assists` takes boolean true and asks the person before applying.
+It updates the view immediately and queues the canonical background preference save.
+The receipt marks persistence queued; it does not confirm durable saving.
 It resumes global assists without accepting or executing any proposal.
 `source_suppressions` contains the loaded source quiet records.
 `silenced_sources` contains their source keys.

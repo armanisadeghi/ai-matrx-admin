@@ -534,7 +534,7 @@ export function AssistsManager() {
       },
       resume_assists: {
         validate: (value) => { z.literal(true).parse(value); if (!assistsPreferencesReady) throw new Error("Wait for quiet preferences to load. Nothing was changed."); },
-        apply: (value) => { z.literal(true).parse(value); if (!assistsPreferencesReady) throw new Error("Wait for quiet preferences to load. Nothing was changed."); resumeAssists(); return { summary: "Assists are back on; no assist was executed.", data: { quiet_until: null } }; },
+        apply: (value) => { z.literal(true).parse(value); if (!assistsPreferencesReady) throw new Error("Wait for quiet preferences to load. Nothing was changed."); resumeAssists(); return { summary: "Resumed assists in this view; synced preference save is queued, not yet confirmed. No assist was executed.", data: { quiet_until: null, persistence: "queued" } }; },
       },
       ...collectionWriteHandlers({ plural: "assists", singular: "assist", update: {
         parse: (value) => parseAssistUpdates(value, rows, loaded && table.state.search === table.queryState.search),
