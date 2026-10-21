@@ -27,7 +27,7 @@ const totp = (secret: string) => {
 };
 
 async function main() {
-  const { readAuthenticators, enrollAuthenticator, verifyAuthenticator, removeAuthenticator } = await import("../../features/user-profile/account-access/mfa");
+  const { readAuthenticators, enrollAuthenticator, verifyAuthenticator, removeAuthenticator, generateRecoveryCodes, verifyRecoveryCode } = await import("../../features/user-profile/account-access/mfa");
   const clients: Array<InstanceType<typeof AuthClient>> = [];
   const client = () => {
     const auth = new AuthClient({ url: target.origin, persistSession: false, autoRefreshToken: false, detectSessionInUrl: false });
@@ -95,8 +95,42 @@ async function main() {
     const back = await fresh.auth.signInWithPassword({ email, password }); if (back.error) throw back.error;
     await verifyAuthenticator(uid, second.id, totp(second.secret), fresh, destination);
     check(!(await readAuthenticators(fresh)).factors.some(f => f.id === duringSwitch.id), "abandoned original-identity factor is actually removed");
-    await removeAuthenticator(uid, second.id, fresh, destination);
-    check((await readAuthenticators(fresh)).factors.length === 0, "explicit final removal leaves no factors");
+    const beforeCodes = await generateRecoveryCodes(uid, false, fresh, destination);
+    check(beforeCodes.length > 0 && new Set(beforeCodes).size === beforeCodes.length, "native provider returns distinct recovery codes once");
+    check((await readAuthenticators(fresh)).hasRecoveryCodes, "provider reports a verified recovery-code factor");
+    const recovery = client(); const recoveryLogin = await recovery.auth.signInWithPassword({ email, password }); if (recoveryLogin.error) throw recoveryLogin.error;
+    await assert.rejects(() => generateRecoveryCodes(uid, true, recovery, destination)); checks++;
+    const afterCodes = await generateRecoveryCodes(uid, true, fresh, destination);
+    await assert.rejects(() => verifyRecoveryCode(uid, beforeCodes[0], recovery, destination)); checks++;
+    check(!(await readAuthenticators(recovery)).elevated, "replaced codes cannot elevate a password session");
+    const another = client(); const anotherLogin = await another.auth.signInWithPassword({ email, password }); if (anotherLogin.error) throw anotherLogin.error;
+    await verifyRecoveryCode(uid, afterCodes[0].toUpperCase().replace(/(.{4})/g, "$1- "), recovery, destination);
+    check((await readAuthenticators(recovery)).elevated, "saved recovery code issues real AAL2 without the lost authenticator");
+    check(Boolean((await another.auth.refreshSession()).error), "recovery invalidates other password-only sessions at the provider");
+    const replay = client(); const replayLogin = await replay.auth.signInWithPassword({ email, password }); if (replayLogin.error) throw replayLogin.error;
+    await assert.rejects(() => verifyRecoveryCode(uid, afterCodes[0], replay, destination)); checks++;
+    check(!(await readAuthenticators(replay)).elevated, "a used recovery code cannot be replayed");
+    const recoveryRefusals = gatewayCalls;
+    await assert.rejects(() => generateRecoveryCodes(uid, true, recovery, refused), /support session/); checks++;
+    await assert.rejects(() => verifyRecoveryCode(uid, afterCodes[1], replay, refused), /support session/); checks++;
+    check(gatewayCalls === recoveryRefusals, "both recovery mutations refuse support context before HTTP");
+    const switchedRecovery = { ...destination, guard: async () => { const b = await replay.auth.signInWithPassword({ email: otherEmail, password: otherPassword }); if (b.error) throw b.error; } };
+    await verifyRecoveryCode(uid, afterCodes[1], replay, switchedRecovery);
+    check((await readAuthenticators(replay)).userId === otherId && !(await readAuthenticators(replay)).elevated, "recovery crossing an identity switch never elevates the new identity");
+    await assert.rejects(() => generateRecoveryCodes(uid, true, replay, destination), /sign-in changed/); checks++;
+    const interrupted = { ...destination, guard: async () => { const b = await fresh.auth.signInWithPassword({ email: otherEmail, password: otherPassword }); if (b.error) throw b.error; } };
+    await generateRecoveryCodes(uid, true, fresh, interrupted); // Deliberately discard the one-time response, as a closed view would.
+    check((await readAuthenticators(fresh)).userId === otherId && !(await readAuthenticators(fresh)).hasRecoveryCodes, "interrupted code replacement never attaches codes to the new identity");
+    const restored = await fresh.auth.signInWithPassword({ email, password }); if (restored.error) throw restored.error;
+    await verifyAuthenticator(uid, second.id, totp(second.secret), fresh, destination);
+    const restoredCodes = await generateRecoveryCodes(uid, true, fresh, destination);
+    check(restoredCodes.length > 0, "retained authenticator restores recovery codes after an interrupted display");
+    const restoredLogin = await replay.auth.signInWithPassword({ email, password }); if (restoredLogin.error) throw restoredLogin.error;
+    await assert.rejects(() => verifyRecoveryCode(uid, afterCodes[2], replay, destination)); checks++;
+    await verifyRecoveryCode(uid, restoredCodes[0], replay, destination);
+    check((await readAuthenticators(replay)).elevated, "regenerated post-interruption code is usable while earlier sets are invalid");
+    await removeAuthenticator(uid, second.id, recovery, destination);
+    check((await readAuthenticators(recovery)).factors.length === 0, "explicit final removal leaves no factors");
     check(gatewayCalls > 0, "real SDK mutations passed a gateway requiring API key and bound user token");
     console.log(JSON.stringify({ checks, provider: "GoTrue v2.197.0", target: target.origin, platformSupportGuard: "substituted", hostedFactorsTouched: false }));
   } finally {

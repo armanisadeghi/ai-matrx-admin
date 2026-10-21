@@ -6,7 +6,7 @@ import type { Database } from "@/types/database.types";
 
 type Client = Pick<ReturnType<typeof createClient>, "auth">;
 export interface AuthenticatorFactor { id: string; name: string; verified: boolean }
-export interface AuthenticatorState { userId: string; factors: AuthenticatorFactor[]; elevated: boolean }
+export interface AuthenticatorState { userId: string; factors: AuthenticatorFactor[]; elevated: boolean; hasRecoveryCodes: boolean }
 export interface AuthenticatorSetup { id: string; qrCode: string; secret: string; cancel: () => Promise<void> }
 export interface AuthenticatorAuthority { authUrl: string; publishableKey: string; guard: (accessToken: string) => Promise<void> }
 
@@ -48,6 +48,7 @@ export async function readAuthenticators(client: Client = createClient()): Promi
       id: factor.id, name: factor.friendly_name || "Authenticator", verified: factor.status === "verified",
     })),
     elevated: data.currentLevel === "aal2",
+    hasRecoveryCodes: (user.factors ?? []).some(factor => factor.factor_type === "recovery_code" && factor.status === "verified"),
   };
 }
 
@@ -60,6 +61,7 @@ async function boundAuth(expectedUserId: string, client: Client, destination: Au
     url: destination.authUrl, headers: { apikey: destination.publishableKey, Authorization: `Bearer ${accessToken}` },
     hasCustomAuthorizationHeader: true, persistSession: false,
     autoRefreshToken: false, detectSessionInUrl: false,
+    experimental: { recoveryCodes: true },
   });
 }
 
@@ -98,14 +100,39 @@ export async function removeAuthenticator(expectedUserId: string, factorId: stri
   if (refreshError) throw refreshError;
 }
 
+/** Native one-time codes are displayed once to the person, never stored by the application. */
+export async function generateRecoveryCodes(expectedUserId: string, replace: boolean, client: Client = createClient(), destination: AuthenticatorAuthority = authority()): Promise<string[]> {
+  const auth = await boundAuth(expectedUserId, client, destination);
+  const { data, error } = replace
+    ? await auth.mfa.recoveryCodes.regenerate()
+    : await auth.mfa.recoveryCodes.generate({ friendlyName: "Recovery codes" });
+  if (error) throw error;
+  return data.codes;
+}
+
+export async function verifyRecoveryCode(expectedUserId: string, code: string, client: Client = createClient(), destination: AuthenticatorAuthority = authority()): Promise<void> {
+  const normalized = code.replace(/[\s-]/g, "").toLowerCase();
+  if (!/^[a-z0-9]{13,32}$/.test(normalized)) throw new Error("Enter a saved recovery code.");
+  const auth = await boundAuth(expectedUserId, client, destination);
+  const { error } = await auth.mfa.recoveryCodes.verify({ code: normalized });
+  if (error) throw error;
+  const { error: refreshError } = await client.auth.refreshSession();
+  if (refreshError) throw refreshError;
+}
+
 /** Do not reflect provider payloads, codes, or secrets into the interface. */
 export function authenticatorError(reason: unknown): string {
   const code = reason && typeof reason === "object" && "code" in reason ? reason.code : null;
   if (reason instanceof Error && reason.message === "Login details can't be changed during a support session.") return reason.message;
   if (reason instanceof Error && reason.message === "Your sign-in changed. Reload authenticators.") return reason.message;
+  if (reason instanceof Error && reason.message === "Enter a saved recovery code.") return reason.message;
   if (code === "mfa_verification_failed") return "That code wasn’t accepted. Enter a new code.";
   if (code === "insufficient_aal") return "Verify an authenticator, then try again.";
   if (code === "mfa_factor_name_conflict") return "That authenticator name is already in use.";
   if (code === "too_many_enrolled_mfa_factors") return "Remove an unused authenticator before adding another.";
+  if (code === "mfa_recovery_codes_enroll_not_enabled" || code === "mfa_recovery_codes_verify_not_enabled") return "Recovery codes aren’t enabled. Use another authenticator.";
+  if (code === "mfa_recovery_codes_locked") return "Too many recovery attempts. Wait or use another authenticator.";
+  if (code === "mfa_recovery_codes_sole_factor") return "Keep a verified authenticator before creating recovery codes.";
+  if (code === "mfa_verified_factor_exists") return "Recovery codes already exist. Replace them to create a new set.";
   return "Couldn’t complete that action. Try again.";
 }

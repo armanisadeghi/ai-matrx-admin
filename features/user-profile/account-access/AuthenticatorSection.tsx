@@ -7,7 +7,7 @@ import { ErrorNotice } from "@ai-matrx/design-system";
 import { InfoHint } from "@/components/official/InfoHint";
 import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
 import { createClient } from "@/utils/supabase/client";
-import { authenticatorError, enrollAuthenticator, readAuthenticators, removeAuthenticator, verifyAuthenticator, type AuthenticatorSetup, type AuthenticatorState } from "./mfa";
+import { authenticatorError, enrollAuthenticator, generateRecoveryCodes, readAuthenticators, removeAuthenticator, verifyAuthenticator, verifyRecoveryCode, type AuthenticatorSetup, type AuthenticatorState } from "./mfa";
 
 export function AuthenticatorSection() {
   const [state, setState] = useState<AuthenticatorState | null>(null);
@@ -19,6 +19,9 @@ export function AuthenticatorSection() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
+  const [recoveryCode, setRecoveryCode] = useState("");
+  const [replaceCodes, setReplaceCodes] = useState(false);
   const generation = useRef(0);
   const locked = useRef(false);
   const identity = useRef<string | null>(null);
@@ -52,6 +55,7 @@ export function AuthenticatorSection() {
       locked.current = false;
       identity.current = session?.user.id ?? null;
       setBusy(false);
+      setRecoveryCodes(null); setRecoveryCode(""); setReplaceCodes(false);
       setSetup(null); setSelected(null); setRemoving(null); setCode(""); setState(null); setNotice(null); setError(null);
       queueMicrotask(() => { if (active && session) void load(); });
     });
@@ -94,6 +98,22 @@ export function AuthenticatorSection() {
     if (setup?.id === id) { pendingSetup.current = null; setSetup(null); setSelected(null); setCode(""); }
     setNotice("Authenticator removed.");
   });
+  const generate = () => run(async (version, userId) => {
+    const codes = await generateRecoveryCodes(userId, state?.hasRecoveryCodes ?? false);
+    if (version !== generation.current) return;
+    // The provider shows these once. Preserve that display if the following read fails.
+    setRecoveryCodes(codes); setReplaceCodes(false);
+    const current = await readAuthenticators();
+    if (version !== generation.current) return;
+    setState(current);
+  });
+  const recover = () => run(async (version, userId) => {
+    await verifyRecoveryCode(userId, recoveryCode);
+    const current = await readAuthenticators();
+    if (version !== generation.current) return;
+    setState(current); setRecoveryCode(""); setSelected(null); setCode("");
+    setNotice("Recovery code verified.");
+  });
 
   return (
     <SettingsSection title="Two-step verification">
@@ -133,6 +153,26 @@ export function AuthenticatorSection() {
               <Input id="authenticator-code" className="min-w-0 flex-1" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={event => setCode(event.target.value)} disabled={busy} />
               <Button type="submit" variant="primary" disabled={busy || !/^\d{6}$/.test(code)}>Verify code</Button>
             </form> : null}
+            <div className="space-y-3 border-t border-border pt-4">
+              <div className="flex items-center gap-2 type-body">
+                <span>Recovery codes</span>
+                <InfoHint label="About recovery codes" text="One-use codes end other password-only sessions; keep your authenticator until saved, and verify it to replace interrupted codes." />
+              </div>
+              {recoveryCodes ? <div role="region" aria-label="New recovery codes" className="space-y-3">
+                <ul className="grid gap-2 sm:grid-cols-2">{recoveryCodes.map(value => <li key={value}><code className="break-all type-body">{value}</code></li>)}</ul>
+                <Button type="button" variant="outline" onClick={() => setRecoveryCodes(null)}>I saved these codes</Button>
+              </div> : state.elevated ? <>
+                {replaceCodes ? <div role="group" aria-label="Replace recovery codes" className="flex flex-wrap items-center gap-2">
+                  <span className="type-body">Previous codes stop working immediately. Keep your authenticator ready until you save the new set.</span>
+                  <Button type="button" variant="outline" disabled={busy || setup !== null} onClick={() => void generate()}>Confirm replacement</Button>
+                  <Button type="button" variant="outline" disabled={busy} onClick={() => setReplaceCodes(false)}>Keep current codes</Button>
+                </div> : <Button type="button" variant="outline" disabled={busy || setup !== null || !state.factors.some(factor => factor.verified)} onClick={() => { if (state.hasRecoveryCodes) setReplaceCodes(true); else void generate(); }}>{state.hasRecoveryCodes ? "Replace recovery codes" : "Generate recovery codes"}</Button>}
+              </> : state.hasRecoveryCodes ? <form className="flex flex-wrap items-center gap-2" onSubmit={event => { event.preventDefault(); void recover(); }}>
+                <label className="sr-only" htmlFor="recovery-code">Saved recovery code</label>
+                <Input id="recovery-code" type="password" autoComplete="off" className="min-w-0 flex-1" value={recoveryCode} onChange={event => setRecoveryCode(event.target.value)} disabled={busy || setup !== null} />
+                <Button type="submit" variant="outline" disabled={busy || setup !== null || !recoveryCode.trim()}>Use recovery code</Button>
+              </form> : null}
+            </div>
           </>
         )}
       </div>
