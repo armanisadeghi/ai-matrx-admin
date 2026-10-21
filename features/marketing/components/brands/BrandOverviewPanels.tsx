@@ -196,7 +196,7 @@ export function BrandOverviewKpis({
           audience.brandFollowers === null ? (
             <HintDoor href={social}>{accounts.length ? "Fetch accounts" : "Add an account"}</HintDoor>
           ) : audience.peopleFollowers ? (
-            `+ ${formatCompact(audience.peopleFollowers)} on people's accounts`
+            `+ ${formatCompact(audience.peopleFollowers)} personal`
           ) : brandDelta !== null ? (
             <Delta value={brandDelta} suffix="in 30d" />
           ) : (

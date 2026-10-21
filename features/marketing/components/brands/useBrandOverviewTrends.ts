@@ -106,7 +106,8 @@ export function useBrandOverviewTrends({
         .abortSignal(signal);
       if (error) throw new Error(error.message);
       const values = followerSeries(data ?? []);
-      return values.length >= 2 ? { values, period: `${FOLLOWER_TREND_DAYS} days`, label: "Followers" } : null;
+      // A line of zeros says nothing the "0" beside it does not.
+      return values.length >= 2 && values.some((v) => v > 0) ? { values, period: `${FOLLOWER_TREND_DAYS} days`, label: "Followers" } : null;
     },
     enabled: profileIds.length > 0,
     staleTime: 5 * 60_000,
