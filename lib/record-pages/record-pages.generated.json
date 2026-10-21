@@ -6,7 +6,7 @@
   "route.none": 596,
   "route.tokens": 52,
   "route.host": 1,
-  "window.pending": 192,
+  "window.pending": 191,
   "window.none": 1,
   "window.host": 1,
   "window.tokens": 2,
@@ -7181,10 +7181,6 @@
   },
   "window:features/window-panels/windows/sandboxes/SandboxManagementWindow.tsx": {
    "file": "features/window-panels/windows/sandboxes/SandboxManagementWindow.tsx",
-   "pending": true
-  },
-  "window:features/window-panels/windows/scopes/SetContextValueWindow.tsx": {
-   "file": "features/window-panels/windows/scopes/SetContextValueWindow.tsx",
    "pending": true
   },
   "window:features/window-panels/windows/search-review/SearchReviewWindow.tsx": {

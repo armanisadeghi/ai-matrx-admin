@@ -30,23 +30,4 @@ describe("dialogs that launch WindowPanels", () => {
       );
     },
   );
-
-  it.each([
-    {
-      file: "features/scopes/actions/quick-assign/SetContextValueCore.tsx",
-      close: "setShowOverwriteWarning(false);",
-    },
-  ])(
-    "$file closes its blocking confirmation before opening a diff window",
-    ({ file, close }) => {
-      const source = fs.readFileSync(path.join(root, file), "utf8");
-      const handler = source.slice(
-        source.indexOf("const handlePreviewOverwrite"),
-        source.indexOf("const handlePreviewOverwrite") + 900,
-      );
-
-      expect(handler.indexOf(close)).toBeGreaterThanOrEqual(0);
-      expect(handler.indexOf(close)).toBeLessThan(handler.indexOf("openDiff({"));
-    },
-  );
 });

@@ -41,7 +41,6 @@ const EXEMPT: Record<string, string> = {
   "features/projects/components/ProjectFormCore.tsx": "Home-organization selector of a project the person is creating",
   "features/rag/components/library/LibraryPublishPanel.tsx": "Publish target: the person names the organization to publish into",
   "features/scopes/components/pages/ContextItemPicker.tsx": "Target selector for the context item the person is assigning",
-  "features/scopes/components/quick-assign/ScopeContextTargetPicker.tsx": "Target selector for a scope assignment the person is making",
   "features/settings/tabs/PlanUsageTab.tsx": "Billing-account selector: the person chooses which account to view",
   "features/settings/universal/ConfigurationExport.tsx": "Copy settings from/to another organization: the control's whole job",
   "features/trash/review/ChangeReviewWindow.tsx": "Move-to target: the person names the destination organization",
