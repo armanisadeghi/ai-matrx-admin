@@ -282,6 +282,58 @@ text field, never over an open dialog.
 the query, not in Redux: it belongs to this mount of this page, and restoring one
 would arm a bulk action against rows nobody has in mind any more.
 
+### 🚨 THE BULK TWIN RULE (2026-10-21)
+
+**A row verb that can sensibly apply to many has its bulk twin from the SAME
+declaration.** Spend approvals had five row decisions and three bulk buttons; a
+census found the same drift on ~95 lists, because the row verbs and the bulk
+verbs were written twice. `rowVerbs.ts` makes them one list:
+
+```ts
+// 1a — a MatrxDataTable / EntityListPage surface
+const { rowActionDefs, bulkActions } = defineRowVerbs<Row>([
+  { id: "approve", icon: Check, label: "Approve", appliesTo: (r) => r.status !== "approved",
+    onClick: (r) => openApprove(r),
+    bulk: { done: "Approved", skipReason: (r) => (r.status === "approved" ? "Already approved" : null),
+            confirm: (t) => ({ title: `Approve ${t.ids.length}?`, description: "…" }),
+            runOne: (id, row, input) => approve(id) } },         // or run: (targets, input) => batch door
+  { id: "history", icon: History, label: "History", onClick: openHistory, bulk: false, noBulk: "single" },
+], { noun: "approval", getRowId: (r) => r.id, getRowName: (r) => r.name });
+const bulk = useTableBulkSelection({ noun: "approval", rows, getRowId, actions: bulkActions, onRefresh });
+<MatrxDataTable rowActionDefs={rowActionDefs} selection={bulk.selection} … />   // or config.bulkActions
+
+// 1b — a verb REGISTRY (ItemMenuConfig menus, allUserActions()): every id must be decided
+const bulkActions = bulkActionsFromRowVerbs(allUserActions(), {
+  suspend: { done: "Suspended", runOne: (id) => suspend(id) },
+  message: { noBulk: "single" },  // …every other id; a missing id is a type error
+}, { noun: "account", getRowId, getRowName, blocked: (verb, row) => userActionBlocked(verb.id, row, ctx) });
+```
+
+- **Every verb decides.** `bulk` is required: a twin, or `false` with a one-word
+  `noBulk` reason (`single` · `open` · `edit` · `view` · `copy`) — Open, Edit,
+  History, Rename. There is no third state, so a verb cannot be forgotten.
+- **Skip and name, never pre-filter.** A selected row the verb does not apply to
+  (its `appliesTo`, `disabled`, or the twin's `skipReason`) is skipped and NAMED
+  in the one warning toast (`reportPerRow`); the bar grays the button with the
+  first reason only when it can see every selected row and none applies.
+  `isRowSelectable` is for rows NO verb can ever touch (spend approvals'
+  platform-decided rows) — never a way to pre-filter one verb.
+- **A verb that needs one value asks it once.** `confirm → { …, ask: { kind:
+  "date", label, defaultValue, min?, validate? } }` or `{ kind: "choice", label,
+  options, defaultValue? }` puts one field under the confirm; the value reaches
+  `runOne` / `run` as `input.value`. One reason is `confirm.reason` →
+  `input.reason`. Never a browser dialog.
+- **Built-ins follow the view.** `standardBulkActionsFor({ archivedView })`:
+  active → Move to Trash; archived → Restore (`entity_undelete`); all → both,
+  each skipping and naming the rows it does not fit. ARCHIVE IS TRASH on this
+  platform (one door, `archiveRecord`), so Archive/Unarchive are Move to Trash /
+  Restore — never a second pair. Opt out per verb (`restore: false`). Add tag
+  opens THE tag picker (`pickTag` → `TagDialog`: your tags, or a new name).
+- **Guard:** `pnpm check:bulk-parity` (+ `:self-test`) — a hand-written bulk list
+  beside `defineRowVerbs` fails at once; list surfaces with mutating row verbs
+  and no selection are the shrink-only census (`scripts/bulk-parity/baseline.json`).
+  Model of 1b on the server side: `features/source-library/hooks/useActionRunner.tsx`.
+
 **Left behind, deliberately:** `EntityAltViewProps` carries no selection, so a
 feature-owned cards/rows VIEW (the `views.cards` render prop — not the table's
 own phone cards, which are fully wired) renders no checkboxes of its own — a selection made
@@ -341,6 +393,7 @@ names on one page.
 | `useLaneParam.ts` | The lane as `?scope=` URL state for a list outside the shell: a named lane wins, else the `lists.landing_tab/<token>` knob, else All; a picked lane is always written. Pair with `useOrgFilterParam` |
 | `components/EntityListToolbar.tsx` / `EntityFilterPanel.tsx` / `EntityColumnPicker.tsx` / `EntityListTable.tsx` | The lifted surface pieces                                                                                                                                                                                                                                                          |
 | `selection.ts`                                                                                                  | Bulk-selection vocabulary — `EntityBulkAction`, `EntityBulkSelection`, `EntityBulkFilter`, and the pure `bulkSelectionMode` that decides which meaning of "all" is currently true                                                                                                   |
+| `rowVerbs.ts` | THE BULK TWIN RULE — `defineRowVerbs` (row action + bulk twin from one declaration) and `bulkActionsFromRowVerbs` (verb registries); skip-and-name, confirm, one-value ask |
 | `useEntityListSelection.ts`                                                                                     | The selection state — local beside the query, never Redux; resolves "everything matching" by paging the surface's own service, cancellably                                                                                                                                          |
 | `components/EntityBulkBar.tsx`                                                                                  | The declared buttons (rendered inside the table's own bulk bar) and the one banner that says which meaning of "all" is true                                                                                                                                                         |
 | `memoryService.ts` | `createMemoryListService` — the service triple over a small, bounded, read-only corpus loaded ONCE in full (scanner findings, drift reports). Search, filter, sort (`sortValue` for a rank behind a word), paging and facet counts run over the WHOLE loaded set; a failed load is retried, never cached empty. Never for user-owned lists that grow without bound — those need a `<feature>_list_scoped` RPC. Guard: `__tests__/memory-service.test.ts` |
@@ -499,6 +552,7 @@ how that savior page gets built.
 
 ## Change log
 
+- 2026-10-21 (bulk parity primitive) — **THE BULK TWIN RULE.** `rowVerbs.ts`: `defineRowVerbs` (row action + bulk twin from one declaration) and `bulkActionsFromRowVerbs` (verb registries, every id decided); skipped rows named through the shared `reportPerRow`. `EntityBulkActionConfirm.ask` asks one date or choice for the whole selection (`input.value`). Built-ins gain **Restore** and follow `archivedView` (EntityListPage passes `query.archived`; `useTableBulkSelection({ archivedView })`); Move to Trash skips rows already in Trash. **Add tag** is THE tag picker (`pickTag`, host in `RecordBulkDialogsHostBody`). First surface: spend approvals (all five decisions in bulk; Temporary asks the expiry). Guard `pnpm check:bulk-parity` (baseline 51 files / 89 verbs). Tests: `__tests__/row-verbs-bulk-twin.test.ts`, `bulk-ask-one-value.test.tsx`, `bulk-parity-guard.test.ts`.
 - 2026-10-18 (users one roof, lane L) — **A bulk confirm can ask ONE reason for the whole selection.** `EntityBulkActionConfirm.reason = { placeholder, optional? }` turns the confirm into the design-system `TextInputDialog` (title + consequence + reason box); the trimmed words reach `run(selection, input)` as `input.reason`. `run` now takes an optional second `input` argument (the shell always passes it, `{}` without a reason). First user: Accounts bulk Close / Reopen, which recorded canned reasons until now.
 - 2026-10-09 (PAGE-SPEED-3) — **A count or facet read is ONE request.** `readListRpc` for the `public` schema now calls `platform.list_rpc_once(p_fn, p_args)`, which runs the named `*_scope_counts` / `*_facets` / `*_counts` function once and returns every row as one jsonb array. The paged reader (a count, page one, then every further page) ran the function five times for the member with 1,532 organizations (3,072 rows); it stays only for a caller that passes another schema's `client`. Nothing is dropped.
 - 2026-10-09 (response checks phase 2) — **`usageColumns.tsx` gains an optional Warnings column.** A caller whose rollup counts warnings passes `warnings: { read, door? }`; the column (id `warnings`, after Failures) sorts and filters server-side by the Runs buckets (`0` = "None", `USAGE_WARNINGS_FILTER_OPTIONS`). Workflows pass it; agents do not, so their five columns are unchanged. Pinned by `usageColumns.test.tsx`.
