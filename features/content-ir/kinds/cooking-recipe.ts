@@ -17,9 +17,8 @@
  * makeCompleteEnvelopeBridge family (quiz, presentation, …) — partials show
  * the type's loading state, completes render bridged serverData.
  *
- * Defaults mirror parseRecipeMarkdown's own fallbacks (title "Recipe",
- * yields "Serves 4", …) because RecipeViewer renders every stat card
- * unconditionally — a missing time would paint an empty tile.
+ * No defaults: a title, servings or time the recipe does not state stays empty and RecipeViewer
+ * draws nothing for it (review 5, G5: "Serves 4" and "30 minutes" were invented here too).
  *
  * NOT registered anywhere yet — the definitions below are ready-to-splice
  * for the central integration pass (system-kinds.ts is frozen to this
@@ -103,15 +102,6 @@ export const COOKING_RECIPE_SCHEMA: KindSchema = {
 // Legacy bridge — canonical envelope → RecipeData serverData.
 // ---------------------------------------------------------------------------
 
-/** parseRecipeMarkdown's own fallback values, verbatim. */
-const RECIPE_DEFAULTS = {
-  title: "Recipe",
-  yields: "Serves 4",
-  totalTime: "30 minutes",
-  prepTime: "15 minutes",
-  cookTime: "15 minutes",
-} as const;
-
 const ROOT_KNOWN_KEYS = [
   "title",
   "yields",
@@ -173,12 +163,12 @@ export const cookingRecipeServerDataFromEnvelope = makeCompleteEnvelopeBridge(
     }
 
     const serverData: RecipeData & Record<string, unknown> = {
-      title: asNonEmptyString(value.title) ?? RECIPE_DEFAULTS.title,
-      yields: asNonEmptyString(value.yields) ?? RECIPE_DEFAULTS.yields,
-      totalTime:
-        asNonEmptyString(value.totalTime) ?? RECIPE_DEFAULTS.totalTime,
-      prepTime: asNonEmptyString(value.prepTime) ?? RECIPE_DEFAULTS.prepTime,
-      cookTime: asNonEmptyString(value.cookTime) ?? RECIPE_DEFAULTS.cookTime,
+      // A block never invents data: what the recipe does not state stays empty and draws nothing.
+      title: asNonEmptyString(value.title) ?? "",
+      yields: asNonEmptyString(value.yields) ?? "",
+      totalTime: asNonEmptyString(value.totalTime) ?? "",
+      prepTime: asNonEmptyString(value.prepTime) ?? "",
+      cookTime: asNonEmptyString(value.cookTime) ?? "",
       ingredients,
       instructions,
     };
@@ -254,7 +244,7 @@ function stepLine(step: Record<string, unknown>, index: number): string {
 export function cookingRecipeMarkdownFromValue(
   value: Record<string, unknown>,
 ): string {
-  const title = asNonEmptyString(value.title) ?? RECIPE_DEFAULTS.title;
+  const title = asNonEmptyString(value.title) ?? "";
 
   const ingredients = Array.isArray(value.ingredients)
     ? value.ingredients.filter(isRecordValue)
@@ -281,7 +271,7 @@ export function cookingRecipeMarkdownFromValue(
   });
 
   return joinBlocks([
-    `### ${title}`,
+    title ? `### ${title}` : null,
     yields ? `**Yields:** ${yields}` : null,
     timeLine(value),
     ingredients.length > 0
