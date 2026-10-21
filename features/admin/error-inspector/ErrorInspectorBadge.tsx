@@ -21,23 +21,25 @@ import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
 import { useCapturedErrorStats } from "@/lib/diagnostics/useCapturedErrors";
 import { useToggleErrorInspector } from "./useOpenErrorInspector";
 import { suppressErrorInspectorBadge } from "./error-inspector-badge-state";
-import { useFixedCornerClearance } from "./useFixedCornerClearance";
 import { useShellMainLeft } from "./useShellMainLeft";
+import { useFloatingLift } from "./useFloatingLift";
 
 export default function ErrorInspectorBadge() {
   const pathname = usePathname();
   const isAdmin = useAppSelector(selectIsAdminDebugger);
   const { red, orange, unseenRed, unseenOrange } = useCapturedErrorStats();
   const toggle = useToggleErrorInspector();
-  // This badge sits in the bottom-left corner OVER whatever the page put
-  // there. It publishes the band it occupies so a page can reserve exactly
-  // that much — measured, because its height and its offset both change with
-  // the viewport and with its own contents (see useFixedCornerClearance).
-  const cornerRef = useFixedCornerClearance<HTMLButtonElement>();
+  // This badge floats in the bottom-left corner OVER the page and never tells the page to make
+  // room: floating things never move the page (Arman, 2026-10-20; pnpm
+  // check:overlays-never-move-page). When a control is under it, IT rises (useFloatingLift).
+  const [liftRef, lift] = useFloatingLift<HTMLButtonElement>();
   // ...and it starts where the PAGE starts (after the sidebar and the chat dock), so it never covers the
   // chat Reply box or the sidebar's buttons.
   const mainLeft = useShellMainLeft();
-  const leftStyle = mainLeft === null ? undefined : ({ "--error-badge-left": `${mainLeft}px` } as React.CSSProperties);
+  const placeStyle = {
+    "--error-badge-lift": `${lift}px`,
+    ...(mainLeft === null ? {} : { "--error-badge-left": `${mainLeft}px` }),
+  } as React.CSSProperties;
 
   if (!isAdmin || suppressErrorInspectorBadge(pathname)) return null;
 
@@ -45,15 +47,15 @@ export default function ErrorInspectorBadge() {
   if (red > 0) {
     return (
       <button
-        ref={cornerRef}
-        style={leftStyle}
+        ref={liftRef}
+        style={placeStyle}
         onClick={toggle}
         title={`${red} error${red === 1 ? "" : "s"} captured — open Error Inspector`}
         data-error-inspector-badge=""
         className={cn(
           // Mobile sits ABOVE the bottom band where composers/action bars live
           // — at bottom-4 it covered a composer's controls (2026-08-16).
-          "fixed bottom-[calc(6rem+var(--page-bottom-dock-h,0px))] left-3 z-[60] flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 shadow-lg sm:bottom-[calc(1rem+var(--page-bottom-dock-h,0px))] sm:left-[var(--error-badge-left,1rem)]",
+          "fixed bottom-[calc(6rem+var(--page-bottom-dock-h,0px)+var(--error-badge-lift,0px))] left-3 z-[60] flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 shadow-lg sm:bottom-[calc(1rem+var(--page-bottom-dock-h,0px)+var(--error-badge-lift,0px))] sm:left-[var(--error-badge-left,1rem)]",
           "bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 transition-colors",
           unseenRed > 0
             ? "border-destructive/50 text-destructive animate-pulse"
@@ -78,13 +80,13 @@ export default function ErrorInspectorBadge() {
   if (orange > 0) {
     return (
       <button
-        ref={cornerRef}
-        style={leftStyle}
+        ref={liftRef}
+        style={placeStyle}
         onClick={toggle}
         title={`${orange} minor issue${orange === 1 ? "" : "s"} — open Error Inspector`}
         aria-label="Open Error Inspector"
         data-error-inspector-badge=""
-        className="fixed bottom-[calc(6rem+var(--page-bottom-dock-h,0px))] left-3 z-[60] flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card/95 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-card/80 transition-transform hover:scale-110 sm:bottom-[calc(1rem+var(--page-bottom-dock-h,0px))] sm:left-[var(--error-badge-left,1rem)]"
+        className="fixed bottom-[calc(6rem+var(--page-bottom-dock-h,0px)+var(--error-badge-lift,0px))] left-3 z-[60] flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card/95 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-card/80 transition-transform hover:scale-110 sm:bottom-[calc(1rem+var(--page-bottom-dock-h,0px)+var(--error-badge-lift,0px))] sm:left-[var(--error-badge-left,1rem)]"
       >
         <span
           className={cn(

@@ -827,7 +827,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     );
 
   const page = (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-textured pb-[var(--shell-fixed-corner-clearance,0px)] pt-[var(--shell-header-h)]" data-testid="agent-studio">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-textured pt-[var(--shell-header-h)]" data-testid="agent-studio">
       {header}
       <div ref={bodyRef} className="flex min-h-0 flex-1 flex-col" data-studio-layout={layout ?? "measuring"}>
         {body}

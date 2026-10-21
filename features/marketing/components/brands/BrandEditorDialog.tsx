@@ -334,9 +334,9 @@ function BrandEditorDialogBody({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !busy && onOpenChange(next)}>
-      {/* The card ends above what floats at the bottom (assists dock): it is
-          centered, so twice the measured runway comes off its height. */}
-      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:flex sm:h-[min(46rem,90dvh)] sm:flex-col sm:max-h-[min(90dvh,calc(100dvh-2*var(--matrx-floating-clearance,0px)))] sm:max-w-2xl">
+      {/* A modal sits above the resting floating chrome, so its height never depends on what floats
+          (floating things never move the page, 2026-10-20). */}
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:flex sm:h-[min(46rem,90dvh)] sm:flex-col sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{brand ? `Edit ${brand.name}` : "Add brand"}</DialogTitle>
           <DialogDescription>

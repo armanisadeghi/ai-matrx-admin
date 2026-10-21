@@ -125,17 +125,8 @@ export function QuestionDeskRail({
         })}
       </ul>
 
-      {/* The app shell parks fixed chrome (the error chip) in the bottom-left
-          corner, on top of this legend (verifier finding 6, 2026-09-12; the
-          guessed `pb-14` only moved the collision one line up — V2 finding 7).
-          The chrome publishes the band it ACTUALLY occupies as
-          `--shell-fixed-corner-clearance`. A bottom padding on this block was
-          the first answer and was still wrong at 1280×720 (V3, 2026-09-16):
-          the rail is a scroll container, so when its content is taller than
-          the viewport the line under the chip is whatever is mid-scroll, and
-          padding at the END of the content protects nothing. The rail's own
-          height now stops above the band (`.qd-rail` in question-desk.css), so
-          no rail content can ever sit under the chip at any scroll position. */}
+      {/* The admin error badge floats in the bottom-left corner; when it would sit on this legend it
+          rises off it. The rail never shrinks for it (floating things never move the page). */}
       <div className="mt-auto space-y-2 border-t border-border pt-3.5">
         {/* A phone has no keyboard, so a key legend there is an affordance
             that cannot be used. It is not dimmed or disabled — it is absent. */}

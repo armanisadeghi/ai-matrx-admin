@@ -422,9 +422,9 @@ export function SmartAddHero({
   return (
     <MotionConfig reducedMotion="user">
       <section
-        // The shell gives this <main> a bottom runway (the page end once, clear of floating chrome). The stage fills the frame LESS that
-        // runway so the two never add up to a scroll when the content fits, and carries no bottom padding of its own.
-        className={`relative flex min-h-[calc(100%-var(--matrx-floating-clearance))] w-full flex-col items-center px-4 ${
+        // The stage fills the frame less the page end — a constant. Never less what floats: that re-centred the whole hero every
+        // time the chat dock or a pill appeared (floating things never move the page, 2026-10-20). No bottom padding of its own.
+        className={`relative flex min-h-[calc(100%-var(--matrx-page-end))] w-full flex-col items-center px-4 ${
           compact
             ? "justify-start pt-[calc(var(--shell-header-h,3rem)+5vh)]"
             : "justify-center pt-[calc(var(--shell-header-h,3rem)+2rem)]"

@@ -350,12 +350,11 @@ export default function AssistsDock() {
       )}
       {/* Floating chrome is the PILL only (lib/layout/floating-chrome.ts): the open panel is a
           transient overlay — measuring it grew every page's runway by up to 50dvh when it opened.
-          It rests above a list's pager (--page-bottom-dock-h): a page-end surface must not pad for it. */}
+          It rests above a list's pager (--page-bottom-dock-h); nothing on the page ever pads for it. */}
       <div
         data-assists-dock=""
         data-assist-dock-pending=""
         data-matrx-floating-bottom=""
-        data-matrx-floating-follows-page=""
         className={cn(
           "data-[assist-dock-pending]:invisible pointer-events-auto group flex items-center gap-0.5 rounded-full border border-primary/30 bg-card pl-1 pr-1 shadow-md transition-opacity data-[assist-dock-yield]:pointer-events-none data-[assist-dock-yield]:opacity-30",
           dragging && "ring-1 ring-primary/40",

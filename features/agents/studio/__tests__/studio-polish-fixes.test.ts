@@ -1,7 +1,7 @@
 /**
  * Studio polish round 2: the empty describe box's "…" holds no registry actions, one example count everywhere,
- * the Import page's promised instructions box exists on the first screen, the admin error pill's corner is
- * reserved on the Studio, and no shared admin surface prefetches a main-app route with next/link.
+ * the Import page's promised instructions box exists on the first screen, the admin error pill never moves
+ * the Studio (it rises off the composer), and no shared admin surface prefetches a main-app route with next/link.
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -29,8 +29,9 @@ describe("Import from Claude", () => {
 });
 
 describe("Admin error pill", () => {
-  it("the Studio page reserves the shell's measured bottom-left corner", () => {
-    expect(src("features/agents/studio/components/AgentStudioPage.tsx")).toMatch(/pb-\[var\(--shell-fixed-corner-clearance,0px\)\]/);
+  it("the Studio page never makes room for it — the pill rises off the composer instead", () => {
+    expect(src("features/agents/studio/components/AgentStudioPage.tsx")).not.toContain("--shell-fixed-corner-clearance");
+    expect(src("features/admin/error-inspector/ErrorInspectorBadge.tsx")).toContain("useFloatingLift");
   });
 });
 

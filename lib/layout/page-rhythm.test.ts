@@ -56,9 +56,9 @@ describe("the page-rhythm scale", () => {
     expect(runway).not.toMatch(/\d(rem|px)\s*$/);
   });
 
-  it("the compact attention pill adds no constant clearance on top of the measured runway", () => {
-    const compact = /:root\[data-admin-attention="compact"\]\s*\{([\s\S]*?)\}/.exec(SHELL_CSS)?.[1] ?? "";
-    expect(compact).toMatch(/--shell-fixed-alert-clearance:\s*0px/);
+  it("the attention pill adds no clearance of its own — it floats, the page never makes room", () => {
+    expect(SHELL_CSS).not.toMatch(/:root\[data-admin-attention="(compact|expanded)"\]\s*\{/);
+    expect(SHELL_CSS).not.toContain("--shell-fixed-alert-clearance");
   });
 
   it("switches to the wide scale at sm", () => {

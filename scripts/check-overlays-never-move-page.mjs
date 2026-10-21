@@ -56,7 +56,6 @@ const CHROME_CODE = [
   "features/admin/attention/",
   "features/ai-test-mode/AiTestModeDock",
   "features/shell/components/FloatingClearanceSync",
-  "components/ui/sonner",
 ];
 const STYLES_PAGE = /\.style\.(?:padding|margin|height|minHeight|maxHeight)[A-Za-z]*\s*=(?!=)|style\.setProperty\(\s*["'`](?:padding|margin|height|min-height|max-height)/;
 

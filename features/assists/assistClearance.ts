@@ -11,9 +11,10 @@
 //   4. Faded and click-through (yield) only when even the chrome has no room.
 //   A list's rows are never a free spot: the control never rests over a row (DH3-VERIFY-2).
 //
-// When it rests at (1) over an INNER scroll area, that scroller gets a bottom inset as tall as the
-// overlap so its last item scrolls fully above the control (09-28 fix D). Never the page's main
-// area: an inset there squeezed the page (data home cards view in a 331 px box, DH3-VERIFY-2).
+// It NEVER pads, insets or resizes anything on the page (Arman, 2026-10-20: floating things never
+// move the page). Until then a resting dock gave the scroller under it a bottom inset as tall as the
+// overlap (09-28 fix D) — which pushed bottom-anchored content (a chat thread) up and squeezed
+// full-size bodies. The control moves; the page stays. Guard: pnpm check:overlays-never-move-page.
 //
 // 🚨 COST (ASSISTS-DOCK-COST, 2026-10-01). The pass was ~40 ms on the data home and ~320 ms on
 // /agents/all (20k nodes) per occurrence, once per keystroke. Causes and the rules that close them:
@@ -33,95 +34,6 @@ import { useEffect } from "react";
 import { TRANSIENT_OVERLAY_SELECTOR } from "@/lib/layout/floating-chrome";
 
 const DOCK_SELECTOR = "[data-assists-dock]";
-const CLEARED_ATTR = "data-assist-clearance";
-/** Breathing room between the scroller's last item and the control. */
-const GAP_PX = 8;
-
-export interface ClearanceRect {
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-}
-
-/**
- * How much bottom inset a scroller needs so nothing in it hides under the
- * dock: the part of the scroller's VISIBLE bottom edge that the dock covers,
- * plus a gap. 0 when they do not overlap.
- */
-export function clearanceFor(
-  scroller: ClearanceRect,
-  dock: ClearanceRect,
-  viewportHeight: number,
-): number {
-  const visibleBottom = Math.min(scroller.bottom, viewportHeight);
-  const overlapsX = dock.left < scroller.right && dock.right > scroller.left;
-  const overlapsY = dock.top < visibleBottom && dock.bottom > scroller.top;
-  if (!overlapsX || !overlapsY) return 0;
-  return Math.ceil(visibleBottom - dock.top + GAP_PX);
-}
-
-/** Within this many px on every edge, a box IS the main area's box. */
-const SAME_BOX_PX = 2;
-
-/**
- * The page's main area (the shell's <main>, anything holding it, the document, and a route's own
- * full-size wrapper inside it — e.g. the agent builder's `h-full overflow-y-auto` root). It is never
- * inset: its children are sized to it, so padding it shrinks the page instead of adding room (the
- * builder grew a ~100 px empty band under both columns a second after load, 2026-10-06).
- */
-function isPageMainArea(el: HTMLElement, main: Element | null, mainRect: DOMRect | null): boolean {
-  if (el === document.body || el === document.documentElement) return true;
-  if (el.tagName === "MAIN" || el.classList.contains("shell-main")) return true;
-  if (main === null) return false;
-  if (el.contains(main)) return true;
-  if (!mainRect || !main.contains(el)) return false;
-  const r = el.getBoundingClientRect();
-  return (
-    Math.abs(r.top - mainRect.top) <= SAME_BOX_PX &&
-    Math.abs(r.bottom - mainRect.bottom) <= SAME_BOX_PX &&
-    Math.abs(r.left - mainRect.left) <= SAME_BOX_PX &&
-    Math.abs(r.right - mainRect.right) <= SAME_BOX_PX
-  );
-}
-
-function isScroller(el: Element): el is HTMLElement {
-  if (!(el instanceof HTMLElement)) return false;
-  // Editors own their internal padding and auto-grow measurements. Insetting
-  // a textarea makes the dock inflate the draft, then chase its new size.
-  // Walk on to the containing page scroller; dock lift already avoids fields.
-  if (el.closest('textarea, input, [role="textbox"], [contenteditable]:not([contenteditable="false"])')) return false;
-  const oy = getComputedStyle(el).overflowY;
-  return (oy === "auto" || oy === "scroll") && el.scrollHeight > el.clientHeight + 1;
-}
-
-/** True for a scroll owner the shell gives its own bottom runway (see styles/shell.css, "NO STACKING"). */
-export function ownsShellRunway(el: HTMLElement): boolean {
-  return el.hasAttribute("data-matrx-page-scroll") && el.getAttribute("data-floating-clearance") !== "off" && el.closest(".shell-main") !== null;
-}
-
-function scrollersUnder(dock: DOMRect): HTMLElement[] {
-  const found = new Set<HTMLElement>();
-  const main = document.querySelector("main");
-  const mainRect = main?.getBoundingClientRect() ?? null;
-  const probeY = Math.max(0, Math.min(window.innerHeight - 1, dock.top + dock.height / 2));
-  for (const x of [dock.left + 2, dock.left + dock.width / 2, dock.right - 2]) {
-    const stack = document.elementsFromPoint?.(x, probeY) ?? [];
-    const hit = stack.find((el) => !el.closest(DOCK_SELECTOR));
-    for (let el: Element | null = hit ?? null; el && el !== document.body; el = el.parentElement) {
-      if (el instanceof HTMLElement && isPageMainArea(el, main, mainRect)) break;
-      // A scroll owner that takes the shell's runway (`data-matrx-page-scroll`) already ends clear of the
-      // dock; an inset on top of it padded the page twice (Table Settings: 123px, `[page-rhythm]`).
-      if (el instanceof HTMLElement && ownsShellRunway(el)) break;
-      if (isScroller(el)) {
-        found.add(el);
-        break;
-      }
-    }
-  }
-  return [...found];
-}
-
 /**
  * The dock's elements, found by one document scan and kept while they stay mounted (a 20k-node
  * page pays ~0.5 ms per scan; the pass used to make several).
@@ -132,62 +44,6 @@ function dockElements(): HTMLElement[] {
     dockEls = [...document.querySelectorAll<HTMLElement>(DOCK_SELECTOR)];
   }
   return dockEls;
-}
-
-/** Scrollers this module inset, so dropping stale insets never scans the document. */
-const clearedEls = new Set<HTMLElement>();
-
-function visibleDockRect(): DOMRect | null {
-  for (const el of dockElements()) {
-    const r = el.getBoundingClientRect();
-    if (r.width > 0 && r.height > 0) return r;
-  }
-  return null;
-}
-
-/** The bottom padding a scroller carries on its own (classes + inline), before any inset. */
-function ownBottomPaddingPx(el: HTMLElement): number {
-  return Number.parseFloat(getComputedStyle(el).paddingBottom) || 0;
-}
-
-function clear(el: HTMLElement) {
-  el.style.paddingBottom = el.dataset.assistClearancePrev ?? "";
-  delete el.dataset.assistClearancePrev;
-  el.removeAttribute(CLEARED_ATTR);
-  clearedEls.delete(el);
-}
-
-/**
- * One pass: give every inner scroller under the RESTING dock its inset (exactly the overlap — it
- * never only grows), drop stale ones. A lifted or docked control covers nothing, so it needs none.
- */
-export function applyAssistClearance(opts: { resting?: boolean } = {}): void {
-  const dock = opts.resting === false ? null : visibleDockRect();
-  const targets = new Map<HTMLElement, number>();
-  if (dock) {
-    for (const scroller of scrollersUnder(dock)) {
-      const need = clearanceFor(scroller.getBoundingClientRect(), dock, window.innerHeight);
-      if (need > 0) targets.set(scroller, need);
-    }
-  }
-  for (const el of [...clearedEls]) {
-    if (!el.isConnected) clearedEls.delete(el);
-    else if (!targets.has(el)) clear(el);
-  }
-  for (const [el, need] of targets) {
-    // ONLY EVER ADDS (2026-10-19): an inset REPLACES the scroller's own bottom padding, so a
-    // scroller that already ends further clear than the overlap (the notes Read pane's page
-    // runway, half the screen) is left alone — it once shrank that runway to the 78px overlap.
-    if (!el.hasAttribute(CLEARED_ATTR) && ownBottomPaddingPx(el) >= need) continue;
-    if (!el.hasAttribute(CLEARED_ATTR)) {
-      el.dataset.assistClearancePrev = el.style.paddingBottom;
-      el.setAttribute(CLEARED_ATTR, "");
-      clearedEls.add(el);
-    }
-    // Measured against the scroller's visible bottom edge, which its own padding does not move.
-    const current = Number.parseFloat(el.style.paddingBottom) || 0;
-    if (Math.abs(need - current) > 1) el.style.paddingBottom = `${need}px`;
-  }
 }
 
 // ── AUTO-DOCK: THE CONTROL MOVES OFF A CONTROL (list-shell fix D round 2, 2026-09-28) ──────────
@@ -300,9 +156,13 @@ export type Coverage = boolean | DockRect;
  * dock, 0 when it is already clear, or null when no lift within reach clears it. Pure, so the rule
  * is tested without a browser.
  */
-export function liftFor(base: DockRect, isCovered: (r: DockRect) => Coverage): number | null {
+export function liftFor(
+  base: DockRect,
+  isCovered: (r: DockRect) => Coverage,
+  maxPx: number = LIFT_MAX_PX,
+): number | null {
   let step = 0;
-  while (step <= LIFT_MAX_PX) {
+  while (step <= maxPx) {
     const r = { ...base, top: base.top - step, bottom: base.bottom - step };
     if (r.top < LIFT_TOP_FLOOR_PX) return null;
     const cover = isCovered(r);
@@ -368,9 +228,14 @@ function samplePoints(r: DockRect): [number, number][] {
  * What covers `r` among the elements the hit test finds: a row stands for its whole list (one
  * jump clears the list or proves no lift will), a control for itself.
  */
-function hitCoverage(r: DockRect, rowsCount: boolean, points: [number, number][] = samplePoints(r)): Coverage {
+function hitCoverage(
+  r: DockRect,
+  rowsCount: boolean,
+  points: [number, number][] = samplePoints(r),
+  self: Element | null = null,
+): Coverage {
   for (const [x, y] of points) {
-    const stack = document.elementsFromPoint?.(x, y) ?? [];
+    const stack = (document.elementsFromPoint?.(x, y) ?? []).filter((el) => !self || !self.contains(el));
     // A toast floats over the page for a few seconds; it is never what the pill must clear. Counting
     // it hid and re-placed the pill, which moved the floating clearance, which moved the toast
     // stack — a loop the owner saw as "toasts moving the UI around" (2026-10-08).
@@ -394,9 +259,23 @@ function hitCoverage(r: DockRect, rowsCount: boolean, points: [number, number][]
   return false;
 }
 
-function coveredInDocument(r: DockRect, cache: PassCache): Coverage {
+function coveredInDocument(r: DockRect, cache: PassCache, self: Element | null = null): Coverage {
   for (const target of geometryAvoidance(cache)) if (overlaps(r, target)) return target;
-  return hitCoverage(r, true);
+  return hitCoverage(r, true, samplePoints(r), self);
+}
+
+/**
+ * THE SHARED LIFT for floating chrome other than the assists dock (the admin error badge…): how far
+ * `el` must rise from its resting place (`currentLift` px below where it is drawn now) so it sits over
+ * no control, composer, pager, attention dock or list row — 0 when it is already clear, null when no
+ * spot up to the shell header is free. The chrome moves; the page never makes room for it.
+ */
+export function floatingLiftFor(el: HTMLElement, currentLift: number): number | null {
+  const drawn = el.getBoundingClientRect();
+  if (!sized(drawn)) return 0;
+  const base = { top: drawn.top + currentLift, bottom: drawn.bottom + currentLift, left: drawn.left, right: drawn.right };
+  const cache: PassCache = { avoidance: null, attention: null };
+  return liftFor(base, (probe) => coveredInDocument(probe, cache, el), window.innerHeight);
 }
 
 // ── THE RESERVED SLOT: NO FREE SPOT → THE DOCK JOINS THE PAGE'S CHROME (chair ruling, 2026-10-01) ──
@@ -820,7 +699,6 @@ export function useAssistClearance(active: boolean): void {
       if (dockElements().length === 0) {
         // Nothing to place: drop anything an earlier dock left behind, read nothing.
         setAttr(document.documentElement, SLOT_ATTR, null);
-        if (clearedEls.size > 0) applyAssistClearance({ resting: false });
         lastBox = null;
         return;
       }
@@ -834,7 +712,6 @@ export function useAssistClearance(active: boolean): void {
       fillSince = 0;
       const t0 = performance.now();
       const placement = applyAssistDockLift();
-      applyAssistClearance({ resting: placement === "rest" });
       watchSlot();
       revealWhenFinal(placement);
       const first = dockElements()[0];
@@ -922,7 +799,6 @@ export function useAssistClearance(active: boolean): void {
         el.removeAttribute(YIELD_ATTR);
       }
       document.documentElement.removeAttribute(SLOT_ATTR);
-      for (const el of document.querySelectorAll<HTMLElement>(`[${CLEARED_ATTR}]`)) clear(el);
     };
   }, [active]);
 }

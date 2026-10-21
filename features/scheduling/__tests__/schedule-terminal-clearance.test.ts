@@ -13,15 +13,12 @@ function pageFiles(directory: string): string[] {
 }
 
 describe("schedule route terminal clearance", () => {
-  it("creates real scroll runway below min-height route children", () => {
+  it("creates real scroll runway below min-height route children — the page runway, never an alarm reserve", () => {
     const source = fs.readFileSync(shellStyles, "utf8");
 
-    expect(source).toContain(
-      ':root[data-admin-attention] .shell-main::after',
-    );
-    expect(source).toMatch(
-      /\.shell-main::after \{[^}]*height: max\(var\(--shell-fixed-alert-clearance\)/,
-    );
+    expect(source).toMatch(/\.shell-main::after,[\s\S]*?block-size: var\(--matrx-page-runway\);/);
+    // Floating things never move the page (2026-10-20): the alarm reserves nothing.
+    expect(source).not.toContain("--shell-fixed-alert-clearance");
   });
 
   it("reserves mobile and desktop space above the fixed schedule alarm in every route scroller", () => {

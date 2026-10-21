@@ -1,13 +1,12 @@
 "use client";
 
-// /memory/observational — the Memory Inspector (observational memory, per conversation)
-// given a route. Wraps the canonical ObservationalMemoryWindow (its own conversation
-// list + ObservationalMemoryCore) instead of copying it; `?conversation=<id>` preselects
-// one conversation.
+// /memory/observational — the Memory Inspector (observational memory, per conversation).
+// The body is @ai-matrx/chat's ObservationalMemoryPanel — the same conversation list and
+// inspector the floating window draws; `?conversation=<id>` preselects one conversation.
 
-import { Eye } from "lucide-react";
+import { AppWindow } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { Button, EmptyState } from "@ai-matrx/design-system/controls";
+import { ObservationalMemoryPanel } from "@ai-matrx/chat/agents/components/observational-memory/ObservationalMemoryPanel";
 import { useOpenObservationalMemoryWindow } from "@/features/overlays/definitions/observationalMemoryWindow.overlay";
 import { MemoryPageFrame } from "./MemoryPageFrame";
 
@@ -15,21 +14,18 @@ export function ObservationalMemoryPage() {
   const conversationId = useSearchParams().get("conversation");
   const open = useOpenObservationalMemoryWindow();
   return (
-    <MemoryPageFrame name="Memory inspector">
-      <EmptyState
-        icon={<Eye />}
-        title="Memory inspector"
-        line="What a conversation remembers, what it cost, and every change."
-        action={
-          <Button
-            variant="primary"
-            icon={<Eye />}
-            onClick={() => open({ initialSelectedConversationId: conversationId })}
-          >
-            Open inspector
-          </Button>
-        }
-      />
+    <MemoryPageFrame
+      name="Memory inspector"
+      fill
+      actions={[
+        {
+          label: "Open as window",
+          icon: AppWindow,
+          onPress: () => open({ initialSelectedConversationId: conversationId }),
+        },
+      ]}
+    >
+      <ObservationalMemoryPanel initialConversationId={conversationId} />
     </MemoryPageFrame>
   );
 }

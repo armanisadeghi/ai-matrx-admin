@@ -15,8 +15,6 @@
 import { useEffect } from "react";
 import {
   FLOATING_BOTTOM_SELECTOR,
-  FLOATING_FIXED_MEASURED_VAR,
-  FLOATING_FOLLOWS_PAGE_ATTR,
   FLOATING_MEASURED_VAR,
   floatingBottomBoxes,
   measureFloatingClearance,
@@ -41,7 +39,6 @@ export default function FloatingClearanceSync() {
     // the value must be right the moment the tab is shown.
     let timer: ReturnType<typeof setTimeout> | null = null;
     let lastPublished = -1;
-    let lastFixed = -1;
     let lastFoot = -1;
     const observed = new Set<Element>();
     const resizeObserver = new ResizeObserver(() => schedule());
@@ -59,14 +56,6 @@ export default function FloatingClearanceSync() {
       if (value !== lastPublished) {
         lastPublished = value;
         root.style.setProperty(FLOATING_MEASURED_VAR, `${value}px`);
-      }
-      const fixed = measureFloatingClearance(
-        boxes.filter((box) => !box.element.hasAttribute(FLOATING_FOLLOWS_PAGE_ATTR)),
-        window.innerHeight,
-      );
-      if (fixed !== lastFixed) {
-        lastFixed = fixed;
-        root.style.setProperty(FLOATING_FIXED_MEASURED_VAR, `${fixed}px`);
       }
       // Scrollers inside floating windows take their own runway under whatever overlaps them.
       syncWindowScrollerRunways(boxes);
@@ -133,7 +122,6 @@ export default function FloatingClearanceSync() {
       window.removeEventListener("resize", schedule);
       window.visualViewport?.removeEventListener("resize", schedule);
       root.style.removeProperty(FLOATING_MEASURED_VAR);
-      root.style.removeProperty(FLOATING_FIXED_MEASURED_VAR);
       root.style.removeProperty(PAGE_FOOT_VAR);
     };
   }, []);

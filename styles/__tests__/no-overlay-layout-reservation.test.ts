@@ -1,8 +1,8 @@
 /**
- * THE LAW THIS GUARDS (2026-09-13): a global fixed notice must not hide the
- * last actionable content. The schedule singleton publishes compact/expanded
- * presence and the actual shell scroll owner reserves responsive runway. This
- * must remain state-driven rather than a measured height feedback loop.
+ * THE LAW THIS GUARDS (2026-09-13, re-ruled 2026-10-20): a global fixed notice
+ * must not hide the last actionable content — and it never moves the page to
+ * avoid it. The notice publishes compact/expanded presence and anchors ITSELF
+ * above table navigation; the page keeps only its ordinary trailing runway.
  *
  * Static assertion over the CSS source: jsdom cannot evaluate these stylesheets.
  */
@@ -25,22 +25,12 @@ const BANNER_TSX = stripComments(
 );
 
 describe("global fixed alerts preserve reachable page actions", () => {
-  it("reserves responsive runway on the shared shell scroll owner", () => {
-    expect(SHELL_CSS).toContain(":root[data-admin-attention=\"compact\"]");
-    expect(SHELL_CSS).toContain(":root[data-admin-attention=\"expanded\"]");
-    expect(SHELL_CSS).toContain("padding-bottom: var(--shell-fixed-alert-clearance)");
-    expect(SHELL_CSS).toContain("36dvh");
-    expect(SHELL_CSS).toContain("@media (min-width: 640px)");
-  });
-
-  it("uses one alarm runway on mobile natural pages and none on the admin outer shell", () => {
-    expect(SHELL_CSS).toContain(':root[data-admin-attention] .shell-main {');
-    // The floating clearance is the ONLY bottom reserve for the mobile dock.
+  it("reserves nothing for the alarm — it floats, the page never makes room (2026-10-20)", () => {
+    expect(SHELL_CSS).not.toContain("--shell-fixed-alert-clearance");
+    expect(SHELL_CSS).not.toMatch(/:root\[data-admin-attention(="[a-z]+")?\]\s+\.shell-main\b[^{]*\{/);
+    // The floating clearance is the ONLY bottom reserve for the mobile dock, and only as trailing runway.
     expect(SHELL_CSS).not.toContain("[data-show-dock] .shell-main");
     expect(SHELL_CSS).toContain("overflow: clip");
-    expect(SHELL_CSS).toContain(
-      ':root[data-admin-attention] .shell-root[data-pathname^="/administration"] .shell-main::after',
-    );
   });
 
   it("the alarm publishes semantic state, not a measured height", () => {
@@ -53,8 +43,6 @@ describe("global fixed alerts preserve reachable page actions", () => {
     expect(BANNER_TSX).toContain("useDock(");
     expect(BANNER_TSX).toContain("SNOOZE_CHOICES");
     expect(BANNER_TSX).toContain("DEFAULT_SNOOZE");
-    const toast = readFileSync(join(__dirname, "..", "..", "components", "ui", "toast.tsx"), "utf8");
-    expect(toast).toContain("bottom-[var(--shell-fixed-alert-clearance,0px)]");
   });
 
   it("anchors the unpositioned dock above canonical table summary totals", () => {
