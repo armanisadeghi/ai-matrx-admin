@@ -112,7 +112,15 @@ try {
     await scrollTo("[data-xml-section='info']");
     await shot("02-split");
   }
-  await mode("Read");
+  if (PHONE) {
+    // The phone header is an Edit/Read switch: name what it offers, then take Read.
+    results.phoneModes = await page.evaluate(() =>
+      [...document.querySelectorAll("header button, [role='radiogroup'] [role='radio']")].map((b) => b.getAttribute("aria-label") || b.textContent.trim()).filter(Boolean).slice(0, 12));
+    const read = page.getByRole("button", { name: /^(Read|Reading|Preview|View)/i }).or(page.getByRole("radio", { name: /^(Read|Reading|Preview)/i })).first();
+    await read.tap().catch(() => read.click());
+  } else {
+    await mode("Read");
+  }
   await sleep(2000);
   results.read = await sections();
   await scrollTo("[data-xml-section='info']");
