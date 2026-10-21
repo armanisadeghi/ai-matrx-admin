@@ -51,7 +51,9 @@ import { codeHighlighting } from "./code-highlight";
 import { spacePanel, spaceSelectionActions } from "./selection-format";
 import { SYNCED_CLIP } from "./synced-block";
 import { SuggestionCard, suggestMode } from "./suggest";
-import { useRubberBand } from "./rubber-band";
+import { selectBlocks, useRubberBand } from "./rubber-band";
+import { applyLastColor, openBlockMenu, pageBlockIds, selectAllStep } from "./notion-keys";
+import { MobileBlockBar, useLongPressBlockMenu } from "./mobile-bar";
 import { CalloutIconHost } from "./callout-block";
 import { dateChoices } from "./date-mention";
 import { spacesSchema, type SpacesEditor } from "./schema";
@@ -276,6 +278,7 @@ export function SpaceEditor({ spaceId, initialBlocks, editable, onChange, slash,
   }, [editor, onReady]);
 
   useRubberBand(editor, editable);
+  useLongPressBlockMenu(editor, editable);
 
   // THE ONE SELECTION TOOLBAR (components/selection-toolbar) serves this editor: Copy first (the common pair),
   // then these registered actions — the inline styles, Ask AI and Comment. BlockNote's own formatting bubble is
@@ -364,11 +367,38 @@ export function SpaceEditor({ spaceId, initialBlocks, editable, onChange, slash,
             menu.askAi();
           }
         }
-        // Escape with text selected drops the selection, so the selection toolbar goes with it
-        // (it used to stay up with nothing selected). Menus that are open take Escape first.
-        if (e.key === "Escape" && !e.defaultPrevented && !document.querySelector(".bn-suggestion-menu, [role='menu']")) {
-          const { from, to } = editor.prosemirrorState.selection;
-          if (from !== to) editor.setTextCursorPosition(editor.getTextCursorPosition().block, "end");
+        // B7 — Esc selects the block the caret is in (or the blocks the selection spans), blue, the caret
+        // gone, so the selection toolbar goes too. Menus that are open take Escape first.
+        if (e.key === "Escape" && !e.defaultPrevented && editable && !document.querySelector(".bn-suggestion-menu, [role='menu']")) {
+          const id = currentBlockId(editor);
+          if (id && selectBlocks(selectedOrCurrent(editor, id))) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }
+        const mod = (e.metaKey || e.ctrlKey) && !e.altKey;
+        // B7 — Cmd+Shift+H: the last text or highlight color used, on the selected words.
+        if (mod && e.shiftKey && e.key.toLowerCase() === "h" && editable && applyLastColor(editor)) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        // B7 — Cmd+/: the block menu of the current block (Turn into, Color, Duplicate…).
+        if (mod && !e.shiftKey && (e.key === "/" || e.code === "Slash") && editable) {
+          const id = currentBlockId(editor);
+          if (id && openBlockMenu(editor, id)) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }
+        // B7 — Cmd+A: the current block's text first, then every block on the page (Notion's order).
+        if (mod && !e.shiftKey && e.key.toLowerCase() === "a" && !document.querySelector(".bn-suggestion-menu")) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (selectAllStep(editor) === "page" && !selectBlocks(pageBlockIds(editor))) {
+            // A read-only page has no block selection: the browser's select-all of the text.
+            const dom = editor.prosemirrorView?.dom;
+            if (dom) window.getSelection()?.selectAllChildren(dom);
+          }
         }
       }}
       onMouseUp={(e) => {
@@ -489,6 +519,7 @@ export function SpaceEditor({ spaceId, initialBlocks, editable, onChange, slash,
     {pasted ? <PasteUrlMenu editor={editor} pasted={pasted} onClose={() => setPasted(null)} /> : null}
     {editable ? <MediaPickerHost /> : null}
     {editable ? <AppletPickerHost /> : null}
+    {editable ? <MobileBlockBar editor={editor} /> : null}
     <SuggestionCard getView={() => editor.prosemirrorView ?? null} canResolve={editable} />
     </div>
     </PageOfBlocksProvider>

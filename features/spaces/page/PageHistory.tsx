@@ -32,6 +32,7 @@ export function Preview({ blocks, depth = 0, titleOf }: { blocks: SpaceBlock[]; 
         const t = text(b);
         const level = b.type === "heading" ? Number(b.props?.level ?? 1) : 0;
         return (
+          // tree-indent-ok: a read-only preview of document text (nested blocks of one saved page), not a navigable tree - no rows, icons or disclosure
           <div key={b.id} style={{ paddingLeft: depth * 20 }}>
             {t ? (
               <p className="spaces-history-line" data-level={level || undefined} data-type={b.type}>
@@ -132,7 +133,7 @@ export function PageHistory({
                 >
                   <span className="flex flex-1 flex-col text-left">
                     <span>{new Date(r.savedAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
-                    <span className="type-secondary text-muted-foreground">{r.savedBy && r.savedBy === me ? "You" : "A member"}</span>
+                    <span className="type-secondary text-muted-foreground">{r.savedBy && r.savedBy === me ? "You" : r.savedByName || "A collaborator"}</span>
                   </span>
                   {i === 0 ? <span className="type-secondary text-muted-foreground">Current</span> : null}
                 </div>

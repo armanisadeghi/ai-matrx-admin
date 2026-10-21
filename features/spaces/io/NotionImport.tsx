@@ -382,6 +382,11 @@ export function NotionImportHost({ children }: { children: ReactNode }) {
   );
 }
 
+/** The door when a <NotionImportHost> is mounted, else null (a published site renders pages without one). */
+export function useOptionalNotionImportDoor(): Door | null {
+  return useContext(DoorContext);
+}
+
 export function useNotionImportDoor(): Door {
   const door = useContext(DoorContext);
   if (!door) throw new Error("useNotionImportDoor needs <NotionImportHost> (SpacesWorkspace mounts it)");
