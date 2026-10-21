@@ -494,3 +494,33 @@ describe("product marks (owner, 2026-10-20: Google's way)", () => {
     expect(css).not.toContain(".mf-glyph");
   });
 });
+
+describe("the lineup follows the owner's tree (common-docs/projects/app-frame/TREE.md)", () => {
+  it("families and tiles, in order", () => {
+    const byFamily = PRODUCT_FAMILIES.map((f) => [
+      f.label,
+      PRODUCTS.filter((p) => p.family === f.id).map((p) => p.name),
+    ]);
+    expect(byFamily).toEqual([
+      ["Yours", ["Home", "Workspace", "Chat"]],
+      ["Memory", ["Memory"]],
+      ["Build", ["Intelligence", "Masterwork", "Applets", "Code", "Connectors"]],
+      ["Productivity", ["Docs", "Data", "Drive", "Media", "Audio"]],
+      ["Business", ["CRM", "HR", "Marketing", "Meet", "Messages", "Business Tools"]],
+      ["Solutions", ["Education", "Legal", "Medical", "E-Commerce", "Other"]],
+      ["More", ["More"]],
+    ]);
+  });
+
+  it("Memory's sidebar mirrors the tree, and its mark is its own", () => {
+    const memory = PRODUCTS.find((p) => p.id === "memory")!;
+    expect(memory.menu.map((s) => [s.label ?? "", s.items.map((i) => i.label)])).toEqual([
+      ["", ["Ask & search", "Topics", "Everything", "Concepts"]],
+      ["Research", ["Research", "Library", "Sources", "Graph, extractions, data stores"]],
+      ["", ["Capture", "Forget & archive", "Advanced"]],
+    ]);
+    const intelligence = PRODUCTS.find((p) => p.id === "intelligence")!;
+    expect(memory.icon).not.toBe(intelligence.icon);
+    expect(PRODUCTS.filter((p) => p.icon === memory.icon)).toHaveLength(1);
+  });
+});
