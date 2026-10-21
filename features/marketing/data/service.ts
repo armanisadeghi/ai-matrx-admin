@@ -1,4 +1,5 @@
 import { dateFilter } from "./date-bounds";
+import { isExpiringCdnUrl, rehostBrandAsset } from "@/features/marketing/lib/asset-rehost";
 import { marketingProperties, toRelationUsage, type RelationUsage } from "./relation-usage";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import { applyHiddenView, type HiddenView } from "@/features/access-gate/service/hiddenByMe";
@@ -4340,7 +4341,12 @@ export async function createBrandAsset(
     })
     .select(BRAND_ASSET_COLUMNS)
     .single();
-  return assertData(response.data, response.error);
+  const created = assertData(response.data, response.error);
+  // A provider-CDN picture (Facebook, Instagram) expires: file it in our own file service now, while its link works.
+  if (!created.file_id && isExpiringCdnUrl(created.source_url)) {
+    void rehostBrandAsset(created.id, input.organizationId);
+  }
+  return created;
 }
 
 export async function updateBrandAsset(

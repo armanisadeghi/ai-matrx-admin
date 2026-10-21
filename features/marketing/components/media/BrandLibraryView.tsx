@@ -9,8 +9,10 @@
  */
 
 import { useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   CircleOff,
+  RefreshCw,
   Globe,
   FileVideo,
   ImageIcon,
@@ -38,7 +40,9 @@ import { BrandAssetEditorDialog } from "@/features/marketing/components/brands/B
 import { AssetImageEditorDialog } from "@/features/marketing/components/media/AssetImageEditorDialog";
 import { BrandAssetDetailDialog } from "@/features/marketing/components/media/BrandAssetDetail";
 import type { SiteMediaStandards } from "@/features/marketing/data/media-library";
+import { assetImageExpired, isExpiringCdnUrl as isExpiringHost, rehostBrandAsset } from "@/features/marketing/lib/asset-rehost";
 import {
+  marketingKeys,
   useBrandAssets,
   useCreateBrandAsset,
   useDeleteBrandAsset,
@@ -287,7 +291,7 @@ function AssetTile({
         </div>
       ) : preview ? (
         <div className="flex aspect-[4/3] items-center justify-center bg-muted/40 p-2">
-          <PreviewImage src={preview} alt={asset.title ?? asset.kind} />
+          <PreviewImage src={preview} alt={asset.title ?? asset.kind} asset={asset} />
         </div>
       ) : asset.kind === "portal" && asset.source_url ? (
         <OutboundLink
@@ -635,14 +639,40 @@ export function BrandLibraryView({
   );
 }
 
-/** An asset's own picture; when the source cannot be fetched it says so instead of showing broken-image alt text. */
-function PreviewImage({ src, alt }: { src: string; alt: string }) {
+/**
+ * An asset's own picture. When its provider link has expired (Facebook / Instagram CDN) it says "Image expired" with
+ * a Refresh that files the picture in our file service while the link works; when it cannot be fetched for any other
+ * reason it says so instead of showing broken-image alt text.
+ */
+function PreviewImage({ src, alt, asset }: { src: string; alt: string; asset: BrandAsset }) {
   const [failed, setFailed] = useState(false);
-  if (failed) {
+  const [refreshing, setRefreshing] = useState(false);
+  const queryClient = useQueryClient();
+  const expired = assetImageExpired(asset);
+  if (failed || expired) {
+    const refresh = async () => {
+      setRefreshing(true);
+      const result = await rehostBrandAsset(asset.id, asset.organization_id);
+      setRefreshing(false);
+      if (result.status === "rehosted" || result.status === "already_durable") {
+        void queryClient.invalidateQueries({ queryKey: marketingKeys.root });
+      } else if (result.status === "expired") {
+        toast.error("The provider link has expired and cannot be saved. Run Smart Add enrich on this brand to fetch a fresh picture.");
+        void queryClient.invalidateQueries({ queryKey: marketingKeys.root });
+      } else {
+        toast.error(result.reason ?? "The picture could not be saved.");
+      }
+    };
     return (
       <span className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
         <CircleOff className="h-5 w-5" aria-hidden />
-        Image unavailable
+        {expired ? "Image expired" : "Image unavailable"}
+        {expired || isExpiringHost(asset.source_url) ? (
+          <Button variant="outline" onClick={refresh} disabled={refreshing}>
+            {refreshing ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <RefreshCw className="h-3.5 w-3.5" aria-hidden />}
+            Refresh
+          </Button>
+        ) : null}
       </span>
     );
   }
