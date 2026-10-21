@@ -820,6 +820,17 @@ route	tree node	how found today	note
 /meetings	BUSINESS › Meet	menu: Communications › Meetings	meetings
 /meetings/[id]	BUSINESS › Meet	opened from a list (under menu: Communications › Meetings)	meetings
 /meetings/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
+/memory	Memory	menu: Memory	Memory home (hub of every section)
+/memory/agent-memory	Memory › Everything	menu: Memory › Everything › Agent memories	Agent Memory window as a page (chat.agent_memory)
+/memory/capture	Memory › Capture	menu: Memory › Capture	placeholder (memory.capture) + doors to every capture path
+/memory/concepts	Memory › Concepts	menu: Memory › Concepts	placeholder (memory.concepts); links the knowledge graph
+/memory/embeddings	Memory › Advanced	menu: Memory › Advanced › Embedding Lab	door to the dev-only Embedding Lab
+/memory/everything	Memory › Everything	menu: Memory › Everything	placeholder (memory.everything); links Drive all files
+/memory/lab	Memory › Advanced	menu: Memory › Advanced › Memory Lab	door to the admin Memory Lab
+/memory/my-memory	Memory › Everything	menu: Memory › Everything › My memory	users.user_memory; same as Settings › AI › Memory
+/memory/observational	Memory › Advanced	menu: Memory › Advanced › Memory inspector	observational memory window as a page
+/memory/topics	Memory › Topics	menu: Memory › Topics	placeholder (memory.topics); links research topics
+/memory/trash	Memory › Forget & archive	menu: Memory › Forget & archive	library trash; links /knowledge/trash and Drive trash
 /messages	BUSINESS › Messages	menu: Communications	
 /messages-showcase	MORE	listed on the /messages/admin map	+ messages showcase (demo)
 /messages/[conversationId]	BUSINESS › Messages	opened from a list (under menu: Communications)	

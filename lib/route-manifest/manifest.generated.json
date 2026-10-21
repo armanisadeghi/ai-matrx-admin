@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1566,
+  "routeCount": 1577,
   "routes": [
     {
       "pattern": "/",
@@ -5939,6 +5939,65 @@
       "pattern": "/meetings/speed-test",
       "status": "live",
       "source": "app/(core)/meetings/speed-test/page.tsx"
+    },
+    {
+      "pattern": "/memory",
+      "status": "live",
+      "source": "app/(core)/memory/page.tsx"
+    },
+    {
+      "pattern": "/memory/agent-memory",
+      "status": "live",
+      "source": "app/(core)/memory/agent-memory/page.tsx"
+    },
+    {
+      "pattern": "/memory/capture",
+      "status": "placeholder",
+      "source": "app/(core)/memory/capture/page.tsx",
+      "promiseKey": "memory.capture"
+    },
+    {
+      "pattern": "/memory/concepts",
+      "status": "placeholder",
+      "source": "app/(core)/memory/concepts/page.tsx",
+      "promiseKey": "memory.concepts"
+    },
+    {
+      "pattern": "/memory/embeddings",
+      "status": "live",
+      "source": "app/(core)/memory/embeddings/page.tsx"
+    },
+    {
+      "pattern": "/memory/everything",
+      "status": "placeholder",
+      "source": "app/(core)/memory/everything/page.tsx",
+      "promiseKey": "memory.everything"
+    },
+    {
+      "pattern": "/memory/lab",
+      "status": "live",
+      "source": "app/(core)/memory/lab/page.tsx"
+    },
+    {
+      "pattern": "/memory/my-memory",
+      "status": "live",
+      "source": "app/(core)/memory/my-memory/page.tsx"
+    },
+    {
+      "pattern": "/memory/observational",
+      "status": "live",
+      "source": "app/(core)/memory/observational/page.tsx"
+    },
+    {
+      "pattern": "/memory/topics",
+      "status": "placeholder",
+      "source": "app/(core)/memory/topics/page.tsx",
+      "promiseKey": "memory.topics"
+    },
+    {
+      "pattern": "/memory/trash",
+      "status": "live",
+      "source": "app/(core)/memory/trash/page.tsx"
     },
     {
       "pattern": "/messages",

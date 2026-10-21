@@ -19,6 +19,41 @@ import { EDITOR_MENU_COMING_SOON } from "./editor-menus";
 export const COMING_SOON: Record<string, ComingSoonEntry> = {
   // Every Google Sheets / Docs / Slides menu row the editors cannot run yet (editor-menus.ts).
   ...EDITOR_MENU_COMING_SOON,
+  // Matrx Memory (Arman, 2026-10-20: Memory replaces Knowledge; not-built parts of
+  // the Memory tree get a placeholder page). Tree: common-docs/projects/app-frame/TREE.md.
+  "memory.topics": {
+    id: "memory.topics",
+    label: "Topics",
+    owner: "memory",
+    promise: "Your named topics, the ones Memory suggests, and your research topics in one list.",
+    stage: "planned",
+    surfaces: ["/memory/topics"],
+  },
+  "memory.concepts": {
+    id: "memory.concepts",
+    label: "Concepts",
+    owner: "memory",
+    promise: "The people, places and ideas in everything you keep, and how they connect.",
+    stage: "planned",
+    // Closest built thing today: the knowledge graph at /knowledge/graph.
+    surfaces: ["/memory/concepts"],
+  },
+  "memory.capture": {
+    id: "memory.capture",
+    label: "Capture",
+    owner: "memory",
+    promise: "One place to bring anything into Memory: files, apps, web pages, photos and meetings.",
+    stage: "planned",
+    surfaces: ["/memory/capture"],
+  },
+  "memory.everything": {
+    id: "memory.everything",
+    label: "Everything",
+    owner: "memory",
+    promise: "Every item Memory holds in one list, with recents, starred, shared, folders and trash.",
+    stage: "planned",
+    surfaces: ["/memory/everything"],
+  },
   "agents.admin-masterwork-from-chat": {
     id: "agents.admin-masterwork-from-chat",
     label: "Masterwork from a person's chat",

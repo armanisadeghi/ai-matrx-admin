@@ -260,7 +260,8 @@ const DOMAIN_ORDER = [
   "Workflows",
   "Intelligence",
   "Masterwork",
-  "Knowledge",
+  // Arman, 2026-10-20: "Memory" replaces "Knowledge" (Matrx Memory); same menu, same place.
+  "Memory",
   "Content",
   "Data",
   "Files",
@@ -580,6 +581,8 @@ const GUEST_OK_SINCE_DOMAIN_TREE: readonly string[] = [
   "/marketing/social",
   "/marketing/tools/domain",
   "/medical",
+  // The Memory home serves a guest the Knowledge landing, like /knowledge/hub.
+  "/memory",
   "/print/branded-qr",
   "/print/zpl",
   "/search",
@@ -742,8 +745,8 @@ describe("main menu — nothing is lost", () => {
     expect(owner("/tools/product-capture")).toBe("Industries");
   });
 
-  it("never gives Knowledge the database icon (Data owns it)", () => {
-    expect(topItem("Knowledge").iconName).not.toBe("Database");
+  it("never gives Memory (was Knowledge) the database icon (Data owns it)", () => {
+    expect(topItem("Memory").iconName).not.toBe("Database");
     expect(topItem("Data").iconName).toBe("Database");
     const icons = primaryNavItems.map((item) => item.iconName);
     expect(icons.length).toBe(new Set(icons).size);
