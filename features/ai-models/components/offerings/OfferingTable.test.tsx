@@ -99,6 +99,11 @@ jest.mock("@/components/ui/alert-dialog", () => ({
   AlertDialogTitle: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
+const confirmMock = jest.fn();
+jest.mock("@/components/dialogs/confirm/ConfirmDialogHost", () => ({
+  confirm: (...args: unknown[]) => confirmMock(...args),
+}));
+
 import OfferingTable from "./OfferingTable";
 
 const offering = {
@@ -134,7 +139,7 @@ describe("OfferingTable", () => {
   const onCreate = jest.fn();
   const onRetry = jest.fn();
   const onSelect = jest.fn();
-  const onDelete = jest.fn();
+  const onDelete = jest.fn(async () => undefined);
 
   beforeEach(async () => {
     tableProps = null;
@@ -187,7 +192,6 @@ describe("OfferingTable", () => {
       "output_price",
       "is_available",
       "usage_basis",
-      "custom-actions",
     ]);
     for (const id of [
       "priority",
@@ -230,23 +234,19 @@ describe("OfferingTable", () => {
     expect(onCreate).toHaveBeenCalledTimes(1);
     expect(onSelect).toHaveBeenCalledWith(offering);
 
-    const deleteButton = host.querySelector(
-      "button[aria-label='Delete offering for Endpoint One']",
-    ) as HTMLButtonElement;
-    await act(async () => deleteButton.click());
-    expect(host.querySelector("[role='dialog']")).not.toBeNull();
+    const deleteVerb = tableProps.rowActionDefs?.find((def) => def.id === "delete");
+    if (!deleteVerb) throw new Error("Offering table has no Delete row action");
 
-    const cancelButton = [...host.querySelectorAll("button")].find(
-      (button) => button.textContent === "Cancel",
-    );
-    await act(async () => cancelButton?.click());
+    confirmMock.mockResolvedValueOnce(false);
+    await act(async () => deleteVerb.onClick(offering, {} as never));
+    expect(confirmMock).toHaveBeenCalledTimes(1);
     expect(onDelete).not.toHaveBeenCalled();
 
-    await act(async () => deleteButton.click());
-    const confirmButton = [...host.querySelectorAll("button")].find(
-      (button) => button.textContent === "Delete Offering",
-    );
-    await act(async () => confirmButton?.click());
+    confirmMock.mockResolvedValueOnce(true);
+    await act(async () => deleteVerb.onClick(offering, {} as never));
+    await act(async () => Promise.resolve());
     expect(onDelete).toHaveBeenCalledWith(offering);
+    // The bar's twin is declared with it: the table is given a selection.
+    expect(tableProps.selection).toBeDefined();
   });
 });
