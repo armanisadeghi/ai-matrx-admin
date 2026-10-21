@@ -1,5 +1,7 @@
 -- AT-SHARE / row 3 — THE ACTIVITY FEED OF A TABLE AND OF A HOME (custom.base_activity).
 -- Seats: admin@admin.com (owner), test@test.com (outside the organization). RED: run before the migration (the door is absent).
+-- ORG-CLEANUP (2026-10-18): the suite only asserts, so it builds inside one transaction and leaves nothing.
+begin;
 do $green$
 declare
   c_admin   constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';
@@ -76,3 +78,4 @@ begin
   raise notice 'AT-SHARE row 3 GREEN';
 end;
 $green$;
+rollback;

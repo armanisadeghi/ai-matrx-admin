@@ -8,6 +8,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { fixtureOrg } from "./lib/use-case-org.mjs";
 
 const ROOT = resolve(new URL(".", import.meta.url).pathname, "..");
 const env = Object.fromEntries(
@@ -24,9 +25,10 @@ const { error: signErr } = await sb.auth.signInWithPassword(seat);
 if (signErr) throw signErr;
 const NAME = "Coastal Pool Service";
 if (cmd === "setup") {
-  const slug = `coastal-pool-service-${Date.now().toString(36)}`;
-  const { data: org, error } = await sb.rpc("org_create", { p_name: NAME, p_slug: slug, p_description: "Residential pool cleaning and repair, north county" });
-  if (error) throw error;
+  // ONE standing organization found by slug (created once), never one per run.
+  const slug = "coastal-pool-service-scope-admin-2";
+  const { org } = await fixtureOrg(sb, { name: NAME, slug, description: "Residential pool cleaning and repair, north county",
+    settings: { test_fixture: true, fixture_marker: "standing:scope-admin-2" } });
   const orgId = org.id ?? org.organization_id ?? org;
   // The scope store doors (FTS-1g: the old create_scope_type / create_scope RPCs were dropped 2026-10-05).
   const { data: typeAnswer, error: e2 } = await sb.schema("custom").rpc("context_type_write", { p_organization_id: orgId, p_type_id: null, p_spec: { label_singular: "Service Route", label_plural: "Service Routes", description: "Weekly cleaning routes" } });

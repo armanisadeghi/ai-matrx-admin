@@ -65,6 +65,8 @@ grant select on shb to authenticated;
 grant select, insert on shb_out, shb_time to authenticated;
 
 -- ══ THE FIXTURE ══════════════════════════════════════════════════════════════════════════════
+-- ORG-CLEANUP (2026-10-18): the suite only asserts, so it builds inside one transaction and leaves nothing.
+begin;
 do $fixture$
 declare
   c_admin   constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';   -- admin@admin.com

@@ -2,6 +2,8 @@
 -- Priya Raman (admin@admin.com, Harbor & Pine Creative) sends Northwind Outfitters the Client Approval board; she adds a password so a forwarded
 -- link is no use to a stranger, and an end date for the campaign.
 -- RED before viewlink2 is applied, green after. One transaction, always ROLLBACK (scripts/campaign-tests/viewlink_run.py).
+-- ORG-CLEANUP (2026-10-18): the suite only asserts, so it builds inside one transaction and leaves nothing.
+begin;
 do $t$
 declare
   c_admin constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';   -- admin@admin.com, the agency owner
@@ -189,3 +191,4 @@ begin
   raise notice 'VIEWLINK2 GREEN - every part passed.';
 end
 $t$;
+rollback;

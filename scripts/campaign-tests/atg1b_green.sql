@@ -6,6 +6,8 @@
 --   3 a confidential column is charted (sum/group) or its values appear   4 a stranger / unshared / draft-only chart answers
 -- Runs inside one transaction and always ends in ROLLBACK (scripts/campaign-tests/viewlink_run.py <this> [<migration>]).
 
+-- ORG-CLEANUP (2026-10-18): the suite only asserts, so it builds inside one transaction and leaves nothing.
+begin;
 do $t$
 declare
   c_admin constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';
@@ -117,3 +119,4 @@ begin
   raise notice '4 PASS - unshared, stranger, draft-only and unknown charts answer nothing.';
 end
 $t$;
+rollback;

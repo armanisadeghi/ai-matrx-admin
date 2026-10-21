@@ -15,6 +15,8 @@
 --   6 the maker is not named in the list; the view count does not rise on a read
 -- Runs inside one transaction and always ends in ROLLBACK (scripts/campaign-tests/viewlink_run.py).
 
+-- ORG-CLEANUP (2026-10-18): the suite only asserts, so it builds inside one transaction and leaves nothing.
+begin;
 do $t$
 declare
   c_admin constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';   -- admin@admin.com, the agency owner
@@ -198,3 +200,4 @@ begin
   raise notice 'VIEWLINK GREEN - every part passed.';
 end
 $t$;
+rollback;

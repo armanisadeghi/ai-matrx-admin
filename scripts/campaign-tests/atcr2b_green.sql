@@ -1,6 +1,8 @@
 -- LANE CHART-READ-2 (b) - a chart counts each part of a many-value column (Airtable); the grid group-by keeps the exact combination;
 -- an outsider's chart filter on a masked column (or a formula over it) is refused. RED before atcr2_b, GREEN after (viewlink_run.py).
 
+-- ORG-CLEANUP (2026-10-18): the suite only asserts, so it builds inside one transaction and leaves nothing.
+begin;
 do $t$
 declare
   c_admin constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';
@@ -138,3 +140,4 @@ begin
   if custom.interface_chart(v_if, 'c-topics') is not null then raise exception 'S: a stranger read a chart'; end if;
 end
 $t$;
+rollback;

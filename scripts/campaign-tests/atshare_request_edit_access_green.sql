@@ -1,6 +1,8 @@
 -- AT-SHARE / row 2 — A VIEWER ASKS FOR EDIT ACCESS ON A TABLE; THE OWNER APPROVES (grants Edit) OR DECLINES.
 -- Uses the platform's one request primitive (public.access_request_*) on the entity token 'record' (tables and records are custom.record rows).
 -- Seats: admin@admin.com (owner), test@test.com (a viewer from outside the organization).
+-- ORG-CLEANUP (2026-10-18): the suite only asserts, so it builds inside one transaction and leaves nothing.
+begin;
 do $green$
 declare
   c_admin   constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';
@@ -80,3 +82,4 @@ begin
   raise notice 'AT-SHARE row 2 GREEN';
 end;
 $green$;
+rollback;

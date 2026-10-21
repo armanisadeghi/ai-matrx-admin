@@ -1,4 +1,6 @@
 -- AT-SHARE / row 4 — COLLABORATOR "NOTIFY WHEN ASSIGNED". Seat: admin@admin.com (owner), who assigns test@test.com (the Collaborator). RED: before the migration the door is absent.
+-- ORG-CLEANUP (2026-10-18): the suite only asserts, so it builds inside one transaction and leaves nothing.
+begin;
 do $green$
 declare
   c_admin constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';
@@ -47,3 +49,4 @@ begin
   raise notice 'AT-SHARE notify-on-assign GREEN';
 end;
 $green$;
+rollback;

@@ -10,6 +10,8 @@
 --   * a "every 15 minutes" schedule saved switched off                    (no blind paid automations)
 -- RED before atauto2_a: part 1 fails ("webhook" is not a trigger). GREEN after it.
 -- Run: uv run python <q.py> this-file (owner connection; the caller wraps it and ROLLS BACK).
+-- ORG-CLEANUP (2026-10-18): the suite only asserts, so it builds inside one transaction and leaves nothing.
+begin;
 do $t$
 declare
   c_admin   constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';   -- admin@admin.com
@@ -189,3 +191,4 @@ begin
   raise notice 'ATAUTO2 GREEN: webhook pipeline (find, if/else, for_each, script wait/resume, update), failed-run notice, versions, 15-minute schedule';
 end
 $t$;
+rollback;

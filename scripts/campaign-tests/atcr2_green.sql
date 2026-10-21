@@ -2,6 +2,8 @@
 -- that reads a column she may not see (directly or through another formula). RED before atcr2_a is applied, GREEN after.
 -- Runs in one transaction that always ends in ROLLBACK (scripts/campaign-tests/viewlink_run.py <this> [<migration>]).
 
+-- ORG-CLEANUP (2026-10-18): the suite only asserts, so it builds inside one transaction and leaves nothing.
+begin;
 do $t$
 declare
   c_admin constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';
@@ -137,3 +139,4 @@ begin
   raise notice '4 PASS - a stranger answers nothing.';
 end
 $t$;
+rollback;

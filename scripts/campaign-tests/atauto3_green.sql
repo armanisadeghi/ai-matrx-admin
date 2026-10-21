@@ -3,6 +3,8 @@
 -- customer's name, and records it on the order. The customer's Tier is a choice: a later step must read "VIP", not a key.
 -- RED before atauto3_a: part 1 reads the stored key, part 2 refuses "run_mandate". GREEN after it.
 -- Run: python3 q.py this-file   (owner connection, rolls back)
+-- ORG-CLEANUP (2026-10-18): the suite only asserts, so it builds inside one transaction and leaves nothing.
+begin;
 do $t$
 declare
   c_admin   constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';
@@ -122,3 +124,4 @@ begin
   raise notice 'ATAUTO3 GREEN';
 end
 $t$;
+rollback;

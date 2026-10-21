@@ -10,6 +10,7 @@
  *   (credentials from the environment: TEST_SEAT_PASSWORD, AI_ADMIN_PASSWORD)
  */
 import { createClient } from "@supabase/supabase-js";
+import { fixtureOrg } from "../lib/use-case-org.mjs";
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -55,21 +56,22 @@ if (process.env.RESET) {
   console.log("reset", t);
   process.exit(0);
 }
-const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "");
-// ORG=<id> reuses an organization a previous run already made.
-const org = process.env.ORG ? { id: process.env.ORG } : must("org_create", await alex.rpc("org_create", {
-  p_name: "Maple Street Community Garden",
-  p_slug: `maple-street-community-garden-${stamp}`,
-  p_description: "Volunteer-run community garden on Maple Street: plots, waitlist and work days.",
-  p_logo_url: null, p_logo_file_id: null, p_website: null, p_settings: {}, p_abbreviation: "MSG",
-}));
-const inv = process.env.ORG ? null : must("inv_create", await alex.rpc("inv_create", {
+// ORG=<id> pins an organization; otherwise the ONE standing fixture organization is found by slug (created once).
+const made = process.env.ORG ? null : await fixtureOrg(alex, {
+  name: "Maple Street Community Garden",
+  slug: "maple-street-community-garden-share-lane",
+  description: "Volunteer-run community garden on Maple Street: plots, waitlist and work days.",
+  abbreviation: "MSG",
+  settings: { test_fixture: true, fixture_marker: "standing:share-lane" },
+});
+const org = process.env.ORG ? { id: process.env.ORG } : made.org;
+const inv = !made?.fresh ? null : must("inv_create", await alex.rpc("inv_create", {
   p_target_type: "organization", p_target_id: org.id, p_email: "admin@admin.com", p_role: "member",
   p_org_id: org.id, p_invited_user_id: null,
   p_expires_at: new Date(Date.now() + 7 * 864e5).toISOString(),
 }));
 if (!process.env.ORG)
-  must("inv_accept", await morgan.rpc("inv_accept", { p_token: inv.token, p_hr_half_handled: false }));
+  if (inv) must("inv_accept", await morgan.rpc("inv_accept", { p_token: inv.token, p_hr_half_handled: false }));
 
 // A Table lives somewhere: the garden's own home (a record in the kernel "Organization" table).
 const home = must("home", await alex.schema("custom").rpc("record_write", {

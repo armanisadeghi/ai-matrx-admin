@@ -12,6 +12,8 @@
 -- Built in disposable organizations inside ONE transaction that the runner rolls back (nothing is left behind).
 -- RED before VERSION-PER-ORG a (every access write moved the platform), GREEN after. A planted missed bump (one
 -- trigger dropped in the same rolled-back transaction) goes RED naming the case.
+-- ORG-CLEANUP (2026-10-18): the suite only asserts, so it builds inside one transaction and leaves nothing.
+begin;
 DO $guard$
 declare
   c_admin constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';   -- admin@admin.com
@@ -137,3 +139,4 @@ begin
   raise notice 'GREEN: % access writes each moved exactly the organizations they touch (and the platform only for platform-wide rules)', v_n;
 end
 $guard$;
+rollback;

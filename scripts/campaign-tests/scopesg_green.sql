@@ -52,6 +52,8 @@ create temp table sg_out (tag text, seat uuid, turn text, digest text, admitted 
 grant select on sg to authenticated;
 
 -- ══ THE FIXTURE ══════════════════════════════════════════════════════════════════════════════
+-- ORG-CLEANUP (2026-10-18): the suite only asserts, so it builds inside one transaction and leaves nothing.
+begin;
 do $fixture$
 declare
   c_admin   constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';   -- admin@admin.com

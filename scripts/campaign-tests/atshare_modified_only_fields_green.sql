@@ -1,4 +1,6 @@
 -- AT-SHARE / row 4 — "Last modified time" LIMITED TO CHOSEN FIELDS. Seat: admin@admin.com. RED: before the migration the column follows the whole record.
+-- ORG-CLEANUP (2026-10-18): the suite only asserts, so it builds inside one transaction and leaves nothing.
+begin;
 do $green$
 declare
   c_admin constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';
@@ -38,3 +40,4 @@ begin
   raise notice 'AT-SHARE modified-time-only-these-fields GREEN';
 end;
 $green$;
+rollback;
