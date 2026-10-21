@@ -1,0 +1,1160 @@
+[
+  {
+    "product": "Memory",
+    "family": "Yours",
+    "summary": "Keep everything you and your agents know, find it, ask about it, and let agents use it. Research a topic, pull in content from the web and your apps, and forget what you want gone.",
+    "entry": "/memory",
+    "sections": [
+      {
+        "name": "Memory home",
+        "route": "/memory",
+        "why": "One front door with a group of doors per section.",
+        "pages": [
+          {
+            "route": "/memory",
+            "title": "Memory",
+            "role": "list",
+            "reachedFrom": [
+              "menu: Memory",
+              "/knowledge (guests)"
+            ],
+            "leadsTo": [
+              "every section"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Ask & search",
+        "route": "/knowledge/hub",
+        "why": "One box over everything you keep; the first thing a person does.",
+        "pages": [
+          {
+            "route": "/knowledge/hub",
+            "title": "Knowledge hub",
+            "role": "list",
+            "reachedFrom": [
+              "menu: Ask & search",
+              "/memory"
+            ],
+            "leadsTo": [
+              "/knowledge/sources/[id]",
+              "/knowledge/transcripts/[id]"
+            ]
+          },
+          {
+            "route": "/search",
+            "title": "Search",
+            "role": "tool",
+            "reachedFrom": [
+              "menu: Web > Search",
+              "/memory"
+            ],
+            "leadsTo": [
+              "/search/experience"
+            ]
+          },
+          {
+            "route": "/search/experience",
+            "title": "Matrx Search",
+            "role": "tool",
+            "reachedFrom": [
+              "menu: Web > Matrx Search",
+              "/memory"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/knowledge/search",
+            "title": "Search Lab",
+            "role": "tool",
+            "reachedFrom": [
+              "menu: Ask & search",
+              "menu: Advanced",
+              "/memory"
+            ],
+            "leadsTo": [
+              "/knowledge/sources/[id]"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Topics",
+        "route": "/memory/topics",
+        "why": "Your named topics; today a placeholder with doors to research topics and data stores.",
+        "pages": [
+          {
+            "route": "/memory/topics",
+            "title": "Topics",
+            "role": "placeholder",
+            "reachedFrom": [
+              "menu: Topics",
+              "/memory"
+            ],
+            "leadsTo": [
+              "/research",
+              "/research/topics/new",
+              "/knowledge/data-stores",
+              "/suggestions"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Everything",
+        "route": "/memory/everything",
+        "why": "All items in one place plus the three memory stores.",
+        "pages": [
+          {
+            "route": "/memory/everything",
+            "title": "Everything",
+            "role": "placeholder",
+            "reachedFrom": [
+              "menu: Everything",
+              "/memory"
+            ],
+            "leadsTo": [
+              "/files/all",
+              "/knowledge/hub",
+              "/files/starred",
+              "/files/shared",
+              "/files/photos",
+              "/memory/trash"
+            ]
+          },
+          {
+            "route": "/memory/my-memory",
+            "title": "My memory",
+            "role": "list",
+            "reachedFrom": [
+              "menu: Everything",
+              "/memory"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/memory/agent-memory",
+            "title": "Agent memories",
+            "role": "tool",
+            "reachedFrom": [
+              "menu: Everything",
+              "/memory"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/knowledge/transcripts/[id]",
+            "title": "Transcript",
+            "role": "record",
+            "reachedFrom": [
+              "a hub row (Open)"
+            ],
+            "leadsTo": [
+              "/knowledge/sources/[id]"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Concepts",
+        "route": "/memory/concepts",
+        "why": "People, places and ideas; a placeholder over the knowledge graph.",
+        "pages": [
+          {
+            "route": "/memory/concepts",
+            "title": "Concepts",
+            "role": "placeholder",
+            "reachedFrom": [
+              "menu: Concepts",
+              "/memory"
+            ],
+            "leadsTo": [
+              "/knowledge/graph",
+              "/suggestions",
+              "/user-settings/voice/dictionary"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Research",
+        "route": "/research",
+        "why": "Deep research on a topic, with 24 pages per topic and news.",
+        "pages": [
+          {
+            "route": "/research",
+            "title": "Research",
+            "role": "list",
+            "reachedFrom": [
+              "menu: Research",
+              "/memory/topics"
+            ],
+            "leadsTo": [
+              "/research/topics"
+            ]
+          },
+          {
+            "route": "/research/topics",
+            "title": "Research topics",
+            "role": "list",
+            "reachedFrom": [
+              "/research (signed in)"
+            ],
+            "leadsTo": [
+              "/research/topics/new",
+              "/research/topics/[topicId]"
+            ]
+          },
+          {
+            "route": "/research/topics/new",
+            "title": "New research",
+            "role": "create",
+            "reachedFrom": [
+              "menu: New Research",
+              "/memory/topics"
+            ],
+            "leadsTo": [
+              "/research/topics/[topicId]"
+            ]
+          },
+          {
+            "route": "/research/topics/[topicId]",
+            "title": "Topic overview",
+            "role": "record",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/keywords",
+            "title": "Keywords",
+            "role": "record",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/keywords/[keywordId]",
+            "title": "Keyword",
+            "role": "record",
+            "reachedFrom": [
+              "a row on its list page"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/youtube",
+            "title": "Videos",
+            "role": "record",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/sources",
+            "title": "Sources",
+            "role": "list",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/sources/[sourceId]",
+            "title": "Source",
+            "role": "record",
+            "reachedFrom": [
+              "a row on its list page"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/content",
+            "title": "Content",
+            "role": "record",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/curate",
+            "title": "Curate",
+            "role": "tool",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/analysis",
+            "title": "Analysis",
+            "role": "report",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/synthesis",
+            "title": "Synthesis",
+            "role": "report",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/document",
+            "title": "Document",
+            "role": "record",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/context",
+            "title": "Context",
+            "role": "settings",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/outputs",
+            "title": "Outputs",
+            "role": "list",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/experts",
+            "title": "Experts",
+            "role": "list",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/social",
+            "title": "Social",
+            "role": "list",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/tasks",
+            "title": "Tasks",
+            "role": "list",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/tags",
+            "title": "Tags",
+            "role": "list",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/tags/[tagId]",
+            "title": "Tag",
+            "role": "record",
+            "reachedFrom": [
+              "a row on its list page"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/media",
+            "title": "Media",
+            "role": "list",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/media/debug",
+            "title": "Media debug",
+            "role": "tool",
+            "reachedFrom": [
+              "a row on its list page"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/costs",
+            "title": "Costs",
+            "role": "report",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/agents",
+            "title": "Agents",
+            "role": "tool",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/intelligence",
+            "title": "Intelligence",
+            "role": "report",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/research/topics/[topicId]/settings",
+            "title": "Topic settings",
+            "role": "settings",
+            "reachedFrom": [
+              "the topic sidebar"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/news",
+            "title": "News",
+            "role": "list",
+            "reachedFrom": [
+              "menu: Research",
+              "/memory"
+            ],
+            "leadsTo": []
+          }
+        ]
+      },
+      {
+        "name": "Library",
+        "route": "/knowledge/library-catalog",
+        "why": "Curated packs to subscribe to, and what AI suggests.",
+        "pages": [
+          {
+            "route": "/knowledge/library-catalog",
+            "title": "Library catalog",
+            "role": "list",
+            "reachedFrom": [
+              "menu: Library",
+              "/memory"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/knowledge/library-curate",
+            "title": "Curate library",
+            "role": "tool",
+            "reachedFrom": [
+              "menu: Library",
+              "/memory"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/suggestions",
+            "title": "Suggestions",
+            "role": "list",
+            "reachedFrom": [
+              "menu: Library",
+              "/memory/topics",
+              "/memory/concepts"
+            ],
+            "leadsTo": []
+          }
+        ]
+      },
+      {
+        "name": "Sources",
+        "route": "/knowledge/library",
+        "why": "Every source, how it got in, and what state it is in.",
+        "pages": [
+          {
+            "route": "/knowledge/library",
+            "title": "Sources",
+            "role": "list",
+            "reachedFrom": [
+              "menu: Sources",
+              "/memory"
+            ],
+            "leadsTo": [
+              "/knowledge/sources/[id]"
+            ]
+          },
+          {
+            "route": "/knowledge/sources/[id]",
+            "title": "Source",
+            "role": "record",
+            "reachedFrom": [
+              "Sources list",
+              "hub rows",
+              "citations"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/acquisition",
+            "title": "Acquisition console",
+            "role": "tool",
+            "reachedFrom": [
+              "menu: Sources",
+              "/memory"
+            ],
+            "leadsTo": [
+              "/acquisition/blocks"
+            ]
+          },
+          {
+            "route": "/acquisition/blocks",
+            "title": "Acquisition blocks",
+            "role": "list",
+            "reachedFrom": [
+              "menu: Sources",
+              "/acquisition"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/knowledge/flow",
+            "title": "Pipeline flow",
+            "role": "report",
+            "reachedFrom": [
+              "menu: Advanced",
+              "/memory"
+            ],
+            "leadsTo": []
+          }
+        ]
+      },
+      {
+        "name": "Graph, extractions, data stores",
+        "route": "/knowledge/graph",
+        "why": "The structured side: entities, extracted datasets, collections.",
+        "pages": [
+          {
+            "route": "/knowledge/graph",
+            "title": "Knowledge graph",
+            "role": "tool",
+            "reachedFrom": [
+              "menu: Concepts",
+              "menu: Research"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/knowledge/extractions",
+            "title": "Extractions",
+            "role": "list",
+            "reachedFrom": [
+              "menu: Research"
+            ],
+            "leadsTo": [
+              "/knowledge/extractions/[id]"
+            ]
+          },
+          {
+            "route": "/knowledge/extractions/[id]",
+            "title": "Extraction",
+            "role": "record",
+            "reachedFrom": [
+              "Extractions list"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/knowledge/data-stores",
+            "title": "Data stores",
+            "role": "list",
+            "reachedFrom": [
+              "menu: Topics",
+              "menu: Research"
+            ],
+            "leadsTo": []
+          }
+        ]
+      },
+      {
+        "name": "Capture",
+        "route": "/memory/capture",
+        "why": "Every way something gets in: upload, apps, web, camera, Scribe, import.",
+        "pages": [
+          {
+            "route": "/memory/capture",
+            "title": "Capture",
+            "role": "placeholder",
+            "reachedFrom": [
+              "menu: Capture",
+              "/memory"
+            ],
+            "leadsTo": [
+              "/files/all",
+              "/connected-sources",
+              "/scraper",
+              "/camera",
+              "/transcripts/scribe",
+              "/files/requests",
+              "/import/ai-chats",
+              "/data/library"
+            ]
+          },
+          {
+            "route": "/exports",
+            "title": "Bring your export",
+            "role": "create",
+            "reachedFrom": [
+              "/memory",
+              "menu: Account"
+            ],
+            "leadsTo": [
+              "/exports/[libraryId]"
+            ]
+          },
+          {
+            "route": "/exports/[libraryId]",
+            "title": "Export library",
+            "role": "record",
+            "reachedFrom": [
+              "Bring your export list"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/scraper",
+            "title": "Web scraper",
+            "role": "tool",
+            "reachedFrom": [
+              "menu: Web",
+              "/memory/capture"
+            ],
+            "leadsTo": [
+              "/scraper/quick",
+              "/scraper/batch",
+              "/scraper/search",
+              "/scraper/search-and-scrape"
+            ]
+          },
+          {
+            "route": "/scraper/quick",
+            "title": "Quick scrape",
+            "role": "tool",
+            "reachedFrom": [
+              "/scraper"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/scraper/batch",
+            "title": "Batch scrape",
+            "role": "tool",
+            "reachedFrom": [
+              "/scraper"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/scraper/search",
+            "title": "Scraper search lab",
+            "role": "tool",
+            "reachedFrom": [
+              "/scraper",
+              "/memory"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/scraper/search-and-scrape",
+            "title": "Search and scrape",
+            "role": "tool",
+            "reachedFrom": [
+              "/scraper"
+            ],
+            "leadsTo": []
+          }
+        ]
+      },
+      {
+        "name": "Forget & archive",
+        "route": "/memory/trash",
+        "why": "Get things back or let them go.",
+        "pages": [
+          {
+            "route": "/memory/trash",
+            "title": "Forget & archive",
+            "role": "list",
+            "reachedFrom": [
+              "menu: Forget & archive",
+              "/memory"
+            ],
+            "leadsTo": [
+              "/files/trash",
+              "/knowledge/trash"
+            ]
+          },
+          {
+            "route": "/knowledge/trash",
+            "title": "Library trash",
+            "role": "list",
+            "reachedFrom": [
+              "/memory/trash"
+            ],
+            "leadsTo": []
+          }
+        ]
+      },
+      {
+        "name": "Advanced",
+        "route": "/memory/observational",
+        "why": "Inspectors, labs and admin maps for the people tuning memory.",
+        "pages": [
+          {
+            "route": "/memory/observational",
+            "title": "Memory inspector",
+            "role": "tool",
+            "reachedFrom": [
+              "menu: Advanced",
+              "/memory"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/memory/lab",
+            "title": "Memory Lab",
+            "role": "tool",
+            "reachedFrom": [
+              "menu: Advanced",
+              "/memory"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/memory/embeddings",
+            "title": "Embedding Lab",
+            "role": "tool",
+            "reachedFrom": [
+              "menu: Advanced",
+              "/memory"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/knowledge/repositories",
+            "title": "Repositories",
+            "role": "list",
+            "reachedFrom": [
+              "menu: Advanced",
+              "/memory"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/knowledge",
+            "title": "Knowledge overview",
+            "role": "report",
+            "reachedFrom": [
+              "menu: Advanced"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/knowledge/about",
+            "title": "About Knowledge",
+            "role": "report",
+            "reachedFrom": [
+              "menu: Advanced"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/knowledge/admin",
+            "title": "Knowledge admin map",
+            "role": "settings",
+            "reachedFrom": [
+              "menu: Advanced"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/knowledge/extractions/admin",
+            "title": "Extractions admin map",
+            "role": "settings",
+            "reachedFrom": [
+              "Extractions admin link"
+            ],
+            "leadsTo": []
+          },
+          {
+            "route": "/compare/old",
+            "title": "Old pages to review",
+            "role": "report",
+            "reachedFrom": [
+              "menu: Advanced"
+            ],
+            "leadsTo": []
+          }
+        ]
+      }
+    ],
+    "journeys": [
+      {
+        "name": "Save a page, find it, ask about it",
+        "steps": [
+          "/memory",
+          "/memory/capture",
+          "/scraper",
+          "/knowledge/library",
+          "/knowledge/sources/[id]",
+          "/knowledge/hub"
+        ]
+      },
+      {
+        "name": "Let an agent use what I know",
+        "steps": [
+          "/memory",
+          "/memory/my-memory",
+          "/memory/agent-memory",
+          "/memory/observational"
+        ]
+      },
+      {
+        "name": "Research a topic",
+        "steps": [
+          "/memory",
+          "/research",
+          "/research/topics/new",
+          "/research/topics/[topicId]",
+          "/research/topics/[topicId]/sources",
+          "/research/topics/[topicId]/synthesis",
+          "/research/topics/[topicId]/document"
+        ]
+      },
+      {
+        "name": "Bring in an AI chat export",
+        "steps": [
+          "/memory",
+          "/memory/capture",
+          "/exports",
+          "/exports/[libraryId]",
+          "/knowledge/library"
+        ]
+      },
+      {
+        "name": "Check how well search finds things",
+        "steps": [
+          "/memory",
+          "/knowledge/hub",
+          "/knowledge/search",
+          "/knowledge/sources/[id]"
+        ]
+      },
+      {
+        "name": "Forget something",
+        "steps": [
+          "/memory",
+          "/knowledge/library",
+          "/memory/trash",
+          "/knowledge/trash"
+        ]
+      }
+    ],
+    "stranded": [],
+    "buried": [
+      {
+        "route": "/knowledge/search",
+        "depth": 2,
+        "why": "The best user tool for understanding search is two clicks down and listed twice",
+        "proposal": "Keep under Ask & search only; drop the Advanced copy"
+      },
+      {
+        "route": "/exports",
+        "depth": 2,
+        "why": "Importing an AI history is a headline capture path but lives in Account and a hub door",
+        "proposal": "Add to the Capture page doors and sidebar"
+      },
+      {
+        "route": "/memory/my-memory",
+        "depth": 2,
+        "why": "The notes every agent reads sit under Everything",
+        "proposal": "Give the three memory stores one front door"
+      },
+      {
+        "route": "/suggestions",
+        "depth": 2,
+        "why": "AI-found links appear under Library, though people expect them under Topics or Concepts",
+        "proposal": "Keep one home, link from both"
+      },
+      {
+        "route": "/knowledge/sources/[id]",
+        "depth": 3,
+        "why": "The one Source screen is only reached by opening a row",
+        "proposal": "Fine; make sure every result links to it"
+      }
+    ],
+    "missingFromTree": [
+      {
+        "name": "Capture",
+        "route": "/memory/capture",
+        "why": "Tree lists uploads, apps, scraper, camera, Scribe, file requests, import; page is a placeholder of doors"
+      },
+      {
+        "name": "Everything (folders, recents, starred, shared, photos)",
+        "route": "/memory/everything",
+        "why": "Tree promises one list; page only links to Drive views"
+      },
+      {
+        "name": "Topics (named and suggested)",
+        "route": "/memory/topics",
+        "why": "Placeholder; no named-topic page exists"
+      },
+      {
+        "name": "Concepts",
+        "route": "/memory/concepts",
+        "why": "Placeholder over the graph"
+      },
+      {
+        "name": "Transcripts",
+        "route": "/transcripts",
+        "why": "Hub door under Research; not in the tree or the menu"
+      },
+      {
+        "name": "Media source catalog",
+        "route": "/libraries",
+        "why": "Hub door; not in the tree"
+      },
+      {
+        "name": "Scopes & context",
+        "route": "/scopes",
+        "why": "Tree lists it under Advanced; no Memory page or menu row"
+      },
+      {
+        "name": "Community library",
+        "route": "/knowledge/library-catalog",
+        "why": "Tree says catalog, curate, community, suggestions; community has no page"
+      },
+      {
+        "name": "How my memory formed",
+        "route": "/memory/agent-memory",
+        "why": "Promised on the hub, not built"
+      }
+    ],
+    "legacy": [
+      {
+        "route": "/rag",
+        "kind": "old copy",
+        "note": "Old address of the matching /knowledge page; page file still exists, nothing in the menu reaches it"
+      },
+      {
+        "route": "/rag/data-stores",
+        "kind": "old copy",
+        "note": "Old address of the matching /knowledge page; page file still exists, nothing in the menu reaches it"
+      },
+      {
+        "route": "/rag/flow",
+        "kind": "old copy",
+        "note": "Old address of the matching /knowledge page; page file still exists, nothing in the menu reaches it"
+      },
+      {
+        "route": "/rag/library",
+        "kind": "old copy",
+        "note": "Old address of the matching /knowledge page; page file still exists, nothing in the menu reaches it"
+      },
+      {
+        "route": "/rag/library-catalog",
+        "kind": "old copy",
+        "note": "Old address of the matching /knowledge page; page file still exists, nothing in the menu reaches it"
+      },
+      {
+        "route": "/rag/repositories",
+        "kind": "old copy",
+        "note": "Old address of the matching /knowledge page; page file still exists, nothing in the menu reaches it"
+      },
+      {
+        "route": "/rag/search",
+        "kind": "old copy",
+        "note": "Old Search Lab address; 11 in-app links still point here"
+      },
+      {
+        "route": "/rag/library/[id]/preview",
+        "kind": "old copy",
+        "note": "Old address of the matching /knowledge page; page file still exists, nothing in the menu reaches it"
+      },
+      {
+        "route": "/rag/viewer/[id]",
+        "kind": "old copy",
+        "note": "Old address of the matching /knowledge page; page file still exists, nothing in the menu reaches it"
+      },
+      {
+        "route": "/rag/admin",
+        "kind": "old copy",
+        "note": "Old address of the matching /knowledge page; page file still exists, nothing in the menu reaches it"
+      },
+      {
+        "route": "/rag/visualization",
+        "kind": "redirect",
+        "note": "Sends to /knowledge/flow"
+      },
+      {
+        "route": "/knowledge/visualization",
+        "kind": "redirect",
+        "note": "Sends to /knowledge/flow"
+      },
+      {
+        "route": "/knowledge-graph",
+        "kind": "redirect",
+        "note": "Permanent redirect to /knowledge/graph"
+      },
+      {
+        "route": "/knowledge/ask",
+        "kind": "redirect",
+        "note": "Sends to the hub in ask mode"
+      },
+      {
+        "route": "/knowledge/viewer/[id]",
+        "kind": "redirect",
+        "note": "Sends to the Source screen"
+      },
+      {
+        "route": "/knowledge/library/[id]/preview",
+        "kind": "redirect",
+        "note": "Sends to the Source screen"
+      },
+      {
+        "route": "/research/tags/[tagId]",
+        "kind": "redirect",
+        "note": "Resolves a tag to its topic-scoped page"
+      },
+      {
+        "route": "/research/topics/[topicId]/documents",
+        "kind": "redirect",
+        "note": "Sends to /document"
+      },
+      {
+        "route": "/scraper/[id]",
+        "kind": "redirect",
+        "note": "Retired task link; sends to /scraper"
+      },
+      {
+        "route": "/compare/old/data-stores",
+        "kind": "bake-off",
+        "note": "Old page kept beside the new one for review; temporary"
+      },
+      {
+        "route": "/compare/old/graph-demo",
+        "kind": "bake-off",
+        "note": "Old page kept beside the new one for review; temporary"
+      },
+      {
+        "route": "/compare/old/knowledge-home",
+        "kind": "bake-off",
+        "note": "Old page kept beside the new one for review; temporary"
+      },
+      {
+        "route": "/compare/old/libraries",
+        "kind": "bake-off",
+        "note": "Old page kept beside the new one for review; temporary"
+      },
+      {
+        "route": "/compare/old/library-catalog",
+        "kind": "bake-off",
+        "note": "Old page kept beside the new one for review; temporary"
+      },
+      {
+        "route": "/compare/old/rag",
+        "kind": "bake-off",
+        "note": "Old page kept beside the new one for review; temporary"
+      },
+      {
+        "route": "/compare/old/sources",
+        "kind": "bake-off",
+        "note": "Old page kept beside the new one for review; temporary"
+      },
+      {
+        "route": "/compare/old/transcripts",
+        "kind": "bake-off",
+        "note": "Old page kept beside the new one for review; temporary"
+      }
+    ],
+    "duplicates": [
+      {
+        "routes": [
+          "/memory/my-memory",
+          "/user-settings"
+        ],
+        "note": "Same memory files also in Settings > AI > Memory"
+      },
+      {
+        "routes": [
+          "/memory/trash",
+          "/knowledge/trash",
+          "/files/trash"
+        ],
+        "note": "Three trash views; two show the same library trash table"
+      },
+      {
+        "routes": [
+          "/memory/topics",
+          "/research"
+        ],
+        "note": "Research topics under Topics and Research on purpose"
+      },
+      {
+        "routes": [
+          "/knowledge/graph",
+          "/memory/concepts"
+        ],
+        "note": "Graph under Concepts and Research on purpose"
+      },
+      {
+        "routes": [
+          "/knowledge/search",
+          "/search",
+          "/scraper/search",
+          "/knowledge/hub"
+        ],
+        "note": "Four search engines"
+      },
+      {
+        "routes": [
+          "/knowledge",
+          "/knowledge/about",
+          "/memory"
+        ],
+        "note": "Three front doors: overview, about (same page), hub"
+      },
+      {
+        "routes": [
+          "/rag/*",
+          "/knowledge/*"
+        ],
+        "note": "Every /rag page is a twin file of a /knowledge page"
+      },
+      {
+        "routes": [
+          "/memory/agent-memory",
+          "/memory/my-memory",
+          "/memory/observational"
+        ],
+        "note": "Three memory stores with no single door"
+      }
+    ]
+  }
+]

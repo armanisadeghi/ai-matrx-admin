@@ -1,0 +1,1992 @@
+[
+ {
+  "product": "CRM",
+  "family": "Business",
+  "summary": "Keep track of people and companies, move deals along, and reach out by email and phone from one place. Chasebox and the outreach inbox show who needs a reply today.",
+  "entry": "/crm",
+  "sections": [
+   {
+    "name": "People & companies",
+    "route": "/crm",
+    "why": "Everyone you know, with import and duplicate clean-up beside them",
+    "pages": [
+     {
+      "route": "/crm",
+      "title": "People & companies",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/crm/[partyId]",
+       "/crm/import",
+       "/crm/duplicates"
+      ]
+     },
+     {
+      "route": "/crm/[partyId]",
+      "title": "Person or company",
+      "role": "record",
+      "reachedFrom": [
+       "/crm"
+      ],
+      "leadsTo": [
+       "/crm/outreach-lists/[listId]",
+       "/crm/duplicates"
+      ]
+     },
+     {
+      "route": "/crm/import",
+      "title": "Import contacts",
+      "role": "create",
+      "reachedFrom": [
+       "/crm"
+      ],
+      "leadsTo": [
+       "/crm"
+      ]
+     },
+     {
+      "route": "/crm/duplicates",
+      "title": "Duplicates",
+      "role": "tool",
+      "reachedFrom": [
+       "/crm",
+       "/crm/[partyId]"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Deals",
+    "route": "/crm/deals",
+    "why": "Money in motion; one list, one record page",
+    "pages": [
+     {
+      "route": "/crm/deals",
+      "title": "Deals",
+      "role": "list",
+      "reachedFrom": [
+       "menu",
+       "/crm"
+      ],
+      "leadsTo": [
+       "/crm/deals/[dealId]",
+       "/crm/outreach-lists/[listId]/dial"
+      ]
+     },
+     {
+      "route": "/crm/deals/[dealId]",
+      "title": "Deal",
+      "role": "record",
+      "reachedFrom": [
+       "/crm/deals"
+      ],
+      "leadsTo": [
+       "/crm/outreach-lists/[listId]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Outreach",
+    "route": "/crm/outreach-lists",
+    "why": "Lists you contact, the inbox of replies, and today's follow-ups",
+    "pages": [
+     {
+      "route": "/crm/outreach-lists",
+      "title": "Outreach lists",
+      "role": "list",
+      "reachedFrom": [
+       "menu",
+       "/crm"
+      ],
+      "leadsTo": [
+       "/crm/outreach-lists/[listId]",
+       "/crm/inbox"
+      ]
+     },
+     {
+      "route": "/crm/outreach-lists/[listId]",
+      "title": "Outreach list",
+      "role": "record",
+      "reachedFrom": [
+       "/crm/outreach-lists"
+      ],
+      "leadsTo": [
+       "/crm/outreach-lists/[listId]/dial",
+       "/crm/inbox",
+       "/chat/message-templates/new"
+      ]
+     },
+     {
+      "route": "/crm/outreach-lists/[listId]/dial",
+      "title": "Call queue",
+      "role": "tool",
+      "reachedFrom": [
+       "/crm/outreach-lists/[listId]"
+      ],
+      "leadsTo": [
+       "/crm/outreach-lists/[listId]"
+      ]
+     },
+     {
+      "route": "/crm/inbox",
+      "title": "Outreach inbox",
+      "role": "list",
+      "reachedFrom": [
+       "menu",
+       "/crm/chasebox"
+      ],
+      "leadsTo": [
+       "/crm/chasebox"
+      ]
+     },
+     {
+      "route": "/crm/chasebox",
+      "title": "Chasebox",
+      "role": "report",
+      "reachedFrom": [
+       "menu",
+       "/crm/inbox"
+      ],
+      "leadsTo": [
+       "/crm/inbox",
+       "/crm/sending-identities/[identityId]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Mailboxes",
+    "route": "/crm/sending-identities",
+    "why": "The email addresses outreach is sent from",
+    "pages": [
+     {
+      "route": "/crm/sending-identities",
+      "title": "Sending mailboxes",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/crm/sending-identities/[identityId]"
+      ]
+     },
+     {
+      "route": "/crm/sending-identities/[identityId]",
+      "title": "Mailbox",
+      "role": "settings",
+      "reachedFrom": [
+       "/crm/sending-identities",
+       "/crm/chasebox"
+      ],
+      "leadsTo": [
+       "/crm/sending-identities"
+      ]
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Add contacts and clean them up",
+    "steps": [
+     "/crm",
+     "/crm/import",
+     "/crm/duplicates",
+     "/crm/[partyId]"
+    ]
+   },
+   {
+    "name": "Start an outreach campaign",
+    "steps": [
+     "/crm/outreach-lists",
+     "/crm/outreach-lists/[listId]",
+     "/chat/message-templates/new",
+     "/crm/sending-identities",
+     "/crm/outreach-lists/[listId]"
+    ]
+   },
+   {
+    "name": "Work today's replies",
+    "steps": [
+     "/crm/chasebox",
+     "/crm/inbox",
+     "/crm/[partyId]",
+     "/crm/deals/[dealId]"
+    ]
+   },
+   {
+    "name": "Phone through a list",
+    "steps": [
+     "/crm/outreach-lists",
+     "/crm/outreach-lists/[listId]",
+     "/crm/outreach-lists/[listId]/dial"
+    ]
+   },
+   {
+    "name": "Move a deal forward",
+    "steps": [
+     "/crm/deals",
+     "/crm/deals/[dealId]",
+     "/crm/[partyId]"
+    ]
+   }
+  ],
+  "stranded": [
+   {
+    "route": "/crm/admin",
+    "why": "only the documentation site links to it; it is the feature's admin map",
+    "proposedHome": "Admin site (not a CRM sidebar entry)"
+   }
+  ],
+  "buried": [
+   {
+    "route": "/crm/chasebox",
+    "depth": 2,
+    "why": "the daily 'who needs a reply' view sits as a menu sub-item beside setup pages",
+    "proposal": "Make Chasebox the first sidebar item under Outreach, or the CRM home card"
+   },
+   {
+    "route": "/crm/outreach-lists/[listId]/dial",
+    "depth": 3,
+    "why": "phone queue is three clicks inside a list",
+    "proposal": "Show a Call queue button on the list header and on the CRM home"
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Message templates",
+    "route": "/chat/message-templates",
+    "why": "outreach needs templates but they live in Messages under a /chat URL; CRM should link there by name"
+   }
+  ],
+  "legacy": [],
+  "duplicates": [
+   {
+    "routes": [
+     "/crm/inbox",
+     "/crm/chasebox"
+    ],
+    "note": "Two views over the same follow-up work that link to each other; decide whether Chasebox is a tab of the inbox"
+   }
+  ]
+ },
+ {
+  "product": "HR",
+  "family": "Business",
+  "summary": "Run people operations for one employer: staff records, time and schedules, leave, hiring, reviews, documents and compliance. Employees use My info for their own clock, pay and time off.",
+  "entry": "/hr",
+  "sections": [
+   {
+    "name": "Home",
+    "route": "/hr",
+    "why": "Role-adaptive starting page with the doors this person has",
+    "pages": [
+     {
+      "route": "/hr",
+      "title": "HR home",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/hr/people",
+       "/hr/me"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "My info",
+    "route": "/hr/me",
+    "why": "The employee's own clock, timesheet, pay and time off",
+    "pages": [
+     {
+      "route": "/hr/me",
+      "title": "My info",
+      "role": "record",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/hr/me/clock",
+       "/hr/me/pay",
+       "/hr/me/time-off",
+       "/hr/me/timesheet"
+      ]
+     },
+     {
+      "route": "/hr/me/clock",
+      "title": "Clock in and out",
+      "role": "tool",
+      "reachedFrom": [
+       "/hr/me"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/me/pay",
+      "title": "My pay",
+      "role": "report",
+      "reachedFrom": [
+       "/hr/me"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/me/timesheet",
+      "title": "My timesheet",
+      "role": "report",
+      "reachedFrom": [
+       "/hr/me"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/me/time-off",
+      "title": "My time off",
+      "role": "list",
+      "reachedFrom": [
+       "/hr/me"
+      ],
+      "leadsTo": [
+       "/hr/me/time-off/[policyId]"
+      ]
+     },
+     {
+      "route": "/hr/me/time-off/[policyId]",
+      "title": "Time-off ledger",
+      "role": "record",
+      "reachedFrom": [
+       "/hr/me/time-off"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "People",
+    "route": "/hr/people",
+    "why": "Employee records, org chart, relations cases and verification letters",
+    "pages": [
+     {
+      "route": "/hr/people",
+      "title": "People",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/hr/people/[employeeId]",
+       "/hr/people/new",
+       "/hr/people/org-chart"
+      ]
+     },
+     {
+      "route": "/hr/people/[employeeId]",
+      "title": "Employee",
+      "role": "record",
+      "reachedFrom": [
+       "/hr/people"
+      ],
+      "leadsTo": [
+       "/hr/people/[employeeId]/[tab]"
+      ]
+     },
+     {
+      "route": "/hr/people/[employeeId]/[tab]",
+      "title": "Employee tab",
+      "role": "record",
+      "reachedFrom": [
+       "/hr/people/[employeeId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/people/[employeeId]/c/[tabKey]",
+      "title": "Employee custom tab",
+      "role": "record",
+      "reachedFrom": [
+       "/hr/people/[employeeId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/people/new",
+      "title": "New employee",
+      "role": "create",
+      "reachedFrom": [
+       "/hr/people"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/people/org-chart",
+      "title": "Org chart",
+      "role": "report",
+      "reachedFrom": [
+       "/hr/people"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/people/relations",
+      "title": "Employee relations",
+      "role": "list",
+      "reachedFrom": [
+       "/hr/people"
+      ],
+      "leadsTo": [
+       "/hr/people/relations/[caseId]"
+      ]
+     },
+     {
+      "route": "/hr/people/relations/[caseId]",
+      "title": "Relations case",
+      "role": "record",
+      "reachedFrom": [
+       "/hr/people/relations"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/people/verifications",
+      "title": "Verification letters",
+      "role": "list",
+      "reachedFrom": [
+       "/hr/people"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Hiring & onboarding",
+    "route": "/hr/hiring",
+    "why": "From open role to a started employee",
+    "pages": [
+     {
+      "route": "/hr/hiring",
+      "title": "Hiring",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/onboarding",
+      "title": "Onboarding",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/tasks",
+      "title": "HR tasks and requests",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/hr/tasks/[instanceId]"
+      ]
+     },
+     {
+      "route": "/hr/tasks/[instanceId]",
+      "title": "HR request",
+      "role": "record",
+      "reachedFrom": [
+       "/hr/tasks"
+      ],
+      "leadsTo": [
+       "/hr/tasks"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Time",
+    "route": "/hr/time",
+    "why": "Punches, timesheets, overtime and pay periods",
+    "pages": [
+     {
+      "route": "/hr/time",
+      "title": "Time",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/hr/time/timesheets",
+       "/hr/time/punches"
+      ]
+     },
+     {
+      "route": "/hr/time/clock",
+      "title": "Shared time clock",
+      "role": "tool",
+      "reachedFrom": [
+       "/hr/time"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/time/punches",
+      "title": "Punch register",
+      "role": "list",
+      "reachedFrom": [
+       "/hr/time"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/time/timesheets",
+      "title": "Timesheets",
+      "role": "list",
+      "reachedFrom": [
+       "/hr/time"
+      ],
+      "leadsTo": [
+       "/hr/time/timesheets/[employmentId]"
+      ]
+     },
+     {
+      "route": "/hr/time/timesheets/[employmentId]",
+      "title": "Timesheet",
+      "role": "record",
+      "reachedFrom": [
+       "/hr/time/timesheets"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/time/exceptions",
+      "title": "Attendance exceptions",
+      "role": "report",
+      "reachedFrom": [
+       "/hr/time"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/time/overtime",
+      "title": "Overtime requests",
+      "role": "list",
+      "reachedFrom": [
+       "/hr/time"
+      ],
+      "leadsTo": [
+       "/hr/time/overtime/[requestId]"
+      ]
+     },
+     {
+      "route": "/hr/time/overtime/[requestId]",
+      "title": "Overtime request",
+      "role": "record",
+      "reachedFrom": [
+       "/hr/time/overtime"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/time/periods",
+      "title": "Pay periods",
+      "role": "list",
+      "reachedFrom": [
+       "/hr/time"
+      ],
+      "leadsTo": [
+       "/hr/time/periods/[periodId]"
+      ]
+     },
+     {
+      "route": "/hr/time/periods/[periodId]",
+      "title": "Pay period",
+      "role": "record",
+      "reachedFrom": [
+       "/hr/time/periods"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/schedule",
+      "title": "Schedule",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Time off",
+    "route": "/hr/leave",
+    "why": "Requests, balances and the who-is-away calendar",
+    "pages": [
+     {
+      "route": "/hr/leave",
+      "title": "Time off",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/hr/leave/balances",
+       "/hr/leave/calendar"
+      ]
+     },
+     {
+      "route": "/hr/leave/balances",
+      "title": "Leave balances",
+      "role": "report",
+      "reachedFrom": [
+       "/hr/leave"
+      ],
+      "leadsTo": [
+       "/hr/leave/balances/[employmentId]/[policyId]"
+      ]
+     },
+     {
+      "route": "/hr/leave/balances/[employmentId]/[policyId]",
+      "title": "Leave ledger",
+      "role": "record",
+      "reachedFrom": [
+       "/hr/leave/balances"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/leave/calendar",
+      "title": "Who is away",
+      "role": "report",
+      "reachedFrom": [
+       "/hr/leave"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Performance",
+    "route": "/hr/performance",
+    "why": "Review cycles, 360 reviews, review meetings and goals",
+    "pages": [
+     {
+      "route": "/hr/performance",
+      "title": "Performance",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/hr/performance/cycles/[cycleId]",
+       "/hr/performance/goals",
+       "/hr/performance/[reviewId]"
+      ]
+     },
+     {
+      "route": "/hr/performance/cycles/[cycleId]",
+      "title": "Review cycle",
+      "role": "record",
+      "reachedFrom": [
+       "/hr/performance"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/performance/goals",
+      "title": "Goals",
+      "role": "list",
+      "reachedFrom": [
+       "/hr/performance"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/performance/[reviewId]",
+      "title": "360 review",
+      "role": "record",
+      "reachedFrom": [
+       "/hr/performance"
+      ],
+      "leadsTo": [
+       "/hr/performance/[reviewId]/meeting"
+      ]
+     },
+     {
+      "route": "/hr/performance/[reviewId]/meeting",
+      "title": "Review meeting",
+      "role": "tool",
+      "reachedFrom": [
+       "/hr/performance/[reviewId]"
+      ],
+      "leadsTo": [
+       "/meet/[slug]"
+      ]
+     },
+     {
+      "route": "/hr/performance/respond/[trackId]",
+      "title": "Complete your review",
+      "role": "tool",
+      "reachedFrom": [
+       "email or task link"
+      ],
+      "leadsTo": [
+       "/meet/[slug]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Records & learning",
+    "route": "/hr/documents",
+    "why": "Documents, training and company assets",
+    "pages": [
+     {
+      "route": "/hr/documents",
+      "title": "Documents",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/training",
+      "title": "Training",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/assets",
+      "title": "Assets",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/engagement",
+      "title": "Engagement",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Compliance & reports",
+    "route": "/hr/compliance",
+    "why": "Rules the employer must follow, and the numbers",
+    "pages": [
+     {
+      "route": "/hr/compliance",
+      "title": "Compliance",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/hr/compliance/laws"
+      ]
+     },
+     {
+      "route": "/hr/compliance/laws",
+      "title": "Laws and rules",
+      "role": "report",
+      "reachedFrom": [
+       "/hr/compliance"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/reports",
+      "title": "HR reports",
+      "role": "report",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Settings",
+    "route": "/hr/settings",
+    "why": "Employer setup: structure, pay, time, leave, devices, access",
+    "pages": [
+     {
+      "route": "/hr/settings",
+      "title": "HR settings",
+      "role": "settings",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/employer",
+      "title": "Employer",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/structure",
+      "title": "Structure",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/access",
+      "title": "Access levels",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/fields",
+      "title": "Custom fields",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/codes",
+      "title": "Earning and deduction codes",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/pay-groups",
+      "title": "Pay groups",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/time-rules",
+      "title": "Time rules",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/schedule-rules",
+      "title": "Schedule rules",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/calendars",
+      "title": "Holiday calendars",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/devices",
+      "title": "Devices",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/alerts",
+      "title": "Alerts",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/notifications",
+      "title": "Notifications",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/workflows",
+      "title": "Approvals",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/review-templates",
+      "title": "Review templates",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/exit-surveys",
+      "title": "Exit surveys",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/retention",
+      "title": "Retention",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/ai",
+      "title": "AI in HR",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/leave-policies",
+      "title": "Leave policies",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/settings/leave-policies/[policyId]",
+      "title": "Leave policy",
+      "role": "record",
+      "reachedFrom": [
+       "/hr/settings/leave-policies"
+      ],
+      "leadsTo": [
+       "/hr/settings/leave-policies/[policyId]/enrollment"
+      ]
+     },
+     {
+      "route": "/hr/settings/leave-policies/[policyId]/enrollment",
+      "title": "Policy enrolment",
+      "role": "settings",
+      "reachedFrom": [
+       "/hr/settings/leave-policies/[policyId]"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Hire and onboard someone",
+    "steps": [
+     "/hr/hiring",
+     "/hr/people/new",
+     "/hr/onboarding",
+     "/hr/tasks",
+     "/hr/people/[employeeId]"
+    ]
+   },
+   {
+    "name": "Employee clocks in and checks pay",
+    "steps": [
+     "/hr/me",
+     "/hr/me/clock",
+     "/hr/me/timesheet",
+     "/hr/me/pay"
+    ]
+   },
+   {
+    "name": "Approve time off",
+    "steps": [
+     "/hr/tasks",
+     "/hr/tasks/[instanceId]",
+     "/hr/leave/calendar",
+     "/hr/leave/balances"
+    ]
+   },
+   {
+    "name": "Close a pay period",
+    "steps": [
+     "/hr/time/exceptions",
+     "/hr/time/timesheets",
+     "/hr/time/overtime",
+     "/hr/time/periods",
+     "/hr/time/periods/[periodId]"
+    ]
+   },
+   {
+    "name": "Run a performance review with a live meeting",
+    "steps": [
+     "/hr/performance",
+     "/hr/performance/cycles/[cycleId]",
+     "/hr/performance/[reviewId]",
+     "/hr/performance/[reviewId]/meeting",
+     "/meet/[slug]"
+    ]
+   },
+   {
+    "name": "Set up a new employer",
+    "steps": [
+     "/hr",
+     "/hr/settings/employer",
+     "/hr/settings/structure",
+     "/hr/settings/leave-policies",
+     "/hr/people/new"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [
+   {
+    "route": "/hr/tasks",
+    "depth": 1,
+    "why": "approvals and requests are what an HR manager does daily but sit mid-menu",
+    "proposal": "Put 'Requests' first in the HR sidebar with a count"
+   },
+   {
+    "route": "/hr/time/punches",
+    "depth": 2,
+    "why": "correcting a punch is under Time then an in-page link",
+    "proposal": "Sidebar sub-items under Time"
+   },
+   {
+    "route": "/hr/people/relations",
+    "depth": 2,
+    "why": "sensitive cases hide inside People",
+    "proposal": "Keep in People sidebar group"
+   },
+   {
+    "route": "/hr/settings/leave-policies/[policyId]/enrollment",
+    "depth": 4,
+    "why": "four clicks from the menu",
+    "proposal": "Enrol button on the policy page header"
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Requests (HR tasks)",
+    "route": "/hr/tasks",
+    "why": "in the menu and heavily used but not named in TREE.md's HR list"
+   },
+   {
+    "name": "Settings",
+    "route": "/hr/settings",
+    "why": "employer setup (about 20 pages) is not in TREE.md's HR list"
+   },
+   {
+    "name": "Shared time clock",
+    "route": "/hr/time/clock",
+    "why": "kiosk-style clock for a shared screen has no tree entry"
+   }
+  ],
+  "legacy": [
+   {
+    "route": "/hr/me/documents",
+    "kind": "old copy",
+    "note": "empty page on the owner's cleanup list; company Documents covers it"
+   },
+   {
+    "route": "/hr/me/schedule",
+    "kind": "old copy",
+    "note": "empty page on the owner's cleanup list; /hr/schedule covers it"
+   },
+   {
+    "route": "/hr/me/training",
+    "kind": "old copy",
+    "note": "empty page on the owner's cleanup list; /hr/training covers it"
+   },
+   {
+    "route": "/hr/performance/360",
+    "kind": "bake-off",
+    "note": "labelled 'trial'; same job as /hr/performance/[reviewId]"
+   },
+   {
+    "route": "/hr/performance/reviews/[reviewId]",
+    "kind": "old copy",
+    "note": "second review record page beside /hr/performance/[reviewId]"
+   }
+  ],
+  "duplicates": [
+   {
+    "routes": [
+     "/hr/me/clock",
+     "/hr/time/clock"
+    ],
+    "note": "personal clock and shared clock are two pages for one job; keep one tool with a mode"
+   },
+   {
+    "routes": [
+     "/hr/people/[employeeId]/[tab]",
+     "/hr/people/[employeeId]/c/[tabKey]"
+    ],
+    "note": "built-in tabs and custom tabs use two URL shapes for one employee page"
+   },
+   {
+    "routes": [
+     "/hr/me/time-off",
+     "/hr/leave"
+    ],
+    "note": "employee and manager time-off views; fine if one page switches by role"
+   },
+   {
+    "routes": [
+     "/hr/me/timesheet",
+     "/hr/time/timesheets/[employmentId]"
+    ],
+    "note": "same timesheet record shown at two addresses"
+   }
+  ]
+ },
+ {
+  "product": "Meet",
+  "family": "Business",
+  "summary": "Hold video meetings and calls, invite people, and let guests book time with you. The most important part of communications.",
+  "entry": "/meetings",
+  "sections": [
+   {
+    "name": "Meetings",
+    "route": "/meetings",
+    "why": "Past and upcoming meetings, and the notes and recordings from each",
+    "pages": [
+     {
+      "route": "/meetings",
+      "title": "Meetings",
+      "role": "list",
+      "reachedFrom": [
+       "menu",
+       "/meet/[slug]"
+      ],
+      "leadsTo": [
+       "/meetings/[id]"
+      ]
+     },
+     {
+      "route": "/meetings/[id]",
+      "title": "Meeting",
+      "role": "record",
+      "reachedFrom": [
+       "/meetings"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "In a meeting",
+    "route": "/meet",
+    "why": "The full-screen room a meeting happens in",
+    "pages": [
+     {
+      "route": "/meet/[slug]",
+      "title": "Meeting room",
+      "role": "tool",
+      "reachedFrom": [
+       "/hr/performance/[reviewId]/meeting",
+       "shared link"
+      ],
+      "leadsTo": [
+       "/meetings"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Invitations",
+    "route": "/rsvp",
+    "why": "What a guest sees when invited",
+    "pages": [
+     {
+      "route": "/rsvp/[secret]",
+      "title": "Meeting invitation",
+      "role": "tool",
+      "reachedFrom": [
+       "email or text link"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Booking",
+    "route": "/b",
+    "why": "Guests pick a time and manage their appointment",
+    "pages": [
+     {
+      "route": "/b/[bookingId]",
+      "title": "Book a time",
+      "role": "create",
+      "reachedFrom": [
+       "shared link"
+      ],
+      "leadsTo": [
+       "/b/manage/[ref]"
+      ]
+     },
+     {
+      "route": "/b/manage/[ref]",
+      "title": "Your appointment",
+      "role": "record",
+      "reachedFrom": [
+       "/b/[bookingId]",
+       "email link"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Start a meeting now",
+    "steps": [
+     "/meetings",
+     "/meet/[slug]",
+     "/meetings/[id]"
+    ]
+   },
+   {
+    "name": "Invite someone and see their answer",
+    "steps": [
+     "/meetings",
+     "/rsvp/[secret]",
+     "/meet/[slug]"
+    ]
+   },
+   {
+    "name": "Let a client book time",
+    "steps": [
+     "/b/[bookingId]",
+     "/b/manage/[ref]",
+     "/meetings"
+    ]
+   },
+   {
+    "name": "Review what was said",
+    "steps": [
+     "/meetings",
+     "/meetings/[id]"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [
+   {
+    "route": "/meet/[slug]",
+    "depth": 3,
+    "why": "the room is only reached from a meeting record, a calendar link or an HR review",
+    "proposal": "A Start meeting button at the top of the Meet sidebar"
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Calls",
+    "route": "(none)",
+    "why": "TREE.md lists calls; no page for starting or logging a call exists in the app"
+   },
+   {
+    "name": "Booking setup",
+    "route": "(none)",
+    "why": "guests can book but the host has no page to set availability or booking links"
+   },
+   {
+    "name": "Start a meeting",
+    "route": "(none)",
+    "why": "nothing in the app creates an instant meeting; only /meetings lists them"
+   }
+  ],
+  "legacy": [
+   {
+    "route": "/meet",
+    "kind": "redirect",
+    "note": "redirects to /meetings"
+   }
+  ],
+  "duplicates": []
+ },
+ {
+  "product": "Messages",
+  "family": "Business",
+  "summary": "Talk with people and your AI staff in conversations, send from templates, and connect WhatsApp. Its own tile, separate from Meet.",
+  "entry": "/messages",
+  "sections": [
+   {
+    "name": "Conversations",
+    "route": "/messages",
+    "why": "Every conversation with people",
+    "pages": [
+     {
+      "route": "/messages",
+      "title": "Messages",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/messages/[conversationId]"
+      ]
+     },
+     {
+      "route": "/messages/[conversationId]",
+      "title": "Conversation",
+      "role": "record",
+      "reachedFrom": [
+       "/messages",
+       "/messenger"
+      ],
+      "leadsTo": [
+       "/messages"
+      ]
+     },
+     {
+      "route": "/messenger",
+      "title": "Messenger",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/messages/[conversationId]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Your staff",
+    "route": "/staff",
+    "why": "The AI staff you message like people",
+    "pages": [
+     {
+      "route": "/staff",
+      "title": "Your staff",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Templates",
+    "route": "/chat/message-templates",
+    "why": "Reusable messages for outreach and replies",
+    "pages": [
+     {
+      "route": "/chat/message-templates",
+      "title": "Message templates",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/chat/message-templates/[id]",
+       "/chat/message-templates/new"
+      ]
+     },
+     {
+      "route": "/chat/message-templates/[id]",
+      "title": "Template",
+      "role": "record",
+      "reachedFrom": [
+       "/chat/message-templates"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/chat/message-templates/new",
+      "title": "New template",
+      "role": "create",
+      "reachedFrom": [
+       "/chat/message-templates",
+       "/crm/outreach-lists/[listId]"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Reply to a person",
+    "steps": [
+     "/messages",
+     "/messages/[conversationId]"
+    ]
+   },
+   {
+    "name": "Message one of your AI staff",
+    "steps": [
+     "/staff",
+     "/messenger",
+     "/messages/[conversationId]"
+    ]
+   },
+   {
+    "name": "Write a reusable template",
+    "steps": [
+     "/chat/message-templates",
+     "/chat/message-templates/new",
+     "/chat/message-templates/[id]"
+    ]
+   },
+   {
+    "name": "Connect WhatsApp and use it",
+    "steps": [
+     "/messenger",
+     "/messenger/whatsapp",
+     "/messages"
+    ]
+   }
+  ],
+  "stranded": [
+   {
+    "route": "/messenger/whatsapp",
+    "why": "nothing links to it; connecting WhatsApp has no door",
+    "proposedHome": "Conversations (Connect accounts)"
+   },
+   {
+    "route": "/messages/admin",
+    "why": "only the documentation site links to it; it is the feature's admin map",
+    "proposedHome": "Admin site"
+   }
+  ],
+  "buried": [
+   {
+    "route": "/staff",
+    "depth": 1,
+    "why": "AI staff are a major draw yet sit as a menu sibling with no tie to conversations",
+    "proposal": "Show staff as a group at the top of the Messages sidebar"
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Email",
+    "route": "(none)",
+    "why": "TREE.md lists email under Messages; no email inbox page exists"
+   },
+   {
+    "name": "SMS",
+    "route": "(none)",
+    "why": "TREE.md lists SMS; only footer pages exist, no SMS conversation view"
+   },
+   {
+    "name": "WhatsApp",
+    "route": "/messenger/whatsapp",
+    "why": "a connected channel with no tree entry"
+   }
+  ],
+  "legacy": [
+   {
+    "route": "/chat/message-templates/edit/[id]",
+    "kind": "old copy",
+    "note": "nothing links to it; owner's cleanup list says kill"
+   }
+  ],
+  "duplicates": [
+   {
+    "routes": [
+     "/messages",
+     "/messenger"
+    ],
+    "note": "two conversation lists over the same people; they link to each other. Pick one home"
+   },
+   {
+    "routes": [
+     "/chat/message-templates",
+     "/crm/outreach-lists/[listId]"
+    ],
+    "note": "templates are created from inside CRM too; one shared template library, linked from both"
+   }
+  ]
+ },
+ {
+  "product": "Business Tools",
+  "family": "Business",
+  "summary": "Send documents for signature, read and scan PDFs, print labels and sheets, make QR codes and barcodes, and use small helper utilities.",
+  "entry": "/esign",
+  "sections": [
+   {
+    "name": "E-signatures",
+    "route": "/esign",
+    "why": "Send, track and template documents for signature",
+    "pages": [
+     {
+      "route": "/esign",
+      "title": "E-signatures",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/esign/[envelopeId]",
+       "/esign/new"
+      ]
+     },
+     {
+      "route": "/esign/new",
+      "title": "Send for signature",
+      "role": "create",
+      "reachedFrom": [
+       "menu",
+       "/esign"
+      ],
+      "leadsTo": [
+       "/esign/[envelopeId]"
+      ]
+     },
+     {
+      "route": "/esign/[envelopeId]",
+      "title": "Envelope",
+      "role": "record",
+      "reachedFrom": [
+       "/esign"
+      ],
+      "leadsTo": [
+       "/esign/templates/[templateId]"
+      ]
+     },
+     {
+      "route": "/esign/templates",
+      "title": "E-sign templates",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/esign/templates/[templateId]"
+      ]
+     },
+     {
+      "route": "/esign/templates/[templateId]",
+      "title": "E-sign template",
+      "role": "record",
+      "reachedFrom": [
+       "/esign/templates"
+      ],
+      "leadsTo": [
+       "/esign/new"
+      ]
+     },
+     {
+      "route": "/sign/e/[envelopeId]",
+      "title": "Sign a document",
+      "role": "tool",
+      "reachedFrom": [
+       "email link"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/x/sign",
+      "title": "Sign a document",
+      "role": "tool",
+      "reachedFrom": [
+       "shared link"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/x/sign/phone",
+      "title": "Add your signature",
+      "role": "tool",
+      "reachedFrom": [
+       "/x/sign"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "PDF & scans",
+    "route": "/tools/pdf-extractor",
+    "why": "Pull text and data out of PDFs, and scan paper with a phone",
+    "pages": [
+     {
+      "route": "/tools/pdf-extractor",
+      "title": "PDF extractor",
+      "role": "tool",
+      "reachedFrom": [
+       "menu",
+       "/messages",
+       "/print"
+      ],
+      "leadsTo": [
+       "/tools/pdf-extractor/[id]",
+       "/tools/scanner"
+      ]
+     },
+     {
+      "route": "/tools/pdf-extractor/[id]",
+      "title": "Extraction result",
+      "role": "record",
+      "reachedFrom": [
+       "/tools/pdf-extractor"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/tools/scanner",
+      "title": "Phone scanner",
+      "role": "tool",
+      "reachedFrom": [
+       "menu",
+       "/tools/pdf-extractor"
+      ],
+      "leadsTo": [
+       "/tools/pdf-extractor"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Print & labels",
+    "route": "/print",
+    "why": "Make printable sheets, labels, study aids and order printed copies",
+    "pages": [
+     {
+      "route": "/print",
+      "title": "All printables",
+      "role": "list",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/print/documents",
+       "/print/labels"
+      ]
+     },
+     {
+      "route": "/print/documents",
+      "title": "Markdown to print or PDF",
+      "role": "tool",
+      "reachedFrom": [
+       "/print"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/print/labels",
+      "title": "Label sheets and rolls",
+      "role": "tool",
+      "reachedFrom": [
+       "/print"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/print/zpl",
+      "title": "ZPL labels",
+      "role": "tool",
+      "reachedFrom": [
+       "/print"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/print/booklet",
+      "title": "Booklet imposition",
+      "role": "tool",
+      "reachedFrom": [
+       "/print"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/print/certificates",
+      "title": "Certificates and workbooks",
+      "role": "tool",
+      "reachedFrom": [
+       "/print"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/print/education",
+      "title": "Cheat sheets and study aids",
+      "role": "tool",
+      "reachedFrom": [
+       "/print"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/print/exams",
+      "title": "Practice tests and bubble sheets",
+      "role": "tool",
+      "reachedFrom": [
+       "/print"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/print/flashcards",
+      "title": "Flashcard decks",
+      "role": "tool",
+      "reachedFrom": [
+       "/print"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/print/order",
+      "title": "Order printed copies",
+      "role": "create",
+      "reachedFrom": [
+       "/print"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "QR codes & barcodes",
+    "route": "/print/qr",
+    "why": "Generate QR codes and barcodes, with a landing for scanned codes",
+    "pages": [
+     {
+      "route": "/print/qr",
+      "title": "QR codes",
+      "role": "tool",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": [
+       "/print/branded-qr"
+      ]
+     },
+     {
+      "route": "/print/branded-qr",
+      "title": "Branded QR",
+      "role": "tool",
+      "reachedFrom": [
+       "menu",
+       "/print/qr"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/print/barcodes",
+      "title": "Barcodes",
+      "role": "tool",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/q/[token]",
+      "title": "QR landing",
+      "role": "tool",
+      "reachedFrom": [
+       "scanned code"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Utilities",
+    "route": "/free/uuid/generator",
+    "why": "Small free helpers",
+    "pages": [
+     {
+      "route": "/free/character-counter",
+      "title": "Character counter",
+      "role": "tool",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/free/data-truncator",
+      "title": "Data truncator",
+      "role": "tool",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/free/uuid/generator",
+      "title": "UUID generator",
+      "role": "tool",
+      "reachedFrom": [
+       "menu"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Send a contract for signature",
+    "steps": [
+     "/esign/templates",
+     "/esign/templates/[templateId]",
+     "/esign/new",
+     "/esign/[envelopeId]"
+    ]
+   },
+   {
+    "name": "Sign a document as a guest",
+    "steps": [
+     "/sign/e/[envelopeId]",
+     "/x/sign",
+     "/x/sign/phone"
+    ]
+   },
+   {
+    "name": "Scan paper, read it, keep the text",
+    "steps": [
+     "/tools/scanner",
+     "/tools/pdf-extractor",
+     "/tools/pdf-extractor/[id]"
+    ]
+   },
+   {
+    "name": "Print a label sheet",
+    "steps": [
+     "/print",
+     "/print/labels",
+     "/print/order"
+    ]
+   },
+   {
+    "name": "Make a branded QR for a flyer",
+    "steps": [
+     "/print/qr",
+     "/print/branded-qr",
+     "/print/documents"
+    ]
+   },
+   {
+    "name": "Check text length before pasting",
+    "steps": [
+     "/free/character-counter",
+     "/free/data-truncator"
+    ]
+   }
+  ],
+  "stranded": [
+   {
+    "route": "/free/uuid/array",
+    "why": "public website page; no menu or app link",
+    "proposedHome": "Utilities (as a mode of the UUID generator)"
+   },
+   {
+    "route": "/print/admin",
+    "why": "only the documentation site links to it; feature admin map",
+    "proposedHome": "Admin site"
+   },
+   {
+    "route": "/tools/pdf-extractor/admin",
+    "why": "only the documentation site links to it; feature admin map",
+    "proposedHome": "Admin site"
+   }
+  ],
+  "buried": [
+   {
+    "route": "/tools/pdf-extractor",
+    "depth": 1,
+    "why": "PDF tools are meant to be a first-class capability but only the extractor exists, under Files",
+    "proposal": "PDF & scans gets its own sidebar group; the tools also appear as actions on any PDF anywhere"
+   },
+   {
+    "route": "/print/order",
+    "depth": 1,
+    "why": "ordering printed copies is one of 11 equal menu items",
+    "proposal": "Make it the action at the end of every print tool"
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "PDF analysis, merge, split, redact",
+    "route": "(none)",
+    "why": "TREE.md lists them under PDF & scans; no pages exist besides the extractor and scanner"
+   },
+   {
+    "name": "Branded QR landing",
+    "route": "/q/[token]",
+    "why": "its title reads 'Your agent needs you', so it may be an agent-approval page, not a QR landing; confirm"
+   },
+   {
+    "name": "Commerce labels",
+    "route": "/commerce/labels",
+    "why": "a second labels tool sits under E-Commerce"
+   }
+  ],
+  "legacy": [],
+  "duplicates": [
+   {
+    "routes": [
+     "/print/labels",
+     "/commerce/labels"
+    ],
+    "note": "label printing exists here and under E-Commerce"
+   },
+   {
+    "routes": [
+     "/sign/e/[envelopeId]",
+     "/x/sign"
+    ],
+    "note": "two signer entry pages for the same job"
+   },
+   {
+    "routes": [
+     "/print/qr",
+     "/print/branded-qr"
+    ],
+    "note": "plain and branded QR could be one tool with a style option"
+   }
+  ]
+ }
+]

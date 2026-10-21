@@ -143,6 +143,13 @@ Crumbs are data (`FrameCrumb`); the frame renders them.
     brings it back by closing the canvas (then the side chat, if still needed).
 - **Drawer:** while open, the sheet is inert and Tab stays inside the drawer. Esc closes it from
   anywhere, unless a popover is open, and focus returns to the control that opened it.
+- **Sidebar width** (owner, 2026-10-21): drag its right edge (a hover-only 2px line on an 8px
+  grab strip) or use the arrow keys; 200 to 400px, 244 by default, remembered per device
+  (`matrx-frame:sidebar-width`); dragging 80px past the minimum snaps it shut.
+- **Space around / sidebar color** (owner's comparisons, playground switches until he picks):
+  `space` `inset` (the gap around the sheet) or `flush` (no outer gap, square outer edges);
+  `sidebarColor` `contrast` (darker app background) or `same` (one color, one hairline). Both
+  work together and in dark mode.
 - **Motion:** panels slide on `--matrx-motion-duration-panel` / `--matrx-motion-ease-panel`.
 
 ## The color proposal (frame-only until approved)
@@ -163,6 +170,12 @@ the app's own tokens are re-pointed, so controls follow without classes of their
 the `@ai-matrx/shell` package, and the frame-only overrides are deleted. They never get a third
 copy.
 
+## Route link graph
+
+`pnpm route-flow` writes `features/shell/frame/route-flow.json` (deterministic, sorted): every page as a node (route, file, group, tree node + how found from `route-homes.tsv`, menu labels, best-effort title, inbound/outbound counts, `reachableFromMenu`) and an edge for every link found in a page file or anything it imports (depth 4): `link` (href), `push` (router.push/replace), `config` (href/path/url/to in objects), `layout` (a layout's links, credited to its section index page), `sidebar` (the brand/website/SEO section registries), `menu` (nav-data, from the synthetic `@menu` node). `exact` = a literal path; `pattern` = a template or dynamic-segment match. Regenerate after adding pages or links; script: `scripts/route-flow/extract.ts`.
+
+Blind spots: hrefs built by helpers other than `marketingRoutes` (HR, education, ...), slug concatenation, links in barrels' unused exports (over-reports), layouts that are not a section's index page, server `redirect()` targets, and links that live in the database.
+
 ## Tests
 
 `features/shell/frame/__tests__/app-frame.test.tsx` (`pnpm test features/shell/frame`) covers:
@@ -173,6 +186,9 @@ the canvas and the ask bar, the per-page memory and the link, the forms and canv
 ownership attributes, and no `className`/`style` on any exported props type.
 
 ## Change log
+
+- 2026-10-21 (round 9): the sidebar resizes (snap shut, remembered); Inset | Flush and
+  Contrast | Same switches; the grid's favorites card gets its own `--matrx-frame-well` token.
 
 - 2026-10-20 (round 8): the app grid rebuilt Google-tight (card, one grid, no headings, no
   repeats, 32px whole-pixel glyphs), with the A | B | C bake-off.

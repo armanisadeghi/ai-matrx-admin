@@ -95,6 +95,23 @@ export type FrameHeaderEdge = "hairline" | "fade";
 
 /** Where this device remembers the side chat's width. */
 export const COMPANION_WIDTH_KEY = "matrx-frame:companion-width";
+/** Where this device remembers the sidebar's width. */
+export const SIDEBAR_WIDTH_KEY = "matrx-frame:sidebar-width";
+
+/** The product sidebar (owner, 2026-10-21): resizable 200–400, 244 by default; 80px past the minimum snaps it shut. */
+export const FRAME_SIDEBAR_MIN_PX = 200;
+export const FRAME_SIDEBAR_MAX_PX = 400;
+export const FRAME_SIDEBAR_DEFAULT_PX = 244;
+export const FRAME_SIDEBAR_SNAP_PX = 80;
+
+/**
+ * The owner's two layout comparisons (2026-10-21), PLAYGROUND A/B ONLY until he picks:
+ * `inset` = the gap around the sheet (Linear); `flush` = no outer gap, square outer edges.
+ * `contrast` = the sidebar on a darker app background; `same` = sidebar and page the same
+ * color, split by one hairline.
+ */
+export type FrameSpace = "inset" | "flush";
+export type FrameSidebarColor = "contrast" | "same";
 /** Where this device remembers, per page, whether the person left the side chat open. */
 export const companionOpenKey = (pageKey: string) => `matrx-frame:side-chat-open:${pageKey}`;
 
@@ -166,6 +183,10 @@ export interface AppFrameProps {
   headerEdge?: FrameHeaderEdge;
   /** PLAYGROUND BAKE-OFF ONLY: the app grid's look (see FrameGridLook); default `A`. */
   gridLook?: FrameGridLook;
+  /** PLAYGROUND A/B ONLY (see FrameSpace); default `inset`. */
+  space?: FrameSpace;
+  /** PLAYGROUND A/B ONLY (see FrameSidebarColor); default `contrast`. */
+  sidebarColor?: FrameSidebarColor;
 }
 
 export function formFor(width: number): FrameForm {
@@ -237,18 +258,18 @@ function writeStorage(key: string, value: string) {
 }
 
 /** The side chat's remembered width (this device), read after mount so SSR and the first paint agree. */
-function useRememberedWidth() {
+function useRememberedWidth(key: string) {
   const [stored, setStored] = useState<number | null>(null);
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
-      const n = Number(readStorage(COMPANION_WIDTH_KEY) ?? NaN);
+      const n = Number(readStorage(key) ?? NaN);
       if (Number.isFinite(n) && n > 0) setStored(n);
     });
     return () => window.cancelAnimationFrame(frame);
-  }, []);
+  }, [key]);
   function remember(width: number) {
     setStored(width);
-    writeStorage(COMPANION_WIDTH_KEY, String(width));
+    writeStorage(key, String(width));
   }
   return { stored, setStored, remember };
 }
@@ -342,7 +363,12 @@ export function AppFrame(props: AppFrameProps) {
   const [propertiesOpen, setPropertiesOpen] = useState(true);
   const [seed, setSeed] = useState<CompanionSeed | undefined>(undefined);
   const [dragging, setDragging] = useState(false);
-  const width = useRememberedWidth();
+  const width = useRememberedWidth(COMPANION_WIDTH_KEY);
+  const sidebarWidth = useRememberedWidth(SIDEBAR_WIDTH_KEY);
+  const sidebarW = Math.min(
+    FRAME_SIDEBAR_MAX_PX,
+    Math.max(FRAME_SIDEBAR_MIN_PX, sidebarWidth.stored ?? FRAME_SIDEBAR_DEFAULT_PX),
+  );
   const drawerRef = useRef<HTMLDivElement>(null);
   const companionOverlayRef = useRef<HTMLDivElement>(null);
   const canvasOverlayRef = useRef<HTMLDivElement>(null);
@@ -540,6 +566,9 @@ export function AppFrame(props: AppFrameProps) {
       data-variant={variant}
       data-dragging={dragging ? "" : undefined}
       data-header-edge={headerEdge}
+      data-space={props.space ?? "inset"}
+      data-sidebar-color={props.sidebarColor ?? "contrast"}
+      data-sidebar-shown={showSidebar ? "" : undefined}
       className="relative flex h-full w-full min-w-0 overflow-hidden"
     >
       <PortalContainerProvider container={root}>
@@ -548,20 +577,36 @@ export function AppFrame(props: AppFrameProps) {
           <div
             data-mf-owner="frame"
             data-mf-region="sidebar"
-            className="mf-slide h-full shrink-0 overflow-hidden"
-            style={{ width: showSidebar ? "var(--matrx-frame-sidebar-w)" : 0 }}
+            className="mf-slide relative h-full shrink-0"
+            style={{ width: showSidebar ? sidebarW : 0 }}
             inert={!showSidebar}
           >
-            <div className="h-full w-[var(--matrx-frame-sidebar-w)]">
-              <FrameSidebar
-                product={product}
-                grid={grid}
-                activeItemId={activeMenuItemId}
-                onSelectItem={onSelectMenuItem}
-                onHide={() => setSidebarOpen(false)}
-                hideLabel="Hide sidebar"
-              />
+            <div className="h-full overflow-hidden">
+              <div className="h-full" style={{ width: sidebarW }}>
+                <FrameSidebar
+                  product={product}
+                  grid={grid}
+                  activeItemId={activeMenuItemId}
+                  onSelectItem={onSelectMenuItem}
+                  onHide={() => setSidebarOpen(false)}
+                  hideLabel="Hide sidebar"
+                />
+              </div>
             </div>
+            {showSidebar ? (
+              <PanelResizeHandle
+                label="Resize sidebar"
+                edge="right"
+                width={sidebarW}
+                min={FRAME_SIDEBAR_MIN_PX}
+                max={FRAME_SIDEBAR_MAX_PX}
+                snapBelow={FRAME_SIDEBAR_MIN_PX - FRAME_SIDEBAR_SNAP_PX}
+                onResize={sidebarWidth.setStored}
+                onDragChange={setDragging}
+                onCommit={sidebarWidth.remember}
+                onSnapClose={() => setSidebarOpen(false)}
+              />
+            ) : null}
           </div>
         ) : null}
 
