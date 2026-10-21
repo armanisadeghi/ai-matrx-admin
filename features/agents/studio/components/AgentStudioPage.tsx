@@ -30,8 +30,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, FlaskConical, RotateCcw } from "lucide-react";
-import { Button, EmptyState, SegmentedControl, StageSteps, Tabs } from "@ai-matrx/design-system/controls";
+import { FlaskConical, ListChecks, RotateCcw } from "lucide-react";
+import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
+import { Button, EmptyState, SegmentedControl, Tabs } from "@ai-matrx/design-system/controls";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useMandate } from "@ai-matrx/chat/mandates/useMandate";
 import { useCanvasWorkspaceConversation } from "@ai-matrx/chat/canvas/workspace/useCanvasWorkspaceConversation";
@@ -53,7 +54,8 @@ import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/se
 import { AGENT_BUILDER_CONTEXT_MENU_PROPS } from "@ai-matrx/chat/agents/agent-context/buildAgentBuilderContextData";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
-import { studioGrid, studioLayoutFor, studioSlot, type StudioLayout } from "../studio-layout";
+import { studioLayoutFor, type StudioLayout, type StudioSavedSizes } from "../studio-layout";
+import { StudioPanes } from "./StudioPanes";
 import { studioStage } from "../studio-stage";
 import { useStudioUnsavedEdits } from "../unsaved-edits";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
@@ -93,7 +95,6 @@ import { useStudioBuilderFeed } from "../studio-builder-feed";
 import { useMandateHostValues } from "@ai-matrx/chat/mandates/host-values/useMandateHostValues";
 import { StudioStart, keepStudioDraft } from "./StudioStart";
 import { StudioRun } from "./StudioRun";
-import type { CSSProperties } from "react";
 import { StudioControls, type ControlsTab } from "./StudioControls";
 import { StudioTurnModel } from "./StudioTurnModel";
 import { PaneBar, PaneLabel } from "./PaneBar";
@@ -117,7 +118,8 @@ type MakePhase =
   | { kind: "suggest"; suggestions: WorkspaceInput[] }
   | { kind: "building" };
 
-export function AgentStudioPage() {
+/** `savedPaneSizes`: the pane sizes the person last dragged, read from their cookies by the route. */
+export function AgentStudioPage({ savedPaneSizes }: { savedPaneSizes?: StudioSavedSizes } = {}) {
   const router = useRouter();
   const params = useSearchParams();
   const state = readStudioState(new URLSearchParams(params.toString()));
@@ -158,10 +160,18 @@ export function AgentStudioPage() {
     );
   }
   // No key: a mode, an agent arriving or a resize never remounts the workspace (its hooks restart in place).
-  return <StudioWorkspace state={state} go={go} />;
+  return <StudioWorkspace state={state} go={go} savedPaneSizes={savedPaneSizes} />;
 }
 
-function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<StudioState>) => void }) {
+function StudioWorkspace({
+  state,
+  go,
+  savedPaneSizes,
+}: {
+  state: StudioState;
+  go: (p: Partial<StudioState>) => void;
+  savedPaneSizes?: StudioSavedSizes;
+}) {
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const router = useRouter();
@@ -765,78 +775,37 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     studio_run: shownRun ? { conversation_id: shownRun, has_run: hasRun } : undefined,
   };
 
+  // The page top is the record template (core-route-headers): back, the agent (or the mode) as the record,
+  // the stage steps centered, the actions right. It renders in the shell header, never in the body.
   const header = (
-    // Three columns: who/where | the stage steps, centered on the page | the actions. A name that
-    // loads late or a longer label never moves the steps or the actions (no layout shift).
-    <div
-      className={`grid h-10 shrink-0 items-center gap-2 border-b border-border px-2 ${
-        // On a phone the actions take their full width first (the main button was cut to "Make a…" at 390).
-        isMobile ? "grid-cols-[auto_minmax(0,1fr)_auto]" : "grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]"
-      }`}
-      data-testid="studio-header"
-      data-assist-dock-slot="header"
-    >
-      <div className="flex min-w-0 items-center gap-2">
-        <Button variant="quiet" icon={<ArrowLeft />} aria-label="Back" onClick={() => router.push(studioHref({}))} />
-        {!isMobile && <span className="shrink-0 text-sm font-semibold text-foreground">Agent Studio</span>}
-        {!compactHeader && <span className="min-w-0 truncate text-xs text-muted-foreground">{agentName ?? mode.title}</span>}
-        <PlanBackLink state={state} />
-      </div>
-      <StageSteps
-        aria-label="Where you are"
-        steps={stage.steps}
-        current={stage.current}
-        labels={compactHeader ? "current" : "all"}
-        data-testid="studio-stage"
-      />
-      <div className="flex min-w-0 items-center justify-end gap-2">
-        {mode.id === "do-with-me" && !state.buildId && (
-          <Button
-            variant="primary"
-            data-testid="studio-make-agent"
-            className="shrink-0 whitespace-nowrap"
-            disabled={!state.chatId || making}
-            onClick={() => void makeThisAnAgent()}
-          >
-            {isMobile ? "Make agent" : "Make this an agent"}
-          </Button>
-        )}
-        {state.agentId && shownRun && (
-          <Button
-            variant="outline"
-            data-testid="studio-save-case"
-            disabled={savingCase || savedRuns.has(shownRun)}
-            aria-label={savedRuns.has(shownRun) ? "Saved as test case" : "Save as test case"}
-            title={savedRuns.has(shownRun) ? "Saved as test case" : "Save this run as a test case"}
-            icon={compactHeader ? <FlaskConical /> : undefined}
-            onClick={() => void saveRunAsCase()}
-          >
-            {compactHeader ? null : savedRuns.has(shownRun) ? "Saved as test case" : "Save as test case"}
-          </Button>
-        )}
-        {state.agentId && (
-          <Button
-            variant="primary"
-            icon={<RotateCcw />}
-            aria-label={hasRun ? "Run again" : "Run"}
-            title={hasRun ? "Run again, fresh" : "Run the agent"}
-            data-testid="studio-run-again"
-            onClick={runAgain}
-          >
-            {isMobile ? null : hasRun ? "Run again" : "Run"}
-          </Button>
-        )}
-      </div>
-    </div>
+    <RecordPageHeader
+      backHref={studioHref({})}
+      record={state.agentId ? { name: agentName ?? "Your agent", token: "agent", id: state.agentId } : { name: mode.title }}
+      steps={{ steps: stage.steps, current: stage.current, labels: compactHeader ? "current" : "all", ariaLabel: "Where you are" }}
+      actions={[
+        ...(state.planId
+          ? [{ label: state.planStep ? `Plan step ${state.planStep}` : "Plan", icon: ListChecks, href: `/agents/orchestra-studio?plan=${encodeURIComponent(state.planId)}`, showLabel: true }]
+          : []),
+        ...(state.agentId && shownRun
+          ? [
+              {
+                label: savedRuns.has(shownRun) ? "Saved as test case" : "Save as test case",
+                icon: FlaskConical,
+                showLabel: !compactHeader,
+                disabled: savingCase || savedRuns.has(shownRun),
+                onPress: () => void saveRunAsCase(),
+              },
+            ]
+          : []),
+        ...(mode.id === "do-with-me" && !state.buildId
+          ? [{ label: "Make this an agent", icon: AGENT_ICON, primary: true, pinnedOnPhone: true, disabled: !state.chatId || making, onPress: () => void makeThisAnAgent() }]
+          : []),
+        ...(state.agentId ? [{ label: hasRun ? "Run again" : "Run", icon: RotateCcw, primary: true, pinnedOnPhone: true, onPress: runAgain }] : []),
+      ]}
+    />
   );
 
-  // ── ONE pane tree; the layout only re-styles its slots (no pane ever remounts on a resize) ──
-  const slot = (pane: "switch" | "assistant" | "agent" | "controls"): { style: CSSProperties; shown: boolean } =>
-    studioSlot(layout, pane, { side, tab: paneTab });
-  const paneProps = (pane: "switch" | "assistant" | "agent" | "controls") => {
-    const { style, shown } = slot(pane);
-    return { style, hidden: !shown, "data-studio-pane": pane, "data-assist-dock-avoid": true, className: "min-h-0 min-w-0 overflow-hidden" };
-  };
+  // ── ONE pane tree: one resizable group whose panels never unmount; a layout change only sets sizes ──
   const body = (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className={layout === "tabs" ? "shrink-0 border-b border-border px-2" : "hidden"}>
@@ -851,8 +820,11 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
           aria-label="Studio panes"
         />
       </div>
-      <div className="grid min-h-0 flex-1 divide-x divide-border" style={studioGrid(layout)} data-testid="studio-panes">
-        <div {...paneProps("switch")}>
+      <StudioPanes
+        layout={layout}
+        ui={{ side, tab: paneTab }}
+        saved={savedPaneSizes ?? {}}
+        switchBar={
           <PaneBar>
             <SegmentedControl
               aria-label="Beside your agent"
@@ -864,17 +836,13 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
               ]}
             />
           </PaneBar>
-        </div>
-        <div {...paneProps("assistant")} data-testid="studio-pane-assistant">
-          {layout === "two" ? <div className="h-full min-h-0">{left}</div> : assistantPane}
-        </div>
-        <div {...paneProps("agent")} data-testid="studio-pane-agent">
-          {centerPane}
-        </div>
-        <div {...paneProps("controls")} data-testid="studio-pane-controls">
-          {right}
-        </div>
-      </div>
+        }
+        panes={{
+          assistant: layout === "two" ? <div className="h-full min-h-0">{left}</div> : assistantPane,
+          agent: centerPane,
+          controls: right,
+        }}
+      />
     </div>
   );
 

@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { Layout } from "react-resizable-panels";
 
 /**
  * The Studio's panes never get narrower than this (px), so the controls' tabs, a test case's
@@ -31,38 +31,47 @@ export function studioLayoutFor(width: number): StudioLayout {
 /** Below this center width a compare shows one answer at a time, never two cramped columns. */
 export const STUDIO_COMPARE_SIDE_BY_SIDE_PX = 640;
 
-/** Grid tracks per layout: the same four children, placed by CSS only. Pure, so the guard reads it. */
-export function studioGrid(layout: StudioLayout): CSSProperties {
-  if (layout === "three") {
-    return {
-      gridTemplateColumns: `minmax(${STUDIO_PANE_MIN_PX.assistant}px, 27fr) minmax(${STUDIO_PANE_MIN_PX.agent}px, 46fr) minmax(${STUDIO_PANE_MIN_PX.controls}px, 27fr)`,
-      gridTemplateRows: "minmax(0, 1fr)",
-    };
-  }
-  if (layout === "two") {
-    return {
-      gridTemplateColumns: `minmax(${STUDIO_SIDE_MIN_PX}px, 42fr) minmax(${STUDIO_PANE_MIN_PX.agent}px, 58fr)`,
-      gridTemplateRows: "auto minmax(0, 1fr)",
-    };
-  }
-  return { gridTemplateColumns: "minmax(0, 1fr)", gridTemplateRows: "minmax(0, 1fr)" };
+export type StudioPane = "assistant" | "agent" | "controls";
+export type StudioPaneUi = { side: "assistant" | "controls"; tab: StudioPane };
+
+/** The panes' resizable group: one id, and one size cookie per layout that has more than one pane. */
+export const STUDIO_PANES_GROUP_ID = "agent-studio-panes";
+export const studioPanesCookie = (layout: StudioLayout) => `panels:${STUDIO_PANES_GROUP_ID}:${layout}`;
+
+/** What the person last dragged, per layout (percent per pane, the library's Layout). */
+export type StudioSavedSizes = { three?: Layout; two?: Layout };
+
+const THREE_DEFAULT: Layout = { assistant: 27, agent: 46, controls: 27 };
+const TWO_SIDE_DEFAULT = 42;
+
+const valid = (l: Layout | undefined): l is Layout =>
+  Boolean(l) &&
+  (["assistant", "agent", "controls"] as const).every((k) => typeof l?.[k] === "number" && l[k] >= 0) &&
+  Math.abs((l?.assistant ?? 0) + (l?.agent ?? 0) + (l?.controls ?? 0) - 100) < 1;
+
+/** Whether a pane shows in a layout (the switch shows only in two). Pure. */
+export function studioPaneShown(layout: StudioLayout, pane: StudioPane | "switch", ui: StudioPaneUi): boolean {
+  if (layout === "three") return pane !== "switch";
+  if (layout === "two") return pane === "switch" || pane === "agent" || ui.side === pane;
+  return pane !== "switch" && ui.tab === pane;
 }
 
-/** Where each pane sits in a layout, and whether it shows. Pure. */
-export function studioSlot(
-  layout: StudioLayout,
-  pane: "switch" | "assistant" | "agent" | "controls",
-  ui: { side: "assistant" | "controls"; tab: "assistant" | "agent" | "controls" },
-): { style: CSSProperties; shown: boolean } {
-  if (layout === "three") {
-    const col = { switch: 1, assistant: 1, agent: 2, controls: 3 }[pane];
-    return { style: { gridColumn: col, gridRow: 1 }, shown: pane !== "switch" };
-  }
+/**
+ * The sizes (percent) the panes get in a layout. Hidden panes collapse to 0 — they stay mounted, so no pane
+ * ever remounts on a layout change. Three and two restore what the person last dragged. Pure.
+ */
+export function studioPanesLayout(layout: StudioLayout, ui: StudioPaneUi, saved: StudioSavedSizes): Layout {
+  if (layout === "three") return valid(saved.three) && saved.three.assistant > 0 && saved.three.controls > 0 ? saved.three : THREE_DEFAULT;
   if (layout === "two") {
-    if (pane === "switch") return { style: { gridColumn: 1, gridRow: 1 }, shown: true };
-    if (pane === "agent") return { style: { gridColumn: 2, gridRow: "1 / span 2" }, shown: true };
-    return { style: { gridColumn: 1, gridRow: 2 }, shown: ui.side === pane };
+    const side = valid(saved.two) && saved.two.agent < 100 ? 100 - saved.two.agent : TWO_SIDE_DEFAULT;
+    return { assistant: ui.side === "assistant" ? side : 0, agent: 100 - side, controls: ui.side === "controls" ? side : 0 };
   }
-  return { style: { gridColumn: 1, gridRow: 1 }, shown: pane !== "switch" && ui.tab === pane };
+  return { assistant: ui.tab === "assistant" ? 100 : 0, agent: ui.tab === "agent" ? 100 : 0, controls: ui.tab === "controls" ? 100 : 0 };
 }
 
+/** A pane's smallest width (px) where it shows beside another; a lone pane has no floor. */
+export function studioPaneMinPx(layout: StudioLayout, pane: StudioPane): number {
+  if (layout === "three") return STUDIO_PANE_MIN_PX[pane];
+  if (layout === "two") return pane === "agent" ? STUDIO_PANE_MIN_PX.agent : STUDIO_SIDE_MIN_PX;
+  return 0;
+}

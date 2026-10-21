@@ -33,6 +33,7 @@ import type { RouteNavItem } from "@/features/shell/components/header/RouteModeN
 import {
   EntityModeHeader,
   type EntityHeaderAction,
+  type EntityModeHeaderProps,
 } from "@/features/shell/components/header/templates/EntityModeHeader";
 import type { Crumb, CrumbOption } from "@/features/shell/components/header/templates/CrumbTrailHeader";
 import { useDerivedTrail } from "@/features/shell/breadcrumbs/useDerivedTrail";
@@ -82,6 +83,8 @@ export interface RecordPageHeaderProps {
   onModeSelect?: (href: string) => void;
   /** Declarative actions, lowest priority first; `primary` marks the one main action. */
   actions?: EntityHeaderAction[];
+  /** Where the person is on a short path, centered on the line (a page with no modes). */
+  steps?: EntityModeHeaderProps["steps"];
   /**
    * ONE "Actions" menu for every verb the header does not show (the Stripe record pattern: one or
    * two header verbs + one menu, danger items last). Desktop: a menu button on the line; phone:
@@ -127,6 +130,7 @@ export function RecordPageHeader({
   onModeSelect,
   actions,
   menu,
+  steps,
 }: RecordPageHeaderProps) {
   const menuItems = menu?.items ?? [];
   // THE DERIVED TRAIL: every level above the record comes from the address + menu; a page supplies
@@ -156,6 +160,7 @@ export function RecordPageHeader({
       modes={modes}
       activeModeHref={activeModeHref}
       onModeSelect={onModeSelect}
+      steps={steps}
       actions={menuItems.length ? [...(actions ?? []), ...phoneMenuActions] : actions}
       rightEnd={menuItems.length ? <RecordActionsMenu label={menu?.label ?? "Actions"} items={menuItems} /> : undefined}
     />

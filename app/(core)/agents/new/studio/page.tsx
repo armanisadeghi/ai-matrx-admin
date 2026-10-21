@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { AgentStudioPage } from "@/features/agents/studio/components/AgentStudioPage";
+import { studioPanesCookie } from "@/features/agents/studio/studio-layout";
+import { readLayoutCookie } from "@/features/resizable-panels/readLayoutCookie";
 
 export const metadata = {
   title: "Agent Studio",
@@ -14,10 +16,12 @@ export const metadata = {
  */
 export default async function AgentStudioRoute() {
   await connection();
+  // The pane sizes the person last dragged, so a reload paints them first (no jump after hydration).
+  const [three, two] = await Promise.all([readLayoutCookie(studioPanesCookie("three")), readLayoutCookie(studioPanesCookie("two"))]);
   return (
     <div className="h-full overflow-hidden">
       <Suspense fallback={<RegionSkeleton />}>
-        <AgentStudioPage />
+        <AgentStudioPage savedPaneSizes={{ three, two }} />
       </Suspense>
     </div>
   );

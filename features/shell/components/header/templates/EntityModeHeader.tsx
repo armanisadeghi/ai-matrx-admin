@@ -53,6 +53,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { StageSteps, type StageStep } from "@ai-matrx/design-system/controls";
 import { resolveActiveRouteMode } from "@/features/shell/components/header/route-mode-match";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
@@ -140,6 +141,11 @@ export interface EntityModeHeaderProps {
   modeSwitchOnPhone?: boolean;
   /** Declarative actions — transparent tap targets on desktop, drawer rows on mobile. */
   actions?: EntityHeaderAction[];
+  /**
+   * Where the person is on a short path (StageSteps), centered on the line when there are no modes.
+   * `labels: "current"` names only the current step (narrow headers).
+   */
+  steps?: { steps: readonly StageStep[]; current: number; labels?: "all" | "current" | "auto"; ariaLabel: string };
   /** Desktop-only extra controls (e.g. a Switch). Hidden below sm. */
   right?: React.ReactNode;
   /** Desktop-only control at the far right, AFTER the declarative actions (a record's Actions menu). Hidden below sm. */
@@ -302,6 +308,7 @@ export function EntityModeHeader({
   actions,
   right,
   rightEnd,
+  steps,
 }: EntityModeHeaderProps) {
   // THE CURRENT RECORD: every record page declares what it shows, once, here (custom-experience §5.4).
   useDeclareCurrentRecord({ label: entityLabel, token: entityRecord?.token ?? null, id: entityRecord?.id ?? null });
@@ -455,6 +462,10 @@ export function EntityModeHeader({
                 activeHref={activeModeHref}
                 onNavigate={onModeSelect}
               />
+            </div>
+          ) : steps ? (
+            <div className="flex w-full min-w-0 justify-center" data-testid="entity-header-steps">
+              <StageSteps aria-label={steps.ariaLabel} steps={steps.steps} current={steps.current} labels={steps.labels ?? "all"} />
             </div>
           ) : undefined
         }

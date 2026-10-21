@@ -70,6 +70,7 @@ function type(box: HTMLTextAreaElement, text: string) {
 beforeEach(() => {
   mockAgents = twoAgents;
   sessionStorage.clear();
+  localStorage.clear();
   push.mockClear();
 });
 
@@ -114,7 +115,7 @@ describe("StudioStart — the stage", () => {
     act(() => q("studio-mode-from-examples")!.click());
     act(() => q("studio-mode-describe")!.click());
     expect(box().value).toBe("Draft replies to tenant emails");
-    expect(sessionStorage.getItem("agent-studio:start:describe")).toBe("Draft replies to tenant emails");
+    // The box is a durable draft (lane 5A-b, the kit's useDurableDraft): a fresh mount restores it.
     const again = mount();
     const box2 = again.host.querySelector('[data-testid="studio-describe"] textarea') as HTMLTextAreaElement;
     expect(box2.value).toBe("Draft replies to tenant emails");
