@@ -52,7 +52,7 @@ describe("public comparison payload", () => {
     expect(p.title).toBe(wire.title);
     expect(p.result.items[0].name).toBe("Acme");
     expect(p.refreshItems.map((i) => i.label)).toEqual(["Acme", "Globex"]);
-    expect(p.policy).toEqual({ viewRequiresAccount: false, runRequiresAccount: true, refreshRequiresAccount: true, indexable: true });
+    expect(p.policy).toEqual({ viewRequiresAccount: false, runRequiresAccount: true, refreshRequiresAccount: true, indexable: true, guestFreeRuns: null });
   });
 
   it("is null for an answer with no result or no slug (the page then 404s, never half-renders)", () => {
@@ -62,7 +62,7 @@ describe("public comparison payload", () => {
   });
 
   it("defaults the policy to the owner's: view open, run needs an account, indexable", () => {
-    expect(parsePublicPolicy({})).toEqual({ viewRequiresAccount: false, runRequiresAccount: true, refreshRequiresAccount: true, indexable: true });
+    expect(parsePublicPolicy({})).toEqual({ viewRequiresAccount: false, runRequiresAccount: true, refreshRequiresAccount: true, indexable: true, guestFreeRuns: null });
   });
 
   it("stamps when the facts were fetched, in a fixed zone", () => {
@@ -98,5 +98,16 @@ describe("the public hero hands the input to sign-up and keeps it", () => {
     const host = await mount(true);
     await submit(host);
     expect(push).not.toHaveBeenCalled();
+  });
+});
+
+describe("the landing says what a visitor gets before the click", () => {
+  it("reads the free-run count and says nothing when it is unknown", () => {
+    expect(parsePublicPolicy({ guest_free_runs: 3 }).guestFreeRuns).toBe(3);
+    expect(parsePublicPolicy({ guest_free_runs: 0 }).guestFreeRuns).toBeNull();
+    const { heroNote } = jest.requireActual("../public/CompareHero") as typeof import("../public/CompareHero");
+    expect(heroNote(false, 3)).toBe("3 free comparisons a day, no account");
+    expect(heroNote(true, 3)).toBe("A free account runs it");
+    expect(heroNote(false, null)).toBeNull();
   });
 });

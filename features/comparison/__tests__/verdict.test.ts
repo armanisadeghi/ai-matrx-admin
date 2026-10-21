@@ -57,3 +57,45 @@ describe("the headline stays honest when another item leads as many fields", () 
     expect(headlineOf(tied)).toEqual({ lead: "Beta and Alpha", rest: "each lead 2 of 4 — Beta ranks first on rating" });
   });
 });
+
+describe("a thin sample that tops the raw number says what the ranking weighs", () => {
+  it("names the review weighting when the first-ranked item is not best on the raw rating", () => {
+    const r = parseResult({
+      kind: "local_business", kind_label: "Local businesses", primary_field: "rating",
+      fields: [F("rating", "rating", "higher_better", true), F("reviews", "int")],
+      items: [
+        { item_id: "deep", name: "Deep", rank: 1, values: { rating: V(4.8, "4.8"), reviews: V(341, "341", true) } },
+        { item_id: "thin", name: "Thin", rank: 2, thin_sample: "Only 6 reviews", values: { rating: V(5, "5.0", true), reviews: V(6, "6") } },
+      ],
+    }) as ComparisonResult;
+    expect(r.items[1].thin_sample).toBe("Only 6 reviews");
+    expect(headlineOf(r)?.rest).toBe("each lead 1 of 2 — Deep ranks first on rating, weighted by reviews");
+  });
+});
+
+describe("a field everyone is level on is not a win (live walk 2026-10-21: 'leads 2 of 2' over 'All tied at 4.6')", () => {
+  const level = parseResult({
+    kind: "local_business", kind_label: "Local businesses", primary_field: "rating",
+    fields: [F("rating", "rating", "higher_better", true), F("reviews", "int")],
+    items: [
+      { item_id: "l", name: "Leonard's Bakery", rank: 1, values: { rating: V(4.6, "4.6", true), reviews: V(13607, "13,607", true) } },
+      { item_id: "i", name: "Liliha Bakery", rank: 2, values: { rating: V(4.6, "4.6", true), reviews: V(4820, "4,820") } },
+    ],
+  }) as ComparisonResult;
+  it("counts only real wins and says what is level", () => {
+    expect(verdictOf(level)).toMatchObject({ leads: 1, total: 2, tied: ["rating"] });
+    expect(headlineOf(level)).toEqual({ lead: "Leonard's Bakery", rest: "leads on 1 of 2 — level on rating" });
+    expect(whyLine(level.fields[0], level)).toBe("All tied at 4.6");
+  });
+  it("items level on every field are named together, not crowned", () => {
+    const all = parseResult({
+      kind: "local_business", kind_label: "Local businesses", primary_field: "rating",
+      fields: [F("rating", "rating", "higher_better", true)],
+      items: [
+        { item_id: "a", name: "A", rank: 1, values: { rating: V(4.6, "4.6", true) } },
+        { item_id: "b", name: "B", rank: 2, values: { rating: V(4.6, "4.6", true) } },
+      ],
+    }) as ComparisonResult;
+    expect(headlineOf(all)).toEqual({ lead: "A and B", rest: "are level on rating" });
+  });
+});

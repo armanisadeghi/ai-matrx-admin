@@ -160,6 +160,8 @@ export interface ComparedItem {
   error: string | null;
   needs_choice: boolean;
   candidates: PlaceCandidate[];
+  /** Plain words when the rating rests on few reviews ("Only 6 reviews"); null when the sample is fine. */
+  thin_sample?: string | null;
   /** The site the facts came from ("Amazon", "Instagram"); mixed platforms are labeled. */
   source_label?: string | null;
   facets?: ItemFacet[];
@@ -449,6 +451,7 @@ function parseItem(v: unknown): ComparedItem {
     error: strOrNull(o.error),
     needs_choice: bool(o.needs_choice),
     candidates: list(o.candidates, parseCandidate),
+    thin_sample: strOrNull(o.thin_sample),
     source_label: strOrNull(o.source_label),
     facets: list(o.facets, parseItemFacet),
   };

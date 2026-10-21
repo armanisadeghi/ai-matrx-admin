@@ -11,6 +11,7 @@ import { useEffect, useState, type KeyboardEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Compass, ListPlus, Search } from "lucide-react";
 import { Button, Chip } from "@ai-matrx/design-system/controls";
+import { formatPoints } from "@ai-matrx/kit/format";
 
 import { ProInput } from "@/components/official/ProInput";
 
@@ -86,7 +87,9 @@ export function AskBar({
       <form className="flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); go(); }}>
         <ProInput value={text} onChange={(e) => onText(e.target.value)} onKeyDown={onEnter} aria-label="Describe or list"
           placeholder={PLACEHOLDER[kindKey] ?? "Describe it, or list names with vs"} wrapperClassName="flex-1" />
+        {/* a paid search states its points BEFORE it runs (the decide step) */}
         <Button type="submit" variant="outline" disabled={find ? !canFind : !canFill}
+          meta={find && reading && reading.points > 0 && !finding ? formatPoints(reading.points) : undefined}
           icon={find || !canFill ? <Search className="h-4 w-4" /> : <ListPlus className="h-4 w-4" />}>
           {find || !canFill ? (finding ? "Finding" : "Find") : `Fill ${Math.min(parsed.items.length, 5)}`}
         </Button>

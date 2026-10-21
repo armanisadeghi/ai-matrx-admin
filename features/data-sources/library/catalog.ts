@@ -25,6 +25,11 @@ export interface LibrarySource extends DataSource {
   knownIssue: string | null;
   /** The server's own per-record points price, when it sends one. */
   pointsPerRecord: number | null;
+  /**
+   * True only when the source carries a price of its own (different from the catalog-wide default every
+   * unpriced source falls back to). A flat default says nothing about THIS source, so a browse card never shows it.
+   */
+  ownPrice?: boolean;
 }
 
 export interface LibraryGroup {
@@ -110,6 +115,18 @@ function inputOf(raw: unknown, exampleUrl: string | null): DataSource["input"] {
   };
 }
 
+/** A source priced differently from the catalog default (`usd_per_record_default`) has a price of its own. */
+function hasOwnPrice(source: Record<string, unknown>, top: Record<string, unknown>): boolean {
+  const def = num(top.usd_per_record_default);
+  const usd = num(source.usd_per_record);
+  const points = num(source.points_per_record);
+  if (usd == null && points == null) return false;
+  if (def == null) return true;
+  const rate = num(top.points_per_usd);
+  const defPoints = rate != null ? Math.ceil(def * rate - 1e-9) : null;
+  return (usd != null && Math.abs(usd - def) > 1e-12) || (points != null && defPoints != null && points !== defPoints);
+}
+
 export function parseLibrary(raw: unknown): Library {
   const o = obj(raw);
   const list = Array.isArray(o.sources) ? o.sources : [];
@@ -146,6 +163,7 @@ export function parseLibrary(raw: unknown): Library {
       confirmed: typeof s.verified_live === "boolean" ? s.verified_live : s.verified === true,
       knownIssue: knownIssueOf(s.known_issue),
       pointsPerRecord: price.points,
+      ownPrice: hasOwnPrice(s, o),
     });
   }
   // No featured flags from the server yet: the confirmed sources are the shelf.

@@ -11,6 +11,8 @@ export interface PublicPolicy {
   runRequiresAccount: boolean;
   refreshRequiresAccount: boolean;
   indexable: boolean;
+  /** Free comparisons a visitor gets a day; null = not known (say nothing). */
+  guestFreeRuns: number | null;
 }
 
 export interface PublicComparison {
@@ -39,6 +41,7 @@ export function parsePublicPolicy(raw: unknown): PublicPolicy {
     runRequiresAccount: b(p.run_requires_account, true),
     refreshRequiresAccount: b(p.refresh_requires_account, true),
     indexable: b(p.indexable, true),
+    guestFreeRuns: typeof p.guest_free_runs === "number" && p.guest_free_runs > 0 ? p.guest_free_runs : null,
   };
 }
 

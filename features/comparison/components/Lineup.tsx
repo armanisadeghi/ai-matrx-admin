@@ -198,7 +198,7 @@ export function Lineup({
       {kind.facets?.length ? <FacetOptions kind={kind} itemCount={matched.length} /> : null}
 
       <div className={cn("flex flex-col gap-3 rounded-2xl p-3 sm:flex-row sm:items-center sm:justify-between sm:pl-5",
-        dense ? "border border-border bg-card" : "sticky bottom-3 z-10 border border-glass-edge bg-glass shadow-glass backdrop-blur-glass backdrop-saturate-glass")}>
+        dense ? "border border-border bg-card" : "border border-glass-edge sm:sticky sm:bottom-3 sm:z-10 bg-glass shadow-glass backdrop-blur-glass backdrop-saturate-glass")}>
         <div className="type-secondary min-h-5 text-muted-foreground" aria-live="polite">
           {matched.length < 2 ? (
             <><span className="tabular-nums text-foreground">{matched.length}</span> of 2 matched

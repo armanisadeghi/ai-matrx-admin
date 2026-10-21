@@ -68,8 +68,10 @@ const INTERACTIVE =
  * A rich block in a note or an answer (`data-block-menu`, the one wrapper every block carries) is a
  * row of the document the same way: the pill sat on a tasks block's progress bar in Split (review 5,
  * G11, 2026-10-21).
+ * Any div-built table row (a comparison's field-by-field grid has no `tr`/`role=row`) opts in with
+ * `data-assist-row`: the pill covered the "Category" row of a result (live walk, 2026-10-21).
  */
-const ROW = '[data-row-id], [data-matrx-table-group-row], tr, [role="row"], [data-message-id], [data-block-menu]';
+const ROW = '[data-row-id], [data-matrx-table-group-row], tr, [role="row"], [data-message-id], [data-block-menu], [data-assist-row]';
 const LIFT_VAR = "--assist-dock-lift";
 const YIELD_ATTR = "data-assist-dock-yield";
 /**

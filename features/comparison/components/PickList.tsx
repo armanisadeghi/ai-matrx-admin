@@ -76,7 +76,7 @@ export function PickList({ result, rows, onAdd, onClose }: {
                 <ItemLogo name={m.name} logoUrl={m.logo_url} website={m.website} size={48} fill={photo} />
                 <div className="min-w-0 flex-1 space-y-0.5">
                   <div className="flex min-w-0 items-center gap-1.5">
-                    <span className="truncate text-base font-semibold text-foreground" title={m.name}>{m.name}</span>
+                    <span className="line-clamp-2 min-w-0 break-words text-base font-semibold text-foreground" title={m.name}>{m.name}</span>
                     {m.url ? (
                       <OutboundLink href={m.url} aria-label={`Open ${m.name}`}
                         className="shrink-0 text-muted-foreground hover:text-foreground"><ExternalLink className="h-3.5 w-3.5" /></OutboundLink>
@@ -93,7 +93,7 @@ export function PickList({ result, rows, onAdd, onClose }: {
                       </span>
                     ) : null}
                   </div>
-                  {m.detail ? <div className="type-secondary truncate text-muted-foreground" title={m.detail}>{m.detail}</div> : null}
+                  {m.detail ? <div className="type-secondary line-clamp-2 break-words text-muted-foreground" title={m.detail}>{m.detail}</div> : null}
                 </div>
                 <Button variant={added ? "quiet" : "outline"} disabled={added || room <= 0}
                   icon={added ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
