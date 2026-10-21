@@ -14,20 +14,20 @@ local mechanics only.
 
 ## The shape
 
-| File | What it owns |
-|---|---|
-| `DevicesSyncTab.tsx` | The settings tab: meter, live/polling banner, device cards, empty and error states. |
-| `components/DeviceCard.tsx` | One device: name, platform, app version, "silent since", its mappings. |
-| `components/MappingRow.tsx` | One synced folder: direction, state + remedy, knobs, pause/resume/remove. |
-| `useDevicesAndSync.ts` | The read, the realtime subscription, the announced polling fallback. |
-| `service.ts` | Direct-to-Supabase reads and the three intent writes. |
-| `honest-states.ts` | The mapping-state vocabulary as this browser renders it. |
-| `honest-states-parity.ts` | **Guard** — `pnpm check:honest-states-parity` (+ `:self-test`). Diffs values, titles and remedy actions against the engine's generated artifact, both directions. Wired into CI (`honest-states-parity` job, gated on `MATRX_LOCAL_REPO_TOKEN`) and both release-gate lanes. |
-| `components/SyncStorageMeters.tsx` | One storage meter per organization that OWNS a synced folder. |
-| `@/features/files/storage-meter/` | The meter itself — billing is its only source (D11). See that folder's header. |
-| `useNow.ts` | The shared clock (a `Date.now()` in a render body is impure). |
-| `app/(admin)/administration/applications/sync/` | The admin page over `files.sync_mapping_admin_status`. |
-| `platform.tsx` | Platform glyph, OS line, "last seen" — one copy for every device surface. |
+| File                                            | What it owns                                                                                                                                                                                                                                                                 |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DevicesSyncTab.tsx`                            | The settings tab: meter, live/polling banner, device cards, empty and error states.                                                                                                                                                                                          |
+| `components/DeviceCard.tsx`                     | One device: name, platform, app version, "silent since", its mappings.                                                                                                                                                                                                       |
+| `components/MappingRow.tsx`                     | One synced folder: direction, state + remedy, knobs, pause/resume/remove.                                                                                                                                                                                                    |
+| `useDevicesAndSync.ts`                          | The read, the realtime subscription, the announced polling fallback.                                                                                                                                                                                                         |
+| `service.ts`                                    | Direct-to-Supabase reads and the three intent writes.                                                                                                                                                                                                                        |
+| `honest-states.ts`                              | The mapping-state vocabulary as this browser renders it.                                                                                                                                                                                                                     |
+| `honest-states-parity.ts`                       | **Guard** — `pnpm check:honest-states-parity` (+ `:self-test`). Diffs values, titles and remedy actions against the engine's generated artifact, both directions. Wired into CI (`honest-states-parity` job, gated on `MATRX_LOCAL_REPO_TOKEN`) and both release-gate lanes. |
+| `components/SyncStorageMeters.tsx`              | One storage meter per organization that OWNS a synced folder.                                                                                                                                                                                                                |
+| `@/features/files/storage-meter/`               | The meter itself — billing is its only source (D11). See that folder's header.                                                                                                                                                                                               |
+| `useNow.ts`                                     | The shared clock (a `Date.now()` in a render body is impure).                                                                                                                                                                                                                |
+| `app/(admin)/administration/applications/sync/` | The admin page over `files.sync_mapping_admin_status`.                                                                                                                                                                                                                       |
+| `platform.tsx`                                  | Platform glyph, OS line, "last seen" — one copy for every device surface.                                                                                                                                                                                                    |
 
 ## Admin fleet surface
 
@@ -37,8 +37,11 @@ unobserved or failed read as an empty fleet. The `admin-sync-fleet.manifest.ts` 
 loaded rows, overlapping health segments and their counts, unique accounts over quota, the
 classification clock and each canonical table's query/processed rows. Segment searches are view
 state and never change the loaded health totals. The canonical read-only menu uses the `files`
-product; it reads current scope without another request. This page has no mutation handler or
-fixed AI worker. Keep readiness partial pending browser proof, header source mapping and
+product; it reads current scope without another request. Four primitive agent view targets
+change the existing parent-controlled segment searches; mapping records remain read-only because
+this page has no create/edit/delete mapping action. `page_overview` is the bounded XML summary;
+full mapping arrays remain lookup values. Guide: `features/surfaces/guides/admin-sync-fleet.md`.
+This page has no fixed AI worker. Keep readiness partial pending browser proof, header source mapping and
 independent certification.
 
 ## The device console (`/devices`, `/devices/[deviceId]`) — Matrx 2 lane E
@@ -46,15 +49,15 @@ independent certification.
 Drive a Matrx 2 computer from any browser, phone first: terminal, files, info. Spec:
 `common-docs/projects/matrx-2/SPEC.md`; plan: `matrx-desktop/design/protocol-v1-draft/PLAN.md`.
 
-| File (`console/`) | What it owns |
-|---|---|
-| `useDeviceClient.ts` | ONE `createDesktopClient` per device page, straight to the relay (token in the subprotocol, re-read every dial; `relay.reauth` on every session refresh; `useDesktopWake`). |
-| `relay.ts` | `NEXT_PUBLIC_MATRX_RELAY_URL` (production default `relay.matrxserver.com`), `/status` reads. |
-| `connection.ts` | The status pill's honest states (Live / Connecting… / Reconnecting… / Offline / refusals), tested. |
-| `TerminalPanel.tsx` | Shell chips (`exec.list`), `+`, close (kill, confirmed), one live shell in `@ai-matrx/terminal`; `?t=` holds the shell. |
-| `FilesPanel.tsx` / `FilePreview.tsx` / `paths.ts` | Breadcrumb, rows, pull to refresh, swipe Rename / Move / Trash (+ Undo), `…` New folder / Upload / Show hidden; `?path=`. |
-| `InfoPanel.tsx` | Device row + `sysinfo.get`; unmeasured = `—`. |
-| `DeviceConsole.tsx` / `DeviceList.tsx` / `devices-query.ts` | The two routes' bodies; the one device query (server page and browser). |
+| File (`console/`)                                           | What it owns                                                                                                                                                                |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useDeviceClient.ts`                                        | ONE `createDesktopClient` per device page, straight to the relay (token in the subprotocol, re-read every dial; `relay.reauth` on every session refresh; `useDesktopWake`). |
+| `relay.ts`                                                  | `NEXT_PUBLIC_MATRX_RELAY_URL` (production default `relay.matrxserver.com`), `/status` reads.                                                                                |
+| `connection.ts`                                             | The status pill's honest states (Live / Connecting… / Reconnecting… / Offline / refusals), tested.                                                                          |
+| `TerminalPanel.tsx`                                         | Shell chips (`exec.list`), `+`, close (kill, confirmed), one live shell in `@ai-matrx/terminal`; `?t=` holds the shell.                                                     |
+| `FilesPanel.tsx` / `FilePreview.tsx` / `paths.ts`           | Breadcrumb, rows, pull to refresh, swipe Rename / Move / Trash (+ Undo), `…` New folder / Upload / Show hidden; `?path=`.                                                   |
+| `InfoPanel.tsx`                                             | Device row + `sysinfo.get`; unmeasured = `—`.                                                                                                                               |
+| `DeviceConsole.tsx` / `DeviceList.tsx` / `devices-query.ts` | The two routes' bodies; the one device query (server page and browser).                                                                                                     |
 
 Rules that are easy to get wrong:
 
@@ -133,10 +136,10 @@ metered to the organization.
 
 ## Guards
 
-| Command | What it proves |
-|---|---|
-| `pnpm check:honest-states-parity` | The browser's state values, titles and remedy actions equal the engine artifact's, verbatim, both directions. CI job + both release-gate lanes. |
-| `pnpm check:honest-states-parity:self-test` | …and that guard still goes red (three planted drifts). |
-| `pnpm check:user-visible-parity` | The one visibility rule: the TS mirror equals the live SQL functions, and the browser's rendered set equals the predicate's set (needs `AI_ADMIN_*`). Set-based — 4,945 paths in under a second through `files.is_user_visible_paths`. Knobs: `PARITY_PATH_BATCH`, `PARITY_MAX_PATHS`. |
-| `npx jest features/files/devices/console` | The console's status-pill states. Terminal's keys, Ctrl latch, gestures, selection and viewport math are tested in `aidream/apps/shared/terminal` (`pnpm test`). |
-| `npx jest features/files/storage-meter features/files/devices features/files/utils/user-visible.test.ts` | The meter's honest states, the one-sentence-per-row rule, and the visibility unit covers. |
+| Command                                                                                                  | What it proves                                                                                                                                                                                                                                                                         |
+| -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm check:honest-states-parity`                                                                        | The browser's state values, titles and remedy actions equal the engine artifact's, verbatim, both directions. CI job + both release-gate lanes.                                                                                                                                        |
+| `pnpm check:honest-states-parity:self-test`                                                              | …and that guard still goes red (three planted drifts).                                                                                                                                                                                                                                 |
+| `pnpm check:user-visible-parity`                                                                         | The one visibility rule: the TS mirror equals the live SQL functions, and the browser's rendered set equals the predicate's set (needs `AI_ADMIN_*`). Set-based — 4,945 paths in under a second through `files.is_user_visible_paths`. Knobs: `PARITY_PATH_BATCH`, `PARITY_MAX_PATHS`. |
+| `npx jest features/files/devices/console`                                                                | The console's status-pill states. Terminal's keys, Ctrl latch, gestures, selection and viewport math are tested in `aidream/apps/shared/terminal` (`pnpm test`).                                                                                                                       |
+| `npx jest features/files/storage-meter features/files/devices features/files/utils/user-visible.test.ts` | The meter's honest states, the one-sentence-per-row rule, and the visibility unit covers.                                                                                                                                                                                              |

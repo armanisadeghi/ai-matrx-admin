@@ -14,6 +14,14 @@
 "use client";
 
 import { useRef, useState } from "react";
+import {
+  FLEET_SEGMENTS,
+  fleetOverview,
+  fleetSearchText,
+  type FleetSegment,
+} from "./surfaceContext";
+import type { SurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import { AlertTriangle, CircleSlash, HardDrive, Wifi } from "lucide-react";
@@ -95,8 +103,12 @@ function FleetSection({
   empty,
   now,
   onView,
+  query,
+  onQueryChange,
 }: {
-  id: string;
+  id: FleetSegment;
+  query: MatrxDataTableQueryState;
+  onQueryChange: (id: FleetSegment, query: MatrxDataTableQueryState) => void;
   title: string;
   rows: SyncAdminRow[];
   empty: string;
@@ -107,14 +119,6 @@ function FleetSection({
     rows?: SyncAdminRow[],
   ) => void;
 }) {
-  const [query, setQuery] = useState<MatrxDataTableQueryState>({
-    page: 1,
-    pageSize: 0,
-    search: "",
-    anyOf: "",
-    columnFilters: {},
-    sort: null,
-  });
   const columns: MatrxColumnDef<SyncAdminRow>[] = [
     {
       id: "account",
@@ -210,7 +214,7 @@ function FleetSection({
           mode: "controlled-local",
           state: query,
           onStateChange: (next) => {
-            setQuery(next);
+            onQueryChange(id, next);
             onView(id, next);
           },
         }}
@@ -229,8 +233,36 @@ function FleetSection({
   );
 }
 
+function initialFleetQuery(): MatrxDataTableQueryState {
+  return {
+    page: 1,
+    pageSize: 0,
+    search: "",
+    anyOf: "",
+    columnFilters: {},
+    sort: null,
+  };
+}
 export function SyncFleetClient({ rows }: { rows: SyncAdminRow[] }) {
   const now = useNow();
+  const [queries, setQueries] = useState<
+    Record<FleetSegment, MatrxDataTableQueryState>
+  >(() => ({
+    "over-quota": initialFleetQuery(),
+    stopped: initialFleetQuery(),
+    degraded: initialFleetQuery(),
+    behind: initialFleetQuery(),
+  }));
+  function onQueryChange(id: FleetSegment, query: MatrxDataTableQueryState) {
+    setQueries((current) => ({ ...current, [id]: query }));
+  }
+  const searches = {
+    "over-quota": queries["over-quota"].search,
+    stopped: queries.stopped.search,
+    degraded: queries.degraded.search,
+    behind: queries.behind.search,
+  };
+
   const contentRef = useRef<HTMLDivElement>(null);
   const tableViews = useRef<
     Record<string, { query: MatrxDataTableQueryState; rows: SyncAdminRow[] }>
@@ -262,6 +294,22 @@ export function SyncFleetClient({ rows }: { rows: SyncAdminRow[] }) {
       observed_at: now,
     };
     return createAdminSyncFleetScope({
+      page_overview: fleetOverview(
+        rows,
+        {
+          accounts_over_quota: accountsOverQuota,
+          over_quota_count: overQuota.length,
+          stalled_count: stalled.length,
+          degraded_count: degraded.length,
+          behind_count: behind.length,
+        },
+        now,
+        searches,
+      ),
+      over_quota_search: queries["over-quota"].search,
+      stalled_search: queries.stopped.search,
+      degraded_search: queries.degraded.search,
+      behind_search: queries.behind.search,
       sync_mappings: rows,
       sync_mapping_count: rows.length,
       fleet_health: health,
@@ -270,7 +318,12 @@ export function SyncFleetClient({ rows }: { rows: SyncAdminRow[] }) {
       stalled_mappings: stalled,
       degraded_mappings: degraded,
       behind_mappings: behind,
-      fleet_table_views: tableViews.current,
+      fleet_table_views: Object.fromEntries(
+        FLEET_SEGMENTS.map((id) => [
+          id,
+          { query: queries[id], rows: tableViews.current[id]?.rows },
+        ]),
+      ),
       load_state: "ready",
       content: contentRef.current?.innerText,
       context: { load_state: "ready", loaded_mapping_limit: 1000 },
@@ -284,13 +337,62 @@ export function SyncFleetClient({ rows }: { rows: SyncAdminRow[] }) {
     const previous = tableViews.current[id];
     tableViews.current[id] = { query, rows: processed ?? previous?.rows ?? [] };
   }
+  const searchTargets = {
+    over_quota_search: "over-quota",
+    stalled_search: "stopped",
+    degraded_search: "degraded",
+    behind_search: "behind",
+  } satisfies Record<string, FleetSegment>;
+  function getWriteHandlers(): SurfaceWriteHandlers {
+    return Object.fromEntries(
+      Object.entries(searchTargets).map(([target, id]) => [
+        target,
+        {
+          validate: (value: unknown) => {
+            fleetSearchText(value);
+          },
+          apply: (value: unknown) => {
+            const search = fleetSearchText(value);
+            onQueryChange(id, { ...queries[id], page: 1, search });
+            return {
+              summary:
+                "Changed the fleet segment search. Mapping records are unchanged.",
+              data: { segment: id, search },
+            };
+          },
+        },
+      ]),
+    );
+  }
+  const extraSections: ContextMenuExtraSection[] = [
+    {
+      id: "fleet-view",
+      label: "Fleet view",
+      items: [
+        {
+          kind: "item",
+          id: "clear-segment-searches",
+          label: "Clear segment searches",
+          onSelect: () =>
+            setQueries({
+              "over-quota": initialFleetQuery(),
+              stopped: initialFleetQuery(),
+              degraded: initialFleetQuery(),
+              behind: initialFleetQuery(),
+            }),
+        },
+      ],
+    },
+  ];
   return (
     <SurfaceRuntimeProvider
       surfaceName={ADMIN_SYNC_FLEET_SURFACE_NAME}
       getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
     >
       <NonEditableContextMenu
-        menuVersion={2}
+        menuVersion={3}
+        extraSections={extraSections}
         sourceFeature="files"
         surfaceName={ADMIN_SYNC_FLEET_SURFACE_NAME}
         getApplicationScope={getScope}
@@ -334,6 +436,8 @@ export function SyncFleetClient({ rows }: { rows: SyncAdminRow[] }) {
 
           <FleetSection
             id="over-quota"
+            query={queries["over-quota"]}
+            onQueryChange={onQueryChange}
             title="Over quota"
             rows={overQuota}
             empty="No account is over its storage limit."
@@ -342,6 +446,8 @@ export function SyncFleetClient({ rows }: { rows: SyncAdminRow[] }) {
           />
           <FleetSection
             id="stopped"
+            query={queries["stopped"]}
+            onQueryChange={onQueryChange}
             title="Sync stopped — needs the person at that machine"
             rows={stalled}
             empty="Nothing is stopped."
@@ -350,6 +456,8 @@ export function SyncFleetClient({ rows }: { rows: SyncAdminRow[] }) {
           />
           <FleetSection
             id="degraded"
+            query={queries["degraded"]}
+            onQueryChange={onQueryChange}
             title="Degraded but moving"
             rows={degraded}
             empty="Nothing is degraded."
@@ -358,6 +466,8 @@ export function SyncFleetClient({ rows }: { rows: SyncAdminRow[] }) {
           />
           <FleetSection
             id="behind"
+            query={queries["behind"]}
+            onQueryChange={onQueryChange}
             title="Devices behind — active mappings whose device stopped checking in"
             rows={behind}
             empty="Every active mapping has a device that checked in recently."

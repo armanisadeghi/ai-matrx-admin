@@ -43,7 +43,13 @@ import {
 } from "@/components/ui/select";
 import { recordToast, toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
-import { saveScenario } from "@/features/proof-runs/api";
+import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import {
+  parseScenarioDraft,
+  mergeScenarioDraft,
+  parseViewText,
+} from "../scenarioAgentWrites";
+import { ProInput } from "@/components/official/ProInput";
 import type {
   Expectation,
   ExpectationRule,
@@ -221,7 +227,7 @@ function ExpectationRow({
 
           <div className="space-y-1">
             <Label className="text-xs">Title — what this proof asserts</Label>
-            <Input
+            <ProInput
               value={expectation.title ?? ""}
               onChange={(e) => set({ title: e.target.value })}
               placeholder="Every link points at a page that exists"
@@ -349,8 +355,12 @@ export function ScenarioEditor({
   onCancel,
   getApplicationScope,
   registerScopeReader,
+  persistScenario,
+  catalogAvailable,
 }: {
   scenario: ProofScenario;
+  persistScenario: (scenario: ProofScenario) => Promise<ProofScenario>;
+  catalogAvailable: boolean;
   mandates: ProofMandateOption[];
   rules: ExpectationRuleHelp[];
   onSaved: (scenario: ProofScenario) => void;
@@ -382,7 +392,7 @@ export function ScenarioEditor({
       scenario_label: scenario.label,
       scenario_description: scenario.description,
       scenario_mandate_key: scenario.mandate_key,
-      scenario_user_input: scenario.user_input ?? undefined,
+      scenario_user_input: scenario.user_input ?? "",
       scenario_variables: scenario.variables,
       scenario_allowed_routes: scenario.allowed_routes,
       scenario_expectations: scenario.expectations,
@@ -404,6 +414,67 @@ export function ScenarioEditor({
     markers,
     registerScopeReader,
   ]);
+  function readDraftPatch(value: unknown) {
+    return parseScenarioDraft(value, mandates, {
+      saving,
+      variablesError,
+      immutableSlug: initial.slug,
+      catalogReady: catalogAvailable,
+    });
+  }
+  useSurfaceWriteHandlers(ADMIN_PROOF_RUNS_SURFACE_NAME, {
+    scenario_description: {
+      validate: (value) => {
+        parseViewText(value, "scenario_description");
+        if (saving) throw new Error("Wait for the current save.");
+      },
+      apply: (value) => {
+        if (saving) throw new Error("Wait for the current save.");
+        setScenario((current) => ({
+          ...current,
+          description: parseViewText(value, "scenario_description"),
+        }));
+        return {
+          summary: "Changed the scenario description draft. Nothing is saved.",
+        };
+      },
+    },
+    scenario_user_input: {
+      validate: (value) => {
+        parseViewText(value, "scenario_user_input");
+        if (saving) throw new Error("Wait for the current save.");
+      },
+      apply: (value) => {
+        if (saving) throw new Error("Wait for the current save.");
+        setScenario((current) => ({
+          ...current,
+          user_input: parseViewText(value, "scenario_user_input"),
+        }));
+        return {
+          summary: "Changed the scenario user-input draft. Nothing is saved.",
+        };
+      },
+    },
+    scenario_draft: {
+      validate: (value) => {
+        readDraftPatch(value);
+      },
+      apply: (value) => {
+        const fields = readDraftPatch(value);
+        const next = mergeScenarioDraft(scenario, fields);
+        setScenario(next);
+        if (fields.variables !== undefined) {
+          setVariablesText(JSON.stringify(next.variables, null, 2));
+          setVariablesError(null);
+        }
+        return {
+          summary:
+            "Updated the controlled scenario draft. Nothing is saved until Save scenario is pressed.",
+          data: { slug: next.slug, label: next.label },
+        };
+      },
+    },
+  });
   const mandate = mandates.find((m) => m.mandate_key === scenario.mandate_key);
 
   const onVariablesChange = useCallback((text: string) => {
@@ -437,7 +508,7 @@ export function ScenarioEditor({
     }
     setSaving(true);
     try {
-      const saved = await saveScenario(scenario);
+      const saved = await persistScenario(scenario);
       recordToast.success(
         // A scenario has no separate id — its slug is the stable key and the
         // segment its own route is built from.
@@ -474,7 +545,10 @@ export function ScenarioEditor({
     setScenario((s) => ({ ...s, allowed_routes: [...s.allowed_routes, ""] }));
 
   return (
-    <div className="space-y-4">
+    <div
+      data-surface-layer={ADMIN_PROOF_RUNS_SURFACE_NAME}
+      className="space-y-4"
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-foreground">
           {initial.slug ? `Editing ${initial.slug}` : "New scenario"}
@@ -513,7 +587,7 @@ export function ScenarioEditor({
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Name</Label>
-          <Input
+          <ProInput
             value={scenario.label}
             onChange={(e) =>
               setScenario((s) => ({ ...s, label: e.target.value }))
@@ -624,6 +698,23 @@ export function ScenarioEditor({
         ) : null}
       </div>
 
+      <div className="space-y-1">
+        <Label className="text-xs">Scenario user input</Label>
+        <ProTextarea
+          surfaceName={ADMIN_PROOF_RUNS_SURFACE_NAME}
+          sourceFeature="admin"
+          getApplicationScope={getApplicationScope}
+          value={scenario.user_input ?? ""}
+          onChange={(event) =>
+            setScenario((current) => ({
+              ...current,
+              user_input: event.target.value,
+            }))
+          }
+          placeholder="The human message this scenario tests"
+          className="min-h-[56px] text-xs"
+        />
+      </div>
       <div className="space-y-1">
         <Label className="text-xs">
           The facts the agent is handed (JSON) — plant your markers here

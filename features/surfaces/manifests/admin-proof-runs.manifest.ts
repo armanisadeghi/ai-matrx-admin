@@ -3,6 +3,7 @@ import type {
   SurfaceScopePayload,
   SurfaceValue,
   SurfaceValueGroup,
+  SurfaceWriteTarget,
 } from "@ai-matrx/chat/surfaces/types";
 import { mergeBaselineValues } from "@ai-matrx/chat/surfaces/manifests/_baseline.manifest";
 import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
@@ -16,10 +17,36 @@ const groups: SurfaceValueGroup[] = [
 ];
 const values: SurfaceValue[] = [
   {
+    name: "page_overview",
+    label: "Proof runs overview",
+    description:
+      "Compact XML overview of read state, selected check/mode, registered checks, scenarios and recent receipt identities, with total/shown counts when truncated. No lookup is needed to describe the page.",
+    valueType: "string",
+    alwaysAvailable: true,
+    typicalCharCount: 5000,
+    inlineUpTo: 6500,
+    autoContext: true,
+    group: "state",
+    sortOrder: 0,
+  },
+  {
+    name: "history_search",
+    label: "History search",
+    description:
+      "Current controlled search text in the recent-runs table. Empty text means no search.",
+    valueType: "string",
+    alwaysAvailable: true,
+    typicalCharCount: 100,
+    autoContext: false,
+    group: "view",
+    sortOrder: 185,
+  },
+
+  {
     name: "proof_checks",
     label: "Proof checks",
     description:
-      "Available only after the combined registry, recent-run, scenario and mandate-catalog read succeeds. Empty then means a successful empty result; retained rows during refresh are the last successful read.",
+      "Available only after the combined registry, recent-run, scenario and mandate-catalog read succeeds. Empty then means a successful empty result; retained rows during refresh are the last successful read; absent after a failed read.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 4000,
@@ -31,7 +58,7 @@ const values: SurfaceValue[] = [
     name: "recent_runs",
     label: "Recent runs",
     description:
-      "Available only after the combined registry, recent-run, scenario and mandate-catalog read succeeds. Empty then means a successful empty result; retained rows during refresh are the last successful read.",
+      "Available only after the combined registry, recent-run, scenario and mandate-catalog read succeeds. Empty then means a successful empty result; retained rows during refresh are the last successful read; absent after a failed read.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 5000,
@@ -43,7 +70,7 @@ const values: SurfaceValue[] = [
     name: "scenarios",
     label: "Scenarios",
     description:
-      "Available only after the combined registry, recent-run, scenario and mandate-catalog read succeeds. Empty then means a successful empty result; retained rows during refresh are the last successful read.",
+      "Available only after the combined registry, recent-run, scenario and mandate-catalog read succeeds. Empty then means a successful empty result; retained rows during refresh are the last successful read; absent after a failed read.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 8000,
@@ -55,7 +82,7 @@ const values: SurfaceValue[] = [
     name: "mandate_catalog",
     label: "Mandate catalog",
     description:
-      "Available only after the combined registry, recent-run, scenario and mandate-catalog read succeeds. Empty then means a successful empty result; retained rows during refresh are the last successful read.",
+      "Available only after the combined registry, recent-run, scenario and mandate-catalog read succeeds. Empty then means a successful empty result; retained rows during refresh are the last successful read; absent after a failed read.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 8000,
@@ -67,7 +94,7 @@ const values: SurfaceValue[] = [
     name: "expectation_rules",
     label: "Expectation rules",
     description:
-      "Available only after the combined registry, recent-run, scenario and mandate-catalog read succeeds. Empty then means a successful empty result; retained rows during refresh are the last successful read.",
+      "Available only after the combined registry, recent-run, scenario and mandate-catalog read succeeds. Empty then means a successful empty result; retained rows during refresh are the last successful read; absent after a failed read.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 4000,
@@ -83,7 +110,7 @@ const values: SurfaceValue[] = [
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 5000,
-    autoContext: true,
+    autoContext: false,
     group: "runs",
     sortOrder: 50,
   },
@@ -102,7 +129,7 @@ const values: SurfaceValue[] = [
     name: "data_loaded",
     label: "Data loaded",
     description:
-      "Whether at least one combined read succeeded; false distinguishes unobserved initial empty state.",
+      "Whether the current combined-read snapshot is usable; false before first success or after an API failure or organization refusal.",
     valueType: "boolean",
     alwaysAvailable: true,
     typicalCharCount: 5,
@@ -187,7 +214,7 @@ const values: SurfaceValue[] = [
     valueType: "object",
     alwaysAvailable: true,
     typicalCharCount: 300,
-    autoContext: true,
+    autoContext: false,
     group: "runs",
     sortOrder: 140,
   },
@@ -199,7 +226,7 @@ const values: SurfaceValue[] = [
     valueType: "object",
     alwaysAvailable: true,
     typicalCharCount: 600,
-    autoContext: true,
+    autoContext: false,
     group: "state",
     sortOrder: 150,
   },
@@ -293,7 +320,7 @@ const values: SurfaceValue[] = [
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 100,
-    autoContext: true,
+    autoContext: false,
     group: "state",
     sortOrder: 230,
   },
@@ -523,6 +550,144 @@ const values: SurfaceValue[] = [
     sortOrder: 530,
   },
 ];
+const writeTargets: SurfaceWriteTarget[] = [
+  {
+    name: "scenario_description",
+    label: "Scenario description draft",
+    description:
+      "Replaces the open scenario's authored description text. Nothing is saved. Open the scenario first with open_scenario.",
+    valueType: "string",
+    updatesValue: "scenario_description",
+    mode: "draft",
+    applyPolicy: "ask",
+    patchable: true,
+    group: "scenario",
+    sortOrder: 140,
+  },
+  {
+    name: "scenario_user_input",
+    label: "Scenario user-input draft",
+    description:
+      "Replaces the open scenario's human-message test fixture. This is engineered scenario data; it does not send a message or run the subject agent. Nothing is saved. Open a scenario first.",
+    valueType: "string",
+    updatesValue: "scenario_user_input",
+    mode: "draft",
+    applyPolicy: "ask",
+    patchable: true,
+    group: "scenario",
+    sortOrder: 150,
+  },
+
+  {
+    name: "create_scenarios",
+    label: "Create scenarios",
+    valueType: "array",
+    valueKind: "json",
+    updatesValue: "scenarios",
+    mode: "entity",
+    applyPolicy: "ask",
+    group: "scenario",
+    sortOrder: 100,
+    description:
+      "Saves 1–25 new scenarios through the same save path as the editor; NEVER runs a proof. Value is an ARRAY of objects with required slug (3–61 lowercase letters/digits/underscores), label (1–200 chars), mandate_key (from mandate_catalog); optional description string, variables JSON object, allowed_routes string array, expectations array of generated Expectation objects, user_input string/null, is_active boolean. Slugs must be new and unique. Operator cost and cadence use the editor defaults and cannot be supplied. Invalid items, unknown keys/mandates and duplicate slugs refuse the entire list before approval. Close the current editor first.",
+  },
+  {
+    name: "update_scenarios",
+    label: "Update scenarios",
+    valueType: "array",
+    valueKind: "json",
+    updatesValue: "scenarios",
+    mode: "entity",
+    applyPolicy: "ask",
+    group: "scenario",
+    sortOrder: 110,
+    description:
+      "Saves changes to 1–25 loaded scenarios immediately; NEVER executes one. Value is an ARRAY of {id: existing scenario slug, ...fields}. Only sent fields change: label, description, mandate_key, variables, allowed_routes, expectations, user_input, is_active. Arrays/variables replace that whole field; include items to keep. is_active:false disables a scenario and true re-enables it. Slug, derived check identity, cadence, cost ceiling and evidence cannot change. Unknown/repeated ids, invalid fields/mandates and an open editor refuse the whole list before approval.",
+  },
+  {
+    name: "delete_scenarios",
+    label: "Archive scenarios",
+    valueType: "array",
+    valueKind: "json",
+    updatesValue: "scenarios",
+    mode: "entity",
+    applyPolicy: "ask",
+    group: "scenario",
+    sortOrder: 120,
+    description:
+      "Archives 1–25 scenarios using the page's existing soft-delete function. Value is an ARRAY of loaded scenario slug strings or {id:slug} objects. Archived scenarios disappear from this list; the recorded proof runs are retained. There is no restore-deleted UI on this page; prefer update_scenarios with is_active:false to disable reversibly. Unknown or repeated slugs refuse the whole list. Close the open editor first.",
+  },
+  {
+    name: "scenario_draft",
+    label: "Scenario draft",
+    valueType: "object",
+    valueKind: "json",
+    updatesValue: "scenario_draft",
+    mode: "draft",
+    applyPolicy: "ask",
+    group: "scenario",
+    sortOrder: 130,
+    description:
+      "Opens the existing New scenario editor, or patches the currently open scenario's controlled fields. NOTHING is saved or run. Value is an OBJECT with __kind:'json' and at least one authored field: slug (new drafts only), label, description, mandate_key, variables, allowed_routes, expectations, user_input, is_active. Omitted fields stay unchanged; arrays and variables replace their whole field. Saved slugs cannot change. Existing slugs must be opened with open_scenario first. Cost/cadence controls remain operator-owned. Current invalid variables JSON requires corrected variables in the proposal. The person still presses Save scenario.",
+  },
+  {
+    name: "selected_check",
+    label: "Selected check",
+    description:
+      "Selects a loaded proof_checks slug without executing it. Plain string; empty clears the selection.",
+    valueType: "string",
+    updatesValue: "selected_check",
+    mode: "ui",
+    applyPolicy: "auto",
+    group: "view",
+    sortOrder: 200,
+  },
+  {
+    name: "run_mode",
+    label: "Run mode",
+    description:
+      "Changes the existing run-mode control to auto, live or replay. No proof starts and no provider is called.",
+    valueType: "string",
+    updatesValue: "run_mode",
+    mode: "ui",
+    applyPolicy: "auto",
+    group: "view",
+    sortOrder: 200,
+  },
+  {
+    name: "history_search",
+    label: "History search",
+    description: "Changes recent-run search text only; empty string clears it.",
+    valueType: "string",
+    updatesValue: "history_search",
+    mode: "ui",
+    applyPolicy: "auto",
+    group: "view",
+    sortOrder: 200,
+  },
+  {
+    name: "open_run",
+    label: "Open receipt",
+    description:
+      "Opens a recorded receipt by id from recent_runs; empty text closes it. Reads existing evidence and never executes a check.",
+    valueType: "string",
+    mode: "ui",
+    applyPolicy: "auto",
+    group: "view",
+    sortOrder: 200,
+  },
+  {
+    name: "open_scenario",
+    label: "Open scenario",
+    description:
+      "Opens a saved scenario by its slug from scenarios, or empty text for a new draft. Nothing is saved or run. Save or cancel an open draft first.",
+    valueType: "string",
+    mode: "ui",
+    applyPolicy: "auto",
+    group: "view",
+    sortOrder: 200,
+  },
+];
 export const adminProofRunsManifest: SurfaceManifest = {
   surfaceName: ADMIN_PROOF_RUNS_SURFACE_NAME,
   client: "matrx-admin",
@@ -535,11 +700,15 @@ export const adminProofRunsManifest: SurfaceManifest = {
   readiness: "partial",
   readinessNote:
     "Complete live scope and canonical menu authored; browser behavior, helper isolation and independent certification remain to be verified.",
-  intro: `<surface_intro>Administrator proof checks, provider spending controls, streamed proof receipts and recent history. Scenario drafts test an existing mandate using engineered inputs; registering this page does not authorize a native job to inherit page context. Loaded data, pending reads, failures and selected run receipts remain distinct.</surface_intro>`,
+  guide: "features/surfaces/guides/admin-proof-runs.md",
+  intro: `<surface_intro>Read page_overview first to describe this page without lookups. Scenario authored data uses create_scenarios, update_scenarios, delete_scenarios and scenario_draft; these use the editor's own save/remove paths. Generic data/context tools are not an alternative. View targets select a check/mode, search history and open existing receipts or scenario editors; NO target executes a proof, changes a cost ceiling, or schedules work. Native scenario jobs receive only their engineered input, never ambient page context. Administrator proof checks, provider spending controls, streamed proof receipts and recent history. Scenario drafts test an existing mandate using engineered inputs; registering this page does not authorize a native job to inherit page context. Loaded data, pending reads, failures and selected run receipts remain distinct.</surface_intro>`,
   groups,
+  writeTargets,
   values: mergeBaselineValues([], values),
 };
 export function createAdminProofRunsScope(values: {
+  page_overview: string;
+  history_search: string;
   proof_checks?: unknown[];
   recent_runs?: unknown[];
   scenarios?: unknown[];

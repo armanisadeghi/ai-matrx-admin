@@ -12,8 +12,8 @@
 - Scenario types and API projections consume the generated contracts in `types.ts`. The JSON editor
   preserves invalid text alongside its parse error; its last valid parsed variables are separate.
 - `admin-proof-runs.manifest.ts` is the page's value contract. Loaded registries and budget values
-  are absent before the combined read succeeds; retained values during refresh are the last
-  successful read. `data_loaded`, `loading`, read error and organization requirement distinguish
+  are absent before the combined read succeeds and after a failed read; retained values during
+  an in-flight refresh are the last successful read. `data_loaded`, `loading`, read error and organization requirement distinguish
   these states. Read the latest scope synchronously; do not fetch on a menu gesture.
 - History queries and processed rows come from the canonical table. A detail response can replace
   the selected receipt only when its ID still matches the latest request. Closing selection cancels
@@ -23,6 +23,16 @@
   and marker names with the page scope; closing it removes that scope.
 - The mandate named by a scenario receives engineered scenario inputs. Surface registration grants
   no ambient inheritance and creates no helper binding or new AI worker.
+- Scenario agent CRUD is validated whole-list before approval and re-parsed at apply; it calls the
+  same `persistScenario`/`removeSavedScenario` functions as the human editor and delete action.
+  Saved writes refuse while an editor is open. `scenario_draft` patches the controlled editor;
+  text targets support anchored edits. Operator cadence/cost controls remain read-only to agents.
+- `page_overview` is the bounded XML pack; large arrays stay lookup values. The guide is
+  `features/surfaces/guides/admin-proof-runs.md`. The existing `json` kind is the generic minimum
+  for command inputs; the precise schemas are runtime Zod validators in `scenarioAgentWrites.ts`,
+  not new renderable kinds. No proof execution target is exposed.
+- The provider excludes the live console's native subject conversation and selected receipt
+  conversation from ambient context and surface tools.
 - Readiness remains partial until browser menu/controlled-edit proof, header source attribution,
   helper isolation and independent certification are verified. Historical billing/provider failures
   are not current verification evidence.

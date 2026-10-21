@@ -49,6 +49,7 @@ import {
   fetchProofRuns,
   fetchScenarios,
   runProofCheck,
+  saveScenario,
 } from "@/features/proof-runs/api";
 import {
   attestationFromRun,
@@ -79,6 +80,15 @@ import {
 import { formatDurationMs, formatDurationSeconds } from "@ai-matrx/kit/format";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
+import { isJsonObject } from "@/types/json";
+import { createScenarioWriteHandlers } from "../scenarioWriteHandlers";
+import {
+  parseScenarioDraft,
+  mergeScenarioDraft,
+  parseViewText,
+} from "../scenarioAgentWrites";
+import { proofRunsOverview } from "../surfaceContext";
+import type { SurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   ADMIN_PROOF_RUNS_SURFACE_NAME,
@@ -369,7 +379,9 @@ export default function ProofRunsClient() {
     setOpenRun(null);
     try {
       const receipt = await fetchProofRun(runId);
-      if (detailRequest.current === runId) setOpenRun(receipt);
+      if (detailRequest.current !== runId) return false;
+      setOpenRun(receipt);
+      return true;
     } catch (err) {
       if (detailRequest.current === runId) {
         setDetailError(extractErrorMessage(err));
@@ -377,6 +389,7 @@ export default function ProofRunsClient() {
           description: extractErrorMessage(err),
         });
       }
+      return false;
     } finally {
       if (detailRequest.current === runId) setDetailLoading(false);
     }
@@ -385,7 +398,7 @@ export default function ProofRunsClient() {
   const removeScenario = useCallback(
     async (slug: string) => {
       try {
-        await deleteScenario(slug);
+        await removeSavedScenario(slug);
         toast.success(`Deleted ${slug}`);
         void refresh();
       } catch (err) {
@@ -397,15 +410,209 @@ export default function ProofRunsClient() {
     [refresh],
   );
 
+  async function persistScenario(
+    scenario: ProofScenario,
+  ): Promise<ProofScenario> {
+    const saved = await saveScenario(scenario);
+    setScenarios((current) =>
+      [...current.filter((row) => row.slug !== saved.slug), saved].sort(
+        (a, b) => a.slug.localeCompare(b.slug),
+      ),
+    );
+    return saved;
+  }
+  async function removeSavedScenario(slug: string): Promise<void> {
+    await deleteScenario(slug);
+    setScenarios((current) => current.filter((row) => row.slug !== slug));
+  }
+  function ensureScenarioData() {
+    if (!dataLoaded || loading || loadError || orgRequired)
+      throw new Error(
+        "Wait for a successful current scenario and mandate catalog read before changing saved scenarios.",
+      );
+    if (editing)
+      throw new Error(
+        "Save or cancel the open scenario draft before changing the saved list; use scenario_draft to edit its controlled fields instead.",
+      );
+  }
+  function draftFields(value: unknown) {
+    if (!dataLoaded || loading || loadError || orgRequired)
+      throw new Error(
+        "Wait for the mandate catalog to load before staging a scenario.",
+      );
+    return parseScenarioDraft(value, mandates);
+  }
+  function getWriteHandlers(): SurfaceWriteHandlers {
+    const handlers: SurfaceWriteHandlers = createScenarioWriteHandlers({
+      current: () => scenarios,
+      mandates: () => mandates,
+      ensureReady: ensureScenarioData,
+      save: persistScenario,
+      remove: removeSavedScenario,
+    });
+    if (!editing) {
+      const openFirst = () => {
+        throw new Error(
+          "Open a scenario with open_scenario before editing its text draft.",
+        );
+      };
+      handlers.scenario_description = { validate: openFirst, apply: openFirst };
+      handlers.scenario_user_input = { validate: openFirst, apply: openFirst };
+    }
+    if (!editing)
+      handlers.scenario_draft = {
+        validate: (value) => {
+          draftFields(value);
+        },
+        apply: (value) => {
+          const proposed = mergeScenarioDraft(
+            emptyScenario(),
+            draftFields(value),
+          );
+          if (
+            proposed.slug &&
+            scenarios.some((row) => row.slug === proposed.slug)
+          )
+            throw new Error(
+              "That scenario slug already exists. Open it through open_scenario before editing.",
+            );
+          setEditing(proposed);
+          return {
+            summary:
+              "Opened and filled the scenario editor. Nothing is saved; review it and press Save scenario.",
+            data: { slug: proposed.slug },
+          };
+        },
+      };
+    handlers.selected_check = {
+      validate: (value) => {
+        const slug = parseViewText(value, "selected_check");
+        if (slug && !checks.some((check) => check.slug === slug))
+          throw new Error("Choose a slug from proof_checks.");
+      },
+      apply: (value) => {
+        const slug = parseViewText(value, "selected_check");
+        if (slug && !checks.some((check) => check.slug === slug))
+          throw new Error("Choose a slug from proof_checks.");
+        setSelected(slug);
+        return {
+          summary: "Selected the check without running it.",
+          data: { selected_check: slug },
+        };
+      },
+    };
+    handlers.run_mode = {
+      validate: (value) => {
+        const mode = parseViewText(value, "run_mode");
+        if (mode !== "auto" && mode !== "live" && mode !== "replay")
+          throw new Error("run_mode must be auto, live or replay.");
+      },
+      apply: (value) => {
+        const mode = parseViewText(value, "run_mode");
+        if (mode !== "auto" && mode !== "live" && mode !== "replay")
+          throw new Error("run_mode must be auto, live or replay.");
+        setMode(mode);
+        return {
+          summary: "Changed the run mode without starting a check.",
+          data: { run_mode: mode },
+        };
+      },
+    };
+    handlers.history_search = {
+      validate: (value) => {
+        parseViewText(value, "history_search");
+      },
+      apply: (value) => {
+        const search = parseViewText(value, "history_search");
+        setTableQuery((current) => ({ ...current, page: 1, search }));
+        return {
+          summary: "Updated the history table search.",
+          data: { history_search: search },
+        };
+      },
+    };
+    handlers.open_run = {
+      validate: (value) => {
+        const id = parseViewText(value, "open_run");
+        if (id && !runs.some((run) => run.id === id))
+          throw new Error(
+            "Choose an id from recent_runs, or empty text to close the receipt.",
+          );
+      },
+      apply: async (value) => {
+        const id = parseViewText(value, "open_run");
+        if (id) {
+          if (!runs.some((run) => run.id === id))
+            throw new Error("Choose an id from recent_runs.");
+          const opened = await openRunDetail(id);
+          if (!opened)
+            throw new Error(
+              "The requested receipt did not load; check run_detail_error before retrying.",
+            );
+        } else {
+          detailRequest.current = null;
+          setOpenRun(null);
+          setDetailError(null);
+          setDetailLoading(false);
+        }
+        return {
+          summary: id
+            ? "Opened the recorded proof receipt."
+            : "Closed the recorded receipt.",
+          data: { requested_run_id: id },
+        };
+      },
+    };
+    handlers.open_scenario = {
+      validate: (value) => {
+        const slug = parseViewText(value, "open_scenario");
+        if (editing)
+          throw new Error("Save or cancel the current scenario draft first.");
+        if (slug && !scenarios.some((row) => row.slug === slug))
+          throw new Error(
+            "Choose a slug from scenarios, or empty text for a new scenario.",
+          );
+      },
+      apply: (value) => {
+        if (editing)
+          throw new Error("Save or cancel the current scenario draft first.");
+        const slug = parseViewText(value, "open_scenario");
+        const existing = scenarios.find((row) => row.slug === slug);
+        if (slug && !existing) throw new Error("Choose a slug from scenarios.");
+        setEditing(existing ?? emptyScenario());
+        return {
+          summary:
+            "Opened the scenario editor without saving or running anything.",
+          data: { slug },
+        };
+      },
+    };
+    return handlers;
+  }
+
   const budgetPct =
     spend.ceiling > 0
       ? Math.min(100, Math.round((spend.mtd / spend.ceiling) * 100))
       : 0;
 
   function getScope() {
+    const currentDataAvailable = dataLoaded && !loadError && !orgRequired;
+    const editorScope = editing ? editorReader.current?.() : undefined;
+    const liveDraft = editorScope?.scenario_draft;
+    const draft = isJsonObject(liveDraft)
+      ? {
+          slug: typeof liveDraft.slug === "string" ? liveDraft.slug : undefined,
+          label:
+            typeof liveDraft.label === "string" ? liveDraft.label : undefined,
+          mandate_key:
+            typeof liveDraft.mandate_key === "string"
+              ? liveDraft.mandate_key
+              : undefined,
+        }
+      : editing;
     const readState = {
       loading,
-      data_loaded: dataLoaded,
+      data_loaded: currentDataAvailable,
       organization_required: orgRequired,
       load_error: loadError ?? undefined,
     };
@@ -420,32 +627,46 @@ export default function ProofRunsClient() {
         ...controls,
         read_state: readState,
         run_controls: controls,
-        proof_checks: dataLoaded ? checks : undefined,
-        recent_runs: dataLoaded ? runs : undefined,
-        scenarios: dataLoaded ? scenarios : undefined,
-        mandate_catalog: dataLoaded ? mandates : undefined,
-        expectation_rules: dataLoaded ? ruleHelp : undefined,
+        page_overview: proofRunsOverview({
+          loading,
+          loaded: currentDataAvailable,
+          error: loadError,
+          organizationRequired: orgRequired,
+          selected,
+          mode,
+          running: runningSlug,
+          checks,
+          scenarios,
+          runs,
+          draft,
+        }),
+        history_search: tableQuery.search,
+        proof_checks: currentDataAvailable ? checks : undefined,
+        recent_runs: currentDataAvailable ? runs : undefined,
+        scenarios: currentDataAvailable ? scenarios : undefined,
+        mandate_catalog: currentDataAvailable ? mandates : undefined,
+        expectation_rules: currentDataAvailable ? ruleHelp : undefined,
         open_run: openRun ?? undefined,
         run_console: console_,
         run_detail_loading: detailLoading,
         requested_run_id: detailRequest.current ?? undefined,
         run_detail_error: detailError ?? undefined,
         recent_runs_table_query: tableQuery,
-        visible_runs: dataLoaded ? visibleRuns.current : undefined,
-        monthly_spend: dataLoaded
+        visible_runs: currentDataAvailable ? visibleRuns.current : undefined,
+        monthly_spend: currentDataAvailable
           ? {
               month_to_date_usd: spend.mtd,
               monthly_ceiling_usd: spend.ceiling,
               budget_percentage: budgetPct,
             }
           : undefined,
-        month_to_date_usd: dataLoaded ? spend.mtd : undefined,
-        monthly_ceiling_usd: dataLoaded ? spend.ceiling : undefined,
-        budget_percentage: dataLoaded ? budgetPct : undefined,
+        month_to_date_usd: currentDataAvailable ? spend.mtd : undefined,
+        monthly_ceiling_usd: currentDataAvailable ? spend.ceiling : undefined,
+        budget_percentage: currentDataAvailable ? budgetPct : undefined,
         content: contentRef.current?.innerText,
         context: { recent_run_limit: 25, ...readState },
       }),
-      ...(editing ? editorReader.current?.() : {}),
+      ...editorScope,
     };
   }
   const extraSections: ContextMenuExtraSection[] = [
@@ -556,6 +777,11 @@ export default function ProofRunsClient() {
     <SurfaceRuntimeProvider
       surfaceName={ADMIN_PROOF_RUNS_SURFACE_NAME}
       getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+      isOwnConversation={(id) =>
+        id === openRun?.conversation_id ||
+        id === console_.started?.conversation_id
+      }
     >
       <NonEditableContextMenu
         sourceFeature="admin"
@@ -563,7 +789,7 @@ export default function ProofRunsClient() {
         getApplicationScope={getScope}
         extraSections={extraSections}
         resolveExtraSectionsOnOpen={resolveExtraSections}
-        menuVersion={2}
+        menuVersion={3}
       >
         <div ref={contentRef} className="space-y-4 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -793,7 +1019,11 @@ export default function ProofRunsClient() {
                 <ScenarioEditor
                   key={editing.slug}
                   scenario={editing}
+                  persistScenario={persistScenario}
                   mandates={mandates}
+                  catalogAvailable={
+                    dataLoaded && !loading && !loadError && !orgRequired
+                  }
                   rules={ruleHelp}
                   getApplicationScope={getScope}
                   registerScopeReader={(reader) => {
