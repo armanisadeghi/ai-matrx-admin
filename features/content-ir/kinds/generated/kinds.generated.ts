@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "5f8e6c9c700b";
+export const KIND_REGISTRY_FINGERPRINT = "53a9f2f9caf0";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -1643,92 +1643,6 @@ export interface Bindings {
   } | string | undefined;
   };
   declared_variables?: string[] | null;
-}
-
-/**
- * * From kind `board_comment_list`.
- */
-export interface BoardComment {
-  body?: string;
-  token?: string | null;
-  /**
-   * The registered kind this payload is an instance of, when it is one.
-   */
-  __kind?: string;
-  row_id: string;
-  table_id?: string | null;
-  comment_id: string;
-}
-
-/**
- * * From kind `board_outline`.
- */
-export interface BoardOutlineChapter {
-  note?: string | null;
-  tiles?: BoardOutlineTile[];
-  title?: string;
-  /**
-   * The registered kind this payload is an instance of, when it is one.
-   */
-  __kind?: string;
-  chapter_id?: string | null;
-}
-
-/**
- * * From kind `board_outline`.
- */
-export interface BoardOutlineTile {
-  /**
-   * table, cover, note, text, … (the tile's source).
-   */
-  kind?: string;
-  look?: string | null;
-  title?: string;
-  /**
-   * The pack table token (color, type_style …), when known.
-   */
-  token?: string | null;
-  /**
-   * The registered kind this payload is an instance of, when it is one.
-   */
-  __kind?: string;
-  tile_id: string;
-  table_id?: string | null;
-  row_count?: number | null;
-}
-
-/**
- * * Shared by 2 kinds (board_table, board_table_list).
- */
-export interface BoardTableField {
-  key: string;
-  type?: string;
-  label?: string;
-  /**
-   * The registered kind this payload is an instance of, when it is one.
-   */
-  __kind?: string;
-}
-
-/**
- * * Shared by 2 kinds (board_table, board_table_list).
- */
-export interface BoardTableRow {
-  id: string;
-  /**
-   * The registered kind this payload is an instance of, when it is one.
-   */
-  __kind?: string;
-  values?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  /**
-   * The row's version; a write sends it as expected_version.
-   */
-  version?: number | null;
 }
 
 /**
@@ -3405,37 +3319,70 @@ export interface DesignRowWritten {
 }
 
 /**
- * * From kind `design_starter_list`.
+ * One engine finding, in Archify's frozen shape (PLAN § Contracts: Diagnostic).
+ *  *
+ *  * From kind `diagram_diagnostics`.
  */
-export interface DesignStarter {
-  mood?: string[];
+export interface DiagramDiagnostic {
   /**
-   * Type style → font, weight, size.
+   * Stable machine code, e.g. layout/constraint or composition/proper-crossing.
    */
-  type?: {
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-  };
-  title?: string;
+  code: string;
   /**
    * The registered kind this payload is an instance of, when it is one.
    */
   __kind?: string;
-  for_who?: string | null;
+  message: string;
   /**
-   * Color role → its value (light and dark).
+   * Where: the node, edge or label it is about.
    */
-  palette?: {
+  subject?: {
     /**
      * The registered kind this payload is an instance of, when it is one.
      */
     __kind?: string;
   };
-  description?: string | null;
-  template_id: string;
-  catalogue_id: string;
+  /**
+   * The numbers behind it.
+   */
+  evidence?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  severity: "error" | "warning";
+  /**
+   * What kinds of change repair it.
+   */
+  supportedFixes?: string[];
+}
+
+/**
+ * One earlier round of the repair loop.
+ *  *
+ *  * From kind `diagram_repair_rounds`.
+ */
+export interface DiagramRepairRound {
+  note?: string | null;
+  round: number;
+  /**
+   * validate or deliver.
+   */
+  stage: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  error_count: number;
+  /**
+   * agent, authoring_model, or none.
+   */
+  repaired_by?: string | null;
+  spec_sha256?: string;
+  persisted_id?: string | null;
+  warning_count: number;
+  repair_snapshot_id?: string | null;
 }
 
 /**
@@ -17076,93 +17023,6 @@ export interface BlogPostOutline {
 }
 
 /**
- * Unresolved comments on the board's table rows, each with its row and table anchor.
- *  *
- *  * Kind `board_comment_list` (registry v1).
- */
-export interface BoardCommentList {
-  items?: BoardComment[];
-  /**
-   * The registered kind this payload is an instance of.
-   */
-  __kind?: "board_comment_list";
-}
-
-/**
- * The board's cover tile: its hero (HTML in the board's own variables) and its prose (markdown).
- *  *
- *  * Kind `board_cover` (registry v1).
- */
-export interface BoardCover {
-  hero?: string;
-  title?: string;
-  /**
-   * The registered kind this payload is an instance of.
-   */
-  __kind?: "board_cover";
-  tile_id: string;
-  markdown?: string;
-}
-
-/**
- * A board's chapters and tiles in reading order; each table tile with its table id, token and row count.
- *  *
- *  * Kind `board_outline` (registry v1).
- */
-export interface BoardOutline {
-  title?: string;
-  /**
-   * The registered kind this payload is an instance of.
-   */
-  __kind?: "board_outline";
-  layout?: string | null;
-  version?: number | null;
-  board_id: string;
-  chapters?: BoardOutlineChapter[];
-  /**
-   * Tiles that sit in no chapter, in reading order.
-   */
-  loose_tiles?: BoardOutlineTile[];
-}
-
-/**
- * One table on a board: its id, pack token, look, fields, and its rows, each with id and version.
- *  *
- *  * Kind `board_table` (registry v1).
- */
-export interface BoardTable {
-  look?: string | null;
-  name?: string;
-  rows?: BoardTableRow[];
-  token?: string | null;
-  /**
-   * Rows in the table; more than len(rows) when capped.
-   */
-  total?: number | null;
-  /**
-   * The registered kind this payload is an instance of.
-   */
-  __kind?: "board_table";
-  fields?: BoardTableField[];
-  table_id: string;
-  tile_title?: string;
-  description?: string | null;
-}
-
-/**
- * The board's other tables (no known token), each as a board table.
- *  *
- *  * Kind `board_table_list` (registry v1).
- */
-export interface BoardTableList {
-  items?: BoardTable[];
-  /**
-   * The registered kind this payload is an instance of.
-   */
-  __kind?: "board_table_list";
-}
-
-/**
  * Kind `boolean` (registry v5).
  */
 export type BooleanKind = boolean;
@@ -26727,19 +26587,6 @@ export interface DescribedLinks {
 }
 
 /**
- * The published design-system starter templates (SP0490–SP0499): who each is for, its mood, palette and type.
- *  *
- *  * Kind `design_starter_list` (registry v1).
- */
-export interface DesignStarterList {
-  items?: DesignStarter[];
-  /**
-   * The registered kind this payload is an instance of.
-   */
-  __kind?: "design_starter_list";
-}
-
-/**
  * What the design-system Conductor did on one board: a short summary, every row it wrote, whether it wrote
  * the cover, and anything it left open.
  *  *
@@ -26777,6 +26624,21 @@ export interface DesktopToolsLoadResult {
   already_loaded?: boolean | null;
   skipped_policy?: string[];
   skipped_platform?: string[];
+}
+
+/**
+ * Everything the diagram engine found wrong with one spec, errors first in importance.
+ *  *
+ *  * Kind `diagram_diagnostics` (registry v1).
+ */
+export interface DiagramDiagnostics {
+  items?: DiagramDiagnostic[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "diagram_diagnostics";
+  error_count: number;
+  warning_count: number;
 }
 
 /**
@@ -26830,6 +26692,51 @@ export interface DiagramNode {
   deathYear?: string;
   generation?: number;
   description?: string;
+}
+
+/**
+ * The engine's account of one render: type, theme, size and the computed layout.
+ *  *
+ *  * Kind `diagram_render_receipt` (registry v1).
+ */
+export interface DiagramRenderReceipt {
+  type: "architecture" | "workflow" | "sequence" | "dataflow" | "lifecycle" | "erd" | "class" | "tree" | "timeline" | "waterfall";
+  theme?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "diagram_render_receipt";
+  /**
+   * Positions, sizes and routes, for the types that have them.
+   */
+  layout?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  } | null;
+  quality?: string | null;
+  viewBox?: number[] | null;
+  warnings?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  schemaVersion?: number;
+}
+
+/**
+ * The rounds of the repair loop so far, oldest first.
+ *  *
+ *  * Kind `diagram_repair_rounds` (registry v1).
+ */
+export interface DiagramRepairRounds {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "diagram_repair_rounds";
+  rounds?: DiagramRepairRound[];
 }
 
 /**
@@ -27251,6 +27158,16 @@ export interface DraftCritique {
    * On a re-review: what improved since the prior review.
    */
   improved_since: string[];
+}
+
+/**
+ * Kind `e2e_throwaway_preview_d74998` (registry v1).
+ */
+export interface E2eThrowawayPreviewD74998 {
+  items?: string[];
+  title?: string;
+  __kind: "e2e_throwaway_preview_d74998";
+  summary?: string;
 }
 
 /**
@@ -46855,6 +46772,27 @@ export interface RenderBinding {
 }
 
 /**
+ * The headless render's numbers (inspection.v1), one entry per ``WIDTH:THEME`` capture.
+ *  *
+ *  * Kind `render_measurements` (registry v1).
+ */
+export interface RenderMeasurements {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "render_measurements";
+  /**
+   * inspection.v1 per capture key '1440:light': text boxes, overlaps, outOfBounds, crossings, contrast.
+   */
+  captures?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+}
+
+/**
  * Kind `rendered_text` (registry v7).
  */
 export interface RenderedText {
@@ -58105,57 +58043,118 @@ export interface TranslationCellEvidence {
 }
 
 /**
- * Kind `translation_cell_proposal` (registry v4).
+ * Kind `translation_cell_proposal` (registry v6).
  */
 export interface TranslationCellProposal {
   /**
-   * ControlRule. Keys vary per setting; common keys: provider_key, value_map, clamp, off, from_number, to_number, accepts, drop, why, context.
+   * A ControlRule: set only the fields this setting needs; leave every other field out (never "" or "null" text).
    */
   rule: {
     /**
-     * What the off value translates to.
+     * How OFF reaches the wire — exactly one of {"send": value}, {"floor": true}, {"omit": true, "why": "..."}.
      */
-    off?: unknown;
+    off?: {
+    why?: string | null;
+    omit?: boolean | null;
+    send?: unknown;
+    floor?: boolean | null;
     /**
-     * Short reason attached to the rule.
+     * The registered kind this payload is an instance of, when it is one.
      */
-    why?: unknown;
+    __kind?: string;
+  } | null;
     /**
-     * Whether/when the parameter is dropped.
+     * One plain sentence a non-technical reader understands.
      */
-    drop?: unknown;
+    why?: string | null;
     /**
-     * Numeric bounds, e.g. {min, max}.
+     * true when the parameter is never sent.
      */
-    clamp?: unknown;
+    drop?: boolean | null;
+    /**
+     * Numeric bounds {min, max}.
+     */
+    clamp?: {
+    max?: number | null;
+    min?: number | null;
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  } | null;
+    /**
+     * Forced on EVERY request, over the person's choice. Leave it out unless the provider accepts only this one value; a draft can never add or change it.
+     */
+    const?: unknown;
     /**
      * The registered kind this payload is an instance of, when it is one.
      */
     __kind?: string;
     /**
-     * Values the provider accepts.
+     * The canonical values this model accepts; others go to the nearest by position.
      */
-    accepts?: unknown;
+    accepts?: unknown[] | null;
+    context?: {
     /**
-     * Extra context for the rule.
+     * The registered kind this payload is an instance of, when it is one.
      */
-    context?: unknown;
+    __kind?: string;
+  } | null;
     /**
-     * Numeric conversion target spec.
+     * Sent on EVERY request where the setting is unset (send_when_unset only widens that). Leave it out unless the provider requires a value; a draft can never add or change it.
      */
-    to_number?: unknown;
+    default?: unknown;
+    max_items?: number | null;
+    processor?: string | null;
     /**
-     * Map of platform values to provider values.
+     * false when the model does NOT take this setting at all (the engine then drops or converts it).
      */
-    value_map?: unknown;
+    supported?: boolean;
     /**
-     * Numeric conversion source spec.
+     * Canonical value -> integer the provider takes.
      */
-    from_number?: unknown;
+    to_number?: {
     /**
-     * Provider parameter name the setting maps to.
+     * The registered kind this payload is an instance of, when it is one.
      */
-    provider_key?: unknown;
+    __kind?: string;
+    [key: string]: number | string | undefined;
+  } | null;
+    ui_values?: unknown[] | null;
+    /**
+     * Platform value -> provider value; a null value means send nothing for it.
+     */
+    value_map?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  } | null;
+    to_default?: unknown[] | null;
+    /**
+     * Ordered cut-offs turning a number into a canonical value: [{lte, to}], lte null = everything above.
+     */
+    from_number?: ({
+    to?: unknown;
+    lte: number | null;
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[] | null;
+    on_unmapped?: "drop" | "nearest" | "error";
+    /**
+     * The provider parameter name (dotted for nested, e.g. reasoning.effort).
+     */
+    provider_key?: string | null;
+    send_when_unset?: boolean;
+    processor_config?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+    drop_items_matching?: string | null;
   };
   /**
    * Settings layer the translation applies to, e.g. offering.
@@ -58812,6 +58811,52 @@ export interface VisionInterviewScribePassOffer {
    * What has been said since the Scribe's last pass.
    */
   transcript_delta: string;
+}
+
+/**
+ * A diagram as a typed spec for the diagram engine, plus the server's verdict on its layout.
+ *  *
+ *  * Kind `visual_map` (registry v1).
+ */
+export interface VisualMap {
+  /**
+   * The typed diagram spec for that type (schema_version, diagram_type, meta, and the type's own parts such as components/connections or participants/messages). Never coordinates.
+   */
+  spec: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  /**
+   * Which of the ten diagram types the spec is: architecture, workflow, sequence, dataflow, lifecycle, erd, class, tree, timeline or waterfall.
+   */
+  type: "architecture" | "workflow" | "sequence" | "dataflow" | "lifecycle" | "erd" | "class" | "tree" | "timeline" | "waterfall";
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "visual_map";
+  /**
+   * How many layout errors remain after the server's check. Stamped by the server; an agent always writes 0.
+   */
+  issues: number;
+  /**
+   * The engine's render receipt (type, theme, viewBox, layout). Stamped by the server; absent means the layout has not been checked.
+   */
+  receipt?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  } | null;
+  /**
+   * True only when the server checked the layout and found no errors. Stamped by the server; an agent always writes false.
+   */
+  verified: boolean;
+  /**
+   * The content_ir.render_inspection row of the delivered render. Stamped by the server.
+   */
+  inspection_id?: string | null;
 }
 
 /**
@@ -64453,11 +64498,6 @@ export type GeneratedKindSlug =
   | "batch_review"
   | "batched_list_result"
   | "blog_post_outline"
-  | "board_comment_list"
-  | "board_cover"
-  | "board_outline"
-  | "board_table"
-  | "board_table_list"
   | "boolean"
   | "branch_result"
   | "brand.voice_rewrite.offer"
@@ -64674,11 +64714,13 @@ export type GeneratedKindSlug =
   | "decision_tree"
   | "deferred_work_result"
   | "described_links"
-  | "design_starter_list"
   | "design_system_build_result"
   | "desktop_tools_load_result"
+  | "diagram_diagnostics"
   | "diagram_edge"
   | "diagram_node"
+  | "diagram_render_receipt"
+  | "diagram_repair_rounds"
   | "diagram_spec"
   | "dictionary.workspace.offer"
   | "diff"
@@ -64695,6 +64737,7 @@ export type GeneratedKindSlug =
   | "domain_authority"
   | "domain_fold_report"
   | "draft_critique"
+  | "e2e_throwaway_preview_d74998"
   | "education.analytics_narrate.offer"
   | "education.card_image.offer"
   | "education.card_image_generation.offer"
@@ -65362,6 +65405,7 @@ export type GeneratedKindSlug =
   | "relation"
   | "release_info"
   | "render_binding"
+  | "render_measurements"
   | "rendered_text"
   | "rental_listing_summary"
   | "resale_conditional_factor"
@@ -65750,6 +65794,7 @@ export type GeneratedKindSlug =
   | "vision_interview.finalize_deliverable.offer"
   | "vision_interview.room_activation.offer"
   | "vision_interview.scribe_pass.offer"
+  | "visual_map"
   | "visual_qc_result"
   | "voice_fingerprint"
   | "voice_measure_result"
@@ -66097,11 +66142,6 @@ export interface KindPayloadBySlug {
   "batch_review": BatchReview;
   "batched_list_result": BatchedListResult;
   "blog_post_outline": BlogPostOutline;
-  "board_comment_list": BoardCommentList;
-  "board_cover": BoardCover;
-  "board_outline": BoardOutline;
-  "board_table": BoardTable;
-  "board_table_list": BoardTableList;
   "boolean": BooleanKind;
   "branch_result": BranchResult;
   "brand.voice_rewrite.offer": BrandVoiceRewriteOffer;
@@ -66318,11 +66358,13 @@ export interface KindPayloadBySlug {
   "decision_tree": DecisionTree;
   "deferred_work_result": DeferredWorkResult;
   "described_links": DescribedLinks;
-  "design_starter_list": DesignStarterList;
   "design_system_build_result": DesignSystemBuildResult;
   "desktop_tools_load_result": DesktopToolsLoadResult;
+  "diagram_diagnostics": DiagramDiagnostics;
   "diagram_edge": DiagramEdge;
   "diagram_node": DiagramNode;
+  "diagram_render_receipt": DiagramRenderReceipt;
+  "diagram_repair_rounds": DiagramRepairRounds;
   "diagram_spec": DiagramSpec;
   "dictionary.workspace.offer": DictionaryWorkspaceOffer;
   "diff": Diff;
@@ -66339,6 +66381,7 @@ export interface KindPayloadBySlug {
   "domain_authority": DomainAuthority;
   "domain_fold_report": DomainFoldReport;
   "draft_critique": DraftCritique;
+  "e2e_throwaway_preview_d74998": E2eThrowawayPreviewD74998;
   "education.analytics_narrate.offer": EducationAnalyticsNarrateOffer;
   "education.card_image.offer": EducationCardImageOffer;
   "education.card_image_generation.offer": EducationCardImageGenerationOffer;
@@ -67006,6 +67049,7 @@ export interface KindPayloadBySlug {
   "relation": Relation;
   "release_info": ReleaseInfo;
   "render_binding": RenderBinding;
+  "render_measurements": RenderMeasurements;
   "rendered_text": RenderedText;
   "rental_listing_summary": RentalListingSummary;
   "resale_conditional_factor": ResaleConditionalFactor;
@@ -67394,6 +67438,7 @@ export interface KindPayloadBySlug {
   "vision_interview.finalize_deliverable.offer": VisionInterviewFinalizeDeliverableOffer;
   "vision_interview.room_activation.offer": VisionInterviewRoomActivationOffer;
   "vision_interview.scribe_pass.offer": VisionInterviewScribePassOffer;
+  "visual_map": VisualMap;
   "visual_qc_result": VisualQcResult;
   "voice_fingerprint": VoiceFingerprint;
   "voice_measure_result": VoiceMeasureResult;
@@ -67745,11 +67790,6 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "batch_review",
   "batched_list_result",
   "blog_post_outline",
-  "board_comment_list",
-  "board_cover",
-  "board_outline",
-  "board_table",
-  "board_table_list",
   "boolean",
   "branch_result",
   "brand.voice_rewrite.offer",
@@ -67966,11 +68006,13 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "decision_tree",
   "deferred_work_result",
   "described_links",
-  "design_starter_list",
   "design_system_build_result",
   "desktop_tools_load_result",
+  "diagram_diagnostics",
   "diagram_edge",
   "diagram_node",
+  "diagram_render_receipt",
+  "diagram_repair_rounds",
   "diagram_spec",
   "dictionary.workspace.offer",
   "diff",
@@ -67987,6 +68029,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "domain_authority",
   "domain_fold_report",
   "draft_critique",
+  "e2e_throwaway_preview_d74998",
   "education.analytics_narrate.offer",
   "education.card_image.offer",
   "education.card_image_generation.offer",
@@ -68654,6 +68697,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "relation",
   "release_info",
   "render_binding",
+  "render_measurements",
   "rendered_text",
   "rental_listing_summary",
   "resale_conditional_factor",
@@ -69042,6 +69086,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "vision_interview.finalize_deliverable.offer",
   "vision_interview.room_activation.offer",
   "vision_interview.scribe_pass.offer",
+  "visual_map",
   "visual_qc_result",
   "voice_fingerprint",
   "voice_measure_result",
