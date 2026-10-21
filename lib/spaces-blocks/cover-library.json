@@ -2940,6 +2940,28 @@
   "height": 1333
  },
  {
+  "key": "realestate-coworking-space-desks",
+  "fileId": "ee9c7b16-9372-59f4-b23a-a26c8577f196",
+  "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/ee9c7b16-9372-59f4-b23a-a26c8577f196?v=521e87f1",
+  "thumb": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/5f957114-b6af-529a-8650-a045fe671f69?v=83eb45d5",
+  "alt": "Spacious open office workspace with desks, chairs, and natural lighting.",
+  "category": "realestate",
+  "tags": [
+   "coworking",
+   "desks",
+   "realestate",
+   "space"
+  ],
+  "credit": "Startup Stock Photos",
+  "creditUrl": "https://www.pexels.com/@startup-stock-photos",
+  "sourceUrl": "https://www.pexels.com/photo/black-rolling-chair-under-desk-7071/",
+  "license": "Pexels License",
+  "licenseUrl": "https://www.pexels.com/license/",
+  "color": "#8B897E",
+  "width": 2000,
+  "height": 1325
+ },
+ {
   "key": "agencies-creative-agency-office",
   "fileId": "9e6964d1-8f16-5d33-813f-b0a627c5b307",
   "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/9e6964d1-8f16-5d33-813f-b0a627c5b307?v=c610a71b",
@@ -3266,6 +3288,28 @@
   "color": "#AAA39D",
   "width": 2000,
   "height": 1332
+ },
+ {
+  "key": "services-dog-grooming-salon",
+  "fileId": "4c120876-466a-5c0a-af5e-1c2c7d730dc6",
+  "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/4c120876-466a-5c0a-af5e-1c2c7d730dc6?v=9fdb04f0",
+  "thumb": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/4cde7ab4-96ab-550c-982f-32d7e7aadfd8?v=3de346a4",
+  "alt": "A poodle sits patiently in a pet salon, ready for grooming. Indoor shot with grooming tools around.",
+  "category": "services",
+  "tags": [
+   "dog",
+   "grooming",
+   "salon",
+   "services"
+  ],
+  "credit": "Goochie Poochie Grooming",
+  "creditUrl": "https://www.pexels.com/@goochie-poochie",
+  "sourceUrl": "https://www.pexels.com/photo/a-dog-in-a-pet-salon-19145874/",
+  "license": "Pexels License",
+  "licenseUrl": "https://www.pexels.com/license/",
+  "color": "#A39E98",
+  "width": 2000,
+  "height": 1335
  },
  {
   "key": "hospitality-restaurant-interior-dining",
@@ -3708,6 +3752,52 @@
   "height": 1335
  },
  {
+  "key": "trades-swimming-pool-clear-blue-water",
+  "fileId": "ae3fddc6-c24c-541f-93b9-3627ed073de5",
+  "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/ae3fddc6-c24c-541f-93b9-3627ed073de5?v=42f2d384",
+  "thumb": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/798ebe2c-ee36-52f4-a0dd-f5985b48c59e?v=72650a50",
+  "alt": "Vibrant inflatable swim ring floating in a sunlit pool, perfect for summer fun.",
+  "category": "trades",
+  "tags": [
+   "blue",
+   "clear",
+   "pool",
+   "swimming",
+   "trades",
+   "water"
+  ],
+  "credit": "Dori Zakar",
+  "creditUrl": "https://www.pexels.com/@dori-zakar-239176149",
+  "sourceUrl": "https://www.pexels.com/photo/swim-ring-on-the-swimming-pool-12595980/",
+  "license": "Pexels License",
+  "licenseUrl": "https://www.pexels.com/license/",
+  "color": "#2293BB",
+  "width": 2000,
+  "height": 1125
+ },
+ {
+  "key": "trades-solar-panels-on-roof",
+  "fileId": "956be6ad-00ba-585d-95cd-31c4a3d7ff41",
+  "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/956be6ad-00ba-585d-95cd-31c4a3d7ff41?v=470d6753",
+  "thumb": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/23b89b97-c391-5d78-986b-7af7b2c9dfc9?v=5c807bd8",
+  "alt": "Solar panels on tiled roofs of houses with chimneys, capturing clean energy.",
+  "category": "trades",
+  "tags": [
+   "panels",
+   "roof",
+   "solar",
+   "trades"
+  ],
+  "credit": "Lena Netkach",
+  "creditUrl": "https://www.pexels.com/@lena-netkach-395486",
+  "sourceUrl": "https://www.pexels.com/photo/solar-panels-on-tiled-roofs-in-residential-area-38021376/",
+  "license": "Pexels License",
+  "licenseUrl": "https://www.pexels.com/license/",
+  "color": "#9E8F8A",
+  "width": 2000,
+  "height": 1501
+ },
+ {
   "key": "wellness-gym-interior-equipment",
   "fileId": "dc0ea519-a4ac-5a40-9dbb-414fe3659c28",
   "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/dc0ea519-a4ac-5a40-9dbb-414fe3659c28?v=131d7ebb",
@@ -3902,6 +3992,27 @@
   "height": 1500
  },
  {
+  "key": "wellness-karate-belts",
+  "fileId": "b64c563f-4da2-5512-9a6a-2b5c85bea54c",
+  "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/b64c563f-4da2-5512-9a6a-2b5c85bea54c?v=3f925113",
+  "thumb": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/df8b0be4-8982-5c87-babd-d72e6fefe146?v=e7fad9fd",
+  "alt": "Close-up of a martial artist wearing an orange belt and white uniform, standing indoors.",
+  "category": "wellness",
+  "tags": [
+   "belts",
+   "karate",
+   "wellness"
+  ],
+  "credit": "RDNE Stock project",
+  "creditUrl": "https://www.pexels.com/@rdne",
+  "sourceUrl": "https://www.pexels.com/photo/person-wearing-a-karate-uniform-with-orange-belt-7045743/",
+  "license": "Pexels License",
+  "licenseUrl": "https://www.pexels.com/license/",
+  "color": "#988B7F",
+  "width": 2000,
+  "height": 1333
+ },
+ {
   "key": "retail-parcels-packages-shipping",
   "fileId": "9830e861-c9c0-50d9-9538-cee26c70d8e2",
   "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/9830e861-c9c0-50d9-9538-cee26c70d8e2?v=d4b5df86",
@@ -4073,6 +4184,30 @@
   "color": "#675549",
   "width": 2000,
   "height": 1333
+ },
+ {
+  "key": "retail-flower-shop-buckets-fresh-flowers",
+  "fileId": "46f48ec7-0de3-5ce9-9037-d00a5f0d141e",
+  "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/46f48ec7-0de3-5ce9-9037-d00a5f0d141e?v=35eda8f9",
+  "thumb": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/285e55aa-a57e-505c-a91d-4de583d7283e?v=db00e807",
+  "alt": "Colorful display of assorted flowers in a Zurich florist shop, showcasing diverse blooms and bouquets.",
+  "category": "retail",
+  "tags": [
+   "buckets",
+   "flower",
+   "flowers",
+   "fresh",
+   "retail",
+   "shop"
+  ],
+  "credit": "Melike  B",
+  "creditUrl": "https://www.pexels.com/@mlkbnl",
+  "sourceUrl": "https://www.pexels.com/photo/a-bunch-of-flowers-in-buckets-27910543/",
+  "license": "Pexels License",
+  "licenseUrl": "https://www.pexels.com/license/",
+  "color": "#65503D",
+  "width": 2000,
+  "height": 1501
  },
  {
   "key": "nonprofit-hands-heart-charity",
@@ -4464,6 +4599,52 @@
   "color": "#6C6868",
   "width": 2000,
   "height": 1125
+ },
+ {
+  "key": "media-vinyl-records-crate",
+  "fileId": "1ac13201-697e-59c4-b314-c9c9e09a823a",
+  "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/1ac13201-697e-59c4-b314-c9c9e09a823a?v=1b31ffc0",
+  "thumb": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/5c765a9b-86a6-5140-8ee2-7059ec49a002?v=79de3d39",
+  "alt": "Explore a vibrant collection of vintage vinyl records in a retro store setting. Perfect for music enthusiasts.",
+  "category": "media",
+  "tags": [
+   "crate",
+   "media",
+   "records",
+   "vinyl"
+  ],
+  "credit": "Volker Thimm",
+  "creditUrl": "https://www.pexels.com/@volkerthimm",
+  "sourceUrl": "https://www.pexels.com/photo/plastic-crates-with-classic-phonograph-records-13125962/",
+  "license": "Pexels License",
+  "licenseUrl": "https://www.pexels.com/license/",
+  "color": "#455749",
+  "width": 2000,
+  "height": 1333
+ },
+ {
+  "key": "media-ring-light-microphone-desk-setup",
+  "fileId": "7f752287-5b11-5bff-a51d-6368cf8dd773",
+  "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/7f752287-5b11-5bff-a51d-6368cf8dd773?v=24c69043",
+  "thumb": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/7b87fa4f-1387-595c-8b13-560631c2f1bb?v=9804f536",
+  "alt": "A stylish indoor vlogging studio equipped with professional lighting and camera setup.",
+  "category": "media",
+  "tags": [
+   "desk",
+   "light",
+   "media",
+   "microphone",
+   "ring",
+   "setup"
+  ],
+  "credit": "Chelsey Horne",
+  "creditUrl": "https://www.pexels.com/@chelsey-horne-2961698",
+  "sourceUrl": "https://www.pexels.com/photo/a-vlogging-studio-4499737/",
+  "license": "Pexels License",
+  "licenseUrl": "https://www.pexels.com/license/",
+  "color": "#40403F",
+  "width": 2000,
+  "height": 1333
  },
  {
   "key": "manufacturing-factory-machinery",
