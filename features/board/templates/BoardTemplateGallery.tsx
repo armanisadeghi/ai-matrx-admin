@@ -4,7 +4,7 @@
 // entries - built-ins from code, then the person's saved templates - and a layout sketch for the preview.
 // "Use template" makes a new board (duplicateBoard / the built-in's document) and opens it.
 
-import { LayoutTemplate, Sparkles } from "lucide-react";
+import { Bookmark, LayoutTemplate } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -59,7 +59,7 @@ export function BoardTemplateGallery({
   const entries: TemplateEntry[] = all.map((t) => ({
     key: t.key,
     title: t.title,
-    icon: t.builtin ? <Sparkles size={16} /> : <LayoutTemplate size={16} />,
+    icon: t.builtin ? <LayoutTemplate size={16} /> : <Bookmark size={16} />,
   }));
 
   // A template that makes its own tables (a design system per brand) is named first: the name titles the
