@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // Chat open / switch stability — the forcing function for "the room stays still".
 //
-// Usage: node scripts/real-tests/chat-switch-stability.mjs <run> <origin> [--json <path>]
-//   <run>     a pw.mjs run whose private Chrome is already signed in
-//             (python3 scripts/real-tests/signin.py <run> /chat/new <origin>)
-//   <origin>  e.g. http://s1234abcd.localhost:3001 or https://www.aimatrx.com
+// Usage: node scripts/real-tests/chat-switch-stability.mjs <origin> [--json <path>]
+//   <origin>  your preview host (http://s1234abcd.localhost:3001: signs in with `pnpm dev-login`)
+//             or the live site (https://www.aimatrx.com: signs in like pw.mjs `signin`, admin@admin.com)
+// The browser lives inside this process (the preview watchdog closes any detached Playwright
+// Chrome whose launcher has exited), headless, 1440x900.
 //
 // Walk (sends NO chat message): hard-load one conversation, click 6 sidebar
 // conversations, browser back + forward, New chat, then a conversation from New chat.
@@ -18,27 +19,39 @@
 // sidebar footer that jumps, or a transcript that lands at the bottom in several jumps.
 import { createRequire } from "node:module";
 import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
-const [run, originArg, ...rest] = process.argv.slice(2);
-if (!run || !originArg) {
-  console.error("usage: node chat-switch-stability.mjs <run> <origin> [--json <path>]");
+import { execFileSync } from "node:child_process";
+import { mintSessionCookies } from "./session-cookies.mjs";
+
+const [originArg, ...rest] = process.argv.slice(2);
+if (!originArg) {
+  console.error("usage: node chat-switch-stability.mjs <origin> [--json <path>]");
   process.exit(2);
 }
 const origin = originArg.replace(/\/$/, "");
 const jsonOut = rest[0] === "--json" ? rest[1] : null;
 const SAMPLE_MS = 2500;
+const isLocal = /^http:\/\/[a-z0-9-]+\.localhost:\d+$/.test(origin);
 
-const activePort = path.join(os.tmpdir(), "matrx-real-test-browsers", run, "profile", "DevToolsActivePort");
-async function connectOwn() {
-  const [port, wsPath] = fs.readFileSync(activePort, "utf8").trim().split("\n");
-  for (const ws of [`ws://127.0.0.1:${port}${wsPath}`, `ws://[::1]:${port}${wsPath}`]) {
-    try { return await chromium.connectOverCDP(ws, { timeout: 5000 }); } catch {}
+async function signedInContext(browser) {
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  if (isLocal) {
+    const out = execFileSync("pnpm", ["-s", "dev-login", "/chat/new"], {
+      cwd: new URL("../..", import.meta.url).pathname,
+      encoding: "utf8",
+    });
+    const url = out.match(/OPEN\s*:\s*(\S+)/)?.[1];
+    if (!url || !url.startsWith(origin)) throw new Error(`dev-login did not print a URL for ${origin}`);
+    const p = await ctx.newPage();
+    await p.goto(url, { waitUntil: "load", timeout: 180000 });
+    await p.close();
+  } else {
+    const { cookies } = await mintSessionCookies();
+    await ctx.addCookies(cookies);
   }
-  throw new Error(`no browser for run ${run}: start it with pw.mjs ${run} start and sign in first`);
+  return ctx;
 }
 
 // Runs in every document from its first byte, so a hard load is sampled from navigation.
@@ -217,11 +230,10 @@ async function sidebarIds(page) {
   });
 }
 
-const browser = await connectOwn();
-const ctx = browser.contexts()[0];
+const browser = await chromium.launch({ headless: true });
+const ctx = await signedInContext(browser);
 await ctx.addInitScript(RECORDER);
 const page = await ctx.newPage();
-await page.setViewportSize({ width: 1440, height: 900 });
 const steps = [];
 try {
   await page.goto(`${origin}/chat/new`, { waitUntil: "load", timeout: 120000 });
@@ -234,9 +246,19 @@ try {
   // Warm every route once (dev compiles), unmeasured.
   await page.goto(`${origin}/chat/${ids[0]}`, { waitUntil: "load", timeout: 120000 });
   await sleep(4000);
+  // The room's geometry, for comparing the skeleton's composer against the real one.
+  console.log("geometry:", JSON.stringify(await page.evaluate(() => {
+    const r = (e) => { if (!e) return null; const x = e.getBoundingClientRect(); return [Math.round(x.left), Math.round(x.top), Math.round(x.width), Math.round(x.height)]; };
+    const col = document.querySelector("main [data-chat-column]");
+    const dock = col && col.children[col.children.length - 1];
+    const ed = dock && dock.querySelector('textarea,[contenteditable="true"]');
+    let box = ed; while (box && !box.classList.contains("border")) box = box.parentElement;
+    const chain = []; for (let n = col; n && n.tagName !== "MAIN"; n = n.parentElement) chain.push(`${n.tagName}.${String(n.className).slice(0, 70)} ${r(n)}`);
+    return { chain, dock: r(dock), dockKids: dock ? [...dock.children].map((c) => `${String(c.className).slice(0, 60)} ${r(c)}`) : null, box: r(box), boxCls: box && box.className };
+  })));
 
   steps.push(await measure(page, `hard load ${ids[0].slice(0, 8)}`, "hard", {
-    action: async () => { await page.reload({ waitUntil: "commit" }); },
+    action: async () => { await page.reload({ waitUntil: "commit", timeout: 120000 }); },
   }));
   await sleep(1500);
   for (const id of ids.slice(1, 7)) {
@@ -261,8 +283,7 @@ try {
     action: () => page.locator(`a[href="/chat/${target}"]`).first().click(),
   }));
 } finally {
-  // Close only our tab: the run's Chrome (and its sign-in) stays up for the next run.
-  await page.close().catch(() => {});
+  await browser.close().catch(() => {});
 }
 
 let failed = 0;
