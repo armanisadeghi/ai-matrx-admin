@@ -2589,6 +2589,29 @@
   "height": 1333
  },
  {
+  "key": "healthcare-blister-packs-tablets-white",
+  "fileId": "9a43eb8a-141f-5c66-8522-3c25abc13709",
+  "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/9a43eb8a-141f-5c66-8522-3c25abc13709?v=13f3ac5c",
+  "thumb": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/d7f5c83a-33da-555b-b468-943254680882?v=b62abb09",
+  "alt": "Close-up of various empty blister packs for medications on a wooden surface.",
+  "category": "healthcare",
+  "tags": [
+   "blister",
+   "healthcare",
+   "packs",
+   "tablets",
+   "white"
+  ],
+  "credit": "Henrikas Mackevicius",
+  "creditUrl": "https://www.pexels.com/@henrix",
+  "sourceUrl": "https://www.pexels.com/photo/empty-foil-packs-4076532/",
+  "license": "Pexels License",
+  "licenseUrl": "https://www.pexels.com/license/",
+  "color": "#939691",
+  "width": 2000,
+  "height": 1333
+ },
+ {
   "key": "legal-law-books-shelf",
   "fileId": "3494db24-da81-5911-8e42-afefdbc19607",
   "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/3494db24-da81-5911-8e42-afefdbc19607?v=8a95612b",
@@ -4466,6 +4489,28 @@
   "height": 1125
  },
  {
+  "key": "media-game-controller-neon",
+  "fileId": "e9ec52e5-96fb-5415-9d08-e44e068438f0",
+  "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/e9ec52e5-96fb-5415-9d08-e44e068438f0?v=5099eebe",
+  "thumb": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/fde38008-78f1-5550-b5c0-41b522bc313b?v=96514fa5",
+  "alt": "A wireless game controller in focus with a vibrant pink and purple neon background.",
+  "category": "media",
+  "tags": [
+   "controller",
+   "game",
+   "media",
+   "neon"
+  ],
+  "credit": "Artem Podrez",
+  "creditUrl": "https://www.pexels.com/@artempodrez",
+  "sourceUrl": "https://www.pexels.com/photo/selective-focus-of-a-dualshock-7773745/",
+  "license": "Pexels License",
+  "licenseUrl": "https://www.pexels.com/license/",
+  "color": "#871C6E",
+  "width": 2000,
+  "height": 1125
+ },
+ {
   "key": "manufacturing-factory-machinery",
   "fileId": "f52cbd47-ca53-5ae7-aeec-69d92f520c06",
   "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/f52cbd47-ca53-5ae7-aeec-69d92f520c06?v=2f73c7ca",
@@ -4569,6 +4614,51 @@
   "license": "Pexels License",
   "licenseUrl": "https://www.pexels.com/license/",
   "color": "#433D3F",
+  "width": 2000,
+  "height": 1333
+ },
+ {
+  "key": "manufacturing-cardboard-parcels-delivery",
+  "fileId": "78a8746f-02b3-5949-a20a-c08533a1966a",
+  "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/78a8746f-02b3-5949-a20a-c08533a1966a?v=96ea5fea",
+  "thumb": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/3079a415-16d5-5d51-b7b9-166510a2184a?v=1b430038",
+  "alt": "Three cardboard boxes on a dolly, ready for shipping outside a warehouse.",
+  "category": "manufacturing",
+  "tags": [
+   "cardboard",
+   "delivery",
+   "manufacturing",
+   "parcels"
+  ],
+  "credit": "Tima Miroshnichenko",
+  "creditUrl": "https://www.pexels.com/@tima-miroshnichenko",
+  "sourceUrl": "https://www.pexels.com/photo/brown-cardboard-boxes-on-a-concrete-ground-6169055/",
+  "license": "Pexels License",
+  "licenseUrl": "https://www.pexels.com/license/",
+  "color": "#616762",
+  "width": 2000,
+  "height": 1333
+ },
+ {
+  "key": "manufacturing-glass-jars-food-production",
+  "fileId": "43ca664f-8687-578e-aed7-3dca1bff1564",
+  "src": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/43ca664f-8687-578e-aed7-3dca1bff1564?v=5fd3c912",
+  "thumb": "https://cdn.matrxserver.com/71b55cc0-f333-462f-8176-f558f866ea5d/ec36cea6-bc7e-5746-9c43-cc757a255805?v=e8ad198d",
+  "alt": "Dozens of honey jars on shelves in a rustic setting create a warm, inviting display.",
+  "category": "manufacturing",
+  "tags": [
+   "food",
+   "glass",
+   "jars",
+   "manufacturing",
+   "production"
+  ],
+  "credit": "Soly Moses",
+  "creditUrl": "https://www.pexels.com/@solyartphotos",
+  "sourceUrl": "https://www.pexels.com/photo/shelf-display-of-honey-jars-in-rustic-setting-38164883/",
+  "license": "Pexels License",
+  "licenseUrl": "https://www.pexels.com/license/",
+  "color": "#6B4226",
   "width": 2000,
   "height": 1333
  }
