@@ -89357,6 +89357,42 @@ export type Database = {
         Args: { p_limit?: number; p_organization_id: string }
         Returns: Json
       }
+      org_admin_member_activity: {
+        Args: {
+          p_before?: string
+          p_before_key?: string
+          p_kinds?: string[]
+          p_limit?: number
+          p_org_id: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      org_admin_member_audit: {
+        Args: { p_limit?: number; p_org_id: string; p_user_id: string }
+        Returns: {
+          action: string
+          actor_email: string
+          actor_user_id: string
+          created_at: string
+          detail: Json
+          id: string
+          metadata: Json
+        }[]
+      }
+      org_admin_member_feedback: {
+        Args: { p_limit?: number; p_org_id: string; p_user_id: string }
+        Returns: {
+          created_at: string
+          description: string
+          feedback_type: string
+          id: string
+          priority: string
+          route: string
+          status: string
+          total: number
+        }[]
+      }
       org_domain_admin_check: {
         Args: {
           p_action: string
