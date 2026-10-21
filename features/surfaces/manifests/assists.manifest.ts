@@ -63,7 +63,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "assist_status_tab",
     label: "Status tab",
     description:
-      'Which status tab is open — "pending" by default, plus the accepted/dismissed/expired slices. Always populated.',
+      'Which status tab is open: pending (Open), accepted, dismissed, resolved (Went away), or all (Everything). Always populated.',
     valueType: "string",
     alwaysAvailable: true,
     typicalCharCount: 12,
