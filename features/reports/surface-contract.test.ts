@@ -1,9 +1,10 @@
 import { buildDriftReportScope, parseReportDestination, reportViewPatch } from "./surface-contract";
+import { DRIFT_SEVERITY_ORDER } from "@/features/agents/components/usages/severity";
 import type { useDriftReport } from "@/features/agents/hooks/useDriftReport";
 
 const report: ReturnType<typeof useDriftReport> = {
   status: "succeeded", error: null, adminRows: [], refresh: () => undefined,
-  totals: { agents: 1, totals: { breaking: 2, silent_breaking: 0, warning: 0, info: 0 } },
+  totals: { agents: 1, order: DRIFT_SEVERITY_ORDER, totals: { breaking: 2, silent_breaking: 0, warning: 0, info: 0 } },
   rows: [{ agentId: "50ea4f94-ebc6-4131-9d66-e030806a101d", agentName: "Live report agent", currentVersion: 3, agentIsActive: true, ownedByCaller: true, myUsageCount: 4, myBreaking: 2, mySilent: 0, myWarning: 0, myInfo: 0, myStalePins: 1, othersUsageCount: null, othersRedflagCount: null, byType: {}, alertId: null, alertStatus: null, alertSeverity: null, alertDetectedAt: null, alertLastScannedAt: null }],
 };
 const table = { page: 1, pageSize: 50, search: "", anyOf: "", columnFilters: {}, sort: null };

@@ -168,7 +168,8 @@ export function AssistsManager() {
     urgency,
   });
 
-  const shownIds = rows.filter((r) => r.status === "pending").map((r) => r.id);
+  const resultsReady = loaded && table.state.search === table.queryState.search;
+  const shownIds = resultsReady ? rows.filter((row) => row.status === "pending").map((row) => row.id) : [];
   const everythingCount = Object.values(stats).reduce(
     (sum, count) => sum + count,
     0,
@@ -770,10 +771,10 @@ export function AssistsManager() {
 
       <div className="min-h-0 flex-1 p-2 sm:p-3">
         <MatrxDataTable<Assist>
-          data={rows}
+          data={resultsReady ? rows : []}
           columns={columns}
           getRowId={(row) => row.id}
-          isLoading={loading}
+          isLoading={loading || table.state.search !== table.queryState.search}
           query={{
             mode: "controlled",
             state: table.state,
