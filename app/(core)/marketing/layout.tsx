@@ -15,6 +15,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import BrandsLanding from "@/features/auth/components/module-landing/landings/BrandsLanding";
 import MarketingLanding from "@/features/auth/components/module-landing/landings/MarketingLanding";
 import { MarketingPageShell } from "@/features/shell/components/MarketingPageShell";
 import { getMarketingRouteMetadata } from "@/features/marketing/lib/route-metadata";
@@ -63,9 +64,10 @@ export default async function MarketingLayout({
     const pathname = (await headers()).get("x-pathname") ?? "/marketing";
     // Unverified (auth unreachable) is never a signed-out person: no bounce.
     if (verdict.state === "signed_out" && brandAddressOf(pathname)) redirect(await currentRequestLoginHref(pathname));
+    // Brands has its own front door (feature-pages contract): the Brands pitch at /marketing/brands.
     return (
       <MarketingPageShell>
-        <MarketingLanding />
+        {pathname === "/marketing/brands" ? <BrandsLanding /> : <MarketingLanding />}
       </MarketingPageShell>
     );
   }

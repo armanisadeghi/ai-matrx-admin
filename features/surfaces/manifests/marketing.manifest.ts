@@ -8,7 +8,8 @@
  *
  *   • `/marketing`             — the pillar map (`MarketingHub`), the feature's
  *                                own table of contents.
- *   • `/marketing/brands`      — the brand portfolio (`BrandsPortfolio`).
+ *   • `/marketing/brands/all`  — the brand list (`BrandsListPage`); `/marketing/brands/new`
+ *                                (`BrandNewPage`) mounts the same surface for the create body.
  *   • `/marketing/sites`       — the flattened managed-site list
  *                                (`SitesPortfolio`).
  *   • `/marketing/connections` — the Google / Bing connection catalog
@@ -21,7 +22,7 @@
  * open hub view has loaded. `hub_view` tells the agent which of them that is.
  *
  * Runtime emitters (all client components, scope assembled at trigger time):
- * `MarketingHub.tsx`, `BrandsPortfolio.tsx`, `SitesPortfolio.tsx`,
+ * `MarketingHub.tsx`, `brands/browse/BrandsListPage.tsx` (+ `BrandNewPage.tsx`), `SitesPortfolio.tsx`,
  * `MarketingConnectionsCatalog.tsx`, `WorkspaceCostWorkspace.tsx`. The shared
  * list-state helper lives in `features/marketing/lib/scopes/marketing-hub-scope.ts`.
  *
@@ -245,7 +246,7 @@ const surfaceSpecific: SurfaceValue[] = [
  *    `features/marketing/lib/site-write-targets.ts` (unit-tested), whose
  *    constants this manifest interpolates into the model-facing description
  *    below so the advertised contract IS the enforced one.
- *  • `BrandsPortfolio` (/marketing/brands) — NO handlers, and that is a
+ *  • `BrandsListPage` (/marketing/brands/all) — NO handlers, and that is a
  *    judgment recorded rather than an oversight. Its `BrandEditorDialog`
  *    edits exactly { name, industry, description }, and
  *    `matrx-user/marketing-brand` ALREADY ships `brand_identity` over

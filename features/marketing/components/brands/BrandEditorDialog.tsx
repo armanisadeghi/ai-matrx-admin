@@ -182,6 +182,10 @@ function profileFromDraft(draft: BrandDraft): BrandProfile {
 /**
  * The ONE brand editor — create and edit expose EVERY user-editable brand
  * field. Hiding a stored, user-editable value from this dialog is a defect.
+ *
+ * The dialog is the EDIT chrome around `BrandEditorForm`. Creating a brand is the same form
+ * (`variant="panel"`) in `BrandCreatePanel`: the /marketing/brands/new page and the
+ * "Add brand" window panel both render it — there is no create form in a dialog any more.
  */
 export function BrandEditorDialog({
   open,
@@ -194,25 +198,39 @@ export function BrandEditorDialog({
   brand: MarketingBrand | null;
 }) {
   return (
-    <BrandEditorDialogBody
-      // Remount per open + brand identity so the draft always starts fresh —
-      // no state-reset effects.
-      key={`${open}:${brand?.id ?? "new"}:${brand?.version ?? 0}`}
-      open={open}
-      onOpenChange={onOpenChange}
-      brand={brand}
-    />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {/* A modal sits above the resting floating chrome, so its height never depends on what floats
+          (floating things never move the page, 2026-10-20). */}
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:flex sm:h-[min(46rem,90dvh)] sm:flex-col sm:max-w-2xl">
+        <BrandEditorForm
+          // Remount per open + brand identity so the draft always starts fresh —
+          // no state-reset effects.
+          key={`${open}:${brand?.id ?? "new"}:${brand?.version ?? 0}`}
+          variant="dialog"
+          brand={brand}
+          onClose={() => onOpenChange(false)}
+        />
+      </DialogContent>
+    </Dialog>
   );
 }
 
-function BrandEditorDialogBody({
-  open,
-  onOpenChange,
+/**
+ * The brand form body: create (`brand` null) and edit, in a dialog or a panel (page / window).
+ * `variant="dialog"` renders inside a DialogContent and carries the dialog header; `"panel"` fills its
+ * host and scrolls itself.
+ */
+export function BrandEditorForm({
+  variant,
   brand,
+  onClose,
+  onCreated,
 }: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  variant: "dialog" | "panel";
   brand: MarketingBrand | null;
+  onClose: () => void;
+  /** Called with the new brand right after create succeeds (before `onClose`). */
+  onCreated?: (brand: MarketingBrand) => void;
 }) {
   const orgs = useActiveOrganizationPicker();
   const createMutation = useCreateBrand();
@@ -319,8 +337,9 @@ function BrandEditorDialogBody({
         toast.success("Brand created", {
           action: toastDoor("web_brand", createdBrand.id),
         });
+        onCreated?.(createdBrand);
       }
-      onOpenChange(false);
+      onClose();
     } catch (error) {
       const message = extractErrorMessage(error);
       setFailure(
@@ -333,22 +352,23 @@ function BrandEditorDialogBody({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !busy && onOpenChange(next)}>
-      {/* A modal sits above the resting floating chrome, so its height never depends on what floats
-          (floating things never move the page, 2026-10-20). */}
-      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:flex sm:h-[min(46rem,90dvh)] sm:flex-col sm:max-w-2xl">
+    <div className={variant === "panel" ? "flex h-full min-h-0 flex-col gap-4 overflow-y-auto px-1 pb-1" : "contents"}>
+      {variant === "dialog" ? (
+        <>
         <DialogHeader>
           <DialogTitle>{brand ? `Edit ${brand.name}` : "Add brand"}</DialogTitle>
           <DialogDescription>
             {brand ? "Every editable brand field, in one place." : BRAND_KIND_COPY[kind].createDescription}
           </DialogDescription>
         </DialogHeader>
+        </>
+      ) : null}
 
         {!brand ? (
           // Smart Add first: paste a website or social link and confirm what we find.
           <Link
             href={marketingRoutes.smartAddBrand()}
-            onClick={() => onOpenChange(false)}
+            onClick={() => (variant === "dialog" ? onClose() : undefined)}
             data-clickable
             className="flex items-center gap-3 rounded-lg border border-primary/40 bg-primary/5 px-3 py-2.5"
             data-testid="smart-add-entry"
@@ -365,7 +385,7 @@ function BrandEditorDialogBody({
           // The found-first door (smart-add VISION Part 23): the same Smart Add, opening on what it found.
           <Link
             href={marketingRoutes.smartAddFound()}
-            onClick={() => onOpenChange(false)}
+            onClick={() => (variant === "dialog" ? onClose() : undefined)}
             data-clickable
             className="flex items-center gap-3 rounded-lg border border-border px-3 py-2.5"
             data-testid="smart-add-found-entry"
@@ -422,7 +442,7 @@ function BrandEditorDialogBody({
               key={`${kind}:${selectedOrgId ?? ""}`}
               kind={kind}
               organizationId={selectedOrgId}
-              onClose={() => onOpenChange(false)}
+              onClose={() => onClose()}
               onLocked={setKindLocked}
             />
           </>
@@ -851,7 +871,7 @@ function BrandEditorDialogBody({
           <Button
             variant="quiet"
             disabled={busy}
-            onClick={() => onOpenChange(false)}
+            onClick={() => onClose()}
           >
             Cancel
           </Button>
@@ -861,7 +881,6 @@ function BrandEditorDialogBody({
         </DialogFooter>
         </>
         )}
-      </DialogContent>
-    </Dialog>
+    </div>
   );
 }

@@ -142,6 +142,7 @@ export const APP_OVERLAYS = [
   d.imageUploaderWindowOverlay,
   d.imageViewerOverlay,
   d.marketingMediaAssetWindowOverlay,
+  d.createBrandWindowOverlay,
   d.masterworkAddRuleWindowOverlay,
   d.masterworkBuildWindowOverlay,
   d.masterworkCheckupWindowOverlay,

@@ -54,7 +54,6 @@
     "features/marketing/change-tracking/SeoChangeTrackingWorkspace.tsx#Detail",
     "features/marketing/change-tracking/SeoChangeTrackingWorkspace.tsx#EvidenceValue",
     "features/marketing/components/analysis/FindingDetail.tsx#LifecycleDatum",
-    "features/marketing/components/brands/BrandsPortfolio.tsx#CardDimension",
     "features/marketing/components/media/BrandAssetDetail.tsx#Field",
     "features/marketing/components/ranks/CrossSiteRankMobileCard.tsx#RankDatum",
     "features/marketing/seo/value-system/packs/PackReview.tsx#Row",

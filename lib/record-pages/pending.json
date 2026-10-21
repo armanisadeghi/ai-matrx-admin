@@ -1363,7 +1363,6 @@
   "features/marketing/components/brands/BrandSocialProfilesCard.tsx",
   "features/marketing/components/brands/BrandTempHomes.tsx",
   "features/marketing/components/brands/BrandWebDecisionsSection.tsx",
-  "features/marketing/components/brands/BrandsPortfolio.tsx",
   "features/marketing/components/crawls/CrawlLogsTable.tsx",
   "features/marketing/components/crawls/CrawlReportWorkspace.tsx",
   "features/marketing/components/crawls/CrawlUrlsTable.tsx",

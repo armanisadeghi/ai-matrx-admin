@@ -11,7 +11,7 @@ Inline edits retain a bounded source-row snapshot across server refreshes and
 query/page changes, so saving still reaches the feature writer with the row's
 identity and kind after that row moves off the rendered page.
 
-**Consumers:** `/agents/all` (`features/agents/browse/listConfig.tsx` — the
+**Consumers:** `/marketing/brands/all` (`features/marketing/components/brands/browse/` — in-memory lanes like /applets) · `/agents/all` (`features/agents/browse/listConfig.tsx` — the
 proving ground) · `/workflows/all`
 (`features/workflow-runtime/browse/listConfig.tsx` — first consumer to need a
 GENERIC relevance scorer, `public.mtx_search_score`, instead of a fourth copy) · `/transcripts` (`features/transcripts/browse/listConfig.tsx`
@@ -540,7 +540,9 @@ registered runtime whose name disagrees with the route, so a `/crm` row above
 
 ## Feature entry pages are LIST views, not forced workspaces
 
-`/[feature]` is the user's first stop — a list of everything they can do
+**Where the list lives:** at `/[feature]/all`; `/[feature]` is the front door (guests: landing, signed in: server redirect to `/all`). Contract: `common-docs/policies/feature-pages.md`. The rest of this section is about WHAT the list is.
+
+The list is the user's first stop — a list of everything they can do
 (create / open / fork), like `/agents` (the gold standard): list → click an
 item → pick a UI (view / build / run / versions) → back out or jump UIs via
 the header row. **Never trap the user in a single record's detail UI as if it

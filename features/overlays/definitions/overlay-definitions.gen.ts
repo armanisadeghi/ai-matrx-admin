@@ -72,6 +72,7 @@ export { contextItemsWindowOverlay } from "./contextItemsWindow.definition";
 export { contextSwitcherWindowOverlay } from "./contextSwitcherWindow.definition";
 export { convertToShapeWindowOverlay } from "./convertToShapeWindow.definition";
 export { copySubsetWindowOverlay } from "./copySubsetWindow.definition";
+export { createBrandWindowOverlay } from "./createBrandWindow.definition";
 export { createProjectWindowOverlay } from "./createProjectWindow.definition";
 export { creatorHubOverlay } from "./creatorHub.definition";
 export { credentialVaultWindowOverlay } from "./credentialVaultWindow.definition";

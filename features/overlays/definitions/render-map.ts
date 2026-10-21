@@ -80,6 +80,7 @@ export const RENDER_MAP: OverlayRenderMap = {
   contextSwitcherWindow: () => import("./contextSwitcherWindow.render"),
   convertToShapeWindow: () => import("./convertToShapeWindow.render"),
   copySubsetWindow: () => import("./copySubsetWindow.render"),
+  createBrandWindow: () => import("./createBrandWindow.render"),
   createProjectWindow: () => import("./createProjectWindow.render"),
   creatorHub: () => import("./creatorHub.render"),
   credentialVaultWindow: () => import("./credentialVaultWindow.render"),

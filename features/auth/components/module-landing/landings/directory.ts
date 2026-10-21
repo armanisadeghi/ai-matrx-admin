@@ -21,6 +21,7 @@ import {
   FileSpreadsheet,
   Network,
   Megaphone,
+  Landmark,
   Workflow,
   Search,
   Shapes,
@@ -242,6 +243,13 @@ export const MODULE_LANDING_DIRECTORY: ModuleLandingDirectoryEntry[] = [
     icon: Workflow,
     teaser:
       "Long, many-step work you can watch: what you'll get named up front, the plan on screen, and results you can use.",
+    group: "Build & Run",
+  },
+  {
+    label: "Brands",
+    href: "/marketing/brands",
+    icon: Landmark,
+    teaser: "Add a brand from a link and open its websites, socials, assets and facts.",
     group: "Build & Run",
   },
   {

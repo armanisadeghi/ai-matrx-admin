@@ -33,11 +33,19 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       status: "Live",
     },
     {
-      url: "/marketing/brands",
+      url: "/marketing/brands/all",
       label: "Brand roster",
       description:
-        "BrandsPortfolio — every brand, and the door into each brand workspace.",
-      filePath: "app/(core)/marketing/brands/page.tsx",
+        "BrandsListPage — every brand on the entity-list shell, and the door into each brand workspace.",
+      filePath: "app/(core)/marketing/brands/all/page.tsx",
+      status: "Live",
+    },
+    {
+      url: "/marketing/brands/new",
+      label: "Add brand",
+      description:
+        "BrandCreatePanel — the one create body; the Add brand window panel renders the same component.",
+      filePath: "app/(core)/marketing/brands/new/page.tsx",
       status: "Live",
     },
     {

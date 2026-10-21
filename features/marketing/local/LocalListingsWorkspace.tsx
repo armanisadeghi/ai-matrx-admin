@@ -200,7 +200,7 @@ export default function LocalListingsWorkspace({
               Locations belong to a brand. Create one under{" "}
               <Link
                 className="text-primary underline-offset-2 "
-                href="/marketing/brands"
+                href="/marketing/brands/all"
               >
                 Brands &amp; Websites
               </Link>{" "}
@@ -1234,7 +1234,7 @@ function OnSiteSchemaCard({ location }: { location: BusinessLocation }) {
           check. Add one under{" "}
           <Link
             className="text-primary underline-offset-2 "
-            href="/marketing/sites"
+            href={marketingRoutes.brandWebsites(location.brand_id)}
           >
             Websites
           </Link>
@@ -1256,7 +1256,7 @@ function OnSiteSchemaCard({ location }: { location: BusinessLocation }) {
           there is no evidence to check yet. Run a crawl from{" "}
           <Link
             className="text-primary underline-offset-2 "
-            href={`/marketing/sites/${site.id}`}
+            href={marketingRoutes.site(location.brand_id, site.id)}
           >
             the site workspace
           </Link>

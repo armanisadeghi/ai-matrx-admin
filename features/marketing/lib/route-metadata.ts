@@ -29,7 +29,7 @@ interface MarketingRouteIdentity {
 
 const MARKETING_ROOT: MarketingRouteIdentity = {
   description:
-    "Every brand brand you manage, cross-brand roll-ups, operations, and SEO tools.",
+    "Every brand you manage, cross-brand roll-ups, operations, and SEO tools.",
   letter: "Mk",
 };
 
@@ -48,8 +48,18 @@ const STATIC_ROUTES: Readonly<Record<string, MarketingRouteIdentity>> = {
   },
   "/marketing/brands": {
     titlePrefix: "Brands",
-    description: "Every brand brand you manage — open one for its workspace.",
+    description: "Every brand you manage — open one for its workspace.",
     letter: "Br",
+  },
+  "/marketing/brands/all": {
+    titlePrefix: "Brands",
+    description: "Every brand you manage — open one for its workspace.",
+    letter: "Bs",
+  },
+  "/marketing/brands/new": {
+    titlePrefix: "Add Brand",
+    description: "Add a brand from a link or by hand.",
+    letter: "Ab",
   },
   "/marketing/brands/new-website": {
     titlePrefix: "New Website",

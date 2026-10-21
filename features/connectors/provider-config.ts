@@ -797,7 +797,7 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
       firstAction: {
         kind: "route",
         label: "Pick a site to check",
-        href: "/marketing/brands",
+        href: "/marketing/brands/all",
       },
     },
     {
@@ -834,7 +834,7 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
       firstAction: {
         kind: "route",
         label: "Pick a client to bind its channel",
-        href: "/marketing/brands",
+        href: "/marketing/brands/all",
       },
     },
   ],

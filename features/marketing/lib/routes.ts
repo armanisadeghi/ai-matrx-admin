@@ -5,7 +5,8 @@
  *
  *   CROSS-BRAND (small by design — only what concerns no single brand)
  *     /marketing                       — Marketing home / hub
- *     /marketing/brands                — brands list (+ /brands/new-website)
+ *     /marketing/brands                — Brands front door (guests: landing; signed in: → /all)
+ *     /marketing/brands/{all,new}      — brands list, add a brand (+ /brands/new-website)
  *     /marketing/reports               — cross-brand roll-ups (+ /cost, /ranks)
  *     /marketing/operations/…          — connections, automations, approvals, data-quality
  *     /marketing/tools/…               — public analyzers index, YouTube research
@@ -133,6 +134,8 @@ function mapLegacySiteSub(brandSeg: string, siteSeg: string, sub: string): strin
   if (first === "value" && segments[1] && VALUE_TO_IDENTITY[segments[1]]) {
     const params = new URLSearchParams(query);
     params.set("site", siteSeg);
+    // Site availability, worth and placement live in the catalog view of Products & services.
+    if (VALUE_TO_IDENTITY[segments[1]] === "offerings" && !params.has("view")) params.set("view", "catalog");
     return `/marketing/${brandSeg}/identity/${VALUE_TO_IDENTITY[segments[1]]}?${params.toString()}`;
   }
   // "value/rules" maps via the section table; everything after rides along.
@@ -152,7 +155,12 @@ function mapLegacySiteSub(brandSeg: string, siteSeg: string, sub: string): strin
 export const marketingRoutes = {
   // ── Agency plane ───────────────────────────────────────────────────────
   home: () => "/marketing",
+  /** Brands front door (menus point at front doors): guests get the landing, signed in forwards to {@link brandsAll}. */
   brands: () => "/marketing/brands",
+  /** The brands list (feature-pages contract: the list lives at /all). */
+  brandsAll: () => "/marketing/brands/all",
+  /** Add a brand: the full-page create (the same body the "Add brand" window opens). */
+  brandsNew: () => "/marketing/brands/new",
   /** New-website intake (static child of /brands so it can't collide with a brand key). */
   /** Smart Add (/smart-add/company | /person). A prefill makes a deep link that starts on open (smart-add/smartAddUrl.ts). */
   smartAddBrand: (link?: SmartAddLink) => smartAddHref(link),
@@ -198,8 +206,13 @@ export const marketingRoutes = {
 
   // ── The brand workspace ──────────────────────────────────────────────
   brand: (brandId: string) => `/marketing/${brandId}`,
-  /** The brand's products and services (the offering tree, filling live while its run goes). */
-  brandOfferings: (brandId: string) => `/marketing/${brandId}/offerings`,
+  /**
+   * Identity › Products & services — the one home (Arman, 2026-10-21). `found` (default) is the tree Smart Add
+   * found, filling live while its run goes; `catalog` is the catalog with prices, or the site workbench.
+   * The old `/marketing/<brand>/offerings` forwards here.
+   */
+  brandOfferings: (brandId: string, view: "found" | "catalog" = "found") =>
+    `/marketing/${brandId}/identity/offerings${view === "catalog" ? "?view=catalog" : ""}`,
   /** Open any brand's products and services, or add a brand. */
   offeringsHome: () => "/marketing/brands/offerings",
   brandSection: (brandId: string, section: string) =>
@@ -412,11 +425,10 @@ export const marketingRoutes = {
    *
    * ⚠️ `/marketing/<brand>/content` was a `permanentRedirect` (HTTP 308) into
    * the content plan until this screen shipped, and browsers cache a 308
-   * forever. Link the sidebar and every in-app entry point at
-   * {@link brandTopicalMapHome}'s `/content/map` form below so a stale cached
-   * redirect is never exercised.
+   * forever. It is now a 307 forward to `/content/map` (2026-10-21), and this
+   * builder emits the `/content/map` form so no link ever takes the hop.
    */
-  brandContent: (brandId: string) => `/marketing/${brandId}/content`,
+  brandContent: (brandId: string) => `/marketing/${brandId}/content/map`,
   /** The same screen at an address no browser ever cached a 308 for. */
   brandTopicalMapHome: (brandId: string) => `/marketing/${brandId}/content/map`,
   /** One map's workspace — the outline view, which is the index. */
@@ -461,7 +473,11 @@ export const marketingRoutes = {
 
   // ── Legacy shim addresses (resolve + redirect; builders keep them only
   //    where the call site lacks the context for a canonical address) ─────
-  sites: () => "/marketing/sites",
+  /**
+   * "All sites" — the retired flat portfolio (`/marketing/sites` only 308s to the brands list now; a website
+   * belongs to a brand). Emits the brands list directly so no link takes the hop.
+   */
+  sites: () => "/marketing/brands",
   /** Cross-site Search Console door; with a site it resolves into the brand tree. */
   searchConsole: (siteId?: string) =>
     siteId

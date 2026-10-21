@@ -9,6 +9,8 @@ const ROUTES = [
   ["/marketing", "Mk"],
   ["/marketing/admin", "Ad"],
   ["/marketing/brands", "Br"],
+  ["/marketing/brands/all", "Bs"],
+  ["/marketing/brands/new", "Ab"],
   ["/marketing/brands/new-website", "Ns"],
   ["/marketing/reports", "Rp"],
   ["/marketing/reports/cost", "Co"],

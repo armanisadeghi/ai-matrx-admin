@@ -355,7 +355,7 @@ export const MARKETING_PILLARS: readonly MarketingNavPillar[] = [
       "Websites, socials, and locations",
       "SEO, content, email, PR, and ads",
     ],
-    landingHref: "/marketing/brands/all",
+    landingHref: "/marketing/brands",
     entries: [
       {
         label: "Brands",
