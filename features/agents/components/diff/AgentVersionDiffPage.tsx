@@ -42,7 +42,7 @@ import { AgentDiffViewer, buildAgentAdapterRegistry } from "@/features/agents/co
 import { VersionHistoryTimeline } from "@/features/agents/components/diff/VersionHistoryTimeline";
 import { useAgentDuplicateFlow } from "@/features/agents/hooks/useAgentDuplicateFlow";
 import { RecordId } from "@ai-matrx/design-system";
-import { promoteFailureMessage, promoteSuccessMessage } from "@ai-matrx/agents/versions";
+import { promoteConfirmMessage, promoteFailureMessage, promoteSuccessMessage } from "@ai-matrx/agents/versions";
 import { compareAgentDefinitions } from "@ai-matrx/agents/versions";
 import { useDiffEnrichment } from "@ai-matrx/chat/agents/hooks/useDiffEnrichment";
 import { DefaultFieldAdapter } from "@ai-matrx/diff/react";
@@ -775,9 +775,7 @@ export function AgentVersionDiffPage({
           <AlertDialogHeader>
             <AlertDialogTitle>Promote Version</AlertDialogTitle>
             <AlertDialogDescription>
-              This will replace the current agent configuration with the content
-              from v{leftVersion}. The current configuration will be saved as a
-              new version in the history.
+              {promoteConfirmMessage(leftVersion)}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
