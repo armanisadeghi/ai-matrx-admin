@@ -16,7 +16,7 @@ import type { OutlierInput } from "../types";
 
 type BadgeVariant = "default" | "neutral" | "outline";
 
-/** Tier -> the design-system Badge variant (+ a colour-only override for the filled "strong" tier). */
+/** Tier -> the design-system Badge variant (+ a color-only override for the filled "strong" tier). */
 const TIER_VARIANT: Record<OutlierTier, BadgeVariant> = {
   none: "outline",
   plain: "outline",

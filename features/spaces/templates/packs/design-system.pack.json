@@ -113,14 +113,14 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
-              "Colour",
+              "Color",
               "Type",
               "Spacing",
               "Radius",
               "Shadow"
             ],
             "choiceColors": {
-              "Colour": "blue",
+              "Color": "blue",
               "Type": "violet",
               "Spacing": "teal",
               "Radius": "orange",
@@ -209,7 +209,7 @@
             "key": "k1",
             "values": {
               "token_name": "color-brand-500",
-              "token_type": "Colour",
+              "token_type": "Color",
               "token_value": "#3B6FD4",
               "status": "Stable",
               "layer": "Core",
@@ -220,7 +220,7 @@
             "key": "k2",
             "values": {
               "token_name": "color-brand-700",
-              "token_type": "Colour",
+              "token_type": "Color",
               "token_value": "#274C9A",
               "status": "Draft",
               "layer": "Core",
@@ -231,7 +231,7 @@
             "key": "k3",
             "values": {
               "token_name": "color-surface",
-              "token_type": "Colour",
+              "token_type": "Color",
               "token_value": "#FFFFFF",
               "status": "Stable",
               "layer": "Semantic",
@@ -242,7 +242,7 @@
             "key": "k4",
             "values": {
               "token_name": "color-action",
-              "token_type": "Colour",
+              "token_type": "Color",
               "token_value": "Brand 500",
               "status": "Stable",
               "layer": "Semantic",
@@ -320,7 +320,7 @@
             "key": "k11",
             "values": {
               "token_name": "color-danger",
-              "token_type": "Colour",
+              "token_type": "Color",
               "token_value": "#C8402F",
               "status": "Stable",
               "layer": "Semantic",
@@ -961,7 +961,7 @@
                   "type": "callout",
                   "text": [
                     {
-                      "text": "Override colours in place."
+                      "text": "Override colors in place."
                     }
                   ],
                   "props": {
@@ -1852,7 +1852,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Colour"
+              "text": "Color"
             }
           ],
           "props": {
@@ -1874,11 +1874,11 @@
             "views": [
               {
                 "id": "v-c",
-                "name": "Colour",
+                "name": "Color",
                 "layout": "grid",
                 "icon": "Palette",
                 "filters": {
-                  "token_type": "Colour"
+                  "token_type": "Color"
                 }
               }
             ],
@@ -1974,7 +1974,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Corner radius and elevation follow the same rules as colour: use a named token, never a pixel value. The tokens table above lists them under Radius and Shadow."
+              "text": "Corner radius and elevation follow the same rules as color: use a named token, never a pixel value. The tokens table above lists them under Radius and Shadow."
             }
           ]
         }

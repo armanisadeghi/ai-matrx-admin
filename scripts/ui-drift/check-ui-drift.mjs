@@ -15,19 +15,19 @@
  *   arbitrary-text-size      `text-[11px]` / `text-[0.8rem]` — an off-scale type size.
  *   unknown-type-style       `type-caption` — a type-* class no stylesheet defines, so the text silently
  *                            renders at the inherited size (the six styles plus the marketing ones are real).
- *   faded-text-colour        `text-muted-foreground/60`, `text-foreground/[0.6]`, `text-card-foreground/70` — an
+ *   faded-text-color        `text-muted-foreground/60`, `text-foreground/[0.6]`, `text-card-foreground/70` — an
  *                            opacity-mixed text gray (STYLE-GUIDE: three text states only). bg-/border- opacity is out of scope.
  *   faded-opacity            `opacity-50`, `disabled:opacity-50`, `opacity-[0.6]` — a fractional opacity class
  *                            (0/100 show-hide is allowed): opacity on a box fades its text into an in-between
  *                            gray; disabled is `text-disabled-foreground` (the 2026-10-14 gray-disease ruling).
- *                            Same predicate as @ai-matrx/design-system scripts/text-colour-law.mjs.
+ *                            Same predicate as @ai-matrx/design-system scripts/text-color-law.mjs.
  *   secondary-as-accent      `from-/via-/to-/border-/ring-/text-secondary` (not `-foreground`) — secondary is
  *                            the quiet gray surface (shadcn meaning); the brand purple is brand-secondary.
  *   raw-color                a raw Tailwind palette color (`bg-blue-500`, `text-white`) or a hex
  *                            (`bg-[#0af]`, a `#rrggbb` in a style prop) instead of a semantic token.
  *   spinner-outside-spinner  `animate-spin` outside a spinner/loader component.
  *   styled-raw-button        a raw `<button>` carrying visual classes (a hand-rolled control).
- *   hand-rolled-overlay      a hand-written scrim (`fixed inset-0` + a backdrop colour/blur) or an
+ *   hand-rolled-overlay      a hand-written scrim (`fixed inset-0` + a backdrop color/blur) or an
  *                            element with role="dialog" | "alertdialog" | "tablist".
  *   glass-tap-on-solid       a glass tap button (TapTargetButton, a `*TapButton` with no variant or
  *                            variant="glass", a TapTargetButtonGroup with no surface="solid")
@@ -115,13 +115,13 @@ export const RULES = {
     title: "type-* style that does not exist",
     fix: "Only these text styles exist: type-title, type-body, type-secondary, type-meta, type-label, type-value (plus type-display, type-heading, type-lead on marketing pages). Any other type-* name renders at the inherited size. STYLE-GUIDE \"Type\".",
   },
-  "faded-text-colour": {
+  "faded-text-color": {
     title: "opacity-mixed text gray",
-    fix: "Text has three colors: text-foreground (content, actions), text-muted-foreground (labels, meta, menu group labels, placeholders), text-disabled-foreground (a disabled control). No other gray — if it must be fainter, it is the wrong element. STYLE-GUIDE \"Colour\".",
+    fix: "Text has three colors: text-foreground (content, actions), text-muted-foreground (labels, meta, menu group labels, placeholders), text-disabled-foreground (a disabled control). No other gray — if it must be fainter, it is the wrong element. STYLE-GUIDE \"Color\".",
   },
   "faded-opacity": {
     title: "opacity fading text into an in-between gray",
-    fix: "Never fade with opacity-NN (0/100 show-hide is fine). Disabled → the control's disabled prop (it paints text-disabled-foreground); secondary text → text-muted-foreground. STYLE-GUIDE \"Colour\".",
+    fix: "Never fade with opacity-NN (0/100 show-hide is fine). Disabled → the control's disabled prop (it paints text-disabled-foreground); secondary text → text-muted-foreground. STYLE-GUIDE \"Color\".",
   },
   "secondary-as-accent": {
     title: "secondary used as an accent color",
@@ -410,7 +410,7 @@ export function scanSource(file, text) {
     const unknownType = toks.filter((t) => UNKNOWN_TYPE_STYLE(stripVariants(t).base));
     if (unknownType.length) add("unknown-type-style", node, `${label} ${[...new Set(unknownType)].sort().join(" ")}`);
     const faded = toks.filter((t) => FADED_TEXT.test(stripVariants(t).base));
-    if (faded.length) add("faded-text-colour", node, `${label} ${[...new Set(faded)].sort().join(" ")}`);
+    if (faded.length) add("faded-text-color", node, `${label} ${[...new Set(faded)].sort().join(" ")}`);
     const fadedBox = toks.filter((t) => FADED_OPACITY.test(stripVariants(t).base));
     if (fadedBox.length) add("faded-opacity", node, `${label} ${[...new Set(fadedBox)].sort().join(" ")}`);
     const accent = toks.filter((t) => SECONDARY_ACCENT.test(stripVariants(t).base));
@@ -812,7 +812,7 @@ const PLANTED_SITES = [
   "canonical-override :: <MatrxDataTable> tableClassName",
   "canonical-override :: <section> [&_[data-matrx-table-tabs]]:border-b-0",
   "hand-built-chip :: <span> bg-warning/10 px-2.5 rounded-full text-warning text-xs",
-  "faded-text-colour :: <span> hover:text-muted-foreground/60 text-foreground/[0.6]",
+  "faded-text-color :: <span> hover:text-muted-foreground/60 text-foreground/[0.6]",
   "faded-opacity :: <em> disabled:opacity-50 opacity-[0.7]",
   "secondary-as-accent :: <i> hover:text-secondary to-secondary/20",
   "primitive-visual-class :: <TabsList> bg-muted rounded-lg",
@@ -823,7 +823,7 @@ const PLANTED_SITES = [
 // ── The text-state contract on the HOST's tokens ──────────────────────────────────────────────
 // app/globals.css re-declares the color tokens, and the host layer WINS over the package's
 // defaults, so the package's own contrast test (token-contrast.test.ts) never sees what the app
-// paints. The same thresholds run here (2026-10-14 gray-disease ruling; STYLE-GUIDE "Colour"):
+// paints. The same thresholds run here (2026-10-14 gray-disease ruling; STYLE-GUIDE "Color"):
 // muted >= 4.5:1 and disabled >= 3.0:1 on background/card/popover/muted; foreground:muted >= 1.85;
 // muted:disabled >= 1.45 — in light AND dark.
 function hslLum([h, s, l]) {

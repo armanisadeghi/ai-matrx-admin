@@ -270,7 +270,7 @@ const colorEntries = (h: DocChromeHost, kind: "text" | "highlight"): EditorMenuE
       kind: "action",
       id: `format.${kind}-color.${slug(c.label)}`,
       label: c.label,
-      keywords: [kind === "text" ? "text color" : "highlight color", "colour"],
+      keywords: [kind === "text" ? "text color" : "highlight color", "color"],
       run: run(h, kind === "text" ? "doc.command.set-inline-format-text-color" : "doc.command.set-inline-format-text-background-color", { value: c.value }),
     }),
   ),

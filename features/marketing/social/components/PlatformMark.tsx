@@ -44,7 +44,7 @@ export function platformLabel(platform: string): string {
 /**
  * The real mark of each developer / creator site (Simple Icons, CC0), drawn raw: the brand's own color on nothing
  * (no tile, no tint). `ink` is a black brand mark; it flips to white in the dark theme so it stays readable.
- * Mastodon and Twitch are also social platforms, so they are resolved here before the generic glyph-on-colour mark.
+ * Mastodon and Twitch are also social platforms, so they are resolved here before the generic glyph-on-color mark.
  */
 const SITE_MARKS: Record<string, { Glyph: LucideIcon; color: string }> = {
   github: { Glyph: Github, color: "ink" },

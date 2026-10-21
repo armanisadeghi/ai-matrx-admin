@@ -4,7 +4,7 @@
 // because cytoscape style takes raw literals only (no CSS vars / Tailwind). The
 // theme-dependent chrome (label, halo, edges, selection) comes from `KG_CHROME`;
 // per-node hue + size are data-driven (`data(color)` / `data(size)`) so changing
-// the colour/size encoding never touches this sheet — only `applyEncoding` rewrites
+// the color/size encoding never touches this sheet — only `applyEncoding` rewrites
 // element data. Swap themes live with `cy.style().fromJson(buildStylesheet(c)).update()`.
 
 import type cytoscape from "cytoscape";

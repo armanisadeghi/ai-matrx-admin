@@ -358,7 +358,7 @@ function AttendeeLine({
           <li key={attendee.email} className="flex items-center gap-1">
             <span
               className={cn("h-1.5 w-1.5 shrink-0 rounded-full", rsvpDotClass(attendee.rsvp))}
-              // The dot is never the only carrier of the state — colour alone is
+              // The dot is never the only carrier of the state — color alone is
               // not information a person can rely on.
               title={`${attendee.displayName ?? attendee.email}: ${rsvpLabel(attendee.rsvp)}`}
               aria-label={`${attendee.displayName ?? attendee.email}: ${rsvpLabel(attendee.rsvp)}`}

@@ -1102,7 +1102,7 @@
             "key": "t03",
             "values": {
               "project": "p-bakery-brand",
-              "task_name": "Colour palette sign-off",
+              "task_name": "Color palette sign-off",
               "status": "Waiting on client",
               "priority": "High",
               "due_on": "@today-2d",

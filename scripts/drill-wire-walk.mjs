@@ -99,7 +99,7 @@ try {
   check("chart series keep the origin colors", judged.length > 0 && judged.every((s) => s.color.includes(`${declared[keyOf(s)]})`)), legend.map((s) => `${s.key}:${(s.color.match(/--matrx-chart-[\w]+/) ?? [""])[0]}`).join(" | "));
   const bars = await page.locator("[data-matrx-drill-share-bar]").evaluateAll((els) => els.map((e) => e.getAttribute("style") ?? ""));
   check("share bars draw in the origin colors", bars.some((s) => /--matrx-chart-\d/.test(s)), bars.slice(0, 6).join(" | "));
-  await page.screenshot({ path: `${SHOTS}/origin_colours.png` });
+  await page.screenshot({ path: `${SHOTS}/origin_colors.png` });
 
   // 4. Most expensive requests: Tool calls + Last active; a request's records: finish reason
   await page.goto(`${ORIGIN}/administration/usage?def=ai_usage_executions&view=builtin:costliest_requests&w=7d`, { waitUntil: "domcontentloaded", timeout: 240000 });

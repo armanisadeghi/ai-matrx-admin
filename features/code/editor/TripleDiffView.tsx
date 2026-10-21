@@ -258,7 +258,7 @@ interface PaneHeaderProps {
 }
 
 const PaneHeader: React.FC<PaneHeaderProps> = ({ left, right, tone }) => {
-  const colour =
+  const color =
     tone === "emerald"
       ? "border-emerald-200 bg-emerald-50/60 text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
       : "border-blue-200 bg-blue-50/60 text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200";
@@ -266,7 +266,7 @@ const PaneHeader: React.FC<PaneHeaderProps> = ({ left, right, tone }) => {
     <div
       className={cn(
         "flex shrink-0 items-center gap-2 border-y px-3 py-1 text-[11px]",
-        colour,
+        color,
       )}
     >
       <FileText className="h-3 w-3" />

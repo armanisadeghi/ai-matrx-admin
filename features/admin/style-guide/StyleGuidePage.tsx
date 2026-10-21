@@ -52,7 +52,7 @@ import { JsonInspector } from "@/components/official-candidate/json-inspector/Js
 import {
   BadProvisionRows,
   BadGreys,
-  BadColours,
+  BadColors,
   BadSurfaces,
   BadStates,
   BadProse,
@@ -62,7 +62,7 @@ const SECTIONS = [
   { id: "basics", label: "The twelve basics" },
   { id: "examples", label: "Do and don't" },
   { id: "type", label: "Text styles" },
-  { id: "colour", label: "Color" },
+  { id: "color", label: "Color" },
   { id: "spacing", label: "Spacing" },
   { id: "components", label: "Components" },
   { id: "data", label: "Reading data" },
@@ -239,7 +239,7 @@ export function StyleGuidePage() {
             <Basics />
             <Examples />
             <TypeStyles />
-            <Colour />
+            <Color />
             <Spacing />
             <Components />
             <ReadingData />
@@ -400,7 +400,7 @@ function Examples() {
               <Badge tone="destructive">Failed</Badge>
             </div>
           }
-          bad={<BadColours />}
+          bad={<BadColors />}
         />
         <Pair
           title="One surface level"
@@ -495,9 +495,9 @@ function TypeStyles() {
 }
 
 // ── 4. Color ────────────────────────────────────────────────────────────────────────────
-function Colour() {
+function Color() {
   return (
-    <Section id="colour" title="Color" meta="Tokens only — dark mode is free">
+    <Section id="color" title="Color" meta="Tokens only — dark mode is free">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {SWATCHES.map((s) => (
           <div key={s.token} className="flex items-center gap-3">

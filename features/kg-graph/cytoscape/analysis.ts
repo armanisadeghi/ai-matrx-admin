@@ -5,7 +5,7 @@
 //   - importance via PageRank (link-analysis, not just raw degree) → node size
 //   - communities via Markov clustering → node color
 // Both are computed once after elements are added, cached into element `data`,
-// then surfaced by `applyEncoding` so the colour/size toggles are instant (no
+// then surfaced by `applyEncoding` so the color/size toggles are instant (no
 // recompute). All algorithms ship in cytoscape core 3.x.
 
 import type cytoscape from "cytoscape";

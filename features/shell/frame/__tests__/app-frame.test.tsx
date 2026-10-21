@@ -476,7 +476,7 @@ describe("zero weight: no chat code before the side chat is engaged", () => {
 });
 
 describe("product marks (owner, 2026-10-20: Google's way)", () => {
-  it("the glyph carries the product's colour and fills its cell; nothing tints the tile", async () => {
+  it("the glyph carries the product's color and fills its cell; nothing tints the tile", async () => {
     mount(base({ form: "desktop" }));
     const sidebarMark = q("nav [data-mf-mark]")!;
     expect(sidebarMark.getAttribute("style")).toContain(`--matrx-chip-${chat.color}-ink`);

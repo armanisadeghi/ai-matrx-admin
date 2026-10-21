@@ -279,7 +279,7 @@
                   "type": "text",
                   "text": [
                     {
-                      "text": "Title, description, photos and the options (colour, size, scent)."
+                      "text": "Title, description, photos and the options (color, size, scent)."
                     }
                   ]
                 },
@@ -2782,7 +2782,7 @@
           {
             "key": "ret-3",
             "values": {
-              "return_name": "Napkins - wrong colour",
+              "return_name": "Napkins - wrong color",
               "order": "order-2",
               "customer": "custom-7",
               "reason": "Wrong item sent",
@@ -4036,7 +4036,7 @@
               "bold": true
             },
             {
-              "text": ": one row per option you can actually pick off a shelf: a colour, a size, a scent. Each has its stock, reorder point, reorder quantity, what is already on order and its shelf."
+              "text": ": one row per option you can actually pick off a shelf: a color, a size, a scent. Each has its stock, reorder point, reorder quantity, what is already on order and its shelf."
             }
           ]
         },

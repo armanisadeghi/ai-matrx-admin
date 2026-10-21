@@ -80,7 +80,7 @@ const surfaceSpecific: SurfaceValue[] = [
   {
     name: "deck_theme",
     label: "Deck theme",
-    description: "The deck's theme: preset name, colours and font that are set.",
+    description: "The deck's theme: preset name, colors and font that are set.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 200,

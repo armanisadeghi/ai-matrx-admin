@@ -1,7 +1,7 @@
 /**
  * GUARD: no theme color variable is used bare (`var(--popover)` is no color: the theme holds bare
  * HSL triples). Runs the real checker over this tree, and proves it fails on a planted offender.
- * The checker is scripts/check-bare-hsl-colour.mjs (kept byte-identical in aidream/apps/shared/scripts
+ * The checker is scripts/check-bare-hsl-color.mjs (kept byte-identical in aidream/apps/shared/scripts
  * and matrx-frontend/scripts).
  */
 import { execFileSync, spawnSync } from "node:child_process";
@@ -9,7 +9,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-const CHECKER = resolve(__dirname, "check-bare-hsl-colour.mjs");
+const CHECKER = resolve(__dirname, "check-bare-hsl-color.mjs");
 const ROOT = resolve(__dirname, "..");
 
 describe("bare theme variable guard", () => {

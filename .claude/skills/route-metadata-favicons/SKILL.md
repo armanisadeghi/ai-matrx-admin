@@ -292,7 +292,7 @@ A genuinely single-purpose sub-page may inherit its section's title and badge fr
 export const metadata = createRouteMetadata("/administration", {
   titlePrefix: "Agent Review",   // the tab's own name, as the tab bar says it
   title: "Users & Access",       // the shell's name — category last
-  letter: "AE",                  // 2 chars, free within the colour family
+  letter: "AE",                  // 2 chars, free within the color family
 });
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
@@ -380,7 +380,7 @@ See `.claude/skills/route-discovery-system/SKILL.md` for full `RouteIndexPage` u
 
 ```
 - [ ] favicon entry added to favicon-route-data.ts with a UNIQUE color (or a family constant)
-- [ ] letter is 1–2 chars — NEVER 3 — and free within that route's COLOUR family
+- [ ] letter is 1–2 chars — NEVER 3 — and free within that route's COLOR family
 - [ ] an admin page that mirrors a real feature reuses that feature's exact code
 - [ ] a page that will not reduce to 2 readable characters uses `emoji` instead
 - [ ] `pnpm check:favicon-letters` is green
@@ -440,6 +440,6 @@ export const metadata = createCustomFaviconMetadata(
 | Thinking the system letter fallback is acceptable       | The path-derived fallback is a safety net only — always pass an explicit `letter` |
 | A 3-character code (`BTU`, `ADA`, `WRL`)                | Two characters, or an `emoji`. There is no third option — the guard fails the run  |
 | `AD`/`A…` prefixing an admin page to mark it as admin   | Reuse the real feature's code; the near-black tile already says admin              |
-| Making a letter globally unique across all ~400 routes  | Only same-COLOUR routes can collide — a core tab and an admin tab are two tiles    |
-| Guessing that your new letter is free                   | Run `pnpm check:favicon-letters` — it judges length and same-colour collisions     |
+| Making a letter globally unique across all ~400 routes  | Only same-COLOR routes can collide — a core tab and an admin tab are two tiles    |
+| Guessing that your new letter is free                   | Run `pnpm check:favicon-letters` — it judges length and same-color collisions     |
 | Repeating a family hex instead of its constant          | Import `DOCS_COLOR` / `SHEETS_COLOR` / … from `constants/favicon-route-data.ts`   |

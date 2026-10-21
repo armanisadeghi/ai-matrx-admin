@@ -183,7 +183,7 @@ export type DeckAction =
   | { type: "load"; deck: Deck }
   | { type: "setTitle"; title: string }
   | { type: "setPreset"; preset: string }
-  /** View → Theme builder: colours, font and look of the deck's master (merged into the theme). */
+  /** View → Theme builder: colors, font and look of the deck's master (merged into the theme). */
   | { type: "setTheme"; theme: Partial<DeckTheme> }
   /** File → Page setup: the deck's slide size. */
   | { type: "setSlideSize"; size: SlideSize }

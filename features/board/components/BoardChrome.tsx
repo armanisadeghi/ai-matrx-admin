@@ -160,16 +160,16 @@ export function Minimap({ className }: { className?: string }) {
     // forces a style flush; read per frame it cost every pan frame a
     // full-board restyle, and read on a 1 s timer it was the idle board's
     // only standing style recalculation.
-    let colours = { frame: "", tile: "", view: "" };
-    const readColours = () => {
+    let colors = { frame: "", tile: "", view: "" };
+    const readColors = () => {
       const st = getComputedStyle(canvas);
-      colours = {
+      colors = {
         frame: st.getPropertyValue("--mm-frame"),
         tile: st.getPropertyValue("--mm-tile"),
         view: st.getPropertyValue("--mm-view"),
       };
     };
-    readColours();
+    readColors();
 
     // What the last picture showed — an idle board redraws nothing.
     let drawn = "";
@@ -178,7 +178,7 @@ export function Minimap({ className }: { className?: string }) {
       const items = [...store.getItems().entries()];
       const cam = store.getCamera();
       const size = store.getSize();
-      let key = `${cam.x},${cam.y},${cam.z},${size.w},${size.h},${colours.frame},${colours.tile},${colours.view}`;
+      let key = `${cam.x},${cam.y},${cam.z},${size.w},${size.h},${colors.frame},${colors.tile},${colors.view}`;
       for (const [id, r] of items) key += `|${id}:${r.x},${r.y},${r.w},${r.h}`;
       if (key === drawn) return;
       drawn = key;
@@ -194,10 +194,10 @@ export function Minimap({ className }: { className?: string }) {
       ctx.clearRect(0, 0, MINIMAP_W, MINIMAP_H);
       for (const [id, r] of items) {
         const isFrame = id.startsWith("frame:");
-        ctx.fillStyle = isFrame ? colours.frame : colours.tile;
+        ctx.fillStyle = isFrame ? colors.frame : colors.tile;
         ctx.fillRect(ox + r.x * s, oy + r.y * s, Math.max(1, r.w * s), Math.max(1, r.h * s));
       }
-      ctx.strokeStyle = colours.view;
+      ctx.strokeStyle = colors.view;
       ctx.lineWidth = 1.5;
       ctx.strokeRect(ox + view.x * s, oy + view.y * s, view.w * s, view.h * s);
     };
@@ -211,7 +211,7 @@ export function Minimap({ className }: { className?: string }) {
     const interval = setInterval(schedule, 1000);
     // The theme flips through the root's class / data-theme, or the OS scheme.
     const onTheme = () => {
-      readColours();
+      readColors();
       schedule();
     };
     const themeObserver = new MutationObserver(onTheme);

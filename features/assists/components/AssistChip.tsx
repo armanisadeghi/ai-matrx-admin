@@ -62,7 +62,7 @@ export function AssistChip({
 }: {
   assist: Assist;
   className?: string;
-  /** Scarce global presentation: friendly, never alarm-coloured or timed. */
+  /** Scarce global presentation: friendly, never alarm-colored or timed. */
   ambient?: boolean;
   /**
    * Keep the expanded card in its parent's mobile scroll chain. The manager's

@@ -90,7 +90,7 @@ export function StartTile({
 }
 
 /**
- * Our Blank mark (Google has its four-colour plus; this is ours, not a copy): a heavy rounded plus in
+ * Our Blank mark (Google has its four-color plus; this is ours, not a copy): a heavy rounded plus in
  * the brand's primary-to-secondary sweep (tokens, so a re-brand carries it), the cross lit where the arms meet. The same in both themes — it
  * sits on the paper-white tile face.
  */

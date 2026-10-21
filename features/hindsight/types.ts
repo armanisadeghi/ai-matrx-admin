@@ -96,7 +96,7 @@ export function replayJudgeReasoning(replay: Replay): string | null {
 export function cleanFailureText(raw: string): string {
   return (
     raw
-      // ANSI colour codes, with or without the surviving ESC byte.
+      // ANSI color codes, with or without the surviving ESC byte.
       .replace(/\u001b?\[\d{1,3}m/g, "")
       .replace(/-{4,}/g, " ")
       .replace(/\s+/g, " ")

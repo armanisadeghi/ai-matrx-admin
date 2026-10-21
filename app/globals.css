@@ -64,7 +64,7 @@
    GENERATED: pnpm gen:kind-sandbox-safelist · VERIFIED: pnpm check:kind-sandbox-safelist */
 @import "../features/content-ir/sandbox/generated/db-class-safelist.css";
 
-/* THE ONE THEME: tokens, the Tailwind colour/glass/radius/font mapping, tw-animate-css, the
+/* THE ONE THEME: tokens, the Tailwind color/glass/radius/font mapping, tw-animate-css, the
    typography plugin, dark variant and every class package source wears that no package CSS
    defined (glass, textured background, scrollbar-hide, phone-stack, touch-target floor, KaTeX).
    Defined ONCE in @ai-matrx/design-system; every host imports it. */
@@ -821,7 +821,7 @@
     /* Muted - Zinc-200 for subtle backgrounds */
     --muted: 240 5% 92%;
     --muted-foreground: 240 5% 35%;
-    /* Disabled control text: the third and last text gray (STYLE-GUIDE "Colour"; never opacity). */
+    /* Disabled control text: the third and last text gray (STYLE-GUIDE "Color"; never opacity). */
     --disabled-foreground: 240 5% 54%;
 
     /* Accent - More visible for hover states and UI elements */

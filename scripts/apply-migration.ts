@@ -568,8 +568,8 @@ async function connect(env: DbEnv): Promise<pg.Client> {
   // verbatim" reached nobody on the one sanctioned apply path. Print them.
   return connectDirect(env, "matrx-frontend db:apply", (n) => {
     const severity = (n.severity ?? "NOTICE").toUpperCase();
-    const colour = severity.startsWith("W") ? C.yellow : C.dim;
-    console.log(`${colour}[${severity}]${C.reset} ${n.message ?? ""}`);
+    const color = severity.startsWith("W") ? C.yellow : C.dim;
+    console.log(`${color}[${severity}]${C.reset} ${n.message ?? ""}`);
     if (n.hint) console.log(`${C.dim}        hint: ${n.hint}${C.reset}`);
   }, { migrationRunner: true }); // the one sanctioned exception to the production guard
 }

@@ -11800,7 +11800,7 @@
       "severity": 2,
       "where": "{ description: }",
       "chars": 109,
-      "text": "How every screen should look: the twelve basics, text styles, colour, spacing and the component for each job.",
+      "text": "How every screen should look: the twelve basics, text styles, color, spacing and the component for each job.",
       "detail": "secondary slot: 109 chars, budget 60"
     },
     {
@@ -39730,7 +39730,7 @@
       "severity": 2,
       "where": "<p>",
       "chars": 94,
-      "text": "JPEG/AVIF don't support alpha. Transparent pixels are filled with this colour when converting.",
+      "text": "JPEG/AVIF don't support alpha. Transparent pixels are filled with this color when converting.",
       "detail": "secondary slot: 94 chars, budget 60"
     },
     {
@@ -39740,7 +39740,7 @@
       "severity": 2,
       "where": "<p>",
       "chars": 94,
-      "text": "JPEG/AVIF don't support alpha. Transparent pixels are filled with this colour when converting.",
+      "text": "JPEG/AVIF don't support alpha. Transparent pixels are filled with this color when converting.",
       "detail": "2 sentences in one secondary slot (max 1)"
     },
     {
@@ -39840,7 +39840,7 @@
       "severity": 2,
       "where": "<p>",
       "chars": 92,
-      "text": "Generate filename, alt text, caption, SEO keywords, and dominant colours — all in one click.",
+      "text": "Generate filename, alt text, caption, SEO keywords, and dominant colors — all in one click.",
       "detail": "secondary slot: 92 chars, budget 60"
     },
     {
@@ -48880,7 +48880,7 @@
       "severity": 2,
       "where": "{ description: }",
       "chars": 155,
-      "text": "Colours and fonts, a header and a footer — the frame every page sits inside. We can build a first version for you, and you can change any of it afterwards.",
+      "text": "Colors and fonts, a header and a footer — the frame every page sits inside. We can build a first version for you, and you can change any of it afterwards.",
       "detail": "secondary slot: 155 chars, budget 60"
     },
     {
@@ -48890,7 +48890,7 @@
       "severity": 2,
       "where": "{ description: }",
       "chars": 155,
-      "text": "Colours and fonts, a header and a footer — the frame every page sits inside. We can build a first version for you, and you can change any of it afterwards.",
+      "text": "Colors and fonts, a header and a footer — the frame every page sits inside. We can build a first version for you, and you can change any of it afterwards.",
       "detail": "2 sentences in one secondary slot (max 1)"
     },
     {
@@ -48900,7 +48900,7 @@
       "severity": 2,
       "where": "<p>",
       "chars": 72,
-      "text": "Rather do it yourself? … Colours, fonts and menu … · … Header and footer",
+      "text": "Rather do it yourself? … Colors, fonts and menu … · … Header and footer",
       "detail": "secondary slot: 72 chars, budget 60"
     },
     {
@@ -50650,7 +50650,7 @@
       "severity": 2,
       "where": "{ description: }",
       "chars": 80,
-      "text": "The topical map drawn as a graph, sized and coloured by what each topic carries.",
+      "text": "The topical map drawn as a graph, sized and colored by what each topic carries.",
       "detail": "secondary slot: 80 chars, budget 60"
     },
     {
@@ -55400,7 +55400,7 @@
       "severity": 2,
       "where": "{ hint: }",
       "chars": 87,
-      "text": "Fix the seo.topical_map.intent_colors knob, or add the colour to intentColorClasses.ts.",
+      "text": "Fix the seo.topical_map.intent_colors knob, or add the color to intentColorClasses.ts.",
       "detail": "secondary slot: 87 chars, budget 60"
     },
     {
@@ -55410,7 +55410,7 @@
       "severity": 1,
       "where": "{ hint: }",
       "chars": 87,
-      "text": "Fix the seo.topical_map.intent_colors knob, or add the colour to intentColorClasses.ts.",
+      "text": "Fix the seo.topical_map.intent_colors knob, or add the color to intentColorClasses.ts.",
       "detail": "dotted snake_case identifier, file name"
     },
     {
@@ -55440,7 +55440,7 @@
       "severity": 2,
       "where": "<p>",
       "chars": 75,
-      "text": "The colour settings for this map have not loaded, so no swatches are shown.",
+      "text": "The color settings for this map have not loaded, so no swatches are shown.",
       "detail": "secondary slot: 75 chars, budget 60"
     },
     {
@@ -65810,7 +65810,7 @@
       "severity": 2,
       "where": "{ blurb: }",
       "chars": 92,
-      "text": "The same symbol in your colours, with a logo in the middle and the scan margin still honest.",
+      "text": "The same symbol in your colors, with a logo in the middle and the scan margin still honest.",
       "detail": "secondary slot: 92 chars, budget 60"
     },
     {
@@ -66330,7 +66330,7 @@
       "severity": 2,
       "where": "SectionShell.blurb",
       "chars": 107,
-      "text": "Brand mark in the middle, coloured modules. Browser-only; the plain lane stays the one for warehouse stock.",
+      "text": "Brand mark in the middle, colored modules. Browser-only; the plain lane stays the one for warehouse stock.",
       "detail": "secondary slot: 107 chars, budget 60"
     },
     {
@@ -66340,7 +66340,7 @@
       "severity": 2,
       "where": "SectionShell.blurb",
       "chars": 107,
-      "text": "Brand mark in the middle, coloured modules. Browser-only; the plain lane stays the one for warehouse stock.",
+      "text": "Brand mark in the middle, colored modules. Browser-only; the plain lane stays the one for warehouse stock.",
       "detail": "2 sentences in one secondary slot (max 1)"
     },
     {

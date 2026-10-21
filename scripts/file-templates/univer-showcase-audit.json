@@ -7610,7 +7610,7 @@
       "kind": "workbook",
       "format": "sheets",
       "name": "Visitor Flow: Heatmap and Data Bars",
-      "description": "See a busy weekend emerge as colour, compare in-cell bar lengths, then view the same week as plain numbers.",
+      "description": "See a busy weekend emerge as color, compare in-cell bar lengths, then view the same week as plain numbers.",
       "showcaseUrl": "https://office.univer.ai/showcase/sheets/visitor-flow-visuals",
       "previewUrl": "https://office.univer.ai/assets/showcase/sheets-visitor-flow-visuals.png",
       "declaredPackages": [

@@ -506,7 +506,7 @@ function colorEntries(h: SheetChromeHost, kind: "text" | "fill"): EditorMenuEntr
         kind: "action",
         id: `format.${kind}-color.${c.label.toLowerCase().replace(/\s+/g, "-")}`,
         label: c.label,
-        keywords: [kind === "text" ? "text color" : "fill color", "colour"],
+        keywords: [kind === "text" ? "text color" : "fill color", "color"],
         run: run(h, command, { value: c.value }),
       }),
     ),
@@ -872,7 +872,7 @@ export function buildSheetMenus(h: SheetChromeHost): EditorMenu[] {
           id: "format.theme",
           label: "Theme",
           icon: Palette,
-          keywords: ["fonts", "colours", "colors", "style"],
+          keywords: ["fonts", "colors", "colors", "style"],
           items: SHEET_THEMES.map((t) => ({
             kind: "action" as const,
             id: `format.theme.${t.id}`,

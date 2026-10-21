@@ -110,7 +110,7 @@ No class-E box-in-a-box was found: every non-canvas consumer wraps at most in `h
   `ProgressTrackerBlock`, `TroubleshootingBlock`, `TimelineBlock`).
 - **Damage:** a third rendering of the same tree — and it is opened *from* the canonical components,
   so a user sees the canonical list and then a hand-made one of the same data in the dialog. Also
-  uses raw `text-gray-*` / `bg-gray-*` instead of semantic tokens (log as a colour-token patrol
+  uses raw `text-gray-*` / `bg-gray-*` instead of semantic tokens (log as a color-token patrol
   sighting when touched).
 - **Fix:** once #3 lands, this dialog consumes the same selectable `TaskChecklist` mode.
 - **Effort:** M (after #3).

@@ -120,7 +120,7 @@ export default function KgGraphCytoscape({
     if (cy) applyTheme(cy, chrome);
   }, [mode]);
 
-  // ENCODING → repoint colour/size, lazily running only the analysis the chosen
+  // ENCODING → repoint color/size, lazily running only the analysis the chosen
   // encoding needs (PageRank for importance, Markov for community). Report the
   // community count so the legend reflects it when coloring by community.
   useEffect(() => {

@@ -272,7 +272,7 @@ export function QuickAddThread({
           const active = flavor === opt.value;
           return (
             <div key={opt.value} className="flex min-w-0 flex-1 justify-center">
-              {/* The selected segment is a solid card-coloured pill; the
+              {/* The selected segment is a solid card-colored pill; the
                   rest are transparent and muted — variants, never classes
                   reaching into the tap button. */}
               {active ? (

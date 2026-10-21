@@ -7,12 +7,12 @@
 // never blank. This module only turns that answer into what the page draws; it adds nothing.
 //
 // Color is a design-system NAME (`STYLE_COLORS`), never a hex: each name ships its own light and
-// dark class, so a portal is legible on both grounds and a retired name degrades to "no colour".
+// dark class, so a portal is legible on both grounds and a retired name degrades to "no color".
 // Pure, no I/O (`__tests__/look.test.ts`).
 
 // The server-safe subpath (design-system 0.39+), NOT `@ai-matrx/design-system/data-table`: that
 // one is a "use client" barrel, so on the server (every portal page is server-rendered) its
-// constants arrive as client references and every accent silently read as "no colour".
+// constants arrive as client references and every accent silently read as "no color".
 import { ROW_TINT_CLASS, SWATCH_CLASS } from "@ai-matrx/design-system/data-table/table-style";
 
 import type { PortalStyle } from "./service";

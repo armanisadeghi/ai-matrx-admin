@@ -359,7 +359,7 @@ try {
     await page.getByRole("option").nth(1).click();
     await sleep(1500);
     const tinted = await page.evaluate(() => [...document.querySelectorAll("tbody tr")].filter((tr) => /(^|\s)bg-\w+-50(\s|$)/.test(tr.className)).length);
-    await shot("o08-colour-preview");
+    await shot("o08-color-preview");
     await colors.getByRole("button", { name: "Cancel", exact: true }).click();
     await sleep(2500);
     const untinted = await page.evaluate(() => [...document.querySelectorAll("tbody tr")].filter((tr) => /(^|\s)bg-\w+-50(\s|$)/.test(tr.className)).length);

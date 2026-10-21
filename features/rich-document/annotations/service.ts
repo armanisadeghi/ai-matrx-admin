@@ -397,7 +397,7 @@ export async function createHighlight(input: CreateHighlightInput): Promise<{ do
 /**
  * Rewrite the `annotates` edge: new color and/or new passages. Passages are
  * sent as an explicit text_anchor_set — the database MERGES a lone
- * text_anchor into what the edge holds, so a reattach or a recolour must say
+ * text_anchor into what the edge holds, so a reattach or a recolor must say
  * the whole set (content-ir text_anchor_set contract).
  */
 export async function rewriteHighlightEdge(

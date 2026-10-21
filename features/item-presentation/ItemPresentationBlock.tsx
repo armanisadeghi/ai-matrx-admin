@@ -6,7 +6,7 @@
  * Lifecycle the user experiences:
  *   1. The block is recognized → a pretty card appears INSTANTLY (even mid-stream,
  *      from a partial JSON scan).
- *   2. The `type` resolves → the card adopts that type's icon + identity colour and, for
+ *   2. The `type` resolves → the card adopts that type's icon + identity color and, for
  *      recognized + enrichable types, kicks off a DB fetch immediately.
  *   3. Enrichment lands → the authoritative name/about replace the agent's guess
  *      and detail rows smoothly grow into view.
@@ -72,7 +72,7 @@ const ItemPresentationBlock: React.FC<ItemPresentationBlockProps> = ({
   // already has the final shape, so the swap to the real card is seamless.
   const awaitingType = !payload.type && isStreamActive;
 
-  // The type's ONE identity colour (icons/domain), mixed over transparent for washes and rings.
+  // The type's ONE identity color (icons/domain), mixed over transparent for washes and rings.
   const identity = config.identity;
   const tint = identity ? (pct: number) => `color-mix(in oklab, ${identity.color} ${pct}%, transparent)` : null;
 

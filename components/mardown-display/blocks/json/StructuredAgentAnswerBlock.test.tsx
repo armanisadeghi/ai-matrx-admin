@@ -235,7 +235,7 @@ describe("schema-bound assistant JSON answer", () => {
     expect(statusTone("completed")).toBe("success");
     expect(statusTone("failed")).toBe("danger");
     expect(statusTone("in_progress")).toBe("warning");
-    // Never guess a colour that would lie about the run.
+    // Never guess a color that would lie about the run.
     expect(statusTone("swizzled")).toBe("neutral");
   });
 

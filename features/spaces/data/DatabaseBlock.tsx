@@ -869,7 +869,7 @@ function ViewSettings({
   compact?: boolean;
 }) {
   // N5 — Notion's property editor: the table's own column panel (records-ui FieldEditor: name, type,
-  // choices and their colours, relation, number format, default, look) for one property or a new one.
+  // choices and their colors, relation, number format, default, look) for one property or a new one.
   const [editing, setEditing] = useState<Field | "new" | null>(null);
   const canShape = editable && !sample;
   const designer = useDatabaseDesigner();

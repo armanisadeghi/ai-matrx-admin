@@ -8,8 +8,8 @@
  * 2026-10-17). A color is always `hsl(var(--x))` (or `hsl(var(--x) / 0.5)`); a fallback is a triple:
  * `hsl(var(--x, 0 0% 100%))`.
  *
- *   node scripts/check-bare-hsl-colour.mjs [--root <repo dir>]...   scan tracked ts/tsx/js/mjs files
- *   node scripts/check-bare-hsl-colour.mjs --self-test              plant a bare var, must fail
+ *   node scripts/check-bare-hsl-color.mjs [--root <repo dir>]...   scan tracked ts/tsx/js/mjs files
+ *   node scripts/check-bare-hsl-color.mjs --self-test              plant a bare var, must fail
  * Default roots: the aidream apps/shared tree. Exit 1 on any offender.
  */
 import { execFileSync } from "node:child_process";
@@ -24,14 +24,14 @@ const OK_BEFORE = /(?:hsla?|oklch|rgba?)\(\s*(?:from\s+)?$/;
 const CUSTOM_PROP_VALUE = /--[\w-]+\s*:\s*$/;
 
 /** Offending [line, snippet] pairs in one file's text. */
-export function findBareHslColours(text) {
+export function findBareHslColors(text) {
   const out = [];
   const lines = text.split("\n");
   lines.forEach((line, i) => {
     const t = line.trim();
     if (t.startsWith("//") || t.startsWith("*") || t.startsWith("/*")) return;
     // Opt-out for a line that is NOT themed with the app's bare triples (a sample frame whose :root holds full
-    // colours): a `bare-hsl-ok: <why>` comment on the line above or the same line.
+    // colors): a `bare-hsl-ok: <why>` comment on the line above or the same line.
     if (line.includes("bare-hsl-ok") || (lines[i - 1] ?? "").includes("bare-hsl-ok")) return;
     for (const m of line.matchAll(BARE)) {
       const before = line.slice(0, m.index);
@@ -48,7 +48,7 @@ function scan(root) {
   })
     .toString()
     .split("\0")
-    .filter((f) => f && !/\.(test|spec)\.[jt]sx?$/.test(f) && !f.includes("/node_modules/") && !f.startsWith(".claude/") && !f.endsWith("check-bare-hsl-colour.mjs"));
+    .filter((f) => f && !/\.(test|spec)\.[jt]sx?$/.test(f) && !f.includes("/node_modules/") && !f.startsWith(".claude/") && !f.endsWith("check-bare-hsl-color.mjs"));
   const bad = [];
   for (const f of files) {
     let text;
@@ -58,7 +58,7 @@ function scan(root) {
       continue;
     }
     if (!text.includes("var(--")) continue;
-    for (const [line, snippet] of findBareHslColours(text)) bad.push(`${f}:${line}  ${snippet}`);
+    for (const [line, snippet] of findBareHslColors(text)) bad.push(`${f}:${line}  ${snippet}`);
   }
   return bad;
 }
@@ -80,12 +80,12 @@ function selfTest() {
     'fill="hsl(var(--background, 0 0% 100%))"',
     "--glow: var(--primary);",
     "// var(--border) is no color",
-    "// bare-hsl-ok: frame root holds full colours\nbackground: var(--primary);",
+    "// bare-hsl-ok: frame root holds full colors\nbackground: var(--primary);",
     'className="shadow-md bg-elevation-2" style={{ background: "hsl(var(--elevation-1))" }}',
   ];
-  for (const p of planted) if (!findBareHslColours(p).length) throw new Error(`self-test: planted bare var not caught: ${p}`);
-  for (const f of fine) if (findBareHslColours(f).length) throw new Error(`self-test: wrongly flagged: ${f}`);
-  console.log("check-bare-hsl-colour self-test OK");
+  for (const p of planted) if (!findBareHslColors(p).length) throw new Error(`self-test: planted bare var not caught: ${p}`);
+  for (const f of fine) if (findBareHslColors(f).length) throw new Error(`self-test: wrongly flagged: ${f}`);
+  console.log("check-bare-hsl-color self-test OK");
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -100,6 +100,6 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       console.error(`bare theme variable used as a color (wrap in hsl(var(--x))):\n${bad.join("\n")}`);
       process.exit(1);
     }
-    console.log("check-bare-hsl-colour OK");
+    console.log("check-bare-hsl-color OK");
   }
 }

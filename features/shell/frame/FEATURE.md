@@ -23,7 +23,7 @@ together. Linear is the visual reference. It is built beside the old shell and i
 - **Playground:** `/lab/shell` (`app/(lab)/lab/shell/`). Static sample content for Chat, CRM and
   Docs, with a toolbar outside the frame for product, variant, theme, width
   (Fit = the real window, 2560 / 1920 / 1440 / 1280 / 1024 / 375), "Show what's ours" (frame
-  regions dashed in the primary colour, page regions in green) and a "loaded" readout fed by
+  regions dashed in the primary color, page regions in green) and a "loaded" readout fed by
   the sample loaders, so the lazy rule is visible. The sample side chat and canvas
   (`SampleCompanion.tsx`, `SampleCanvas.tsx`) arrive by dynamic import. A Docs document shows
   the ask bar. `?side_chat=open|closed` opens the page with the side chat in that state.
@@ -49,7 +49,7 @@ together. Linear is the visual reference. It is built beside the old shell and i
 - `FrameModules.tsx`: the heavy-module machinery: `lazyModule` (one `React.lazy` per loader),
   `ModuleSlot` (Suspense with a row skeleton, and an honest failure), the labelled stand-ins,
   the side chat's resize handle and the ask bar.
-- `ProductMark.tsx`: a product's mark, Google's way: the glyph itself in the product's colour
+- `ProductMark.tsx`: a product's mark, Google's way: the glyph itself in the product's color
   (the design system's chip ink for its hue, light and dark values), 40px in the grid's 48px
   cell (stroke 1.5), 18px beside the sidebar's product name (stroke 1.75). No tinted tile.
 - `products.ts`: THE product list, following the owner's tree
@@ -145,7 +145,7 @@ Crumbs are data (`FrameCrumb`); the frame renders them.
   anywhere, unless a popover is open, and focus returns to the control that opened it.
 - **Motion:** panels slide on `--matrx-motion-duration-panel` / `--matrx-motion-ease-panel`.
 
-## The colour proposal (frame-only until approved)
+## The color proposal (frame-only until approved)
 
 Every value is scoped to `[data-matrx-frame]`, so nothing outside the frame changes. Inside it,
 the app's own tokens are re-pointed, so controls follow without classes of their own.
@@ -180,7 +180,7 @@ ownership attributes, and no `className`/`style` on any exported props type.
 - 2026-10-20 (round 7): the lineup follows the owner's tree (Memory replaces Knowledge and
   sits first after Yours; Home, Productivity, E-Commerce, Other and More added).
 
-- 2026-10-20 (round 6): product marks lose their tinted tile; the glyph carries the colour and
+- 2026-10-20 (round 6): product marks lose their tinted tile; the glyph carries the color and
   fills the cell (grid, favorites, sidebar).
 
 - 2026-10-20 (round 5): no chevrons on right-side icons; switchable crumbs (down chevron,

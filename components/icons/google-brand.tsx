@@ -2,7 +2,7 @@
 
 /**
  * Google brand marks — the ONE place every "Google" mention in the app gets its official mark.
- * Always full color (Google's brand guidelines forbid recolouring the G or product icons).
+ * Always full color (Google's brand guidelines forbid recoloring the G or product icons).
  * Built on the shared connector artwork in `@ai-matrx/chat`, plus Slides and the official
  * "Sign in with Google" / "Continue with Google" button (Google Identity branding guidelines).
  */

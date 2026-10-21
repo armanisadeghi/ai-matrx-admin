@@ -330,7 +330,7 @@
                   "type": "todo",
                   "text": [
                     {
-                      "text": "A size row for every size and colour received"
+                      "text": "A size row for every size and color received"
                     }
                   ],
                   "props": {
@@ -782,7 +782,7 @@
         "ordered": false,
         "icon": "ruler",
         "titleField": "sku_name",
-        "describes": "Each style in each size and colour: received, on hand, where it sits and how many have sold.",
+        "describes": "Each style in each size and color: received, on hand, where it sits and how many have sold.",
         "subject": "thing",
         "statusImplies": [],
         "rowTemplates": [],
@@ -792,7 +792,7 @@
         "fields": [
           {
             "key": "sku_name",
-            "label": "Size and colour",
+            "label": "Size and color",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -831,8 +831,8 @@
             }
           },
           {
-            "key": "colour",
-            "label": "Colour",
+            "key": "color",
+            "label": "Color",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
@@ -932,7 +932,7 @@
               "sku_name": "Wrap dress floral - S",
               "product": "produc-1",
               "size": "S",
-              "colour": "Navy floral",
+              "color": "Navy floral",
               "received": 4,
               "on_hand": 2,
               "location": "Floor"
@@ -944,7 +944,7 @@
               "sku_name": "Wrap dress floral - M",
               "product": "produc-1",
               "size": "M",
-              "colour": "Navy floral",
+              "color": "Navy floral",
               "received": 5,
               "on_hand": 1,
               "location": "Floor"
@@ -956,7 +956,7 @@
               "sku_name": "Wrap dress floral - L",
               "product": "produc-1",
               "size": "L",
-              "colour": "Navy floral",
+              "color": "Navy floral",
               "received": 3,
               "on_hand": 3,
               "location": "Back stock"
@@ -968,7 +968,7 @@
               "sku_name": "Shirt dress linen - S",
               "product": "produc-2",
               "size": "S",
-              "colour": "Sand",
+              "color": "Sand",
               "received": 3,
               "on_hand": 1,
               "location": "Floor"
@@ -980,7 +980,7 @@
               "sku_name": "Shirt dress linen - M",
               "product": "produc-2",
               "size": "M",
-              "colour": "Sand",
+              "color": "Sand",
               "received": 4,
               "on_hand": 3,
               "location": "Floor"
@@ -992,7 +992,7 @@
               "sku_name": "Wide-leg trousers - S",
               "product": "produc-3",
               "size": "S",
-              "colour": "Black",
+              "color": "Black",
               "received": 5,
               "on_hand": 3,
               "location": "Floor"
@@ -1004,7 +1004,7 @@
               "sku_name": "Wide-leg trousers - M",
               "product": "produc-3",
               "size": "M",
-              "colour": "Black",
+              "color": "Black",
               "received": 6,
               "on_hand": 2,
               "location": "Floor"
@@ -1016,7 +1016,7 @@
               "sku_name": "Wide-leg trousers - L",
               "product": "produc-3",
               "size": "L",
-              "colour": "Black",
+              "color": "Black",
               "received": 4,
               "on_hand": 4,
               "location": "Back stock"
@@ -1028,7 +1028,7 @@
               "sku_name": "Cropped cardigan - S",
               "product": "produc-4",
               "size": "S",
-              "colour": "Oat",
+              "color": "Oat",
               "received": 4,
               "on_hand": 2,
               "location": "Floor"
@@ -1040,7 +1040,7 @@
               "sku_name": "Cropped cardigan - M",
               "product": "produc-4",
               "size": "M",
-              "colour": "Rust",
+              "color": "Rust",
               "received": 4,
               "on_hand": 0,
               "location": "Floor"
@@ -1052,7 +1052,7 @@
               "sku_name": "Silk scarf - one size",
               "product": "produc-5",
               "size": "One size",
-              "colour": "Mixed prints",
+              "color": "Mixed prints",
               "received": 30,
               "on_hand": 22,
               "location": "Floor"
@@ -1064,7 +1064,7 @@
               "sku_name": "Crossbody bag - cognac",
               "product": "produc-6",
               "size": "One size",
-              "colour": "Cognac",
+              "color": "Cognac",
               "received": 6,
               "on_hand": 3,
               "location": "Window"
@@ -1076,7 +1076,7 @@
               "sku_name": "Denim jacket - M",
               "product": "produc-7",
               "size": "M",
-              "colour": "Mid wash",
+              "color": "Mid wash",
               "received": 4,
               "on_hand": 3,
               "location": "Floor"
@@ -1088,7 +1088,7 @@
               "sku_name": "Denim jacket - L",
               "product": "produc-7",
               "size": "L",
-              "colour": "Mid wash",
+              "color": "Mid wash",
               "received": 4,
               "on_hand": 4,
               "location": "Back stock"
@@ -1100,7 +1100,7 @@
               "sku_name": "Handmade earrings - brass",
               "product": "produc-8",
               "size": "One size",
-              "colour": "Brass",
+              "color": "Brass",
               "received": 20,
               "on_hand": 15,
               "location": "Floor"
@@ -1112,7 +1112,7 @@
               "sku_name": "Wool coat - M",
               "product": "produc-9",
               "size": "M",
-              "colour": "Camel",
+              "color": "Camel",
               "received": 0,
               "on_hand": 0,
               "location": "Back stock"
@@ -1124,7 +1124,7 @@
               "sku_name": "Summer kaftan - one size",
               "product": "produc-10",
               "size": "One size",
-              "colour": "Terracotta",
+              "color": "Terracotta",
               "received": 8,
               "on_hand": 3,
               "location": "Floor"
@@ -1169,7 +1169,7 @@
                   "type": "text",
                   "text": [
                     {
-                      "text": "Brands, colours, fits, occasions coming up."
+                      "text": "Brands, colors, fits, occasions coming up."
                     }
                   ]
                 },
@@ -2847,7 +2847,7 @@
         "inverseKey": "orders"
       },
       {
-        "describes": "Each sale is for one size and colour.",
+        "describes": "Each sale is for one size and color.",
         "fromTable": "order",
         "fromField": "variant",
         "toTable": "variant",
@@ -3256,7 +3256,7 @@
         {
           "name": "related_tables",
           "table": "variant",
-          "describes": "Sizes and colours with stock on hand."
+          "describes": "Sizes and colors with stock on hand."
         }
       ],
       "question": {
@@ -4013,7 +4013,7 @@
               "bold": true
             },
             {
-              "text": ": each style in each size and colour, with what came in, what is left and where it is (floor, back stock, window, online only)."
+              "text": ": each style in each size and color, with what came in, what is left and where it is (floor, back stock, window, online only)."
             }
           ]
         },
@@ -4302,7 +4302,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Replace the sample vendors and styles with your own, then add a size row for each size and colour you receive. Delete the sample sales once yours are in. Customer sizes and phone numbers are private: use them only to serve that customer."
+              "text": "Replace the sample vendors and styles with your own, then add a size row for each size and color you receive. Delete the sample sales once yours are in. Customer sizes and phone numbers are private: use them only to serve that customer."
             }
           ]
         }
@@ -4919,7 +4919,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Add a size row for each size and colour, with "
+              "text": "Add a size row for each size and color, with "
             },
             {
               "text": "Units received",
@@ -5436,7 +5436,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Count the pieces with the designer and both sign the intake list: style, colour, quantity, price."
+              "text": "Count the pieces with the designer and both sign the intake list: style, color, quantity, price."
             }
           ]
         },

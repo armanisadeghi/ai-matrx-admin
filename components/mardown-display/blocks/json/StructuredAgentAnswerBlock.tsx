@@ -41,7 +41,7 @@ export interface StructuredAgentAnswerProps {
  * hardcoding `done | blocked | needs_user` (the Sandbox Specialist's three
  * values) would give the next agent's "complete" / "failed" / "pending" a
  * grey pill that says nothing. Anything unrecognised stays neutral rather
- * than guessing a colour that would lie about the run.
+ * than guessing a color that would lie about the run.
  */
 export function statusTone(
   value: string,

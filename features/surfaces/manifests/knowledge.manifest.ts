@@ -408,7 +408,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "graph_view_state",
     label: "Graph view state",
     description:
-      "Composite of every canvas control: detail level, layout, colour-by, size-by, kind filter, search, hide-noise, and the community count. Empty off the graph route.",
+      "Composite of every canvas control: detail level, layout, color-by, size-by, kind filter, search, hide-noise, and the community count. Empty off the graph route.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 250,
@@ -611,9 +611,9 @@ const surfaceSpecific: SurfaceValue[] = [
  *  - `graph_organization_id` / `graph_scope_id` / `graph_scope_type_id` —
  *    these choose WHOSE knowledge you are looking at. Ownership/scoping
  *    identity, not authored content.
- *  - The canvas ENCODING knobs (colour-by, size-by, hide-noise) and
+ *  - The canvas ENCODING knobs (color-by, size-by, hide-noise) and
  *    `extraction_page` / `extraction_merge_duplicates` / column order — pure
- *    mechanical view toggles nobody would ask an agent to flip. colour-by and
+ *    mechanical view toggles nobody would ask an agent to flip. color-by and
  *    size-by additionally have NO runtime vocabulary constant (`KgColorBy` /
  *    `KgSizeBy` are types only), so a handler could only validate against
  *    re-typed literals — the `node_primary_keyword_id` rule, twice over.

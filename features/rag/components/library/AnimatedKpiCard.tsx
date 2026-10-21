@@ -4,7 +4,7 @@
  * AnimatedKpiCard — premium rollup tile.
  *
  *   - Count-up animation when the value changes (cubic ease).
- *   - Subtle tone-coloured glow on the icon side.
+ *   - Subtle tone-colored glow on the icon side.
  *   - Pulse highlight when the value increases (great signal during
  *     live polling: "embedding count just went up").
  *   - Skeleton shimmer while loading the first value.

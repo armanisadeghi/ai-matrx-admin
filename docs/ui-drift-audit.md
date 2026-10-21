@@ -286,7 +286,7 @@ There are 23,975 Lucide icon elements.
   - Leading: `text-[11px]` 6,187 · `text-[10px]` 5,566 · `text-[9px]` 573 · `pt-[var(--shell-header-h)]` 283 · `text-[12px]` 258 (which *is* `text-xs`) · `text-[13px]` 205 · `min-h-[44px]` 147 · `text-[0.6875rem]` 125 (which is 11px again) · `text-[15px]` 106 · `max-h-[90dvh]` 94 · `text-[11.5px]` 70 · `text-[10.5px]` 53 · `text-[12.5px]` 42 · `text-[8px]` 40 · `z-[9999]` 31.
   - The 11px size alone is spelled three ways: `text-[11px]`, `text-[0.6875rem]` and `text-[11.5px]`.
 - **Raw hex:** 48 hex values inside class strings, 61 inside `style` props, and 913 hex string literals across 142 files (some legitimate: brand logos, editor themes, chart palettes).
-  - With `check:theme-color-literals` pointed at the whole repo: 1,608 raw-colour findings, including light-only neutrals with no dark pair.
+  - With `check:theme-color-literals` pointed at the whole repo: 1,608 raw-color findings, including light-only neutrals with no dark pair.
 - **Inline `style`:** 2,365 attributes.
 - **The package itself uses arbitrary values** (`text-[11px]` ×9, including the Badge base; `z-[10000]` ×21; `max-h-[90dvh]` ×10), so there is no clean example to copy.
 

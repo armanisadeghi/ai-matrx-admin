@@ -324,7 +324,7 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
 - 2026-10-07 — builder round 31: (1) N5 property menu in records-ui 0.103.7 (ccdddefded): "Wrap column" per column (kept on the
   view as `wrapColumns`; store key `presentation.wrapColumns` added to `custom.view_keys()`; Spaces passes it both ways, ca80b9e66f)
   and "Duplicate property" (the new-column panel starts from the original, named "<name> (1)"; values are not copied — NEEDS). Change
-  type and option rename / recolour / reorder / delete walked (`property-edit.walk.mjs`). (2) A non-editor's Form view is the forms
+  type and option rename / recolor / reorder / delete walked (`property-edit.walk.mjs`). (2) A non-editor's Form view is the forms
   system's public form inline (`FormToAnswer`, server action `data/form-actions.ts`, cb55940755) — blocked from showing after a reload
   because the snapshot schema refuses layout `form` (NEEDS). (3) A built-in table block saved before its "+ New page" row reads its
   stored size with 34px added (`paintedSizesOf`, `nr` marker on new saves, 0dc23598bf). (4) The advanced-filter popover is opaque

@@ -230,34 +230,21 @@ it("over a selection where comments are on, the row shows and opens the toolbar'
   expect(toast.error).not.toHaveBeenCalled();
 });
 
-it("live, the right-click collapses the browser selection first: the row still shows, and a stale selection does not", async () => {
+it("live, the right-click collapses the browser selection first: the row follows the menu's captured selection", async () => {
   await mount();
   await selectWord("statistical", { pointer: false });
-  // The right-click collapses the selection; the menu's context may be from an earlier open (no selection in it).
   window.getSelection()?.removeAllRanges();
-  expect(commentRow().visible?.(withScope(""))).toBe(true);
+  // The menu captured "statistical": the row shows, and choosing it brings the passage back.
   expect(commentRow().visible?.(withScope("statistical"))).toBe(true);
+  // A menu that captured no selection (a plain right-click) offers no Comment.
+  expect(commentRow().visible?.(withScope(""))).toBe(false);
   await act(async () => {
-    await commentRow().run(withScope(""));
+    await commentRow().run(withScope("statistical"));
   });
   await act(async () => { await new Promise((r) => setTimeout(r, 400)); });
   await flush(20);
   expect(composer()).not.toBeNull();
   expect(quoted()).toBe("statistical");
-});
-
-it("a selection the person clicked away from long ago is not offered", async () => {
-  await mount();
-  await selectWord("statistical", { pointer: false });
-  window.getSelection()?.removeAllRanges();
-  document.dispatchEvent(new Event("selectionchange"));
-  const now = Date.now();
-  const spy = jest.spyOn(Date, "now").mockReturnValue(now + 5_000);
-  try {
-    expect(commentRow().visible?.(withScope(""))).toBe(false);
-  } finally {
-    spy.mockRestore();
-  }
 });
 
 it("outside an area where comments are on the row is absent", async () => {

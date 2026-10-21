@@ -38,13 +38,9 @@ export function commentableSelection(): Range | null {
 
 // The last passage a comment could be pinned to. A right-click on live collapses the browser
 // selection before the menu draws (the menu keeps its own copy and puts it back on close), so the
-// row is decided from this: matched against the selection the menu captured (`applicationScope`),
-// or, when the menu's context is from an earlier open, by the collapse being THIS right-click's
-// (no collapse seen since the passage was taken, or one a moment ago).
+// row is decided from this, matched against the selection the menu captured (`applicationScope`).
 let remembered: { range: Range; text: string; at: number } | null = null;
-let collapsedAt = 0;
 const REMEMBER_MS = 60_000;
-const THIS_CLICK_MS = 1_500;
 
 function rememberSelection(): void {
   const range = commentableSelection();
@@ -54,8 +50,6 @@ function rememberSelection(): void {
 if (typeof document !== "undefined") {
   let timer: ReturnType<typeof setTimeout> | null = null;
   document.addEventListener("selectionchange", () => {
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) collapsedAt = Date.now();
     if (timer) clearTimeout(timer);
     timer = setTimeout(rememberSelection, 120);
   });
@@ -65,15 +59,10 @@ if (typeof document !== "undefined") {
 function passageFor(ctx: RichDocumentActionContext): Range | null {
   const live = commentableSelection();
   if (live) return live.cloneRange();
-  if (!remembered || Date.now() - remembered.at > REMEMBER_MS) return null;
-  // A re-render moves a live range (removed nodes collapse it onto their parent): the passage is gone.
-  const kept = remembered.range;
-  if (!kept.startContainer.isConnected || kept.collapsed || kept.toString().trim() !== remembered.text) return null;
-  const collapsedByThisClick = collapsedAt <= remembered.at || Date.now() - collapsedAt < THIS_CLICK_MS;
-  if (collapsedByThisClick) return remembered.range;
-  // Or the menu captured this very passage (its copy may be the selection written back as markdown).
   const captured = String(ctx.applicationScope?.selection ?? "").trim();
-  if (!captured) return null;
+  if (!captured || !remembered || Date.now() - remembered.at > REMEMBER_MS) return null;
+  if (!remembered.range.startContainer.isConnected) return null;
+  // The menu's copy may be the selection written back as markdown; the words still match.
   const words = (t: string) => t.replace(/[*_`#>[\]()-]/g, " ").replace(/\s+/g, " ").trim();
   return words(captured).includes(words(remembered.text)) || words(remembered.text).includes(words(captured)) ? remembered.range : null;
 }

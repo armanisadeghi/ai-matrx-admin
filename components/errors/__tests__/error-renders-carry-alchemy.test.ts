@@ -196,7 +196,7 @@ describe("round-3 probes (RC-B12 verify R3-1), red then green", () => {
   it("an error's id or digest line is a reference, not a second error display", () => {
     expect(count('{error.digest && <p className="text-xs">Error ID: {error.digest}</p>}')).toBe(0);
   });
-  it("an uncoloured {state.message} inside an error branch counts", () => {
+  it("an uncolored {state.message} inside an error branch counts", () => {
     expect(count('{state.status === "error" ? <p className="text-sm">{state.message}</p> : null}')).toBe(1);
   });
   it("an opacity-0 menu does not carry, unless it is revealed on hover", () => {

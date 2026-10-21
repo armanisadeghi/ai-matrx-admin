@@ -358,7 +358,7 @@ export function EvidenceLadder({
           {/* Named in the USER's language, not the column's. Nobody who has
               never pitched a reporter knows what a `contradictions` field is —
               but everybody understands being challenged on a claim. This stays
-              the one warning-coloured thing in the proof area, because a gap is
+              the one warning-colored thing in the proof area, because a gap is
               work and this is something actually wrong. */}
           <p className="flex items-center gap-1.5 text-[11px] font-semibold text-destructive">
             <Scale className="h-3.5 w-3.5" aria-hidden />

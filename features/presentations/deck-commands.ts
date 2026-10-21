@@ -157,7 +157,7 @@ function formatItems(h: DeckChromeHost): EditorMenuEntry[] {
             kind: "action" as const,
             id: `format.color.${hex.slice(1).toLowerCase()}`,
             label: name,
-            keywords: ["color", "colour"],
+            keywords: ["color", "color"],
             checked: () => (st().color ?? "").toLowerCase() === hex.toLowerCase(),
             run: () => apply({ color: hex }),
             disabled: locked,

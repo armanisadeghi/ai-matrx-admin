@@ -2,7 +2,7 @@
 
 /**
  * An item's own mark, exactly as its source has it: the company's logo or the place's photo when the
- * source sent one, else the website's favicon, else the first letter. Never tinted or recoloured.
+ * source sent one, else the website's favicon, else the first letter. Never tinted or recolored.
  * In dark mode only, a logo sits RAW on a neutral light rounded chip so dark marks stay readable
  * (light mode and place photos are untouched); while the picture loads, the square shimmers so
  * nothing shifts.

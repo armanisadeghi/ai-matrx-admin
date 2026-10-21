@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// scripts/store-guards/a-new-choice-wears-its-own-colour.mjs — lane FX2 (tables close-out, 2026-10-17)
+// scripts/store-guards/a-new-choice-wears-its-own-color.mjs — lane FX2 (tables close-out, 2026-10-17)
 //
 // GUARD: every choice the store makes wears its own palette color, and a color a person chose is never
 // repainted. MEASURED on W3 Supplies (Cedar Ridge Physical Therapy): after an import and after a text ->
@@ -8,7 +8,7 @@
 // and a cell's "Add" (options_add) after a person painted one choice red.
 // ONE transaction, ROLLED BACK. admin@admin.com in Cedar Ridge Physical Therapy.
 //
-//   node scripts/store-guards/a-new-choice-wears-its-own-colour.mjs [--apply <file.sql>]
+//   node scripts/store-guards/a-new-choice-wears-its-own-color.mjs [--apply <file.sql>]
 
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
@@ -61,7 +61,7 @@ try {
   await client.query("begin");
   await client.query("set local statement_timeout = '60s'");
   if (applyFile) await client.query(readFileSync(resolve(process.cwd(), applyFile), "utf8"));
-  await client.query("select set_config('request.jwt.claims', $1, true), set_config('app.actor_system', 'store-guard/a-new-choice-wears-its-own-colour', true)", [ADMIN_CLAIMS]);
+  await client.query("select set_config('request.jwt.claims', $1, true), set_config('app.actor_system', 'store-guard/a-new-choice-wears-its-own-color', true)", [ADMIN_CLAIMS]);
   const one = async (sql, args) => (await client.query(sql, args)).rows[0];
   const home = (await one(
     `select r.data ->> 'parent_id' as id from custom.record r
@@ -69,7 +69,7 @@ try {
         and r.data ? 'parent_id'
       group by 1 order by count(*) desc limit 1`, [ORG])).id;
   const table = (await one("select custom.table_declare($1, $2::jsonb) as id", [ORG, JSON.stringify({
-    name: "Guard choice colors", slug: `guard_choice_colours_${Date.now()}`, type: "entity", label_singular: "Supply",
+    name: "Guard choice colors", slug: `guard_choice_colors_${Date.now()}`, type: "entity", label_singular: "Supply",
     label_plural: "Supplies", title_field: "title", display: "list", weight: "light", ordered: true, row_order: "sorted",
     default_sort: [{ field: "title", direction: "asc" }], parent_id: home, agent_writable: true, retention_days: 3650,
     fields: [{ name: "title" }] })])).id;

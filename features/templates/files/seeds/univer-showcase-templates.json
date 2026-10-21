@@ -1861,7 +1861,7 @@
             },
             "20": {
               "0": {
-                "v": "Calendar weeks also shows Not joined before enrolment. Text states never enter the colour scale.",
+                "v": "Calendar weeks also shows Not joined before enrolment. Text states never enter the color scale.",
                 "t": 1
               }
             },
@@ -1982,7 +1982,7 @@
             },
             "3": {
               "0": {
-                "v": "SHARE OF ORIGINAL COHORT / the same fixed 0–100% colour scale",
+                "v": "SHARE OF ORIGINAL COHORT / the same fixed 0–100% color scale",
                 "t": 1
               }
             },
@@ -9933,7 +9933,7 @@
                 "s": "dateInput"
               },
               "1": {
-                "v": "Colour mixing",
+                "v": "Color mixing",
                 "t": 1,
                 "s": "input"
               },
@@ -10685,7 +10685,7 @@
             },
             "16": {
               "0": {
-                "v": "Rose = loss / Gold = exactly zero / Mint = profit. Values remain visible; colour is native conditional formatting.",
+                "v": "Rose = loss / Gold = exactly zero / Mint = profit. Values remain visible; color is native conditional formatting.",
                 "t": 1,
                 "s": "hint"
               }
@@ -14945,7 +14945,7 @@
     "kind": "workbook",
     "name": "Visitor Flow: Heatmap and Data Bars",
     "category": "Work",
-    "description": "See a busy weekend emerge as colour, compare in-cell bar lengths, then view the same week as plain numbers.",
+    "description": "See a busy weekend emerge as color, compare in-cell bar lengths, then view the same week as plain numbers.",
     "sortOrder": -940,
     "snapshot": {
       "id": "estuary-visitor-flow",
@@ -15147,7 +15147,7 @@
             },
             "2": {
               "0": {
-                "v": "Colour reveals the midday and weekend peaks across the whole week.",
+                "v": "Color reveals the midday and weekend peaks across the whole week.",
                 "s": "hint"
               }
             },
@@ -15615,7 +15615,7 @@
             },
             "18": {
               "0": {
-                "v": "Try Saturday at 12:00: change G9 from 120 to 12 and watch the colour fade or bar shrink.",
+                "v": "Try Saturday at 12:00: change G9 from 120 to 12 and watch the color fade or bar shrink.",
                 "s": "hint"
               }
             },
@@ -16228,7 +16228,7 @@
             },
             "18": {
               "0": {
-                "v": "Try Saturday at 12:00: change G9 from 120 to 12 and watch the colour fade or bar shrink.",
+                "v": "Try Saturday at 12:00: change G9 from 120 to 12 and watch the color fade or bar shrink.",
                 "s": "hint"
               }
             },

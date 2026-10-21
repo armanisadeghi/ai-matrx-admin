@@ -277,7 +277,7 @@ function BindingSwatch({ value }: { value: string }) {
 
 function InteriorSwatch({ value }: { value: string }) {
   const v = value.toLowerCase();
-  const isColor = v.includes("color") || v.includes("colour");
+  const isColor = v.includes("color") || v.includes("color");
   const isPremium = v.includes("prem");
   const id = `ink-${isColor ? "c" : "bw"}-${isPremium ? "p" : "s"}`;
 

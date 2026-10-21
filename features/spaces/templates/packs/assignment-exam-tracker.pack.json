@@ -657,7 +657,7 @@
           {
             "key": "a15",
             "values": {
-              "assignment_name": "Colour theory worksheet",
+              "assignment_name": "Color theory worksheet",
               "course": "co-art",
               "type": "Homework",
               "due_on": "@today-15d",

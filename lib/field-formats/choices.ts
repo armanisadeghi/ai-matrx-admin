@@ -124,9 +124,9 @@ export const CHOICE_COLOR_NAMES = Object.keys(
 ) as ChoiceColorName[];
 
 /**
- * THE COLOUR'S NAME AS A PERSON SAYS IT (BREAKER-2 B2-28): the option editor listed the palette's
+ * THE COLOR'S NAME AS A PERSON SAYS IT (BREAKER-2 B2-28): the option editor listed the palette's
  * keys ("neutral", "slate"). The names are the table palette's own (`STYLE_COLOR_LABELS`, the words
- * the highlight menu already uses), plus "Plain" for the uncoloured chip.
+ * the highlight menu already uses), plus "Plain" for the uncolored chip.
  */
 export const CHOICE_COLOR_LABELS: Record<ChoiceColorName, string> = {
   neutral: "Plain",

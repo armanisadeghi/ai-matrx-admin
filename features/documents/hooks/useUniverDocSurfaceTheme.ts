@@ -3,7 +3,7 @@
  * canvas, on boot and on every theme flip.
  *
  * `useUniverDarkModeSync` is the other half and is NOT enough on its own:
- * `univerAPI.toggleDarkMode()` recolours Univer's chrome and nothing else.
+ * `univerAPI.toggleDarkMode()` recolors Univer's chrome and nothing else.
  * The page and the desk it sits on are painted by
  * `@univerjs/engine-render`'s `DocBackground` from module-level LIGHT
  * constants, and the canvas element's own background is set once by

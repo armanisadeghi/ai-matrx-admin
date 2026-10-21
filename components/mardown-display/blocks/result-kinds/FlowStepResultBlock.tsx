@@ -8,7 +8,7 @@
  * THE READER'S QUESTION: *where did the run go, and how much went with it?*
  * A control step's own payload is almost never the point — the point is the
  * DIRECTION it chose and the COUNTERS it moved. So the direction (or the wave
- * / iteration) is the headline, the counters are chips coloured by what they
+ * / iteration) is the headline, the counters are chips colored by what they
  * mean (succeeded green, failed red, duplicates muted), and the carried value
  * sits underneath as a normal payload.
  *

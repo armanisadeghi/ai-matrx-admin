@@ -41,7 +41,7 @@ export interface AnalyticsCaveat {
      * claim as "checked and clean". Live on 2026-09-17 all 62,301 GA4 rows carry
      * ONE metadata object — `{timeZone, currencyCode, schemaRestrictionResponse:
      * {}}` — so no honesty caveat has ever fired on this platform, and a silent
-     * clean number would be the GA4 lie §1 names, wearing our own colours.
+     * clean number would be the GA4 lie §1 names, wearing our own colors.
      */
     | "flags-not-affirmed";
   /** What is wrong with the number, in the reader's words. */

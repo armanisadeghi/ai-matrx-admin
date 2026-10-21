@@ -65,8 +65,8 @@ describe("create_classes value", () => {
       parseCreateClassesValue([{ name: "Ok", price: 10 }], []),
     ).toThrow(/only a "paid" class/);
     expect(() =>
-      parseCreateClassesValue([{ name: "Ok", colour: "red" }], []),
-    ).toThrow(/does not accept colour/);
+      parseCreateClassesValue([{ name: "Ok", color: "red" }], []),
+    ).toThrow(/does not accept color/);
   });
 
   it("refuses duplicates in the list and names the person already has", () => {
@@ -245,8 +245,8 @@ describe("update_classes value", () => {
       parseUpdateClassesValue([{ id: "c-chem" }], current),
     ).toThrow(/changes nothing/);
     expect(() =>
-      parseUpdateClassesValue([{ id: "c-chem", colour: "red" }], current),
-    ).toThrow(/does not accept colour/);
+      parseUpdateClassesValue([{ id: "c-chem", color: "red" }], current),
+    ).toThrow(/does not accept color/);
   });
 
   it("refuses a rename onto another class's name, but allows a swap", () => {
@@ -344,8 +344,8 @@ describe("every problem at once (owner ruling 2026-09-27)", () => {
   });
 
   it("new_class_draft reports every bad field", () => {
-    const message = messageOf(() => parseNewClassDraftValue({ access_mode: "x", colour: "red" }));
-    expect(message).toMatch(/does not accept colour/);
+    const message = messageOf(() => parseNewClassDraftValue({ access_mode: "x", color: "red" }));
+    expect(message).toMatch(/does not accept color/);
     expect(message).toMatch(/access_mode must be one of/);
   });
 

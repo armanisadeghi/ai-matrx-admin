@@ -25,7 +25,7 @@ it("adds, configures, moves, resizes and removes through the doc verbs", () => {
 it("refuses by name: unknown type, bad size, unknown field, bad choice, missing widget", () => {
   expect(applyAgentEdit(EMPTY_LAUNCHPAD_DOC, "start_add_widget", { type: "nope" }).ok).toBe(false);
   expect(applyAgentEdit(EMPTY_LAUNCHPAD_DOC, "start_add_widget", { type: "kpis", size: "s" })).toEqual({ ok: false, error: '"kpis" is 6 to 12 columns wide.' });
-  expect(applyAgentEdit(EMPTY_LAUNCHPAD_DOC, "start_add_widget", { type: "recent", config: { colour: "red" } }).ok).toBe(false);
+  expect(applyAgentEdit(EMPTY_LAUNCHPAD_DOC, "start_add_widget", { type: "recent", config: { color: "red" } }).ok).toBe(false);
   expect(applyAgentEdit(EMPTY_LAUNCHPAD_DOC, "start_add_widget", { type: "recent", config: { kind: "boats" } }).ok).toBe(false);
   expect(applyAgentEdit(EMPTY_LAUNCHPAD_DOC, "start_remove_widget", { id: "x" }).ok).toBe(false);
 });

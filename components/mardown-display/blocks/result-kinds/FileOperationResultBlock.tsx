@@ -261,7 +261,7 @@ const FileOperationResultBlock: React.FC<ResultKindBlockProps> = ({
       </ChipRow>
 
       {/* A directory tree is drawn by the one tree renderer (rails, depth
-          colour, wrap that keeps the rails) — never as a raw <pre>. */}
+          color, wrap that keeps the rails) — never as a raw <pre>. */}
       {body !== null && bodyKey === "tree" ? (
         <div className="max-h-96 min-w-0 overflow-auto">
           <TreeBlock content={body} className="my-0" />

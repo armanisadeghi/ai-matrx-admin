@@ -45,7 +45,7 @@ export const CODE_NAMED_TABLE_IDS: ReadonlySet<string> = new Set([
   "177a5e1a-fb38-4ceb-afb2-f5afca573f3b", // admin's Workspace — matrx-frontend (LCP lcp-test-mu7c6pdn) — Known defects
   "17823eed-679f-463b-b475-4839c7d62541", // Cedar Ridge Physical Therapy — Clinic Supply Reorders
   "182fef5a-4ead-42a0-966b-e4e88fcd87a9", // Greenline Landscaping Crew — Jobs
-  "197ed942-5f74-45af-83d6-14f6249e5411", // admin's Workspace — Birchwood Rooms — colour walk
+  "197ed942-5f74-45af-83d6-14f6249e5411", // admin's Workspace — Birchwood Rooms — color walk
   "1aaba65d-68de-457e-8a0c-0f2731161d13", // Castellano & Reyes, LLP — Matter
   "1ac8673d-f034-4359-977f-274dfb3c10ab", // admin's Workspace — Class
   "1c9bae6d-f8be-4999-a513-2194c97d44bc", // Wraithmoor Regional Museum of Art & Craft — Wraithmoor Regional Museum of Art & Craft: exhibitions

@@ -83,12 +83,12 @@ const LINKED_SHOWN = 3;
 const UNLINKED_SHOWN = 2;
 
 /** Google's default-avatar colors: a signed-in account with no photo is its initial on one of these. */
-const AVATAR_COLOURS = ["#1a73e8", "#e8710a", "#188038", "#d93025", "#9334e6", "#007b83", "#c5221f", "#b06000"];
+const AVATAR_COLORS = ["#1a73e8", "#e8710a", "#188038", "#d93025", "#9334e6", "#007b83", "#c5221f", "#b06000"];
 
-function avatarColour(seed: string): string {
+function avatarColor(seed: string): string {
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-  return AVATAR_COLOURS[h % AVATAR_COLOURS.length];
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
 }
 
 /** Google's account chip: the account's initial in its avatar circle, then the address. Opens the connection settings. */
@@ -96,7 +96,7 @@ function AccountChip({ email, name }: { email: string; name: string | null }) {
   const initial = (name?.trim() || email).charAt(0).toUpperCase();
   return (
     <Link href="/user-settings/integrations/google-workspace" className={styles.account} title={name ? `${name} · ${email}` : email}>
-      <span className={styles.avatar} style={{ background: avatarColour(email) }} aria-hidden>
+      <span className={styles.avatar} style={{ background: avatarColor(email) }} aria-hidden>
         {initial}
       </span>
       <span className={styles.ellipsis}>{email}</span>

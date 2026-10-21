@@ -28,7 +28,7 @@ export interface LibraryCover {
   sourceUrl: string;
   license: string;
   licenseUrl: string;
-  /** The photo's average colour, drawn while it loads. */
+  /** The photo's average color, drawn while it loads. */
   color: string | null;
   width: number;
   height: number;

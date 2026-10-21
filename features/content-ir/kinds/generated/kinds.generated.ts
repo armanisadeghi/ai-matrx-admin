@@ -2263,11 +2263,11 @@ export interface CaptionStyle {
    */
   font_feel?: string | null;
   /**
-   * Main text colour, hex or a plain colour name
+   * Main text color, hex or a plain color name
    */
   fill_color?: string | null;
   /**
-   * Outline colour, if any
+   * Outline color, if any
    */
   stroke_color?: string | null;
   /**
@@ -5840,7 +5840,7 @@ export interface LuluCatalogProduct {
    */
   trim_width_in?: string | null;
   /**
-   * Interior colour option.
+   * Interior color option.
    */
   interior_color?: string | null;
   /**
@@ -12279,7 +12279,7 @@ export interface AgentAppsAutoCreateRequestOffer {
    */
   creation_mode?: string;
   /**
-   * The primary colour.
+   * The primary color.
    */
   primary_color?: string;
   /**
@@ -12307,7 +12307,7 @@ export interface AgentAppsAutoCreateRequestOffer {
    */
   custom_instructions: string;
   /**
-   * Rendered colour palette instructions (auto or custom).
+   * Rendered color palette instructions (auto or custom).
    */
   color_pallet_options: string;
   /**

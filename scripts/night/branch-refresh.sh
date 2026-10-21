@@ -1263,8 +1263,8 @@ else
   cd "$FRONTEND" || exit 78
   node node_modules/tsx/dist/cli.mjs scripts/check-branch-schema-drift.ts > "$WORK/drift.out" 2>&1
   DEXIT=$?
-  # THE NUMBER IS READ FROM A COLOURED LINE. `\e[31mPRODUCTION HAS 1375 OBJECT(S)…` — the
-  # first cut took the first digits it saw and reported "31", the ANSI colour code, as the drift.
+  # THE NUMBER IS READ FROM A COLORED LINE. `\e[31mPRODUCTION HAS 1375 OBJECT(S)…` — the
+  # first cut took the first digits it saw and reported "31", the ANSI color code, as the drift.
   # Strip the escapes first, then take the number that follows the words.
   sed -E $'s/\033\[[0-9;]*m//g' "$WORK/drift.out" > "$WORK/drift.plain"
   DNUM="$(sed -nE 's/.*PRODUCTION HAS ([0-9]+) OBJECT.*/\1/p' "$WORK/drift.plain" | head -1)"

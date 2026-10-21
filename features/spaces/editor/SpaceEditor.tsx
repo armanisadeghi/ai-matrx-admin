@@ -230,7 +230,7 @@ export function SpaceEditor({ spaceId, initialBlocks, editable, onChange, slash,
       schema: spacesSchema,
       initialContent: room ? ([{ type: "paragraph", id: "initialBlockId" }] as never) : initialBlocks.length ? (toEngine(initialBlocks) as never) : undefined,
       disableExtensions: room ? ["history"] : undefined,
-      // Notion names the no-colour choice "Default" (a callout on Default draws a bordered box).
+      // Notion names the no-color choice "Default" (a callout on Default draws a bordered box).
       dictionary: { ...en, placeholders: PLACEHOLDERS, color_picker: { ...en.color_picker, colors: { ...en.color_picker.colors, default: "Default" } } },
       extensions: room ? [notionKeys(), suggestMode(), outsideAriaMarks(), notionNumbering(), codeHighlighting(), room] : [notionKeys(), suggestMode(), outsideAriaMarks(), notionNumbering(), codeHighlighting()],
       tabBehavior: "prefer-indent",

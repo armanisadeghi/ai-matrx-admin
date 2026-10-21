@@ -78,7 +78,7 @@ export function intentColorClasses(name: string): IntentColorClasses {
       callSite: "features/marketing/seo/topical-map/ui/intentColorClasses.ts",
     });
   } catch {
-    // Capture is best-effort — it must never take a page down over a colour.
+    // Capture is best-effort — it must never take a page down over a color.
   }
   return MISSING_INTENT_COLOR_CLASSES;
 }

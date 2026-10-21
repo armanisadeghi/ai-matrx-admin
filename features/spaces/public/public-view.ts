@@ -139,7 +139,7 @@ export function publicDescription(view: PublicSpaceView): string {
 }
 
 /**
- * The cover as a share-card image: a linked picture, a bundled gallery photo or a cover-library photo (absolute). Colour and
+ * The cover as a share-card image: a linked picture, a bundled gallery photo or a cover-library photo (absolute). Color and
  * gradient covers and uploaded files (private storage) have no public image, so the card has none.
  */
 export function publicCoverImage(

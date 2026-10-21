@@ -21,7 +21,7 @@ describe("DocumentEditor Univer preset contract", () => {
 
   it("states the page's own colors, not just Univer's chrome", () => {
     // Cold walk 18: a black sheet in a bright frame, in a dark app.
-    // `toggleDarkMode` (useUniverDarkModeSync) only recolours Univer's chrome;
+    // `toggleDarkMode` (useUniverDarkModeSync) only recolors Univer's chrome;
     // `@univerjs/engine-render` paints the desk and the paper from module-level
     // LIGHT constants no theme ever reaches, so the host has to say what they
     // are. The standalone sweep is `pnpm check:univer-doc-theme`; this keeps

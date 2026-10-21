@@ -1,10 +1,10 @@
 // components/official/status-badge/StatusBadge.tsx
 //
-// THE canonical lifecycle-status badge: one colour-coded, icon-led pill for
+// THE canonical lifecycle-status badge: one color-coded, icon-led pill for
 // "what state is this record in" (draft / active / disabled / archived and
 // their cousins on other entities). A status nobody can miss is the point —
 // so the color is solid enough to read at a glance, the icon carries the
-// meaning for colour-blind readers, and the label is always a word, never a
+// meaning for color-blind readers, and the label is always a word, never a
 // dot alone.
 //
 // Entity modules own their status VOCABULARY (which statuses exist, what

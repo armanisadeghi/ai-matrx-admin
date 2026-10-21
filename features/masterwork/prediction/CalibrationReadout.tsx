@@ -177,7 +177,7 @@ export function CalibrationReadout({
                 { x: 0, y: 0 },
                 { x: 100, y: 100 },
               ]}
-              // Same channels-are-not-a-colour bug as the fill above: this
+              // Same channels-are-not-a-color bug as the fill above: this
               // line was DECLARED and never drawn, while the caption under
               // the chart explained it to the reader ("the dotted line is
               // dead-on"). A legend for an invisible mark is a screen lying.

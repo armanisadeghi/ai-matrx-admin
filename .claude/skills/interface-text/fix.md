@@ -39,7 +39,7 @@ You were given one batch: files, findings, and the exact replacement for each. Y
 | Only the listed lines fixed; a long string beside them left | Run the detector on the **whole file** and fix neighbours in the same row, dialog or list |
 | Review's replacement shipped still over budget | Count characters (code spans included) before applying; shorten to fit |
 | A warning's remedy cut with the prose ("the ramp is paused" — by whom? until when?) | A warning keeps its remedy: who acts, or the control that fixes it |
-| A new term nobody sees elsewhere ("Dig-here lines"), or ambiguous shorthand ("colour is off") | Use words already on the screen |
+| A new term nobody sees elsewhere ("Dig-here lines"), or ambiguous shorthand ("color is off") | Use words already on the screen |
 | `truncate` on a line that carries a formatted number | Let number lines wrap — truncation hides the value |
 | A link to another page removed with the prose | Keep it as a plain link, or name the removal in the commit |
 | Text deleted, its container kept (a lone icon row floating at the top of a page) | Remove the wrapper when the text was all it held |

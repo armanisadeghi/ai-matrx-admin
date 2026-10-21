@@ -3,7 +3,7 @@
 // the committed packs (or a pack edit the generator would undo) fails here. Run `python3 .../build-design-starters.py`
 // only after this passes against the packs you mean to keep.
 // The ten starters must be byte-identical. The base board (SP0363) is hand-landed and its committed text mixes
-// British and US spelling, so it is compared with "colour" spelled "color" on both sides: everything else exact.
+// British and US spelling, so it is compared with "color" spelled "color" on both sides: everything else exact.
 
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
@@ -14,7 +14,7 @@ const TEMPLATES = join(__dirname, "..");
 const PACKS = join(TEMPLATES, "packs");
 const STARTERS = readdirSync(PACKS).filter((f) => f.startsWith("design-starter-"));
 const BASE = "design-system-board.pack.json";
-const spelled = (s: string) => s.replace(/colour/g, "color").replace(/Colour/g, "Color");
+const spelled = (s: string) => s.replace(/color/g, "color").replace(/Color/g, "Color");
 
 describe("build-design-starters.py output matches the committed packs", () => {
   let out: string;
@@ -32,7 +32,7 @@ describe("build-design-starters.py output matches the committed packs", () => {
     expect(readFileSync(join(out, f), "utf8")).toBe(readFileSync(join(PACKS, f), "utf8"));
   });
 
-  it("the base board matches apart from colour/color spelling", () => {
+  it("the base board matches apart from color/color spelling", () => {
     expect(spelled(readFileSync(join(out, BASE), "utf8"))).toBe(spelled(readFileSync(join(PACKS, BASE), "utf8")));
   });
 });

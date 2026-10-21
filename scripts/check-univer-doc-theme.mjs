@@ -18,7 +18,7 @@
  * 1. `@univerjs/docs-ui` contains ZERO references to `darkMode`, and
  *    `@univerjs/engine-render`'s `DocBackground` paints the desk and the paper
  *    from four module-level LIGHT constants. `univerAPI.toggleDarkMode()`
- *    recolours Univer's CHROME and stops there. A host that pushes nothing
+ *    recolors Univer's CHROME and stops there. A host that pushes nothing
  *    does not get "the default" — it gets whatever Univer happens to hold.
  * 2. Every `ctx.fillStyle = <string>` on Univer's rendering context goes
  *    through `ICanvasColorService.getRenderColor()`, which in dark mode
@@ -360,10 +360,10 @@ async function selfTest() {
   const checks = {
     "Univer 0.x's getRenderById is caught as missing from engine-render": oldLookup.length === 1,
     "the surface-theme hook reaches only members engine-render ships": liveLookup.length === 0,
-    "the pass-through colour service is caught on Univer's real tokens": dumbTokens.some((v) =>
+    "the pass-through color service is caught on Univer's real tokens": dumbTokens.some((v) =>
       v.includes('"gray.0"'),
     ),
-    "the pass-through colour service is caught in source": dumbSource.length === 1,
+    "the pass-through color service is caught in source": dumbSource.length === 1,
     "the editor's token resolver paints every shipped Univer token": liveTokens.length === 0,
     "walk-18 editor flagged for the missing hook": walk18.some(
       (f) => f.kind === "univer-document-without-theme",
@@ -377,12 +377,12 @@ async function selfTest() {
     "walk-19 editor flagged for the inverter alone": walk19.length === 1,
     "a sheets preset is not flagged": sheet.length === 0,
     "a prose mention is not flagged": prose.length === 0,
-    "the shipped hsl() colours are caught by Univer's ColorKit":
+    "the shipped hsl() colors are caught by Univer's ColorKit":
       plantedColors.some((v) => v.includes("ColorKit THROWS")),
     "a black page is caught by the luminance invariant": blackPage.some((v) =>
       v.includes("too dark for the black ink"),
     ),
-    "the colours this repo produces today are clean": liveColors.length === 0,
+    "the colors this repo produces today are clean": liveColors.length === 0,
   };
 
   const failed = Object.entries(checks).filter(([, ok]) => !ok);

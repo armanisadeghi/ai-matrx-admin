@@ -3,7 +3,7 @@
 // The single KG canvas surface — serves `/knowledge-graph` in mode="org" or
 // mode="scope" (the legacy `/scopes/[scopeId]/graph` route is deleted; scope
 // graphs open via `/knowledge-graph?scope=…`). It owns the data fetch and the
-// chrome around the graph: toolbar (search, layout, colour/size encoding, kind
+// chrome around the graph: toolbar (search, layout, color/size encoding, kind
 // filter, reload), legend, empty/error/loading states, and the side panel. The
 // actual cytoscape render surface is loaded via next/dynamic({ ssr:false })
 // because cytoscape + its extensions touch `window`/DOM at import.

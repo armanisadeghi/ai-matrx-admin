@@ -35,7 +35,7 @@ const TONE_TITLES: Record<PageIntentTone | PageTopicState, string> = {
   intent_topic_hidden: "Its destination topic was retired or rejected",
 };
 
-function colourNameFor(tone: IntentDotProps["tone"], colors: MapIntentColors): string {
+function colorNameFor(tone: IntentDotProps["tone"], colors: MapIntentColors): string {
   switch (tone) {
     case "in_place":
       return colors.in_place;
@@ -55,7 +55,7 @@ function colourNameFor(tone: IntentDotProps["tone"], colors: MapIntentColors): s
 }
 
 export function IntentDot({ tone, colors, label }: IntentDotProps) {
-  const classes = intentColorClasses(colourNameFor(tone, colors));
+  const classes = intentColorClasses(colorNameFor(tone, colors));
   const title = TONE_TITLES[tone];
   return (
     <span className="inline-flex shrink-0 items-center gap-1" title={title}>

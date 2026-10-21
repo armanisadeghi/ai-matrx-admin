@@ -457,7 +457,7 @@ export function SectionCard({
   title: React.ReactNode;
   /** Leading icon chip before the title. */
   icon?: LucideIcon;
-  /** Tint classes for the icon chip (background + colour); defaults to a quiet muted chip. */
+  /** Tint classes for the icon chip (background + color); defaults to a quiet muted chip. */
   iconClassName?: string;
   /** Leading badge before the title: a string or number renders as a step chip; a node renders as given. */
   badge?: React.ReactNode;

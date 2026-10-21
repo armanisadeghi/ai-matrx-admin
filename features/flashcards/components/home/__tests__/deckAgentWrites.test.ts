@@ -36,7 +36,7 @@ describe("create_decks", () => {
         [
           { name: "cell biology" },
           { topic: "no name" },
-          { name: "X", difficulty: "brutal", colour: "red" },
+          { name: "X", difficulty: "brutal", color: "red" },
           { name: "X" },
         ],
         DECKS,
@@ -46,7 +46,7 @@ describe("create_decks", () => {
     }
     expect(message).toMatch(/create_decks\[1\].*name is required/);
     expect(message).toMatch(/difficulty must be one of easy, medium, hard/);
-    expect(message).toMatch(/does not accept colour/);
+    expect(message).toMatch(/does not accept color/);
     expect(message).toMatch(/already has a deck named "cell biology"/);
     expect(message).toMatch(/more than once/);
     expect(message).toMatch(/Nothing was changed\.$/);

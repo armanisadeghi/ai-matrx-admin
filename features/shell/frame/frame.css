@@ -1,5 +1,5 @@
 /* THE NEW APP FRAME — tokens and the few structural rules Tailwind cannot say.
-   Every value is scoped to [data-matrx-frame]: they are the owner's colour
+   Every value is scoped to [data-matrx-frame]: they are the owner's color
    PROPOSAL (2026-10-17). On approval they move to the global tokens / the
    @ai-matrx/shell package; until then nothing outside the frame changes.
    Inside the frame the app's own tokens are re-pointed, so `text-foreground`,
@@ -126,7 +126,7 @@
 }
 
 /* THE TOP EDGE (owner A/B, 2026-10-20): the last top band (the header, or the tabs row under it)
-   ends in a hairline or a fade. The fade is a band of the sheet colour fading out over the body:
+   ends in a hairline or a fade. The fade is a band of the sheet color fading out over the body:
    content scrolls under it and fades; at rest every scroll area starts below it. */
 [data-matrx-frame] {
   --matrx-frame-fade-h: 14px;
@@ -186,7 +186,7 @@
 }
 
 /* OURS vs THE PAGE'S (playground aid): an ancestor carrying data-mf-show-owner outlines every
-   frame-owned region in one colour and every page-supplied region in another. */
+   frame-owned region in one color and every page-supplied region in another. */
 [data-mf-show-owner] [data-matrx-frame] [data-mf-owner="frame"] {
   outline: 2px dashed hsl(var(--primary));
   outline-offset: -2px;
@@ -214,7 +214,7 @@
   }
 }
 
-/* A product's mark: the glyph itself in the product's colour, no tile behind it (ProductMark.tsx). */
+/* A product's mark: the glyph itself in the product's color, no tile behind it (ProductMark.tsx). */
 [data-matrx-frame] .mf-mark {
   color: hsl(var(--mf-hue-ink));
 }

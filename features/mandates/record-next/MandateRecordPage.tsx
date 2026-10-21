@@ -266,7 +266,7 @@ function RecordHeader({
       entityLabel={name}
       right={
         <div className="flex items-center gap-1">
-          {/* THE STATUS — big, colour-coded, and the ONE control for a seat
+          {/* THE STATUS — big, color-coded, and the ONE control for a seat
               that may change it: Enable, Disable and Archive (the soft
               removal) all live in its menu. A separate red "Remove" and a
               body "Enabled" switch used to repeat it (UX punch list

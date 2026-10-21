@@ -95,7 +95,7 @@ function useImageSizes(urls: string[]): { sizes: Map<string, Size | null>; settl
 type Tone = "light" | "dark";
 
 /**
- * A transparent logo drawn for a dark (or light) header disappears on a same-coloured tile — a
+ * A transparent logo drawn for a dark (or light) header disappears on a same-colored tile — a
  * white wordmark on a white card. Each image is sampled once through our same-origin image proxy
  * (a cross-origin canvas cannot be read) and only the tile's backdrop changes, never its size.
  */

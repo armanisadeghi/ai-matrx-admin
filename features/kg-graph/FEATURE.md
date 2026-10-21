@@ -61,7 +61,7 @@ empty/error/loading, side panel) · `KgGraphCytoscape` (presentational render su
   the toolbar control's `onChange` calls and validates against the vocabulary the UI renders from
   (`KG_DETAIL_LEVELS`, `KG_LAYOUTS`, the payload's own `kinds`) — never a re-typed literal.
   Deliberately NOT writable and not worth re-litigating: the org / scope / scope-type selectors
-  (they choose *whose* knowledge is drawn — identity, not view state), the colour-by / size-by
+  (they choose *whose* knowledge is drawn — identity, not view state), the color-by / size-by
   encodings (`KgColorBy` / `KgSizeBy` are types with no runtime vocabulary constant), hide-noise,
   and the entity payload itself. There is no entity-authoring editor on this canvas at all.
 - No emojis. Lucide icons only for chrome.

@@ -63,7 +63,7 @@ export function BadGreys() {
   );
 }
 
-export function BadColours() {
+export function BadColors() {
   return (
     <div className="flex flex-wrap gap-3" style={{ fontSize: 11 }}>
       <span style={{ color: "#059669" }}>Complete</span>

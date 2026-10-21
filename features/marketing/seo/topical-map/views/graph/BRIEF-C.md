@@ -21,7 +21,7 @@ never a write.
 ### C-1 — Convergence fills are SOLID (Tailwind 4 removed `bg-opacity-*`)
 `views/graph/nodes.tsx` `fillClasses()` composes `intentColorClasses(name).dot` ("bg-success
 border-success") with `bg-opacity-10 dark:bg-opacity-20`. Tailwind 4 has no `bg-opacity-*`
-utilities (opacity is the `/` modifier), so every convergence-coloured card paints a SOLID
+utilities (opacity is the `/` modifier), so every convergence-colored card paints a SOLID
 success/warning/info/destructive block with `text-foreground` on it — unreadable in both
 themes. The class: this lane must never derive a FILL from the dot classes. Fix: a local table in
 `nodes.tsx` keyed on `MapIntentColorName` (guarded by `isMapIntentColorName` from

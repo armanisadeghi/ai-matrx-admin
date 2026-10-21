@@ -23,7 +23,7 @@ import { enablePillGuard } from "@ai-matrx/design-system";
 setTapTargetLinkComponent(Link as unknown as TapTargetLinkComponent);
 
 // THE MISUSE GUARD, development builds only: a tap button that a caller bends
-// (a parent gap, a padded wrapper, a token override, a non-colour className,
+// (a parent gap, a padded wrapper, a token override, a non-color className,
 // no tooltip text) renders as a giant red box naming the fault. Gated HERE,
 // in host code Next compiles, never inside the package (whose build inlines
 // NODE_ENV).

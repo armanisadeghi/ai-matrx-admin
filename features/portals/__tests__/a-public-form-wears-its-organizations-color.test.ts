@@ -28,10 +28,10 @@ describe("a public form's color and cover", () => {
   it.each([
     ["teal", "hsl(175 84% 30%)"],
     ["blue", "hsl(221 83% 50%)"],
-  ] as const)("%s becomes the page's resolved primary color", (accent, colour) => {
+  ] as const)("%s becomes the page's resolved primary color", (accent, color) => {
     const vars = portalLook(style({ accent }), "Cedar Ridge Physical Therapy").primaryVars;
-    expect(vars?.["--color-primary"]).toBe(colour);
-    expect(vars?.["--color-ring"]).toBe(colour);
+    expect(vars?.["--color-primary"]).toBe(color);
+    expect(vars?.["--color-ring"]).toBe(color);
     expect(vars?.["--color-primary-foreground"]).toBe("hsl(0 0% 100%)");
   });
 

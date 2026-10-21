@@ -210,8 +210,35 @@ function filesToScan(root: string, argv: string[]): string[] {
   return [...new Set(files)].filter((f) => SOURCE.test(f) && !SKIP.test(f));
 }
 
+/**
+ * THE COLOR LAW (Arman, 2026-10-21): the British "colour" does not exist anywhere in our files: not in a
+ * comment, an identifier, a file name, a CSS variable, a template JSON or a doc. Unlike the user-visible scan above
+ * this one reads every tracked text file. The only exceptions: applied SQL migrations (immutable history) and this
+ * guard itself (it has to spell the word).
+ */
+const COLOUR_TEXT = /\.(tsx?|jsx|mts|mjs|cjs|json|css|md|mdx|py|sh|yml|yaml|fixture)$/;
+const COLOUR_EXEMPT = /(^|\/)(node_modules|dist|\.next|migrations)\/|\.sql$|check-us-spelling|pnpm-lock|package-lock/;
+export function colourAnywhere(file: string, text: string): Finding[] {
+  if (!COLOUR_TEXT.test(file) || COLOUR_EXEMPT.test(file)) return [];
+  const out: Finding[] = [];
+  if (/colour/i.test(file)) out.push({ file, line: 0, found: "colour", use: "color" });
+  text.split("\n").forEach((line, i) => {
+    if (/colour/i.test(line)) out.push({ file, line: i + 1, found: "colour", use: "color" });
+  });
+  return out;
+}
+
 export function scanRoot(root: string, argv: string[]): Finding[] {
   const out: Finding[] = [];
+  const everyTracked = argv.includes("--all") ? git(root, ["ls-files"]) : [...new Set([
+    ...git(root, ["diff", "--name-only", "HEAD"]),
+    ...git(root, ["ls-files", "--others", "--exclude-standard"]),
+  ])];
+  for (const f of everyTracked) {
+    const p = join(root, f);
+    if (!existsSync(p) || !COLOUR_TEXT.test(f)) continue;
+    out.push(...colourAnywhere(f, readFileSync(p, "utf8")));
+  }
   for (const f of filesToScan(root, argv)) {
     const p = join(root, f);
     if (!existsSync(p)) continue;
@@ -239,6 +266,14 @@ function selfTest(): number {
     }
     if (g.length !== 0) {
       console.error(`SELF-TEST FAILED: the guard went red on a clean file: ${JSON.stringify(g)}`);
+      failed = true;
+    }
+    if (colourAnywhere("features/x/t.pack.json", '{"label":"Colour"}').length !== 1 || colourAnywhere("a.ts", "// a colour comment").length !== 1) {
+      console.error("SELF-TEST FAILED: the color law did not go red on a planted 'Colour' in JSON or a comment.");
+      failed = true;
+    }
+    if (colourAnywhere("features/x/t.pack.json", '{"label":"Color"}').length !== 0) {
+      console.error("SELF-TEST FAILED: the color law went red on 'Color'.");
       failed = true;
     }
     // Every suggestion must be a real word: the whole-word table, never stem + ending.

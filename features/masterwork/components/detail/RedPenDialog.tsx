@@ -178,7 +178,7 @@ export interface WorkSegment {
  * span must be exactly the characters between its own offsets, or the
  * highlight on screen would not be the evidence sent to the server.
  * Overlapping corrections keep the FIRST one — a second verdict on the same
- * words is a second correction, not a re-colouring of the first.
+ * words is a second correction, not a re-coloring of the first.
  */
 export function segmentWork(
   workText: string,

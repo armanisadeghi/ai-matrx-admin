@@ -171,7 +171,7 @@ export function WebResultBlock({ serverData, className }: SearchKindBlockProps) 
         <div className="min-w-0 flex-1">
           {/* Site identity: the favicon is as tall as the two lines beside it
               (two 16px lines, a 32px circle), on a neutral ring that never
-              recolours it. */}
+              recolors it. */}
           <div className="flex items-center gap-3">
             <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-border bg-card">
               <SearchFavicon

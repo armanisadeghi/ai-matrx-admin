@@ -662,7 +662,7 @@ export async function bootSync(options: BootOptions): Promise<BootResult> {
         // A boot that throws must not leave a slice "loading" forever: every
         // remotely-loaded slice hears its load failed, then the caller hears
         // the throw (store.ts lets a later mount retry the boot).
-        // The saved theme choice is as known as it will get: let the device-colour reconcile run
+        // The saved theme choice is as known as it will get: let the device-color reconcile run
         // rather than leave this session unreconciled (it is idempotent if boot got that far).
         markThemeChoiceKnown();
         const message = extractErrorMessage(err);

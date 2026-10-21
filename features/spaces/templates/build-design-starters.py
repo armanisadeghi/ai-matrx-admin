@@ -889,7 +889,7 @@ def build(s, kept=None):
         "agent": {"platformAgent": {"id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec", "name": "Answers From Your Tables"}, "name": "Design system assistant",
                   "variables": [{"name": "primary_table", "table": "color", "describes": "Every color, its light and dark values and what it is read on."}, {"name": "related_tables", "table": "type_style", "describes": "The text styles."}],
                   "question": {"ask": "How many colors are in the Surfaces group?", "whyItMatters": s.get("why") or f"{first} keeps the surfaces to a handful so screens stay calm.",
-                               "expect": {"table": "color", "measure": {"op": "count"}, "filter": {"group": "Surfaces"}, "answer": surfaces, "unit": "colours"}}},
+                               "expect": {"table": "color", "measure": {"op": "count"}, "filter": {"group": "Surfaces"}, "answer": surfaces, "unit": "colors"}}},
         "walk": [{"says": "Open Colors.", "action": {"kind": "open", "surface": "all_color"}, "expect": {"kind": "renders", "surface": "all_color", "minItems": 3}},
                  {"says": "Open Typography.", "action": {"kind": "open", "surface": "all_type_style"}, "expect": {"kind": "renders", "surface": "all_type_style", "minItems": 3}},
                  {"says": "Open Components.", "action": {"kind": "open", "surface": "all_component"}, "expect": {"kind": "renders", "surface": "all_component", "minItems": 3}}],

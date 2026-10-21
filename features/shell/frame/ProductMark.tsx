@@ -1,7 +1,7 @@
 "use client";
 
 // A PRODUCT'S MARK — Google's way (owner, 2026-10-20): the glyph itself carries the product's
-// colour and fills its box; no tinted tile behind it (except the bake-off's look C). The colour is the design system's chip ink
+// color and fills its box; no tinted tile behind it (except the bake-off's look C). The color is the design system's chip ink
 // for the product's hue (`--matrx-chip-<hue>-ink`), which has a light and a dark value, so the
 // mark keeps its contrast on the sheet in both themes. Used by the app grid (and its favorites)
 // and the sidebar's product name.

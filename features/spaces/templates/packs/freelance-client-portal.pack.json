@@ -855,7 +855,7 @@
             "key": "f3",
             "values": {
               "client": "cl1",
-              "file_name": "Brand colour guide",
+              "file_name": "Brand color guide",
               "type": "Asset",
               "approved": true,
               "shared_on": "@today-30d",

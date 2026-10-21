@@ -1,5 +1,5 @@
 // N5 property menu, round 31: on a scratch page's inline database — Duplicate property, Wrap column (kept
-// with the view across a reload), Change type to Select, the Select's options renamed / recoloured /
+// with the view across a reload), Change type to Select, the Select's options renamed / recolored /
 // reordered / deleted in Column settings, a width dragged twice (each drag widens, kept on reload), the
 // advanced-filter popover's surface is opaque, and Share offers the platform's levels. Trashes the page.
 //   SPACES_WALK_ORG="Ashford Labs" SHOT_DIR=<dir> node features/spaces/__tests__/walk/property-edit.walk.mjs [pageId]
@@ -144,8 +144,8 @@ const readChoices = async () => {
   await dialog().waitFor({ timeout: 10_000 });
   await page.waitForTimeout(2500);
   const words = await dialog().locator("input[aria-label^='Choice ']").evaluateAll((els) => els.map((e) => e.value));
-  const colours = await dialog().locator("[aria-label^='Color for ']").evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")).filter((l) => l.includes(":")));
-  return { words, colours };
+  const colors = await dialog().locator("[aria-label^='Color for ']").evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")).filter((l) => l.includes(":")));
+  return { words, colors };
 };
 let before;
 await act(page, async () => {
@@ -154,10 +154,10 @@ await act(page, async () => {
   if (!before.words.includes("Call booked")) {
     // Edited by an earlier run on this page: the reload below reads what that run kept.
     await page.keyboard.press("Escape");
-    before = { words: ["Lead", "Call booked", "Won"], colours: ["Color for Won: Amber"] };
+    before = { words: ["Lead", "Call booked", "Won"], colors: ["Color for Won: Amber"] };
     return;
   }
-  // Rename "Lead" -> "New lead"; recolour "Won"; move "Won" up; remove "Call booked".
+  // Rename "Lead" -> "New lead"; recolor "Won"; move "Won" up; remove "Call booked".
   await dialog().getByRole("textbox", { name: "Choice 1" }).fill("New lead");
   await dialog().locator("[aria-label^='Color for Won:']").click();
   await page.waitForTimeout(400);
@@ -189,9 +189,9 @@ await act(page, async () => {
 });
 console.log(JSON.stringify({ after }));
 check("options renamed, reordered and one deleted (kept after reload)", JSON.stringify(after.words) === JSON.stringify(["New lead", "Won"]), { words: after.words });
-const wonBefore = before.colours.find((c) => c.startsWith("Color for Won:"));
-const wonAfter = after.colours.find((c) => c.startsWith("Color for Won:"));
-check("Won recoloured (kept after reload)", !!wonAfter && wonAfter !== wonBefore, { wonBefore, wonAfter });
+const wonBefore = before.colors.find((c) => c.startsWith("Color for Won:"));
+const wonAfter = after.colors.find((c) => c.startsWith("Color for Won:"));
+check("Won recolored (kept after reload)", !!wonAfter && wonAfter !== wonBefore, { wonBefore, wonAfter });
 
 // 3b. Reorder on its own: Won moves to the top, kept after a reload.
 step("reorder");

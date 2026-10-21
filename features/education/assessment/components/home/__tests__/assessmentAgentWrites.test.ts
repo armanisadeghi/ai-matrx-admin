@@ -41,7 +41,7 @@ describe("create_quizzes", () => {
         [
           { title: "cell biology checkpoint" },
           { topic: "no title" },
-          { title: "X", depth: "brutal", colour: "red" },
+          { title: "X", depth: "brutal", color: "red" },
           { title: "X" },
         ],
         MINE,
@@ -52,7 +52,7 @@ describe("create_quizzes", () => {
     expect(message).toContain("create_quizzes[1]");
     expect(message).toContain("title is required");
     expect(message).toContain("depth must be one of recall, applied, exam");
-    expect(message).toContain("does not accept colour");
+    expect(message).toContain("does not accept color");
     expect(message).toContain("already has one titled");
   });
 });
@@ -121,7 +121,7 @@ describe("generate_quizzes", () => {
     try {
       parseGenerateValue(
         "quizzes",
-        { source: "topic", question_count: 99, difficulty: "brutal", time_limit_minutes: 5, colour: 1 },
+        { source: "topic", question_count: 99, difficulty: "brutal", time_limit_minutes: 5, color: 1 },
         LIMITS,
       );
     } catch (e) {
@@ -131,6 +131,6 @@ describe("generate_quizzes", () => {
     expect(message).toContain("question_count must be a whole number from 1 to 30");
     expect(message).toContain("difficulty must be one of");
     expect(message).toContain("applies only to practice tests");
-    expect(message).toContain("does not accept colour");
+    expect(message).toContain("does not accept color");
   });
 });

@@ -19,7 +19,7 @@ describe("checkPack: the board key", () => {
   });
   it("names a tile whose table token the spec does not have", () => {
     const p = fresh();
-    p.board!.chapters[1].tiles[0].table = "colour";
+    p.board!.chapters[1].tiles[0].table = "color";
     expect(ats(p)).toContain("board.chapters[1].tiles[0].table");
   });
   it("names a page-layout tile wider than the chapter", () => {

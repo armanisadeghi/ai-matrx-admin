@@ -103,9 +103,9 @@ check(String(after).startsWith("Backflow Test"),
 
 // ── 2. THE CLASS. A key this door does not store is refused BY NAME.
 const err2 = await refusal("field_update", {
-  p_organization_id: ORG, p_field_id: summaryId, p_patch: { label: "Ticket summary", colour: "blue" },
+  p_organization_id: ORG, p_field_id: summaryId, p_patch: { label: "Ticket summary", color: "blue" },
 });
-check(err2 !== null && /colour/.test(err2) && /no setting called/i.test(err2),
+check(err2 !== null && /color/.test(err2) && /no setting called/i.test(err2),
       "a key this door does not store is refused by name, with the list of what it does store",
       err2 ?? "ACCEPTED — the door said yes and stored nothing");
 

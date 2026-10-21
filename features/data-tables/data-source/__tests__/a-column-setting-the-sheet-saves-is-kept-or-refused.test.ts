@@ -447,7 +447,7 @@ describe("September service board · rules", () => {
     for (const update of [
       { id: F.notes, display_name: "Job notes", field_name: "job_notes" },
       { id: F.notes, display_name: "Job notes", is_public: true },
-      { id: F.notes, display_name: "Job notes", colour_scale: "heat" },
+      { id: F.notes, display_name: "Job notes", color_scale: "heat" },
     ]) {
       const saved = await rs.updateTableConfig(HOME, { tableId: TABLE, fieldUpdates: [update] });
       expect(saved.success).toBe(false);

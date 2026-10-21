@@ -87,7 +87,7 @@
      selected in BOTH themes. Light glass is nearly opaque, so the low-alpha
      --matrx-glass-bg-active tint that works in dark is invisible on it —
      light therefore gets a SOLID raised pill (segmented-control treatment)
-     plus a real text-colour delta. Dark keeps the glass tint that reads well. */
+     plus a real text-color delta. Dark keeps the glass tint that reads well. */
   --shell-nav-selected-bg: #ffffff;
   --shell-nav-selected-text: rgb(29, 78, 216);
   --shell-nav-selected-shadow:

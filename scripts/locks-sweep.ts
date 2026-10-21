@@ -128,9 +128,9 @@ async function main(): Promise<number> {
         `${pad("held for", 12)}${pad("last beat", 12)}lease left${C.reset}`,
     );
     for (const r of rows) {
-      const colour = r.state === "expired" ? C.dim : C.yellow;
+      const color = r.state === "expired" ? C.dim : C.yellow;
       console.log(
-        `${colour}${pad(r.state, 9)}${pad(r.lock_name, w + 2)}${pad(r.held_by, h + 2)}` +
+        `${color}${pad(r.state, 9)}${pad(r.lock_name, w + 2)}${pad(r.held_by, h + 2)}` +
           `${pad(dur(r.held_for), 12)}${pad(dur(r.since_heartbeat), 12)}` +
           `${r.state === "expired" ? "—" : dur(r.lease_left)}${C.reset}` +
           (r.note ? `\n${C.dim}         "${r.note}"${C.reset}` : ""),
