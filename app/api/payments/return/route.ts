@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { settleFromReturn } from "@/features/payments/server";
 import { safeReturnPath } from "@/features/payments/amount";
-import { requestOrigin } from "@/utils/auth/request-origin";
+import { requestHostOrigin } from "@/utils/auth/request-origin";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 
 export const dynamic = "force-dynamic";
@@ -16,10 +16,11 @@ export const dynamic = "force-dynamic";
 /** Only a path on THIS site is followed — never an outside address carried in the link (I3). */
 // `pid` names the payment so the page can READ its state on the server (I4) — the `payment` word is
 // only a hint about what happened in Stripe's window, never proof of money.
-// The browser-facing origin (the host the payer started on — a session host, a custom domain), not
+// The host this request was SERVED on (the host the payer started on — a session host, a custom domain),
+// never the Origin header (another site sets it when it posts here — CD-PAY-06), and not
 // Next's own idea of it: in dev nextUrl.origin is plain localhost, which drops the payer's cookies.
 function backTo(request: NextRequest, outcome: string): URL {
-  const origin = requestOrigin(request.headers) ?? request.nextUrl.origin;
+  const origin = requestHostOrigin(request.headers) ?? request.nextUrl.origin;
   const path = safeReturnPath(request.nextUrl.searchParams.get("back"), origin);
   const url = new URL(path, origin);
   url.searchParams.set("payment", outcome);

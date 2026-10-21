@@ -30,7 +30,7 @@ const RECHECK_MS = 120_000;
 interface Route {
   id: string;
   path_prefix: string;
-  target_kind: "form" | "booking" | "portal";
+  target_kind: "form" | "booking" | "portal" | "space";
   target_id: string;
   target_title: string | null;
 }
@@ -46,7 +46,7 @@ interface Domain {
 }
 
 interface Target {
-  kind: "form" | "booking";
+  kind: "form" | "booking" | "space";
   id: string;
   title: string;
 }
@@ -390,6 +390,7 @@ function CopyValue({ value }: { value: string }) {
 }
 
 const PORTAL_VALUE = "portal:";
+const KIND_LABEL: Record<"form" | "booking" | "space", string> = { form: "Form", booking: "Booking", space: "Page" };
 
 function RoutesEditor({
   organizationId,
@@ -409,7 +410,7 @@ function RoutesEditor({
   const [saving, setSaving] = useState(false);
   const options = [
     { value: "", label: "Shows…" },
-    ...targets.map((t) => ({ value: `${t.kind}:${t.id}`, label: `${t.kind === "booking" ? "Booking" : "Form"} · ${t.title}` })),
+    ...targets.map((t) => ({ value: `${t.kind}:${t.id}`, label: `${KIND_LABEL[t.kind]} · ${t.title}` })),
     { value: PORTAL_VALUE, label: "Portal" },
   ];
 
@@ -442,7 +443,7 @@ function RoutesEditor({
 
   function labelFor(route: Route): string {
     if (route.target_kind === "portal") return "Portal";
-    return `${route.target_kind === "booking" ? "Booking" : "Form"} · ${route.target_title ?? "Untitled"}`;
+    return `${KIND_LABEL[route.target_kind]} · ${route.target_title ?? "Untitled"}`;
   }
 
   return (
