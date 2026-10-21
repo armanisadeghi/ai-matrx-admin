@@ -13,8 +13,8 @@ import { requestSelectionToolbarAction } from "@/components/selection-toolbar/se
 import { toast } from "@/lib/toast";
 import { ANNOTATION_HOST_KEY, type AnnotationSelectionHost } from "../../annotations/annotation-actions";
 import { registerActionIfAbsent } from "./register-if-absent";
+import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
 
-export const COMMENT_SELECTION_ACTION_ID = "comment-selection";
 /** The selection toolbar's own Comment (annotation-actions.tsx). */
 export const TOOLBAR_COMMENT_ACTION_ID = "selection:comment";
 
@@ -36,9 +36,36 @@ export function commentableSelection(): Range | null {
   return pinnable ? range : null;
 }
 
-// The passage the menu opened on: a click inside the menu may clear the live selection before
-// the row runs, and the toolbar needs that selection back to pin the comment to it.
-let openedOn: Range | null = null;
+// The last passage a comment could be pinned to. A right-click on live collapses the browser
+// selection before the menu draws (the menu keeps its own copy and puts it back on close), so the
+// row is decided from this, matched against the selection the menu captured (`applicationScope`).
+let remembered: { range: Range; text: string; at: number } | null = null;
+const REMEMBER_MS = 60_000;
+
+function rememberSelection(): void {
+  const range = commentableSelection();
+  if (range) remembered = { range: range.cloneRange(), text: range.toString().trim(), at: Date.now() };
+}
+
+if (typeof document !== "undefined") {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  document.addEventListener("selectionchange", () => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(rememberSelection, 120);
+  });
+}
+
+/** The passage this menu opened on, when a comment can be pinned to it; else null. */
+function passageFor(ctx: RichDocumentActionContext): Range | null {
+  const live = commentableSelection();
+  if (live) return live.cloneRange();
+  const captured = String(ctx.applicationScope?.selection ?? "").trim();
+  if (!captured || !remembered || Date.now() - remembered.at > REMEMBER_MS) return null;
+  if (!remembered.range.startContainer.isConnected) return null;
+  // The menu's copy may be the selection written back as markdown; the words still match.
+  const words = (t: string) => t.replace(/[*_`#>[\]()-]/g, " ").replace(/\s+/g, " ").trim();
+  return words(captured).includes(words(remembered.text)) || words(remembered.text).includes(words(captured)) ? remembered.range : null;
+}
 
 registerActionIfAbsent({
   id: "comment-selection",
@@ -49,18 +76,12 @@ registerActionIfAbsent({
   renderSlot: "overflow",
   order: 4,
   preserveSelection: true,
-  visible: () => {
-    const range = commentableSelection();
-    openedOn = range ? range.cloneRange() : null;
-    return range !== null;
-  },
+  visible: (ctx) => passageFor(ctx) !== null,
   run: (ctx) => {
-    const live = commentableSelection();
-    const range = live ? live.cloneRange() : openedOn;
-    openedOn = null;
+    const range = passageFor(ctx);
     ctx.onClose();
-    // After the menu has closed (and handed the selection back): restore it if it was lost, then
-    // the toolbar opens on it and runs its own Comment.
+    // After the menu has closed (and handed the selection back): restore it if it is still gone,
+    // then the toolbar opens on it and runs its own Comment.
     setTimeout(() => {
       const sel = window.getSelection();
       if (range && sel && (sel.rangeCount === 0 || sel.isCollapsed)) {

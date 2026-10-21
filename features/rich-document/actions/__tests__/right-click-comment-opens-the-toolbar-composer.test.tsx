@@ -210,16 +210,16 @@ const commentRow = () => {
 const composer = () => toolbar()?.querySelector<HTMLTextAreaElement>("[data-selection-panel] textarea[aria-label^='Comment']") ?? null;
 const quoted = () => toolbar()?.querySelector("[data-selection-panel] blockquote")?.textContent ?? null;
 
+const withScope = (selection: string) => ({ ...ctx, applicationScope: { selection } }) as unknown as RichDocumentActionContext;
+
 it("over a selection where comments are on, the row shows and opens the toolbar's own comment composer", async () => {
   await mount();
   await selectWord("statistical", { pointer: false });
   // The menu opens over the selection: the row is offered.
-  expect(commentRow().visible?.(ctx)).toBe(true);
+  expect(commentRow().visible?.(withScope("statistical"))).toBe(true);
   expect(typeof commentRow().label === "string" ? commentRow().label : "").toBe("Comment");
-  // A click inside the menu may drop the live selection; the row brings it back.
-  window.getSelection()?.removeAllRanges();
   await act(async () => {
-    await commentRow().run(ctx);
+    await commentRow().run(withScope("statistical"));
   });
   await act(async () => { await new Promise((r) => setTimeout(r, 400)); });
   await flush(20);
@@ -230,10 +230,27 @@ it("over a selection where comments are on, the row shows and opens the toolbar'
   expect(toast.error).not.toHaveBeenCalled();
 });
 
-it("outside an area where comments are on (or with no selection) the row is absent", async () => {
+it("live, the right-click collapses the browser selection first: the row follows the menu's captured selection", async () => {
+  await mount();
+  await selectWord("statistical", { pointer: false });
+  window.getSelection()?.removeAllRanges();
+  // The menu captured "statistical": the row shows, and choosing it brings the passage back.
+  expect(commentRow().visible?.(withScope("statistical"))).toBe(true);
+  // A menu that captured no selection (a plain right-click) offers no Comment.
+  expect(commentRow().visible?.(withScope(""))).toBe(false);
+  await act(async () => {
+    await commentRow().run(withScope("statistical"));
+  });
+  await act(async () => { await new Promise((r) => setTimeout(r, 400)); });
+  await flush(20);
+  expect(composer()).not.toBeNull();
+  expect(quoted()).toBe("statistical");
+});
+
+it("outside an area where comments are on the row is absent", async () => {
   await mount(false, true);
-  expect(commentRow().visible?.(ctx)).toBe(false);
+  expect(commentRow().visible?.(withScope(""))).toBe(false);
   await selectWord("comments here", { pointer: false });
   expect(window.getSelection()?.toString()).toBe("comments here");
-  expect(commentRow().visible?.(ctx)).toBe(false);
+  expect(commentRow().visible?.(withScope("comments here"))).toBe(false);
 });
