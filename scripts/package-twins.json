@@ -16,6 +16,9 @@
   "vendored": [],
   "contentLane": { "mode": "app-vs-packages", "packagesRoot": "../aidream/apps/shared", "exclude": [] },
   "contentCensus": [
+    { "pair": "features/code-editor/multi-file-core/CodeEditorTabBar.tsx|chat/src/window-panels/windows/code/CodeEditorTabBar.tsx", "reason": "move in flight, Lane B (DESKTOP App - Paperclip Repo chat lane), finishing after 2:30 PT; that lane removes these entries when the app copies are deleted" },
+    { "pair": "features/code-editor/multi-file-core/CodeSidebar.tsx|chat/src/window-panels/windows/code/CodeEditorSidebar.tsx", "reason": "move in flight, Lane B (DESKTOP App - Paperclip Repo chat lane), finishing after 2:30 PT; that lane removes these entries when the app copies are deleted" },
+    { "pair": "features/window-panels/windows/code/CodeEditorWindow.tsx|chat/src/window-panels/windows/code/CodeEditorWindow.tsx", "reason": "move in flight, Lane B (DESKTOP App - Paperclip Repo chat lane), finishing after 2:30 PT; that lane removes these entries when the app copies are deleted" },
     { "pair": "components/errors/chunk-load-recovery.ts|kit/src/chunk-load-recovery.ts", "reason": "Pre-existing whole-file copy of package source (found 2026-10-21 by the content lane). DEBT: collapse the app file into an import of the package and delete this line." },
     { "pair": "components/loaders/SuspenseLoader.tsx|design-system/src/suspense-loader.tsx", "reason": "Pre-existing whole-file copy of package source (found 2026-10-21 by the content lane). DEBT: collapse the app file into an import of the package and delete this line." },
     { "pair": "components/matrx/Tooltip.tsx|design-system/src/simple-tooltip.tsx", "reason": "Pre-existing whole-file copy of package source (found 2026-10-21 by the content lane). DEBT: collapse the app file into an import of the package and delete this line." },
@@ -819,10 +822,6 @@
           "why": "IS the count capability and has not been collapsed yet. Eight abbreviators (including the two \"B = billion\" bodies) were collapsed onto kit 0.14.0's compact voice in this session, along with the Spend/Usage/console counts; the rest is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
         },
         {
-          "file": "components/content-refine/RefinableContentEditor.tsx",
-          "why": "IS the count capability and has not been collapsed yet. Eight abbreviators (including the two \"B = billion\" bodies) were collapsed onto kit 0.14.0's compact voice in this session, along with the Spend/Usage/console counts; the rest is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
-        },
-        {
           "file": "components/debug/AgentExecutionDebugPanel.tsx",
           "why": "IS the count capability and has not been collapsed yet. Eight abbreviators (including the two \"B = billion\" bodies) were collapsed onto kit 0.14.0's compact voice in this session, along with the Spend/Usage/console counts; the rest is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
         },
@@ -1155,10 +1154,6 @@
           "why": "IS the count capability and has not been collapsed yet. Eight abbreviators (including the two \"B = billion\" bodies) were collapsed onto kit 0.14.0's compact voice in this session, along with the Spend/Usage/console counts; the rest is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
         },
         {
-          "file": "features/marketing/components/brands/BrandsPortfolio.tsx",
-          "why": "IS the count capability and has not been collapsed yet. Eight abbreviators (including the two \"B = billion\" bodies) were collapsed onto kit 0.14.0's compact voice in this session, along with the Spend/Usage/console counts; the rest is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
-        },
-        {
           "file": "features/marketing/components/crawls/CrawlReportWorkspace.tsx",
           "why": "IS the count capability and has not been collapsed yet. Eight abbreviators (including the two \"B = billion\" bodies) were collapsed onto kit 0.14.0's compact voice in this session, along with the Spend/Usage/console counts; the rest is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
         },
@@ -1212,10 +1207,6 @@
         },
         {
           "file": "features/marketing/components/integrations/MarketingConnectionsWorkspace.tsx",
-          "why": "IS the count capability and has not been collapsed yet. Eight abbreviators (including the two \"B = billion\" bodies) were collapsed onto kit 0.14.0's compact voice in this session, along with the Spend/Usage/console counts; the rest is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
-        },
-        {
-          "file": "features/marketing/components/media/BrandLibraryView.tsx",
           "why": "IS the count capability and has not been collapsed yet. Eight abbreviators (including the two \"B = billion\" bodies) were collapsed onto kit 0.14.0's compact voice in this session, along with the Spend/Usage/console counts; the rest is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
         },
         {
@@ -1384,10 +1375,6 @@
         },
         {
           "file": "features/masterwork/record/format.ts",
-          "why": "IS the count capability and has not been collapsed yet. Eight abbreviators (including the two \"B = billion\" bodies) were collapsed onto kit 0.14.0's compact voice in this session, along with the Spend/Usage/console counts; the rest is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
-        },
-        {
-          "file": "features/notes/actions/quick-save/QuickNoteSaveCore.tsx",
           "why": "IS the count capability and has not been collapsed yet. Eight abbreviators (including the two \"B = billion\" bodies) were collapsed onto kit 0.14.0's compact voice in this session, along with the Spend/Usage/console counts; the rest is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
         },
         {
@@ -1604,10 +1591,6 @@
         },
         {
           "file": "features/review-walk/components/TurnDiagnosis.tsx",
-          "why": "IS the count capability and has not been collapsed yet. Eight abbreviators (including the two \"B = billion\" bodies) were collapsed onto kit 0.14.0's compact voice in this session, along with the Spend/Usage/console counts; the rest is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
-        },
-        {
-          "file": "features/scopes/actions/quick-assign/SetContextValueCore.tsx",
           "why": "IS the count capability and has not been collapsed yet. Eight abbreviators (including the two \"B = billion\" bodies) were collapsed onto kit 0.14.0's compact voice in this session, along with the Spend/Usage/console counts; the rest is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
         },
         {
@@ -2451,7 +2434,16 @@
       "name": "ArchivedDisclosure",
       "package": "@ai-matrx/design-system",
       "why": "THE ARCHIVED-ITEMS LAW's card-list control (design-system 0.14.0): the one-click \"Archived (N)\" reveal, closed by default, with `countLabel` for a capped/absent count and `keepWhileOpen` for a surface whose open state IS the archive view. Proven in Transcript Studio, lived at components/official/ArchivedDisclosure.tsx, deleted 2026-09-10 when the package took it \u2014 the law says the control is the same primitive everywhere, and a second home for half of it was the defect. Fourteen surfaces (masterwork \u00d74, pdf-extractor \u00d72, pdf scanner, page-extraction, canvas, hr fields, whatsapp-clone, organizations, agent templates, transcript-studio) import it from the package.",
-      "allow": []
+      "allow": [
+        {
+          "file": "features/data-tables/records-ui-host/recordsUiLazy.tsx",
+          "reason": "Not a body: a lazy-loading door. `ArchivedDisclosure` here is a next/dynamic wrapper that loads the records-ui front door and delegates to the module's export; it contains no disclosure behavior."
+        },
+        {
+          "file": "features/data-tables/records-ui-host/__tests__/recordsUiLazy.jest-shim.tsx",
+          "reason": "Test stub: the jest shim of the lazy door above, re-providing the same screen names synchronously so tests need no dynamic import. No disclosure behavior."
+        }
+      ]
     },
     {
       "name": "MatrxDataTable",

@@ -34,7 +34,7 @@ function useAutoBuy(section: Section) {
   }, [notStored, section]);
 }
 
-function Card({ id, section, label, icon, value, domain }: { id: string; section: Section; label: string; icon: React.ReactNode; value: string | null; domain?: boolean }) {
+function SearchResultCard({ id, section, label, icon, value, domain }: { id: string; section: Section; label: string; icon: React.ReactNode; value: string | null; domain?: boolean }) {
   const waiting = section.state.kind === "loading" || section.state.kind === "idle" || (section.state.kind === "not_stored" && section.state.note === null);
   return (
     <div className="min-h-[8.5rem]" data-found-card={id} data-state={value ? "filled" : waiting ? "waiting" : "retired"}>
@@ -73,7 +73,7 @@ export function WelcomeSearchCards({ host, names }: { host: string; names: reado
   const noKeywords = keywords.state.kind === "ready" && rows.length === 0;
   return (
     <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4" data-testid="welcome-search-cards">
-      <Card
+      <SearchResultCard
         id="competitor"
         section={noKeywords ? keywords : competitors}
         label="A competitor"
@@ -81,7 +81,7 @@ export function WelcomeSearchCards({ host, names }: { host: string; names: reado
         value={rival}
         domain
       />
-      <Card id="buyers" section={keywords} label="What buyers search" icon={<KeyRound className="size-4" />} value={top.length ? top.join(" · ") : null} />
+      <SearchResultCard id="buyers" section={keywords} label="What buyers search" icon={<KeyRound className="size-4" />} value={top.length ? top.join(" · ") : null} />
       {keywords.approvalDialog}
       {competitors.approvalDialog}
     </section>

@@ -10,7 +10,7 @@ import { createRoot } from "react-dom/client";
 import { useFloatingLift } from "../useFloatingLift";
 import { resetPageMotionForTests } from "@/lib/layout/page-motion";
 
-function Badge() {
+function LiftProbe() {
   const [ref] = useFloatingLift<HTMLDivElement>();
   return <div ref={ref} style={{ position: "fixed", bottom: 16, left: 16, width: 80, height: 24 }} />;
 }
@@ -43,7 +43,7 @@ afterEach(() => {
 });
 
 it("runs no pass while a pointer is held, whatever scrolls and however long, and one after release", () => {
-  render(<Badge />);
+  render(<LiftProbe />);
   act(() => {
     jest.advanceTimersByTime(50);
   });
@@ -69,7 +69,7 @@ it("runs no pass while a pointer is held, whatever scrolls and however long, and
 });
 
 it("a stream of scroll events asks for one pass once quiet, never one per scroll frame", () => {
-  render(<Badge />);
+  render(<LiftProbe />);
   act(() => {
     jest.advanceTimersByTime(50);
   });
