@@ -188,7 +188,18 @@ export function splitNameAndExtension(name: string): [string, string] {
   return [name.slice(0, dot), name.slice(dot)];
 }
 
-export function RenameDialog({
+/**
+ * A closed dialog costs NOTHING. FileContextMenu / FolderContextMenu mount one of these per row;
+ * the body subscribes to the whole files + folders maps and scans them for sibling names, so a
+ * closed instance per row made /files/all O(rows²) on every store change (a ~10 s main-thread
+ * storm at boot that failed `pnpm preview:ready /files`). Mount the body only while open.
+ */
+export function RenameDialog(props: RenameDialogProps) {
+  if (!props.open) return null;
+  return <RenameDialogBody {...props} />;
+}
+
+function RenameDialogBody({
   open,
   onOpenChange,
   kind,
