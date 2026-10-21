@@ -139,6 +139,11 @@ export interface ConnectorProduct {
   /** Today's product name, in the provider's own words. */
   name: string;
   /**
+   * The other words a person types to find this product ("email", "inbox" for Gmail). The ONE place
+   * Google's product search words live — the chat's Connections menu and the directory both read it.
+   */
+  searchTerms: string;
+  /**
    * ONE plain sentence saying exactly what AI Matrx will be able to do. Final
    * user-facing copy. It states the boundary too ("We never read your inbox"),
    * because the boundary is the reason a person says yes.
@@ -323,6 +328,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "workspace_files",
       name: "Docs, Sheets & Drive files",
+      searchTerms:
+        "docs document documents sheets spreadsheet spreadsheets slides presentation presentations drive files google docs google sheets google slides",
       promise:
         "Open, create and edit only the files you pick. We never see the rest of your Drive.",
       group: WORKSPACE_GROUP,
@@ -354,6 +361,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "drive_browse",
       name: "Google Drive browse",
+      searchTerms:
+        "drive files folders browse google drive storage",
       promise:
         "Browse your Drive, then choose a file to copy into Matrx Files. Google permits access to all files; we copy only what you choose.",
       group: WORKSPACE_GROUP,
@@ -372,6 +381,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "gmail",
       name: "Gmail",
+      searchTerms:
+        "email mail inbox google mail send email compose draft",
       promise:
         "Send emails you have reviewed. This sending permission cannot read your inbox.",
       group: WORKSPACE_GROUP,
@@ -393,6 +404,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "gmail_read",
       name: "Gmail reading",
+      searchTerms:
+        "read email inbox search mail messages",
       promise:
         "Search and open messages when you ask. If you separately register this mailbox for outreach, matched replies are saved in CRM.",
       group: WORKSPACE_GROUP,
@@ -411,6 +424,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "gmail_modify",
       name: "Gmail changes",
+      searchTerms:
+        "label archive star mark read email mail",
       promise:
         "Change an opened message only when you choose Archive, Restore to inbox, Read, Unread, Star, or a label action. No automatic changes or Gmail Snooze.",
       group: WORKSPACE_GROUP,
@@ -429,6 +444,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "calendar",
       name: "Calendar",
+      searchTerms:
+        "events schedule meetings google calendar agenda appointments",
       promise: "See your own upcoming events. We never change your calendar.",
       group: WORKSPACE_GROUP,
       icon: CalendarDays,
@@ -456,6 +473,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "calendar_shared",
       name: "Selected Google calendars",
+      searchTerms:
+        "shared calendars team calendar colleagues",
       promise:
         "See the calendars Google makes available to this account and review one you select. We never change Google events.",
       group: WORKSPACE_GROUP,
@@ -483,6 +502,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "meet",
       name: "Google Meet review",
+      searchTerms:
+        "video calls meetings recordings transcripts google meet",
       promise:
         "Preview conference details and selected transcript entries from your personal account. No data is saved or sent to an AI model.",
       group: WORKSPACE_GROUP,
@@ -501,6 +522,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "calendar_changes",
       name: "Calendar changes",
+      searchTerms:
+        "create events edit events invite schedule meeting reschedule",
       promise:
         "Preview and confirm event creation, time changes, cancellation, or your RSVP. Guest notifications cannot be undone.",
       group: WORKSPACE_GROUP,
@@ -525,6 +548,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "contacts",
       name: "Contacts",
+      searchTerms:
+        "people address book google contacts phone numbers",
       promise: "Bring a contact you choose into your People.",
       group: WORKSPACE_GROUP,
       icon: Contact,
@@ -553,6 +578,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "contacts_edits",
       name: "Contacts edits",
+      searchTerms:
+        "add contact edit contact update people",
       promise:
         "Preview and confirm name-only edits to existing Google Contacts. We never create contacts or change email addresses or phone numbers.",
       group: WORKSPACE_GROUP,
@@ -572,6 +599,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "directory",
       name: "Workspace Directory",
+      searchTerms:
+        "company directory coworkers employees org chart people",
       promise:
         "Preview one page of colleagues shared with your own Google Workspace account. Nothing is saved or sent to an AI model.",
       group: WORKSPACE_GROUP,
@@ -592,6 +621,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "chat_messages",
       name: "Google Chat messages",
+      searchTerms:
+        "google chat spaces messages team chat dms",
       promise:
         "Preview one page of text messages from a member space you choose. Nothing is saved, synced, or sent to an AI model.",
       group: WORKSPACE_GROUP,
@@ -610,6 +641,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "other_contacts",
       name: "Other Contacts",
+      searchTerms:
+        "people emailed before suggested contacts",
       promise:
         "Review and import one suggested contact. We never change Google.",
       group: WORKSPACE_GROUP,
@@ -628,6 +661,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "tasks",
       name: "Tasks",
+      searchTerms:
+        "todo to-do google tasks reminders checklist",
       promise:
         "Bring tasks you choose into your tasks. We never change Google Tasks.",
       group: WORKSPACE_GROUP,
@@ -653,6 +688,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "tasks_changes",
       name: "Tasks changes",
+      searchTerms:
+        "add task complete task edit todo",
       promise:
         "Review and confirm task creation and selected complete or reopen changes in Google Tasks. AI Matrx does not delete tasks or retry changes automatically.",
       group: WORKSPACE_GROUP,
@@ -672,6 +709,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "search_console",
       name: "Search Console",
+      searchTerms:
+        "seo search performance rankings keywords clicks impressions",
       promise: "See how your sites perform in Google Search. Read-only.",
       group: MARKETING_GROUP,
       icon: Search,
@@ -689,6 +728,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "search_console_write",
       name: "Search Console management",
+      searchTerms:
+        "sitemaps submit sitemap indexing seo",
       promise: "Authorize management of your Search Console sites.",
       group: MARKETING_GROUP,
       icon: Search,
@@ -706,6 +747,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "analytics",
       name: "Analytics",
+      searchTerms:
+        "ga4 google analytics traffic visitors website stats",
       promise: "See your website analytics. Read-only, no settings changed.",
       group: MARKETING_GROUP,
       icon: BarChart3,
@@ -723,6 +766,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "tag_manager",
       name: "Tag Manager",
+      searchTerms:
+        "gtm tags containers tracking pixels",
       promise: "See which tags are installed on your sites. Read-only.",
       group: MARKETING_GROUP,
       icon: Tag,
@@ -758,6 +803,8 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
     {
       key: "youtube",
       name: "YouTube",
+      searchTerms:
+        "videos channel youtube analytics subscribers views",
       promise:
         "See your channel's videos and performance. We never publish or change anything.",
       group: MARKETING_GROUP,

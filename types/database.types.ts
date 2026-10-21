@@ -119389,6 +119389,7 @@ export type Database = {
           is_official: boolean
           last_used_at: string
           name: string
+          products: Json
           server_id: string
           server_status: Database["public"]["Enums"]["mcp_server_status"]
           slug: string
@@ -147242,6 +147243,7 @@ export type Database = {
           oauth_client_id: string | null
           oauth_scopes: string[] | null
           organization_id: string
+          products: Json
           published_to_web: boolean
           published_to_web_at: string | null
           published_to_web_by: string | null
@@ -147289,6 +147291,7 @@ export type Database = {
           oauth_client_id?: string | null
           oauth_scopes?: string[] | null
           organization_id: string
+          products?: Json
           published_to_web?: boolean
           published_to_web_at?: string | null
           published_to_web_by?: string | null
@@ -147336,6 +147339,7 @@ export type Database = {
           oauth_client_id?: string | null
           oauth_scopes?: string[] | null
           organization_id?: string
+          products?: Json
           published_to_web?: boolean
           published_to_web_at?: string | null
           published_to_web_by?: string | null

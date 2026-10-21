@@ -8,10 +8,16 @@
 // `users.integration_connections`, so the chat package's MCP-catalog list had no
 // row for it. This builds the ONE row the list draws, from the same two sources
 // every other Google surface reads — `provider-config.ts` (product names,
-// promises, scopes: the only place that says what Google covers) and
-// `google-status.ts` (which scope proves which product). Aliases ("email",
-// "inbox") are the only words added here, so "gmail" finds the row the same way
-// it finds the Google card in the directory.
+// promises, scopes AND the words a person types to find each product: the only
+// place that says what Google covers) and `google-status.ts` (which scope proves
+// which product). Nothing here lists search words, so "gmail" finds the row the
+// same way it finds the Google card in the directory.
+//
+// ONE TRUTH WITH THE BROWSE WINDOW (Arman, 2026-10-20: the menu said "Active,
+// Gmail" while the window said "Needs reconnecting"). The state is the window's
+// own: the SAME `savedAccountSummary` over the SAME accounts (the viewer's own,
+// `googleAccountSummary` below). Any of their accounts needing repair makes
+// Google "needs repair" here exactly as it does there.
 //
 // WHAT A CHAT CAN DO WITH EACH PRODUCT IS SAID, NOT IMPLIED. The chat's Google
 // tools (the `google` bundle) read and append the Docs and Sheets a person
@@ -25,8 +31,10 @@ import type {
   FirstPartyState,
 } from "@ai-matrx/chat/agents/connectors/first-party-connectors";
 import type { GoogleConnectionSummary } from "@/features/marketing/google/types";
+import { savedAccountSummary } from "./integration-directory";
+import { splitConnectionsByOwnership, type ConnectionViewer } from "./connection-ownership";
 import { GOOGLE_CONNECTOR_PROVIDER } from "./provider-config";
-import { googleConnectionForProduct, googleStaleConnectionFor } from "./google-status";
+import { googleConnectionForProduct } from "./google-status";
 import { getConnector } from "./registry";
 
 /** The chat tools Google's bundle gives a chat: the names a per-chat removal takes out. */
@@ -40,88 +48,90 @@ export const GOOGLE_CHAT_TOOL_NAMES = [
 export const GOOGLE_REPLACED_CATALOG_SLUGS = ["google-workspace", "google-drive"] as const;
 
 interface ChatProductFacts {
-  terms: string;
   inChat: boolean;
   chatNote: string;
 }
 
-/** Keyed by `provider-config.ts` product key. A Google product not listed here is not offered in chat. */
+/**
+ * What a CHAT can do with each Google product (the `google` tool bundle: it reads and appends the Docs
+ * and Sheets a person picked, reads the primary calendar, contacts and tasks, and prepares an email the
+ * person reviews). Keyed by `provider-config.ts` product key; a product not listed here is findable in
+ * search but says it is not in chat yet. The words that FIND a product are `searchTerms` in the config.
+ */
 const CHAT_PRODUCT_FACTS: Readonly<Record<string, ChatProductFacts>> = {
-  workspace_files: {
-    terms: "docs document sheets spreadsheet slides presentation drive files google docs google sheets google slides",
-    inChat: true,
-    chatNote: "Reads and edits the Docs and Sheets you pick.",
-  },
-  drive_browse: {
-    terms: "drive files folders browse google drive",
-    inChat: false,
-    chatNote: "Browsing your Drive is not available in chat yet.",
-  },
-  gmail: {
-    terms: "email mail inbox google mail send email compose draft",
-    inChat: true,
-    chatNote: "Drafts emails for you to review and send.",
-  },
-  gmail_read: {
-    terms: "read email inbox search mail messages",
-    inChat: false,
-    chatNote: "Reading your inbox is not available in chat yet.",
-  },
-  gmail_modify: {
-    terms: "label archive star email mail",
-    inChat: false,
-    chatNote: "Changing messages is not available in chat yet.",
-  },
-  calendar: {
-    terms: "events schedule meetings google calendar agenda",
-    inChat: true,
-    chatNote: "Reads your calendar.",
-  },
-  contacts: {
-    terms: "people address book google contacts",
-    inChat: true,
-    chatNote: "Looks up your contacts.",
-  },
-  tasks: {
-    terms: "todo to-do google tasks",
-    inChat: true,
-    chatNote: "Reads your Google Tasks.",
-  },
+  workspace_files: { inChat: true, chatNote: "Reads and edits the Docs and Sheets you pick." },
+  drive_browse: { inChat: false, chatNote: "Browsing your Drive is not available in chat yet." },
+  gmail: { inChat: true, chatNote: "Drafts emails for you to review and send." },
+  gmail_read: { inChat: false, chatNote: "Reading your inbox is not available in chat yet." },
+  gmail_modify: { inChat: false, chatNote: "Changing messages is not available in chat yet." },
+  calendar: { inChat: true, chatNote: "Reads your calendar." },
+  contacts: { inChat: true, chatNote: "Looks up your contacts." },
+  tasks: { inChat: true, chatNote: "Reads your Google Tasks." },
 };
+
+const NOT_IN_CHAT: ChatProductFacts = { inChat: false, chatNote: "Not available in chat yet." };
 
 type Row = Pick<GoogleConnectionSummary, "health" | "scopes" | "account_email" | "account_name">;
 
 function productFor(rows: readonly Row[], key: string): FirstPartyProduct | null {
   const product = GOOGLE_CONNECTOR_PROVIDER.products.find((p) => p.key === key);
-  const facts = CHAT_PRODUCT_FACTS[key];
-  if (!product || !facts) return null;
+  if (!product) return null;
+  const facts = CHAT_PRODUCT_FACTS[key] ?? NOT_IN_CHAT;
   return {
     key,
     name: product.name,
-    terms: facts.terms,
+    terms: product.searchTerms,
     inChat: facts.inChat,
     chatNote: facts.chatNote,
     granted: googleConnectionForProduct(key, rows) !== undefined,
   };
 }
 
-/** The state of Google FOR A CHAT: connected when a healthy account holds any product a chat can use. */
+/** The Google accounts that are THE VIEWER'S OWN (an organization's shared account is named as shared, never counted as theirs). */
+export function ownGoogleConnections<T extends Pick<GoogleConnectionSummary, "owner_type" | "owner_user_id" | "organization_id">>(
+  rows: readonly T[],
+  viewer: ConnectionViewer,
+): T[] {
+  return splitConnectionsByOwnership(
+    rows.map((row) => ({
+      row,
+      ownerKind: row.owner_type === "organization" ? ("organization" as const) : ("person" as const),
+      ownerUserId: row.owner_user_id,
+      organizationId: row.organization_id,
+    })),
+    viewer,
+  ).mine.map((owned) => owned.row);
+}
+
+/**
+ * The Google card's summary, exactly as the Browse window draws it: the viewer's OWN accounts through
+ * `savedAccountSummary`. The window shows `status`; the chat reads the same word through
+ * `googleChatState` — one function, so the two cannot disagree.
+ */
+export function googleAccountSummary(rows: readonly Row[], read: { loading: boolean; failed: boolean }) {
+  return savedAccountSummary(
+    rows.map((account) => ({
+      identity: account.account_email ?? account.account_name ?? "Google account",
+      status: account.health,
+    })),
+    read.loading,
+    read.failed,
+  );
+}
+
+/** The state of Google FOR A CHAT: the window's own word for it, in the chat's vocabulary. */
 export function googleChatState(
   rows: readonly Row[],
   read: { loading: boolean; failed: boolean },
 ): FirstPartyState {
   if (read.loading) return "loading";
   if (read.failed) return "unavailable";
-  const chatKeys = Object.keys(CHAT_PRODUCT_FACTS).filter((key) => CHAT_PRODUCT_FACTS[key].inChat);
-  if (chatKeys.some((key) => googleConnectionForProduct(key, rows) !== undefined)) return "connected";
-  // An account that once held a chat product's grant but is no longer healthy: one reconnect repairs it.
-  const stale = rows.some(
-    (row) =>
-      row.health !== "connected" &&
-      (googleStaleConnectionFor("google-workspace", [row]) !== undefined ||
-        googleStaleConnectionFor("gmail", [row]) !== undefined),
-  );
-  return stale ? "needs_reauth" : "not_connected";
+  const summary = googleAccountSummary(rows, read);
+  // `attention` outranks `connected` there too: one account that needs repair makes the card say so.
+  if (summary.attention) return "needs_reauth";
+  if (summary.status === "Status unavailable" || summary.status === "Unavailable") return "unavailable";
+  if (summary.connected) return "connected";
+  return "not_connected";
 }
 
 export function buildGoogleChatConnector(
@@ -151,8 +161,8 @@ export function buildGoogleChatConnector(
     },
     state,
     accountSummary: accounts.length > 0 ? accounts.join(", ") : undefined,
-    products: Object.keys(CHAT_PRODUCT_FACTS)
-      .map((key) => productFor(rows, key))
+    products: GOOGLE_CONNECTOR_PROVIDER.products
+      .map((product) => productFor(rows, product.key))
       .filter((product): product is FirstPartyProduct => product !== null),
     chatToolNames: GOOGLE_CHAT_TOOL_NAMES,
     replacesSlugs: GOOGLE_REPLACED_CATALOG_SLUGS,
