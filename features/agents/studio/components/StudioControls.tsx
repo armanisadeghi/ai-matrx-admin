@@ -27,7 +27,8 @@ import { selectAgentById, selectAgentIsDirty } from "@ai-matrx/chat/agents/redux
 import { selectLatestAssistantMessageId } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { selectActiveModels } from "@ai-matrx/agents/models";
 import { useModelOptions, useModelRecords } from "@ai-matrx/chat/agents/identity/model-catalog";
-import { defaultDebriefModelId } from "@ai-matrx/chat/agents/debrief/debrief";
+import { DEBRIEF_MODEL_TIER_KNOB, debriefModelTier, defaultDebriefModelId } from "@ai-matrx/chat/agents/debrief/debrief";
+import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { debriefKey, getDebrief, setDebrief, useDebrief } from "@ai-matrx/chat/agents/debrief/debrief-store";
 import { parseAgentDebrief, type DebriefProposal } from "@ai-matrx/chat/agents/debrief/debrief-proposals";
 import { DebriefProposalCards } from "@ai-matrx/chat/agents/debrief/DebriefProposalCards";
@@ -407,7 +408,9 @@ function DebriefTab({
   );
   const key = runConversationId && messageId ? debriefKey(runConversationId, messageId) : "";
   const debrief = useDebrief(key);
-  // The model the debrief reads the run with: the strongest non-gated Claude unless the person picks one.
+  // The model the debrief reads the run with: the one the chat.debrief/model_tier knob picks (default
+  // the cheapest current Claude, never an Opus; @ai-matrx/chat's resolver) unless the person picks one.
+  const debriefTier = debriefModelTier(useSessionKnob(DEBRIEF_MODEL_TIER_KNOB));
   useModelOptions();
   const records = useModelRecords(selectActiveModels);
   // Only text/chat models still served, from the live catalog (never mock, speech, image or retired ones).
@@ -415,7 +418,7 @@ function DebriefTab({
   const debriefIds = debriefModelIds(catalogModels);
   const [pickedModel, setPickedModel] = useState<string | null>(null);
   const [moreModels, setMoreModels] = useState(false);
-  const model = pickedModel ?? debrief?.model ?? defaultDebriefModelId(records);
+  const model = pickedModel ?? debrief?.model ?? defaultDebriefModelId(records, debriefTier);
   // The menu opens on the strongest current models; "More models…" is the way out to the full text-model list.
   const curatedIds = curatedDebriefModelIds(catalogModels);
   const shortList = curatedIds.length > 0 && model && debriefIds.includes(model) && !curatedIds.includes(model) ? [...curatedIds, model] : curatedIds;

@@ -48,8 +48,13 @@ describe("Studio tabs", () => {
     const head = battle.slice(battle.indexOf("<TabHead"), battle.indexOf("</TabHead>"));
     expect(head).not.toContain("studio-battle-repeats");
   });
-  it("offers a Debrief model menu defaulting to the strongest Claude", () => {
-    expect(controls).toContain("defaultDebriefModelId(records)");
+  it("offers a Debrief model menu defaulting to the model the chat.debrief/model_tier knob picks (never a second rule)", () => {
+    // L4 #23 (2026-10-21): the debrief defaulted to Opus. Its default is the package resolver over the knob.
+    expect(controls).toContain("const debriefTier = debriefModelTier(useSessionKnob(DEBRIEF_MODEL_TIER_KNOB));");
+    expect(controls).toContain("defaultDebriefModelId(records, debriefTier)");
+    expect(controls.match(/defaultDebriefModelId\(/g)?.length).toBe(1);
+    // No model literal picks the debrief's model in the web.
+    expect(controls).not.toMatch(/claude-(opus|sonnet|haiku)|["']opus["']/i);
     expect(controls).toContain('aria-label="Debrief model"');
   });
   it("shows version age and note", () => {
