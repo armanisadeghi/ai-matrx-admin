@@ -314,7 +314,8 @@ function OutlineBody({ frames, store, layout, pages, onMoveChapter, onRenameChap
                       aria-current={p.id === pages.currentId ? "page" : undefined}
                       className={cn(
                         "flex h-7 w-full items-center gap-2 rounded-md pr-2 text-[13px]",
-                        p.parentId ? "pl-6" : "pl-2",
+                        // A child page sits one half-step in (8px), never a full icon-width.
+                        p.parentId ? "pl-4" : "pl-2",
                         p.id === pages.currentId ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground",
                       )}
                     >
@@ -328,7 +329,7 @@ function OutlineBody({ frames, store, layout, pages, onMoveChapter, onRenameChap
                     type="button"
                     onClick={pages.onAdd}
                     disabled={pages.adding}
-                    className="flex h-7 w-full items-center gap-2 rounded-md pl-6 pr-2 text-left text-[13px] text-muted-foreground hover:bg-accent hover:text-foreground disabled:text-disabled-foreground"
+                    className="flex h-7 w-full items-center gap-2 rounded-md pl-4 pr-2 text-left text-[13px] text-muted-foreground hover:bg-accent hover:text-foreground disabled:text-disabled-foreground"
                   >
                     <Plus className="h-3.5 w-3.5 shrink-0" />
                     Add page

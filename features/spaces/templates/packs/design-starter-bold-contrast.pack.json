@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0493",
-  "version": 6,
+  "version": 7,
   "title": "Design system — Bold high-contrast",
   "description": "Black, white and a hot orange; square corners and hard offset shadows.",
   "forWho": "Brands that want to be loud, direct and unmistakable",
@@ -1215,7 +1215,7 @@
             "group": "Surfaces"
           },
           "answer": 6,
-          "unit": "colors"
+          "unit": "colours"
         }
       }
     },
@@ -1271,7 +1271,7 @@
         "Gantry Way"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [],
   "board": {
@@ -1451,6 +1451,7 @@
           }
         ]
       }
-    ]
+    ],
+    "listed": false
   }
 }

@@ -27,6 +27,8 @@ export interface BoardTemplateEntry {
   builtin: boolean;
   /** The tiles to preview. */
   doc: BoardDocument;
+  /** A board pack that starts empty (`board.startsEmpty`): its start offers the AI build first. */
+  startsEmpty?: boolean;
 }
 
 /** Built-in templates first, then the published board packs, then the person's saved ones (boards labeled `template` that they can read). */
@@ -37,7 +39,7 @@ export async function listBoardTemplates(): Promise<BoardTemplateEntry[]> {
     listTemplateIds("board"),
     listBoardPacks().catch((err: unknown) => (reportUnreadablePack("The board template packs", err), [])),
   ]);
-  const packed = packs.map((p) => ({ key: p.key, title: p.title, builtin: true, doc: p.doc }));
+  const packed = packs.map((p) => ({ key: p.key, title: p.title, builtin: true, doc: p.doc, ...(p.startsEmpty ? { startsEmpty: true } : {}) }));
   const saved = (await getBoardsByIds(ids)).map((b) => ({ key: b.id, title: b.title, builtin: false, doc: b.doc }));
   return [...builtin, ...packed, ...saved];
 }
@@ -66,11 +68,11 @@ export async function makeBoardFromTemplate(
   /** Built-in templates only: adds to the fresh document before it is stored (the Studio adds the brand's own accounts). */
   extend?: (doc: BoardDocument) => BoardDocument,
   /** Board packs only: installing their tables copies the template's assistant (host steps need the store). */
-  pack?: { dispatch: AppDispatch; onStage?: (stage: string) => void },
+  pack?: { dispatch: AppDispatch; onStage?: (stage: string) => void; styleTemplateId?: string },
 ): Promise<LoadedBoard> {
   if (isPackKey(key)) {
     if (!pack) throw new Error("This template installs tables; it needs the app's store to do so.");
-    return makeBoardFromPack(key, organizationId, title, pack.dispatch, pack.onStage);
+    return makeBoardFromPack(key, organizationId, title, pack.dispatch, pack.onStage, undefined, pack.styleTemplateId);
   }
   const builtin = builtinTemplateByKey(key);
   if (builtin) {

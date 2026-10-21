@@ -11,6 +11,9 @@ import { packBoards, packCardFace, type SpaceTemplatePack } from "../template-pa
 
 const PACK = JSON.parse(readFileSync(join(__dirname, "../../../features/spaces/templates/packs/design-system-board.pack.json"), "utf8")) as SpaceTemplatePack;
 const fresh = () => JSON.parse(JSON.stringify(PACK)) as SpaceTemplatePack;
+// The base board starts EMPTY (Arman 2026-10-21); row checks run on a starter, which carries every row.
+const STARTER = JSON.parse(readFileSync(join(__dirname, "../../../features/spaces/templates/packs/design-starter-calm-neutral.pack.json"), "utf8")) as SpaceTemplatePack;
+const freshStarter = () => JSON.parse(JSON.stringify(STARTER)) as SpaceTemplatePack;
 const ats = (p: SpaceTemplatePack) => checkPack(p).map((f) => f.at);
 
 describe("checkPack: the board key", () => {
@@ -19,7 +22,7 @@ describe("checkPack: the board key", () => {
   });
   it("names a tile whose table token the spec does not have", () => {
     const p = fresh();
-    p.board!.chapters[1].tiles[0].table = "color";
+    p.board!.chapters[1].tiles[0].table = "no_such_table";
     expect(ats(p)).toContain("board.chapters[1].tiles[0].table");
   });
   it("names a page-layout tile wider than the chapter", () => {
@@ -51,7 +54,7 @@ describe("checkPack: the board key", () => {
     expect(found).toContain("board.chapters[6].tiles[0].kind");
   });
   it("names a seed value its design look cannot draw, and a ground row that does not exist", () => {
-    const p = fresh();
+    const p = freshStarter();
     const shadow = p.spec.tables.find((t) => t.token === "shadow")!;
     shadow.rows[0].values.value = JSON.stringify({ x: 0, y: 1, blur: 2, spread: 0, color: "rgba(15,23,42,0.08)" });
     const color = p.spec.tables.find((t) => t.token === "color")!;
@@ -61,7 +64,7 @@ describe("checkPack: the board key", () => {
     expect(found).toContain("spec.tables (color).rows[1].values.reads_on");
   });
   it("names a color read on itself, and two rows of one name when rows are found by name", () => {
-    const p = fresh();
+    const p = freshStarter();
     const color = p.spec.tables.find((t) => t.token === "color")!;
     const primaryFg = color.rows.findIndex((r) => r.values.name === "primary-foreground");
     color.rows[primaryFg].values.reads_on = "primary-foreground";
@@ -71,7 +74,7 @@ describe("checkPack: the board key", () => {
     expect(found.find((f) => f.at === "spec.tables (color).rows")?.says).toMatch(/2 rows are named "card"/);
   });
   it("finds rows by the name column when there is no title field; says once when there is neither", () => {
-    const p = fresh();
+    const p = freshStarter();
     const color = p.spec.tables.find((t) => t.token === "color")!;
     delete (color as { titleField?: string }).titleField;
     expect(checkPack(p).filter((f) => f.at.startsWith("spec.tables (color).rows["))).toEqual([]);
@@ -84,8 +87,28 @@ describe("checkPack: the board key", () => {
     expect(found.filter((f) => f.at.startsWith("spec.tables (color).rows["))).toEqual([]);
     expect(found.filter((f) => f.at === "spec.tables (color).titleField" && /names rows by their name/.test(f.says))).toHaveLength(1);
   });
+  it("the base board starts EMPTY: no rows in any table, no cover words; one seeded row is named", () => {
+    for (const t of PACK.spec.tables) expect(t.rows ?? []).toEqual([]);
+    const cover = PACK.board!.chapters.flatMap((c) => c.tiles).find((t) => t.kind === "cover")!;
+    expect(cover.hero ?? "").toBe("");
+    expect(cover.text ?? "").toBe("");
+    expect(PACK.board!.startsEmpty).toBe(true);
+    const p = fresh();
+    p.spec.tables[0].rows = [{ key: "x", values: { name: "primary" } }] as never;
+    expect(checkPack(p).find((f) => f.at === `spec.tables (${p.spec.tables[0].token}).rows`)?.says).toMatch(/starts empty/);
+    const q = fresh();
+    q.board!.chapters[0].tiles[0].text = "## Principles";
+    expect(ats(q)).toContain("board.chapters[0].tiles[0]");
+  });
+  it("names a listed flag that is not true or false", () => {
+    const p = fresh();
+    (p.board as unknown as { listed: unknown }).listed = "no";
+    expect(ats(p)).toContain("board.listed");
+  });
   it("puts the board on the card face; the top board comes first", () => {
-    expect(packCardFace(PACK).board).toEqual({ title: "Design system", chapters: 10, pages: 1 });
+    expect(packCardFace(PACK).board).toEqual({ title: "Design system", chapters: 10, pages: 1, startsEmpty: true });
+    // A starter is reference only: its card says so, so no gallery lists it.
+    expect(packCardFace(STARTER).board).toMatchObject({ listed: false });
     expect(packCardFace(PACK).pages).toBe(0);
     expect(packBoards(PACK.board!).map((b) => b.key)).toEqual(["design-system", "files"]);
   });

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0494",
-  "version": 6,
+  "version": 7,
   "title": "Design system — Soft rounded",
   "description": "Plum, peach and sage pastels, round shapes and gentle, unhurried motion.",
   "forWho": "Lifestyle shops, beauty, gifting and friendly services",
@@ -1219,7 +1219,7 @@
             "group": "Surfaces"
           },
           "answer": 6,
-          "unit": "colors"
+          "unit": "colours"
         }
       }
     },
@@ -1275,7 +1275,7 @@
         "Marigold Court"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [],
   "board": {
@@ -1455,6 +1455,7 @@
           }
         ]
       }
-    ]
+    ],
+    "listed": false
   }
 }
