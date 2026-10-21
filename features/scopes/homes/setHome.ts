@@ -6,7 +6,7 @@
 // of both — the database decides and its sentence is what the caller shows.
 //
 // `expectedVersion` is the record's `version` as the caller last read it: a
-// mismatch is refused (40001, "This was changed somewhere else…"). Null skips
+// mismatch is refused (PT409, "This was changed somewhere else…"). Null skips
 // the check — only for callers that hold no version.
 
 import { supabase } from "@/utils/supabase/client";

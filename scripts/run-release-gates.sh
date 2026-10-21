@@ -397,6 +397,12 @@ if $STRICT; then
         # no hand-sliced ids, private copy-id buttons or local id components. Baseline scripts/one-id/baseline.json only shrinks.
         "One id|pnpm check:one-id:strict"
         "One id — self-test|pnpm check:one-id:self-test"
+        # THE BULK TWIN RULE (2026-10-21): a row verb's bulk twin comes from the same declaration
+        # (lib/entity-list/rowVerbs.ts). A hand-written bulk list beside defineRowVerbs is never
+        # grandfathered; list surfaces with mutating row verbs and no bulk are the shrink-only
+        # census in scripts/bulk-parity/baseline.json.
+        "Bulk parity|pnpm check:bulk-parity:strict"
+        "Bulk parity — self-test|pnpm check:bulk-parity:self-test"
         # ONE DOOR TO BROWSER STORAGE (2026-10-14): outside lib/sync nothing calls localStorage /
         # sessionStorage directly — declare the key in @/lib/sync/client-storage, or move a setting to
         # server preferences. Baseline scripts/check-raw-storage/baseline.json only shrinks.
@@ -1357,6 +1363,8 @@ else
         "One peek — self-test|pnpm check:one-peek:self-test"
         "One id|pnpm check:one-id"
         "One id — self-test|pnpm check:one-id:self-test"
+        "Bulk parity|pnpm check:bulk-parity"
+        "Bulk parity — self-test|pnpm check:bulk-parity:self-test"
         "Raw storage|pnpm check:raw-storage"
         "Raw storage — self-test|pnpm check:raw-storage:self-test"
         "Bare secret fill|pnpm check:fill-secret"
