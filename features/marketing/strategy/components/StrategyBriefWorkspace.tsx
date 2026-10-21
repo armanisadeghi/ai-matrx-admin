@@ -237,10 +237,12 @@ export function StrategyBriefWorkspace({
     ? FACT_ROWS[scope].filter((row) => asText(current.facts[row.key])).length
     : 0;
   const factsTotal = FACT_ROWS[scope].length;
-  const goTo = (anchor: string) =>
-    document
-      .getElementById(anchor)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const goTo = (anchor: string) => {
+    const target = document.getElementById(anchor);
+    if (!target) return;
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    target.focus({ preventScroll: true });
+  };
   // Short states only — what is done, what is not, and the one door to change it.
   const states: Array<{
     key: string;
@@ -277,7 +279,7 @@ export function StrategyBriefWorkspace({
             : "Nothing",
           done: openQuestions.length === 0,
           action: "Answer",
-          anchor: "strategy-corrections",
+          anchor: "strategy-facts",
         },
         {
           key: "corrections",
@@ -408,7 +410,7 @@ export function StrategyBriefWorkspace({
             </div>
           </SectionCard>
 
-          <div id="strategy-facts" className="scroll-mt-16">
+          <div id="strategy-facts" tabIndex={-1} className="scroll-mt-16 outline-none">
             <SectionCard
               title="Facts the AI established"
               about="What the AI concluded about the business. Anything wrong goes in Your corrections and outranks these."
@@ -434,7 +436,7 @@ export function StrategyBriefWorkspace({
                 </div>
                 {openQuestions.length > 0 ? (
                   <PropertyRow label="What the AI was unsure about">
-                    <ul className="list-disc space-y-0.5 pl-5">
+                    <ul className="list-outside list-disc space-y-1 pl-0">
                       {openQuestions.map((q) => (
                         <li key={q}>{q}</li>
                       ))}
@@ -446,7 +448,7 @@ export function StrategyBriefWorkspace({
           </div>
 
           {scope === "brand" || current.serviceLines.length > 0 ? (
-            <div id="strategy-lines" className="scroll-mt-16">
+            <div id="strategy-lines" tabIndex={-1} className="scroll-mt-16 outline-none">
               <SectionCard
                 title={
                   scope === "brand"
@@ -462,7 +464,7 @@ export function StrategyBriefWorkspace({
                 ) : (
                   <ul className="divide-y divide-border">
                     {current.serviceLines.map((line) => (
-                      <li key={line.name} className="flex flex-col gap-1 px-3 py-2">
+                      <li key={line.name} className="flex flex-col gap-1 px-3 py-3">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="type-title text-foreground">
                             {line.name}
@@ -470,18 +472,17 @@ export function StrategyBriefWorkspace({
                           <Badge variant="outline">
                             {footprintLabel(line.footprint)}
                           </Badge>
-                          {line.customerSegment ? (
-                            <span className="type-secondary text-muted-foreground">
-                              for {line.customerSegment}
-                            </span>
-                          ) : null}
                         </div>
-                        {line.footprintDetail || line.why ? (
+                        {line.customerSegment ? (
                           <p className="type-secondary text-muted-foreground">
-                            {[line.footprintDetail, line.why]
-                              .filter(Boolean)
-                              .join(" — ")}
+                            For {line.customerSegment}
                           </p>
+                        ) : null}
+                        {line.footprintDetail ? (
+                          <p className="type-body text-foreground">{line.footprintDetail}</p>
+                        ) : null}
+                        {line.why ? (
+                          <p className="type-secondary text-muted-foreground">{line.why}</p>
                         ) : null}
                       </li>
                     ))}
@@ -491,7 +492,7 @@ export function StrategyBriefWorkspace({
             </div>
           ) : null}
 
-          <div id="strategy-corrections" className="scroll-mt-16">
+          <div id="strategy-corrections" tabIndex={-1} className="scroll-mt-16 outline-none">
             <SectionCard
               title="Your corrections"
               about={`Say it the way you would say it out loud: "it's more like a 30-mile radius", "we stopped doing residential last year". This outranks everything the AI inferred and carries into every later version. Confirming with no corrections means "this is right".`}
@@ -565,7 +566,7 @@ export function StrategyBriefWorkspace({
           title="About this version"
           headerExtra={
             <>
-              <Badge variant="secondary">v{current.versionNo}</Badge>
+              <Badge variant="outline">v{current.versionNo}</Badge>
               {current.agentConfidence != null ? (
                 <Badge variant="outline" title={current.confidenceReason}>
                   AI confidence {current.agentConfidence}/5
