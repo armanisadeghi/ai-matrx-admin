@@ -12,6 +12,8 @@
 --
 -- Guard: seo.__offering_mint_conformance() / pnpm check:offering-mint-sources:strict.
 -- Sort order: this file runs after brand_offerings_mint_only_from_positive_signal.sql.
+-- based-on: seo.fn_reconcile_site_offering_facts(uuid) ecef280fe454d07295c4ca15375614096acdcdaf1ad1f2ebfb05381b599b0301
+-- based-on: seo.gsc_set_topic_value(uuid, uuid, numeric, text, text, text, boolean) 717e1efcb52e7314d050241504d1ed70ab5044a48e922137d1c0106acf7c9197
 
 CREATE OR REPLACE FUNCTION seo.fn_reconcile_site_offering_facts(p_site_id uuid)
  RETURNS TABLE(site_id uuid, offerings_created bigint, availability_created bigint, placements_written bigint, placements_demoted bigint, worth_written bigint, worth_cleared bigint, placements_skipped_unavailable bigint)
