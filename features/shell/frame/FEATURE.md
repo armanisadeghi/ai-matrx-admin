@@ -163,6 +163,12 @@ the app's own tokens are re-pointed, so controls follow without classes of their
 the `@ai-matrx/shell` package, and the frame-only overrides are deleted. They never get a third
 copy.
 
+## Route link graph
+
+`pnpm route-flow` writes `features/shell/frame/route-flow.json` (deterministic, sorted): every page as a node (route, file, group, tree node + how found from `route-homes.tsv`, menu labels, best-effort title, inbound/outbound counts, `reachableFromMenu`) and an edge for every link found in a page file or anything it imports (depth 4): `link` (href), `push` (router.push/replace), `config` (href/path/url/to in objects), `layout` (a layout's links, credited to its section index page), `sidebar` (the brand/website/SEO section registries), `menu` (nav-data, from the synthetic `@menu` node). `exact` = a literal path; `pattern` = a template or dynamic-segment match. Regenerate after adding pages or links; script: `scripts/route-flow/extract.ts`.
+
+Blind spots: hrefs built by helpers other than `marketingRoutes` (HR, education, ...), slug concatenation, links in barrels' unused exports (over-reports), layouts that are not a section's index page, server `redirect()` targets, and links that live in the database.
+
 ## Tests
 
 `features/shell/frame/__tests__/app-frame.test.tsx` (`pnpm test features/shell/frame`) covers:
