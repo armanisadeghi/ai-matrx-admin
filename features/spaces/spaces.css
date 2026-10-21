@@ -2016,7 +2016,9 @@ tr:hover .spaces-entity-openpill, .spaces-entity-open:focus-visible .spaces-enti
 .spaces-media-frame[data-align="left"] { margin-left: 0; margin-right: auto; }
 .spaces-media-body { position: relative; }
 .spaces-media-body .spaces-iframe-embed, .spaces-media-body .spaces-iframe-pdf { height: var(--spaces-embed-h, 420px); }
-.spaces-media-frame[data-media-kind="pdf"] .spaces-media-body:not([style]) .spaces-iframe-pdf { height: 640px; }
+/* A PDF with no stored height opens taller. Never `:not([style])` + a descendant part: it makes Chrome
+   restyle the whole subtree on every inline-style change (styles/__tests__/no-style-attribute-descendant-selectors). */
+.spaces-media-frame[data-media-kind="pdf"] .spaces-media-body .spaces-iframe-pdf { height: var(--spaces-embed-h, 640px); }
 .spaces-media-handle { position: absolute; z-index: 2; opacity: 0; transition: opacity 120ms; }
 .spaces-media-handle[data-side="left"], .spaces-media-handle[data-side="right"] { top: 0; bottom: 0; width: 14px; cursor: col-resize; display: flex; align-items: center; justify-content: center; }
 .spaces-media-handle[data-side="left"] { left: 0; }
