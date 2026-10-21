@@ -2,7 +2,7 @@
 
 import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { IntegrationDirectory } from "./IntegrationDirectory";
+import { FeaturedIntegrationTile, IntegrationDirectory } from "./IntegrationDirectory";
 import { DEFAULT_DIRECTORY_FILTERS, type DirectoryFilters, type IntegrationDirectoryItem } from "./integration-directory";
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -64,4 +64,11 @@ test("incomplete empty Yours never claims no saved integrations", async () => {
   await render({ incomplete: true }); click("Yours");
   // The fixture has saved rows; this also asserts the loading/error vocabulary remains explicit.
   expect(container.textContent).toContain("saved integrations loaded");
+});
+
+test("a featured tile's status pill carries the glyph trim, so its ink balances (the Connect pill's tap-target error)", async () => {
+  await act(async () => root.render(<FeaturedIntegrationTile item={item("slack", "Slack")} onOpen={jest.fn()} />));
+  const pill = Array.from(container.querySelectorAll("span")).find((node) => node.textContent === "Connect" && node.querySelector(":scope > svg"));
+  expect(pill).toBeDefined();
+  expect(pill?.classList.contains("matrx-glyph-trim")).toBe(true);
 });

@@ -677,7 +677,9 @@ export function FeaturedIntegrationTile({
         <span
           title={shared && state.tone === "action" ? "Connect your own" : state.label}
           className={cn(
-            "flex max-w-[60%] shrink-0 items-center gap-1 truncate rounded-full px-2 py-0.5 font-medium",
+            // `matrx-glyph-trim`: the pill's glyph (Plus, Check, AlertCircle) carries air of its own, and the
+            // tap-target guard measures INK — untrimmed, "Connect" read 10px left vs 8px right.
+            "matrx-glyph-trim flex max-w-[60%] shrink-0 items-center gap-1 truncate rounded-full px-2 py-0.5 font-medium",
             state.tone === "success" && "bg-success/10 text-success",
             state.tone === "warning" && "bg-warning/10 text-warning",
             state.tone === "muted" && "bg-muted text-muted-foreground",
