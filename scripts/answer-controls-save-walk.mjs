@@ -46,7 +46,7 @@ const writes = [];
 const t0 = Date.now();
 page.on("request", (req) => {
   const url = req.url();
-  if (req.method() === "GET" || !/\/rest\/v1\/(rpc\/(cx_message_edit|cx_canvas_[a-z_]+)|canvas_items|message)/.test(url)) return;
+  if (req.method() === "GET" || !/\/rest\/v1\/(rpc\/(cx_message_edit|cx_message_set_content|cx_canvas_[a-z_]+)|canvas_items|message)/.test(url)) return;
   writes.push({ at: Date.now() - t0, method: req.method(), url: url.replace(/^.*\/rest\/v1\//, "").slice(0, 90), status: null });
 });
 page.on("response", (res) => {
