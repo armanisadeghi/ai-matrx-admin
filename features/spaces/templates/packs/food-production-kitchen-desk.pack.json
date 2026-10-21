@@ -1,0 +1,4319 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0577",
+  "version": 1,
+  "title": "Food Production Kitchen Desk",
+  "description": "Plan batches, trace lots, track allergens, cost each jar, and ship wholesale orders.",
+  "forWho": "Small packaged-food makers and commercial kitchens",
+  "icon": {
+    "emoji": "🫙"
+  },
+  "cover": {
+    "url": "gallery:manufacturing-glass-jars-food-production",
+    "offsetY": 50
+  },
+  "category": "manufacturing",
+  "tags": [
+    "food production",
+    "packaged food",
+    "co-packer",
+    "batches",
+    "lot tracing",
+    "commissary"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-food-production-kitchen-desk",
+    "catalogueId": "SP0577",
+    "useCase": "The founder of Copper Kettle Pantry uses this to plan the week's kettles, release lots, trace any jar back to its ingredients and see margin per product.",
+    "industry": "manufacturing_logistics",
+    "vertical": "Packaged food production kitchen",
+    "job": "inventory",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Copper Kettle Pantry",
+      "describes": "A seven-person packaged-food maker producing salsas, jams, granola and dressings for grocers, distributors and markets.",
+      "address": {
+        "line1": "45 Millrace Commons",
+        "city": "Boise",
+        "region": "ID",
+        "postalCode": "83702",
+        "country": "US"
+      },
+      "phone": "(208) 555-0130",
+      "website": "copperkettlepantry.net",
+      "email": "orders@copperkettlepantry.net",
+      "timezone": "America/Boise"
+    },
+    "cleanupTag": "use-case:spaces-food-production-kitchen-desk",
+    "tables": [
+      {
+        "token": "batch",
+        "name": "Batches",
+        "labelSingular": "Batch",
+        "labelPlural": "Batches",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "chef-hat",
+        "titleField": "batch_name",
+        "describes": "Every production run: lot code, units made, cost per unit, pH and the checks that release it.",
+        "subject": "thing",
+        "independentOf": {
+          "product": "Either record can be created or change status before the other.",
+          "team_member": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Released"
+            ],
+            "filled": [
+              "released_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Batch record",
+            "values": {
+              "status": "Planned",
+              "batch_name": "New batch"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before you start"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Kitchen cleaned and sanitized; allergen changeover done if the last run had a different allergen"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Ingredient lots written down below"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Scale and pH meter checked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "During the run"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Kettle start time and temperatures"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Hot fill temperature on the first and last jar"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Release"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "pH recorded (4.6 or lower for acidified products)"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Labels match the recipe's allergens"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Metal detector or sieve check passed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Retained samples kept, two per lot"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Production day is planned; Released on is stamped after QA, usually the next day.",
+        "fields": [
+          {
+            "key": "batch_name",
+            "label": "Batch",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planned",
+              "In production",
+              "QA hold",
+              "Released",
+              "Rejected"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "In production": "blue",
+              "QA hold": "amber",
+              "Released": "green",
+              "Rejected": "red"
+            },
+            "required": true,
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "In production": "in_progress",
+              "QA hold": "in_progress",
+              "Released": "done",
+              "Rejected": "done"
+            }
+          },
+          {
+            "key": "product",
+            "label": "Product",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "product",
+            "relationMax": 1
+          },
+          {
+            "key": "lead",
+            "label": "Production lead",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "lot",
+            "label": "Lot code",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "batch_on",
+            "label": "Production day",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "released_on",
+            "label": "Released on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "units",
+            "label": "Units made",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "ing_cost",
+            "label": "Ingredients (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "pack_cost",
+            "label": "Packaging (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ]
+          },
+          {
+            "key": "labor_cost",
+            "label": "Labor (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ]
+          },
+          {
+            "key": "wholesale",
+            "label": "Wholesale price (USD)",
+            "parityType": "lookup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "product",
+            "pick": "wholesale"
+          },
+          {
+            "key": "unit_cost",
+            "label": "Cost per unit (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Status} = \"Rejected\", {Units made} = 0), \"\", ROUND(({Ingredients (USD)} + {Packaging (USD)} + {Labor (USD)}) / {Units made}, 2))"
+          },
+          {
+            "key": "batch_margin",
+            "label": "Batch margin (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Status} = \"Rejected\", {Status} = \"Planned\"), \"\", ROUND({Units made} * {Wholesale price (USD)} - {Ingredients (USD)} - {Packaging (USD)} - {Labor (USD)}, 2))"
+          },
+          {
+            "key": "ph",
+            "label": "Finished pH",
+            "parityType": "decimal",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 2
+              },
+              {
+                "kind": "max",
+                "value": 8
+              }
+            ],
+            "description": "Acidified products must read 4.6 or lower."
+          },
+          {
+            "key": "label_check",
+            "label": "Label and allergen check",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "metal",
+            "label": "Metal detector passed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "assigned_to",
+            "label": "On the line",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "release_btn",
+            "label": "Release lot",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "batch_release"
+            }
+          },
+          {
+            "key": "hold_btn",
+            "label": "Put on QA hold",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "batch_hold"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "batch_take"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "bt-1",
+            "values": {
+              "batch_name": "Smoky tomato salsa, morning kettle",
+              "status": "Released",
+              "product": "pr-1",
+              "lead": "tm-2",
+              "lot": "SAL-2417",
+              "batch_on": "@today-9d",
+              "released_on": "@today-8d",
+              "units": 600,
+              "ing_cost": 540,
+              "pack_cost": 372,
+              "labor_cost": 210,
+              "ph": 4.1,
+              "label_check": true,
+              "metal": true
+            }
+          },
+          {
+            "key": "bt-2",
+            "values": {
+              "batch_name": "Peach habanero jam, small run",
+              "status": "Released",
+              "product": "pr-2",
+              "lead": "tm-2",
+              "lot": "JAM-2418",
+              "batch_on": "@today-8d",
+              "released_on": "@today-7d",
+              "units": 360,
+              "ing_cost": 410,
+              "pack_cost": 205,
+              "labor_cost": 180,
+              "ph": 3.4,
+              "label_check": true,
+              "metal": true
+            }
+          },
+          {
+            "key": "bt-3",
+            "values": {
+              "batch_name": "Maple pecan granola, bake day",
+              "status": "Released",
+              "product": "pr-3",
+              "lead": "tm-3",
+              "lot": "GRA-2419",
+              "batch_on": "@today-7d",
+              "released_on": "@today-6d",
+              "units": 480,
+              "ing_cost": 890,
+              "pack_cost": 240,
+              "labor_cost": 260,
+              "label_check": true,
+              "metal": true
+            }
+          },
+          {
+            "key": "bt-4",
+            "values": {
+              "batch_name": "Green chile salsa verde",
+              "status": "Released",
+              "product": "pr-4",
+              "lead": "tm-2",
+              "lot": "VER-2420",
+              "batch_on": "@today-6d",
+              "released_on": "@today-5d",
+              "units": 540,
+              "ing_cost": 455,
+              "pack_cost": 335,
+              "labor_cost": 195,
+              "ph": 4.0,
+              "label_check": true,
+              "metal": true
+            }
+          },
+          {
+            "key": "bt-5",
+            "values": {
+              "batch_name": "Smoky tomato salsa, afternoon kettle",
+              "status": "Rejected",
+              "product": "pr-1",
+              "lead": "tm-4",
+              "lot": "SAL-2421",
+              "batch_on": "@today-5d",
+              "units": 0,
+              "ing_cost": 530,
+              "pack_cost": 0,
+              "labor_cost": 150,
+              "ph": 4.8,
+              "label_check": false,
+              "metal": true
+            }
+          },
+          {
+            "key": "bt-6",
+            "values": {
+              "batch_name": "Sesame ginger dressing, first production",
+              "status": "QA hold",
+              "product": "pr-5",
+              "lead": "tm-3",
+              "lot": "DRS-2422",
+              "batch_on": "@today-2d",
+              "units": 420,
+              "ing_cost": 610,
+              "pack_cost": 290,
+              "labor_cost": 170,
+              "ph": 3.9,
+              "label_check": false,
+              "metal": true,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "bt-7",
+            "values": {
+              "batch_name": "Maple pecan granola, double bake",
+              "status": "In production",
+              "product": "pr-3",
+              "lead": "tm-3",
+              "lot": "GRA-2423",
+              "batch_on": "@today",
+              "units": 960,
+              "ing_cost": 1760,
+              "pack_cost": 480,
+              "labor_cost": 470,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "bt-8",
+            "values": {
+              "batch_name": "Peach habanero jam, holiday run",
+              "status": "Planned",
+              "product": "pr-2",
+              "lead": "tm-2",
+              "lot": "JAM-2424",
+              "batch_on": "@today+2d",
+              "units": 720,
+              "ing_cost": 800,
+              "pack_cost": 410,
+              "labor_cost": 330
+            }
+          },
+          {
+            "key": "bt-9",
+            "values": {
+              "batch_name": "Smoky tomato salsa, replacement kettle",
+              "status": "Planned",
+              "product": "pr-1",
+              "lead": "tm-4",
+              "lot": "SAL-2425",
+              "batch_on": "@today+1d",
+              "units": 600,
+              "ing_cost": 545,
+              "pack_cost": 372,
+              "labor_cost": 210,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "bt-10",
+            "values": {
+              "batch_name": "Green chile salsa verde, grocery reorder",
+              "status": "Planned",
+              "product": "pr-4",
+              "lead": "tm-2",
+              "lot": "VER-2426",
+              "batch_on": "@today+5d",
+              "units": 540,
+              "ing_cost": 460,
+              "pack_cost": 335,
+              "labor_cost": 195
+            }
+          }
+        ]
+      },
+      {
+        "token": "product",
+        "name": "Products",
+        "labelSingular": "Product",
+        "labelPlural": "Products",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "shopping-bag",
+        "titleField": "product_name",
+        "describes": "Every product and size you sell, its process, allergens, prices and the real cost from released lots.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New product",
+            "values": {
+              "prod_status": "In development",
+              "product_name": "New product"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Recipe"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Ingredients by weight, in order, with the target pH or water activity."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Approvals"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Process reviewed by a process authority if it is acidified"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Nutrition panel and allergen statement drafted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "UPC assigned"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "product_name",
+            "label": "Product",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "prod_status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "In development",
+              "Discontinued"
+            ],
+            "choiceColors": {
+              "Active": "green",
+              "In development": "blue",
+              "Discontinued": "gray"
+            }
+          },
+          {
+            "key": "process",
+            "label": "Process",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Acidified, hot fill",
+              "High-sugar preserve",
+              "Shelf-stable bake",
+              "Refrigerated"
+            ],
+            "choiceColors": {
+              "Acidified, hot fill": "red",
+              "High-sugar preserve": "orange",
+              "Shelf-stable bake": "amber",
+              "Refrigerated": "teal"
+            }
+          },
+          {
+            "key": "allergens",
+            "label": "Contains",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Milk",
+              "Eggs",
+              "Wheat",
+              "Soy",
+              "Peanuts",
+              "Tree nuts",
+              "Sesame",
+              "Fish",
+              "Shellfish"
+            ],
+            "choiceColors": {
+              "Milk": "blue",
+              "Eggs": "yellow",
+              "Wheat": "amber",
+              "Soy": "green",
+              "Peanuts": "orange",
+              "Tree nuts": "brown",
+              "Sesame": "violet",
+              "Fish": "teal",
+              "Shellfish": "red"
+            }
+          },
+          {
+            "key": "wholesale",
+            "label": "Wholesale price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "retail",
+            "label": "Suggested retail (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "case_pack",
+            "label": "Units per case",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 48
+              }
+            ]
+          },
+          {
+            "key": "shelf_days",
+            "label": "Shelf life (days)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 730
+              }
+            ]
+          },
+          {
+            "key": "upc",
+            "label": "UPC",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lots",
+            "label": "Lots released",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "batches",
+            "pick": "batch_name",
+            "agg": "count",
+            "filter": {
+              "status": "Released"
+            }
+          },
+          {
+            "key": "units_out",
+            "label": "Units released",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "batches",
+            "pick": "units",
+            "agg": "sum",
+            "filter": {
+              "status": "Released"
+            }
+          },
+          {
+            "key": "avg_cost",
+            "label": "Average unit cost (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "batches",
+            "pick": "unit_cost",
+            "agg": "avg",
+            "filter": {
+              "status": "Released"
+            },
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "gross_pct",
+            "label": "Wholesale margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(AND({Wholesale price (USD)} > 0, {Average unit cost (USD)} > 0), ROUND(({Wholesale price (USD)} - {Average unit cost (USD)}) / {Wholesale price (USD)} * 100, 0), \"\")"
+          },
+          {
+            "key": "plan_btn",
+            "label": "Plan a batch",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "batch",
+              "template": "Batch record",
+              "prefill": {
+                "product": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "pr-1",
+            "values": {
+              "product_name": "Smoky tomato salsa, 16 oz jar",
+              "prod_status": "Active",
+              "process": "Acidified, hot fill",
+              "allergens": [],
+              "wholesale": 4.25,
+              "retail": 7.49,
+              "case_pack": 12,
+              "shelf_days": 540,
+              "upc": "0 81234 00011 6"
+            }
+          },
+          {
+            "key": "pr-2",
+            "values": {
+              "product_name": "Peach habanero jam, 10 oz jar",
+              "prod_status": "Active",
+              "process": "High-sugar preserve",
+              "allergens": [],
+              "wholesale": 4.6,
+              "retail": 8.99,
+              "case_pack": 12,
+              "shelf_days": 730,
+              "upc": "0 81234 00012 3"
+            }
+          },
+          {
+            "key": "pr-3",
+            "values": {
+              "product_name": "Maple pecan granola, 12 oz bag",
+              "prod_status": "Active",
+              "process": "Shelf-stable bake",
+              "allergens": [
+                "Tree nuts",
+                "Wheat"
+              ],
+              "wholesale": 5.4,
+              "retail": 9.49,
+              "case_pack": 8,
+              "shelf_days": 180,
+              "upc": "0 81234 00013 0"
+            }
+          },
+          {
+            "key": "pr-4",
+            "values": {
+              "product_name": "Green chile salsa verde, 16 oz jar",
+              "prod_status": "Active",
+              "process": "Acidified, hot fill",
+              "allergens": [],
+              "wholesale": 4.25,
+              "retail": 7.49,
+              "case_pack": 12,
+              "shelf_days": 540,
+              "upc": "0 81234 00014 7"
+            }
+          },
+          {
+            "key": "pr-5",
+            "values": {
+              "product_name": "Sesame ginger dressing, 12 oz bottle",
+              "prod_status": "In development",
+              "process": "Refrigerated",
+              "allergens": [
+                "Sesame",
+                "Soy",
+                "Wheat"
+              ],
+              "wholesale": 4.9,
+              "retail": 8.49,
+              "case_pack": 12,
+              "shelf_days": 90,
+              "upc": "0 81234 00015 4"
+            }
+          },
+          {
+            "key": "pr-6",
+            "values": {
+              "product_name": "Roasted garlic pasta sauce, 24 oz jar",
+              "prod_status": "Discontinued",
+              "process": "Acidified, hot fill",
+              "allergens": [],
+              "wholesale": 4.75,
+              "retail": 8.99,
+              "case_pack": 12,
+              "shelf_days": 540
+            }
+          }
+        ]
+      },
+      {
+        "token": "ingredient",
+        "name": "Ingredients and packaging",
+        "labelSingular": "Ingredient or packaging",
+        "labelPlural": "Ingredients and packaging",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "boxes",
+        "titleField": "ing_name",
+        "describes": "Raw ingredients, jars, lids and labels on hand, with supplier approval, allergen and reorder point.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "On order"
+            ],
+            "filled": [
+              "ordered_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New ingredient",
+            "values": {
+              "status": "In stock",
+              "ing_name": "New ingredient"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Supplier"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Supplier approval form and food safety certificate on file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Specification sheet and allergen statement"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Receiving"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Temperature and condition checked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Supplier lot code written on the case"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Ordered on is when stock was ordered; the certificate date is the supplier's own expiry; they are unrelated.",
+        "fields": [
+          {
+            "key": "ing_name",
+            "label": "Ingredient or packaging",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Stock",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "In stock",
+              "Low",
+              "On order",
+              "Out"
+            ],
+            "choiceColors": {
+              "In stock": "green",
+              "Low": "amber",
+              "On order": "blue",
+              "Out": "red"
+            },
+            "required": true,
+            "default": "In stock",
+            "statusGroups": {
+              "In stock": "done",
+              "Low": "in_progress",
+              "On order": "in_progress",
+              "Out": "todo"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Produce",
+              "Dry goods",
+              "Oils and vinegars",
+              "Sweeteners",
+              "Jars and lids",
+              "Labels and film"
+            ],
+            "choiceColors": {
+              "Produce": "green",
+              "Dry goods": "amber",
+              "Oils and vinegars": "teal",
+              "Sweeteners": "orange",
+              "Jars and lids": "slate",
+              "Labels and film": "violet"
+            }
+          },
+          {
+            "key": "allergen",
+            "label": "Allergen",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "None",
+              "Tree nuts",
+              "Wheat",
+              "Sesame",
+              "Soy"
+            ],
+            "choiceColors": {
+              "None": "slate",
+              "Tree nuts": "brown",
+              "Wheat": "amber",
+              "Sesame": "violet",
+              "Soy": "green"
+            },
+            "default": "None"
+          },
+          {
+            "key": "supplier",
+            "label": "Supplier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "approved",
+            "label": "Supplier approved",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "cert_expires",
+            "label": "Supplier certificate expires",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ordered_on",
+            "label": "Ordered on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "unit",
+            "label": "Unit",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "lb",
+              "gal",
+              "each",
+              "roll"
+            ],
+            "choiceColors": {
+              "lb": "blue",
+              "gal": "teal",
+              "each": "slate",
+              "roll": "violet"
+            }
+          },
+          {
+            "key": "unit_cost",
+            "label": "Cost per unit (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "value",
+            "label": "Stock value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND({On hand} * {Cost per unit (USD)}, 2)"
+          },
+          {
+            "key": "reorder",
+            "label": "Reorder check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} <= {Reorder at}, \"Order\", \"OK\")"
+          },
+          {
+            "key": "order_btn",
+            "label": "Mark ordered",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "ing_ordered"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ig-1",
+            "values": {
+              "ing_name": "Roma tomatoes, fire-roasted",
+              "status": "In stock",
+              "kind": "Produce",
+              "supplier": "Delta Row Farms",
+              "approved": true,
+              "cert_expires": "@today+7m",
+              "on_hand": 420,
+              "reorder_at": 300,
+              "unit": "lb",
+              "unit_cost": 0.92
+            }
+          },
+          {
+            "key": "ig-2",
+            "values": {
+              "ing_name": "Tomatillos",
+              "status": "Low",
+              "kind": "Produce",
+              "supplier": "Delta Row Farms",
+              "approved": true,
+              "cert_expires": "@today+7m",
+              "on_hand": 90,
+              "reorder_at": 150,
+              "unit": "lb",
+              "unit_cost": 1.35
+            }
+          },
+          {
+            "key": "ig-3",
+            "values": {
+              "ing_name": "Frozen peach slices",
+              "status": "In stock",
+              "kind": "Produce",
+              "supplier": "Orchard Gate Packers",
+              "approved": true,
+              "cert_expires": "@today+4m",
+              "on_hand": 380,
+              "reorder_at": 200,
+              "unit": "lb",
+              "unit_cost": 1.6
+            }
+          },
+          {
+            "key": "ig-4",
+            "values": {
+              "ing_name": "Cider vinegar, 5 percent",
+              "status": "In stock",
+              "kind": "Oils and vinegars",
+              "supplier": "Prairie Pantry Wholesale",
+              "approved": true,
+              "cert_expires": "@today+10m",
+              "on_hand": 55,
+              "reorder_at": 20,
+              "unit": "gal",
+              "unit_cost": 7.8
+            }
+          },
+          {
+            "key": "ig-5",
+            "values": {
+              "ing_name": "Rolled oats",
+              "status": "In stock",
+              "kind": "Dry goods",
+              "allergen": "Wheat",
+              "supplier": "Prairie Pantry Wholesale",
+              "approved": true,
+              "cert_expires": "@today+10m",
+              "on_hand": 900,
+              "reorder_at": 400,
+              "unit": "lb",
+              "unit_cost": 0.68
+            }
+          },
+          {
+            "key": "ig-6",
+            "values": {
+              "ing_name": "Pecan pieces",
+              "status": "On order",
+              "kind": "Dry goods",
+              "allergen": "Tree nuts",
+              "supplier": "Southfork Nut Co",
+              "approved": true,
+              "cert_expires": "@today+5m",
+              "ordered_on": "@today-2d",
+              "on_hand": 40,
+              "reorder_at": 120,
+              "unit": "lb",
+              "unit_cost": 7.4
+            }
+          },
+          {
+            "key": "ig-7",
+            "values": {
+              "ing_name": "Pure maple syrup",
+              "status": "In stock",
+              "kind": "Sweeteners",
+              "supplier": "Ridgeback Sugarhouse",
+              "approved": true,
+              "cert_expires": "@today+8m",
+              "on_hand": 24,
+              "reorder_at": 10,
+              "unit": "gal",
+              "unit_cost": 46
+            }
+          },
+          {
+            "key": "ig-8",
+            "values": {
+              "ing_name": "Toasted sesame oil",
+              "status": "Low",
+              "kind": "Oils and vinegars",
+              "allergen": "Sesame",
+              "supplier": "Prairie Pantry Wholesale",
+              "approved": true,
+              "cert_expires": "@today+10m",
+              "on_hand": 3,
+              "reorder_at": 5,
+              "unit": "gal",
+              "unit_cost": 38
+            }
+          },
+          {
+            "key": "ig-9",
+            "values": {
+              "ing_name": "16 oz glass jar with lid",
+              "status": "In stock",
+              "kind": "Jars and lids",
+              "supplier": "Clearwell Packaging",
+              "approved": true,
+              "cert_expires": "@today+12m",
+              "on_hand": 4200,
+              "reorder_at": 1500,
+              "unit": "each",
+              "unit_cost": 0.48
+            }
+          },
+          {
+            "key": "ig-10",
+            "values": {
+              "ing_name": "Salsa front labels",
+              "status": "Out",
+              "kind": "Labels and film",
+              "supplier": "Inkhorn Label Works",
+              "approved": false,
+              "cert_expires": "@today+3m",
+              "on_hand": 0,
+              "reorder_at": 1000,
+              "unit": "roll",
+              "unit_cost": 62
+            }
+          }
+        ]
+      },
+      {
+        "token": "order",
+        "name": "Wholesale orders",
+        "labelSingular": "Order",
+        "labelPlural": "Orders",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "order_name",
+        "describes": "Grocery, distributor, market and online orders, with value, ship-by date and the lots shipped.",
+        "subject": "thing",
+        "independentOf": {
+          "product": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Shipped"
+            ],
+            "filled": [
+              "shipped_on"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Order sheet",
+            "values": {
+              "status": "New",
+              "order_name": "New order"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Picking"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Oldest released lots first"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Lot codes written in Lot codes shipped"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Shipping"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Bill of lading or delivery receipt signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Invoice sent with the shipment"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Ship by is promised; Shipped on and Paid on are stamped by the buttons and can fall either side of it.",
+        "fields": [
+          {
+            "key": "order_name",
+            "label": "Order",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Confirmed",
+              "Packed",
+              "Shipped",
+              "Paid",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "New": "slate",
+              "Confirmed": "blue",
+              "Packed": "violet",
+              "Shipped": "teal",
+              "Paid": "green",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "New",
+            "statusGroups": {
+              "New": "todo",
+              "Confirmed": "todo",
+              "Packed": "in_progress",
+              "Shipped": "in_progress",
+              "Paid": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "buyer",
+            "label": "Buyer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "channel",
+            "label": "Channel",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Grocery",
+              "Distributor",
+              "Farmers market",
+              "Online",
+              "Gift shop"
+            ],
+            "choiceColors": {
+              "Grocery": "blue",
+              "Distributor": "violet",
+              "Farmers market": "green",
+              "Online": "teal",
+              "Gift shop": "pink"
+            }
+          },
+          {
+            "key": "product",
+            "label": "Product",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "product",
+            "relationMax": 1
+          },
+          {
+            "key": "cases",
+            "label": "Cases",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "o_case_pack",
+            "label": "Units per case",
+            "parityType": "lookup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "product",
+            "pick": "case_pack"
+          },
+          {
+            "key": "o_price",
+            "label": "Unit price (USD)",
+            "parityType": "lookup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "product",
+            "pick": "wholesale"
+          },
+          {
+            "key": "o_total",
+            "label": "Order value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Cancelled\", \"\", ROUND({Cases} * {Units per case} * {Unit price (USD)}, 2))"
+          },
+          {
+            "key": "ship_by",
+            "label": "Ship by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "shipped_on",
+            "label": "Shipped on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "lots_shipped",
+            "label": "Lot codes shipped",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Packing",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ship_btn",
+            "label": "Mark shipped",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "order_shipped"
+            }
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "order_paid"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "or-1",
+            "values": {
+              "order_name": "Green Basket Grocers, weekly salsa",
+              "status": "Paid",
+              "buyer": "Green Basket Grocers",
+              "channel": "Grocery",
+              "product": "pr-1",
+              "cases": 20,
+              "ship_by": "@today-6d",
+              "shipped_on": "@today-6d",
+              "paid_on": "@today-1d",
+              "lots_shipped": "SAL-2417"
+            }
+          },
+          {
+            "key": "or-2",
+            "values": {
+              "order_name": "Hearthside Distributing, jam pallet",
+              "status": "Shipped",
+              "buyer": "Hearthside Distributing",
+              "channel": "Distributor",
+              "product": "pr-2",
+              "cases": 24,
+              "ship_by": "@today-4d",
+              "shipped_on": "@today-4d",
+              "lots_shipped": "JAM-2418"
+            }
+          },
+          {
+            "key": "or-3",
+            "values": {
+              "order_name": "Larkfield Co-op, granola",
+              "status": "Shipped",
+              "buyer": "Larkfield Food Co-op",
+              "channel": "Grocery",
+              "product": "pr-3",
+              "cases": 30,
+              "ship_by": "@today-3d",
+              "shipped_on": "@today-3d",
+              "lots_shipped": "GRA-2419"
+            }
+          },
+          {
+            "key": "or-4",
+            "values": {
+              "order_name": "Saturday market stock, salsa verde",
+              "status": "Packed",
+              "buyer": "Riverside Saturday Market",
+              "channel": "Farmers market",
+              "product": "pr-4",
+              "cases": 8,
+              "ship_by": "@today-1d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "or-5",
+            "values": {
+              "order_name": "Green Basket Grocers, salsa verde trial",
+              "status": "Confirmed",
+              "buyer": "Green Basket Grocers",
+              "channel": "Grocery",
+              "product": "pr-4",
+              "cases": 12,
+              "ship_by": "@today",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "or-6",
+            "values": {
+              "order_name": "Pinecone Gift Shop, holiday jam",
+              "status": "New",
+              "buyer": "Pinecone Gift Shop",
+              "channel": "Gift shop",
+              "product": "pr-2",
+              "cases": 10,
+              "ship_by": "@today+3d"
+            }
+          },
+          {
+            "key": "or-7",
+            "values": {
+              "order_name": "Online store restock, granola",
+              "status": "Confirmed",
+              "buyer": "Our online store",
+              "channel": "Online",
+              "product": "pr-3",
+              "cases": 15,
+              "ship_by": "@today+2d"
+            }
+          },
+          {
+            "key": "or-8",
+            "values": {
+              "order_name": "Hearthside Distributing, pasta sauce",
+              "status": "Cancelled",
+              "buyer": "Hearthside Distributing",
+              "channel": "Distributor",
+              "product": "pr-6",
+              "cases": 20,
+              "ship_by": "@today-8d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each batch makes one product.",
+        "fromTable": "batch",
+        "fromField": "product",
+        "toTable": "product",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "batches"
+      },
+      {
+        "describes": "Each batch has one production lead.",
+        "fromTable": "batch",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "batches_led"
+      },
+      {
+        "describes": "Each order line is for one product.",
+        "fromTable": "order",
+        "fromField": "product",
+        "toTable": "product",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "orders"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Rosalind Achterberg",
+              "role": "Founder",
+              "work_email": "rosalind@copperkettlepantry.net",
+              "mobile": "(208) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Mateus Oliveira",
+              "role": "Kitchen lead",
+              "work_email": "mateus@copperkettlepantry.net",
+              "mobile": "(208) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Hana Sorensen",
+              "role": "Baker and QA",
+              "work_email": "hana@copperkettlepantry.net",
+              "mobile": "(208) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Ezekiel Brandt",
+              "role": "Line cook",
+              "work_email": "ezekiel@copperkettlepantry.net",
+              "mobile": "(208) 555-0143",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Pilar Montoya",
+              "role": "Orders and shipping",
+              "work_email": "pilar@copperkettlepantry.net",
+              "mobile": "(208) 555-0144",
+              "start_date": "@today-9y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "wholesale_order",
+        "name": "Wholesale order",
+        "describes": "How a store or distributor places an order.",
+        "audience": "staff",
+        "table": "order",
+        "fields": [
+          {
+            "fieldKey": "order_name",
+            "ask": "What should we call this order (store and product)?",
+            "required": true
+          },
+          {
+            "fieldKey": "buyer",
+            "ask": "Which store or distributor is ordering?",
+            "required": true
+          },
+          {
+            "fieldKey": "product",
+            "ask": "Which product?",
+            "required": true
+          },
+          {
+            "fieldKey": "cases",
+            "ask": "How many cases?",
+            "required": true
+          },
+          {
+            "fieldKey": "ship_by",
+            "ask": "When do you need it?"
+          }
+        ],
+        "submitLabel": "Place the order",
+        "confirmation": "Thanks. The kitchen will confirm the ship date within one business day."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "batch_release",
+        "table": "batch",
+        "name": "Release lot",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Released"
+          },
+          {
+            "field": "released_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "batch_hold",
+        "table": "batch",
+        "name": "Put on QA hold",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "QA hold"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "batch_take",
+        "table": "batch",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "ing_ordered",
+        "table": "ingredient",
+        "name": "Mark ordered",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "On order"
+          },
+          {
+            "field": "ordered_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "order_shipped",
+        "table": "order",
+        "name": "Mark shipped",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Shipped"
+          },
+          {
+            "field": "shipped_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "order_paid",
+        "table": "order",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_batch",
+        "name": "All batches",
+        "table": "batch",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "batch_board",
+        "name": "Batches board",
+        "table": "batch",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "batch_cal",
+        "name": "Batches calendar",
+        "table": "batch",
+        "kind": "calendar",
+        "dateField": "batch_on",
+        "allDay": true
+      },
+      {
+        "token": "batch_over",
+        "name": "Overdue",
+        "table": "batch",
+        "kind": "grid",
+        "within": {
+          "batch_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "In production",
+            "QA hold"
+          ]
+        }
+      },
+      {
+        "token": "batch_week",
+        "name": "Due this week",
+        "table": "batch",
+        "kind": "grid",
+        "within": {
+          "batch_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "In production",
+            "QA hold"
+          ]
+        }
+      },
+      {
+        "token": "batch_next7",
+        "name": "Next 7 days",
+        "table": "batch",
+        "kind": "grid",
+        "within": {
+          "batch_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "In production",
+            "QA hold"
+          ]
+        }
+      },
+      {
+        "token": "batch_mine",
+        "name": "My batches",
+        "table": "batch",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_product",
+        "name": "All products",
+        "table": "product",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "product_board",
+        "name": "Products board",
+        "table": "product",
+        "kind": "kanban",
+        "groupBy": "prod_status"
+      },
+      {
+        "token": "all_ingredient",
+        "name": "All ingredients and packaging",
+        "table": "ingredient",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "ingredient_board",
+        "name": "Ingredients and packaging board",
+        "table": "ingredient",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "all_order",
+        "name": "All orders",
+        "table": "order",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "order_board",
+        "name": "Orders board",
+        "table": "order",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "order_cal",
+        "name": "Orders calendar",
+        "table": "order",
+        "kind": "calendar",
+        "dateField": "ship_by",
+        "allDay": true
+      },
+      {
+        "token": "order_over",
+        "name": "Overdue",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "ship_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Confirmed",
+            "Packed"
+          ]
+        }
+      },
+      {
+        "token": "order_week",
+        "name": "Due this week",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "ship_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Confirmed",
+            "Packed"
+          ]
+        }
+      },
+      {
+        "token": "order_next7",
+        "name": "Next 7 days",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "ship_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Confirmed",
+            "Packed"
+          ]
+        }
+      },
+      {
+        "token": "order_mine",
+        "name": "My orders",
+        "table": "order",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Food Production Kitchen Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "batch",
+          "describes": "Every production run: lot code, units made, cost per unit, pH and the checks that release it."
+        },
+        {
+          "name": "related_tables",
+          "table": "product",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many batches are planned and not yet started?",
+        "whyItMatters": "Planned batches set the ingredient order for the week.",
+        "expect": {
+          "table": "batch",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Planned"
+          },
+          "answer": 3,
+          "unit": "batches"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open batches.",
+        "action": {
+          "kind": "open",
+          "surface": "batch_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "batch_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open products.",
+        "action": {
+          "kind": "open",
+          "surface": "product_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "product_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open ingredients and packaging.",
+        "action": {
+          "kind": "open",
+          "surface": "ingredient_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "ingredient_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-21",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "copperkettlepantry.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Millrace Commons"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "food-production-kitchen-desk",
+      "parent": null,
+      "title": "Food Production Kitchen Desk",
+      "icon": {
+        "emoji": "🫙"
+      },
+      "cover": {
+        "url": "gallery:manufacturing-glass-jars-food-production",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Start Monday on the Dashboard: kettles planned this week, anything on QA hold, ingredients to order and orders to ship. Each batch moves Planned, In production, QA hold, Released; Release lot stamps the day once pH, labels and metal checks pass. Orders record the lot codes shipped so any jar can be traced."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:lot-tracing-and-recall"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:costing-a-jar"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Batches"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every production run: lot code, units made, cost per unit, pH and the checks that release it."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "batch",
+              "view": "batch_board"
+            },
+            "inline": true,
+            "title": "Batches",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "batc-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "lot",
+                  "released_on",
+                  "units",
+                  "ing_cost",
+                  "pack_cost",
+                  "labor_cost",
+                  "wholesale",
+                  "unit_cost",
+                  "batch_margin",
+                  "ph",
+                  "label_check",
+                  "metal",
+                  "assigned_to",
+                  "release_btn",
+                  "hold_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "batc-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "batch_on",
+                "hiddenFields": [
+                  "status",
+                  "lot",
+                  "batch_on",
+                  "units",
+                  "ing_cost",
+                  "pack_cost",
+                  "labor_cost",
+                  "wholesale",
+                  "unit_cost",
+                  "batch_margin",
+                  "ph",
+                  "label_check",
+                  "metal",
+                  "assigned_to",
+                  "release_btn",
+                  "hold_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "batc-t",
+                "name": "All batches",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "batc-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "batch_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "In production",
+                    "QA hold"
+                  ]
+                }
+              },
+              {
+                "id": "batc-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "batch_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "In production",
+                    "QA hold"
+                  ]
+                }
+              },
+              {
+                "id": "batc-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "batch_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "In production",
+                    "QA hold"
+                  ]
+                }
+              },
+              {
+                "id": "batc-m",
+                "name": "My batches",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "batc-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Products"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every product and size you sell, its process, allergens, prices and the real cost from released lots."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "product",
+              "view": "product_board"
+            },
+            "inline": true,
+            "title": "Products",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "prod-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "prod_status",
+                "hiddenFields": [
+                  "allergens",
+                  "case_pack",
+                  "shelf_days",
+                  "upc",
+                  "lots",
+                  "units_out",
+                  "avg_cost",
+                  "gross_pct",
+                  "plan_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "prod-t",
+                "name": "All products",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "prod-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ingredients and packaging"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Raw ingredients, jars, lids and labels on hand, with supplier approval, allergen and reorder point."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "ingredient",
+              "view": "ingredient_board"
+            },
+            "inline": true,
+            "title": "Ingredients and packaging",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ingr-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "supplier",
+                  "approved",
+                  "ordered_on",
+                  "on_hand",
+                  "reorder_at",
+                  "unit",
+                  "unit_cost",
+                  "value",
+                  "reorder",
+                  "order_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "ingr-t",
+                "name": "All ingredients and packaging",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "ingr-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Wholesale orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Grocery, distributor, market and online orders, with value, ship-by date and the lots shipped."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "order_board"
+            },
+            "inline": true,
+            "title": "Wholesale orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "orde-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "buyer",
+                  "cases",
+                  "o_price",
+                  "o_total",
+                  "ship_by",
+                  "shipped_on",
+                  "paid_on",
+                  "lots_shipped",
+                  "owner",
+                  "ship_btn",
+                  "paid_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "orde-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "ship_by",
+                "hiddenFields": [
+                  "status",
+                  "buyer",
+                  "cases",
+                  "o_price",
+                  "o_total",
+                  "ship_by",
+                  "shipped_on",
+                  "paid_on",
+                  "lots_shipped",
+                  "owner",
+                  "ship_btn",
+                  "paid_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "orde-t",
+                "name": "All orders",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "orde-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "ship_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Confirmed",
+                    "Packed"
+                  ]
+                }
+              },
+              {
+                "id": "orde-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "ship_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Confirmed",
+                    "Packed"
+                  ]
+                }
+              },
+              {
+                "id": "orde-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "ship_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Confirmed",
+                    "Packed"
+                  ]
+                }
+              },
+              {
+                "id": "orde-m",
+                "name": "My orders",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "orde-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "food-production-kitchen-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A small food maker answers to three people: the customer who wants the order on time, the inspector who wants every lot traceable, and the owner who wants to know what a jar really costs. This workspace keeps all three in one place."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The four tables"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Batches",
+              "bold": true
+            },
+            {
+              "text": ": one row per production run with its lot code, units made, ingredient, packaging and labor cost, finished pH and the release checks. Status runs Planned, In production, QA hold, Released or Rejected. Release lot stamps the day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Products",
+              "bold": true
+            },
+            {
+              "text": ": each product and size, its process (acidified hot fill, high-sugar preserve, bake, refrigerated), allergens, wholesale and retail price. It averages the cost per unit of released lots into a real Wholesale margin."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ingredients and packaging",
+              "bold": true
+            },
+            {
+              "text": ": produce, dry goods, oils, sweeteners, jars, lids and labels, with supplier approval, certificate expiry, allergen and reorder point."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Wholesale orders",
+              "bold": true
+            },
+            {
+              "text": ": grocery, distributor, market, gift shop and online orders with value, ship-by date and the lot codes shipped."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A normal week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: plan the week's batches from open orders and stock. Work the Order this week list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Each production day: the kitchen lead opens the batch, presses Assign to me, and fills the batch record as they go."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Acidified products: pH is read on a cooled sample. Above 4.6 the lot is Rejected; never re-labelled."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The next morning QA checks labels, allergen statement and retained samples, then presses Release lot."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Orders are packed oldest lot first, the lot codes written in, and Mark shipped pressed at the dock."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who owns what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Area"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Production plan and kettles"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Kitchen lead"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "QA release and pH log"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Baker and QA"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Ingredient buying and suppliers"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Founder"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Orders, shipping and invoices"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Orders and shipping"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Allergens"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Granola carries tree nuts and wheat; the dressing carries sesame, soy and wheat. Allergen products run last in the day, followed by a full clean before any other product."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "food-production-kitchen-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "batch",
+                      "view": "all_batch"
+                    },
+                    "inline": true,
+                    "title": "Batches by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Batches by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "batch",
+                      "view": "all_batch"
+                    },
+                    "inline": true,
+                    "title": "Margin by product",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Margin by product",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "product",
+                          "op": "sum",
+                          "field": "batch_margin"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "order",
+                      "view": "all_order"
+                    },
+                    "inline": true,
+                    "title": "Order value by channel",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Order value by channel",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "channel",
+                          "op": "sum",
+                          "field": "o_total"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "ingredient",
+                      "view": "all_ingredient"
+                    },
+                    "inline": true,
+                    "title": "Stock value by kind",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Stock value by kind",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "kind",
+                          "op": "sum",
+                          "field": "value"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "product",
+                      "view": "all_product"
+                    },
+                    "inline": true,
+                    "title": "Products by process",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Products by process",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "process",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "order",
+                      "view": "all_order"
+                    },
+                    "inline": true,
+                    "title": "Orders by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Orders by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lots on QA hold"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "batch",
+              "view": "all_batch"
+            },
+            "inline": true,
+            "title": "Lots on QA hold",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl0",
+                "name": "On hold",
+                "layout": "list",
+                "filters": {
+                  "status": "QA hold"
+                }
+              }
+            ],
+            "activeViewId": "dl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Order this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "ingredient",
+              "view": "all_ingredient"
+            },
+            "inline": true,
+            "title": "Order this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl1",
+                "name": "Low or out",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Low",
+                    "Out"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Orders to ship"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "all_order"
+            },
+            "inline": true,
+            "title": "Orders to ship",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl2",
+                "name": "Open orders",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Confirmed",
+                    "Packed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cost per unit (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ingredients, packaging and labor over units made"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rising two lots in a row means a supplier price or a yield problem"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wholesale margin (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Wholesale price against the average released cost"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Below 40 percent leaves no room for distributor discounts"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Batch margin (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Units made at wholesale less the batch cost; blank for planned and rejected lots"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A rejected lot's cost still shows in Batches by status"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Reorder check"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "On hand against the reorder point"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Order means it goes on Monday's purchase list"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "lot-tracing-and-recall",
+      "parent": "food-production-kitchen-desk",
+      "title": "Lot tracing and a mock recall",
+      "icon": {
+        "emoji": "🔎"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "If a supplier calls about a bad ingredient, or a customer reports a problem, you must say within hours which lots used it and where every jar went. This page is how the kitchen keeps that chain whole, and the twice-yearly mock recall that proves it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The chain"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Link"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it lives"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Supplier lot of each ingredient"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The batch record, written at weigh-up"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Our lot code"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lot code on the batch, printed on every jar"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Which lots went to which buyer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lot codes shipped on each wholesale order"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Retained samples"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two jars per lot on the sample shelf for the shelf life"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lot codes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Our code is product prefix plus a running number: SAL for tomato salsa, VER for salsa verde, JAM, GRA, DRS. The number comes from the production calendar, so codes never repeat."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Running a mock recall (90 minutes, twice a year)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick one ingredient lot at random, for example a case of pecans."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "From its batch records, list every batch that used it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Wholesale orders and find every order whose Lot codes shipped includes those lots."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Count the units: made, shipped, still in the warehouse, retained samples. They must add up."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write the time it took and anything missing in this page. Two hours is our ceiling; anything slower means a gap in the records to fix this week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When it is real"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Stop shipping the affected lots at once: move any open order holding them back to Confirmed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Call each buyer the same day with lot codes and units."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep a log of every call, time and person."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Rejected or recalled product is held and destroyed with a witness, never reworked into another lot."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist after each batch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every ingredient's supplier lot written in the batch record"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Lot code printed and readable on the first and last jar"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Retained samples labelled and shelved"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Units made entered so traceback totals add up"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "costing-a-jar",
+      "parent": "food-production-kitchen-desk",
+      "title": "Costing a jar and setting wholesale price",
+      "icon": {
+        "emoji": "🧮"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Small food makers lose money quietly: a label price creeps up, a batch yields fewer jars, a distributor asks for 25 percent off. This page shows how the workspace turns real batches into a true cost per unit and how to use it when pricing."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What goes into cost per unit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ingredients at what you paid, including spoilage and trim."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Packaging: jar, lid, label, shrink band and the case."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Labor: hours on the line, including set-up and clean-down, at a loaded hourly rate."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each batch divides the three by Units made. Products then average the cost of released lots only, so a rejected kettle does not hide inside a good average; it shows as a loss on the Batches chart instead."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Worked example: smoky tomato salsa"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Item"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Batch SAL-2417"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Ingredients"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "540"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Packaging (600 jars at 0.62)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "372"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Labor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "210"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Units made"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "600"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cost per unit"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "1.87"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wholesale price"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "4.25"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wholesale margin"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "about 56 percent"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A distributor usually takes about 25 percent from the store's price, and the store needs its own margin. That is why we want at least 50 percent at wholesale for anything sold through a distributor."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly price check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Products and read Average unit cost and Wholesale margin."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Any product under 45 percent: check the last three batches for yield (units made) and supplier prices on Ingredients and packaging."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Fix yield first: a kettle that fills 560 jars instead of 600 costs more than a five-cent price rise. Weigh the kettle before filling and note the fill weight of the first jar."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Only then raise the wholesale price, with 60 days' notice to buyers."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Never price from a recipe spreadsheet; price from released batches"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Re-check margin when any packaging item changes supplier"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rejected lots are reviewed every month for their cause"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Labor hours include set-up and clean-down, not only kettle time"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
