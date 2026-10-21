@@ -5,13 +5,15 @@
 // what is the page's, and shows which heavy modules have loaded. Everything
 // inside is static sample content.
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { Check } from "lucide-react";
+import { Check, LayoutList } from "lucide-react";
 import { Button, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { AppFrame } from "@/features/shell/frame/AppFrame";
 import type { FrameHeaderEdge, FrameSidebarColor, FrameSpace } from "@/features/shell/frame/AppFrame";
 import type { FrameGridLook } from "@/features/shell/frame/AppGrid";
 import { PRODUCTS, PRODUCT_FAMILIES, productById } from "@/features/shell/frame/products";
+import { INTELLIGENCE_PARTS, flowByName, flowForTile } from "@/features/shell/frame/flows";
+import { BigPicture, FlowView } from "./FlowView";
 import { defaultPageActions, placeholderHeaderTools } from "@/features/shell/frame/SheetHeader";
 import type { FrameCrumb, FrameProduct, FrameVariant } from "@/features/shell/frame/types";
 import {
@@ -71,13 +73,45 @@ function labHref(product: string, item?: string) {
 }
 
 /** The real product list with every home and menu link pointed back at the playground. */
+/**
+ * A product's sidebar from its flow (features/shell/frame/flows): the flow's sections in order,
+ * each row's hover text its real route. Intelligence shows its six parts as sidebar sections.
+ * Row ids are `s-<index>` into the flow's section list, so a picked row finds its Map card.
+ */
+function flowMenu(p: FrameProduct): FrameProduct["menu"] | null {
+  const row = (name: string, route: string | undefined, pages: number, index: number) => ({
+    id: `s-${index}`,
+    label: name,
+    icon: LayoutList,
+    count: pages,
+    hint: route ?? name,
+    href: labHref(p.id, `s-${index}`),
+  });
+  if (p.id === "intelligence") {
+    let index = 0;
+    return INTELLIGENCE_PARTS.map((part) => {
+      const flow = flowByName(part);
+      return {
+        id: part,
+        label: part,
+        items: (flow?.sections ?? []).map((s) => row(s.name, s.route, s.pages.length, index++)),
+      };
+    });
+  }
+  const flow = flowForTile(p.name);
+  if (!flow || flow.sections.length === 0) return null;
+  return [{ id: "flow", items: flow.sections.map((s, i) => row(s.name, s.route, s.pages.length, i)) }];
+}
+
 const LAB_PRODUCTS: readonly FrameProduct[] = PRODUCTS.map((p) => ({
   ...p,
   homeHref: labHref(p.id),
-  menu: p.menu.map((section) => ({
-    ...section,
-    items: section.items.map((item) => ({ ...item, href: labHref(p.id, item.id) })),
-  })),
+  menu:
+    flowMenu(p) ??
+    p.menu.map((section) => ({
+      ...section,
+      items: section.items.map((item) => ({ ...item, href: labHref(p.id, item.id) })),
+    })),
 }));
 
 export function ShellPlayground({ initialProduct, initialItem }: { initialProduct?: string; initialItem?: string }) {
@@ -92,6 +126,11 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
   const [headerEdge, setHeaderEdge] = useState<FrameHeaderEdge>("fade");
   const [gridLook, setGridLook] = useState<FrameGridLook>("A");
   const [space, setSpace] = useState<FrameSpace>("inset");
+  const [bodyMode, setBodyMode] = useState<"flow" | "sample">("flow");
+  const [bigPicture, setBigPicture] = useState(false);
+  const [focusSection, setFocusSection] = useState<number | null>(
+    initialItem?.startsWith("s-") ? Number(initialItem.slice(2)) : null,
+  );
   const [sidebarColor, setSidebarColor] = useState<FrameSidebarColor>("contrast");
   const [favorites, setFavorites] = useState<string[]>([
     "chat",
@@ -255,6 +294,43 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
     statusText = "Sample product";
   }
 
+  // FLOW MODE: the body is the product's flow (or the whole app's big picture), whatever the sample says.
+  let frameVariant = variant;
+  if (bodyMode === "flow") {
+    frameVariant = "list";
+    properties = undefined;
+    tabs = undefined;
+    onBack = undefined;
+    const flow = flowForTile(product.name);
+    if (bigPicture) {
+      crumbs = [{ id: "big-picture", label: "Big picture" }];
+      body = (
+        <BigPicture
+          products={LAB_PRODUCTS}
+          families={PRODUCT_FAMILIES}
+          onPick={(id) => {
+            setProductId(id);
+            setFocusSection(null);
+            setBigPicture(false);
+          }}
+        />
+      );
+      statusText = "Every product and section";
+    } else {
+      crumbs = [
+        { id: product.id, label: product.name, href: labHref(product.id), onSelect: () => setFocusSection(null) },
+        { id: "flow", label: "Flow" },
+      ];
+      body = flow ? (
+        <FlowView key={product.id} flow={flow} focusSection={focusSection} />
+      ) : (
+        <WorkspaceSample label={`${product.name} · no flow yet`} />
+      );
+      statusText = flow ? `${flow.sections.length} sections` : "No flow";
+    }
+    activeMenuItemId = focusSection === null ? "" : `s-${focusSection}`;
+  }
+
   // Favoriting is a property of the page, never of the variant: every sample page can be starred.
   const pageKey = `${productId}:${crumbs[crumbs.length - 1].id}`;
   const favorite = {
@@ -326,6 +402,25 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             { value: "C", label: "Grid C" },
           ]}
         />
+        <SegmentedControl<"flow" | "sample">
+          aria-label="Body"
+          value={bodyMode}
+          onValueChange={setBodyMode}
+          data={[
+            { value: "flow", label: "Flow" },
+            { value: "sample", label: "Sample" },
+          ]}
+        />
+        <Button
+          variant={bigPicture ? "outline" : "quiet"}
+          aria-pressed={bigPicture}
+          onClick={() => {
+            setBodyMode("flow");
+            setBigPicture(!bigPicture);
+          }}
+        >
+          Big picture
+        </Button>
         <SegmentedControl<FrameSpace>
           aria-label="Space around"
           value={space}
@@ -393,6 +488,11 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             onFavoritesChange={setFavorites}
             activeMenuItemId={activeMenuItemId}
             onSelectMenuItem={(item) => {
+              if (bodyMode === "flow" && item.id.startsWith("s-")) {
+                setBigPicture(false);
+                setFocusSection(Number(item.id.slice(2)));
+                return;
+              }
               setItemId(item.id);
               setStatus(`${item.label} opened (sample)`);
             }}
@@ -402,8 +502,8 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             headerTools={placeholderHeaderTools((id) => setStatus(`${id} pressed (sample)`))}
             onBack={onBack}
             tabs={tabs}
-            variant={variant}
-            properties={variant === "record" ? properties : undefined}
+            variant={frameVariant}
+            properties={frameVariant === "record" ? properties : undefined}
             askBar={askBar}
             pageKey={`lab-shell:${pageKey}`}
             onSideChatAddress={(search) => replaceAddressWithoutNavigating(`${window.location.pathname}${search}`)}

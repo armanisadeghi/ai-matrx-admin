@@ -13,7 +13,13 @@ import { plainBuildState } from "./plain-stop-reason";
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
 import { createClient } from "@/utils/supabase/client";
 import { operationFailed } from "@/utils/errors";
-import { postJson } from "@/lib/python-client";
+import { startBuild } from "@ai-matrx/api/agents";
+import { serverApi, callOptionsFrom } from "@/lib/api/server-api";
+import { readAllRows } from "@ai-matrx/data/db";
+import type { AppDispatch } from "@/lib/redux/store";
+import { getStoreSingleton } from "@/lib/redux/store-singleton";
+import { resolveBuildEngine } from "./build-engine";
+import { startBuildRun, unarchiveAgent } from "./build-run-service";
 import { followServerWork } from "@/features/ai-watch/followed-work";
 import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { applyServerTableState, type ServerTableSpec } from "@/features/admin/shared/server-table/postgrest";
@@ -148,18 +154,22 @@ export async function listFactoryBuildsPage(
 export async function listFactoryBuildsSince(days: number): Promise<FactoryBuildRow[]> {
   const supabase = createClient();
   const since = new Date(Date.now() - days * 86_400_000).toISOString();
-  const { data, error } = await supabase
-    .schema("runtime")
-    .from("global_execution")
-    .select(LIST_SELECT)
-    .eq("type", AGENT_FACTORY_BUILD_TYPE)
-    .gte("created_at", since)
-    .order("created_at", { ascending: false })
-    .order("created_at", { referencedTable: "global_execution_checkpoint", ascending: false })
-    .limit(1, { referencedTable: "global_execution_checkpoint" })
-    .limit(5000);
-  if (error) throw operationFailed("load the Agent Factory builds", error);
-  return mapRows((data ?? []) as unknown as ListRow[]);
+  const rows = await readAllRows<ListRow>(
+    ({ from, to }) =>
+      supabase
+        .schema("runtime")
+        .from("global_execution")
+        .select(LIST_SELECT, { count: "exact" })
+        .eq("type", AGENT_FACTORY_BUILD_TYPE)
+        .gte("created_at", since)
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: true })
+        .order("created_at", { referencedTable: "global_execution_checkpoint", ascending: false })
+        .limit(1, { referencedTable: "global_execution_checkpoint" })
+        .range(from, to) as never,
+    { label: "runtime.global_execution (agent_factory_build)" },
+  );
+  return mapRows(rows);
 }
 
 export async function getFactoryBuild(buildId: string, signal?: AbortSignal): Promise<FactoryBuildDetail | null> {
@@ -204,13 +214,18 @@ export async function keptConversationIds(ids: string[]): Promise<Set<string>> {
   const unique = [...new Set(ids.filter(Boolean))];
   if (unique.length === 0) return new Set();
   const supabase = createClient();
-  const { data, error } = await supabase
-    .schema("chat")
-    .from("conversation")
-    .select("id")
-    .in("id", unique);
-  if (error) throw operationFailed("check the step conversations", error);
-  return new Set((data ?? []).map((r) => r.id));
+  const rows = await readAllRows<{ id: string }>(
+    ({ from, to }) =>
+      supabase
+        .schema("chat")
+        .from("conversation")
+        .select("id", { count: "exact" })
+        .in("id", unique)
+        .order("id", { ascending: true })
+        .range(from, to),
+    { label: "chat.conversation" },
+  );
+  return new Set(rows.map((r) => r.id));
 }
 
 export interface FactoryMandateOption {
@@ -261,7 +276,7 @@ export async function startFactoryBuild(input: StartFactoryBuildInput): Promise<
     mandate_key: input.mandateKey,
     idempotency_key: `admin-factory:${input.mandateKey}:${crypto.randomUUID()}`,
   };
-  const { data } = await postJson<{ build_id: string }>("/agent-factory/builds", body);
+  const data = await startBuild(serverApi, { body: body as never }, callOptionsFrom());
   if (!data?.build_id) throw new Error("The Agent Factory did not return a build id");
   followServerWork({ kind: "factory_build", id: data.build_id, label: "Agent Factory build", source: "Agent Factory admin" });
   return data.build_id;
@@ -300,29 +315,37 @@ export function personBuildKeyFamily(door: string | null | undefined, search?: s
 }
 
 export async function startAgentBuild(input: StartAgentBuildInput): Promise<string> {
-  const { data } = await postJson<{ build_id: string }>(
-    "/agent-factory/builds",
-    {
+  const dispatch = getStoreSingleton()?.dispatch as AppDispatch | undefined;
+  // The door's engine (see build-engine.ts): the workflow when its switch says so, else the old pipeline.
+  if (dispatch && input.organizationId && (await resolveBuildEngine(input.door)) === "workflow") {
+    return startBuildRun(dispatch, {
       spec: input.spec,
-      mandate_key: input.mandateKey ?? null,
-      unproven: input.unproven ?? false,
-      idempotency_key: input.idempotencyKey ?? `${personBuildKeyFamily(input.door)}:${crypto.randomUUID()}`,
-      ...(input.door ? { door: input.door } : {}),
-      ...(input.builtin ? { builtin: true } : {}),
+      mandateKey: input.mandateKey ?? null,
+      unproven: input.unproven,
+      door: input.door,
+      organizationId: input.organizationId,
+    });
+  }
+  const data = await startBuild(
+    serverApi,
+    {
+      body: {
+        spec: input.spec,
+        mandate_key: input.mandateKey ?? null,
+        unproven: input.unproven ?? false,
+        idempotency_key: input.idempotencyKey ?? `${personBuildKeyFamily(input.door)}:${crypto.randomUUID()}`,
+        ...(input.door ? { door: input.door } : {}),
+        ...(input.builtin ? { builtin: true } : {}),
+      } as never,
     },
-    input.organizationId ? { organizationId: input.organizationId } : {},
+    callOptionsFrom(input.organizationId ? { organizationId: input.organizationId } : {}),
   );
   if (!data?.build_id) throw new Error("The Agent Factory did not return a build id");
   followServerWork({ kind: "factory_build", id: data.build_id, label: "Agent Factory build", source: input.door ?? "agent build" });
   return data.build_id;
 }
 
-/** Keep it anyway (R35 O4): un-archive a refused build's draft, marked unproven. */
-export async function keepBuildAnyway(buildId: string): Promise<string> {
-  const { data } = await postJson<{ agent_id: string }>(
-    `/agent-factory/builds/${encodeURIComponent(buildId)}/keep`,
-    {},
-  );
-  if (!data?.agent_id) throw new Error("The Agent Factory did not return the kept agent");
-  return data.agent_id;
+/** Keep it anyway on an old build (D7): the saved agent's own un-archive. */
+export async function keepBuildAnyway(agentId: string): Promise<string> {
+  return unarchiveAgent(agentId);
 }

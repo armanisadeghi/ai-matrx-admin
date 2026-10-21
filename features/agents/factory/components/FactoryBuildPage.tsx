@@ -8,8 +8,9 @@
  * then the proof cases side by side (candidate vs today's answer) with the
  * judge's per-criterion verdict, un-blinded.
  *
- * Source: the build's latest checkpoint (`runtime.global_execution_checkpoint`).
- * Polls every 3s until the spine row is over.
+ * Source: the build's latest checkpoint (`runtime.global_execution_checkpoint`) for an old
+ * build, or the `agent_build` workflow run (row + event feed) for a new one: `useBuildDetail`
+ * reads both id shapes. Nothing polls.
  *
  * Known limits of the record (aidream, not this page):
  *  - code steps (model, save, proof) are recorded once per build, so they are
@@ -21,7 +22,7 @@
  */
 
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "@/components/navigation/AppLink";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -51,7 +52,8 @@ import {
   StateChip,
   isRecord,
 } from "@/components/mardown-display/blocks/result-kinds/result-kind-shared";
-import { getFactoryBuild, keptConversationIds } from "../service";
+import { keptConversationIds } from "../service";
+import { useBuildDetail } from "../useBuildDetail";
 import {
   STEP_ANSWER_KIND,
   STEP_LABEL,
@@ -69,7 +71,6 @@ import { FACTORY_BASE_PATH } from "./FactoryBuildsPage";
 import { Spinner } from "@/components/ui/loaders/Spinner";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ErrorNotice } from "@ai-matrx/design-system";
-const POLL_MS = 3000;
 
 export type RowStatus = "done" | "running" | "failed" | "skipped" | "pending";
 
@@ -503,36 +504,34 @@ function ProofCaseCard({
 /* ------------------------------------------------------------------ page */
 
 export function FactoryBuildPage({ buildId }: { buildId: string }) {
-  const [detail, setDetail] = useState<FactoryBuildDetail | null | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
+  const { snap } = useBuildDetail(buildId);
+  const detail = snap ? snap.detail : undefined;
+  const error = snap?.error ?? null;
   const [kept, setKept] = useState<Set<string>>(new Set());
   const [openRows, setOpenRows] = useState<Set<string>>(new Set());
 
-  const load = useCallback(async () => {
-    try {
-      const next = await getFactoryBuild(buildId);
-      setDetail(next);
-      setError(null);
-      const ids = [
-        ...(next?.state?.history ?? []).map((h) => h.conversation_id ?? ""),
-        ...(next?.state?.proof ?? []).map((p) => p.candidate_conversation_id ?? ""),
-      ];
-      setKept(await keptConversationIds(ids));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not load the build");
-    }
-  }, [buildId]);
-
+  // Which step conversations were kept: asked when the build's records change, not on a clock.
+  const conversationIds = useMemo(
+    () =>
+      [
+        ...(detail?.state?.history ?? []).map((h) => h.conversation_id ?? ""),
+        ...(detail?.state?.proof ?? []).map((p) => p.candidate_conversation_id ?? ""),
+      ].filter(Boolean),
+    [detail],
+  );
   useEffect(() => {
-    void load();
-  }, [load]);
-
-  const running = detail ? !spineIsOver(detail.spineStatus) : false;
-  useEffect(() => {
-    if (!running) return undefined;
-    const t = setInterval(() => void load(), POLL_MS);
-    return () => clearInterval(t);
-  }, [running, load]);
+    if (conversationIds.length === 0) return undefined;
+    let live = true;
+    keptConversationIds(conversationIds).then(
+      (ids) => {
+        if (live) setKept(ids);
+      },
+      (e) => console.error("[agent-factory] could not check the step conversations", e),
+    );
+    return () => {
+      live = false;
+    };
+  }, [conversationIds]);
 
   const rows = useMemo(() => (detail ? buildRows(detail) : []), [detail]);
 

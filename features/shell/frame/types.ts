@@ -15,6 +15,8 @@ export interface FrameMenuItem {
   count?: number;
   /** Opens in a new tab (a studio that runs outside the product). */
   external?: boolean;
+  /** Hover text for the row (e.g. the real route behind it). */
+  hint?: string;
 }
 
 export interface FrameMenuSection {

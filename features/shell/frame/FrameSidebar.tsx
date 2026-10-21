@@ -85,6 +85,7 @@ export function FrameSidebar({
                         // Opts the row into the 44px touch floor inside a matrx-touch-targets subtree (the drawer).
                         data-tap-target=""
                         href={href}
+                        title={item.hint}
                         target={item.external ? "_blank" : undefined}
                         rel={item.external ? "noopener noreferrer" : undefined}
                         onClick={(e) => {

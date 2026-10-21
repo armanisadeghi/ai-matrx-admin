@@ -20,6 +20,7 @@
 
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { useEffect, useRef, useState } from "react";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
@@ -32,7 +33,10 @@ import { selectIsAdminPerson } from "@/lib/redux/selectors/userSelectors";
 import { outcomeChip } from "@/components/mardown-display/blocks/agent-factory-kinds/AgentFactoryKindBlocks";
 import { StateChip, isRecord } from "@/components/mardown-display/blocks/result-kinds/result-kind-shared";
 import { plainBuildState } from "../plain-stop-reason";
-import { getFactoryBuild, keepBuildAnyway, startAgentBuild } from "../service";
+import { keepBuildAnyway, startAgentBuild } from "../service";
+import { answerBuildGate } from "../build-run-service";
+import { useBuildDetail } from "../useBuildDetail";
+import type { BuildGate } from "../build-run";
 import {
   KEPT_OUTCOMES,
   STEP_LABEL,
@@ -47,7 +51,6 @@ import { formatDuration } from "./factory-shared";
 import { refineAgentHref } from "../refine-link";
 import { catalogProseText } from "@/features/content-ir/surfaces/kind-one-line";
 
-const POLL_MS = 3000;
 /** A proof case's result, from the new agent's side. */
 const CASE_WORD: Record<string, string> = { candidate: "won", baseline: "lost", tie: "tie", both_fail: "both failed" };
 const ADMIN_BUILD_PATH = "/administration/agents/factory";
@@ -136,6 +139,29 @@ export function WorkflowSuggestion({ suggestion }: { suggestion: NonNullable<Fac
           </ol>
         </details>
       ) : null}
+    </div>
+  );
+}
+
+/** The workflow offer and "Keep it anyway" of a workflow build: the run waits here until answered. */
+export function GateCard({ gate, busy, onAnswer }: { gate: BuildGate; busy: boolean; onAnswer: (value: string) => void }) {
+  return (
+    <div data-testid={`build-gate-${gate.kind}`} className="flex min-w-0 flex-col gap-1.5 border-t border-border pt-2.5">
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
+        <span className="min-w-0 type-body">{gate.prompt || gate.title}</span>
+        <span className="ml-auto flex items-center gap-2">
+          {gate.options.map((option) => (
+            <Button
+              key={option.value}
+              variant={option.value === gate.defaultValue ? "primary" : "outline"}
+              disabled={busy}
+              onClick={() => onAnswer(option.value)}
+            >
+              {option.label}
+            </Button>
+          ))}
+        </span>
+      </div>
     </div>
   );
 }
@@ -318,37 +344,15 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
   // A "Build unproven" follow-up replaces the build this view tracks.
   const [rebuiltId, setRebuiltId] = useState<string | null>(null);
   const currentId = rebuiltId ?? buildId;
-  // The latest read, tagged with the build it belongs to (a new id reads as loading).
-  const [snap, setSnap] = useState<{ id: string; detail: FactoryBuildDetail | null; error: string | null; polls?: number } | null>(null);
-  const detail = snap?.id === currentId ? snap.detail : undefined;
-  const error = snap?.id === currentId ? snap.error : null;
+  const dispatch = useAppDispatch();
+  // The latest read of the build (either id shape), tagged with the id it belongs to.
+  const { snap, reload } = useBuildDetail(currentId);
+  const detail = snap ? snap.detail : undefined;
+  const error = snap ? snap.error : null;
+  const gate = snap?.gate ?? null;
   const [busy, setBusy] = useState(false);
   const [keptAgent, setKeptAgent] = useState<string | null>(null);
   const isAdmin = useAppSelector(selectIsAdminPerson);
-
-  // One effect per build id: load now, poll every 3s, stop once the spine row is over.
-  useEffect(() => {
-    let live = true;
-    let timer: ReturnType<typeof setInterval> | null = null;
-    let overPolls = 0;
-    const tick = async () => {
-      try {
-        const next = await getFactoryBuild(currentId);
-        if (!live) return;
-        if (next && spineIsOver(next.spineStatus)) overPolls += 1;
-        setSnap({ id: currentId, detail: next, error: null, polls: overPolls });
-        if ((!next || buildIsSettled(next, overPolls)) && timer) clearInterval(timer);
-      } catch (e) {
-        if (live) setSnap({ id: currentId, detail: null, error: e instanceof Error ? e.message : "Could not load the build" });
-      }
-    };
-    timer = setInterval(() => void tick(), POLL_MS);
-    void tick();
-    return () => {
-      live = false;
-      if (timer) clearInterval(timer);
-    };
-  }, [currentId]);
 
   const over = detail ? spineIsOver(detail.spineStatus) : false;
   // A kept build reports its end once the saved agent's id is on the record too (it can land a poll
@@ -376,11 +380,26 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
   const keep = async () => {
     setBusy(true);
     try {
-      const agentId = await keepBuildAnyway(currentId);
+      const savedId = detail?.state?.agent_id;
+      if (!savedId) throw new Error("This build has no saved draft to keep");
+      const agentId = await keepBuildAnyway(savedId);
       setKeptAgent(agentId);
       onKept?.(agentId);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not keep the draft");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /** The workflow offer, or "Keep it anyway" on a running workflow build: one answer, then the run goes on. */
+  const answer = async (g: BuildGate, value: string) => {
+    setBusy(true);
+    try {
+      await answerBuildGate(dispatch, g, value);
+      reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "The answer did not go through");
     } finally {
       setBusy(false);
     }
@@ -468,6 +487,8 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
       ) : null}
 
       {state.workflow_suggestion ? <WorkflowSuggestion suggestion={state.workflow_suggestion} /> : null}
+
+      {gate ? <GateCard gate={gate} busy={busy} onAnswer={(value) => void answer(gate, value)} /> : null}
 
       {over ? (
         keptAgent ? (
