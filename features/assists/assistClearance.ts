@@ -259,10 +259,17 @@ function hitCoverage(
   return false;
 }
 
-function coveredInDocument(r: DockRect, cache: PassCache, self: Element | null = null): Coverage {
+function coveredInDocument(r: DockRect, cache: PassCache): Coverage {
   for (const target of geometryAvoidance(cache)) if (overlaps(r, target)) return target;
-  return hitCoverage(r, true, samplePoints(r), self);
+  return hitCoverage(r, true);
 }
+
+/**
+ * What other floating chrome steps off by its box: composers, a list's pager, the attention dock.
+ * Not `data-assist-dock-avoid` — that marks whole columns for the assists pill only (the Studio
+ * declares both of its panes), and a badge avoiding it finds no free spot anywhere.
+ */
+const CHROME_AVOIDANCE_SELECTOR = `[data-matrx-table-footer], ${ATTENTION_DOCK_SELECTOR}, [data-agent-input-shell]`;
 
 /**
  * THE SHARED LIFT for floating chrome other than the assists dock (the admin error badge…): how far
@@ -274,8 +281,18 @@ export function floatingLiftFor(el: HTMLElement, currentLift: number): number | 
   const drawn = el.getBoundingClientRect();
   if (!sized(drawn)) return 0;
   const base = { top: drawn.top + currentLift, bottom: drawn.bottom + currentLift, left: drawn.left, right: drawn.right };
-  const cache: PassCache = { avoidance: null, attention: null };
-  return liftFor(base, (probe) => coveredInDocument(probe, cache, el), window.innerHeight);
+  const avoid = [...document.querySelectorAll(CHROME_AVOIDANCE_SELECTOR)]
+    .filter((target) => !el.contains(target))
+    .map((target) => target.getBoundingClientRect())
+    .filter(sized);
+  return liftFor(
+    base,
+    (probe) => {
+      for (const target of avoid) if (overlaps(probe, target)) return target;
+      return hitCoverage(probe, true, samplePoints(probe), el);
+    },
+    window.innerHeight,
+  );
 }
 
 // ── THE RESERVED SLOT: NO FREE SPOT → THE DOCK JOINS THE PAGE'S CHROME (chair ruling, 2026-10-01) ──

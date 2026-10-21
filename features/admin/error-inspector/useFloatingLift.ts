@@ -26,9 +26,10 @@ export function useFloatingLift<T extends HTMLElement>(): [(node: T | null) => v
   useEffect(() => {
     if (!element) return undefined;
     let current = 0;
-    let frame = 0;
+    // A timer, not requestAnimationFrame: rAF never fires in a hidden tab (FloatingClearanceSync).
+    let timer: ReturnType<typeof setTimeout> | null = null;
     const place = () => {
-      frame = 0;
+      timer = null;
       const next = floatingLiftFor(element, current) ?? 0;
       if (next !== current) {
         current = next;
@@ -36,16 +37,16 @@ export function useFloatingLift<T extends HTMLElement>(): [(node: T | null) => v
       }
     };
     const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(place);
+      if (timer === null) timer = setTimeout(place, 16);
     };
     schedule();
     window.addEventListener("resize", schedule);
     document.addEventListener("scroll", schedule, true);
-    const backstop = setInterval(() => {
-      if (document.visibilityState === "visible") schedule();
-    }, BACKSTOP_MS);
+    // Every second whatever the tab's visibility: the place must be right the moment it is shown,
+    // and a browser already throttles a hidden tab's timers. One pass is a few rects.
+    const backstop = setInterval(schedule, BACKSTOP_MS);
     return () => {
-      if (frame) cancelAnimationFrame(frame);
+      if (timer !== null) clearTimeout(timer);
       window.removeEventListener("resize", schedule);
       document.removeEventListener("scroll", schedule, true);
       clearInterval(backstop);
