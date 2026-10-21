@@ -726,6 +726,7 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
               inputs={inputs}
               form={form}
               surface={surface}
+              guest={guest}
               onSearchWords={(query) => runTab("web", { query })}
             />
           ) : showRuns ? (
@@ -1112,12 +1113,14 @@ function SpecialPanel({
   form,
   surface,
   onSearchWords,
+  guest = false,
 }: {
   special: SearchSpecialView;
   inputs: UseSearchInputsReturn;
   form: UseScraperKeywordSearchFormReturn;
   surface: "search" | "scraper";
   onSearchWords: (query: string) => void;
+  guest?: boolean;
 }) {
   const isAdminDebugger = useAppSelector(selectIsAdminDebugger);
   const [inspectorOpen, setInspectorOpen] = useState(false);
@@ -1173,13 +1176,17 @@ function SpecialPanel({
             message={special.error ?? "The lookup failed."}
             size="compact"
             actions={
-              <Button
-                variant="quiet"
-                icon={<RotateCcw />}
-                onClick={() => inputs.lookUpProfile(special.platform, special.handle, special.url)}
-              >
-                Try again
-              </Button>
+              guest ? (
+                <SignUpForMore />
+              ) : (
+                <Button
+                  variant="quiet"
+                  icon={<RotateCcw />}
+                  onClick={() => inputs.lookUpProfile(special.platform, special.handle, special.url)}
+                >
+                  Try again
+                </Button>
+              )
             }
           />
         )}
@@ -1243,6 +1250,7 @@ function SpecialPanel({
             title="Search by image didn't come back"
             message={special.error ?? "The search failed."}
             size="compact"
+            actions={guest ? <SignUpForMore /> : undefined}
           />
         )}
         {special.outcome && <SearchKindView value={special.outcome.result} />}
