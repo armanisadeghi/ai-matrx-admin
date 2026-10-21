@@ -29,10 +29,11 @@ export default function OrgAdminMemberLayout({ children }: { children: ReactNode
   return (
     <OrgAdminBoundary orgIdParam={orgIdParam}>
       {({ orgId, organization }) => (
-        <>
+        // (core) content scrolls under the shell header; the record frame starts below it.
+        <div className="flex h-full flex-col pt-[var(--shell-header-h)]">
           <MemberRecord orgId={orgId} organization={organization} userId={userId} />
           {children}
-        </>
+        </div>
       )}
     </OrgAdminBoundary>
   );

@@ -61,8 +61,7 @@ Every read and write goes through the `public.org_admin_*` RPC family; each RPC 
 **Routes** (under `app/(core)/organizations/[orgId]/admin/`, `[orgId]` = UUID or slug):
 
 - `/admin` — dashboard: overview tiles + member roster + invite + audit log
-- `/admin/users/[userId]` — member detail: identity, status actions, usage metrics, controls, resource summary
-- `/admin/users/[userId]/resources` — read-only member resource inventory
+- `/admin/users/[userId][/<tab>]` — one member's page: the platform user page's frame and tabs (`features/admin/users/record` — `UserRecordFrame`, `userSurfaces.ts`, the shared tab bodies) with an organization scope (`UserRecordPage scope=…` → `OrgMemberRecord`). Tabs: Overview (this org's numbers, facts, controls), Activity (`iam.org_admin_member_activity`: this org's admin actions, workflow runs, feedback — never conversations, texts or sign-ins), Content (`org_admin_list_member_resources`), Feedback (`iam.org_admin_member_feedback`), Notes (the org's admin-only member note, `iam.org_member_controls.notes`), Admin history (`iam.org_admin_member_audit`). Actions: Suspend/Reactivate (reason required), Take over, Remove. The old `/resources` address is the Content tab now.
 
 **Surfaced from:** `OrgManage` header → "Manage users" button (owners/admins).
 
@@ -72,7 +71,7 @@ Every read and write goes through the `public.org_admin_*` RPC family; each RPC 
 - `service.ts` — the single client chokepoint for the `org_admin_*` RPCs (snake→camel mapping)
 - `hooks.ts` — `useOrgAdminGate` (resolve+role), `useOrgRoster`, `useOrgMemberDetail`
 - `utils.ts` — `formatMcents` / `usdToMcents` / `gbToBytes` / `formatRelativeTime` / `activityBucket` (byte sizes render with `formatFileSize` from `@ai-matrx/kit/format`, imported at each call site — the local `formatBytes` alias was deleted 2026-09-12 because an alias of a collapsed export hides its call sites from the guard that judges what enters it)
-- `components/` — `OrgAdminBoundary`, `OrgAdminDashboard`, `MemberRosterTable`, `MemberDetailView`, `MemberResourcesView`, `MemberControlsForm`, `RemoveMemberDialog`, `OrgAdminAuditTable`
+- `components/` — `OrgAdminBoundary`, `OrgAdminDashboard`, `MemberRosterTable`, `OrgMemberRecord`, `MemberControlsForm`, `RemoveMemberDialog`, `OrgAdminAuditTable`
 - `MemberRosterTable` uses `UserSearchField` with only this organization roster's candidates; selecting a result opens the member.
 
 **Invite** reuses the existing `InvitationManager` (org invite flow) — not reinvented.
@@ -98,6 +97,7 @@ Every read and write goes through the `public.org_admin_*` RPC family; each RPC 
 ---
 
 ## Change Log
+- **2026-10-20** — The member page is the platform user page scoped to this organization (Arman 2026-10-18): one frame, one tab registry, one set of tab bodies with a `scope` prop; `MemberDetailView` / `MemberResourcesView` deleted. New org-gated reads `iam.org_admin_member_activity` / `_feedback` / `_audit` (`migrations/20261020120000_org_admin_member_record_reads.sql`). Suspend/Reactivate now asks for a reason (recorded in this org's log). The member note moved from the controls form to the Notes tab. Verified on localhost as admin@admin.com (owner of a test organization).
 - **2026-09-28** — ACCESS LADDER T-16d: `TakeOverAccountDialog` now offers the right take-over automatically — whole account for a member of this org alone, their records in this org (to a member you pick, default you, with what moves listed) for a member of other orgs too. New RPCs `org_admin_take_over_options` / `org_admin_take_over_member_records` (`migrations/access_ladder_t16d_take_over_member_records_in_one_org.sql`); access log shows "Records taken over". Verified on localhost as admin@admin.com.
 
 - **2026-09-21** — The member roster now uses `MatrxDataTable` for its shared

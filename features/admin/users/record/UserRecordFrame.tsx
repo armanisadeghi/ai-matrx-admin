@@ -7,7 +7,7 @@
 // (features/organizations/admin/components/OrgMemberRecord) each bring their own read and actions;
 // everything around them is this one file.
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
 import { CopyForAiAction } from "@/features/admin/attention/CopyForAiAction";
@@ -31,6 +31,19 @@ export function tabFromPath(pathname: string, userId: string, scope: UserRecordS
 /** The open tab for this seat: a tab that is not registered, built or in scope opens Overview. */
 export function activeTabOf(tab: string | undefined, scope: UserRecordScope): UserTabId {
   return isVisibleUserTab(tab, scope) ? tab : "overview";
+}
+
+/** The open tab's body: the seat's renderer, handed the frame's Copy-for-AI sink. */
+function OpenTab({
+  tab,
+  render,
+  shareForAi,
+}: {
+  tab: UserTabId;
+  render: UserRecordFrameProps["renderTab"];
+  shareForAi: (data: unknown) => void;
+}) {
+  return <>{render(tab, shareForAi)}</>;
 }
 
 export interface UserRecordFrameProps {
@@ -86,9 +99,12 @@ export function UserRecordFrame({
 
   // What the open tab shows, for Copy for AI (read at click time; never re-renders the page).
   const tabData = useRef<{ tab: UserTabId; data: unknown } | null>(null);
-  const shareForAi = (data: unknown) => {
-    tabData.current = { tab: activeTab, data };
-  };
+  const shareForAi = useCallback(
+    (data: unknown) => {
+      tabData.current = { tab: activeTab, data };
+    },
+    [activeTab],
+  );
 
   const tabs = visibleUserTabs(scope);
 
@@ -133,7 +149,7 @@ export function UserRecordFrame({
                   }}
                 />
               </div>
-              {renderTab(activeTab, shareForAi)}
+              <OpenTab tab={activeTab} render={renderTab} shareForAi={shareForAi} />
             </>
           ) : null}
         </div>

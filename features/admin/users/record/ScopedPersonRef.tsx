@@ -12,6 +12,7 @@ import { listOrgMembers } from "@/features/organizations/admin/service";
 import { orgAdminMemberHref } from "@/features/organizations/admin/routes";
 import type { OrgAdminMember } from "@/features/organizations/admin/types";
 import { AdminUserRef } from "../components/AdminUserRef";
+import { realName } from "./userOverview";
 import type { UserRecordScope } from "./userSurfaces";
 
 // One roster read per organization per tab session; a failed read is forgotten so the next mount retries.
@@ -42,7 +43,7 @@ function OrganizationPersonRef({ userId, email, orgId, orgSlug }: { userId: stri
   if (member) {
     return (
       <AppLink href={orgAdminMemberHref(orgSlug, userId)} className="truncate hover:text-primary">
-        {member.displayName || member.email || "Member"}
+        {realName(member.displayName) ?? member.email ?? "Member"}
       </AppLink>
     );
   }

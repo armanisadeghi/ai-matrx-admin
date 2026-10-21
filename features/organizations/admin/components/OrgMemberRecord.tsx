@@ -26,6 +26,7 @@ import {
 import { UserRecordFrame, tabFromPath } from "@/features/admin/users/record/UserRecordFrame";
 import { SCOPED_TAB_BODIES } from "@/features/admin/users/record/scopedTabBodies";
 import { useReasonPrompt } from "@/features/admin/users/record/useReasonPrompt";
+import { realName } from "@/features/admin/users/record/userOverview";
 import { scopeHubPath, userRecordHref, type UserRecordScope } from "@/features/admin/users/record/userSurfaces";
 import { useOrgMemberDetail } from "../hooks";
 import { setMemberStatus } from "../service";
@@ -41,8 +42,9 @@ function day(iso: string | null | undefined): string | null {
   return iso ? new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : null;
 }
 
+/** Their name, else email — a placeholder name ("User") is never a name (the platform page's rule). */
 function memberName(m: OrgAdminMemberDetail): string {
-  return m.displayName || m.email || "Unnamed member";
+  return realName(m.displayName) ?? m.email ?? "Unnamed member";
 }
 
 /** Overview for the org seat: this organization's numbers, the person's facts here, and the controls. */
@@ -199,7 +201,7 @@ export function OrgMemberRecord({ userId, tab: tabProp, scope }: { userId: strin
         parents={[{ label: scope.orgName, href: hub }]}
         placeholderName={{ loading: "Member", missing: "Member not found" }}
         loading={loading}
-        status={member ? (suspended ? { label: "Suspended", tone: "destructive" } : { label: member.role, tone: "neutral" }) : undefined}
+        status={member ? (suspended ? { label: "Suspended", tone: "destructive" } : { label: member.role.charAt(0).toUpperCase() + member.role.slice(1), tone: "neutral" }) : undefined}
         actions={headerActions}
         menuItems={menuItems}
         notices={error ? <ErrorNotice size="inline" message={error} error={error} operation="Read member" calls={["public.org_admin_get_member"]} /> : null}
