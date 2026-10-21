@@ -7,8 +7,8 @@
  */
 
 import { useState } from "react";
-import { CircleAlert, Clock, PackageOpen } from "lucide-react";
-import { Badge, Button, EmptyState, SegmentedControl } from "@ai-matrx/design-system/controls";
+import { CircleAlert, Clock, PackageOpen, SlidersHorizontal } from "lucide-react";
+import { Badge, Button, EmptyState } from "@ai-matrx/design-system/controls";
 import { isCallRunning, type ToolCallView } from "@ai-matrx/agents/tools";
 import { ResultJson } from "@ai-matrx/chat/tool-call-visualization/result-fields/ResultJson";
 
@@ -166,18 +166,12 @@ export function ToolResult({
   return (
     <div data-tool-result="succeeded" className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
-        {showRaw && view.raw != null ? (
-          <SegmentedControl<Pane>
-            aria-label="View"
-            value={pane}
-            onValueChange={setPane}
-            data={[
-              { value: "answer", label: "Answer" },
-              { value: "raw", label: "Raw data" },
-            ]}
-          />
-        ) : null}
         <span className="ml-auto flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground" data-tool-cost="">
+          {showRaw && view.raw != null ? (
+            <Button variant="quiet" pressed={pane === "raw"} aria-expanded={pane === "raw"} data-tool-result-advanced="" onClick={() => setPane(pane === "raw" ? "answer" : "raw")} icon={<SlidersHorizontal className="h-4 w-4" />}>
+              Advanced
+            </Button>
+          ) : null}
           {view.cache !== "none" ? <Badge tone="neutral">Saved answer</Badge> : null}
           {view.display_source ? <Badge tone="neutral">{sourceLabel(view.display_source, jobFamily)}</Badge> : null}
         </span>

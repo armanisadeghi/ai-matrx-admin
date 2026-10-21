@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -153,27 +154,25 @@ export const ResourceDebugIndicator: React.FC<ResourceDebugIndicatorProps> = ({
             {resources.length}
           </span>
 
-          <button
+          <ControlButton
+            variant="quiet"
             onClick={(e) => {
               e.stopPropagation();
               setSize("large");
             }}
-            className="p-0 rounded hover:bg-green-700"
-            title="Expand"
-          >
-            <ChevronRight size={12} />
-          </button>
+            aria-label="Expand"
+            icon={<ChevronRight size={12} />}
+          />
 
-          <button
+          <ControlButton
+            variant="quiet"
             onClick={(e) => {
               e.stopPropagation();
               onClose();
             }}
-            className="p-0 rounded hover:bg-green-700"
-            title="Close"
-          >
-            <X size={12} />
-          </button>
+            aria-label="Close"
+            icon={<X size={12} />}
+          />
         </div>
       </div>
     );
@@ -199,13 +198,7 @@ export const ResourceDebugIndicator: React.FC<ResourceDebugIndicatorProps> = ({
               >
                 <ChevronRight size={16} className="rotate-180" />
               </button>
-              <button
-                onClick={onClose}
-                className="p-1 rounded hover:bg-destructive/20"
-                title="Close"
-              >
-                <X size={16} />
-              </button>
+              <ControlButton variant="quiet" removes onClick={onClose} aria-label="Close" icon={<X size={16} />} />
             </div>
           </div>
 
@@ -281,13 +274,7 @@ export const ResourceDebugIndicator: React.FC<ResourceDebugIndicatorProps> = ({
             >
               <ChevronRight size={16} className="rotate-180" />
             </button>
-            <button
-              onClick={onClose}
-              className="p-1 rounded hover:bg-destructive/20"
-              title="Close"
-            >
-              <X size={16} />
-            </button>
+            <ControlButton variant="quiet" removes onClick={onClose} aria-label="Close" icon={<X size={16} />} />
           </div>
         </div>
 

@@ -10,7 +10,7 @@ import { accountName } from "./mappers";
 import type { AccountRow } from "./types";
 
 /** Roles that are the brand's own accounts (they come first and start checked). */
-const OWN_ROLES: ReadonlySet<string> = new Set(["own", "client"]);
+const OWN_ROLES: ReadonlySet<string> = new Set(["own"]);
 
 export interface AccountTileSeed {
   rowId: string;

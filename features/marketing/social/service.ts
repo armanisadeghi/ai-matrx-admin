@@ -252,7 +252,7 @@ export async function readAccountRows(args: {
   // Own accounts the organization tracks that the brand's property list does not carry yet: an account
   // attached through a connected-account flow lands org-wide (no brand, no property) until it is added.
   const others = tracked.filter(
-    (t) => !seen.has(t.id) && t.role !== "client" && (t.role !== "own" || !t.brand_id || !t.property_id),
+    (t) => !seen.has(t.id) && (t.role !== "own" || !t.brand_id || !t.property_id),
   );
   if (others.length === 0) return brandRows;
   const profileIds = [...new Set(others.map((t) => t.profile_id))];

@@ -827,6 +827,94 @@ export async function getSiteOverview(
   };
 }
 
+/**
+ * A site at a glance for the brand home: pages, open issues, sitemaps and the last crawl — four small indexed
+ * reads. The full `getSiteOverview` (site score + coverage rollup) takes 10-17 s on a large site, too slow for a
+ * summary card; the site page keeps it.
+ */
+export interface SiteGlance {
+  pages: number;
+  openFindings: number;
+  sitemaps: number;
+  lastCrawlAt: string | null;
+}
+
+export async function getSiteGlance(siteId: string, signal?: AbortSignal): Promise<SiteGlance> {
+  const db = await authenticatedWebDb(supabase);
+  const abortSignal = signal ?? new AbortController().signal;
+  const [pages, findings, sitemaps, crawl] = await Promise.all([
+    db
+      .from("v_page_list")
+      .select("page_id", { count: "exact", head: true })
+      .eq("site_id", siteId)
+      .eq("is_resource", false)
+      .eq("is_canonical", true)
+      .eq("has_page_evidence", true)
+      .abortSignal(abortSignal),
+    db
+      .from("finding")
+      .select("id", { count: "exact", head: true })
+      .eq("site_id", siteId)
+      .in("status", ["open", "reopened"])
+      .eq("suppressed", false)
+      .is("deleted_at", null)
+      .abortSignal(abortSignal),
+    db
+      .from("sitemap")
+      .select("id", { count: "exact", head: true })
+      .eq("site_id", siteId)
+      .is("deleted_at", null)
+      .abortSignal(abortSignal),
+    db
+      .from("crawl_session")
+      .select("started_at, finished_at")
+      .eq("site_id", siteId)
+      .is("deleted_at", null)
+      .order("started_at", { ascending: false, nullsFirst: false })
+      .limit(1)
+      .abortSignal(abortSignal)
+      .maybeSingle(),
+  ]);
+  for (const response of [pages, findings, sitemaps, crawl]) {
+    if (response.error) throw operationFailed("load this site's summary", response.error);
+  }
+  return {
+    pages: pages.count ?? 0,
+    openFindings: findings.count ?? 0,
+    sitemaps: sitemaps.count ?? 0,
+    lastCrawlAt: crawl.data ? (crawl.data.finished_at ?? crawl.data.started_at) : null,
+  };
+}
+
+export interface SiteTopPage {
+  pageId: string;
+  path: string;
+  clicks: number;
+}
+
+/** A site's pages with the most Search Console clicks in the last 28 days (canonical HTML pages only). */
+export async function listSiteTopPages(
+  siteId: string,
+  limit = 3,
+  signal?: AbortSignal,
+): Promise<SiteTopPage[]> {
+  const db = await authenticatedWebDb(supabase);
+  const response = await db
+    .from("v_page_list")
+    .select("page_id, path, url, gsc_clicks_28d")
+    .eq("site_id", siteId)
+    .eq("is_resource", false)
+    .gt("gsc_clicks_28d", 0)
+    .order("gsc_clicks_28d", { ascending: false })
+    .limit(limit)
+    .abortSignal(signal ?? new AbortController().signal);
+  return assertData(response.data, response.error).flatMap((row) =>
+    row.page_id
+      ? [{ pageId: row.page_id, path: row.path || row.url || "/", clicks: Number(row.gsc_clicks_28d ?? 0) }]
+      : [],
+  );
+}
+
 /** Read observed homepage `<title>` and meta description from the latest snapshot. */
 export async function getHomepageObservedMeta(
   siteId: string,

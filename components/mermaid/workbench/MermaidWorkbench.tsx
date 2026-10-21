@@ -97,6 +97,7 @@ import { registerMermaidEditor } from "./editor-bridge";
 import { useMermaidArtifactSave } from "./useMermaidArtifactSave";
 import { useMermaidEditor, type WorkbenchMode } from "./useMermaidEditor";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 // LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
 if (typeof window !== "undefined") performance.mark("load:heavy:Mermaid workbench");
@@ -886,14 +887,8 @@ function SaveIndicator({
   }
   if (state === "error") {
     return (
-      <button
-        type="button"
-        onClick={onRetry}
-        className="flex items-center gap-1 rounded px-1.5 text-xs text-destructive-ink hover:bg-destructive/10"
-      >
-        <TriangleAlert className="h-3 w-3" />
-        Retry save
-      </button>
+      <ControlButton variant="quiet" type="button"
+        onClick={onRetry} icon={<TriangleAlert />}>Retry save</ControlButton>
     );
   }
   if (state === "dirty") {

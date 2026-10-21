@@ -35,6 +35,17 @@ export interface BrandAssistOffers {
   decline_cooldown_days: number;
 }
 
+/**
+ * Never a brand assist again (Arman, 2026-10-21): searching the brand's own name burned paid calls and took the
+ * page's best spot. The server no longer offers them; this keeps a stale server or a stored row off the page.
+ */
+export const RETIRED_BRAND_ASSISTS: ReadonlySet<string> = new Set(["name_volume", "who_ranks"]);
+
+/** True for a ledger row of a retired brand assist (`brand.assist.<id>`). */
+export function isRetiredBrandAssist(sourceKey: string | null | undefined): boolean {
+  return Boolean(sourceKey?.startsWith(BRAND_ASSIST_SOURCE_PREFIX) && RETIRED_BRAND_ASSISTS.has(sourceKey.slice(BRAND_ASSIST_SOURCE_PREFIX.length)));
+}
+
 export function brandAssistSourceKey(assistId: string): string {
   return `${BRAND_ASSIST_SOURCE_PREFIX}${assistId}`;
 }
@@ -73,7 +84,7 @@ export function offersToEmit(
 ): BrandAssistOffer[] {
   const brandId = data.brand_id;
   return data.offers
-    .filter((offer) => !offer.done)
+    .filter((offer) => !offer.done && !RETIRED_BRAND_ASSISTS.has(offer.assist_id))
     .filter((offer) => {
       const key = brandAssistDedupeKey(offer.assist_id, brandId);
       const live = history.some(

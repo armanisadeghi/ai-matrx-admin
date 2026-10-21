@@ -6,7 +6,7 @@
  * session's answers), or create a separate one. It always sits IN FLOW (MKT-121:
  * floating over the page it covered "Review web results"): under the entry field, or stacked above the Create bar inside the bar's sticky box.
  */
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Loader2 } from "lucide-react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { Button } from "@ai-matrx/design-system/controls";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
@@ -21,12 +21,15 @@ export function ExistingBrandNotice({
   error = null,
   onAddTo,
   onSeparate,
+  separating = false,
   placement,
 }: {
   matches: BrandMatch[];
   error?: string | null;
   onAddTo: (match: BrandMatch) => void;
   onSeparate: () => void;
+  /** The separate brand is being made (or queued for the page to settle): the button shows it and cannot be pressed twice. */
+  separating?: boolean;
   /** `above`: opens upward from its anchor (the Create bar); `below`: opens downward (the entry field). */
   placement: "above" | "below";
 }) {
@@ -79,8 +82,9 @@ export function ExistingBrandNotice({
       </ul>
       <div className="flex items-center justify-between gap-2">
         {matches.length > MAX_LISTED ? <span className="text-xs text-muted-foreground">+{matches.length - MAX_LISTED} more</span> : <span />}
-        <Button variant="quiet" onClick={onSeparate} data-testid="existing-brand-separate">
-          Create a separate brand
+        <Button variant="quiet" onClick={onSeparate} disabled={separating} aria-busy={separating} data-testid="existing-brand-separate">
+          {separating ? <Loader2 className="size-3.5 animate-spin" /> : null}
+          {separating ? "Creating…" : "Create a separate brand"}
         </Button>
       </div>
     </div>

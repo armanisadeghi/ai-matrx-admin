@@ -14,7 +14,7 @@ import React, {
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Button as ControlButton } from "@ai-matrx/design-system/controls";
 import {
   Select,
   SelectContent,
@@ -784,24 +784,13 @@ function SelectionBar({
           Clear
         </button>
       )}
-      <button
+      <ControlButton
+        variant={copied ? "success" : "primary"}
         onClick={onCopy}
-        className={`flex items-center gap-1 text-[10px] px-3 py-1 rounded font-medium transition-colors ${
-          copied
-            ? "bg-success text-success-foreground"
-            : "bg-primary hover:bg-primary/90 text-primary-foreground"
-        }`}
+        icon={copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
       >
-        {copied ? (
-          <>
-            <Check className="h-3 w-3" /> Copied!
-          </>
-        ) : (
-          <>
-            <Copy className="h-3 w-3" /> Copy {range ? "selection" : "all"}
-          </>
-        )}
-      </button>
+        {copied ? "Copied!" : `Copy ${range ? "selection" : "all"}`}
+      </ControlButton>
     </div>
   );
 }

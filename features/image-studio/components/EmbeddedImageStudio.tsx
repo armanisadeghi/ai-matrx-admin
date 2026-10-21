@@ -63,6 +63,7 @@ import { formatFileSize } from "@ai-matrx/kit/format";
 import type { ImagePosition, StudioSourceFile } from "../types";
 import dynamic from "next/dynamic";
 import { StudioDropZone } from "./StudioDropZone";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 // InitialCropWindow renders <WindowPanel> as styling chrome — keep it
 // out of EmbeddedImageStudio's static graph so the parent's chunk
@@ -610,13 +611,14 @@ export function EmbeddedImageStudio({
             <p className="font-medium">Pipeline failed</p>
             <p className="text-xs">{autoFlowError ?? "Unknown error"}</p>
           </div>
-          <button
+          <ControlButton
             type="button"
+            variant="outline"
+            tone="destructive"
             onClick={runPipeline}
-            className="text-xs rounded-md border border-destructive/40 hover:bg-destructive/10 px-2 py-1"
           >
             Retry
-          </button>
+          </ControlButton>
           <ErrorAlchemyMenu error={autoFlowError} />
         </div>
       )}
@@ -702,15 +704,9 @@ function InitialUrlBanner({
           <RefreshCw className="h-3 w-3 inline mr-1" />
           Replace
         </button>
-        <button
-          type="button"
+        <ControlButton variant="quiet" removes type="button"
           onClick={onClear}
-          disabled={disabled}
-          className="rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive-ink p-1.5 disabled:opacity-50"
-          title="Clear"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </button>
+          disabled={disabled} aria-label="Clear" icon={<Trash2 />} />
       </div>
     </div>
   );
@@ -924,29 +920,15 @@ function ExternalUrlBanner({
         </OutboundLink>
       </div>
       <div className="flex items-center gap-1 shrink-0">
-        <button
+        <ControlButton
           type="button"
+          variant={copied ? "success" : "outline"}
           onClick={handleCopy}
-          className={cn(
-            "rounded-md border px-2 py-1 text-xs flex items-center gap-1",
-            copied
-              ? "border-success/40 bg-success/10 text-success-ink"
-              : "border-border hover:bg-muted",
-          )}
           title="Copy URL"
+          icon={copied ? <CheckCircle2 /> : <Copy />}
         >
-          {copied ? (
-            <>
-              <CheckCircle2 className="h-3 w-3" />
-              Copied
-            </>
-          ) : (
-            <>
-              <Copy className="h-3 w-3" />
-              Copy
-            </>
-          )}
-        </button>
+          {copied ? "Copied" : "Copy"}
+        </ControlButton>
         <button
           type="button"
           onClick={onReplace}
@@ -957,15 +939,9 @@ function ExternalUrlBanner({
           <RefreshCw className="h-3 w-3 inline mr-1" />
           Replace
         </button>
-        <button
-          type="button"
+        <ControlButton variant="quiet" removes type="button"
           onClick={onClear}
-          disabled={disabled}
-          className="rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive-ink p-1.5 disabled:opacity-50"
-          title="Clear"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </button>
+          disabled={disabled} aria-label="Clear" icon={<Trash2 />} />
       </div>
     </div>
   );
@@ -1064,15 +1040,9 @@ function SourceHeader({
           <RefreshCw className="h-3 w-3 inline mr-1" />
           Replace
         </button>
-        <button
-          type="button"
+        <ControlButton variant="quiet" removes type="button"
           onClick={onClear}
-          disabled={disabled}
-          className="rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive-ink p-1.5 disabled:opacity-50"
-          title="Clear"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </button>
+          disabled={disabled} aria-label="Clear" icon={<Trash2 />} />
       </div>
     </div>
   );
@@ -1300,29 +1270,16 @@ function VariantCard({
 
         {publicUrl ? (
           <div className="flex items-center gap-1 pt-1">
-            <button
+            <ControlButton
               type="button"
+              variant={copied ? "success" : "outline"}
+              className="flex-1"
               onClick={handleCopy}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-1 rounded-md border px-1.5 py-1 text-[10px] font-medium transition-colors",
-                copied
-                  ? "border-success/40 bg-success/10 text-success-ink"
-                  : "border-border hover:bg-muted/40",
-              )}
               title="Copy permanent CDN URL"
+              icon={copied ? <CheckCircle2 /> : <Copy />}
             >
-              {copied ? (
-                <>
-                  <CheckCircle2 className="h-2.5 w-2.5" />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="h-2.5 w-2.5" />
-                  Copy CDN
-                </>
-              )}
-            </button>
+              {copied ? "Copied" : "Copy CDN"}
+            </ControlButton>
             <OutboundLink
               href={publicUrl}
               className="rounded-md border border-border hover:bg-muted/40 p-1 text-muted-foreground"

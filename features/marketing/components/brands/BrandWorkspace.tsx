@@ -1175,6 +1175,8 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                 brandSeg={brandSeg}
                 sites={websiteSites}
                 loading={sites.isLoading}
+                error={sites.isError ? sites.error : undefined}
+                onRetry={() => void sites.refetch()}
                 publicWebsiteUrl={publicWebsiteUrl}
                 allHref={tabHref("web")}
               />

@@ -7,6 +7,7 @@ import {
   activityRecordHref,
   appendActivityPage,
   groupActivityByDay,
+  isPeekRecordType,
   parseActivityPage,
   type ActivityItem,
   type ActivityPage,
@@ -109,13 +110,17 @@ describe("activityRecordHref", () => {
     expect(activityRecordHref({ type: "billing", id: "g", user_id: me, href: null }, me)).toBe(`/administration/users/${me}/billing`);
     expect(activityRecordHref({ type: "notification", id: "n", user_id: null, href: "/chat/abc" }, me)).toBe("/chat/abc");
   });
-  it("opens a sign-in on the Security tab only while that tab is built", () => {
-    expect(activityRecordHref({ type: "auth_session", id: "s", user_id: null, href: null }, me)).toBe(
+  it("opens a recorded sign-in on the Security tab only while that tab is built", () => {
+    expect(activityRecordHref({ type: "sign_in_event", id: "s", user_id: null, href: null }, me)).toBe(
       isVisibleUserTab("security") ? `/administration/users/${me}/security` : null,
     );
   });
   it("returns null for records with no page and for off-site notification links", () => {
+    // agent jobs and app_log rows have no page: their door is THE Peek (ActivityRecordDoor).
     expect(activityRecordHref({ type: "agent_run", id: "r", user_id: null, href: null }, me)).toBeNull();
+    expect(activityRecordHref({ type: "app_log", id: "l", user_id: null, href: null }, me)).toBeNull();
+    expect(isPeekRecordType("agent_run") && isPeekRecordType("app_log")).toBe(true);
+    expect(isPeekRecordType("conversation")).toBe(false);
     expect(activityRecordHref({ type: "notification", id: "n", user_id: null, href: "https://evil.example" }, me)).toBeNull();
     expect(activityRecordHref(null, me)).toBeNull();
   });

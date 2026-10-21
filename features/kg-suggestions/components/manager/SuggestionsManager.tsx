@@ -51,6 +51,7 @@ import { KgSuggestionRowItem } from "@/features/kg-suggestions/components/KgSugg
 import { SuggestionsFilterBar } from "./SuggestionsFilterBar";
 import { SuggestionsTable } from "./SuggestionsTable";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 export function SuggestionsManager() {
   const isMobile = useIsMobile();
@@ -165,14 +166,8 @@ export function SuggestionsManager() {
             />
           </button>
           {showLowQuality ? (
-            <button
-              type="button"
-              onClick={() => void dismissAllLowQuality()}
-              className="inline-flex shrink-0 items-center gap-1 rounded border border-border bg-background px-2 py-0.5 text-[11px] text-destructive-ink hover:bg-destructive/10 transition-colors"
-            >
-              <X className="h-3 w-3" />
-              Dismiss all
-            </button>
+            <ControlButton variant="quiet" removes type="button"
+              onClick={() => void dismissAllLowQuality()} className="shrink-0" icon={<X />}>Dismiss all</ControlButton>
           ) : null}
         </div>
         {showLowQuality ? (

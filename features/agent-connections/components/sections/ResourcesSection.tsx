@@ -9,6 +9,7 @@ import { SectionToolbar } from "../SectionToolbar";
 import { SectionFooter } from "../SectionFooter";
 import { useResources } from "../../hooks/useResources";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 type ResourceItem = ReturnType<typeof useResources>["resources"][number];
 
@@ -118,14 +119,8 @@ export function ResourcesSection() {
                   )}
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setDeleteTarget(r)}
-                className="h-7 w-7 rounded-md opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive-ink hover:bg-destructive/10 flex items-center justify-center transition-all"
-                aria-label="Delete resource"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
+              <ControlButton variant="quiet" removes type="button"
+                onClick={() => setDeleteTarget(r)} className="opacity-0 group-hover:opacity-100" aria-label="Delete resource" icon={<Trash2 />} />
             </div>
           ))
         )}

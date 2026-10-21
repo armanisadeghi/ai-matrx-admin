@@ -13,7 +13,7 @@
 import type { ValidationRule, ValidationIssue, ResolvedConfig } from "./types";
 import { getControlForKey } from "./resolve-config";
 import { evaluateAllConstraints } from "./constraints";
-import { isUiGateKey } from "@ai-matrx/chat/agents/redux/agent-settings/ui-gates";
+import { extraSettingKeys } from "@ai-matrx/agents/settings";
 
 // =============================================================================
 // Rule: Unrecognized Keys
@@ -424,51 +424,27 @@ const unsupportedByModel: ValidationRule = {
   category: "unsupported_by_model",
   inspects: [],
   validate(config: ResolvedConfig): ValidationIssue[] {
-    const controls = config.normalizedControls;
-    if (!controls) return []; // no model selected → nothing to confirm against
-
-    // Only run when the model actually declares a control schema. A model with
-    // zero declared controls is a data gap, not a real incompatibility — those
-    // settings surface via the inline "unknown" caution dot instead of a hard
-    // issue, so we don't flood the IssueTable with false positives.
-    const declaredKeys = Object.keys(controls).filter(
-      (k) => k !== "rawControls" && k !== "unmappedControls",
+    // ONE rule for which set values the model does not carry natively — the
+    // same `extraSettingKeys` THE model-settings panel draws its "Translated
+    // for this model" group from, so the issue list and the rows can never
+    // disagree. Not an error: the person's setting is KEPT and the server
+    // translates it for this model (settings-translation K7 — the platform
+    // rule); nothing here or in apply-fix drops it automatically.
+    const { translated } = extraSettingKeys(
+      // MATRX-EXCEPTION: extraSettingKeys validates each control at read time (lookupControl).
+      config.normalizedControls as unknown as Record<string, unknown> | null,
+      config.settings as Record<string, unknown>,
     );
-    if (declaredKeys.length === 0) return [];
-
-    const issues: ValidationIssue[] = [];
     const settings = config.settings as Record<string, unknown>;
-
-    for (const [key, value] of Object.entries(settings)) {
-      if (value === null || value === undefined) continue;
-      if (key === "model_id") continue;
-      // offering_id is a routing key (pins the exact ai.offering for the call),
-      // never a model control — staleness across model swaps is checked against
-      // the catalog by the reconciliation flow, not against controls here.
-      if (key === "offering_id") continue;
-      // Model-gated UI flags moved OUT of settings into agent.uiGates; they no
-      // longer appear here. Guard defensively in case a flattened value lingers.
-      if (isUiGateKey(key)) continue;
-      if (key in LEGACY_KEY_MAP) continue; // handled by the deprecated-key rule
-      if (!config.recognizedKeys.has(key)) continue; // handled by unrecognized-keys
-      if (getControlForKey(config.normalizedControls, key)) continue; // supported
-
-      // Not an error: the person's setting is KEPT and the server translates
-      // it for this model (settings-translation K7 — the platform rule). The
-      // settings form shows it under "Translated for this model" with a clear
-      // control; nothing here or in apply-fix drops it automatically.
-      issues.push({
-        ruleId: "unsupported-by-model",
-        key,
-        severity: "info",
-        category: "unsupported_by_model",
-        message: "Translated for this model",
-        value,
-        suggestion: "Clear it to use the model default",
-      });
-    }
-
-    return issues;
+    return translated.map((key) => ({
+      ruleId: "unsupported-by-model",
+      key,
+      severity: "info" as const,
+      category: "unsupported_by_model" as const,
+      message: "Translated for this model",
+      value: settings[key],
+      suggestion: "Clear it to use the model default",
+    }));
   },
 };
 

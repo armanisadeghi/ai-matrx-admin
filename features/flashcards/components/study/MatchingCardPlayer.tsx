@@ -22,6 +22,7 @@ import { AlertCircle, Check, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ReviewResult } from "../../types";
 import type { MatchingPair } from "../../utils/cardVariants";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 /** Deterministic-per-mount shuffle (Fisher–Yates on a copy). */
 function shuffle<T>(items: T[]): T[] {
@@ -215,14 +216,8 @@ export function MatchingCardPlayer({
       {gradeFailed && (
         <div className="mt-3 flex items-center justify-between gap-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
           <span>All matched, but recording your grade failed.</span>
-          <button
-            type="button"
-            onClick={() => void submitCompletion()}
-            className="inline-flex shrink-0 items-center gap-1 rounded-md border border-red-300 px-2 py-1 font-medium hover:bg-red-100 dark:border-red-700 dark:hover:bg-red-950"
-          >
-            <RotateCcw className="h-3 w-3" />
-            Retry
-          </button>
+          <ControlButton variant="quiet" type="button"
+            onClick={() => void submitCompletion()} className="shrink-0" icon={<RotateCcw />}>Retry</ControlButton>
         </div>
       )}
     </div>

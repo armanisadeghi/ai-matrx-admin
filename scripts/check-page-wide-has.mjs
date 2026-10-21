@@ -59,7 +59,7 @@ const ALLOWED = new Map([
   ],
   [
     "body:has(.cm-live) ",
-    "context-menu tooltip lift while a menu is live; class/attribute subjects. Measured on the phone notes page in review 6b (see evidence review6-has-and-modes-perf). Follow-up: the menu sets an attribute while live.",
+    "context-menu tooltip lift while a menu is live; class/attribute subjects. Measured 9.3–9.4 ms against 9.2 ms with no :has() (phone notes page, review 6b). Follow-up: the menu sets an attribute while live.",
   ],
   [
     ".markdown-flush-start > .contents:not(.contents:has(> .math-content-wrapper) ~ .contents)",

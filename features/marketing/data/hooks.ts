@@ -83,6 +83,8 @@ import {
   getSite,
   getSiteHeroScreenshot,
   getSiteOverview,
+  listSiteTopPages,
+  getSiteGlance,
   getSnapshot,
   listCrawlEvents,
   listCrawls,
@@ -187,6 +189,10 @@ export const marketingKeys = {
     [...marketingKeys.site(siteId), "homepage-meta"] as const,
   heroScreenshot: (siteId: string) =>
     [...marketingKeys.site(siteId), "hero-screenshot"] as const,
+  glance: (siteId: string) =>
+    [...marketingKeys.site(siteId), "glance"] as const,
+  topPages: (siteId: string) =>
+    [...marketingKeys.site(siteId), "top-pages"] as const,
   discovered: (
     brandId: string,
     status: DiscoveredItemStatus | null,
@@ -315,6 +321,22 @@ export function useSiteOverview(siteId: string) {
   return useQuery({
     queryKey: marketingKeys.overview(siteId),
     queryFn: ({ signal }) => getSiteOverview(siteId, signal),
+    enabled: Boolean(siteId),
+  });
+}
+
+export function useSiteGlance(siteId: string) {
+  return useQuery({
+    queryKey: marketingKeys.glance(siteId),
+    queryFn: ({ signal }) => getSiteGlance(siteId, signal),
+    enabled: Boolean(siteId),
+  });
+}
+
+export function useSiteTopPages(siteId: string, limit = 3) {
+  return useQuery({
+    queryKey: [...marketingKeys.topPages(siteId), limit] as const,
+    queryFn: ({ signal }) => listSiteTopPages(siteId, limit, signal),
     enabled: Boolean(siteId),
   });
 }

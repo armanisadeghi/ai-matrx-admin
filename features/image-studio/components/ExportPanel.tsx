@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import React, { useState } from "react";
 import Link from "next/link";
 import {
@@ -423,24 +424,20 @@ export function ExportPanel({
               </span>
             </span>
           </label>
-          <button
+          <ControlButton
             type="button"
+            variant="success"
+            className="mt-1.5 w-full"
             onClick={() => onSaveAll(folder, makePublic)}
             disabled={!canSave || isSaving}
-            className={cn(
-              "mt-1.5 w-full h-9 rounded-md text-xs font-medium flex items-center justify-center gap-1.5 transition-colors",
-              canSave && !isSaving
-                ? "bg-success/10 border border-success/40 text-success-ink hover:bg-success/20"
-                : "bg-muted text-muted-foreground border border-border cursor-not-allowed",
-            )}
+            icon={<CloudUpload />}
           >
-            <CloudUpload className="h-3.5 w-3.5" />
             {isSaving
               ? "Saving…"
               : makePublic
                 ? "Save all to library (public)"
                 : "Save all to library (private)"}
-          </button>
+          </ControlButton>
 
           {/* Post-save success card — visible after a successful save
               with a deep-link to the destination folder in /files. Stays

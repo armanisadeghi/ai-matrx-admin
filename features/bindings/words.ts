@@ -261,10 +261,19 @@ export const JOB_ADVANCED_WORDS: Partial<AdvancedSectionWords> = {
  * rung covers. Arman found it; the sentence was simply false. Same wording-prop
  * discipline as everything else in this file.
  */
-export const JOB_OVERRIDE_WORDS = {
-  heading: "Model settings for this binding",
+/**
+ * WHAT THE BINDING'S OVERRIDES COVER (B14) — the binding screen's own heading
+ * over THE model-settings panel. The panel draws no header of its own (owner,
+ * 2026-10-21: one look with the builder), so the screen that stores the
+ * overrides says where they land.
+ */
+export const JOB_OVERRIDE_HEADING = {
+  title: "Model settings for this binding",
   scopeNote:
     "These are stored on this binding and applied whenever the server resolves this binding for someone this rung covers — not to one conversation. Resetting a value hands it back to the Mandate Holder's own default.",
+};
+
+export const JOB_OVERRIDE_WORDS = {
   noModelNote:
     "No model resolved for this Mandate Holder yet — its settings appear once it is read.",
   // The job vocabulary's own word for the picker's "no override" choice. The
@@ -286,10 +295,9 @@ export const JOB_OVERRIDE_WORDS = {
  * Two live controls, two different doors — see `JOB_ADVANCED_WORDS
  * .llmOverridesHint`.
  */
+// What these cover is said by the field's own title and hint
+// (`JOB_ADVANCED_WORDS.llmOverridesHint`), above the panel.
 export const JOB_TREATMENT_OVERRIDE_WORDS = {
-  heading: "Model settings for this job's own options",
-  scopeNote:
-    "These are stored with this job's options and used when it is launched from a menu or from a place in the app. One answer for everyone — options have no per-person rung. Resetting a value hands it back to the Mandate Holder's own default.",
   noModelNote:
     "No model chosen — this job runs on its Mandate Holder's own model unless you pick one.",
   modelEmptyChoiceLabel: "Use the Mandate Holder's own model",

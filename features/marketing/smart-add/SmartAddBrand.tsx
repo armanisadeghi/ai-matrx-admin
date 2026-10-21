@@ -22,7 +22,8 @@ import { FoundStage } from "./found/FoundStage";
 import { addWitnesses, foundAnswers, foundCards, foundCoreReady } from "./found/foundCards";
 import { PersonFoundStage } from "./found/PersonFoundStage";
 import { personAnswers, personCoreReady } from "./found/personCards";
-import { loginSeed as readLoginSeed, provenProfileName, seedEvidence, type LoginSeed } from "./welcome/loginSeed";
+import { loginSeed as readLoginSeed, seedEvidence, type LoginSeed } from "./welcome/loginSeed";
+import { welcomeNameOf } from "./welcome/welcomeName";
 import { readTypedName, writeTypedName } from "./welcome/typedNameStore";
 import { WelcomeNameFrame, WelcomeNothingFrame } from "./welcome/WelcomeAsk";
 import type { PersonGroup } from "./welcome/peopleGroups";
@@ -1690,7 +1691,9 @@ export function SmartAddBrand({
         }
       : null;
   const existing = useExistingBrands(checkMatches ? (confirmedProbe ?? entryProbe) : null);
-  const matches = existing.matches.filter((m) => !separateIds.has(m.brand.id));
+  // "Create a separate brand" pressed: the notice stays up (spinner) until the brand is made or the press fails.
+  const [separating, setSeparating] = useState(false);
+  const matches = existing.matches.filter((m) => separating || !separateIds.has(m.brand.id));
   const chooseSeparate = () => {
     const next = new Set([...separateRef.current, ...matches.map((m) => m.brand.id)]);
     separateRef.current = next;
@@ -1698,10 +1701,38 @@ export function SmartAddBrand({
     setReleased((n) => n + 1);
   };
   /** Beside the Create bar, "Create a separate brand" creates it: the answer alone left the page sitting (MKT-182). */
+  // A press is never dropped: it shows pending at once, waits for the page to settle (the name, a Create already running),
+  // runs Create, and says so when it cannot (MKT round 3: a first press did nothing visible for over a minute).
   const separateAndCreate = () => {
+    if (separating) return;
     chooseSeparate();
-    if (canCreate) void create();
+    setSeparating(true);
   };
+  const SEPARATE_WAIT_MS = 20_000;
+  const separateRun = useRef(false);
+  const runSeparate = useEffectEvent(() => {
+    if (created) return setSeparating(false);
+    if (!canCreate || separateRun.current) return;
+    separateRun.current = true;
+    void create()
+      .catch((error: unknown) => setCreateError(`The separate brand could not be created: ${extractErrorMessage(error)}`))
+      .finally(() => {
+        separateRun.current = false;
+        setSeparating(false);
+      });
+  });
+  useEffect(() => {
+    if (!separating) return;
+    runSeparate();
+  }, [separating, canCreate, created]);
+  useEffect(() => {
+    if (!separating || canCreate || created) return;
+    const t = setTimeout(() => {
+      setCreateError(basics.name ? "The page is still working. Try Create a separate brand again in a moment." : "Add the brand's name, then try again.");
+      setSeparating(false);
+    }, SEPARATE_WAIT_MS);
+    return () => clearTimeout(t);
+  }, [separating, canCreate, created, basics.name]);
   /** Add what is new to an existing brand: the enrich flow, carrying the website and account this session has. */
   const addToExisting = (m: BrandMatch) => {
     const account = basics.accounts.find((a) => a.platform && isSocialPlatform(a.platform));
@@ -1882,9 +1913,10 @@ export function SmartAddBrand({
     // Declared after the first round's effect, so on the commit that starts both, the first round claims the name.
     if (welcomeNameKick && welcomeSeed) runWelcomeName();
   }, [welcomeNameKick, welcomeSeed]);
-  const welcomeName = welcomeSeed?.name ?? welcomeLoginName ?? welcomeLateName ?? personTyped.current?.name ?? "";
-  // Next in line after the login: the name on a GitHub account the email lookup proved is theirs.
-  const welcomeProvenName = welcomeOn && welcomeSeed && !welcomeName ? provenProfileName(visible) : null;
+  // The name rule (welcomeName.ts): the login's own name > one typed here > a proven GitHub name > the email's hint.
+  const { name: welcomeName, proven: welcomeProvenName } = welcomeOn
+    ? welcomeNameOf({ seed: welcomeSeed, loginName: welcomeLoginName, later: welcomeLateName ?? personTyped.current?.name ?? null, visible })
+    : { name: welcomeSeed?.name ?? welcomeLoginName ?? welcomeLateName ?? personTyped.current?.name ?? "", proven: null };
   const adoptProvenName = useEffectEvent((name: string) => welcomeSetName(name, false));
   useEffect(() => {
     if (welcomeProvenName) adoptProvenName(welcomeProvenName);
@@ -2399,7 +2431,7 @@ export function SmartAddBrand({
 
       {/* Create: the confirmed basics, one row. */}
       <div className="sticky bottom-3 z-10">
-      {created ? null : <ExistingBrandNotice placement="above" matches={matches} error={existing.error} onAddTo={addToExisting} onSeparate={separateAndCreate} />}
+      {created ? null : <ExistingBrandNotice placement="above" matches={matches} error={existing.error} onAddTo={addToExisting} onSeparate={separateAndCreate} separating={separating} />}
       <div className="flex min-h-12 flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-border bg-card/95 px-4 py-2 shadow-lg backdrop-blur">
         {/* Two rows: the brand, then what Create files and what it spends — each fact once, nothing cut off. */}
         <div className="flex min-w-0 flex-1 basis-full items-center gap-2.5 sm:basis-0">

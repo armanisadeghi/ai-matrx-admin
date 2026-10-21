@@ -68,6 +68,7 @@ import { IntakeCard } from "./IntakeCard";
 import { pickFollowTarget, planSummary } from "./plan-model";
 import { replaceAddressOrNavigate } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 type Resolution =
   | { phase: "loading" }
@@ -630,8 +631,7 @@ function RunControls({
           <Play className="h-3.5 w-3.5" aria-hidden />
         </button>
       ) : null}
-      <button
-        type="button"
+      <ControlButton variant="quiet" removes type="button"
         disabled={busy}
         onClick={() =>
           act(async () => {
@@ -647,12 +647,7 @@ function RunControls({
             if (ok) toast.info("Stopping — it will wind down gracefully.");
             return ok;
           })
-        }
-        aria-label="Stop the run"
-        className="flex h-7 w-7 items-center justify-center rounded-md text-destructive-ink hover:bg-destructive/10 disabled:opacity-50"
-      >
-        <OctagonX className="h-3.5 w-3.5" aria-hidden />
-      </button>
+        } aria-label="Stop the run" icon={<OctagonX aria-hidden />} />
     </span>
   );
 }

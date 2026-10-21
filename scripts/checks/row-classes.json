@@ -5,7 +5,7 @@
     "repo-only": "reads the repository and nothing else"
   },
   "counts": {
-    "repo-only": 221,
+    "repo-only": 227,
     "live-db": 70
   },
   "rows": {
@@ -199,6 +199,20 @@
       "class": "repo-only",
       "cmd": "pnpm check:matrx-imports",
       "reason": "no database access in 3 file(s) reached",
+      "evidence": []
+    },
+    "one-file-fans-out-too-many-lazy-import-targets": {
+      "label": "Import fan-out and summon boot graph",
+      "class": "repo-only",
+      "cmd": "pnpm check:import-fanout",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "import-fanout-guard-self-test": {
+      "label": "Import fan-out — self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:import-fanout:self-test",
+      "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },
     "every-imported-ai-matrx-package-is-declared-in-package-json": {
@@ -768,20 +782,6 @@
       "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },
-    "one-file-fans-out-too-many-lazy-import-targets": {
-      "label": "One file fans out too many lazy import() targets",
-      "class": "repo-only",
-      "cmd": "pnpm check:import-fanout",
-      "reason": "no database access in 1 file(s) reached",
-      "evidence": []
-    },
-    "import-fanout-guard-self-test": {
-      "label": "Import-fanout guard self-test",
-      "class": "repo-only",
-      "cmd": "pnpm check:import-fanout:self-test",
-      "reason": "no database access in 1 file(s) reached",
-      "evidence": []
-    },
     "login-hydrates-asset-reader-self-test": {
       "label": "Login-hydrates asset reader self-test",
       "class": "repo-only",
@@ -976,6 +976,20 @@
       "reason": "no database access in 2 file(s) reached",
       "evidence": []
     },
+    "no-page-wide-has": {
+      "label": "No page-wide :has()",
+      "class": "repo-only",
+      "cmd": "pnpm check:page-wide-has",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "no-page-wide-has-self-test": {
+      "label": "No page-wide :has() — self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:page-wide-has:self-test",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
     "ssr-viewport-branch": {
       "label": "SSR viewport branch",
       "class": "repo-only",
@@ -1078,6 +1092,20 @@
       "label": "One id — self-test",
       "class": "repo-only",
       "cmd": "pnpm check:one-id:self-test",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "bulk-parity": {
+      "label": "Bulk parity",
+      "class": "repo-only",
+      "cmd": "pnpm check:bulk-parity:strict",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "bulk-parity-self-test": {
+      "label": "Bulk parity — self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:bulk-parity:self-test",
       "reason": "no database access in 2 file(s) reached",
       "evidence": []
     },
@@ -2168,7 +2196,7 @@
       "label": "Content IR / kinds test suite",
       "class": "repo-only",
       "cmd": "pnpm test:content-ir",
-      "reason": "no database access in 262 file(s) reached",
+      "reason": "no database access in 266 file(s) reached",
       "evidence": []
     },
     "whole-jest-suite-every-suite-not-ci-s-four-scopes": {
@@ -2564,6 +2592,20 @@
       "label": "Outbound-referral guard self-test",
       "class": "repo-only",
       "cmd": "pnpm check:outbound-referral:self-test",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "hand-coded-tree-indent-outside-the-shared-tree-geometry": {
+      "label": "Hand-coded tree indent outside the shared tree geometry",
+      "class": "repo-only",
+      "cmd": "pnpm check:tree-indent",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "tree-indent-guard-self-test": {
+      "label": "Tree-indent guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:tree-indent:self-test",
       "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },

@@ -5,25 +5,25 @@
  *
  * Arman, 2026-09-24, on the existing tab: *"All it's really doing is showing
  * you what the current agent's settings are and then letting you override
- * them."* So that is all this does: one list of the agent's settings, each
- * with an Override button that turns the row into its editor.
- *
- * It is a SIBLING of the existing tab (`OneBindingWorkspace` → RunConfigOverrides),
- * which stays untouched. Same data, same writer:
+ * them."* Since 2026-10-21 (one settings experience) the rows ARE the agent
+ * builder's: THE model-settings panel through `ConversationModelSettings`
+ * over this level's draft — the agent's value on every row, a change made
+ * here with its own reset back to the agent, the model row with a
+ * "Use the agent's model" choice. Same data, same writer as the binding
+ * screen (`OneBindingWorkspace`):
  *   · the draft lives in the canonical `instanceModelOverrides` slice, seeded
  *     with the agent's own settings (plus anything a higher level already
- *     overrides) exactly as the existing tab seeds it;
+ *     overrides);
  *   · Save builds the body with `buildBindingSavePayload` and writes it through
  *     `putMandateBinding` — the stored holder, mapping and auto-run are sent
  *     back unchanged, and `config_overrides` is `selectSettingsOverridesForApi`.
  */
 
-import { useEffect, useState, type ReactNode } from "react";
-import { RotateCcw } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
-import { cn } from "@/lib/utils";
 import { isJsonObject, type JsonObject } from "@/types/json";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -41,7 +41,6 @@ import {
   markRemoved,
   removeInstanceOverrides,
   replaceOverrides,
-  resetOverride,
   setOverrides,
 } from "@ai-matrx/chat/agents/redux/execution-system/instance-model-overrides/instance-model-overrides.slice";
 import {
@@ -49,21 +48,8 @@ import {
   selectSettingsOverridesForApi,
 } from "@ai-matrx/chat/agents/redux/execution-system/instance-model-overrides/instance-model-overrides.selectors";
 import { buildInstanceBaseSettings } from "@ai-matrx/chat/agents/redux/execution-system/instance-model-overrides/base-settings";
-import {
-  effectiveOfferingPin,
-  resetModelChoice,
-  setOfferingPin,
-} from "@ai-matrx/chat/agents/redux/execution-system/instance-model-overrides/offering-pin";
-import { selectAllModels, selectModelFullyLoaded } from "@ai-matrx/agents/models";
-import { getModelRecords, readModelRecords, useModelRecords } from "@ai-matrx/chat/agents/identity/model-catalog";
-import { useModelControls } from "@ai-matrx/chat/agents/hooks/useModelControls";
-import { useModelClassControls } from "@ai-matrx/chat/agents/identity/model-catalog";
-import { buildSettingsRows } from "@ai-matrx/chat/agents/redux/agent-settings/settings-catalogue";
-import type { ControlDefinition } from "@ai-matrx/chat/agents/redux/agent-settings/types";
-import { SettingControlInput } from "@ai-matrx/agents/settings/react";
-import { ModelListDropdown } from "@ai-matrx/agents/models/react";
-import { AiModelRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { ConversationModelSettings } from "@ai-matrx/chat/agents/components/run-controls/ConversationModelSettings";
 import { fetchMandateLadder } from "@/features/mandates/workspace/useMandateLadder";
 import {
   inheritedModelOverrides,
@@ -102,7 +88,6 @@ import {
   type OverridesLevel,
   type ResolvedHolderForOverrides,
 } from "./binding-lookup";
-import { agentSettingDisplay } from "./format-setting-value";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { useBuiltinAgents } from "@ai-matrx/chat/agents/identity/agent-catalog-lists";
@@ -170,9 +155,6 @@ type LoadState =
   | { status: "ready" }
   | { status: "error"; message: string };
 
-const deepEqual = (a: unknown, b: unknown) =>
-  JSON.stringify(a) === JSON.stringify(b);
-
 /** Key-order-independent serialization, for "is there anything unsaved?". */
 function stableJson(value: Record<string, unknown> | null | undefined): string {
   if (!value) return "{}";
@@ -180,6 +162,13 @@ function stableJson(value: Record<string, unknown> | null | undefined): string {
   for (const key of Object.keys(value).sort()) sorted[key] = value[key];
   return JSON.stringify(sorted);
 }
+
+/** The panel's words on this tab: the baseline is the agent that runs this job. */
+const MANDATE_OVERRIDE_WORDS = {
+  modelEmptyChoiceLabel: "Use the agent's model",
+  baselineSourceLabel: "Agent",
+  noModelNote: "No model resolved for this agent yet.",
+};
 
 function OverridesBody({
   data,
@@ -252,8 +241,6 @@ function OverridesBody({
   );
   const [sources, setSources] = useState<Record<string, string>>({});
   const [savedJson, setSavedJson] = useState<string>("{}");
-  /** Rows the person opened with "Override" but has not changed yet. */
-  const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [guardOpen, setGuardOpen] = useState(false);
@@ -345,7 +332,6 @@ function OverridesBody({
       setSavedJson(
         stableJson(selectSettingsOverridesForApi(instanceId)(store.getState())),
       );
-      setOpened(new Set());
       setLoad({ status: "ready" });
     })().catch((error: unknown) => {
       if (!cancelled)
@@ -394,86 +380,8 @@ function OverridesBody({
     surfaceState.status !== "loading";
   const hasOffer = Boolean(data.offer ?? describedOffer);
 
-  // ── The model's controls, for whichever model is effective ────────────────
-  const models = useModelRecords(selectAllModels);
-  const base = (entry?.baseSettings ?? {}) as Record<string, unknown>;
-  const overrides = (entry?.overrides ?? {}) as Record<string, unknown>;
-  const removals = entry?.removals ?? [];
-  const effectiveModel = removals.includes("model")
-    ? holderSettings.model
-    : (overrides.model ?? base.model);
-  const effectiveModelId =
-    typeof effectiveModel === "string" ? effectiveModel : "";
-  const isFull = useModelRecords((s) =>
-    selectModelFullyLoaded(s, effectiveModelId),
-  );
-  const registryLoading = useModelRecords((s) => s.isLoading);
-  useEffect(() => {
-    if (effectiveModelId && !isFull && !registryLoading) {
-      getModelRecords().loadModel(effectiveModelId);
-    }
-  }, [dispatch, effectiveModelId, isFull, registryLoading]);
-  const classControls = useModelClassControls(
-    effectiveModelId,
-    effectiveOfferingPin(entry),
-  );
-  const { normalizedControls } = useModelControls(
-    models,
-    effectiveModelId,
-    classControls,
-  );
-  // MATRX-EXCEPTION: settings-catalogue keys are dynamic; buildSettingsRows validates each control.
-  const controlsMap = normalizedControls as unknown as Record<
-    string,
-    ControlDefinition
-  > | null;
-
-  const merged: Record<string, unknown> = { ...base, ...overrides };
-  for (const key of removals) {
-    if (holderSettings[key] != null) merged[key] = holderSettings[key];
-    else delete merged[key];
-  }
-  const rows = buildSettingsRows(controlsMap, merged).flatMap((g) => g.rows);
-
-  const wire = JSON.parse(wireJson) as Record<string, unknown>;
-  const overriddenCount = Object.keys(wire).length;
   const dirty = load.status === "ready" && wireJson !== savedJson;
 
-  /** What the agent (plus any higher level) sets — never the model default. */
-  const agentValue = (key: string): unknown => base[key] ?? undefined;
-  const isOverridden = (key: string) => key in wire;
-  const isOpen = (key: string) => opened.has(key) || isOverridden(key);
-
-  function change(key: string, value: unknown) {
-    const current = agentValue(key);
-    if (current !== undefined && deepEqual(value, current)) {
-      dispatch(resetOverride({ conversationId: instanceId, key }));
-      return;
-    }
-    dispatch(
-      setOverrides({ conversationId: instanceId, changes: { [key]: value } }),
-    );
-  }
-  function open(key: string) {
-    setOpened((prev) => new Set(prev).add(key));
-  }
-  function reset(key: string) {
-    dispatch(resetOverride({ conversationId: instanceId, key }));
-    setOpened((prev) => {
-      const next = new Set(prev);
-      next.delete(key);
-      return next;
-    });
-  }
-  /** The model and its class (offering) reset together. */
-  function resetModel() {
-    dispatch(resetModelChoice(instanceId));
-    setOpened((prev) => {
-      const next = new Set(prev);
-      next.delete("model");
-      return next;
-    });
-  }
   function cancel() {
     dispatch(
       replaceOverrides({
@@ -481,7 +389,6 @@ function OverridesBody({
         changes: JSON.parse(savedJson) as Record<string, unknown>,
       }),
     );
-    setOpened(new Set());
     setSaveError(null);
   }
 
@@ -628,11 +535,7 @@ function OverridesBody({
   }
   if (picked.source === "loading") {
     return (
-      <div className="space-y-1 rounded-lg border border-border p-2" aria-busy>
-        {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="h-8 animate-pulse rounded bg-muted/60" />
-        ))}
-      </div>
+      <RegionSkeleton shape="form" count={4} aria-label="Reading who runs this job" />
     );
   }
   if (picked.source === "error") {
@@ -658,7 +561,7 @@ function OverridesBody({
 
   return (
     <div className="space-y-2">
-      <div className="flex min-w-0 items-center justify-between gap-3">
+      <div className="flex min-w-0 items-center gap-3">
         <div className="flex min-w-0 items-center gap-1.5 type-body text-muted-foreground">
           <span className="shrink-0">Settings from</span>
           <EntityRef
@@ -669,16 +572,11 @@ function OverridesBody({
             labelClassName="font-medium text-foreground"
           />
           {inheritedHolder ? (
-            <span className="shrink-0 type-secondary text-muted-foreground/70">
+            <span className="shrink-0 type-secondary text-muted-foreground">
               (runs for you today)
             </span>
           ) : null}
         </div>
-        {overriddenCount > 0 ? (
-          <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 type-secondary font-medium text-primary-ink">
-            {overriddenCount} overridden
-          </span>
-        ) : null}
       </div>
 
       {load.status === "error" ? (
@@ -692,103 +590,18 @@ function OverridesBody({
           </Button>
         </div>
       ) : load.status === "loading" || !entry ? (
-        <div
-          className="space-y-1 rounded-lg border border-border p-2"
-          aria-busy
-        >
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-8 animate-pulse rounded bg-muted/60" />
-          ))}
-        </div>
+        <RegionSkeleton shape="form" count={4} aria-label="Reading the agent's settings" />
       ) : (
-        <div className="divide-y divide-border rounded-lg border border-border bg-card">
-          <SettingRow
-            label="Model"
-            overridden={isOverridden("model") || isOverridden("offering_id")}
-            open={isOpen("model") || isOverridden("offering_id")}
-            onOverride={() => open("model")}
-            onReset={resetModel}
-            disabled={busy}
-            inheritedFrom={sourceWord(sources.model)}
-            display={
-              typeof base.model === "string" && base.model ? (
-                <AiModelRef
-                  modelId={base.model}
-                  showClass
-                  offeringId={
-                    typeof base.offering_id === "string" ? base.offering_id : null
-                  }
-                  showIcon={false}
-                />
-              ) : (
-                "Not set"
-              )
-            }
-            editor={
-              <ModelListDropdown
-                value={effectiveModelId || null}
-                onValueChange={(model) => change("model", model)}
-                pinnedOfferingId={effectiveOfferingPin(entry)}
-                onOfferingPinChange={(offeringId) =>
-                  dispatch(
-                    setOfferingPin({ conversationId: instanceId, offeringId }),
-                  )
-                }
-                onClear={resetModel}
-                emptyOptionLabel="Use the agent's model"
-                placeholder="Use the agent's model"
-                inputModalities={[]}
-                outputModalities={["text"]}
-                disabled={busy}
-              />
-            }
-          />
-          {rows.map((row) =>
-            row.control ? (
-              <SettingRow
-                key={row.key}
-                label={row.label}
-                overridden={isOverridden(row.key)}
-                open={isOpen(row.key)}
-                onOverride={() => open(row.key)}
-                onReset={() => reset(row.key)}
-                disabled={busy}
-                inheritedFrom={sourceWord(sources[row.key])}
-                display={
-                  <AgentValue
-                    value={agentValue(row.key)}
-                    control={row.control}
-                  />
-                }
-                editor={
-                  removals.includes(row.key) ? (
-                    <span className="type-body text-muted-foreground">
-                      <AgentValue
-                        value={holderSettings[row.key]}
-                        control={row.control}
-                      />
-                    </span>
-                  ) : (
-                    <SettingControlInput
-                      settingKey={row.key}
-                      control={row.control}
-                      value={
-                        row.key in overrides
-                          ? overrides[row.key]
-                          : // The editor needs a starting point; the model's
-                            // default is only that, never shown as the agent's.
-                            (agentValue(row.key) ?? row.control.default)
-                      }
-                      onChange={(v) => change(row.key, v)}
-                      disabled={busy}
-                      id={`overrides-simple-${row.key}`}
-                    />
-                  )
-                }
-              />
-            ) : null,
-          )}
-        </div>
+        // THE model-settings panel (the builder's rows) over this level's draft.
+        <ConversationModelSettings
+          conversationId={instanceId}
+          model="override"
+          words={MANDATE_OVERRIDE_WORDS}
+          inheritedSources={sources}
+          nullOverrideDefaults={holderSettings}
+          overrideSource={MODEL_OVERRIDE_SOURCE[rung]}
+          disabled={busy}
+        />
       )}
 
       {dirty || saveError ? (
@@ -840,109 +653,6 @@ function OverridesBody({
           onCancel={() => setGuardOpen(false)}
         />
       ) : null}
-    </div>
-  );
-}
-
-/** The agent's value, or a muted "Model default" when the agent leaves it unset. */
-function AgentValue({
-  value,
-  control,
-}: {
-  value: unknown;
-  control: ControlDefinition | null;
-}) {
-  const shown = agentSettingDisplay(value, control);
-  return shown.modelDefault ? (
-    <span className="text-muted-foreground/60">{shown.text}</span>
-  ) : (
-    <>{shown.text}</>
-  );
-}
-
-/** "System" / "Organization" when a higher level set this value; else nothing. */
-function sourceWord(source: string | undefined): string | null {
-  if (!source) return null;
-  const word = source.split(" · ")[0];
-  return Object.values(MODEL_OVERRIDE_SOURCE).includes(word) ? word : null;
-}
-
-/** Label · value · action. Inline so the column plan never depends on a CSS rebuild. */
-const ROW_COLUMNS = "minmax(8rem, 14rem) minmax(0, 1fr) auto";
-
-function SettingRow({
-  label,
-  display,
-  editor,
-  overridden,
-  open,
-  inheritedFrom,
-  disabled,
-  onOverride,
-  onReset,
-}: {
-  label: string;
-  display: ReactNode;
-  editor: ReactNode;
-  overridden: boolean;
-  open: boolean;
-  inheritedFrom: string | null;
-  disabled: boolean;
-  onOverride: () => void;
-  onReset: () => void;
-}) {
-  return (
-    <div
-      className={cn(
-        "grid min-h-10 items-center gap-3 px-3 py-1.5",
-        overridden && "border-l-2 border-l-primary bg-primary/5",
-      )}
-      style={{ gridTemplateColumns: ROW_COLUMNS }}
-    >
-      <div className="flex min-w-0 items-center gap-1.5 type-body text-foreground">
-        <span className="truncate">{label}</span>
-        {overridden ? (
-          <span className="shrink-0 type-meta font-medium text-primary">
-            Overridden
-          </span>
-        ) : null}
-      </div>
-      <div className="min-w-0">
-        {open ? (
-          editor
-        ) : (
-          <div className="flex min-w-0 items-center gap-1.5 type-body text-muted-foreground">
-            <span className="min-w-0 truncate">{display}</span>
-            {inheritedFrom ? (
-              <span className="shrink-0 type-secondary text-muted-foreground/70">
-                (set by {inheritedFrom})
-              </span>
-            ) : null}
-          </div>
-        )}
-      </div>
-      <div className="flex justify-end">
-        {open ? (
-          <Button
-            icon={<RotateCcw />}
-            variant="quiet"
-            onClick={onReset}
-            disabled={disabled}
-            aria-label={`Reset ${label} to the agent's value`}
-            title="Back to the agent's value"
-          >
-            Reset
-          </Button>
-        ) : (
-          <Button
-            variant="quiet"
-            onClick={onOverride}
-            disabled={disabled}
-          >
-            Override
-          </Button>
-        )}
-      </div>
     </div>
   );
 }

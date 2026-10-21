@@ -277,11 +277,11 @@ describe("brand social account rows (brand_social_accounts)", () => {
   it("maps a tracked account: coerces numeric strings, derives 30-day growth, keeps owner", () => {
     const r = brandSocialRowToAccountRow({
       ...base, row_key: "prop2", owner_kind: "person", owner_name: "Arman Sadeghi",
-      tracked_account_id: "t9", tracked_role: "client", tracked_status: "active", profile_id: "p9",
+      tracked_account_id: "t9", tracked_role: "own", tracked_status: "active", profile_id: "p9",
       profile_handle: "armansadeghi", profile_display_name: "Arman", followers: "1100", followers_30d_ago: "1000",
       posts_tracked: "12", best_multiple_30d: "4.5", avatar_url: "https://x/a.jpg",
     });
-    expect(r).toMatchObject({ rowId: "property:prop1", trackedAccountId: "t9", role: "client", status: "active", followers: 1100, postsTracked: 12, bestScore: 4.5, ownerKind: "person", ownerName: "Arman Sadeghi", displayName: "Arman" });
+    expect(r).toMatchObject({ rowId: "property:prop1", trackedAccountId: "t9", role: "own", status: "active", followers: 1100, postsTracked: 12, bestScore: 4.5, ownerKind: "person", ownerName: "Arman Sadeghi", displayName: "Arman" });
     expect(r.growth).toBeCloseTo(0.1, 5);
   });
   it("says there is not enough history when no 30-day-old snapshot exists", () => {

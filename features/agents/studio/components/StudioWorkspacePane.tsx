@@ -92,7 +92,7 @@ function QuietText({
  * published). A `version` echo guard drops any delivery not newer than what is on screen (our own
  * save's echo, a late event). Idle = zero reads. A failed read is shown, never swallowed.
  */
-export function useStudioWorkspace(conversationId: string | null) {
+export function useStudioWorkspace(conversationId: string | null, turnEnded: string | null = null) {
   // The record is held WITH the conversation it belongs to, so a closed or switched conversation shows
   // nothing without a synchronous reset in the effect.
   const [held, setHeld] = useState<{ id: string; ws: StudioWorkspace } | null>(null);
@@ -131,6 +131,14 @@ export function useStudioWorkspace(conversationId: string | null) {
     void readOnce(conversationId);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one read per conversation opened
   }, [conversationId]);
+  // ...and one read when the assistant's turn ENDS (its stream event, never a timer): live on production
+  // 2026-10-21 the row's realtime UPDATE did not arrive for chat.conversation (joined, no delivery), so the
+  // stream's end is the guaranteed signal that its studio_workspace writes are in.
+  useEffect(() => {
+    if (!conversationId || !turnEnded) return;
+    void readOnce(conversationId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one read per ended turn
+  }, [conversationId, turnEnded]);
   useChannel(
     conversationId
       ? {

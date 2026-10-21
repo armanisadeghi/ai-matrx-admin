@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import { Trash2, X } from "lucide-react";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
@@ -107,14 +108,14 @@ export function RecordingCardList({
             <X className="h-4 w-4" />
             {selected.size} selected
           </button>
-          <button
+          <ControlButton
             type="button"
+            variant="danger"
             onClick={handleDelete}
-            className="flex items-center gap-1.5 rounded-full bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground active:bg-destructive/80"
+            icon={<Trash2 />}
           >
-            <Trash2 className="h-4 w-4" />
             Move to Trash
-          </button>
+          </ControlButton>
         </div>
       )}
 

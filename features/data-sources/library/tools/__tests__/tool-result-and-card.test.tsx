@@ -77,12 +77,15 @@ describe("ToolResult", () => {
     expect(host.textContent).not.toContain("Raw data");
   });
 
-  it("a member never sees the Raw data toggle; an admin with the admin view on does", () => {
+  it("raw data is behind Advanced: a member sees neither; an admin sees Advanced, never a Raw data tab beside Answer", () => {
     const v = view("succeeded", { output: { domain: "x.org" }, raw: { domain: "x.org" } });
     show(v);
     expect(host.textContent).not.toContain("Raw data");
+    expect(host.textContent).not.toContain("Advanced");
     show(v, null, { adminView: true });
-    expect(host.textContent).toContain("Raw data");
+    expect(host.textContent).not.toContain("Raw data");
+    expect(host.querySelector("[data-tool-result-advanced]")).toBeTruthy();
+    expect(host.querySelector("[data-raw]")).toBeNull();
   });
 
   it("a compare Tool's source (what the layer sends only for compare) is shown beside the answer", () => {
@@ -133,7 +136,7 @@ describe("ToolResult", () => {
 
   it("the raw view is a marked source view, so internal keys are allowed there and nowhere else", () => {
     show(view("succeeded", { output: { domain: "x.org" }, raw: { __kind: "domain_authority", domain: "x.org" } }), null, { adminView: true });
-    act(() => ([...host.querySelectorAll("button")].find((b) => b.textContent === "Raw data") as HTMLButtonElement).click());
+    act(() => ([...host.querySelectorAll("button")].find((b) => b.textContent === "Advanced") as HTMLButtonElement).click());
     expect(host.querySelector("[data-kind-source='explicit'] [data-raw]")).toBeTruthy();
   });
 

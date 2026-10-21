@@ -75,14 +75,13 @@ export function isSocialPlatform(value: string): value is SocialPlatform {
 }
 
 /** `social.tracked_account.role`. */
-export const TRACKED_ROLES = ["own", "competitor", "inspiration", "client"] as const;
+export const TRACKED_ROLES = ["own", "competitor", "inspiration"] as const;
 export type TrackedRole = (typeof TRACKED_ROLES)[number];
 
 export const TRACKED_ROLE_LABELS: Record<TrackedRole, string> = {
   own: "Own account",
   competitor: "Competitor",
   inspiration: "Inspiration",
-  client: "Client",
 };
 
 export function isTrackedRole(value: string): value is TrackedRole {

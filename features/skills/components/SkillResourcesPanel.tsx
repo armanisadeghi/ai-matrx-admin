@@ -35,7 +35,7 @@ import {
 import { toast } from "@/lib/toast";
 
 import { cn } from "@/lib/utils";
-import { Input, Select } from "@ai-matrx/design-system/controls";
+import { Input, Select, Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Badge } from "@/components/ui/badge";
@@ -345,15 +345,8 @@ function SortableResourceRow({
           >
             <Pencil className="h-3 w-3" />
           </button>
-          <button
-            type="button"
-            onClick={onDelete}
-            aria-label="Delete"
-            title="Delete"
-            className="inline-flex items-center justify-center h-6 w-6 rounded text-muted-foreground hover:bg-destructive/10 hover:text-destructive-ink transition-colors"
-          >
-            <Trash2 className="h-3 w-3" />
-          </button>
+          <ControlButton variant="quiet" removes type="button"
+            onClick={onDelete} aria-label="Delete" icon={<Trash2 />} />
         </div>
       )}
     </div>

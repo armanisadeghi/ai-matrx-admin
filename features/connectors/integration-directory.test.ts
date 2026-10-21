@@ -117,3 +117,46 @@ describe("the directory finds a catalog connector by the products the CATALOG st
     expect(filterDirectory([bare], { ...DEFAULT_DIRECTORY_FILTERS, query: "sprints" })).toHaveLength(0);
   });
 });
+
+describe("a card names only the person's own accounts", () => {
+  const raw = [
+    { identity: "arman26@gmail.com", status: "connected" },
+    { identity: "Arman26@gmail.com", status: "connected" },
+    { identity: "firebase-adminsdk-fbsvc@project.iam.gserviceaccount.com", status: "connected" },
+    { identity: "work@example.com", status: "connected" },
+    { identity: "third@example.com", status: "connected" },
+    { identity: "fourth@example.com", status: "connected" },
+    { identity: "svc-reports@acme.iam.gserviceaccount.com", status: "connected" },
+  ];
+
+  it("hides service accounts and repeats nothing", () => {
+    const summary = savedAccountSummary(raw, false, false);
+    expect(summary.accounts).toEqual([
+      "arman26@gmail.com",
+      "work@example.com",
+      "third@example.com",
+      "fourth@example.com",
+    ]);
+    expect(summary.accountSummary).not.toMatch(/gserviceaccount|firebase/i);
+    expect(summary.accountSummary?.match(/arman26/gi)).toHaveLength(1);
+  });
+
+  it("is compact: two names then a count, never the whole list", () => {
+    expect(savedAccountSummary(raw, false, false).accountSummary).toBe(
+      "arman26@gmail.com, work@example.com +2",
+    );
+  });
+
+  it("keeps the service accounts for an admin's Advanced view only", () => {
+    expect(savedAccountSummary(raw, false, false).serviceAccounts).toEqual([
+      "firebase-adminsdk-fbsvc@project.iam.gserviceaccount.com",
+      "svc-reports@acme.iam.gserviceaccount.com",
+    ]);
+  });
+
+  it("never loses the connection itself when only a service account exists", () => {
+    const only = savedAccountSummary([raw[2]], false, false);
+    expect(only.saved).toBe(true);
+    expect(only.accountSummary).toBe("");
+  });
+});

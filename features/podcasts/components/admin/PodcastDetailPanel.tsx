@@ -18,6 +18,7 @@ import { podcastService } from "../../service";
 import type { PcShow, PcEpisodeWithShow } from "../../types";
 import { archiveConfirmSentence } from "@/features/trash/archiveCopy";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 interface PodcastDetailPanelProps {
   activeTab: "shows" | "episodes";
@@ -93,13 +94,7 @@ export function PodcastDetailPanel({
               </OutboundLink>
             )}
             {!isNew && currentId && (
-              <button
-                onClick={() => setConfirmDelete(true)}
-                className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive-ink transition-colors"
-                title={`Delete ${label}`}
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
+              <ControlButton variant="quiet" removes onClick={() => setConfirmDelete(true)} aria-label={`Delete ${label}`} icon={<Trash2 />} />
             )}
             <button
               onClick={onClose}

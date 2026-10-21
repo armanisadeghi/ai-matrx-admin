@@ -10,7 +10,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Select } from "@ai-matrx/design-system/controls";
+import { Select, Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { Globe, Loader2, Trash2, UserPlus } from "lucide-react";
 import { extractErrorMessage } from "@/utils/errors";
 import {
@@ -331,16 +331,10 @@ export function PermissionsDialogBody({
                       Toggle in Share
                     </span>
                   ) : (
-                    <button
-                      type="button"
+                    <ControlButton variant="quiet" removes type="button"
                       onClick={() =>
                         void handleRevoke(perm.granteeId, perm.granteeType)
-                      }
-                      aria-label="Revoke"
-                      className="flex h-7 w-7 items-center justify-center rounded text-destructive-ink hover:bg-destructive/10"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                      } aria-label="Revoke" icon={<Trash2 />} />
                   )}
                 </li>
               );

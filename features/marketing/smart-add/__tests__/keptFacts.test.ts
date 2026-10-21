@@ -32,7 +32,6 @@ describe("Create keeps every fact the person did not say No to", () => {
       expect(r.decision).toBe("kept");
       expect(r.metadata).toMatchObject({
         found_by: "brand_intake.early_facts",
-        agent_kind: "brand_basics",
         run_id: round.run_id,
         step: "facts",
         field: r.fact.field,
@@ -40,6 +39,8 @@ describe("Create keeps every fact the person did not say No to", () => {
         decision: "kept",
         evidence_key: r.fact.key,
       });
+      // The old hard-coded label said brand_basics for every row, whichever agent found it (MKT round 3).
+      expect(r.metadata).not.toHaveProperty("agent_kind");
     }
     const kinds = Object.fromEntries(p.rows.map((r) => [r.fact.value, r.kind]));
     expect(kinds["(415) 641-1011"]).toBe("phone");

@@ -31,7 +31,7 @@ import type {
   FirstPartyState,
 } from "@ai-matrx/chat/agents/connectors/first-party-connectors";
 import type { GoogleConnectionSummary } from "@/features/marketing/google/types";
-import { savedAccountSummary } from "./integration-directory";
+import { compactAccounts, personAccounts, savedAccountSummary } from "./integration-directory";
 import { splitConnectionsByOwnership, type ConnectionViewer } from "./connection-ownership";
 import { GOOGLE_CONNECTOR_PROVIDER } from "./provider-config";
 import { googleConnectionForProduct } from "./google-status";
@@ -140,14 +140,12 @@ export function buildGoogleChatConnector(
 ): FirstPartyConnector {
   const state = googleChatState(rows, read);
   const markSource = getConnector(GOOGLE_CONNECTOR_PROVIDER.markConnectorId);
-  const accounts = [
-    ...new Set(
-      rows
-        .filter((row) => row.health === "connected")
-        .map((row) => row.account_email ?? row.account_name)
-        .filter((value): value is string => Boolean(value)),
-    ),
-  ];
+  const { accounts } = personAccounts(
+    rows
+      .filter((row) => row.health === "connected")
+      .map((row) => row.account_email ?? row.account_name)
+      .filter((value): value is string => Boolean(value)),
+  );
   return {
     id: GOOGLE_CONNECTOR_PROVIDER.id,
     name: "Google Workspace",
@@ -160,7 +158,7 @@ export function buildGoogleChatConnector(
       surfaces: ["directory"],
     },
     state,
-    accountSummary: accounts.length > 0 ? accounts.join(", ") : undefined,
+    accountSummary: accounts.length > 0 ? compactAccounts(accounts) : undefined,
     products: GOOGLE_CONNECTOR_PROVIDER.products
       .map((product) => productFor(rows, product.key))
       .filter((product): product is FirstPartyProduct => product !== null),

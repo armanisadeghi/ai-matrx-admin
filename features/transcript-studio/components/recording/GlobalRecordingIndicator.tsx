@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Loader2, Mic, Pause, Play, Square } from "lucide-react";
@@ -83,19 +84,20 @@ export function GlobalRecordingIndicator() {
           )}
         </button>
 
-        <button
+        <ControlButton
           type="button"
+          variant="danger"
           onClick={recording.stop}
           disabled={recording.isFinalizing}
           aria-label="Stop recording"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-red-500 text-white active:scale-95 disabled:opacity-60"
-        >
-          {recording.isFinalizing ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Square className="h-4 w-4 fill-current" />
-          )}
-        </button>
+          icon={
+            recording.isFinalizing ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Square className="fill-current" />
+            )
+          }
+        />
       </div>
     </div>
   );

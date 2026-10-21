@@ -42,7 +42,7 @@ export const ACTIVITY_KIND_LABEL: Record<ActivityKind, string> = {
   admin: "Admin",
   org_admin: "Org admin",
   support: "Support",
-  sign_in: "Live sessions",
+  sign_in: "Sign-ins",
   account: "Account",
   conversation: "Conversations",
   run: "Runs",
@@ -219,6 +219,13 @@ export function groupActivityByDay(items: readonly ActivityItem[], now: Date = n
     group.items.push(item);
   }
   return days;
+}
+
+/** Record kinds with no page: an activity row opens THE Peek for them (ActivityRecordDoor). */
+export type DoorRecordType = "agent_run" | "app_log";
+export const PEEK_RECORD_TYPES: readonly DoorRecordType[] = ["agent_run", "app_log"];
+export function isPeekRecordType(type: string): type is DoorRecordType {
+  return (PEEK_RECORD_TYPES as readonly string[]).includes(type);
 }
 
 /** The ONE door for an activity row's record, or null when that record has no page (for this seat). */
