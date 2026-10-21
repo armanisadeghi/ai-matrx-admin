@@ -13,7 +13,7 @@
  */
 
 import type { AppDispatch } from "@/lib/redux/store";
-import { startSystemRun } from "@/features/education/kits/systemRuns";
+import { startSystemRun } from "@/lib/workflows/system-runs";
 import {
   confirmedBasics,
   customItem,

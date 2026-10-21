@@ -41,7 +41,7 @@ import {
   updateBrand,
   type BrandRelationKind,
 } from "@/features/marketing/data/service";
-import { startSystemRun } from "@/features/education/kits/systemRuns";
+import { startSystemRun } from "@/lib/workflows/system-runs";
 import { associationsService } from "@/features/scopes/service/associationsService";
 import { linkPersonToBrand } from "../relations";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";

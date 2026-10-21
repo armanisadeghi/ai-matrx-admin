@@ -28,7 +28,7 @@ import { extractErrorMessage } from "@/utils/errors";
 import { toast } from "@/lib/toast";
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import { HumanGatePanel, useOpenGates } from "@/features/workflow-runtime/interrupt/HumanGatePanel";
-import { lookupSystemRun, startSystemRun } from "@/features/education/kits/systemRuns";
+import { lookupSystemRun, startSystemRun } from "@/lib/workflows/system-runs";
 import { countSitePages, listBrandProperties, listBrandSites } from "@/features/marketing/data/service";
 import { loadAccounts } from "@/features/marketing/components/brands/BrandBackgroundWork";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";

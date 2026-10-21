@@ -50,7 +50,7 @@ function query(table: string) {
 
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
 jest.mock("@/utils/supabase/webDb", () => ({ authenticatedWebDb: async () => ({ from: (t: string) => query(t) }) }));
-jest.mock("@/features/education/kits/systemRuns", () => ({ startSystemRun: jest.fn() }));
+jest.mock("@/lib/workflows/system-runs", () => ({ startSystemRun: jest.fn() }));
 jest.mock("@/features/scopes/service/associationsService", () => ({ associationsService: {} }));
 jest.mock("@/lib/redux/store-singleton", () => ({ getStoreSingleton: jest.fn() }));
 jest.mock("../siteOwnershipLive", () => ({ liveSiteClaimDeps: jest.fn() }));

@@ -9,7 +9,7 @@ import { createClient } from "@/utils/supabase/client";
 import { requireAuthenticatedSupabaseSession } from "@/utils/supabase/webDb";
 import { readAllRows } from "@ai-matrx/data/db";
 import type { AppDispatch } from "@/lib/redux/store";
-import { startSystemRun } from "@/features/education/kits/systemRuns";
+import { startSystemRun } from "@/lib/workflows/system-runs";
 import { labelConversations } from "@/features/agents/decision-review/service";
 import { createComparisonSet, mergeComparisonSetMetadata } from "../../service/comparisonSetsService";
 import { runMatrixCells } from "../matrix/service";

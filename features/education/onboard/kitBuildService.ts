@@ -33,7 +33,7 @@ import {
   lookupSystemRun,
   startSystemRun,
   type SystemRun,
-} from "@/features/education/kits/systemRuns";
+} from "@/lib/workflows/system-runs";
 import type { KitTargetState } from "./types";
 
 /** The system-workflow key of the kit build (aidream allow-list). */

@@ -61,7 +61,7 @@ import { factSlotKey, typedWebsiteItem, wakesFacts, type FactsSaw } from "./firs
 import { liveKnownDomainRules } from "@/lib/web-domains/registry";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatCount } from "@ai-matrx/kit/format";
-import { lookupSystemRun, startSystemRun } from "@/features/education/kits/systemRuns";
+import { lookupSystemRun, startSystemRun } from "@/lib/workflows/system-runs";
 import {
   createBrand,
   createBusinessFact,

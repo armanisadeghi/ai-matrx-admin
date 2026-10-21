@@ -35,7 +35,7 @@ import { authenticatedWebDb } from "@/utils/supabase/webDb";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { recordToast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
-import { lookupSystemRun } from "@/features/education/kits/systemRuns";
+import { lookupSystemRun } from "@/lib/workflows/system-runs";
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import { initializeSite } from "@/features/marketing/crawler/direct-client";
 import { useBrandProperties, useBrandSites } from "@/features/marketing/data/hooks";

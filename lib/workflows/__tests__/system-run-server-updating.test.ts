@@ -2,7 +2,7 @@
  * MKT-094: during a rolling deploy a start lands on a server older than the workflow. The server says so (503
  * `node_types_unavailable_here`; an older server 422 "Unknown node type"), and the start retries onto a newer server.
  */
-import { isServerUpdatingRefusal } from "../systemRuns";
+import { isServerUpdatingRefusal } from "../system-runs";
 
 describe("a start refused by a server mid-update is retried", () => {
   it("503 node_types_unavailable_here", () => {
