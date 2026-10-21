@@ -680,6 +680,11 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
         ])],
       },
       {
+        name: "Free allowance",
+        iconName: "Gift",
+        destinations: [destination("/administration/billing/free-allowance")],
+      },
+      {
         name: "Build waste",
         iconName: "PackageX",
         destinations: [destination("/administration/billing/build-waste")],

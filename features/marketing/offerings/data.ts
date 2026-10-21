@@ -27,6 +27,12 @@ export interface OfferingQuote {
   addressOnly: boolean;
 }
 
+/** A kept offering a past defect may have wrongly minted (`metadata.contamination_review`): a person confirms or retires it. */
+export interface OfferingReview {
+  /** One plain line: why this row needs a look. */
+  reason: string;
+}
+
 export interface OfferingItem {
   key: string;
   name: string;
@@ -41,6 +47,7 @@ export interface OfferingItem {
   status: "pending" | "confirmed" | "dismissed";
   offeringId: string | null;
   byReader: boolean;
+  review: OfferingReview | null;
 }
 
 export interface OfferingsVerdict {
@@ -79,6 +86,18 @@ export interface KeptOfferingRow {
   kind: string;
   price_note: string | null;
   metadata: unknown;
+}
+
+const REVIEW_REASON: Record<string, string> = {
+  not_offered_ruling: "An earlier site check said this brand does not offer it.",
+  foreign_tier_placement_only: "Added from a shared topic nobody here chose.",
+};
+
+/** The flag a past defect left on a kept offering, as the one line the person reads; null when it carries none. */
+export function reviewOf(metadata: unknown): OfferingReview | null {
+  const flag = obj(obj(metadata).contamination_review);
+  if (!Object.keys(flag).length) return null;
+  return { reason: REVIEW_REASON[str(flag.reason) ?? ""] ?? str(flag.why) ?? "Added automatically; please confirm it is yours." };
 }
 
 /** One spelling for "the same item": case, punctuation and a plural ending never split it. */
@@ -132,6 +151,7 @@ export function buildOfferingItems(rows: DiscoveredOfferingRow[], kept: KeptOffe
       status: "pending",
       offeringId: null,
       byReader: false,
+      review: null,
     };
     item.quotes.push(...quotes);
     item.rowIds.push(row.id);
@@ -160,6 +180,7 @@ export function buildOfferingItems(rows: DiscoveredOfferingRow[], kept: KeptOffe
       linked.status = "confirmed";
       linked.offeringId = linked.offeringId ?? o.id;
       linked.certainty = "confirmed";
+      linked.review = reviewOf(meta);
       continue;
     }
     const urls = Array.isArray(meta.evidence_urls) ? meta.evidence_urls.filter((u): u is string => typeof u === "string") : [];
@@ -185,6 +206,7 @@ export function buildOfferingItems(rows: DiscoveredOfferingRow[], kept: KeptOffe
       status: "confirmed",
       offeringId: o.id,
       byReader: false,
+      review: reviewOf(meta),
     };
     items.push(item);
     byMatch.set(offeringMatchKey(o.name), item);
@@ -357,4 +379,27 @@ export async function clearDecision(item: OfferingItem): Promise<void> {
   if (!item.rowIds.length) return;
   const upd = await supabase.schema("web").from("discovered_item").update({ status: "pending" }).in("id", item.rowIds);
   if (upd.error) throw new Error(`Could not clear "${item.name}": ${upd.error.message}`);
+}
+
+/**
+ * Keep a flagged offering: the flag is cleared and who kept it, and when, is recorded on the offering.
+ * ("Not ours" is `rejectOffering`: it retires the offering through the same path as any No.)
+ */
+export async function keepFlaggedOffering(item: OfferingItem): Promise<void> {
+  if (!item.offeringId) return;
+  const { data: auth } = await supabase.auth.getUser();
+  const cur = await supabase.schema("web").from("brand_offering").select("metadata").eq("id", item.offeringId).single();
+  if (cur.error) throw new Error(`Could not read "${item.name}": ${cur.error.message}`);
+  const { contamination_review: flag, ...rest } = obj(cur.data.metadata);
+  const upd = await supabase
+    .schema("web")
+    .from("brand_offering")
+    .update({
+      metadata: {
+        ...rest,
+        contamination_review_kept: { by: auth.user?.id ?? null, at: new Date().toISOString(), flag: flag ?? null },
+      } as unknown as Json,
+    })
+    .eq("id", item.offeringId);
+  if (upd.error) throw new Error(`Could not keep "${item.name}": ${upd.error.message}`);
 }

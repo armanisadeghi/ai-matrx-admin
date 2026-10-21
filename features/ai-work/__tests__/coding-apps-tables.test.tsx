@@ -158,6 +158,7 @@ describe("Claude cloud delivery on the account rows", () => {
         { id: "c1", label: "A@Example.com", email: "A@Example.com", status: "connected", slot: "primary" },
         { id: "c9", label: "far@example.com", email: "far@example.com", status: "connected", slot: "x1acct" },
       ],
+      macEmails: new Set<string>(),
       loadError: null, reload: jest.fn(), running: null, resuming: false, failure: null, capacity: null, note: null, signingOut: null,
       start: jest.fn(), finish: jest.fn(), cancel: jest.fn(), signOut: jest.fn(), dismiss: jest.fn(), retryAfterStop: jest.fn(),
       ...over,

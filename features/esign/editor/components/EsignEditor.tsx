@@ -31,6 +31,7 @@ import { DocumentStage } from "./DocumentStage";
 import { FieldsPanel } from "./FieldsPanel";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { RecipientsPanel, type Person } from "./RecipientsPanel";
+import { useUserConnections } from "@/features/messaging/hooks/useUserConnections";
 import { DocumentsPanel, UploadButton } from "./DocumentsPanel";
 import { MessagePanel } from "./MessagePanel";
 import { PreviewDialog, SendDialog, TemplateDialog } from "./Dialogs";
@@ -59,7 +60,6 @@ export interface EsignEditorProps {
   organizationId: string | null;
   /** Asked when a write needs an organization and none is chosen (the organization gate). */
   resolveOrganizationId?: () => Promise<string>;
-  people: Person[];
   me: Person | null;
   uploader: EditorUploader;
   /** The draft now exists on the server: the host moves the address bar. */
@@ -130,6 +130,12 @@ export function EsignEditor(props: EsignEditorProps) {
   const [armed, setArmed] = useState<FieldKindV2 | null>(null);
   const [activeRecipient, setActiveRecipient] = useState<string | null>(null);
   const [tab, setTab] = useState<"documents" | "people" | "message" | "fields">(props.initial.draft.documents.length ? "people" : "documents");
+  // The organization's people are read when the People tab is shown — never on opening the editor.
+  const { connections } = useUserConnections({
+    ...(props.organizationId ? { organizationId: props.organizationId } : {}),
+    enabled: tab === "people",
+  });
+  const people: Person[] = connections.map((c) => ({ user_id: c.user_id, display_name: c.display_name ?? null, email: c.email ?? null }));
   const [zoom, setZoom] = useState(1);
   const [candidates, setCandidates] = useState<Record<string, DetectCandidate[]>>(() => readCandidates(props.envelopeId));
   const [finding, setFinding] = useState(false);
@@ -523,7 +529,7 @@ export function EsignEditor(props: EsignEditorProps) {
       />
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
         {tab === "documents" && <DocumentsPanel draft={draft} edit={edit} uploading={uploader.busy} onFiles={(f) => void onFiles(f)} onPickFromFiles={() => uploader.pick((d) => addDocs([d]))} />}
-        {tab === "people" && <RecipientsPanel draft={draft} edit={edit} people={props.people} me={props.me} setAccessCode={setAccessCode} templateMode={templateMode} />}
+        {tab === "people" && <RecipientsPanel draft={draft} edit={edit} people={people} me={props.me} setAccessCode={setAccessCode} templateMode={templateMode} />}
         {tab === "message" && <MessagePanel draft={draft} edit={edit} templateMode={templateMode} />}
         {tab === "fields" && (
           <FieldsPanel

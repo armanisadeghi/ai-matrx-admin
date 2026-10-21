@@ -320,6 +320,13 @@ export const adminCategoriesData: AdminCategory[] = [
         isNew: true,
       },
       {
+        title: "Free Allowance",
+        description: "What visitors and free accounts used today against the daily free budget, and every decision.",
+        iconName: "Gift",
+        link: "/administration/billing/free-allowance",
+        isNew: true,
+      },
+      {
         title: "Build Waste",
         description: "Package builds (npm, PyPI, Docker) that shipped nothing new: per package, minutes, cost and why.",
         iconName: "PackageX",

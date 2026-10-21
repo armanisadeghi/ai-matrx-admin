@@ -95,10 +95,13 @@ jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({
 
 // An organization she is in that is NOT on the first page of 50 the store holds.
 const OFF_PAGE_ORG = { id: "00000000-0000-4000-8000-0000000000ff", name: "Titanium", role: "member", archivedAt: null };
+// An organization she is NOT in, and one whose membership read failed.
+const NOT_MINE_ORG_ID = "00000000-0000-4000-8000-0000000000fe";
+const UNREADABLE_ORG_ID = "00000000-0000-4000-8000-0000000000fd";
 jest.mock("@/features/organizations/service/organizationLookup", () => ({
   lookupOrganizations: async (ids: string[]) =>
     new Map(ids.filter((id) => id === OFF_PAGE_ORG.id).map((id) => [id, OFF_PAGE_ORG])),
-  lookupFailed: () => false,
+  lookupFailed: (id: string) => id === UNREADABLE_ORG_ID,
 }));
 
 jest.mock("@/features/organizations/service/invitationsService", () => ({
@@ -110,6 +113,7 @@ import { execFileSync } from "node:child_process";
 import { NewConversationDialog } from "@/features/messaging/components/NewConversationDialog";
 import TaskAssigneePicker from "@/features/tasks/components/TaskAssigneePicker";
 import { GuestPicker } from "@/features/meet/components/manage/GuestPicker";
+import { useUserConnections } from "@/features/messaging/hooks/useUserConnections";
 import { forgetOrganizationMemberRows } from "@/features/organizations/service/orgMemberRows";
 
 const rosterRequests = () =>
@@ -185,6 +189,15 @@ describe("every people picker that sits on a page unused reads no roster", () =>
     expect(rosterRequests()).toBeLessThanOrEqual(ORGANIZATION_COUNT);
   });
 
+  it("an ASSIGNED task picker reads its organization's roster to name the assignee", async () => {
+    await act(async () =>
+      root.render(<TaskAssigneePicker assigneeId={`u-${ORGS[3].id}`} onChange={() => undefined} organizationId={ORGS[3].id} />),
+    );
+    await drain();
+    expect(rosterRequests()).toBe(1);
+    expect(container.textContent).toContain(`Person ${ORGS[3].id.slice(-2)}`);
+  });
+
   it("an untouched meeting guest field reads nothing until it is focused", async () => {
     await act(async () =>
       root.render(
@@ -221,6 +234,31 @@ describe("a named organization past the first page of organizations", () => {
   });
 });
 
+function Probe({ organizationId }: { organizationId: string }) {
+  const { isLoading, partialFailures, connections } = useUserConnections({ organizationId });
+  return (
+    <output data-loading={String(isLoading)} data-people={connections.length}>
+      {partialFailures.map((f) => f.source).join("|")}
+    </output>
+  );
+}
+
+describe("an off-page organization that is not hers, or could not be checked", () => {
+  it("asks no roster for an organization she is not in", async () => {
+    await act(async () => root.render(<Probe organizationId={NOT_MINE_ORG_ID} />));
+    await drain();
+    expect(rosterRequests()).toBe(0);
+    expect(container.querySelector("output")!.dataset.loading).toBe("false");
+  });
+
+  it("says so when her membership could not be read — never a silently empty list", async () => {
+    await act(async () => root.render(<Probe organizationId={UNREADABLE_ORG_ID} />));
+    await drain();
+    expect(rosterRequests()).toBe(0);
+    expect(container.querySelector("output")!.textContent).toBe("this organization");
+  });
+});
+
 /**
  * Callers whose people list IS the visible content the moment they mount — never a closed
  * picker. Anything not named here must pass `enabled` (its open / engaged state).
@@ -230,8 +268,6 @@ const SHOWN_ON_MOUNT: Record<string, string> = {
   "features/sharing/components/tabs/ShareWithUserTab.tsx": "inside an open share surface",
   // The organization's invitations page: the list is the page.
   "features/organizations/components/InvitationManager.tsx": "the invitations page itself",
-  // The e-sign editor page: recipients are picked from it while composing.
-  "features/esign/editor/components/EditorHost.tsx": "the open envelope editor",
   // Inside an OPEN permissions dialog, or the file's Share tab mounted on first visit.
   "features/files/components/core/PermissionsDialog/PermissionsDialog.tsx": "inside an open dialog or visited tab",
 };

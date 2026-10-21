@@ -47,11 +47,16 @@ export function freeAllowanceLine(a: FreeAllowance | null): { text: string; href
   return { text: a.remaining === a.limit ? `${a.limit} free today` : `${a.remaining} left today` };
 }
 
-export function useFreeAllowance(feature: string, refreshKey?: unknown): FreeAllowance | null {
+/** `organizationId`: the workspace the action runs in (a signed-out visitor's guest workspace answers as that guest). */
+export function useFreeAllowance(feature: string, refreshKey?: unknown, organizationId?: string | null): FreeAllowance | null {
   const q = useQuery({
-    queryKey: ["free-allowance", feature, refreshKey],
+    queryKey: ["free-allowance", feature, organizationId ?? null, refreshKey],
     queryFn: async ({ signal }) => {
-      const { data } = await getJson<unknown>(`/billing/free-allowance/features/${encodeURIComponent(feature)}`, { signal });
+      const { data } = await getJson<unknown>(`/billing/free-allowance/features/${encodeURIComponent(feature)}`, {
+        signal,
+        captureErrors: false,
+        ...(organizationId ? { organizationId } : {}),
+      });
       return parseFreeAllowance(data);
     },
     staleTime: 30_000,
@@ -60,8 +65,12 @@ export function useFreeAllowance(feature: string, refreshKey?: unknown): FreeAll
   return q.data ?? null;
 }
 
-export function FreeAllowanceNote({ feature, refreshKey }: { feature: string; refreshKey?: unknown }) {
-  const line = freeAllowanceLine(useFreeAllowance(feature, refreshKey));
+export function FreeAllowanceNote({ feature, refreshKey, organizationId }: {
+  feature: string;
+  refreshKey?: unknown;
+  organizationId?: string | null;
+}) {
+  const line = freeAllowanceLine(useFreeAllowance(feature, refreshKey, organizationId));
   if (!line) return null;
   if (line.href) {
     return (

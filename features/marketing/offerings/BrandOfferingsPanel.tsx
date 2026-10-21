@@ -45,6 +45,7 @@ import {
   fetchOfferingItems,
   fetchOfferingsVerdict,
   fetchRunSnapshots,
+  keepFlaggedOffering,
   keepOffering,
   rejectOffering,
   type OfferingItem,
@@ -287,6 +288,45 @@ function offeringColumns(
   ];
 }
 
+/** Rows a past defect may have wrongly added: name, why it needs a look, and Yes (keep) / No (not ours). */
+function flaggedColumnsFor(
+  onAnswer: (item: OfferingItem, a: DecisionAnswer | null) => void,
+): MatrxColumnDef<OfferingItem>[] {
+  const [nameCol] = offeringColumns(onAnswer);
+  return [
+    nameCol,
+    {
+      id: "reason",
+      accessorFn: (item) => item.review?.reason ?? "",
+      header: "Why",
+      label: "Why",
+      width: 420,
+      cell: (item) => (
+        <span className="block min-w-0 truncate" title={item.review?.reason}>
+          {item.review?.reason}
+        </span>
+      ),
+    },
+    {
+      id: "decision",
+      accessorFn: () => "Open",
+      header: "Is it theirs?",
+      label: "Is it theirs?",
+      helpText:
+        "Yes keeps it as one of the brand's products or services; No retires it.",
+      width: 230,
+      cell: (item) => (
+        <DecisionControl
+          value={null}
+          onChange={(a) => onAnswer(item, a)}
+          onSkip={() => onAnswer(item, null)}
+          onClear={() => onAnswer(item, null)}
+        />
+      ),
+    },
+  ];
+}
+
 /** The brand home's one-line Products & services summary; the list lives on its own page. */
 export function BrandOfferingsSummary({ brand }: Props) {
   const [items, setItems] = useState<OfferingItem[] | null>(null);
@@ -314,8 +354,9 @@ export function BrandOfferingsSummary({ brand }: Props) {
     counts.set(groupOf(it), (counts.get(groupOf(it)) ?? 0) + 1);
   const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
   const confirmed = (items ?? []).filter(
-    (i) => i.status === "confirmed",
+    (i) => i.status === "confirmed" && !i.review,
   ).length;
+  const needsLook = (items ?? []).filter((i) => i.review).length;
   const open = (items ?? []).filter((i) => i.status === "pending").length;
   const verdictText = verdictLabel(verdict);
   return (
@@ -353,6 +394,18 @@ export function BrandOfferingsSummary({ brand }: Props) {
           }
         />
       </div>
+      {needsLook ? (
+        <div className="min-w-[8rem]">
+          <PropertyRow
+            label="Needs a look"
+            value={
+              <span className="text-warning-ink tabular-nums">
+                {formatCount(needsLook)}
+              </span>
+            }
+          />
+        </div>
+      ) : null}
         <div className="min-w-[10rem]">
           <PropertyRow
             label="Top groups"
@@ -472,6 +525,17 @@ export function BrandOfferingsPanel({ brand }: Props) {
     );
   }, [builder, runId, run, verdict, emissions.length]);
 
+  const answerFlagged = async (item: OfferingItem, a: DecisionAnswer | null) => {
+    if (a === null) return;
+    try {
+      if (a === "yes") await keepFlaggedOffering(item);
+      else await rejectOffering(brand, item);
+      await load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : String(e));
+    }
+  };
+
   const answer = async (item: OfferingItem, a: DecisionAnswer | null) => {
     try {
       if (a === "yes") await keepOffering(brand, item);
@@ -529,6 +593,8 @@ export function BrandOfferingsPanel({ brand }: Props) {
   const running = !!run && !TERMINAL.has(liveStatus ?? run.status);
   const verdictText = verdictLabel(verdict);
   const columns = offeringColumns((i, a) => void answer(i, a));
+  const flagged = (items ?? []).filter((i) => i.review);
+  const flaggedColumns = flaggedColumnsFor((i, a) => void answerFlagged(i, a));
 
   return (
     <div
@@ -591,8 +657,33 @@ export function BrandOfferingsPanel({ brand }: Props) {
           </div>
         ) : null}
       </section>
+      {flagged.length ? (
+        <section
+          className="flex min-w-0 flex-col gap-2 rounded-lg border border-border bg-card p-3"
+          data-offerings-needs-a-look={flagged.length}
+        >
+          <h3 className="type-title">
+            Needs a look{" "}
+            <span className="tabular-nums text-muted-foreground">
+              {formatCount(flagged.length)}
+            </span>
+          </h3>
+          <MatrxDataTable<OfferingItem>
+            data={flagged}
+            columns={flaggedColumns}
+            getRowId={(item) => item.key}
+            tableId="marketing.brand-offerings.needs-a-look"
+            read={{ status: "ready", error: null, what: "products and services" }}
+            defaultSort={{ id: "name", direction: "asc" }}
+            searchText={(item) => `${item.name} ${item.review?.reason ?? ""}`}
+            detail={{ enabled: false }}
+            pageSize={25}
+            emptyState={{ title: "Nothing needs a look" }}
+          />
+        </section>
+      ) : null}
       <MatrxDataTable<OfferingItem>
-        data={items ?? []}
+        data={(items ?? []).filter((i) => !i.review)}
         columns={columns}
         getRowId={(item) => item.key}
         tableId="marketing.brand-offerings"

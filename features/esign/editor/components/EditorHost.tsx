@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation";
 
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { useFileUpload } from "@/features/files/handler/hooks/useFileUpload";
-import { useUserConnections } from "@/features/messaging/hooks/useUserConnections";
 import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserEmail, selectUserFullName, selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -114,8 +113,6 @@ export function EditorHost({ source }: { source: Source }) {
       .catch((err: unknown) => setFailed(err instanceof Error ? err.message : "This could not be opened."));
   }, [api, activeOrg, source]);
 
-  const { connections } = useUserConnections((loaded?.organizationId ?? activeOrg) ? { organizationId: (loaded?.organizationId ?? activeOrg) as string } : {});
-  const people = useMemo(() => connections.map((c) => ({ user_id: c.user_id, display_name: c.display_name ?? null, email: c.email ?? null })), [connections]);
   const me = useMemo(() => (userId ? { user_id: userId, display_name: fullName || senderName || null, email: email ?? null } : null), [userId, fullName, senderName, email]);
 
   const { upload, uploading } = useFileUpload();
@@ -156,7 +153,6 @@ export function EditorHost({ source }: { source: Source }) {
         template={loaded.template}
         organizationId={loaded.organizationId}
         resolveOrganizationId={() => ensureOrgId(null)}
-        people={people}
         me={me}
         uploader={uploader}
         restoredNotice={loaded.restored}

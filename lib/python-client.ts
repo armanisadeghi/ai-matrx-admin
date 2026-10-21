@@ -500,6 +500,31 @@ function selectedOrganizationIdOrNull(): string | null {
     : null;
 }
 
+// ---------------------------------------------------------------------------
+// The guest workspace's own bearer (FREE-ALLOWANCE.md, free-use-live 2026-10-21)
+// ---------------------------------------------------------------------------
+
+/**
+ * A signed-out visitor who holds a GUEST session (lib/guest — its own cookie, invisible to the shell)
+ * acts in that guest's workspace with that guest's token. A surface that minted the guest registers the
+ * workspace here once; a request that explicitly names that workspace, sent while no main session
+ * exists, then carries the guest's bearer. A signed-in person's own session always wins, and nothing
+ * else about signed-out requests changes (no organization is ever inferred from this).
+ */
+const guestWorkspaceBearers = new Map<string, () => Promise<string | null>>();
+
+export function registerGuestWorkspaceBearer(organizationId: string, bearer: () => Promise<string | null>): () => void {
+  guestWorkspaceBearers.set(organizationId, bearer);
+  return () => {
+    if (guestWorkspaceBearers.get(organizationId) === bearer) guestWorkspaceBearers.delete(organizationId);
+  };
+}
+
+async function guestWorkspaceBearer(organizationId: string | undefined): Promise<string | null> {
+  const bearer = organizationId ? guestWorkspaceBearers.get(organizationId) : undefined;
+  return bearer ? bearer() : null;
+}
+
 export async function buildHeaders(
   opts: RequestOptions,
   includeContentType: boolean,
@@ -510,7 +535,7 @@ export async function buildHeaders(
    */
   method: string = "POST",
 ): Promise<{ headers: Record<string, string>; requestId: string }> {
-  const token = await getAccessTokenOrNull();
+  const token = (await getAccessTokenOrNull()) ?? (await guestWorkspaceBearer(opts.organizationId));
   const fingerprint = opts.guestFingerprint ?? getCachedFingerprint();
 
   // Reject only when neither identity exists. Authed users still send the
