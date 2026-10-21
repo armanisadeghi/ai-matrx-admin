@@ -66,6 +66,8 @@ Then open **only the printed `http://<your-session>.localhost:3001` hostname** (
 
 ## THE ONE BROWSER LAW
 
+`scripts/real-tests/pw.mjs` resolves dependencies from its own module URL, so it follows the current checkout rather than an obsolete frontend directory name.
+
 **Use your own isolated browser for ordinary browsing and every application test**, preferably the provider's separate in-app Browser. Use the available tool's documented API; Computer Use is allowed when it controls the isolated browser. A missing older skill or API is not a reason to stop when another agent-owned browser harness is available.
 
 **Never use the user's browser as a testing or availability fallback.** A matching URL, a signed-in user session, an unavailable isolated browser, or convenience is not authorization. If the isolated browser cannot complete a test, use another agent-owned harness or report the blocker. Matrx UI verification always uses the isolated browser with the authorized `admin@admin.com` test identity; it never borrows the user's Matrx session.
