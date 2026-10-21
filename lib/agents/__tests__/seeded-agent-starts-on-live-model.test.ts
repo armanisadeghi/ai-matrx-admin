@@ -1,8 +1,11 @@
 /**
- * A brand-new agent starts on a LIVE model (Lane D walk, 2026-10-21). The blank agent's model is a
- * constant in code (Claude Sonnet 5), since deprecated with a successor (Sonnet 5.5). Written as is,
- * the builder's picker healed it on first view and the unsaved-changes diff showed "Claude Sonnet 5 →
- * Claude Sonnet 5.5", a change nobody made. The seeded insert writes the successor instead.
+ * A seeded agent is written on a LIVE model (Lane D walk, 2026-10-21). A seed that names a model which
+ * has since been superseded must be written as its live successor; written as is, the builder's picker
+ * healed it on first view and the unsaved-changes diff showed a model change nobody made.
+ *
+ * The model a NEW agent starts on is no longer a constant: the blank seed pins none (it comes from the
+ * `agents.model_prefs.agent_authoring_default_model` knob through `resolveNewAgentModelId`), so the
+ * superseded id below is test data on a seed, never read from the package.
  */
 const inserted: Array<Record<string, unknown>> = [];
 const catalog: Record<string, { id: string; is_deprecated: boolean; retired_at: string | null; successor_id: string | null }> = {
@@ -20,6 +23,11 @@ const fakeSupabase = {
     }),
   }),
 };
+const KNOB_MODEL = "3f1c9a52-7b4e-4d2a-9c61-5e8a0b2d7f15";
+jest.mock("@/lib/scoped-config/effectiveKnobs.server", () => ({
+  readEffectiveKnobOnServer: async (address: { feature: string; key: string }) =>
+    `${address.feature}.${address.key}` === "agents.model_prefs.agent_authoring_default_model" ? KNOB_MODEL : undefined,
+}));
 jest.mock("@/utils/supabase/server", () => ({ createClient: async () => fakeSupabase }));
 jest.mock("@/utils/supabase/claimsUser", () => ({ getClaimsUser: async () => ({ data: { user: { id: "me" } }, error: null }) }));
 jest.mock("@/utils/auth/adminLaneServer", () => ({ hasAdminPower: async () => false }));
@@ -27,12 +35,22 @@ jest.mock("@/utils/auth/server-login-href", () => ({ currentRequestLoginHref: as
 jest.mock("next/navigation", () => ({ redirect: (to: string) => { throw Object.assign(new Error("NEXT_REDIRECT"), { to }); } }));
 
 import { createAgentFromSeed } from "@/lib/agents/actions";
-import { BLANK_AGENT_SEED, DEFAULT_AGENT_MODEL_ID } from "@ai-matrx/chat/agents/constants/blank-agent";
+import { BLANK_AGENT_SEED } from "@ai-matrx/chat/agents/constants/blank-agent";
 
 describe("a seeded agent is written on a live model", () => {
-  it("the blank agent's superseded default model is written as its live successor", async () => {
-    expect(DEFAULT_AGENT_MODEL_ID).toBe("617abdcd-79e2-4a4b-be76-4a9960cdffa1");
-    await expect(createAgentFromSeed(BLANK_AGENT_SEED, "org-1")).rejects.toMatchObject({ to: "/agents/new-agent/build" });
+  it("a seed's superseded model is written as its live successor", async () => {
+    inserted.length = 0;
+    await expect(createAgentFromSeed({ ...BLANK_AGENT_SEED, modelId: "617abdcd-79e2-4a4b-be76-4a9960cdffa1" }, "org-1")).rejects.toMatchObject({ to: "/agents/new-agent/build" });
     expect(inserted[0]?.model_id).toBe("3f1c9a52-7b4e-4d2a-9c61-5e8a0b2d7f15");
+  });
+
+  it("a blank seed created through the action gets the knob's model, never null", async () => {
+    inserted.length = 0;
+    await expect(createAgentFromSeed(BLANK_AGENT_SEED, "org-1")).rejects.toMatchObject({ to: "/agents/new-agent/build" });
+    expect(inserted[0]?.model_id).toBe(KNOB_MODEL);
+  });
+
+  it("the blank seed pins no model: the knob decides where the agent is created", () => {
+    expect(BLANK_AGENT_SEED.modelId).toBeUndefined();
   });
 });
