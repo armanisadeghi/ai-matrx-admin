@@ -213,9 +213,10 @@ export const DestructiveQuietRow = () => <DeleteRows solid={false} />;
 
 /* ------------------------------ Tabs ------------------------------- */
 
-function UnderlineTabs({ items }: { items: string[] }) {
+function UnderlineTabs({ items, inset = true }: { items: string[]; inset?: boolean }) {
   const [on, setOn] = useState(items[0]!);
-  return <Tabs aria-label="Sections" value={on} onValueChange={setOn} data={items.map((i) => ({ value: i, label: i }))} />;
+  // Every sample frames its tabs in a bordered panel: inset starts the labels at the panel's content edge.
+  return <Tabs inset={inset} aria-label="Sections" value={on} onValueChange={setOn} data={items.map((i) => ({ value: i, label: i }))} />;
 }
 
 function CapsuleTabs({ items }: { items: string[] }) {
@@ -231,7 +232,7 @@ export const TabsAllUnderline = () => (
     <Frame>
       <UnderlineTabs items={SECTIONS} />
       <ControlRow className="px-1.5 py-1.5">
-        <UnderlineTabs items={FILTERS} />
+        <UnderlineTabs items={FILTERS} inset={false} />
       </ControlRow>
     </Frame>
   </Alt>
