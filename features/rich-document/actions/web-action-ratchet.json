@@ -1,7 +1,8 @@
 {
-  "$comment": "G2 ratchet (scripts/check-rich-document-action-ratchet.mjs). awaitingMove only shrinks: delete an id in the commit that moves its action into @ai-matrx/chat. staysWeb is exactly the four web-only contexts (plan D8).",
+  "$comment": "G2 ratchet (scripts/check-rich-document-action-ratchet.mjs). awaitingMove only shrinks: delete an id in the commit that moves its action into @ai-matrx/chat. staysWeb is exactly the web-only contexts (plan D8, plus comment-selection: the annotation sidecar is web-only like notes-and-comments).",
   "staysWeb": [
     "notes-and-comments",
+    "comment-selection",
     "apply-to-source",
     "attach-artifact-to-chat",
     "code-block-apply-to-file"

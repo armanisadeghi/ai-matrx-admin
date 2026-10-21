@@ -10,7 +10,7 @@
  *   2. every id this app registers is in the ratchet file — no NEW web-only action;
  *   3. every id in the ratchet file is still registered here — the file only shrinks (delete the
  *      line in the commit that moves the action);
- *   4. the "staysWeb" list is exactly the four web-only contexts (plan D8). The move is done when
+ *   4. the "staysWeb" list is exactly the web-only contexts (plan D8, plus the annotation sidecar's comment-selection). The move is done when
  *      "awaitingMove" is empty.
  *
  *   node scripts/check-rich-document-action-ratchet.mjs              # red on any breach
@@ -27,7 +27,8 @@ const HANDLERS = join(ROOT, "features/rich-document/actions/handlers");
 const RATCHET = join(ROOT, "features/rich-document/actions/web-action-ratchet.json");
 const REGISTER_MODULE = "@ai-matrx/chat/agents/components/messages-display/rich-document/actions/register";
 const REGISTER_CALLS = new Set(["registerActionIfAbsent", "registerAction"]);
-export const STAYS_WEB = ["notes-and-comments", "apply-to-source", "attach-artifact-to-chat", "code-block-apply-to-file"];
+// "comment-selection" (review 4 F12, 2026-10-20) joins "notes-and-comments": both drive the web-only annotation sidecar.
+export const STAYS_WEB = ["notes-and-comments", "comment-selection", "apply-to-source", "attach-artifact-to-chat", "code-block-apply-to-file"];
 
 const ts = createRequire(join(ROOT, "package.json"))("typescript");
 

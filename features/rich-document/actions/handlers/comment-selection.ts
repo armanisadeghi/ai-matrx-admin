@@ -41,7 +41,7 @@ export function commentableSelection(): Range | null {
 let openedOn: Range | null = null;
 
 registerActionIfAbsent({
-  id: COMMENT_SELECTION_ACTION_ID,
+  id: "comment-selection",
   label: "Comment",
   icon: MessageSquarePlus,
   category: "share",

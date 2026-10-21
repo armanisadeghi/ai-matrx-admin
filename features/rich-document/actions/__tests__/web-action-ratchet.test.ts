@@ -6,7 +6,7 @@
  *    the INSTALLED package registers (CHAT_MESSAGE_ACTION_IDS) is among them;
  *  - the ratchet script (scripts/check-rich-document-action-ratchet.mjs): its self-test, then the
  *    real check — no package id here, no new web-only id, no stale ratchet line, and staysWeb is
- *    exactly the four web-only contexts (plan D8).
+ *    exactly the web-only contexts (plan D8, plus comment-selection).
  * Red with a web copy of delete-message or edit-history (the W0 package actions) left in edit.ts.
  */
 import { execFileSync } from "node:child_process";
