@@ -91,7 +91,11 @@ const labels = (scope) => page.evaluate((scope) => {
       inSource: !!el.closest(".cm-editor"),
     })),
     kindHostsWithoutLabel: [...root.querySelectorAll("[data-kind-record-host]")].filter(visible)
-      .filter((h) => !h.querySelector(":scope > [data-block-header] [data-block-type-label]")).map((h) => h.getAttribute("data-kind-record-host")),
+      .filter((h) => !h.querySelector("[data-block-header] [data-block-type-label]")).map((h) => h.getAttribute("data-kind-record-host")),
+    // One header row per block: a kind host holding two of its own header rows (the label row AND the card's header) is a defect.
+    kindHostsWithTwoHeaders: [...root.querySelectorAll("[data-kind-record-host]")].filter(visible)
+      .filter((h) => [...h.querySelectorAll("[data-block-header]")].filter((x) => x.closest("[data-kind-record-host]") === h).length > 1)
+      .map((h) => h.getAttribute("data-kind-record-host")),
     headersWithoutLabel: [...root.querySelectorAll("[data-block-header]")].filter(visible)
       .filter((h) => !h.querySelector("[data-block-type-label]")).map((h) => (h.textContent || "").trim().slice(0, 40)),
     rawTags: /<timeline>|<\/flashcards>/.test((root.innerText ?? root.body?.innerText) || ""),
