@@ -67,7 +67,7 @@ export function useUserRequestChanges({ scope, enabled, id = null, refresh }: Us
               event: "*",
               schema: "chat",
               table: "user_request",
-              ...(id ? { filter: `id=eq.${id}` } : {}),
+              filter: id ? `id=eq.${id}` : undefined,
               rowId: (row) => (typeof row.id === "string" ? row.id : undefined),
               fingerprint: (row) => JSON.stringify([row.status ?? null, row.last_activity_at ?? null, row.completed_at ?? null]),
               onChange: fold,

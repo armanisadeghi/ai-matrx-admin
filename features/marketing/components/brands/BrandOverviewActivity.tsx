@@ -48,6 +48,17 @@ export function newestEntries(entries: readonly ActivityEntry[], limit = SHOWN):
     .slice(0, limit);
 }
 
+/** Rows (newest first) split into runs saved within an hour of the run's newest row. Pure; tested. */
+export function batchByHour<T extends { created_at: string }>(rows: readonly T[]): T[][] {
+  const groups: T[][] = [];
+  for (const row of rows) {
+    const current = groups.at(-1);
+    if (current && Date.parse(current[0].created_at) - Date.parse(row.created_at) <= 3_600_000) current.push(row);
+    else groups.push([row]);
+  }
+  return groups;
+}
+
 const CRAWL_WORDS: Record<string, string> = {
   completed: "Site crawl finished",
   complete: "Site crawl finished",
@@ -97,7 +108,8 @@ function useBrandRecentActivity({
               .in("site_id", sites.map((s) => s.id))
               .is("deleted_at", null)
               .order("created_at", { ascending: false })
-              .limit(SHOWN)
+              // Enough to hold each site's latest crawl (one line per site below).
+              .limit(SHOWN * 4)
               .abortSignal(signal)
           : none,
         db
@@ -115,7 +127,7 @@ function useBrandRecentActivity({
           .eq("brand_id", brandId)
           .is("deleted_at", null)
           .order("created_at", { ascending: false })
-          .limit(SHOWN)
+          .limit(SHOWN * 5)
           .abortSignal(signal),
       ]);
       for (const r of [posts, crawls, findings, assets]) if (r.error) throw r.error;
@@ -133,7 +145,11 @@ function useBrandRecentActivity({
         });
       }
       const siteById = new Map(sites.map((s) => [s.id, s]));
+      // One entry per site, its latest crawl: a re-crawl replaces the earlier line.
+      const seenSites = new Set<string>();
       for (const c of (crawls.data ?? []) as { id: string; site_id: string; status: string; created_at: string; finished_at: string | null }[]) {
+        if (seenSites.has(c.site_id)) continue;
+        seenSites.add(c.site_id);
         const site = siteById.get(c.site_id);
         entries.push({
           key: `crawl:${c.id}`,
@@ -156,13 +172,20 @@ function useBrandRecentActivity({
           href: marketingRoutes.brandDiscovery(brandSeg),
         });
       }
-      for (const a of (assets.data ?? []) as { id: string; kind: string; title: string | null; created_at: string }[]) {
+      // Assets saved together (an enrich run files a dozen at once) are one entry, never six lines of "Font added".
+      const assetRows = (assets.data ?? []) as { id: string; kind: string; title: string | null; created_at: string }[];
+      for (const group of batchByHour(assetRows)) {
+        const first = group[0];
+        const kindLabel = (k: string) => (isBrandAssetKind(k) ? BRAND_ASSET_KIND_LABELS[k] : "Asset");
         entries.push({
-          key: `asset:${a.id}`,
-          at: a.created_at,
+          key: `asset:${first.id}`,
+          at: first.created_at,
           icon: ImagePlus,
-          label: `${isBrandAssetKind(a.kind) ? BRAND_ASSET_KIND_LABELS[a.kind] : "Asset"} added`,
-          detail: a.title,
+          label: group.length === 1 ? `${kindLabel(first.kind)} added` : `${group.length} assets added`,
+          detail:
+            group.length === 1
+              ? first.title
+              : [...new Set(group.map((a) => kindLabel(a.kind)))].join(" · "),
           href: `${marketingRoutes.brand(brandSeg)}?tab=assets`,
         });
       }

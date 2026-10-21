@@ -69,3 +69,21 @@ describe("near-identical logos collapse, distinct marks stay", () => {
     expect(ranked[0].expired).toBeUndefined();
   });
 });
+
+describe("recent activity", () => {
+  it("one entry per batch of assets saved together, newest first", () => {
+    const { batchByHour, newestEntries } = jest.requireActual("../BrandOverviewActivity") as typeof import("../BrandOverviewActivity");
+    const rows = [
+      { created_at: "2026-10-17T10:05:00Z" },
+      { created_at: "2026-10-17T10:00:00Z" },
+      { created_at: "2026-10-17T09:30:00Z" },
+      { created_at: "2026-10-10T09:30:00Z" },
+    ];
+    expect(batchByHour(rows).map((g) => g.length)).toEqual([3, 1]);
+    const at = (iso: string) => ({ key: iso, at: iso, icon: (() => null) as never, label: iso, detail: null, href: "/" });
+    expect(newestEntries([at("2026-10-01T00:00:00Z"), at("2026-10-03T00:00:00Z"), at("")], 6).map((e) => e.key)).toEqual([
+      "2026-10-03T00:00:00Z",
+      "2026-10-01T00:00:00Z",
+    ]);
+  });
+});

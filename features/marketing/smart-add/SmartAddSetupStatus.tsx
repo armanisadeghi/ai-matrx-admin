@@ -229,8 +229,15 @@ export function SmartAddSetupStatus({ brandId, organizationId }: { brandId: stri
         </Button>
       ) : null}
       {canRunAgain ? (
-        <Button variant="outline" icon={rerunning ? <Loader2 className="animate-spin" /> : <RotateCcw />} disabled={rerunning} onClick={() => void runAgain()}>
-          <span className="sm:hidden">Run again</span>
+        <Button
+          // On a phone the hero line holds status, setup and this: the icon alone, so nothing is cut off.
+          variant="outline"
+          icon={rerunning ? <Loader2 className="animate-spin" /> : <RotateCcw />}
+          aria-label="Run setup again"
+          title="Run setup again"
+          disabled={rerunning}
+          onClick={() => void runAgain()}
+        >
           <span className="hidden sm:inline">Run setup again</span>
         </Button>
       ) : null}
