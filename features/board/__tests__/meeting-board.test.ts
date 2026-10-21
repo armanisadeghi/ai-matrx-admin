@@ -6,6 +6,8 @@
 type Call = { op: string; args: unknown[] };
 const calls: Call[] = [];
 let existing: unknown[] = [];
+/** Set to simulate the unique index refusing the insert: the winner appears for the re-read. */
+let refuseInsert: unknown[] | null = null;
 
 function chain(result: () => unknown) {
   const c: Record<string, unknown> = {};
@@ -42,9 +44,14 @@ jest.mock("@/utils/supabase/projectsDb", () => ({
   projectsDb: () => ({
     from: () => {
       let inserting: Record<string, unknown> | null = null;
-      const c = chain(() =>
-        inserting ? { data: row({ id: "new", ...inserting }), error: null } : { data: existing, error: null },
-      );
+      const c = chain(() => {
+        if (inserting && refuseInsert) {
+          existing = refuseInsert;
+          refuseInsert = null;
+          return { data: null, error: { code: "23505", message: "duplicate key value violates unique constraint" } };
+        }
+        return inserting ? { data: row({ id: "new", ...inserting }), error: null } : { data: existing, error: null };
+      });
       const insert = c.insert as (...a: unknown[]) => unknown;
       c.insert = (values: Record<string, unknown>) => {
         inserting = values;
@@ -68,6 +75,7 @@ import { meetingPartOf } from "../items/meeting-items.logic";
 beforeEach(() => {
   calls.length = 0;
   existing = [];
+  refuseInsert = null;
 });
 
 describe("getMeetingBoard", () => {
@@ -99,6 +107,14 @@ describe("getMeetingBoard", () => {
       getMeetingBoard({ meetingId: "m1", title: "Weekly sync", organizationId: "org1", seed }),
     ]);
     expect(a).toBe(b);
+    expect(calls.filter((c) => c.op === "insert")).toHaveLength(1);
+  });
+
+  it("a refused duplicate (the unique index) re-reads the winner instead of failing", async () => {
+    // Another tab inserted between our read and our insert: the database refuses with 23505.
+    refuseInsert = [row({ id: "winner", settings: { meeting_id: "m1" } })];
+    const board = await getMeetingBoard({ meetingId: "m1", title: "Weekly sync", organizationId: "org1", seed: meetingNotesDocument("m1") });
+    expect(board.id).toBe("winner");
     expect(calls.filter((c) => c.op === "insert")).toHaveLength(1);
   });
 

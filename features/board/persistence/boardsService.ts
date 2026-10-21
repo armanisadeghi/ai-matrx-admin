@@ -470,7 +470,7 @@ export async function getMeetingBoard(input: {
   const flightKey = `${userId}|${input.meetingId}`;
   const existing = meetingInFlight.get(flightKey);
   if (existing) return existing;
-  const work = (async () => {
+  const readMine = async (): Promise<LoadedBoard | null> => {
     const { data, error } = await db
       .from(TABLE)
       .select(BOARD_COLUMNS)
@@ -481,15 +481,30 @@ export async function getMeetingBoard(input: {
       .limit(1);
     if (error) throw readFailed("this meeting's board", error);
     const found = data?.[0];
-    if (found) return toLoadedBoard(found);
+    return found ? toLoadedBoard(found) : null;
+  };
+  const work = (async () => {
+    const found = await readMine();
+    if (found) return found;
     const orgId = await resolveOrganization(input.organizationId);
-    return insertBoard({
-      organizationId: orgId,
-      userId,
-      title: normalizeTitle(input.title || DEFAULT_BOARD_TITLE),
-      settings: { [MEETING_BOARD_SETTING]: input.meetingId },
-      columns: documentColumns(input.seed),
-    });
+    try {
+      // The link is stored in the SAME insert; the database holds one live board per person per meeting
+      // (index `boards_one_board_per_person_per_meeting`).
+      return await insertBoard({
+        organizationId: orgId,
+        userId,
+        title: normalizeTitle(input.title || DEFAULT_BOARD_TITLE),
+        settings: { [MEETING_BOARD_SETTING]: input.meetingId },
+        columns: documentColumns(input.seed),
+      });
+    } catch (e) {
+      // A refused duplicate means another tab just made it: open theirs.
+      if (isBoardError(e) && e.code === "conflict") {
+        const winner = await readMine();
+        if (winner) return winner;
+      }
+      throw e;
+    }
   })().finally(() => meetingInFlight.delete(flightKey));
   meetingInFlight.set(flightKey, work);
   return work;
