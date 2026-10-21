@@ -50,13 +50,48 @@ def launch() -> None:
                      stdout=log, stderr=log, stdin=subprocess.DEVNULL, start_new_session=True)
     for _ in range(150):
         if cdp_up():
+            # The resident console listener: a per-command hook (pw.mjs's way) misses everything logged while
+            # a page loads, which is when most errors land (q02-cloud-r1: the app logged one, `console` said []).
+            subprocess.Popen([sys.executable, os.path.abspath(__file__), "--watch-console"], stdout=log, stderr=log,
+                             stdin=subprocess.DEVNULL, start_new_session=True)
             print(f"started on {PORT}")
             return
         time.sleep(0.2)
     raise SystemExit("chrome did not start")
 
 
+CONSOLE_LOG = os.path.join(HOME, "rt-console.jsonl")
+
+
+def watch_console() -> None:
+    """Stays connected to this box's Chromium and appends every console error/warning and uncaught page error."""
+    from playwright.sync_api import sync_playwright
+
+    def write(kind, text, url):
+        with open(CONSOLE_LOG, "a") as fh:
+            fh.write(json.dumps({"type": kind, "text": text[:400], "url": url}) + "\n")
+
+    def attach(pg):
+        pg.on("console", lambda m: m.type in ("error", "warning") and write(m.type, m.text, pg.url))
+        pg.on("pageerror", lambda e: write("pageerror", str(e), pg.url))
+
+    with sync_playwright() as p:
+        browser = p.chromium.connect_over_cdp(CDP, timeout=15000)
+        ctx = browser.contexts[0]
+        for pg in ctx.pages:
+            attach(pg)
+        ctx.on("page", attach)
+        # The sync API delivers events only while it is inside a call, so the loop waits inside one.
+        while browser.is_connected():
+            try:
+                ctx.pages[0].wait_for_timeout(1000)
+            except Exception:
+                time.sleep(1)
+
+
 def main() -> None:
+    if "--watch-console" in sys.argv:
+        return watch_console()
     req = json.loads(sys.stdin.read() or "{}")
     cmd, args = req.get("cmd"), req.get("args") or []
     if cmd == "launch":
@@ -72,6 +107,12 @@ def main() -> None:
         pages = [pg for pg in ctx.pages if not pg.url.startswith("devtools")]
         page = pages[0] if pages else ctx.new_page()
         page.set_viewport_size({"width": 1440, "height": 900})
+        # Q-04 reads the clipboard after "Copy as Markdown"; a headless page has no person to grant it, and a grant
+        # lasts only as long as the connection that made it, so every command grants it again.
+        try:
+            ctx.grant_permissions(["clipboard-read", "clipboard-write"], origin="https://www.aimatrx.com")
+        except Exception:
+            pass
         try:
             page.evaluate("""() => { if (window.__rtErrs) return; window.__rtErrs = [];
               const orig = console.error; console.error = (...a) => { window.__rtErrs.push(a.map(String).join(' ').slice(0, 400)); orig(...a); }; }""")
@@ -93,8 +134,6 @@ def main() -> None:
         elif cmd == "signin":
             # Cookies were minted on the Mac over the Supabase auth API; no password reaches this box.
             cookies(req.get("cookies"))
-            # Q-04 reads the clipboard after "Copy as Markdown"; a headless page has no person to grant it.
-            ctx.grant_permissions(["clipboard-read", "clipboard-write"], origin="https://www.aimatrx.com")
             page.goto("https://www.aimatrx.com/", wait_until="load", timeout=120000)
             page.wait_for_timeout(3000)
             path = re.sub(r"^https?://[^/]+", "", page.url).split("?")[0]
@@ -147,7 +186,15 @@ def main() -> None:
         elif cmd == "shot":
             print("[png base64] " + base64.b64encode(page.screenshot()).decode())
         elif cmd == "console":
-            out(page.evaluate("() => { const e = window.__rtErrs ?? []; window.__rtErrs = []; return e; }"))
+            # Errors since the last call: the resident listener's log (page loads included) plus the in-page hook.
+            seen = page.evaluate("() => { const e = window.__rtErrs ?? []; window.__rtErrs = []; return e; }")
+            logged = []
+            if os.path.exists(CONSOLE_LOG):
+                with open(CONSOLE_LOG) as fh:
+                    logged = [json.loads(line) for line in fh if line.strip()]
+                open(CONSOLE_LOG, "w").close()
+            texts = [f"[{e['type']}] {e['text']}" for e in logged]
+            out(texts + [t for t in seen if not any(t[:120] in x for x in texts)])
         elif cmd == "stop":
             try:
                 browser.new_browser_cdp_session().send("Browser.close")
