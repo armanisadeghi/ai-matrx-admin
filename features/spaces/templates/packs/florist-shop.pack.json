@@ -1,0 +1,3971 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0584",
+  "version": 1,
+  "title": "Florist Shop",
+  "description": "Daily orders and deliveries, wedding and event proposals, and the stem cooler.",
+  "forWho": "Flower shops and event florists",
+  "icon": {
+    "emoji": "💐"
+  },
+  "cover": {
+    "url": "gallery:retail-flower-shop-buckets-fresh-flowers",
+    "offsetY": 50
+  },
+  "category": "retail",
+  "tags": [
+    "florist",
+    "flowers",
+    "weddings",
+    "delivery",
+    "bouquets",
+    "events"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-florist-shop",
+    "catalogueId": "SP0584",
+    "useCase": "The owner of Larkspur and Fern uses this to see today's deliveries, which wedding proposals are waiting and whether flowers are priced at the right cost.",
+    "industry": "retail_ecommerce",
+    "vertical": "Florist",
+    "job": "intake",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Larkspur and Fern",
+      "describes": "A five-person flower shop doing walk-in and phone orders, same-day delivery across three zones, sympathy work for two funeral homes and about thirty weddings a year.",
+      "address": {
+        "line1": "18 Bellwether Lane",
+        "city": "Savannah",
+        "region": "GA",
+        "postalCode": "31401",
+        "country": "US"
+      },
+      "phone": "(912) 555-0190",
+      "website": "larkspurandfern.net",
+      "email": "orders@larkspurandfern.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-florist-shop",
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Genevieve Oduya",
+              "role": "Owner and lead designer",
+              "work_email": "genevieve@larkspurandfern.net",
+              "mobile": "(912) 555-0141",
+              "start_date": "@today-10y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Hamish Carrow",
+              "role": "Designer",
+              "work_email": "hamish@larkspurandfern.net",
+              "mobile": "(912) 555-0142",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Paloma Strand",
+              "role": "Order desk",
+              "work_email": "paloma@larkspurandfern.net",
+              "mobile": "(912) 555-0143",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Emeka Lindahl",
+              "role": "Delivery driver",
+              "work_email": "emeka@larkspurandfern.net",
+              "mobile": "(912) 555-0144",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Rosalind Achterberg",
+              "role": "Event designer",
+              "work_email": "rosalind@larkspurandfern.net",
+              "mobile": "(912) 555-0145",
+              "start_date": "@today-4y"
+            }
+          }
+        ]
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "order_delivered",
+        "table": "order",
+        "name": "Mark delivered",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Delivered"
+          },
+          {
+            "field": "delivered_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "order_take",
+        "table": "order",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "event_booked",
+        "table": "event",
+        "name": "Mark deposit paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Booked"
+          },
+          {
+            "field": "deposit_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Florist Shop assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "order",
+          "describes": "Every bouquet, arrangement and sympathy piece from the phone call to the doorstep, with what the flowers cost."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many orders are received but not started yet?",
+        "whyItMatters": "Designers plan the bench from untouched orders.",
+        "expect": {
+          "table": "order",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Received"
+          },
+          "answer": 5,
+          "unit": "orders"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open orders.",
+        "action": {
+          "kind": "open",
+          "surface": "order_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "order_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open events.",
+        "action": {
+          "kind": "open",
+          "surface": "event_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "event_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-21",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "larkspurandfern.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Bellwether Lane"
+      ]
+    },
+    "version": 1,
+    "tables": [
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "People and businesses who order from you, with the dates they send flowers for and what they spend.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client_type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Regular",
+              "Wedding couple",
+              "Corporate account",
+              "Funeral home",
+              "Event planner"
+            ],
+            "choiceColors": {
+              "Regular": "green",
+              "Wedding couple": "pink",
+              "Corporate account": "blue",
+              "Funeral home": "violet",
+              "Event planner": "orange"
+            }
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "key_date",
+            "label": "Next date to remember",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "occasion",
+            "label": "What the date is",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "likes",
+            "label": "Likes and dislikes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "order_count",
+            "label": "Orders",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "order_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Cancelled"
+                ]
+              }
+            }
+          },
+          {
+            "key": "spent",
+            "label": "Spent with us (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "price",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Delivered",
+                "Picked up"
+              ]
+            }
+          },
+          {
+            "key": "tier",
+            "label": "Client tier",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Spent with us (USD)} >= 500, \"Top client\", IF({Spent with us (USD)} > 0, \"Regular\", \"New\"))"
+          },
+          {
+            "key": "add_order_btn",
+            "label": "New order",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "order",
+              "template": "Order ticket",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "call_btn",
+            "label": "Call",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "tel:{{phone}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "clie-1",
+            "values": {
+              "client_name": "Marguerite Holloway",
+              "client_type": "Regular",
+              "phone": "(912) 555-0101",
+              "email": "m.holloway@inbox-mail.net",
+              "key_date": "@today+6d",
+              "occasion": "Wedding anniversary",
+              "likes": "Garden roses, no lilies (cats at home)"
+            }
+          },
+          {
+            "key": "clie-2",
+            "values": {
+              "client_name": "Desmond Achebe",
+              "client_type": "Regular",
+              "phone": "(912) 555-0102",
+              "email": "desmond.achebe@inbox-mail.net",
+              "key_date": "@today+19d",
+              "occasion": "Mother's birthday",
+              "likes": "Bright colors, tropical"
+            }
+          },
+          {
+            "key": "clie-3",
+            "values": {
+              "client_name": "Whitfield and Sons Funeral Home",
+              "client_type": "Funeral home",
+              "phone": "(912) 555-0103",
+              "email": "arrangements.whitfield@inbox-mail.net",
+              "likes": "Deliver to the side entrance by 9:00"
+            }
+          },
+          {
+            "key": "clie-4",
+            "values": {
+              "client_name": "Oakhaven Memorial Chapel",
+              "client_type": "Funeral home",
+              "phone": "(912) 555-0104",
+              "email": "office.oakhaven@inbox-mail.net",
+              "likes": "White and green only"
+            }
+          },
+          {
+            "key": "clie-5",
+            "values": {
+              "client_name": "Harborview Dental Group",
+              "client_type": "Corporate account",
+              "phone": "(912) 555-0105",
+              "email": "frontdesk.harborview@inbox-mail.net",
+              "key_date": "@today+2d",
+              "occasion": "Weekly lobby piece",
+              "likes": "Tall, low scent"
+            }
+          },
+          {
+            "key": "clie-6",
+            "values": {
+              "client_name": "Camila Ferreira and Jonah Whitlock",
+              "client_type": "Wedding couple",
+              "phone": "(912) 555-0106",
+              "email": "camila.jonah@inbox-mail.net",
+              "key_date": "@today+25d",
+              "occasion": "Wedding day",
+              "likes": "Blush, ivory, eucalyptus"
+            }
+          },
+          {
+            "key": "clie-7",
+            "values": {
+              "client_name": "Priya Natarajan and Sam Okafor",
+              "client_type": "Wedding couple",
+              "phone": "(912) 555-0107",
+              "email": "priya.sam@inbox-mail.net",
+              "key_date": "@today+68d",
+              "occasion": "Wedding day",
+              "likes": "Deep burgundy and gold"
+            }
+          },
+          {
+            "key": "clie-8",
+            "values": {
+              "client_name": "Tidewater Events Co.",
+              "client_type": "Event planner",
+              "phone": "(912) 555-0108",
+              "email": "planning.tidewater@inbox-mail.net",
+              "likes": "Wants proposals as PDF within two days"
+            }
+          },
+          {
+            "key": "clie-9",
+            "values": {
+              "client_name": "Beatrix Lindqvist",
+              "client_type": "Regular",
+              "phone": "(912) 555-0109",
+              "email": "beatrix.l@inbox-mail.net",
+              "key_date": "@today+11d",
+              "occasion": "Daughter's recital",
+              "likes": "Sunflowers"
+            }
+          },
+          {
+            "key": "clie-10",
+            "values": {
+              "client_name": "Coastal Bank of Savannah",
+              "client_type": "Corporate account",
+              "phone": "(912) 555-0110",
+              "email": "facilities.coastalbank@inbox-mail.net",
+              "key_date": "@today+4d",
+              "occasion": "Branch opening",
+              "likes": "Brand colors navy and white"
+            }
+          },
+          {
+            "key": "clie-11",
+            "values": {
+              "client_name": "Theo Abernathy",
+              "client_type": "Regular",
+              "phone": "(912) 555-0111",
+              "email": "theo.abernathy@inbox-mail.net",
+              "key_date": "@today+3d",
+              "occasion": "Partner's birthday",
+              "likes": "Peonies when in season"
+            }
+          }
+        ]
+      },
+      {
+        "token": "order",
+        "name": "Orders",
+        "labelSingular": "Order",
+        "labelPlural": "Orders",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "flower",
+        "titleField": "order_name",
+        "describes": "Every bouquet, arrangement and sympathy piece from the phone call to the doorstep, with what the flowers cost.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Delivered"
+            ],
+            "filled": [
+              "delivered_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Order ticket",
+            "values": {
+              "status": "Received",
+              "order_name": "New order"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Taking the order"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Recipient name, address, phone and a safe place to leave it"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Occasion and any colors or flowers to avoid"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Budget said out loud, before and after the delivery fee"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Card message read back word for word"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Design"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Recipe written: stems, greens, container"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Photo taken before it leaves"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Delivery"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Care card and flower food tucked in"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Photo at the door if nobody answers"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "order_name",
+            "label": "Order",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Received",
+            "choices": [
+              "Received",
+              "Designing",
+              "Ready",
+              "Out for delivery",
+              "Delivered",
+              "Picked up",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Received": "slate",
+              "Designing": "blue",
+              "Ready": "violet",
+              "Out for delivery": "amber",
+              "Delivered": "green",
+              "Picked up": "teal",
+              "Cancelled": "red"
+            },
+            "statusGroups": {
+              "Received": "todo",
+              "Designing": "in_progress",
+              "Ready": "in_progress",
+              "Out for delivery": "in_progress",
+              "Delivered": "done",
+              "Picked up": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "client",
+            "label": "Ordered by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "occasion",
+            "label": "Occasion",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Birthday",
+              "Anniversary",
+              "Sympathy",
+              "Get well",
+              "Just because",
+              "Corporate",
+              "New baby"
+            ],
+            "choiceColors": {
+              "Birthday": "pink",
+              "Anniversary": "red",
+              "Sympathy": "violet",
+              "Get well": "teal",
+              "Just because": "yellow",
+              "Corporate": "blue",
+              "New baby": "green"
+            }
+          },
+          {
+            "key": "product",
+            "label": "Piece",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Hand-tied bouquet",
+              "Vase arrangement",
+              "Standing spray",
+              "Casket spray",
+              "Bud vase",
+              "Lobby arrangement"
+            ],
+            "choiceColors": {
+              "Hand-tied bouquet": "pink",
+              "Vase arrangement": "blue",
+              "Standing spray": "violet",
+              "Casket spray": "slate",
+              "Bud vase": "yellow",
+              "Lobby arrangement": "orange"
+            }
+          },
+          {
+            "key": "fulfilment",
+            "label": "Delivery or pickup",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Delivery",
+              "Pickup"
+            ],
+            "choiceColors": {
+              "Delivery": "blue",
+              "Pickup": "green"
+            },
+            "default": "Delivery"
+          },
+          {
+            "key": "zone",
+            "label": "Delivery zone",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Zone 1, downtown",
+              "Zone 2, midtown and islands",
+              "Zone 3, outer county"
+            ],
+            "choiceColors": {
+              "Zone 1, downtown": "green",
+              "Zone 2, midtown and islands": "yellow",
+              "Zone 3, outer county": "orange"
+            }
+          },
+          {
+            "key": "recipient",
+            "label": "Recipient",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "card",
+            "label": "Card message",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "deliver_on",
+            "label": "Deliver by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "delivered_on",
+            "label": "Delivered on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "flower_cost",
+            "label": "Flower and supply cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 3000
+              }
+            ]
+          },
+          {
+            "key": "delivery_fee",
+            "label": "Delivery fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "driver",
+            "label": "Driver",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "cost_pct",
+            "label": "Cost of goods (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Cancelled\", \"\", IF({Price (USD)} > 0, ROUND({Flower and supply cost (USD)} / {Price (USD)} * 100, 0), \"\"))"
+          },
+          {
+            "key": "cost_check",
+            "label": "Pricing check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Cancelled\", \"\", IF({Cost of goods (%)} <= 33, \"On target\", \"Flowers too costly\"))"
+          },
+          {
+            "key": "assigned_to",
+            "label": "Designer",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "del_btn",
+            "label": "Mark delivered",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "order_delivered"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "order_take"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "orde-1",
+            "values": {
+              "order_name": "Anniversary garden roses for Marguerite",
+              "status": "Delivered",
+              "client": "clie-1",
+              "occasion": "Anniversary",
+              "product": "Vase arrangement",
+              "fulfilment": "Delivery",
+              "zone": "Zone 1, downtown",
+              "recipient": "Marguerite Holloway",
+              "deliver_on": "@today-12d 14:00",
+              "delivered_on": "@today-12d",
+              "price": 145,
+              "flower_cost": 44,
+              "delivery_fee": 12,
+              "driver": "tm-4"
+            }
+          },
+          {
+            "key": "orde-2",
+            "values": {
+              "order_name": "Standing spray for the Pemberton service",
+              "status": "Delivered",
+              "client": "clie-3",
+              "occasion": "Sympathy",
+              "product": "Standing spray",
+              "fulfilment": "Delivery",
+              "zone": "Zone 2, midtown and islands",
+              "recipient": "Whitfield and Sons Funeral Home",
+              "deliver_on": "@today-9d 09:00",
+              "delivered_on": "@today-9d",
+              "price": 275,
+              "flower_cost": 86,
+              "delivery_fee": 0,
+              "driver": "tm-4"
+            }
+          },
+          {
+            "key": "orde-3",
+            "values": {
+              "order_name": "Casket spray, white and green",
+              "status": "Delivered",
+              "client": "clie-4",
+              "occasion": "Sympathy",
+              "product": "Casket spray",
+              "fulfilment": "Delivery",
+              "zone": "Zone 2, midtown and islands",
+              "recipient": "Oakhaven Memorial Chapel",
+              "deliver_on": "@today-6d 08:30",
+              "delivered_on": "@today-6d",
+              "price": 425,
+              "flower_cost": 132,
+              "delivery_fee": 0,
+              "driver": "tm-4"
+            }
+          },
+          {
+            "key": "orde-4",
+            "values": {
+              "order_name": "Lobby arrangement, week one",
+              "status": "Delivered",
+              "client": "clie-5",
+              "occasion": "Corporate",
+              "product": "Lobby arrangement",
+              "fulfilment": "Delivery",
+              "zone": "Zone 1, downtown",
+              "recipient": "Harborview Dental Group",
+              "deliver_on": "@today-5d 08:00",
+              "delivered_on": "@today-5d",
+              "price": 180,
+              "flower_cost": 52,
+              "delivery_fee": 0,
+              "driver": "tm-4"
+            }
+          },
+          {
+            "key": "orde-5",
+            "values": {
+              "order_name": "Tropical birthday bouquet",
+              "status": "Picked up",
+              "client": "clie-2",
+              "occasion": "Birthday",
+              "product": "Hand-tied bouquet",
+              "fulfilment": "Pickup",
+              "recipient": "Desmond Achebe",
+              "deliver_on": "@today-3d 17:00",
+              "delivered_on": "@today-3d",
+              "price": 95,
+              "flower_cost": 30,
+              "delivery_fee": 0
+            }
+          },
+          {
+            "key": "orde-6",
+            "values": {
+              "order_name": "Get-well bud vase for room 412",
+              "status": "Delivered",
+              "client": "clie-9",
+              "occasion": "Get well",
+              "product": "Bud vase",
+              "fulfilment": "Delivery",
+              "zone": "Zone 2, midtown and islands",
+              "recipient": "Hollis Brandt",
+              "deliver_on": "@today-2d 11:00",
+              "delivered_on": "@today-2d",
+              "price": 45,
+              "flower_cost": 14,
+              "delivery_fee": 18,
+              "driver": "tm-4"
+            }
+          },
+          {
+            "key": "orde-7",
+            "values": {
+              "order_name": "Sunflower recital bouquet",
+              "status": "Designing",
+              "client": "clie-9",
+              "occasion": "Just because",
+              "product": "Hand-tied bouquet",
+              "fulfilment": "Pickup",
+              "recipient": "Beatrix Lindqvist",
+              "deliver_on": "@today 16:30",
+              "price": 65,
+              "flower_cost": 20,
+              "delivery_fee": 0
+            }
+          },
+          {
+            "key": "orde-8",
+            "values": {
+              "order_name": "Sympathy vase for the Duarte family",
+              "status": "Out for delivery",
+              "client": "clie-3",
+              "occasion": "Sympathy",
+              "product": "Vase arrangement",
+              "fulfilment": "Delivery",
+              "zone": "Zone 1, downtown",
+              "recipient": "Duarte family",
+              "deliver_on": "@today 11:00",
+              "price": 120,
+              "flower_cost": 37,
+              "delivery_fee": 12,
+              "driver": "tm-4"
+            }
+          },
+          {
+            "key": "orde-9",
+            "values": {
+              "order_name": "New baby arrangement, labor and delivery",
+              "status": "Ready",
+              "occasion": "New baby",
+              "product": "Vase arrangement",
+              "fulfilment": "Delivery",
+              "zone": "Zone 2, midtown and islands",
+              "recipient": "Imani Castellanos",
+              "deliver_on": "@today 13:00",
+              "price": 95,
+              "flower_cost": 29,
+              "delivery_fee": 18,
+              "driver": "tm-4"
+            }
+          },
+          {
+            "key": "orde-10",
+            "values": {
+              "order_name": "Lobby arrangement, week two",
+              "status": "Received",
+              "client": "clie-5",
+              "occasion": "Corporate",
+              "product": "Lobby arrangement",
+              "fulfilment": "Delivery",
+              "zone": "Zone 1, downtown",
+              "recipient": "Harborview Dental Group",
+              "deliver_on": "@today+2d 08:00",
+              "price": 180,
+              "flower_cost": 54,
+              "delivery_fee": 0,
+              "driver": "tm-4"
+            }
+          },
+          {
+            "key": "orde-11",
+            "values": {
+              "order_name": "Branch opening pair, navy and white",
+              "status": "Received",
+              "client": "clie-10",
+              "occasion": "Corporate",
+              "product": "Vase arrangement",
+              "fulfilment": "Delivery",
+              "zone": "Zone 3, outer county",
+              "recipient": "Coastal Bank of Savannah",
+              "deliver_on": "@today+4d 08:30",
+              "price": 340,
+              "flower_cost": 106,
+              "delivery_fee": 25,
+              "driver": "tm-4"
+            }
+          },
+          {
+            "key": "orde-12",
+            "values": {
+              "order_name": "Peony birthday bouquet",
+              "status": "Received",
+              "client": "clie-11",
+              "occasion": "Birthday",
+              "product": "Hand-tied bouquet",
+              "fulfilment": "Delivery",
+              "zone": "Zone 3, outer county",
+              "recipient": "Rowan Abernathy",
+              "deliver_on": "@today+3d 15:00",
+              "price": 110,
+              "flower_cost": 34,
+              "delivery_fee": 25,
+              "driver": "tm-4"
+            }
+          },
+          {
+            "key": "orde-13",
+            "values": {
+              "order_name": "Anniversary roses, second year",
+              "status": "Received",
+              "client": "clie-1",
+              "occasion": "Anniversary",
+              "product": "Vase arrangement",
+              "fulfilment": "Delivery",
+              "zone": "Zone 1, downtown",
+              "recipient": "Marguerite Holloway",
+              "deliver_on": "@today+6d 14:00",
+              "price": 150,
+              "flower_cost": 46,
+              "delivery_fee": 12,
+              "driver": "tm-4"
+            }
+          },
+          {
+            "key": "orde-14",
+            "values": {
+              "order_name": "Thank-you bouquet for a teacher",
+              "status": "Received",
+              "occasion": "Just because",
+              "product": "Hand-tied bouquet",
+              "fulfilment": "Pickup",
+              "recipient": "Ms. Okoro",
+              "deliver_on": "@today+1d 15:30",
+              "price": 55,
+              "flower_cost": 17,
+              "delivery_fee": 0
+            }
+          },
+          {
+            "key": "orde-15",
+            "values": {
+              "order_name": "Wreath for the Harmon service",
+              "status": "Cancelled",
+              "client": "clie-4",
+              "occasion": "Sympathy",
+              "product": "Standing spray",
+              "fulfilment": "Delivery",
+              "zone": "Zone 2, midtown and islands",
+              "recipient": "Oakhaven Memorial Chapel",
+              "deliver_on": "@today+1d 09:00",
+              "price": 260,
+              "flower_cost": 80,
+              "delivery_fee": 0
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "driver": "Either record can be created or change status before the other."
+        },
+        "datesIndependent": "Deliver by is the promise; delivered on is stamped at the door and can come before it."
+      },
+      {
+        "token": "event",
+        "name": "Weddings and events",
+        "labelSingular": "Event",
+        "labelPlural": "Events",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "heart",
+        "titleField": "event_name",
+        "describes": "Weddings and corporate events from first consultation to load-in, with the proposal, deposit and flower budget.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Booked",
+              "Final order placed",
+              "Delivered and set"
+            ],
+            "filled": [
+              "deposit_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Wedding consultation",
+            "values": {
+              "status": "Consultation booked",
+              "event_name": "New wedding"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The day"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Date, ceremony and reception venues, load-in and strike times."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The look"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Three inspiration photos, and one they dislike"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Colors and any flowers that matter to the family"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Budget for flowers, said out loud"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The count"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Bridal and attendant bouquets"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Boutonnieres and corsages"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Ceremony pieces and arch"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Centerpieces per table and table count"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Proposal sent within three days"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Deposit of 30% to hold the date"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "event_name",
+            "label": "Event",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Inquiry",
+            "choices": [
+              "Inquiry",
+              "Consultation booked",
+              "Proposal sent",
+              "Booked",
+              "Final order placed",
+              "Delivered and set",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Inquiry": "slate",
+              "Consultation booked": "blue",
+              "Proposal sent": "violet",
+              "Booked": "teal",
+              "Final order placed": "amber",
+              "Delivered and set": "green",
+              "Declined": "red"
+            },
+            "statusGroups": {
+              "Inquiry": "todo",
+              "Consultation booked": "todo",
+              "Proposal sent": "in_progress",
+              "Booked": "in_progress",
+              "Final order placed": "in_progress",
+              "Delivered and set": "done",
+              "Declined": "done"
+            }
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "lead_designer",
+            "label": "Lead designer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "event_on",
+            "label": "Event date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "venue",
+            "label": "Venue",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "guests",
+            "label": "Guests",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "centerpieces",
+            "label": "Centerpieces",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 300
+              }
+            ]
+          },
+          {
+            "key": "bouquets",
+            "label": "Bouquets and boutonnieres",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "proposal_total",
+            "label": "Proposal total (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "deposit",
+            "label": "Deposit paid (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "flower_budget",
+            "label": "Flower and rental cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "deposit_on",
+            "label": "Deposit paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "balance",
+            "label": "Balance due (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Stage} = \"Declined\", \"\", {Proposal total (USD)} - {Deposit paid (USD)})"
+          },
+          {
+            "key": "cost_pct",
+            "label": "Cost of goods (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Stage} = \"Declined\", \"\", IF({Proposal total (USD)} > 0, ROUND({Flower and rental cost (USD)} / {Proposal total (USD)} * 100, 0), \"\"))"
+          },
+          {
+            "key": "book_btn",
+            "label": "Mark deposit paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "event_booked"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "even-1",
+            "values": {
+              "event_name": "Ferreira and Whitlock wedding",
+              "status": "Final order placed",
+              "client": "clie-6",
+              "lead_designer": "tm-5",
+              "event_on": "@today+25d",
+              "venue": "Forsyth Carriage House",
+              "guests": 140,
+              "centerpieces": 14,
+              "bouquets": 16,
+              "proposal_total": 8600,
+              "deposit": 2580,
+              "flower_budget": 2650,
+              "deposit_on": "@today-150d"
+            }
+          },
+          {
+            "key": "even-2",
+            "values": {
+              "event_name": "Natarajan and Okafor wedding",
+              "status": "Booked",
+              "client": "clie-7",
+              "lead_designer": "tm-5",
+              "event_on": "@today+68d",
+              "venue": "Riverside Cotton Exchange",
+              "guests": 220,
+              "centerpieces": 22,
+              "bouquets": 22,
+              "proposal_total": 12400,
+              "deposit": 3720,
+              "flower_budget": 3900,
+              "deposit_on": "@today-90d"
+            }
+          },
+          {
+            "key": "even-3",
+            "values": {
+              "event_name": "Coastal Bank branch opening",
+              "status": "Booked",
+              "client": "clie-10",
+              "lead_designer": "tm-1",
+              "event_on": "@today+4d",
+              "venue": "Coastal Bank, Pooler branch",
+              "guests": 80,
+              "centerpieces": 6,
+              "bouquets": 0,
+              "proposal_total": 1450,
+              "deposit": 435,
+              "flower_budget": 430,
+              "deposit_on": "@today-20d"
+            }
+          },
+          {
+            "key": "even-4",
+            "values": {
+              "event_name": "Tidewater gala for the maritime museum",
+              "status": "Proposal sent",
+              "client": "clie-8",
+              "lead_designer": "tm-5",
+              "event_on": "@today+52d",
+              "venue": "Maritime museum courtyard",
+              "guests": 300,
+              "centerpieces": 30,
+              "bouquets": 0,
+              "proposal_total": 9800,
+              "deposit": 0,
+              "flower_budget": 3100
+            }
+          },
+          {
+            "key": "even-5",
+            "values": {
+              "event_name": "Calloway and Brandt wedding",
+              "status": "Delivered and set",
+              "client": "clie-8",
+              "lead_designer": "tm-5",
+              "event_on": "@today-18d",
+              "venue": "Oakmoss Plantation",
+              "guests": 160,
+              "centerpieces": 16,
+              "bouquets": 18,
+              "proposal_total": 9200,
+              "deposit": 2760,
+              "flower_budget": 2900,
+              "deposit_on": "@today-200d"
+            }
+          },
+          {
+            "key": "even-6",
+            "values": {
+              "event_name": "Lindqvist garden party",
+              "status": "Delivered and set",
+              "client": "clie-9",
+              "lead_designer": "tm-2",
+              "event_on": "@today-40d",
+              "venue": "Private garden, Ardsley Park",
+              "guests": 45,
+              "centerpieces": 6,
+              "bouquets": 0,
+              "proposal_total": 1250,
+              "deposit": 375,
+              "flower_budget": 360,
+              "deposit_on": "@today-70d"
+            }
+          },
+          {
+            "key": "even-7",
+            "values": {
+              "event_name": "Moreau and Hart wedding",
+              "status": "Consultation booked",
+              "lead_designer": "tm-5",
+              "event_on": "@today+140d",
+              "venue": "Tybee lighthouse lawn",
+              "guests": 90,
+              "centerpieces": 10,
+              "bouquets": 12
+            }
+          },
+          {
+            "key": "even-8",
+            "values": {
+              "event_name": "Spring charity luncheon",
+              "status": "Inquiry",
+              "client": "clie-8",
+              "event_on": "@today+95d",
+              "venue": "Bellwether ballroom",
+              "guests": 180,
+              "centerpieces": 18,
+              "bouquets": 0
+            }
+          },
+          {
+            "key": "even-9",
+            "values": {
+              "event_name": "Okonkwo and Reyes wedding",
+              "status": "Declined",
+              "lead_designer": "tm-5",
+              "event_on": "@today+30d",
+              "venue": "Skidaway boathouse",
+              "guests": 120,
+              "centerpieces": 12,
+              "bouquets": 14,
+              "proposal_total": 7800,
+              "deposit": 0,
+              "flower_budget": 2400
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "lead_designer": "Either record can be created or change status before the other."
+        },
+        "before": [
+          [
+            "deposit_on",
+            "event_on"
+          ]
+        ]
+      },
+      {
+        "token": "stem",
+        "name": "Stems and cooler",
+        "labelSingular": "Stem",
+        "labelPlural": "Stems",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "snowflake",
+        "titleField": "stem_name",
+        "describes": "What is in the cooler, what each stem costs, how long it lasts and when to buy more.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "stem_name",
+            "label": "Stem",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "role",
+            "label": "Role in a design",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Focal",
+              "Filler",
+              "Greenery",
+              "Line"
+            ],
+            "choiceColors": {
+              "Focal": "pink",
+              "Filler": "yellow",
+              "Greenery": "green",
+              "Line": "violet"
+            }
+          },
+          {
+            "key": "supplier",
+            "label": "Supplier",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Wholesale market",
+              "Local grower",
+              "Farm direct"
+            ],
+            "choiceColors": {
+              "Wholesale market": "blue",
+              "Local grower": "green",
+              "Farm direct": "orange"
+            }
+          },
+          {
+            "key": "stem_cost",
+            "label": "Cost per stem (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "on_hand",
+            "label": "Stems on hand",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "vase_life",
+            "label": "Vase life (days)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 30
+              }
+            ]
+          },
+          {
+            "key": "retail_each",
+            "label": "Priced in a design at (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND({Cost per stem (USD)} * 3.5, 2)"
+          },
+          {
+            "key": "reorder",
+            "label": "Reorder check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Stems on hand} <= {Reorder at}, \"Buy more\", \"Stocked\")"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "stem-1",
+            "values": {
+              "stem_name": "Garden rose, peach",
+              "role": "Focal",
+              "supplier": "Wholesale market",
+              "stem_cost": 4.2,
+              "on_hand": 60,
+              "reorder_at": 40,
+              "vase_life": 7
+            }
+          },
+          {
+            "key": "stem-2",
+            "values": {
+              "stem_name": "Standard rose, ivory",
+              "role": "Focal",
+              "supplier": "Wholesale market",
+              "stem_cost": 1.6,
+              "on_hand": 150,
+              "reorder_at": 100,
+              "vase_life": 8
+            }
+          },
+          {
+            "key": "stem-3",
+            "values": {
+              "stem_name": "Peony, blush",
+              "role": "Focal",
+              "supplier": "Farm direct",
+              "stem_cost": 5.5,
+              "on_hand": 20,
+              "reorder_at": 30,
+              "vase_life": 5
+            }
+          },
+          {
+            "key": "stem-4",
+            "values": {
+              "stem_name": "Ranunculus, mixed",
+              "role": "Focal",
+              "supplier": "Local grower",
+              "stem_cost": 2.1,
+              "on_hand": 50,
+              "reorder_at": 40,
+              "vase_life": 7
+            }
+          },
+          {
+            "key": "stem-5",
+            "values": {
+              "stem_name": "Sunflower",
+              "role": "Focal",
+              "supplier": "Local grower",
+              "stem_cost": 1.8,
+              "on_hand": 35,
+              "reorder_at": 20,
+              "vase_life": 8
+            }
+          },
+          {
+            "key": "stem-6",
+            "values": {
+              "stem_name": "Spray rose, white",
+              "role": "Filler",
+              "supplier": "Wholesale market",
+              "stem_cost": 1.9,
+              "on_hand": 70,
+              "reorder_at": 50,
+              "vase_life": 9
+            }
+          },
+          {
+            "key": "stem-7",
+            "values": {
+              "stem_name": "Waxflower",
+              "role": "Filler",
+              "supplier": "Wholesale market",
+              "stem_cost": 1.1,
+              "on_hand": 80,
+              "reorder_at": 40,
+              "vase_life": 14
+            }
+          },
+          {
+            "key": "stem-8",
+            "values": {
+              "stem_name": "Silver dollar eucalyptus",
+              "role": "Greenery",
+              "supplier": "Wholesale market",
+              "stem_cost": 0.9,
+              "on_hand": 120,
+              "reorder_at": 80,
+              "vase_life": 14
+            }
+          },
+          {
+            "key": "stem-9",
+            "values": {
+              "stem_name": "Italian ruscus",
+              "role": "Greenery",
+              "supplier": "Wholesale market",
+              "stem_cost": 0.7,
+              "on_hand": 90,
+              "reorder_at": 60,
+              "vase_life": 21
+            }
+          },
+          {
+            "key": "stem-10",
+            "values": {
+              "stem_name": "Snapdragon",
+              "role": "Line",
+              "supplier": "Local grower",
+              "stem_cost": 1.3,
+              "on_hand": 25,
+              "reorder_at": 30,
+              "vase_life": 7
+            }
+          },
+          {
+            "key": "stem-11",
+            "values": {
+              "stem_name": "Delphinium",
+              "role": "Line",
+              "supplier": "Wholesale market",
+              "stem_cost": 2.4,
+              "on_hand": 30,
+              "reorder_at": 20,
+              "vase_life": 6
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each order is placed by one client.",
+        "fromTable": "order",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "orders"
+      },
+      {
+        "describes": "The driver who takes it out.",
+        "fromTable": "order",
+        "fromField": "driver",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "deliveries"
+      },
+      {
+        "describes": "Each event is booked by one client.",
+        "fromTable": "event",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "events"
+      },
+      {
+        "describes": "One designer leads each event.",
+        "fromTable": "event",
+        "fromField": "lead_designer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "events_led"
+      }
+    ],
+    "views": [
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "client_type"
+      },
+      {
+        "token": "client_dates",
+        "name": "Dates in the next 30 days",
+        "table": "client",
+        "kind": "grid",
+        "within": {
+          "key_date": {
+            "relative": "next_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "all_order",
+        "name": "All orders",
+        "table": "order",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "order_board",
+        "name": "Orders board",
+        "table": "order",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "order_cal",
+        "name": "Orders calendar",
+        "table": "order",
+        "kind": "calendar",
+        "dateField": "deliver_on",
+        "allDay": true
+      },
+      {
+        "token": "order_today",
+        "name": "Today",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "deliver_on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "order_tomorrow",
+        "name": "Tomorrow",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "deliver_on": {
+            "relative": "tomorrow"
+          }
+        }
+      },
+      {
+        "token": "order_next7",
+        "name": "Next 7 days",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "deliver_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        }
+      },
+      {
+        "token": "order_mine",
+        "name": "My designs",
+        "table": "order",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_event",
+        "name": "All events",
+        "table": "event",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "event_board",
+        "name": "Events board",
+        "table": "event",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "event_cal",
+        "name": "Events calendar",
+        "table": "event",
+        "kind": "calendar",
+        "dateField": "event_on",
+        "allDay": true
+      },
+      {
+        "token": "event_next60",
+        "name": "Next 60 days",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "event_on": {
+            "relative": "next_days",
+            "n": 60
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Final order placed"
+          ]
+        }
+      },
+      {
+        "token": "event_proposals",
+        "name": "Proposals out",
+        "table": "event",
+        "kind": "grid",
+        "filters": {
+          "status": "Proposal sent"
+        }
+      },
+      {
+        "token": "all_stem",
+        "name": "All stems",
+        "table": "stem",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "stem_board",
+        "name": "Stems board",
+        "table": "stem",
+        "kind": "kanban",
+        "groupBy": "role"
+      }
+    ],
+    "forms": [
+      {
+        "token": "flower_order",
+        "name": "Place a flower order",
+        "describes": "How the order desk takes a phone or walk-in order.",
+        "audience": "staff",
+        "table": "order",
+        "fields": [
+          {
+            "fieldKey": "order_name",
+            "ask": "What is the order?",
+            "required": true
+          },
+          {
+            "fieldKey": "recipient",
+            "ask": "Who is it for?"
+          },
+          {
+            "fieldKey": "deliver_on",
+            "ask": "When should it arrive?"
+          },
+          {
+            "fieldKey": "card",
+            "ask": "What should the card say?"
+          }
+        ],
+        "submitLabel": "Place the order",
+        "confirmation": "Thanks. The order is on the board as Received."
+      }
+    ]
+  },
+  "pages": [
+    {
+      "key": "florist-shop",
+      "parent": null,
+      "title": "Florist Shop",
+      "icon": {
+        "emoji": "💐"
+      },
+      "cover": {
+        "url": "gallery:retail-flower-shop-buckets-fresh-flowers",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Orders run the day: Today on the Dashboard lists every delivery by time, and Mark delivered stamps the door. Weddings and events run the season. Clients remembers the dates people send flowers for; Stems and cooler keeps recipes priced right."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:pricing-recipes"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:wedding-flow"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "People and businesses who order from you, with the dates they send flowers for and what they spend."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "clie-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "client_type",
+                "hiddenFields": [
+                  "phone",
+                  "email",
+                  "likes",
+                  "order_count",
+                  "spent",
+                  "tier",
+                  "add_order_btn",
+                  "call_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "clie-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "clie-dates",
+                "name": "Dates in the next 30 days",
+                "layout": "list",
+                "icon": "Gift",
+                "within": {
+                  "key_date": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                }
+              }
+            ],
+            "activeViewId": "clie-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every bouquet, arrangement and sympathy piece from the phone call to the doorstep, with what the flowers cost."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "order_board"
+            },
+            "inline": true,
+            "title": "Orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "orde-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "client",
+                  "occasion",
+                  "fulfilment",
+                  "zone",
+                  "card",
+                  "delivered_on",
+                  "price",
+                  "flower_cost",
+                  "delivery_fee",
+                  "driver",
+                  "cost_pct",
+                  "cost_check",
+                  "assigned_to",
+                  "del_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "orde-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "deliver_on",
+                "hiddenFields": [
+                  "status",
+                  "client",
+                  "occasion",
+                  "fulfilment",
+                  "zone",
+                  "card",
+                  "delivered_on",
+                  "price",
+                  "flower_cost",
+                  "delivery_fee",
+                  "driver",
+                  "cost_pct",
+                  "cost_check",
+                  "assigned_to",
+                  "del_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "orde-t",
+                "name": "All orders",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "orde-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Truck",
+                "within": {
+                  "deliver_on": {
+                    "relative": "today"
+                  }
+                }
+              },
+              {
+                "id": "orde-tomorrow",
+                "name": "Tomorrow",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "deliver_on": {
+                    "relative": "tomorrow"
+                  }
+                }
+              },
+              {
+                "id": "orde-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "deliver_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                }
+              },
+              {
+                "id": "orde-mine",
+                "name": "My designs",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "orde-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weddings and events"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Weddings and corporate events from first consultation to load-in, with the proposal, deposit and flower budget."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "event",
+              "view": "event_board"
+            },
+            "inline": true,
+            "title": "Weddings and events",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "even-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "client",
+                  "lead_designer",
+                  "guests",
+                  "centerpieces",
+                  "bouquets",
+                  "deposit",
+                  "flower_budget",
+                  "deposit_on",
+                  "balance",
+                  "cost_pct",
+                  "book_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "even-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "event_on",
+                "hiddenFields": [
+                  "status",
+                  "client",
+                  "lead_designer",
+                  "guests",
+                  "centerpieces",
+                  "bouquets",
+                  "deposit",
+                  "flower_budget",
+                  "deposit_on",
+                  "balance",
+                  "cost_pct",
+                  "book_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "even-t",
+                "name": "All events",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "even-next60",
+                "name": "Next 60 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "event_on": {
+                    "relative": "next_days",
+                    "n": 60
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Final order placed"
+                  ]
+                }
+              },
+              {
+                "id": "even-proposals",
+                "name": "Proposals out",
+                "layout": "list",
+                "icon": "Send",
+                "filters": {
+                  "status": "Proposal sent"
+                }
+              }
+            ],
+            "activeViewId": "even-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stems and cooler"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What is in the cooler, what each stem costs, how long it lasts and when to buy more."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "stem",
+              "view": "stem_board"
+            },
+            "inline": true,
+            "title": "Stems and cooler",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "stem-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "role",
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_at",
+                  "vase_life",
+                  "retail_each",
+                  "reorder",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "stem-t",
+                "name": "All stems",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "stem-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "florist-shop",
+      "title": "Start here: how the shop runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Orders is the day's work: every bouquet and arrangement with its delivery time. Weddings and events holds the big jobs months ahead. Clients remembers people and their dates. Stems and cooler is what you have to design with."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A shop day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open the Dashboard. "
+            },
+            {
+              "text": "Today",
+              "bold": true
+            },
+            {
+              "text": " lists every delivery and pickup by time; the driver's run starts with the earliest."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Designers take an order with "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": ", build it from the recipe on the ticket, photograph it and move it to Ready."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The driver moves orders to Out for delivery when they leave and presses "
+            },
+            {
+              "text": "Mark delivered",
+              "bold": true
+            },
+            {
+              "text": " at each door."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Phone orders go in with the Order ticket: read the card message back word for word."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monday: check "
+            },
+            {
+              "text": "Dates in the next 30 days",
+              "bold": true
+            },
+            {
+              "text": " on Clients and call regulars a week before their anniversary or birthday."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tuesday and Friday: buy from the wholesale market for the stems marked Buy more and for any event in the next ten days."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Look at the "
+            },
+            {
+              "text": "Pricing check",
+              "bold": true
+            },
+            {
+              "text": " on last week's orders. Anything marked Flowers too costly was underpriced or over-stuffed."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Delivery zone"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fee"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Zone 1, downtown"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "12 USD"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Zone 2, midtown and islands"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "18 USD"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Zone 3, outer county"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "25 USD"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "florist-shop",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Today's deliveries by time, then what is due tomorrow, then wedding money: balances and proposals still waiting on a couple."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "order",
+                      "view": "all_order"
+                    },
+                    "inline": true,
+                    "title": "Orders",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-orders-by-status",
+                        "name": "Orders by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "c-orders-by-status"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "order",
+                      "view": "all_order"
+                    },
+                    "inline": true,
+                    "title": "Orders",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-sales-by-occasion",
+                        "name": "Sales by occasion",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "occasion",
+                          "op": "sum",
+                          "field": "price"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "c-sales-by-occasion"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "event",
+                      "view": "all_event"
+                    },
+                    "inline": true,
+                    "title": "Weddings and events",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-events-by-stage",
+                        "name": "Events by stage",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "c-events-by-stage"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Out today"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "all_order"
+            },
+            "inline": true,
+            "title": "Orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-today-s-run",
+                "name": "Today's run",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "deliver_on": {
+                    "relative": "today"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "l-today-s-run"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Due tomorrow"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "all_order"
+            },
+            "inline": true,
+            "title": "Orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-tomorrow-s-orders",
+                "name": "Tomorrow's orders",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "deliver_on": {
+                    "relative": "tomorrow"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "l-tomorrow-s-orders"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My designs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "all_order"
+            },
+            "inline": true,
+            "title": "Orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-assigned-to-me",
+                "name": "Assigned to me",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "l-assigned-to-me"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Events in the next 60 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "event",
+              "view": "all_event"
+            },
+            "inline": true,
+            "title": "Weddings and events",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-booked-events",
+                "name": "Booked events",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "event_on": {
+                    "relative": "next_days",
+                    "n": 60
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Final order placed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "l-booked-events"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Proposals waiting on a reply"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "event",
+              "view": "all_event"
+            },
+            "inline": true,
+            "title": "Weddings and events",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-open-proposals",
+                "name": "Open proposals",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Proposal sent"
+                }
+              }
+            ],
+            "activeViewId": "l-open-proposals"
+          }
+        }
+      ]
+    },
+    {
+      "key": "pricing-recipes",
+      "parent": "florist-shop",
+      "title": "Pricing a design from its recipe",
+      "icon": {
+        "emoji": "🧮"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A florist loses money one stem at a time. Every design starts from a recipe, and the price comes from the recipe, not from a guess at the counter."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Write the recipe first"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "List every stem, every piece of greenery, the container and the extras: ribbon, foam, the care card. Look up each stem's "
+            },
+            {
+              "text": "Cost per stem",
+              "bold": true
+            },
+            {
+              "text": " in Stems and cooler and add it up. That total goes on the order as "
+            },
+            {
+              "text": "Flower and supply cost",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The markup"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Fresh flowers are marked up three and a half times: the "
+            },
+            {
+              "text": "Priced in a design at",
+              "bold": true
+            },
+            {
+              "text": " column on each stem does that sum for you. Containers and hard goods are marked up two times. Labor is already inside the flower markup for everyday work; for sympathy and event pieces that take more than an hour, add a design fee."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The "
+            },
+            {
+              "text": "Cost of goods",
+              "bold": true
+            },
+            {
+              "text": " on each order divides the flower and supply cost by the price. Keep it at "
+            },
+            {
+              "text": "33% or less",
+              "bold": true
+            },
+            {
+              "text": ". The Pricing check marks anything over that."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Piece"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Price"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Flower and supply cost"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cost of goods"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hand-tied bouquet"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "95 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "30 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "32%"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Vase arrangement"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "145 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "44 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "30%"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Standing spray"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "275 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "86 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "31%"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Casket spray"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "425 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "132 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "31%"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When the customer names a price"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Take the price without the delivery fee."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Divide by three and a half: that is what you may spend on flowers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Build the recipe to that number, starting with the focal flowers, then filler and greens."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If they ask for peonies on a 65 USD budget, offer garden roses or ranunculus instead and say why."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Waste"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every stem that dies in the cooler is cost with no price. Keep "
+            },
+            {
+              "text": "Stems on hand",
+              "bold": true
+            },
+            {
+              "text": " honest, buy twice a week instead of once, and use the oldest stems first in everyday work. Vase life tells you which stems to sell first: peonies and delphinium before eucalyptus and ruscus."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "wedding-flow",
+      "parent": "florist-shop",
+      "title": "A wedding, from consultation to load-in",
+      "icon": {
+        "emoji": "💒"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Weddings are booked months ahead and judged in one afternoon. This is the order of work that keeps the money, the flowers and the timeline straight."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Consultation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Use the Wedding consultation template on the event row. Ask for the budget before showing anything. Count every piece: bouquets, boutonnieres, ceremony arch, centerpieces per table. The "
+            },
+            {
+              "text": "Guests",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Centerpieces",
+              "bold": true
+            },
+            {
+              "text": " numbers drive the flower order later."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Proposal"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send it within three days and move the event to "
+            },
+            {
+              "text": "Proposal sent",
+              "bold": true
+            },
+            {
+              "text": ". Build it from recipes, exactly like a daily order, and keep the flower and rental cost under a third of the total. Rentals such as arches, urns and candles cost money too; put them in the cost."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deposit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A date is only held once 30% is paid. Press "
+            },
+            {
+              "text": "Mark deposit paid",
+              "bold": true
+            },
+            {
+              "text": " on the row: it moves the event to Booked and stamps the date. "
+            },
+            {
+              "text": "Balance due",
+              "bold": true
+            },
+            {
+              "text": " shows what is left; collect it two weeks before the wedding."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Final order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Three weeks out, confirm the final count with the couple or their planner."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Place the flower order with the wholesaler and the farm for delivery four days before the wedding, so blooms have time to open."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move the event to "
+            },
+            {
+              "text": "Final order placed",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week of"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Processing day: strip, cut and hydrate every stem as it arrives."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Design day: bouquets last, the day before, kept cool."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Load-in: check the venue's timeline and the strike time. Photograph every piece in place."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Move the event to "
+            },
+            {
+              "text": "Delivered and set",
+              "bold": true
+            },
+            {
+              "text": ". Collect rentals the next morning. Compare the real flower spend with the budget on the row; if a wedding ran over, the next proposal for that venue or that size should be priced higher."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wedding"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Proposal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Flower and rental cost"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cost of goods"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Calloway and Brandt"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "9,200 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2,900 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "32%"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Ferreira and Whitlock"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "8,600 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2,650 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "31%"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
