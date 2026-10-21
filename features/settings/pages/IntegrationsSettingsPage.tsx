@@ -272,7 +272,8 @@ const DOOR_HREFS: Record<string, string> = {
 
 export function IntegrationsWorkspace({
   embedded = false,
-}: { embedded?: boolean } = {}) {
+  initialProvider = null,
+}: { embedded?: boolean; initialProvider?: string | null } = {}) {
   const organizationId = useAppSelector(selectOrganizationId);
   const userId = useAppSelector(selectUserId);
   const dispatch = useAppDispatch();
@@ -335,8 +336,17 @@ export function IntegrationsWorkspace({
   }, [userId, socialVersion]);
   const params = useSearchParams();
   const openSettingsTab = useSettingsTabNavigate();
-  const returnTarget =
-    !embedded && params ? directoryDetailFromParams(params) : null;
+  // A window opened for one provider (the chat's "Set up" / "Add Gmail") lands on its card; a
+  // settings page lands where the provider's return URL says.
+  const returnTarget = embedded
+    ? initialProvider
+      ? directoryDetailFromParams({
+          get: (name: string) => (name === "provider" ? initialProvider : null),
+        })
+      : null
+    : params
+      ? directoryDetailFromParams(params)
+      : null;
   const [selectedDetail, setSelectedDetail] = useState<string | null>(
     returnTarget,
   );

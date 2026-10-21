@@ -1,6 +1,6 @@
 import type { McpCatalogEntry } from "@ai-matrx/chat/agents/types/mcp.types";
 import { MCP_CATEGORY_META } from "@ai-matrx/chat/agents/types/mcp.types";
-import { matchesIntegrationSearch } from "@/features/settings/tabs/integration-search-match";
+import { matchesConnectorSearch } from "@ai-matrx/chat/agents/connectors/connector-search";
 import { readConnectionStatus } from "./connection-status";
 import type { IntegrationAbility } from "./provider-folds";
 import type { ConnectorDefinition } from "./types";
@@ -78,7 +78,7 @@ export function filterDirectory(
       const category =
         MCP_CATEGORY_META[item.category as keyof typeof MCP_CATEGORY_META]
           ?.label ?? item.category;
-      return matchesIntegrationSearch(
+      return matchesConnectorSearch(
         filters.query,
         `${item.name} ${item.description} ${item.vendor} ${category} ${item.keywords} ${item.accountSummary ?? ""}`,
       );

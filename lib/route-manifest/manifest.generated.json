@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1565,
+  "routeCount": 1566,
   "routes": [
     {
       "pattern": "/",
@@ -7334,6 +7334,11 @@
       "pattern": "/tasks/[id]",
       "status": "live",
       "source": "app/(core)/tasks/[id]/page.tsx"
+    },
+    {
+      "pattern": "/tasks/compare",
+      "status": "live",
+      "source": "app/(core)/tasks/compare/page.tsx"
     },
     {
       "pattern": "/tasks/new",

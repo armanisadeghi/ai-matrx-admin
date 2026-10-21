@@ -6,6 +6,10 @@ import type { McpOAuthOutcome } from "@ai-matrx/chat/agents/services/mcp-oauth/p
 const mockDispatch = jest.fn();
 const mockPopup = jest.fn();
 const mockPush = jest.fn();
+const mockOpenDirectory = jest.fn();
+jest.mock("@/features/overlays/definitions/liveIntegrationsWindow.overlay", () => ({
+  useOpenLiveIntegrationsWindow: () => mockOpenDirectory,
+}));
 jest.mock("next/navigation", () => ({ useRouter: () => ({ push: mockPush }) }));
 jest.mock("@/lib/redux/hooks", () => ({
   useAppDispatch: () => mockDispatch,
@@ -30,6 +34,13 @@ jest.mock("@/lib/toast", () => ({
   recordToast: { success: jest.fn(), error: jest.fn() },
 }));
 import { useConnectMcpServer } from "./useConnectMcpServer";
+import { awaitEffectiveOrganizationId } from "@/features/organizations/awaitWorkspace";
+import { githubConnectUrl } from "@/features/github-integration/service";
+import {
+  resetConnectIntents,
+  setBaseline,
+  takeRememberedConnectIntent,
+} from "@ai-matrx/chat/agents/connectors/connect-intent-store";
 
 const notion: McpCatalogEntry = {
   serverId: "664215cc-038b-42f0-8d6c-dbf7f033835a",
@@ -90,8 +101,8 @@ describe("MCP connection intent", () => {
   });
 
   it("opens one authorization for two presses before React rerenders", async () => {
-    let first!: Promise<void>;
-    let second!: Promise<void>;
+    let first!: Promise<boolean>;
+    let second!: Promise<boolean>;
     await act(async () => {
       first = controller.connect(notion);
       second = controller.connect(notion);
@@ -110,7 +121,7 @@ describe("MCP connection intent", () => {
   });
 
   it("clears pending on cancellation without claiming a new connection", async () => {
-    let pending!: Promise<void>;
+    let pending!: Promise<boolean>;
     await act(async () => {
       pending = controller.connect(notion);
     });
@@ -175,5 +186,72 @@ describe("MCP connection intent", () => {
       await controller.connect(notion);
     });
     expect(mockPopup).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("connecting FROM A CHAT (Arman, 2026-10-20)", () => {
+  let root: Root;
+  let container: HTMLDivElement;
+  let controller: ReturnType<typeof useConnectMcpServer>;
+  function Harness() {
+    controller = useConnectMcpServer();
+    return null;
+  }
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    resetConnectIntents();
+    container = document.createElement("div");
+    root = createRoot(container);
+    await act(async () => root.render(<Harness />));
+  });
+  afterEach(async () => {
+    await act(async () => root.unmount());
+  });
+
+  it("answers true only when the connection now exists", async () => {
+    mockPopup.mockResolvedValueOnce({ ok: true, serverId: notion.serverId });
+    await act(async () => {
+      expect(await controller.connect(notion, undefined, { conversationId: "chat" })).toBe(true);
+    });
+    mockPopup.mockResolvedValueOnce({ ok: false, cancelled: true, error: "Canceled" });
+    await act(async () => {
+      expect(await controller.connect(notion, undefined, { conversationId: "chat" })).toBe(false);
+    });
+    mockPopup.mockResolvedValueOnce({ ok: false, error: "Denied" });
+    await act(async () => {
+      expect(await controller.connect(notion, undefined, { conversationId: "chat" })).toBe(false);
+    });
+  });
+
+  it("a server that can only be set up in the directory opens the directory WINDOW on it, never a page", async () => {
+    const supabase = { ...notion, slug: "supabase", name: "Supabase" };
+    await act(async () => {
+      expect(await controller.connect(supabase, undefined, { conversationId: "chat" })).toBe(false);
+    });
+    expect(mockOpenDirectory).toHaveBeenCalledWith({ conversationId: "chat", provider: "supabase" });
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("GitHub hands the chat's baseline to the page that comes back before it leaves", async () => {
+    const github = { ...notion, slug: "github", name: "GitHub" };
+    (awaitEffectiveOrganizationId as jest.Mock).mockResolvedValue({ status: "ready", organizationId: "org" });
+    (githubConnectUrl as jest.Mock).mockReturnValue("https://github.test/install");
+    setBaseline("chat", { keys: new Set(["mcp:linear"]), sources: new Set(["mcp"]) });
+    const original = window.location;
+    const assign = jest.fn();
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { ...original, pathname: "/chat/new", assign },
+    });
+    try {
+      await act(async () => {
+        expect(await controller.connect(github, undefined, { conversationId: "chat" })).toBe(false);
+      });
+      expect(assign).toHaveBeenCalledWith("https://github.test/install");
+      // The page that comes back (a fresh conversation id on the same path) finds the baseline.
+      expect(takeRememberedConnectIntent("minted-after-redirect")?.keys.has("mcp:linear")).toBe(true);
+    } finally {
+      Object.defineProperty(window, "location", { configurable: true, value: original });
+    }
   });
 });

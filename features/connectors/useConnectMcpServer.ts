@@ -31,29 +31,49 @@ import type { McpCatalogEntry } from "@ai-matrx/chat/agents/types/mcp.types";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { awaitEffectiveOrganizationId } from "@/features/organizations/awaitWorkspace";
 import { toast, recordToast } from "@/lib/toast";
+import { useOpenLiveIntegrationsWindow } from "@/features/overlays/definitions/liveIntegrationsWindow.overlay";
+import { rememberConnectIntent } from "@ai-matrx/chat/agents/connectors/connect-intent-store";
+
+export interface ConnectMcpOptions {
+  /**
+   * The chat this connect is for. Set, a connect never leaves it: a server that can only be set
+   * up in the directory opens the directory WINDOW on it, and a connect that must leave the page
+   * (the GitHub install) hands the chat's baseline to the page that comes back, so the connection
+   * still joins this chat.
+   */
+  conversationId?: string;
+}
 
 export function useConnectMcpServer() {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const openDirectory = useOpenLiveIntegrationsWindow();
   const organizationId = useAppSelector(selectOrganizationId);
   const [connectingSlug, setConnectingSlug] = useState<string | null>(null);
   const pending = useRef(false);
 
+  /** Resolves true only when the connection now exists; false for a cancel, a failure, or a flow that left the page. */
   const connect = async (
     server: McpCatalogEntry,
     endpointOverride?: string,
-  ) => {
-    if (pending.current) return;
+    options: ConnectMcpOptions = {},
+  ): Promise<boolean> => {
+    if (pending.current) return false;
     const route =
       server.slug === "supabase" && endpointOverride
         ? "oauth"
         : mcpConnectionRouteFor(server);
 
     if (route === "configure") {
+      if (options.conversationId) {
+        rememberConnectIntent(options.conversationId);
+        openDirectory({ conversationId: options.conversationId, provider: server.slug });
+        return false;
+      }
       router.push(
         `/user-settings/integrations?provider=${encodeURIComponent(server.slug)}`,
       );
-      return;
+      return false;
     }
     if (route === "github") {
       pending.current = true;
@@ -66,8 +86,9 @@ export function useConnectMcpServer() {
         const workspace = await awaitEffectiveOrganizationId();
         if (workspace.status !== "ready") {
           toast.error(workspace.reason);
-          return;
+          return false;
         }
+        if (options.conversationId) rememberConnectIntent(options.conversationId);
         window.location.assign(
           githubConnectUrl(window.location.pathname, workspace.organizationId),
         );
@@ -75,7 +96,7 @@ export function useConnectMcpServer() {
         pending.current = false;
         setConnectingSlug(null);
       }
-      return;
+      return false;
     }
 
     pending.current = true;
@@ -102,9 +123,9 @@ export function useConnectMcpServer() {
           recordToast.error(record, `Could not connect to ${server.name}`, {
             description: outcome.error,
           });
-          return;
+          return false;
         } else {
-          return;
+          return false;
         }
       }
       // Re-read BOTH the catalog row and the server's health: a fresh
@@ -113,10 +134,12 @@ export function useConnectMcpServer() {
       if (organizationId) {
         dispatch(fetchAvailability({ organizationId })); // org-filter: server-call re-checks the health of the connection just made in the organization it was connected in
       }
+      return true;
     } catch (cause) {
       recordToast.error(record, `Could not connect to ${server.name}`, {
         description: failureLine(cause, { action: `connecting ${server.name}`, retrySafe: true }),
       });
+      return false;
     } finally {
       pending.current = false;
       setConnectingSlug(null);

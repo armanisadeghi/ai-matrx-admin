@@ -65,6 +65,8 @@ import {
 } from "@/features/connectors/attachments.service";
 import { ConnectorPromptHost } from "@/features/connectors/ConnectorPromptHost";
 import { useConnectMcpServer } from "@/features/connectors/useConnectMcpServer";
+import { useFirstPartyConnectors } from "@/features/connectors/useFirstPartyConnectors";
+import { useOpenFirstPartyConnect } from "@/features/connectors/useOpenFirstPartyConnect";
 import { resolveSystemOrgId } from "@/lib/organizations/systemOrg";
 import { createClient as createAppClient } from "@/utils/supabase/client";
 import { projectsDb } from "@/utils/supabase/projectsDb";
@@ -265,6 +267,8 @@ registerChatUi({
   AttachedResourcesSection,
   ConnectorPromptHost,
   useConnectMcpServer,
+  useFirstPartyConnectors,
+  useOpenFirstPartyConnect,
   fetchConversationAttachments,
   attachConversationResource,
   detachConversationResource,
