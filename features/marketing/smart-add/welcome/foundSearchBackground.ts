@@ -33,14 +33,14 @@ import { liveKnownDomainRules } from "@/lib/web-domains/registry";
 import { lookupSystemRun, startSystemRun } from "@/lib/workflows/system-runs";
 import { addWitnesses } from "../found/foundCards";
 import { mergeEvidence, type EvidenceItem } from "../evidence";
-import { finishedRound } from "../roundOutput";
+import { finishedRound, finishedRoundPath } from "../roundOutput";
 import { mergeFacts, type BrandFact } from "../validate/queue";
 import { visibleEvidence } from "../visibleEvidence";
 import type { WeThinkSuggestion } from "../weThink";
 import { loginSeed, type LoginSeed } from "./loginSeed";
 import { welcomeNameOf } from "./welcomeName";
 import { IDENTIFY_WORKFLOW_KEY, welcomeFirstRound } from "./welcomeRound";
-import { roundSubject, welcomeSubject } from "./welcomeSession";
+import { MAX_WELCOME_ROUNDS, roundSubject, welcomeSubject } from "./welcomeSession";
 import { welcomeFoundSomething, welcomeVerdict } from "./welcomeVerdict";
 import { FOUND_WINDOW_LINK, foundSearchState, type FoundSearchState } from "./foundSearchState";
 import { foundStateMetadata, startFoundSearchWith, type FoundSearchInfo } from "./foundSearchStart";
@@ -96,18 +96,31 @@ export async function startFoundSearch(info: FoundSearchInfo = {}): Promise<void
   );
 }
 
+/** Every round of the session that exists, in order (the door's and the background's alike; the first gap ends it). */
+export async function sessionRounds(
+  lookup: (subject: string) => Promise<{ runId: string; status: string } | null>,
+  userId: string,
+): Promise<{ runId: string; status: string }[]> {
+  const out: { runId: string; status: string }[] = [];
+  for (let n = 0; n < MAX_WELCOME_ROUNDS; n++) {
+    const run = await lookup(roundSubject(welcomeSubject(userId), n));
+    if (!run) break;
+    out.push(run);
+  }
+  return out;
+}
+
 /** Everything the session's rounds found so far, as the door would show it, and whether to tell the person. */
-async function verdictFor(dispatch: AppDispatch, user: User, rounds: number, organizationId: string) {
+async function verdictFor(user: User, runs: readonly { runId: string }[]) {
   const seed = await seedFor(user);
   const first = welcomeFirstRound(seed);
   let items = mergeEvidence(new Map<string, EvidenceItem>(), first?.items ?? []);
   let witnesses = addWitnesses(new Map(), []);
   let facts: BrandFact[] = [];
   let suggestions: Record<string, WeThinkSuggestion> = {};
-  for (let n = 0; n <= rounds; n++) {
-    const run = await lookupSystemRun(dispatch, IDENTIFY_WORKFLOW_KEY, roundSubject(welcomeSubject(user.id), n), organizationId, "This session could not be read.");
-    if (!run) continue;
-    const { data } = await getJson<{ output?: Record<string, unknown> | null }>(`/runs/${run.runId}`);
+  for (const run of runs) {
+    // Only the slice the verdict reads (roundOutput.finishedRoundPath), never the whole stored output.
+    const { data } = await getJson<{ output?: Record<string, unknown> | null }>(finishedRoundPath(run.runId));
     const r = finishedRound(data.output);
     items = mergeEvidence(items, r.evidence);
     witnesses = addWitnesses(witnesses, r.evidence);
@@ -131,9 +144,14 @@ export async function checkFoundSearch(): Promise<FoundCheck> {
   const state = foundSearchState(user);
   if (state.skip || !state.startedAt || state.shownAt || state.checkedAt || state.round < 0) return "none";
   const organizationId = await ensureOrgId(null);
-  const run = await lookupSystemRun(dispatch, IDENTIFY_WORKFLOW_KEY, roundSubject(welcomeSubject(user.id), state.round), organizationId, "This session could not be read.");
-  if (run && !TERMINAL.includes(run.status)) return "running";
-  const { verdict, seed } = await verdictFor(dispatch, user, state.round, organizationId);
+  // EVERY round of the session counts, not only the one the account recorded (live 2026-10-21: a narrowed round the
+  // door started found her and the check never read it).
+  const runs = await sessionRounds(
+    (subject) => lookupSystemRun(dispatch, IDENTIFY_WORKFLOW_KEY, subject, organizationId, "This session could not be read."),
+    user.id,
+  );
+  if (runs.some((r) => !TERMINAL.includes(r.status))) return "running";
+  const { verdict, seed } = await verdictFor(user, runs);
   const now = new Date().toISOString();
   if (!welcomeFoundSomething(verdict)) {
     await writeState({ checkedAt: now });

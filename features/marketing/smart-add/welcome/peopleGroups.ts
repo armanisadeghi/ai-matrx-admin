@@ -92,8 +92,8 @@ function links(a: EvidenceItem, b: EvidenceItem): boolean {
 function samePerson(a: EvidenceItem, b: EvidenceItem): boolean {
   const ka = idKey(a);
   if (ka.length >= 3 && ka === idKey(b)) return true;
-  const ca = cityOf(a.anchor?.location);
-  if (ca && ca === cityOf(b.anchor?.location)) return true;
+  const ca = cityOf(locationOf(a));
+  if (ca && ca === cityOf(locationOf(b))) return true;
   return links(a, b) || links(b, a);
 }
 
@@ -128,10 +128,24 @@ export function cleanLine(raw: string | null | undefined): string | null {
   return s.length >= 2 ? s : null;
 }
 
-/** The employer a LinkedIn result names ("· Experience: KGW-TV · Education: …"). */
+/** A Facebook-style intro line's work ("Johanna Klomann ; Lives in Flagstaff, Arizona ; Owner at Klomann Accounting LLC"). */
+const WORK_AT = /(?:^|[;·|]\s*)((?:Owner|Founder|Co-founder|CEO|President|Partner|Director|Manager|Works|Worked)\s+at\s+[^;·|]+)/i;
+/** The same intro's place ("Lives in Flagstaff, Arizona"). */
+const LIVES_IN = /(?:^|[;·|]\s*)Lives in\s+([^;·|]+)/i;
+
+/** The employer a LinkedIn result names ("· Experience: KGW-TV · Education: …"), or a Facebook intro's work. */
 function employerOf(i: EvidenceItem): string | null {
   const m = /Experience:\s*([^·|]+)/.exec(i.snippet ?? "");
-  return m ? cleanLine(m[1]) : null;
+  if (m) return cleanLine(m[1]);
+  const w = WORK_AT.exec(i.snippet ?? "");
+  return w ? cleanLine(w[1]) : null;
+}
+
+/** Where the candidate is: its profile's location, else the place its intro line states. */
+function locationOf(i: EvidenceItem): string | null {
+  if (i.anchor?.location) return i.anchor.location;
+  const m = LIVES_IN.exec(i.snippet ?? "");
+  return m ? m[1].trim().replace(/[.\s]+$/, "") : null;
 }
 
 /** "Decatur, Georgia, United States" → "Decatur, Georgia". */
@@ -160,8 +174,8 @@ function photoOf(items: EvidenceItem[]): PersonPhoto | null {
   return { url: best.image_url, profileId: best.profile_id, platform: best.field === "website" ? "website" : (best.platform ?? "") };
 }
 
-function lineOf(items: EvidenceItem[]): string | null {
-  const cities = items.map((i) => cityOf(i.anchor?.location)).filter(Boolean);
+function lineOf(items: EvidenceItem[], want: string): string | null {
+  const cities = items.map((i) => cityOf(locationOf(i))).filter(Boolean);
   const ok = (l: string | null): l is string => Boolean(l) && !isPlaceLine(l as string, cities);
   for (const i of items) {
     const e = employerOf(i);
@@ -170,6 +184,12 @@ function lineOf(items: EvidenceItem[]): string | null {
   for (const i of items) {
     const b = cleanLine(i.anchor?.bio_line);
     if (ok(b)) return b;
+  }
+  // Their own site's title names what they do ("Klomann Accounting LLC"), unless it is only their name.
+  for (const i of items) {
+    if (i.field !== "website") continue;
+    const t = cleanLine(i.label);
+    if (ok(t) && normName(t) !== want && normName(t) !== normName(hostOf(i))) return t;
   }
   return null;
 }
@@ -216,8 +236,8 @@ export function peopleGroups(items: readonly EvidenceItem[], searchedName: strin
         id: g[0].key,
         name: (named && nameOf(named)) || searchedName.trim(),
         photo: photoOf(g),
-        line: lineOf(g),
-        place: placeOf(g.find((i) => i.anchor?.location)?.anchor?.location),
+        line: lineOf(g, want),
+        place: placeOf(g.map(locationOf).find(Boolean)),
         accounts: g,
         strength: Math.round(g.reduce((s, i) => s + scoreOf(i), 0) * 10) / 10,
       };

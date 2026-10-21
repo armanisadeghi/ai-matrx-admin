@@ -1,9 +1,19 @@
-import { KEHINDE_WILEY, NICOLE_LONG, ROCHELLE_MOULTON } from "../fixtures/anchorFixtures";
+import { JOHANNA_KLOMANN, KEHINDE_WILEY, NICOLE_LONG, ROCHELLE_MOULTON } from "../fixtures/anchorFixtures";
 import { cleanLine, handleKey, LINE_MAX, normName, peopleGroups, placeOf, sameNameCandidates } from "../peopleGroups";
 
 const accountKeys = (p: { accounts: { key: string }[] }) => p.accounts.map((a) => a.key).sort();
 
 describe("peopleGroups on real anchor rounds", () => {
+  it("Johanna Klomann: the intro line's place and work make her a card (live 2026-10-21: zero cards)", () => {
+    const got = peopleGroups(JOHANNA_KLOMANN.items, JOHANNA_KLOMANN.searchedName);
+    expect(got.people).toHaveLength(1);
+    expect(got.more).toBe(0);
+    const [p] = got.people;
+    expect(accountKeys(p)).toEqual(["social:facebook:johanna.klomann", "website:johannaklomann.com"]);
+    expect(p.place).toBe("Flagstaff, Arizona");
+    expect(p.line).toBe("Owner at Klomann Accounting LLC");
+  });
+
   it("Nicole Long: six distinct people, strongest first, four shown and two more", () => {
     const all = peopleGroups(NICOLE_LONG.items, NICOLE_LONG.searchedName, 10);
     // Six people; the one with neither a line nor a place is no card, only counted.

@@ -1,0 +1,210 @@
+{
+ "searched_name": "Johanna Klomann",
+ "run_id": "0cc61658-ff42-4860-b299-ff74f30e8cb6",
+ "evidence": [
+  {
+   "key": "social:linkedin:johanna-klomann-cpa-pllc",
+   "url": "https://www.linkedin.com/company/johanna-klomann-cpa-pllc",
+   "hits": [
+    {
+     "rank": 4,
+     "query": "\"Johanna Klomann\" Flagstaff, AZ",
+     "engine": "google",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Klomann Accounting LLC",
+   "value": "https://www.linkedin.com/company/johanna-klomann-cpa-pllc",
+   "anchor": {
+    "kind": "account",
+    "score": 4.7,
+    "reasons": [
+     "names \"Johanna Klomann\"",
+     "a professional title",
+     "found by 1 result, best rank 4"
+    ],
+    "bio_line": "At Johanna Klomann CPA PLLC, we bring decades of experience and expertise to help individuals, small businesses, and nonprofits navigate the complexities of fin",
+    "location": "Flagstaff",
+    "followers": 46,
+    "display_name": "Klomann Accounting LLC",
+    "person_profile": false
+   },
+   "handle": "johanna-klomann-cpa-pllc",
+   "source": {
+    "url": "https://www.linkedin.com/company/johanna-klomann-cpa-pllc",
+    "kind": "social_profile",
+    "node": "person_anchor_extract",
+    "where": "linkedin profile"
+   },
+   "engines": [
+    "google"
+   ],
+   "same_as": [
+    "social:linkedin:54800060"
+   ],
+   "snippet": "At Johanna Klomann CPA PLLC, we bring decades of experience and expertise to help individuals, small businesses, and nonprofits navigate the complexities of ...",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": null,
+   "followers": 46,
+   "image_url": "https://media.licdn.com/dms/image/v2/D560BAQEzFEpTQYbD4g/company-logo_200_200/company-logo_200_200/0/1718916561574/johanna_klomann_cpa_pllc_logo?e=2147483647&v=beta&t=j1SRfmGuomSTjLRIdc-zT_sd3vS74xoTDmWmQqAEm6A",
+   "site_kind": null,
+   "confidence": 0.97,
+   "profile_id": "43b2d8ae-cd35-4cad-8b67-6e7cdb8f3c8f",
+   "raw_results": [],
+   "certainty_reasons": []
+  },
+  {
+   "key": "social:facebook:johanna.klomann",
+   "url": "https://www.facebook.com/johanna.klomann",
+   "hits": [
+    {
+     "rank": 2,
+     "query": "\"Johanna Klomann\" Flagstaff, AZ",
+     "engine": "google",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Johanna Klomann",
+   "value": "https://www.facebook.com/johanna.klomann",
+   "anchor": {
+    "kind": "account",
+    "score": 3.9,
+    "reasons": [
+     "named exactly \"Johanna Klomann\"",
+     "found by 1 result, best rank 2"
+    ],
+    "display_name": "Johanna Klomann",
+    "person_profile": false
+   },
+   "handle": "johanna.klomann",
+   "source": {
+    "url": "https://www.facebook.com/johanna.klomann",
+    "kind": "social_profile",
+    "node": "person_anchor_extract",
+    "where": "facebook profile"
+   },
+   "engines": [
+    "google"
+   ],
+   "same_as": [
+    "social:facebook:619806839"
+   ],
+   "snippet": "Johanna Klomann ; Lives in Flagstaff, Arizona ; Owner at Klomann Accounting LLC ; Studied Accountancy at Northern Arizona University ; Went to Flagstaff High School.",
+   "platform": "facebook",
+   "verified": null,
+   "certainty": null,
+   "followers": null,
+   "image_url": "https://scontent-lga3-3.xx.fbcdn.net/v/t39.30808-1/468410591_10164094930761840_5477544786328247958_n.jpg?stp=c265.0.1519.1519a_dst-jpg_tt6&cstp=mx1519x1519&ctp=s480x480&_nc_cat=106&ccb=1-7&_nc_sid=e99d92&_nc_ohc=UTD5Gj_QgzQQ7kNvwFuL7mt&_nc_oc=Adql8HlRHf8SG3LBaCCYdZfEa2BGzQfrPqeSHIFC4GuZuag1bhqnFp3ipX802l3z1lA&_nc_zt=24&_nc_ht=scontent-lga3-3.xx&_nc_gid=c4D7d6e6n1m4os3G_5GdjA&_nc_ss=78289&oh=00_AQMzzIkckWVE7KoGtXCKCX7h_Uh-iRd8Aqa-jC1zntIpiA&oe=6ADF1243",
+   "site_kind": null,
+   "confidence": 0.97,
+   "profile_id": "bf42557e-5295-4741-9185-9dff5a8270d9",
+   "raw_results": [],
+   "certainty_reasons": []
+  },
+  {
+   "key": "social:facebook:klomanncpa",
+   "url": "https://www.facebook.com/KlomannCPA",
+   "hits": [
+    {
+     "rank": 6,
+     "query": "\"Johanna Klomann\" Flagstaff, AZ",
+     "engine": "google",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Klomann Accounting LLC",
+   "value": "https://www.facebook.com/KlomannCPA",
+   "anchor": {
+    "kind": "account",
+    "score": 2.0,
+    "reasons": [
+     "mentions Flagstaff, AZ",
+     "found by 1 result, best rank 6"
+    ],
+    "bio_line": "Accounting and Bookkeeping",
+    "followers": 254,
+    "display_name": "Klomann Accounting LLC",
+    "person_profile": false
+   },
+   "handle": "KlomannCPA",
+   "source": {
+    "url": "https://www.facebook.com/KlomannCPA",
+    "kind": "social_profile",
+    "node": "person_anchor_extract",
+    "where": "facebook profile"
+   },
+   "engines": [
+    "google"
+   ],
+   "same_as": [
+    "social:facebook:100028372077139"
+   ],
+   "snippet": "2218 East Cedar Avenue, Flagstaff, AZ, United States, 86001. Details ... Don't forget to vote! No photo description available. Johanna Klomann. 1 ...",
+   "platform": "facebook",
+   "verified": null,
+   "certainty": null,
+   "followers": 254,
+   "image_url": "https://scontent-den2-1.xx.fbcdn.net/v/t39.30808-1/456647190_1226781358277588_661583881198858147_n.jpg?stp=c80.0.480.480a_dst-jpg_tt6&cstp=mx480x480&ctp=s480x480&_nc_cat=101&ccb=1-7&_nc_sid=2d3e12&_nc_ohc=oN_mI9Cx3OwQ7kNvwGycHZM&_nc_oc=AdqcYvQ_k2lkP_WV6xClPFcn668YkAbGgQqtJesaphCa72Lq7Xa1rZW8N7H8ccVJsnI&_nc_zt=24&_nc_ht=scontent-den2-1.xx&_nc_gid=bwljeagWWP3lkOfkQwlB3A&_nc_ss=78289&oh=00_AQOeSr4CXUxo8ZJPZcxHhTlTnlY8wBFl_M8N-9iOScmCRw&oe=6ADEFB9A",
+   "site_kind": null,
+   "confidence": 0.97,
+   "profile_id": "beac431f-8bc6-4ffa-ad1c-0bb256720d42",
+   "raw_results": [],
+   "certainty_reasons": []
+  },
+  {
+   "key": "website:johannaklomann.com",
+   "url": "https://johannaklomann.com",
+   "hits": [
+    {
+     "rank": 1,
+     "query": "\"Johanna Klomann\" Flagstaff, AZ",
+     "engine": "google",
+     "endpoint": "web"
+    }
+   ],
+   "field": "website",
+   "label": "Klomann Accounting LLC",
+   "value": "https://johannaklomann.com",
+   "anchor": {
+    "kind": "website",
+    "score": 5.0,
+    "reasons": [
+     "names \"Johanna Klomann\"",
+     "mentions Flagstaff, AZ",
+     "found by 1 result, best rank 1"
+    ],
+    "person_profile": false
+   },
+   "handle": "johannaklomann.com",
+   "source": {
+    "url": "https://johannaklomann.com",
+    "kind": "web_search",
+    "node": "person_anchor_extract",
+    "where": "web result 1 for \"Johanna Klomann\" Flagstaff, AZ"
+   },
+   "engines": [
+    "google"
+   ],
+   "same_as": [],
+   "snippet": "Flagstaff, Az. 86004. Office: 928-774-8995 Fax: 866-706-1017 office@klomanncpa.com. Copyright \u00a9 2025 Klomann Accounting LLC \u2014 Primer WordPress theme by GoDaddy.",
+   "platform": null,
+   "verified": null,
+   "certainty": "possible",
+   "followers": null,
+   "image_url": null,
+   "site_kind": null,
+   "confidence": 0.4,
+   "profile_id": null,
+   "raw_results": [],
+   "certainty_reasons": [
+    "names \"Johanna Klomann\"",
+    "mentions Flagstaff, AZ",
+    "found by 1 result, best rank 1"
+   ]
+  }
+ ]
+}
