@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-21T17:44:00.524Z",
+  "generated_at": "2026-10-21T18:16:35.538Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -343,6 +343,12 @@
       "filename": "20261021170000_closeagent_a_a_table_can_be_closed_to_agents.sql",
       "checksum": "055d0cb491717f17f682acd2e5e867fea1cedeb2e94b216ef1345e7c46fae002",
       "applied_at": "2026-10-21 17:07:49.447559+00"
+    },
+    "migrations/campaign/20261021180000_closeagent_b_an_ai_column_refills_on_its_own.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261021180000_closeagent_b_an_ai_column_refills_on_its_own.sql",
+      "checksum": "3d39aa0db6d965dd0e173b950b73c9845b25b44153e7032edef0a8ff42df83bd",
+      "applied_at": "2026-10-21 17:51:57.520611+00"
     },
     "migrations/campaign/20261021190000_closeformula_a_a_formula_value_knows_which_formula_made_it.sql": {
       "source": "matrx-frontend",
@@ -2137,6 +2143,12 @@
       "filename": "close_core_a_a_a_record_moves_to_another_table_with_what_does_not_fit_in_history.sql",
       "checksum": "102bea462e25bb7623d5b14e985dd1b221cba5a40c781307965da5db14d496e9",
       "applied_at": "2026-10-21 17:09:35.142107+00"
+    },
+    "migrations/campaign/close_core_a_b_a_required_column_refuses_a_blank.sql": {
+      "source": "matrx-frontend",
+      "filename": "close_core_a_b_a_required_column_refuses_a_blank.sql",
+      "checksum": "68b07dc8b8a88cde807aab7d76a71e2e3fa79ef38a5b9b2fb6222c53bd2c5b64",
+      "applied_at": "2026-10-21 18:00:12.624975+00"
     },
     "migrations/campaign/closeperf_a_a_a_door_probe_follows_its_door_when_an_argument_is_added.sql": {
       "source": "matrx-frontend",

@@ -22,8 +22,15 @@ const origin = originOf(page);
 await page.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin });
 await page.locator(".bn-editor").first().waitFor({ timeout: 240_000 });
 await resumeIfPaused(page);
-await act(page, () => page.getByRole("button", { name: /^Share$/ }).first().click());
-await act(page, () => page.getByRole("tab", { name: "Publish" }).or(page.getByRole("radio", { name: "Publish" })).first().click());
+// The Share popover's Share | Publish switch (design-system Tabs; its role differs by version).
+for (let i = 0; i < 3 && !(await page.getByTestId("publish-embed-copy").isVisible().catch(() => false)); i++) {
+  if (!(await page.locator('[aria-label="Share or publish"]').isVisible().catch(() => false)))
+    await act(page, () => page.getByRole("button", { name: /^Share$/ }).first().click());
+  await page.locator('[aria-label="Share or publish"]').waitFor({ timeout: 30_000 }).catch(() => {});
+  await act(page, () => page.locator('[aria-label="Share or publish"]').getByText("Publish", { exact: true }).first().click()).catch(() => {});
+  await page.getByTestId("publish-embed-copy").waitFor({ timeout: 30_000 }).catch(() => {});
+}
+await page.screenshot({ path: `${shots}/embed-0-share.png` });
 await page.getByTestId("publish-embed-copy").waitFor({ timeout: 60_000 });
 await page.screenshot({ path: `${shots}/embed-1-share-publish.png` });
 await act(page, () => page.getByTestId("publish-embed-copy").click());
@@ -33,7 +40,7 @@ check("Copy code puts an iframe of the page in embed mode on the clipboard", /^<
 await browser.close();
 
 // A foreign website: another origin, the snippet pasted in as-is.
-const html = `<!doctype html><html><head><title>Acme Physio</title></head><body style="font-family:system-ui;margin:24px"><h1>Acme Physio — our home program</h1>${code}<p>Footer of the foreign site</p></body></html>`;
+const html = `<!doctype html><html><head><meta charset="utf-8"><title>Acme Physio</title></head><body style="font-family:system-ui;margin:24px"><h1>Acme Physio — our home program</h1>${code}<p>Footer of the foreign site</p></body></html>`;
 const server = createServer((_q, r) => { r.writeHead(200, { "content-type": "text/html" }); r.end(html); });
 await new Promise((res) => server.listen(0, "127.0.0.1", res));
 const foreign = `http://127.0.0.1:${server.address().port}/`;

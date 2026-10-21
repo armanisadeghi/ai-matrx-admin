@@ -53,6 +53,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { DynamicIcon } from "@ai-matrx/icons";
 import { toast } from "@/lib/toast";
 
 import { cn } from "@/lib/utils";
@@ -482,7 +483,17 @@ function SortableCategoryRow({
         onToggle={onToggleCollapse}
         label={node.row.label}
       />
-      <TreeFolderIcon open={node.hasChildren && !collapsed} />
+      {node.row.iconName ? (
+        <DynamicIcon
+          name={node.row.iconName}
+          color={node.row.color || "zinc"}
+          size={4}
+          fallbackIcon="SquareMenu"
+          className="h-4 w-4 shrink-0"
+        />
+      ) : (
+        <TreeFolderIcon open={node.hasChildren && !collapsed} />
+      )}
 
       {/* Color swatch + picker */}
       <ColorSwatchButton
@@ -821,6 +832,7 @@ function CreateCategoryRow({
       <span aria-hidden="true" className="inline-block h-5 w-5" />
       <TreeDisclosure expandable={false} />
       <TreeFolderIcon />
+      <span aria-hidden="true" className="inline-block h-3 w-3 shrink-0" />
       <Input
         value={label}
         onChange={(e) => setLabel(e.target.value)}
@@ -834,7 +846,7 @@ function CreateCategoryRow({
           keyTouchedRef.current = true;
           setKey(e.target.value);
         }}
-        className="font-mono w-40"
+        className="w-40"
         data-identifier
         placeholder="category_key"
       />

@@ -41,11 +41,10 @@ import { FileIcon } from "../../styles/file-icon";
 import {
   ACTIVE_ROW,
   HOVER_ROW,
-  ROW_HEIGHT,
   TEXT_BODY,
 } from "../../styles/tokens";
 import { libraryTabId } from "../../hooks/useOpenLibraryFile";
-import { TreeDisclosure, TreeFolderIcon, treeIndentStyle } from "@/components/official/topic-tree/geometry";
+import { TREE_ROW_TEXT, TreeDisclosure, TreeFolderIcon, treeIndentStyle } from "@/components/official/topic-tree/geometry";
 
 interface LibraryTreeNodeProps {
   folder: CodeFolder;
@@ -163,7 +162,8 @@ export const PersistedLibraryFileRow: React.FC<
         }}
         className={cn(
           "flex items-center gap-1 cursor-pointer rounded-sm",
-          ROW_HEIGHT,
+          "h-7",
+          TREE_ROW_TEXT,
           "max-lg:h-11",
           TEXT_BODY,
           HOVER_ROW,
@@ -347,7 +347,8 @@ export const LibraryTreeNode: React.FC<LibraryTreeNodeProps> = ({
           }}
           className={cn(
             "flex items-center gap-1 cursor-pointer rounded-sm",
-            ROW_HEIGHT,
+            "h-7",
+            TREE_ROW_TEXT,
             "max-lg:h-11",
             TEXT_BODY,
             HOVER_ROW,
