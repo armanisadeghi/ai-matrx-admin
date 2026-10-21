@@ -1,22 +1,31 @@
-import { isDebriefModel, debriefModelIds, curatedDebriefModelIds, type DebriefModelRow } from "../debrief-models";
+import { isDebriefModel, debriefModelIds, curatedDebriefModelIds, type DebriefModelFilter, type DebriefModelRow } from "../debrief-models";
+
+/** What the knob register answers today (migration 20261022140000): the menu's filter is data, not code. */
+const FILTER: DebriefModelFilter = {
+  minContextTokens: 32_000,
+  minStrongRating: 4,
+  modelsPerMaker: 2,
+  topRatingBand: 6,
+  specialistPattern: "robot|\\blive\\b|translate|deep research|codex|safety|guard|tts|realtime|embedding|image|\\bcoder?\\b|\\bsearch\\b",
+};
 import { describeVersionNote, SYSTEM_NOTE_LABEL } from "../version-notes";
 
 const ok = { contextWindow: 200_000, interaction: "turn", input: ["text", "image"], output: ["text"] };
 
 describe("Debrief offers only text/chat models still served", () => {
   it("keeps a normal text model", () => {
-    expect(isDebriefModel({ id: "1", name: "Claude Opus 5.5", ...ok })).toBe(true);
+    expect(isDebriefModel({ id: "1", name: "Claude Opus 5.5", ...ok }, FILTER)).toBe(true);
   });
   it("drops mock, speech-to-text, image, deprecated, retired and tiny-window models", () => {
-    expect(isDebriefModel({ id: "m", name: "Mock Model (No-Cost Test)", ...ok })).toBe(false);
-    expect(isDebriefModel({ id: "s", name: "Deepgram Nova-3 (Streaming STT)", contextWindow: null, interaction: "realtime", input: ["audio"], output: ["text"] })).toBe(false);
-    expect(isDebriefModel({ id: "i", name: "Gemini 2.5 Flash Image", contextWindow: 66_000, interaction: "turn", input: ["text"], output: ["text", "image"] })).toBe(false);
-    expect(isDebriefModel({ id: "d", name: "Old", isDeprecated: true, ...ok })).toBe(false);
-    expect(isDebriefModel({ id: "r", name: "Gone", retiredAt: "2026-01-01", ...ok })).toBe(false);
-    expect(isDebriefModel({ id: "a", name: "ALLaM 2 7B", contextWindow: 4_100, interaction: "turn", input: ["text"], output: ["text"] })).toBe(false);
+    expect(isDebriefModel({ id: "m", name: "Mock Model (No-Cost Test)", ...ok }, FILTER)).toBe(false);
+    expect(isDebriefModel({ id: "s", name: "Deepgram Nova-3 (Streaming STT)", contextWindow: null, interaction: "realtime", input: ["audio"], output: ["text"] }, FILTER)).toBe(false);
+    expect(isDebriefModel({ id: "i", name: "Gemini 2.5 Flash Image", contextWindow: 66_000, interaction: "turn", input: ["text"], output: ["text", "image"] }, FILTER)).toBe(false);
+    expect(isDebriefModel({ id: "d", name: "Old", isDeprecated: true, ...ok }, FILTER)).toBe(false);
+    expect(isDebriefModel({ id: "r", name: "Gone", retiredAt: "2026-01-01", ...ok }, FILTER)).toBe(false);
+    expect(isDebriefModel({ id: "a", name: "ALLaM 2 7B", contextWindow: 4_100, interaction: "turn", input: ["text"], output: ["text"] }, FILTER)).toBe(false);
   });
   it("lists ids", () => {
-    expect(debriefModelIds([{ id: "1", name: "A", ...ok }, { id: "2", name: "Mock", ...ok }])).toEqual(["1"]);
+    expect(debriefModelIds([{ id: "1", name: "A", ...ok }, { id: "2", name: "Mock", ...ok }], FILTER)).toEqual(["1"]);
   });
 });
 
@@ -77,7 +86,7 @@ describe("Debrief opens on a short curated list, rule-based from the catalog", (
   ];
   const names = (ids: string[]) => new Set(ids);
   it("keeps the strongest per maker and their top band, and drops small, specialist and unrated models", () => {
-    const picked = names(curatedDebriefModelIds(catalog));
+    const picked = names(curatedDebriefModelIds(catalog, FILTER));
     for (const n of ["Claude Sonnet 5.5", "Claude Opus 5.5", "Claude Fable 5.1", "GPT-6.1 Sol", "GPT-5.6 Terra", "GPT-6 Astra", "Gemini 4 Argon", "Gemini Pro Latest"]) {
       expect(picked.has(n)).toBe(true);
     }
@@ -86,14 +95,32 @@ describe("Debrief opens on a short curated list, rule-based from the catalog", (
     }
   });
   it("is short, and a subset of what Debrief may read with", () => {
-    const curated = curatedDebriefModelIds(catalog);
+    const curated = curatedDebriefModelIds(catalog, FILTER);
     expect(curated.length).toBeLessThan(debriefModelIds(catalog).length);
     expect(curated.every((id) => debriefModelIds(catalog).includes(id))).toBe(true);
   });
   it("follows the catalog: a newer rated model takes the place, no ids are named", () => {
     const next = [...catalog, m("Claude Opus 6", "Anthropic", 5, "2026-11-01", true, true)];
-    expect(names(curatedDebriefModelIds(next)).has("Claude Opus 6")).toBe(true);
+    expect(names(curatedDebriefModelIds(next, FILTER)).has("Claude Opus 6")).toBe(true);
     const src = require("fs").readFileSync(require("path").join(__dirname, "../debrief-models.ts"), "utf8");
     expect(src).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
+    // The menu's settings are knobs (chat.debrief.*), not constants or a hard-coded list in this file.
+    expect(src).not.toMatch(/\bconst (MIN_|TOP_BAND|PER_MAKER|SPECIALIST)/);
+    expect(src).not.toMatch(/robot\|/);
+  });
+});
+
+describe("the Debrief menu filter comes from the knob register", () => {
+  const ok = { contextWindow: 200_000, interaction: "turn", input: ["text"], output: ["text"] } as const;
+  const rows: DebriefModelRow[] = [{ id: "1", name: "Big", maker: "A", costRating: 5, isPrimary: true, ...ok }];
+  it("with no answer yet there is no short menu and no context floor", () => {
+    expect(curatedDebriefModelIds(rows, null)).toEqual([]);
+    expect(isDebriefModel({ id: "s", name: "Small", contextWindow: 4_000, interaction: "turn", input: ["text"], output: ["text"] }, null)).toBe(true);
+  });
+  it("the floor, per-maker count and specialist pattern follow the values given", () => {
+    expect(isDebriefModel({ id: "m", name: "Mid", ...ok, contextWindow: 66_000 }, { ...FILTER, minContextTokens: 100_000 })).toBe(false);
+    expect(curatedDebriefModelIds(rows, { ...FILTER, specialistPattern: "big" })).toEqual([]);
+    expect(curatedDebriefModelIds(rows, FILTER)).toEqual(["1"]);
+    expect(curatedDebriefModelIds(rows, { ...FILTER, specialistPattern: "(" })).toEqual([]);
   });
 });

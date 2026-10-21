@@ -16,7 +16,27 @@ describe("a Studio save writes a person-facing change note", () => {
   it("both save paths go through saveWithNote", () => {
     const c = read("../components/StudioControls.tsx");
     expect(c.match(/await saveWithNote\(dispatch/g)?.length).toBe(2);
-    expect(c).toContain("change_note: note");
+    // Lane 5A-c: the note goes through the server door; the browser never writes the version row.
+    expect(c).toContain("writeVersionNote(dispatch, agentId, version, note)");
+    expect(c).not.toMatch(/definition_version"\)\s*\.update\(/);
+    expect(c).not.toMatch(/\.update\(\{ change_note/);
+  });
+  it("version views read tier and system, never created_by", () => {
+    const c = read("../components/StudioControls.tsx");
+    expect(c).toContain("created_by_tier, created_by_system");
+    expect(c).not.toMatch(/select\("[^"]*created_by[,"]/);
+  });
+  it("the Debrief model picker has its own row: it never shares the button row of a narrow pane (the labels overlapped)", () => {
+    const c = read("../components/StudioControls.tsx");
+    const tab = c.slice(c.indexOf("function DebriefTab"));
+    const head = tab.slice(tab.indexOf("<TabHead>"), tab.indexOf("</TabHead>"));
+    expect(head).toContain("Debrief the latest answer");
+    expect(head).not.toContain("ModelListDropdown");
+    expect(tab).toContain('className="w-full min-w-0" data-testid="studio-debrief-model"');
+  });
+  it("the door is the server's agent-studio version-note route", () => {
+    const api = read("../version-note-api.ts");
+    expect(api).toContain("/agent-studio/agents/${agentId}/version-note");
   });
 });
 
