@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useGoogleConnectionInventory } from "@/features/marketing/google/hooks";
-import { useOpenGoogleConnectWindow } from "@/features/overlays/definitions/googleConnectWindow.overlay";
+import { useOpenFirstPartyConnect } from "./useOpenFirstPartyConnect";
 import { useMcpCatalog } from "@ai-matrx/chat/agents/hooks/useMcpTools";
 import {
   connectServer,
@@ -30,7 +30,7 @@ export function useLiveConnectors() {
   const inventory = useGoogleConnectionInventory();
   const mcp = useMcpCatalog();
   const mcpError = useAppSelector(selectMcpCatalogError);
-  const openGoogleConnect = useOpenGoogleConnectWindow();
+  const openFirstPartyConnect = useOpenFirstPartyConnect();
   const [connectingId, setConnectingId] = useState<ConnectorId | null>(null);
   const [isNavigating, startTransition] = useTransition();
 
@@ -73,11 +73,12 @@ export function useLiveConnectors() {
 
   const connect = async (id: ConnectorId) => {
     if (id === "google-workspace" || id === "gmail") {
-      openGoogleConnect({
-        reason:
-          id === "gmail"
-            ? "so an agent can draft email you review before it sends"
-            : "so an agent can work with docs and sheets you choose",
+      // The product's own consent, not the Docs-and-Sheets connect window: that window grants
+      // `drive.file` only, so a "Gmail" chip that opened it could never connect Gmail (Arman,
+      // 2026-10-20: "connecting my gmail isn't working"). The strip re-reads the inventory the
+      // press leaves behind, so the chip turns "connected" on its own.
+      await openFirstPartyConnect("google", {
+        productKey: id === "gmail" ? "gmail" : "workspace_files",
       });
       return;
     }

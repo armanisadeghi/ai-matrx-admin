@@ -235,23 +235,15 @@ describe("connecting FROM A CHAT (Arman, 2026-10-20)", () => {
   it("GitHub hands the chat's baseline to the page that comes back before it leaves", async () => {
     const github = { ...notion, slug: "github", name: "GitHub" };
     (awaitEffectiveOrganizationId as jest.Mock).mockResolvedValue({ status: "ready", organizationId: "org" });
-    (githubConnectUrl as jest.Mock).mockReturnValue("https://github.test/install");
     setBaseline("chat", { keys: new Set(["mcp:linear"]), sources: new Set(["mcp"]) });
-    const original = window.location;
-    const assign = jest.fn();
-    Object.defineProperty(window, "location", {
-      configurable: true,
-      value: { ...original, pathname: "/chat/new", assign },
+    // A hash change is the one navigation jsdom performs, so the redirect itself is real here.
+    window.history.pushState({}, "", "/chat/new");
+    (githubConnectUrl as jest.Mock).mockReturnValue("#github-install");
+    await act(async () => {
+      expect(await controller.connect(github, undefined, { conversationId: "chat" })).toBe(false);
     });
-    try {
-      await act(async () => {
-        expect(await controller.connect(github, undefined, { conversationId: "chat" })).toBe(false);
-      });
-      expect(assign).toHaveBeenCalledWith("https://github.test/install");
-      // The page that comes back (a fresh conversation id on the same path) finds the baseline.
-      expect(takeRememberedConnectIntent("minted-after-redirect")?.keys.has("mcp:linear")).toBe(true);
-    } finally {
-      Object.defineProperty(window, "location", { configurable: true, value: original });
-    }
+    expect(window.location.hash).toBe("#github-install");
+    // The page that comes back (a fresh conversation id on the same path) finds the baseline.
+    expect(takeRememberedConnectIntent("minted-after-redirect")?.keys.has("mcp:linear")).toBe(true);
   });
 });
