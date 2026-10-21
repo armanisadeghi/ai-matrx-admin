@@ -20,8 +20,7 @@
  *
  * Mapping defaults mirror the PARSER'S OWN behavior (it is the shape
  * authority), never invented:
- * - set `title` falls back to "Timeline" (parser: `title || 'Timeline'`).
- * - event `date` falls back to "TBD" (parser: `eventDate || 'TBD'`).
+ * - set `title` and event `date` stay empty when the source gives none: nothing is invented (review 5).
  * - event `description` is empty when none was written (parser: no
  *   description lines → ""; review 2026-10-19 #14 — never the title again).
  * - event `id` is synthesized as `${period}-${index}` when absent (the
@@ -147,7 +146,7 @@ function mapEvent(
     // The parser's exact id scheme — the component keys completion on it.
     id: nonEmptyString(event.id) ?? `${periodName}-${index}`,
     title,
-    date: nonEmptyString(event.date) ?? "TBD",
+    date: nonEmptyString(event.date) ?? "",
     description: nonEmptyString(event.description) ?? "",
   };
 
@@ -205,7 +204,7 @@ export const timelineServerDataFromEnvelope = makeCompleteEnvelopeBridge(
 
     const serverData: Record<string, unknown> = {
       // The parser's own fallback title.
-      title: nonEmptyString(value.title) ?? "Timeline",
+      title: nonEmptyString(value.title) ?? "",
       periods,
     };
     const description = nonEmptyString(value.description);
