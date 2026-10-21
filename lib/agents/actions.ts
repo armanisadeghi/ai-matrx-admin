@@ -12,7 +12,8 @@ import { sanitizeAgentToolIds } from "@ai-matrx/chat/agents/redux/agent-definiti
 import { currentRequestLoginHref } from "@/utils/auth/server-login-href";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import { agentNameTaken } from "@ai-matrx/chat/agents/redux/agent-definition/agentNameTaken";
-import { resolveLiveModelId, type SuccessionClient } from "@ai-matrx/agents/models";
+import { resolveLiveModelId, resolveNewAgentModelId, type SuccessionClient } from "@ai-matrx/agents/models";
+import { readEffectiveKnobOnServer } from "@/lib/scoped-config/effectiveKnobs.server";
 
 type AgentInsert = Omit<
   Database["agent"]["Tables"]["definition"]["Insert"],
@@ -98,6 +99,19 @@ async function insertSeededDefinition(
   // A seed's model is a constant in code that outlives the model it names: write its live successor,
   // never a superseded model the builder's picker would "heal" on first view (an unsaved model
   // change nobody made on a brand-new agent).
+  // A seed that pins no model (the blank agent, templates) starts on the new-agent knob's model —
+  // `agents.model_prefs.agent_authoring_default_model` through the package resolver, never a literal
+  // and never null.
+  if (!row.model_id) {
+    const { modelId } = await resolveNewAgentModelId((fullKey) => {
+      const dot = fullKey.indexOf(".");
+      return readEffectiveKnobOnServer(
+        { feature: fullKey.slice(0, dot), key: fullKey.slice(dot + 1) },
+        { organizationId: row.organization_id ?? null },
+      );
+    });
+    row = { ...row, model_id: modelId };
+  }
   let attempt = row.model_id
     ? { ...row, model_id: await resolveLiveModelId(supabase as unknown as SuccessionClient, row.model_id) }
     : row;

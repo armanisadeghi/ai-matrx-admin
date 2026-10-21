@@ -23,6 +23,11 @@ const fakeSupabase = {
     }),
   }),
 };
+const KNOB_MODEL = "3f1c9a52-7b4e-4d2a-9c61-5e8a0b2d7f15";
+jest.mock("@/lib/scoped-config/effectiveKnobs.server", () => ({
+  readEffectiveKnobOnServer: async (address: { feature: string; key: string }) =>
+    `${address.feature}.${address.key}` === "agents.model_prefs.agent_authoring_default_model" ? KNOB_MODEL : undefined,
+}));
 jest.mock("@/utils/supabase/server", () => ({ createClient: async () => fakeSupabase }));
 jest.mock("@/utils/supabase/claimsUser", () => ({ getClaimsUser: async () => ({ data: { user: { id: "me" } }, error: null }) }));
 jest.mock("@/utils/auth/adminLaneServer", () => ({ hasAdminPower: async () => false }));
@@ -37,6 +42,12 @@ describe("a seeded agent is written on a live model", () => {
     inserted.length = 0;
     await expect(createAgentFromSeed({ ...BLANK_AGENT_SEED, modelId: "617abdcd-79e2-4a4b-be76-4a9960cdffa1" }, "org-1")).rejects.toMatchObject({ to: "/agents/new-agent/build" });
     expect(inserted[0]?.model_id).toBe("3f1c9a52-7b4e-4d2a-9c61-5e8a0b2d7f15");
+  });
+
+  it("a blank seed created through the action gets the knob's model, never null", async () => {
+    inserted.length = 0;
+    await expect(createAgentFromSeed(BLANK_AGENT_SEED, "org-1")).rejects.toMatchObject({ to: "/agents/new-agent/build" });
+    expect(inserted[0]?.model_id).toBe(KNOB_MODEL);
   });
 
   it("the blank seed pins no model: the knob decides where the agent is created", () => {
