@@ -76,6 +76,8 @@ export interface ActivityRecord {
   id: string | null;
   user_id: string | null;
   href: string | null;
+  /** An error row's owning conversation: the secondary door beside the error record. */
+  conversation_id?: string | null;
 }
 
 export interface ActivityItem {
@@ -106,7 +108,7 @@ const str = (v: Json | undefined): string | null => (typeof v === "string" && v 
 
 function parseRecord(v: Json | undefined): ActivityRecord | null {
   if (!isJsonObject(v) || typeof v.type !== "string") return null;
-  return { type: v.type, id: str(v.id), user_id: str(v.user_id), href: str(v.href) };
+  return { type: v.type, id: str(v.id), user_id: str(v.user_id), href: str(v.href), conversation_id: str(v.conversation_id) };
 }
 
 /** The RPC's jsonb, checked field by field (a malformed row is dropped, never guessed). */

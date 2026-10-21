@@ -5,9 +5,10 @@
  * the member page's Notes tab (its one home); a save here passes it back unchanged.
  * Advisory in v1 — values are stored, tracked, and surfaced; hard enforcement into the
  * upload/usage paths is a deliberate follow-up (see features/organizations/admin/FEATURE.md).
+ * Not stated in the UI: controls are tracked and shown, not yet enforced.
  */
 import React, { useState } from "react";
-import { Info, Loader2, Save } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
@@ -112,14 +113,6 @@ export function MemberControlsForm({ orgId, member, onSaved }: Props) {
             placeholder="No limit"
           />
         </div>
-      </div>
-
-      <div className="flex items-start gap-2 rounded-md bg-muted/50 p-2.5 text-xs text-muted-foreground">
-        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-        <span>
-          Controls are tracked and shown across the admin dashboard. Hard enforcement (blocking
-          uploads / usage at the limit) is wired in a follow-up — see the feature doc.
-        </span>
       </div>
 
       <div className="flex justify-end">

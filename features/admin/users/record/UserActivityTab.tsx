@@ -30,6 +30,7 @@ import { Button, EmptyState, RegionSkeleton, Tabs } from "@ai-matrx/design-syste
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import AppLink from "@/components/navigation/AppLink";
 import { ScopedPersonRef } from "./ScopedPersonRef";
+import { conversationHref as conversationHref_ } from "@/features/hindsight/subject-doors";
 import { ActivityRecordDoor } from "./ActivityRecordDoor";
 import { adminActionWords } from "../lib/adminActionWords";
 import { useRecordLoad } from "./useRecordLoad";
@@ -93,6 +94,10 @@ function ActivityRow({ item, personId, scope }: { item: ActivityItem; personId: 
   // Admin rows read in the Admin history tab's words (one formatter for the same audit row).
   const words = item.kind === "admin" || item.kind === "org_admin" ? adminActionWords(item.title) : item.title;
   const peekType = !href && scope.kind !== "organization" && item.record?.id && isPeekRecordType(item.record.type) ? item.record.type : null;
+  const conversationHref =
+    item.kind === "error" && scope.kind !== "organization" && item.record?.conversation_id
+      ? conversationHref_(item.record.conversation_id, "admin")
+      : null;
   const title = href ? (
     <AppLink href={href} className="truncate font-medium text-foreground hover:text-primary">
       {words}
@@ -124,6 +129,11 @@ function ActivityRow({ item, personId, scope }: { item: ActivityItem; personId: 
             </span>
           ) : null}
         </div>
+        {conversationHref ? (
+          <AppLink href={conversationHref} className="type-secondary text-muted-foreground hover:text-primary">
+            Conversation
+          </AppLink>
+        ) : null}
         {item.detail ? <p className="truncate type-secondary text-muted-foreground">{item.detail}</p> : null}
       </div>
       <time dateTime={item.at} title={exactTime(item.at)} className="shrink-0 type-meta text-muted-foreground">

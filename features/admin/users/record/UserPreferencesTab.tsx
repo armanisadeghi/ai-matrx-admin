@@ -7,5 +7,5 @@ import { UserPreferencesView } from "../components/PreferencesTabClient";
 import type { UserTabBodyProps } from "./UserRecordPage";
 
 export function UserPreferencesTab({ userId, shareForAi }: UserTabBodyProps) {
-  return <UserPreferencesView userId={userId} onData={shareForAi} />;
+  return <UserPreferencesView userId={userId} onData={shareForAi} embedded />;
 }

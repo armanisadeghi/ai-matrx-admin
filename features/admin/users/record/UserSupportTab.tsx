@@ -66,14 +66,15 @@ function feedbackColumns(scope: UserRecordScope): MatrxColumnDef<FeedbackRow>[] 
     accessorKey: "description",
     header: "Feedback",
     width: 360,
+    // data-kind-source: the person's own words, verbatim (they can name a kind key; that is their text, not a leak).
     // The feedback console is the platform's; an organization's seat reads the words here.
     cell: (r) =>
       scope.kind === "platform" ? (
-        <AppLink href={feedbackHref(r.id)} className="line-clamp-1 hover:text-primary">
+        <AppLink href={feedbackHref(r.id)} data-kind-source="explicit" className="line-clamp-1 hover:text-primary">
           {r.description || "Untitled"}
         </AppLink>
       ) : (
-        <span className="line-clamp-1">{r.description || "Untitled"}</span>
+        <span data-kind-source="explicit" className="line-clamp-1">{r.description || "Untitled"}</span>
       ),
   },
   { id: "feedback_type", accessorKey: "feedback_type", header: "Type", filter: "select", width: 110 },

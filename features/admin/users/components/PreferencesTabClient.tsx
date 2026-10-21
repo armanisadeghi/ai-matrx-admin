@@ -384,7 +384,7 @@ function summarize(value: unknown): string {
   return keys.length ? keys.join(", ") : "{}";
 }
 
-export function UserPreferencesView({ userId, onData }: { userId: string; /** What the view loaded, for the record page's Copy for AI. */ onData?: (data: { preferences: Record<string, unknown>; exists: boolean; updated_at: string | null }) => void }) {
+export function UserPreferencesView({ userId, onData, embedded = false }: { userId: string; /** On the user page the page-level Drift overview / Back to Accounts / picker controls do not show. */ embedded?: boolean; /** What the view loaded, for the record page's Copy for AI. */ onData?: (data: { preferences: Record<string, unknown>; exists: boolean; updated_at: string | null }) => void }) {
   const router = useRouter();
   const [rows, setRows] = useState<ModuleRow[]>([]);
   const [meta, setMeta] = useState<{
@@ -459,21 +459,26 @@ export function UserPreferencesView({ userId, onData }: { userId: string; /** Wh
   return (
     <div className="flex h-full flex-col gap-3 p-4">
       <div className="flex flex-wrap items-center gap-2">
+        {embedded ? null : (
         <Button
           icon={<ArrowLeft />}
           variant="quiet"
           onClick={() => pushAppHref(router, "/administration/users/preferences")}
         > Drift overview
         </Button>
-        <h2 className="flex items-center gap-1.5 text-sm font-semibold">
-          Preferences for <AdminUserRef userId={userId} />
-        </h2>
-        <PreferencesUserPicker />
+        )}
+        {embedded ? null : (
+          <h2 className="flex items-center gap-1.5 text-sm font-semibold">
+            Preferences for <AdminUserRef userId={userId} />
+          </h2>
+        )}
+        {embedded ? null : <PreferencesUserPicker />}
         {meta.updated_at ? (
           <span className="text-xs text-muted-foreground">
             updated {new Date(meta.updated_at).toLocaleString()}
           </span>
         ) : null}
+        {embedded ? null : (
         <Button
           icon={<X />}
           variant="quiet"
@@ -481,6 +486,7 @@ export function UserPreferencesView({ userId, onData }: { userId: string; /** Wh
           onClick={() => pushAppHref(router, "/administration/users")}
         > Back to Accounts
         </Button>
+        )}
       </div>
 
       {error ? (
