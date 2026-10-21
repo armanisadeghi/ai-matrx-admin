@@ -3,6 +3,8 @@
 -- RED: run alone against the old body (share_grant refuses a Table for a non-member).
 -- GREEN: run after migrations/campaign/atshare_a_a_whole_table_can_be_shared_outside_the_organization.sql.
 -- Plain SQL, no psql meta commands: run with scripts/campaign-tests/viewlink_run.py (one transaction, always rolled back).
+-- ORG-CLEANUP (2026-10-18): the suite only asserts, so it builds inside one transaction and leaves nothing.
+begin;
 do $green$
 declare
   c_admin   constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';
@@ -85,3 +87,4 @@ begin
   raise notice 'AT-SHARE row 1 GREEN';
 end;
 $green$;
+rollback;

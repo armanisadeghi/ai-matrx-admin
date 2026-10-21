@@ -33,6 +33,8 @@ const ALLOWED = {
   "scripts/access-matrix/check-org-ownership.ts":
     "mints prefixed disposable users AND organizations and its teardown verifies zero prefixed rows survive",
   "scripts/campaign-tests/portal_green.sql": "its DO block ends in an unconditional TEARDOWN raise, so the whole block rolls back",
+  "scripts/campaign-tests/chairconf_a_custom_table_can_be_confidential_gate.sql":
+    "an approval must survive a COMMIT (the ledger is append-only), so its fixture commits — and its last transaction archives it; no run leaves an open organization",
   "scripts/campaign-tests/portal_red.sql": "its DO block ends in an unconditional ROLLBACK VERIFIED raise, so the whole block rolls back",
 };
 

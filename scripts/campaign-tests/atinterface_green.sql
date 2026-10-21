@@ -14,6 +14,8 @@
 --   6 an element with a current-user column but no me_only shows the client another client's rows (atinterface_b)
 -- Runs inside one transaction and always ends in ROLLBACK (scripts/campaign-tests/viewlink_run.py <this> [<migration>]).
 
+-- ORG-CLEANUP (2026-10-18): the suite only asserts, so it builds inside one transaction and leaves nothing.
+begin;
 do $t$
 declare
   c_admin constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';
@@ -132,3 +134,4 @@ begin
   raise notice '5 PASS - test@test.com, shared nothing, reads nothing.';
 end
 $t$;
+rollback;

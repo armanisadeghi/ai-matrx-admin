@@ -13,6 +13,7 @@
  *   (credentials from the environment: TEST_SEAT_PASSWORD, AI_ADMIN_PASSWORD)
  */
 import { createClient } from "@supabase/supabase-js";
+import { fixtureOrg } from "../lib/use-case-org.mjs";
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -40,26 +41,24 @@ if (process.env.ARCHIVE) {
     p_organization_id: org, p_table_id: process.env.TABLE, p_chunk: 500, p_include_table: true,
   }));
   must("home", await reyes.schema("custom").rpc("record_delete", { p_organization_id: org, p_record_id: process.env.HOME_ID }));
-  must("organization_archive", await owner.schema("iam").rpc("organization_archive", {
-    p_org: org, p_confirm_name: ORG_NAME, p_reason: "SHARE-LANE-2 walk disposable, finished",
-  }));
-  console.log("archived", org);
+  // The organization is the standing fixture (found by slug next run), so it stays open.
+  console.log("cleaned", org);
   process.exit(0);
 }
 
-const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "");
-const org = must("org_create", await reyes.rpc("org_create", {
-  p_name: ORG_NAME,
-  p_slug: `cedar-hollow-veterinary-${stamp}`,
-  p_description: "Two-vet companion-animal practice: appointments, case notes and kennel schedule.",
-  p_logo_url: null, p_logo_file_id: null, p_website: null, p_settings: {}, p_abbreviation: "CHV",
-}));
-const inv = must("inv_create", await reyes.rpc("inv_create", {
+const { org, fresh } = await fixtureOrg(reyes, {
+  name: ORG_NAME,
+  slug: "cedar-hollow-veterinary-share-lane-2",
+  description: "Two-vet companion-animal practice: appointments, case notes and kennel schedule.",
+  abbreviation: "CHV",
+  settings: { test_fixture: true, fixture_marker: "standing:share-lane-2" },
+});
+const inv = !fresh ? null : must("inv_create", await reyes.rpc("inv_create", {
   p_target_type: "organization", p_target_id: org.id, p_email: "admin@admin.com", p_role: "admin",
   p_org_id: org.id, p_invited_user_id: null,
   p_expires_at: new Date(Date.now() + 7 * 864e5).toISOString(),
 }));
-must("inv_accept", await owner.rpc("inv_accept", { p_token: inv.token, p_hr_half_handled: false }));
+if (inv) must("inv_accept", await owner.rpc("inv_accept", { p_token: inv.token, p_hr_half_handled: false }));
 
 const home = must("home", await reyes.schema("custom").rpc("record_write", {
   p_organization_id: org.id,
