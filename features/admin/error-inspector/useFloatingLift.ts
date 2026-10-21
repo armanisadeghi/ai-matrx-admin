@@ -30,7 +30,9 @@ export function useFloatingLift<T extends HTMLElement>(): [(node: T | null) => v
     let timer: ReturnType<typeof setTimeout> | null = null;
     const place = () => {
       timer = null;
-      const next = floatingLiftFor(element, current) ?? 0;
+      // Within the lower half of the screen only: on a list every row has a checkbox, and a badge
+      // that flew to the top of the page read as a different thing. No free spot → it rests.
+      const next = floatingLiftFor(element, current, window.innerHeight / 2) ?? 0;
       if (next !== current) {
         current = next;
         setLift(next);
