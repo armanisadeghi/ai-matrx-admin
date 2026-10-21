@@ -55,6 +55,7 @@ interface TroubleshootingData {
   title: string;
   description?: string;
   issues: TroubleshootingIssue[];
+  looseLines?: string[];
 }
 
 export interface TroubleshootingState {
@@ -467,6 +468,13 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
 
               {/* Issues List */}
               <div ref={blockContentRef} className="space-y-4">
+                {troubleshooting.issues.length === 0 && troubleshooting.looseLines && (
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-foreground" data-testid="troubleshooting-loose-lines">
+                    {troubleshooting.looseLines.map((text, index) => (
+                      <li key={index}>{text}</li>
+                    ))}
+                  </ul>
+                )}
                 {filteredIssues.map((issue) => {
                   const isExpanded = expandedIssues.has(issue.id);
                   const severityIcon = getSeverityIcon(issue.severity);

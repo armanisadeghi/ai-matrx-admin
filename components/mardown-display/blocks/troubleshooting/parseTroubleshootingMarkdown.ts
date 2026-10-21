@@ -42,7 +42,11 @@ export type TroubleshootingIssue = Omit<
 export type TroubleshootingData = Omit<
   TroubleshootingGuide,
   typeof KIND_KEY | "issues"
-> & { issues: TroubleshootingIssue[] };
+> & {
+  issues: TroubleshootingIssue[];
+  /** Lines the guide wrote before any "**Symptom:**": shown as written, never reshaped into an invented issue. */
+  looseLines?: string[];
+};
 
 /**
  * Parses markdown content into structured troubleshooting data
@@ -74,7 +78,8 @@ export function parseTroubleshootingMarkdown(content: string): TroubleshootingDa
   // Fence opener/closer lines by THE one code-range rule (@ai-matrx/content-ir/source).
   const fenceKinds = fenceLineKinds(lines.join('\n'));
   
-  let title = 'Troubleshooting Guide';
+  let title = '';
+  const looseLines: string[] = [];
   let description: string | undefined;
   const issues: TroubleshootingIssue[] = [];
   let currentIssue: TroubleshootingIssue | null = null;
@@ -128,6 +133,12 @@ export function parseTroubleshootingMarkdown(content: string): TroubleshootingDa
       continue;
     }
 
+    // Text before the first symptom that is not the heading or description is kept as written.
+    if (!currentIssue && !line.startsWith('**Symptom:**') && !line.startsWith('#')) {
+      looseLines.push(line.replace(/^(?:[-*]|\d+\.)\s+/, ''));
+      continue;
+    }
+
     // Parse symptom (**Symptom:** Description)
     if (line.startsWith('**Symptom:**')) {
       // Save previous issue if exists
@@ -146,7 +157,7 @@ export function parseTroubleshootingMarkdown(content: string): TroubleshootingDa
       const symptom = line.replace('**Symptom:**', '').trim();
       currentIssue = {
         id: `issue-${issueIdCounter++}`,
-        symptom: symptom || 'Unknown Issue',
+        symptom,
         causes: [],
         solutions: []
       };
@@ -241,30 +252,12 @@ export function parseTroubleshootingMarkdown(content: string): TroubleshootingDa
     issues.push(currentIssue);
   }
 
-  // If no issues were parsed, create a default structure
-  if (issues.length === 0) {
-    issues.push({
-      id: 'issue-1',
-      symptom: 'General Issue',
-      description: 'No specific symptoms identified',
-      causes: ['Unknown cause'],
-      solutions: [{
-        id: 'solution-1',
-        title: 'General Solution',
-        description: 'Review the content for troubleshooting steps',
-        steps: [{
-          id: 'step-1',
-          title: 'Review Documentation',
-          description: 'Check the relevant documentation for guidance'
-        }]
-      }]
-    });
-  }
-
+  // No issues parsed: the guide has none to show. Nothing is made up to stand in for one.
   return {
     title,
     description,
-    issues
+    issues,
+    ...(issues.length === 0 && looseLines.length > 0 ? { looseLines } : {})
   };
 }
 
@@ -324,8 +317,8 @@ function parseStepText(text: string, id: string): TroubleshootingStep {
 
   return {
     id,
-    title: title || 'Step',
-    description: description || 'No description provided',
+    title,
+    description,
     links: links.length > 0 ? links : undefined,
     difficulty,
     estimatedTime

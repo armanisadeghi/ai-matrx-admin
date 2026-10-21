@@ -267,13 +267,13 @@ export const parseResearchMarkdown = (content: string): ResearchData | null => {
           // If no structured findings found, create a general finding with the content
           const finding: ResearchFinding = {
             id: `finding-general`,
-            title: 'General Research Content',
-            primarySource: 'Multiple Sources',
+            title: '',
+            primarySource: '',
             additionalSources: [],
             urls: [],
             keyDetails: section.content,
-            significance: 'Contains research findings and discoveries',
-            futureImplications: 'See detailed content',
+            significance: '',
+            futureImplications: '',
             confidenceLevel: 'MEDIUM'
           };
           researchSection.findings.push(finding);
@@ -322,13 +322,13 @@ export const parseResearchMarkdown = (content: string): ResearchData | null => {
     }
 
     return {
-      title: title || 'Research Analysis',
-      overview: overview || 'No overview found',
+      title,
+      overview,
       researchScope,
       keyFocusAreas,
       analysisPeriod,
       executiveSummary,
-      introduction: introduction || 'No introduction found',
+      introduction,
       researchQuestions,
       sections,
       convergentThemes,
@@ -338,7 +338,7 @@ export const parseResearchMarkdown = (content: string): ResearchData | null => {
       longTermVision,
       challenges,
       recommendations,
-      conclusion: conclusion || 'No conclusion found',
+      conclusion,
       keyTakeaways,
       methodology,
       sourceQuality,

@@ -53,37 +53,40 @@ export const parseRecipeMarkdown = (content: string): RecipeData | null => {
       const line = lines[i];
       
       // Extract title (first header)
-      if (line.startsWith('###') && !title) {
+      if (/^###(?!#)/.test(line) && !title) {
         title = line.replace(/^#+\s*/, '').trim();
         i++;
         continue;
       }
       
-      // Extract metadata (Yields, Time, etc.)
-      if (line.startsWith('**Yields:**')) {
-        yields = line.replace('**Yields:**', '').trim();
-        i++;
-        continue;
-      }
-      
-      if (line.startsWith('**Time:**')) {
-        const timeInfo = line.replace('**Time:**', '').trim();
-        totalTime = timeInfo.split('(')[0].trim();
-        
-        // Try to extract prep and cook time from parentheses
-        const timeMatch = timeInfo.match(/\(([^)]+)\)/);
-        if (timeMatch) {
-          const timeDetails = timeMatch[1];
-          const prepMatch = timeDetails.match(/(\d+\s*minutes?\s*prep)/i);
-          const cookMatch = timeDetails.match(/(\d+\s*minutes?\s*(?:baking|cooking))/i);
-          
-          if (prepMatch) prepTime = prepMatch[1];
-          if (cookMatch) cookTime = cookMatch[1];
+      // Extract metadata. A value is kept ONLY when the recipe states it: nothing here is ever guessed.
+      const meta = line.match(/^\**\s*(yields?|serves|servings|makes|total(?: time)?|prep(?: time)?|preparation|cook(?: time)?|cooking(?: time)?|time)\s*:?\s*\**\s*:?\s*(.*)$/i);
+      if (meta && meta[2].trim() && !currentSection) {
+        const keyword = meta[1].toLowerCase();
+        const value = meta[2].trim();
+        if (/^(yield|serves|servings|makes)/.test(keyword)) {
+          yields = /^(serves|makes)/.test(keyword) && /^\d/.test(value) ? `${meta[1][0].toUpperCase()}${meta[1].slice(1).toLowerCase()} ${value}` : value;
+        } else if (keyword.startsWith('prep')) {
+          prepTime = value;
+        } else if (keyword.startsWith('cook')) {
+          cookTime = value;
+        } else if (keyword.startsWith('total')) {
+          totalTime = value;
+        } else {
+          totalTime = value.split('(')[0].trim();
+          // Prep and cook times in parentheses, when the recipe gives them.
+          const timeMatch = value.match(/\(([^)]+)\)/);
+          if (timeMatch) {
+            const prepMatch = timeMatch[1].match(/(\d+\s*(?:minutes?|mins?|hours?|hrs?)\s*prep)/i);
+            const cookMatch = timeMatch[1].match(/(\d+\s*(?:minutes?|mins?|hours?|hrs?)\s*(?:baking|cooking|cook))/i);
+            if (prepMatch) prepTime = prepMatch[1];
+            if (cookMatch) cookTime = cookMatch[1];
+          }
         }
         i++;
         continue;
       }
-      
+
       // Section headers
       if (line.startsWith('####')) {
         const sectionTitle = line.replace(/^#+\s*/, '').toLowerCase();
@@ -171,22 +174,13 @@ export const parseRecipeMarkdown = (content: string): RecipeData | null => {
       i++;
     }
     
-    // Fallback values
-    if (!prepTime && !cookTime && totalTime) {
-      prepTime = '15 minutes';
-      cookTime = totalTime.replace(/\d+\s*minutes/, (match) => {
-        const total = parseInt(match);
-        const cook = Math.max(total - 15, 10);
-        return `${cook} minutes`;
-      });
-    }
-
+    // No fallbacks: a field the recipe does not state stays empty, and the block draws nothing for it.
     return {
-      title: title || 'Recipe',
-      yields: yields || 'Serves 4',
-      totalTime: totalTime || '30 minutes',
-      prepTime: prepTime || '15 minutes',
-      cookTime: cookTime || '15 minutes',
+      title,
+      yields,
+      totalTime,
+      prepTime,
+      cookTime,
       ingredients,
       instructions,
       notes: notes || undefined

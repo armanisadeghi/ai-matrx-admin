@@ -19,5 +19,5 @@ export function recipeShoppingList(
     children.push({ id: `ingredient-${index}`, title: line, type: "task", checked: false, children: [] });
   });
   if (children.length === 0) return [];
-  return [{ id: "shopping-list", title: `Shopping list: ${title}`.trim(), type: "section", children }];
+  return [{ id: "shopping-list", title: title ? `Shopping list: ${title}` : "Shopping list", type: "section", children }];
 }

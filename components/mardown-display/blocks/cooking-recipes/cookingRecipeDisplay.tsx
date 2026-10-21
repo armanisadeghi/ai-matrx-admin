@@ -410,9 +410,11 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
                           </InlineControlText>
                         </h1>
                       )}
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                        {recipe.yields}
-                      </p>
+                      {recipe.yields && (
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                          {recipe.yields}
+                        </p>
+                      )}
                     </div>
                   </div>
 

@@ -469,9 +469,11 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({
                                     <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">{finding.title}</h4>
                                     <div className="flex items-center gap-2 mb-2">
                                       {getConfidenceBadge(finding.confidenceLevel)}
-                                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                                        {finding.primarySource}
-                                      </span>
+                                      {finding.primarySource && (
+                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                          {finding.primarySource}
+                                        </span>
+                                      )}
                                     </div>
                                   </div>
                                   {expandedFindings.has(finding.id) ? 
@@ -512,9 +514,11 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({
                                   <div>
                                     <h5 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Sources</h5>
                                     <div className="space-y-1">
-                                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                                        <span className="font-medium">Primary:</span> {finding.primarySource}
-                                      </p>
+                                      {finding.primarySource && (
+                                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                                          <span className="font-medium">Primary:</span> {finding.primarySource}
+                                        </p>
+                                      )}
                                       {finding.additionalSources.length > 0 && (
                                         <p className="text-sm text-gray-700 dark:text-gray-300">
                                           <span className="font-medium">Additional:</span> {finding.additionalSources.join(', ')}
