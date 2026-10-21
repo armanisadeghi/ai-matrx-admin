@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1634 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1637 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "cf80e1945244";
+export const KIND_REGISTRY_FINGERPRINT = "a57c32e7207c";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -5119,7 +5119,7 @@ export interface JobHighlight {
 }
 
 /**
- * * Shared by 133 kinds (ad_creative, agent_assignment_batch_result, agent_build_assembly, agent_build_job_values, …).
+ * * Shared by 135 kinds (ad_creative, agent_assignment_batch_result, agent_build_assembly, agent_build_job_values, …).
  */
 export type JsonValue = unknown;
 
@@ -8093,6 +8093,19 @@ export interface ProfileLink {
 }
 
 /**
+ * * From kind `agent_proof_pairs`.
+ */
+export interface ProofCaseInput {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  case_key: string;
+  user_text?: string;
+  variables?: JsonValue;
+}
+
+/**
  * * From kind `brand_intake_profile`.
  */
 export interface ProofItem {
@@ -8114,6 +8127,19 @@ export interface ProofItem {
    * 0.0-1.0: how sure the agent is that this is true of THIS brand.
    */
   confidence: number;
+}
+
+/**
+ * * From kind `agent_proof_pairs`.
+ */
+export interface ProofPairRow {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  baseline?: string;
+  case_key: string;
+  candidate: string;
 }
 
 /**
@@ -15353,6 +15379,27 @@ export interface AgentProofCases {
 }
 
 /**
+ * What the blind judge is sent (its mandate variables) and which label hid the candidate.
+ *  *
+ *  * Kind `agent_proof_judge_view` (registry v1).
+ */
+export interface AgentProofJudgeView {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_proof_judge_view";
+  case_keys?: string[];
+  variables?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  candidate_labels?: string[];
+}
+
+/**
  * What the judge reads (blind), and every tell that would un-blind it.
  *  *
  *  * Kind `agent_proof_packet` (registry v1).
@@ -15364,6 +15411,42 @@ export interface AgentProofPacket {
    */
   __kind?: "agent_proof_packet";
   packet?: JsonValue;
+}
+
+/**
+ * Per proof case: the candidate's answer and today's answer, read back from a test run.
+ *  *
+ *  * Kind `agent_proof_pairs` (registry v1).
+ */
+export interface AgentProofPairs {
+  cases?: ProofCaseInput[];
+  pairs?: ProofPairRow[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_proof_pairs";
+  run_id: string;
+  /**
+   * Cases with no candidate answer, and why.
+   */
+  missing?: string[];
+  settled?: boolean;
+}
+
+/**
+ * The judge's per-case preferences un-blinded (candidate | baseline | tie | both_fail | None).
+ *  *
+ *  * Kind `agent_proof_verdicts` (registry v1).
+ */
+export interface AgentProofVerdicts {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_proof_verdicts";
+  findings?: string[];
+  per_case?: (string | null)[];
+  judge_verdict?: string | null;
+  judge_send_back_to?: string | null;
 }
 
 /**
@@ -64099,7 +64182,10 @@ export type GeneratedKindSlug =
   | "agent_mandate_specification"
   | "agent_model_choice"
   | "agent_proof_cases"
+  | "agent_proof_judge_view"
   | "agent_proof_packet"
+  | "agent_proof_pairs"
+  | "agent_proof_verdicts"
   | "agent_react_result"
   | "agent_ref"
   | "agent_result"
@@ -65736,7 +65822,10 @@ export interface KindPayloadBySlug {
   "agent_mandate_specification": AgentMandateSpecification;
   "agent_model_choice": AgentModelChoice;
   "agent_proof_cases": AgentProofCases;
+  "agent_proof_judge_view": AgentProofJudgeView;
   "agent_proof_packet": AgentProofPacket;
+  "agent_proof_pairs": AgentProofPairs;
+  "agent_proof_verdicts": AgentProofVerdicts;
   "agent_react_result": AgentReactResult;
   "agent_ref": AgentRef;
   "agent_result": AgentResult;
@@ -67377,7 +67466,10 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "agent_mandate_specification",
   "agent_model_choice",
   "agent_proof_cases",
+  "agent_proof_judge_view",
   "agent_proof_packet",
+  "agent_proof_pairs",
+  "agent_proof_verdicts",
   "agent_react_result",
   "agent_ref",
   "agent_result",
