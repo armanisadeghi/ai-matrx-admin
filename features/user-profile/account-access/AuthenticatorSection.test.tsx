@@ -7,11 +7,13 @@ const mockRead = jest.fn();
 const mockEnroll = jest.fn();
 const mockVerify = jest.fn();
 const mockRemove = jest.fn();
+const mockGenerate = jest.fn();
+const mockRecover = jest.fn();
 let mockAuthChanged: (event: string, session: null) => void;
 jest.mock("@/utils/supabase/client", () => ({ createClient: () => ({ auth: { onAuthStateChange: (callback: typeof mockAuthChanged) => { mockAuthChanged = callback; return { data: { subscription: { unsubscribe() {} } } }; } } }) }));
-jest.mock("./mfa", () => ({ ...jest.requireActual("./mfa"), readAuthenticators: () => mockRead(), enrollAuthenticator: (...args: unknown[]) => mockEnroll(...args), verifyAuthenticator: (...args: unknown[]) => mockVerify(...args), removeAuthenticator: (...args: unknown[]) => mockRemove(...args) }));
+jest.mock("./mfa", () => ({ ...jest.requireActual("./mfa"), generateRecoveryCodes: (...args: unknown[]) => mockGenerate(...args), verifyRecoveryCode: (...args: unknown[]) => mockRecover(...args), readAuthenticators: () => mockRead(), enrollAuthenticator: (...args: unknown[]) => mockEnroll(...args), verifyAuthenticator: (...args: unknown[]) => mockVerify(...args), removeAuthenticator: (...args: unknown[]) => mockRemove(...args) }));
 
-const initial: AuthenticatorState = { userId: "owned-user", factors: [], elevated: false };
+const initial: AuthenticatorState = { userId: "owned-user", factors: [], elevated: false, hasRecoveryCodes: false };
 function deferred<T>() { let resolve!: (value: T) => void; const promise = new Promise<T>(done => { resolve = done; }); return { promise, resolve }; }
 
 describe("authenticator management lifecycle", () => {
@@ -78,6 +80,49 @@ describe("authenticator management lifecycle", () => {
     await mount(); await act(async () => button("Remove").click()); expect(mockRemove).not.toHaveBeenCalled();
     await act(async () => button("Confirm removal").click()); expect(mockRemove).toHaveBeenCalledWith("owned-user", "verified");
   });
+  it("displays native codes once and clears them on acknowledgement", async () => {
+    mockRead.mockResolvedValue({ ...initial, elevated: true, factors: [{ id: "primary", name: "Primary", verified: true }] });
+    mockGenerate.mockResolvedValue(["OWNEDRECOVERYCODE"]);
+    await mount(); await act(async () => button("Generate recovery codes").click());
+    expect(mockGenerate).toHaveBeenCalledWith("owned-user", false);
+    expect(container.textContent).toContain("OWNEDRECOVERYCODE");
+    await act(async () => button("I saved these codes").click());
+    expect(container.textContent).not.toContain("OWNEDRECOVERYCODE");
+  });
+  it("keeps the one-time display available if subsequent provider readback fails", async () => {
+    mockRead.mockResolvedValueOnce({ ...initial, elevated: true, factors: [{ id: "primary", name: "Primary", verified: true }] }).mockRejectedValue(new Error("readback unavailable"));
+    mockGenerate.mockResolvedValue(["OWNED_ONCE_ONLY"]);
+    await mount(); await act(async () => button("Generate recovery codes").click());
+    expect(container.textContent).toContain("OWNED_ONCE_ONLY");
+    expect(container.textContent).toContain("Couldn’t complete that action");
+  });
+  it("requires confirmation before invalidating previous codes", async () => {
+    mockRead.mockResolvedValue({ ...initial, elevated: true, hasRecoveryCodes: true, factors: [{ id: "primary", name: "Primary", verified: true }] });
+    mockGenerate.mockResolvedValue(["OWNEDREPLACEMENT"]);
+    await mount(); await act(async () => button("Replace recovery codes").click());
+    expect(mockGenerate).not.toHaveBeenCalled();
+    await act(async () => button("Confirm replacement").click());
+    expect(mockGenerate).toHaveBeenCalledWith("owned-user", true);
+  });
+  it("does not expose delayed recovery codes after sign-out", async () => {
+    mockRead.mockResolvedValue({ ...initial, elevated: true, factors: [{ id: "primary", name: "Primary", verified: true }] });
+    const pending = deferred<string[]>(); mockGenerate.mockReturnValue(pending.promise);
+    await mount(); await act(async () => button("Generate recovery codes").click());
+    await act(async () => mockAuthChanged("SIGNED_OUT", null));
+    await act(async () => pending.resolve(["PRIVATE_RECOVERY"]));
+    expect(container.textContent).not.toContain("PRIVATE_RECOVERY");
+  });
+  it("offers a masked saved-code challenge from AAL1 and clears it after verification", async () => {
+    mockRead.mockResolvedValue({ ...initial, hasRecoveryCodes: true });
+    await mount(); expect(container.querySelector<HTMLInputElement>("#recovery-code")?.type).toBe("password");
+    await act(async () => input("recovery-code", "OWNEDSAVEDCODE"));
+    mockRead.mockResolvedValue({ ...initial, elevated: true, hasRecoveryCodes: true });
+    await act(async () => container.querySelector("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })));
+    expect(mockRecover).toHaveBeenCalledWith("owned-user", "OWNEDSAVEDCODE");
+    expect(container.textContent).toContain("Recovery code verified.");
+    expect(container.querySelector("#recovery-code")).toBeNull();
+  });
+
 });
 
 describe("safe MFA recovery messages", () => {
@@ -86,6 +131,9 @@ describe("safe MFA recovery messages", () => {
     [{ code: "mfa_factor_name_conflict" }, "That authenticator name is already in use."],
     [{ code: "too_many_enrolled_mfa_factors" }, "Remove an unused authenticator before adding another."],
     [new Error("Login details can't be changed during a support session."), "Login details can't be changed during a support session."],
+    [{ code: "mfa_recovery_codes_enroll_not_enabled" }, "Recovery codes aren’t enabled. Use another authenticator."],
+    [new Error("Enter a saved recovery code."), "Enter a saved recovery code."],
+    [{ code: "mfa_recovery_codes_locked" }, "Too many recovery attempts. Wait or use another authenticator."],
     [new Error("PRIVATE_SETUP_KEY"), "Couldn’t complete that action. Try again."],
   ])("reports a recovery action without reflecting provider secrets", (error, expected) => {
     expect(authenticatorError(error)).toBe(expected);

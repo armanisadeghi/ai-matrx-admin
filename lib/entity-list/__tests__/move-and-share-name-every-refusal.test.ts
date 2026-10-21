@@ -15,9 +15,9 @@ jest.mock("@/utils/supabase/client", () => {
 });
 const warning = jest.fn();
 jest.mock("@/lib/toast", () => ({ toast: { warning: (...a: unknown[]) => warning(...a), success: jest.fn(), error: jest.fn() } }));
-jest.mock("@/features/trash/service", () => ({ archiveRecord: jest.fn() }));
+jest.mock("@/features/trash/service", () => ({ archiveRecord: jest.fn(), restoreFromTrash: jest.fn() }));
 jest.mock("@/features/knowledge/hub/tags/tagApi", () => ({ fileUnderTag: jest.fn() }));
-jest.mock("@/components/dialogs/value-prompts/valuePromptsOpener", () => ({ promptForValues: jest.fn() }));
+jest.mock("@/features/knowledge/hub/tags/tagPickerOpener", () => ({ pickTag: jest.fn() }));
 jest.mock("@/lib/organizations/activeOrg", () => ({ getActiveOrgId: () => "org-active" }));
 
 import {
