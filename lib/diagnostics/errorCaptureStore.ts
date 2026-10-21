@@ -911,12 +911,26 @@ function isRecordsUnreachableLine(input: CaptureInput): boolean {
   return input.source === "console-error" && RECORDS_UNREACHABLE_LINE.test((input.message ?? "").trim());
 }
 
+/**
+ * The line a knob read prints (console.error, lib/scoped-config/effectiveKnobs.client.ts) when its
+ * snapshot call died: "[knob] <key> could not be resolved ... TypeError: Failed to fetch ...". On a
+ * leaving page it is the same browser-killed fetch, reported a third time. Real: the admin "1 error"
+ * pill after a hard navigation (review 4, F6, 2026-10-20) was five of these from /dashboard.
+ */
+const KNOB_UNRESOLVED_FETCH_LINE =
+  /^\[knob\] \S+ could not be resolved[\s\S]*(?:Failed to fetch|Load failed|NetworkError when attempting to fetch)/i;
+
+function isKnobUnresolvedFetchLine(input: CaptureInput): boolean {
+  return input.source === "console-error" && KNOB_UNRESOLVED_FETCH_LINE.test((input.message ?? "").trim());
+}
+
 function isLeavingPageTransportDrop(input: CaptureInput): boolean {
   const named =
     (input.code !== undefined && TRANSPORT_DROP_CODES.has(input.code)) ||
     (input.name !== undefined && TRANSPORT_DROP_CODES.has(input.name)) ||
     isBareBrowserFetchFailure(input) ||
-    isRecordsUnreachableLine(input);
+    isRecordsUnreachableLine(input) ||
+    isKnobUnresolvedFetchLine(input);
   return named && pageIsLeaving();
 }
 

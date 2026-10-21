@@ -78,3 +78,37 @@ describe("the records package's unreachable line on a leaving page", () => {
     expect(getSnapshot()).toHaveLength(1);
   });
 });
+
+/**
+ * GUARD - a knob read's own console line ("[knob] ... could not be resolved ... TypeError: Failed to
+ * fetch") is the same browser-killed fetch and is dropped with it. Real: the admin "1 error" pill
+ * after a hard navigation (review 4, F6, 2026-10-20).
+ */
+const knobLine = (cause: string) =>
+  captureError({
+    source: "console-error",
+    message:
+      "[knob] agents.chat_composer.default_mode could not be resolved (feature='agents.chat_composer', key='default_mode'), " +
+      `so every reader is falling back to its own default: platform.knob_snapshot_delta could not answer: ${cause}.`,
+  });
+
+describe("a knob's unresolved line on a leaving page", () => {
+  beforeEach(() => {
+    clearCapturedErrors();
+    resetPageLeavingForTests();
+  });
+  it("is captured while the page stays", () => {
+    knobLine("TypeError: Failed to fetch");
+    expect(getSnapshot()).toHaveLength(1);
+  });
+  it("is not captured once the page is leaving", () => {
+    window.dispatchEvent(new Event("beforeunload"));
+    knobLine("TypeError: Failed to fetch");
+    expect(getSnapshot()).toHaveLength(0);
+  });
+  it("a knob refused by the database during a leave is still captured", () => {
+    window.dispatchEvent(new Event("beforeunload"));
+    knobLine("permission denied for function knob_snapshot_delta");
+    expect(getSnapshot()).toHaveLength(1);
+  });
+});
