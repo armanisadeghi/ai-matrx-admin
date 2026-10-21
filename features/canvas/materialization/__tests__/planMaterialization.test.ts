@@ -214,3 +214,23 @@ describe("planMaterialization — the raw kindState gate (2026-08-31 audit)", ()
     expect(plan.hasChanges).toBe(false);
   });
 });
+
+// Review 5, G2 (2026-10-21): saving an answer's artifacts re-serialized every split block, and a
+// tag the model wrapped content in (`<foo>…</foo>`) came back as a ```xml fence — quoted source,
+// so the settled and the reloaded answer drew the old "XML" source card. Live row: chat 0d36fff3,
+// content_history reason artifact_materialization.
+describe("planMaterialization — an XML section stays as written", () => {
+  it("keeps <info>, <plan> and <foo> exactly as the model wrote them beside a saved chart", () => {
+    const answer =
+      '<info>\n\n</info>\n\n<plan>\nship it\n</plan>\n\n<foo>\nfoo body\n</foo>\n\n```chart\n{"type":"pie","title":"Visits","data":[{"label":"Web","value":6}]}\n```';
+    const plan = planMaterialization([textBlock(answer)]);
+    expect(plan.hasChanges).toBe(true);
+    const text = plan.rewrittenBlocks
+      .map((b) => ((b as { type?: string; text?: string }).type === "text" ? (b as { text: string }).text : ""))
+      .join("\n");
+    expect(text).not.toContain("```xml");
+    expect(text).toContain("<foo>\nfoo body\n</foo>");
+    expect(text).toContain("<info>\n\n</info>");
+    expect(text).toContain("<plan>\nship it\n</plan>");
+  });
+});
