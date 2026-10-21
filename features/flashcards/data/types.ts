@@ -5,7 +5,7 @@
 // study_attempt / item_mastery / study_goal) lives in `features/education/study/`,
 // since it is mode-agnostic and reused by quizzes, practice tests, etc.
 //
-// Relationships (card↔set membership, card↔card hierarchy, card↔file media/lineage,
+// Relationships (card↔deck membership, card↔card hierarchy, card↔file media/lineage,
 // card↔category themes) are NOT columns — they are `platform.associations` edges,
 // reached through `associationsService`. See the role vocabulary in EDGE_ROLE.
 
@@ -22,7 +22,7 @@ export type FcDetailInsert = Edu["fc_detail"]["Insert"];
 
 // ─── Edge roles (platform.categories dimension `association_role`) ────────────
 export const EDGE_ROLE = {
-  member: "member", //              fc_card → fc_set (set membership, position = order)
+  member: "member", //              fc_card → fc_set (deck membership, position = order)
   expandsInto: "expands_into", //   fc_card → fc_card (hierarchy: struggle → sub-cards)
   prerequisiteOf: "prerequisite_of",
   related: "related",
@@ -95,7 +95,7 @@ export interface NewSetInput {
 }
 
 // ─── Read/view shapes ────────────────────────────────────────────────────────
-/** A card plus its owned detail rows (helper/example/spoken/...) and its order in the set. */
+/** A card plus its owned detail rows (helper/example/spoken/...) and its order in the deck. */
 export interface CardWithDetails extends FcCardRow {
   position: number | null;
   details: FcDetailRow[];

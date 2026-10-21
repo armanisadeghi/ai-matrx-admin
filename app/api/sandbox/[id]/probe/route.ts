@@ -59,7 +59,7 @@ export async function POST(
 
     if (error || !row) {
       return NextResponse.json(
-        { error: "Sandbox instance not found" },
+        { error: "Sandbox not found" },
         { status: 404 },
       );
     }

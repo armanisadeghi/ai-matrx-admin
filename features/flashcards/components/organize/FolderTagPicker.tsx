@@ -2,7 +2,7 @@
 
 // features/flashcards/components/organize/FolderTagPicker.tsx
 //
-// Folders/tags for flashcard sets — a `platform.categories` row under the
+// Folders/tags for flashcard decks — a `platform.categories` row under the
 // `flashcard-folder` dimension, attached via a `theme` edge (fc_set →
 // category). Folders and tags are the SAME primitive; the only difference
 // from Quizlet's two concepts is navigational, not structural.
@@ -19,7 +19,7 @@ import { EDGE_ROLE } from "@/features/flashcards/data/types";
 
 const DIMENSION = CATEGORY_DIMENSIONS.flashcardFolder;
 
-/** The set's currently-attached folder/tag category ids, derived from its edges. */
+/** The deck's currently-attached folder/tag category ids, derived from its edges. */
 export function useSetFolderIds(setId: string | null): {
   folderIds: string[];
   loading: boolean;
@@ -37,8 +37,8 @@ export function useSetFolderIds(setId: string | null): {
 }
 
 /**
- * Multi-select combobox: pick existing folders/tags for one flashcard set, or
- * create a new one inline. Fully self-contained — mount it once per set (edit
+ * Multi-select combobox: pick existing folders/tags for one flashcard deck, or
+ * create a new one inline. Fully self-contained — mount it once per deck (edit
  * page) and it reads/writes the theme edges itself.
  */
 export function FolderTagPicker({ setId }: { setId: string }) {

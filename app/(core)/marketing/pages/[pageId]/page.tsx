@@ -171,7 +171,7 @@ export default async function MarketingPageShortLink({
         </section>
 
         <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
-          <h2 className="font-semibold">Snapshots</h2>
+          <h2 className="font-semibold">Page captures</h2>
           {snapshots.data?.length ? (
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {snapshots.data.map((snapshot) => (
@@ -197,7 +197,7 @@ export default async function MarketingPageShortLink({
             </div>
           ) : (
             <p className="mt-2 text-sm text-muted-foreground">
-              No snapshots have been captured for this page yet.
+              No page captures exist for this page yet.
             </p>
           )}
         </section>

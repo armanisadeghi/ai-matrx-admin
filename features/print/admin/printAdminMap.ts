@@ -196,7 +196,7 @@ export const printAdminMap: FeatureAdminMap = {
             name: "Flashcards",
             adminUrl: "/education/flashcards/admin",
             description:
-                "Set detail prints through the same flashcardsPrinter; its deck tools carry a 'More printing' door back to the hub.",
+                "Deck detail prints through the same flashcardsPrinter; its deck tools carry a 'More printing' door back to the hub.",
         },
         {
             name: "Rich document actions",

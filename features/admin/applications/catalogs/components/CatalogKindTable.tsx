@@ -16,9 +16,12 @@ import {
   AlertTriangle,
   ArrowLeft,
   CheckCircle2,
+  Archive,
   Link2,
   Loader2,
   Plus,
+  Power,
+  PowerOff,
   ShieldQuestion,
 } from "lucide-react";
 
@@ -64,6 +67,10 @@ import {
 } from "@/features/admin/applications/catalogs/schemas";
 import type { CatalogEntryRow } from "@/features/admin/applications/catalogs/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { createClient } from "@/utils/supabase/client";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { asClause } from "@ai-matrx/kit/text";
 
 interface CatalogKindTableProps {
@@ -259,6 +266,101 @@ export function CatalogKindTable({
     },
     [onChanged, toast],
   );
+
+  // One entry, one door — the same RPCs the switch and the editor's Archive use.
+  const setActiveOne = async (row: CatalogEntryRow, next: boolean) => {
+    if (next) {
+      const check = validatePayload(row.kind, row.payload);
+      if (check.status === "invalid") throw new Error("Payload fails its kind schema");
+    }
+    const { error } = await upsertCatalogEntry(upsertArgsFromRow(row, { is_active: next }));
+    if (error) throw new Error(isConflictError(error) ? "Changed since load" : rpcErrorMessage(error));
+  };
+  const archiveOne = async (row: CatalogEntryRow) => {
+    const { error } = await createClient().rpc("admin_delete_catalog_entry", {
+      p_app: row.app,
+      p_kind: row.kind,
+      p_key: row.key,
+    });
+    if (error) throw new Error(rpcErrorMessage(error));
+  };
+  const entriesLabel = (n: number) => `${n} ${n === 1 ? "entry" : "entries"}`;
+  const { rowActionDefs, bulkActions } = defineRowVerbs<CatalogEntryRow>(
+    [
+      {
+        id: "activate", icon: Power, label: "Activate",
+        appliesTo: (r) => !r.is_active, unavailableTooltip: "Already active",
+        onClick: (r) => setPendingToggle({ row: r, next: true }),
+        bulk: {
+          done: "Activated",
+          skipReason: (r) => (r.is_active ? "Already active" : null),
+          confirm: (t) => ({
+            title: `Activate ${entriesLabel(t.ids.length)}?`,
+            description: "Installed clients pick them up on their next catalog refresh. Entries whose payload fails its kind schema are refused and named; artifact links are not probed here.",
+            confirmLabel: "Activate",
+          }),
+          runOne: (_id, row) => setActiveOne(row as CatalogEntryRow, true),
+        },
+      },
+      {
+        id: "deactivate", icon: PowerOff, label: "Deactivate",
+        appliesTo: (r) => r.is_active, unavailableTooltip: "Already inactive",
+        onClick: (r) => setPendingToggle({ row: r, next: false }),
+        bulk: {
+          done: "Deactivated",
+          skipReason: (r) => (r.is_active ? null : "Already inactive"),
+          confirm: (t) => ({
+            title: `Deactivate ${entriesLabel(t.ids.length)}?`,
+            description: "Installed clients drop them on their next catalog refresh.",
+            confirmLabel: "Deactivate",
+            variant: "destructive",
+          }),
+          runOne: (_id, row) => setActiveOne(row as CatalogEntryRow, false),
+        },
+      },
+      {
+        id: "archive", icon: Archive, label: "Archive", tone: "destructive",
+        onClick: async (r) => {
+          const ok = await confirm({
+            title: `Archive ${r.key}?`,
+            description: "The entry leaves the catalog and installed clients drop it on their next refresh.",
+            confirmLabel: "Archive",
+            variant: "destructive",
+          });
+          if (!ok) return;
+          try {
+            await archiveOne(r);
+            toast({ title: "Entry archived", description: `${app}/${kind}/${r.key}` });
+            onChanged();
+          } catch (err) {
+            toast({ title: "Archive failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+          }
+        },
+        bulk: {
+          done: "Archived",
+          removesRows: true,
+          confirm: (t) => ({
+            title: `Archive ${entriesLabel(t.ids.length)}?`,
+            description: "They leave the catalog and installed clients drop them on their next refresh.",
+            confirmLabel: "Archive",
+            variant: "destructive",
+          }),
+          runOne: (_id, row) => archiveOne(row as CatalogEntryRow),
+        },
+      },
+      { id: "open", icon: Link2, label: "Open entry", onClick: (r) => onOpenEntry(r), bulk: false, noBulk: "open" },
+    ],
+    { noun: "entry", getRowId: (r) => r.id, getRowName: (r) => r.key },
+  );
+  const bulk = useTableBulkSelection<CatalogEntryRow>({
+    noun: "entry",
+    rows: entries,
+    getRowId: (r) => r.id,
+    getRowName: (r) => r.key,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: onChanged,
+  });
 
   const columns = useMemo((): MatrxColumnDef<CatalogEntryRow>[] => {
     return [
@@ -467,6 +569,7 @@ export function CatalogKindTable({
           urlState={{ id: "application-catalog-entries" }}
           data={entries}
           columns={columns}
+          {...(readOnly ? {} : { rowActionDefs, selection: bulk.selection })}
           getRowId={(row) => row.id}
           pageSize={50}
           emptyState={{

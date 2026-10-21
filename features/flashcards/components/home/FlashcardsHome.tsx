@@ -100,6 +100,7 @@ export function FlashcardsHome() {
             userId,
             useRowActions: useFlashcardSetRowActions,
             folderName: (id) => folderNames.get(id) ?? "Unnamed folder",
+            folders: folders.map((f) => ({ id: f.id, name: f.name })),
             foldersKey,
           })
         : null,

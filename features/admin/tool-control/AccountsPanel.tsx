@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { RefreshCw } from "lucide-react";
+import { Pause, Play, RefreshCw } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
@@ -12,7 +12,9 @@ import { Spinner } from "@/components/ui/loaders/Spinner";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import { formatRelativeTime } from "@/utils/datetime";
-import { loadControlOverview, setAccountState } from "./service";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { loadControlOverview, mustChange, setAccountState } from "./service";
 import { TOOL_CONTROL_PATH, TOOL_CONTROL_QUERY_KEY } from "./paths";
 import { isCheckRequired, stateWords } from "./words";
 import type { ProviderRow } from "./types";
@@ -70,28 +72,67 @@ export function AccountsPanel() {
     { id: "direct", accessorFn: (r) => (r.provider.direct_account ? "Our own account" : "Through an aggregator"), header: "Reached", width: 190, filter: "select" },
     { id: "sources", accessorFn: (r) => `${r.sourcesOn} of ${r.sources}`, sortValue: (r) => r.sources, header: "Sources on", width: 120 },
     { id: "changed", accessorFn: (r) => (r.changedAt ? formatRelativeTime(r.changedAt) : "Never"), sortValue: (r) => (r.changedAt ? new Date(r.changedAt).getTime() : 0), header: "Last change", width: 140 },
-    {
-      id: "actions",
-      header: "",
-      width: 140,
-      filter: false,
-      sortable: false,
-      cell: (r) =>
-        r.provider.state === "live" ? (
-          <Button variant="outline" disabled={busy === r.provider.slug} onClick={() => void change(r, "paused")}>
-            Pause
-          </Button>
-        ) : (
-          <Button variant="primary" disabled={busy === r.provider.slug} onClick={() => void change(r, "live")}>
-            Turn on
-          </Button>
-        ),
-    },
   ];
+
+  const accountsLabel = (n: number) => `${n} account${n === 1 ? "" : "s"}`;
+  const { rowActionDefs, bulkActions } = defineRowVerbs<AccountRow>(
+    [
+      {
+        id: "pause", icon: Pause, label: "Pause", tone: "destructive",
+        appliesTo: (r) => r.provider.state === "live",
+        unavailableTooltip: "Not on",
+        disabled: (r) => busy === r.provider.slug,
+        onClick: (r) => void change(r, "paused"),
+        bulk: {
+          done: "Paused",
+          skipReason: (r) => (r.provider.state === "live" ? null : "Not on"),
+          confirm: (t) => ({
+            title: `Pause ${accountsLabel(t.ids.length)}?`,
+            description: "Every Tool that uses these accounts stops using them until you resume them.",
+            confirmLabel: "Pause",
+            variant: "destructive",
+          }),
+          runOne: async (id) => mustChange(await setAccountState(id, "paused")),
+        },
+      },
+      {
+        id: "turn-on", icon: Play, label: "Turn on",
+        appliesTo: (r) => r.provider.state !== "live",
+        unavailableTooltip: "Already on",
+        disabled: (r) => busy === r.provider.slug,
+        onClick: (r) => void change(r, "live"),
+        bulk: {
+          done: "Turned on",
+          skipReason: (r) => (r.provider.state === "live" ? "Already on" : null),
+          confirm: (t) => ({
+            title: `Turn on ${accountsLabel(t.ids.length)}?`,
+            description: "Each account turns on only if a source behind it passed a check; the others are skipped and named.",
+            confirmLabel: "Turn on",
+          }),
+          runOne: async (id) => mustChange(await setAccountState(id, "live")),
+        },
+      },
+    ],
+    { noun: "account", getRowId: (r) => r.provider.slug, getRowName: (r) => r.provider.admin_name },
+  );
+  const bulk = useTableBulkSelection<AccountRow>({
+    noun: "account",
+    rows,
+    getRowId: (r) => r.provider.slug,
+    getRowName: (r) => r.provider.admin_name,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: () => {
+      void query.refetch();
+      void queryClient.invalidateQueries({ queryKey: ["admin-attention"] });
+    },
+  });
 
   return (
     <div className="min-h-0 flex-1">
       <MatrxDataTable
+        rowActionDefs={rowActionDefs}
+        selection={bulk.selection}
         data={rows}
         columns={columns}
         getRowId={(r) => r.provider.slug}

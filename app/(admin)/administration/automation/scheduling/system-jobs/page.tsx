@@ -65,6 +65,8 @@ import { recordToast, toast } from "@/lib/toast";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import type { EntityBulkAction } from "@/lib/entity-list/selection";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
@@ -167,6 +169,7 @@ function taxonomyNodeLabel(
 export default function SystemJobsPage() {
   const { organizationId, canLoad, organizationRequired, organizationState } =
     useOrganizationRequired();
+  const { format: formatCost } = useCostDisplay();
   const [rows, setRows] = useState<SystemTaskResponse[]>([]);
   // What each job costs and how it behaves — the shared automation rollup
   // (scheduler.automation_cost_rollup), keyed by the job's sch_task id.
@@ -895,58 +898,80 @@ export default function SystemJobsPage() {
   // database job stops real maintenance, so both name the count and the
   // consequence. Built-ins are off: platform jobs are not favouritable or
   // trashable records.
-  const jobBulkActions: EntityBulkAction<SystemTaskResponse>[] = [
-    {
-      id: "enable-jobs",
-      label: "Enable",
-      icon: Power,
-      confirm: (sel) => ({
-        title: `Enable ${sel.count} system job${sel.count === 1 ? "" : "s"}?`,
-        description: `This starts real recurring server work for ${sel.count} job${sel.count === 1 ? "" : "s"}, each on its own schedule until disabled. Jobs with no registered handler are refused and named.`,
-        confirmLabel: "Enable",
-      }),
-      run: (sel) =>
-        runPerRow(
-          sel,
-          async (id) => {
+  const jobsLabel = (n: number) => `${n} system job${n === 1 ? "" : "s"}`;
+  const { rowActionDefs: jobRowActionDefs, bulkActions: jobBulkActions } = defineRowVerbs<SystemTaskResponse>(
+    [
+      {
+        id: "enable", icon: Power, label: "Enable job",
+        appliesTo: (r) => !r.enabled, unavailableTooltip: "Already enabled",
+        loading: (r) => busy.has(r.id), disabled: (r) => busy.has(r.id),
+        onClick: (r) => void toggleEnabled(r),
+        bulk: {
+          label: "Enable", done: "Enabled",
+          confirm: (t) => ({
+            title: `Enable ${jobsLabel(t.ids.length)}?`,
+            description: `This starts real recurring server work for ${jobsLabel(t.ids.length)}, each on its own schedule until disabled. Jobs with no registered handler are refused and named.`,
+            confirmLabel: "Enable",
+          }),
+          runOne: async (id) => {
             applyPatched(await patchSystemTask(id, { enabled: true }));
           },
-          {
-            done: "Enabled",
-            noun: "job",
-            labelOf: (r) => r.title,
-            skipReason: (r) => (r.enabled ? "Already enabled" : null),
-          },
-          (r) => r.id,
-        ),
-    },
-    {
-      id: "disable-jobs",
-      label: "Disable",
-      icon: Power,
-      variant: "destructive",
-      confirm: (sel) => ({
-        title: `Disable ${sel.count} system job${sel.count === 1 ? "" : "s"}?`,
-        description: `${sel.count} job${sel.count === 1 ? "" : "s"} stop running on schedule until re-enabled.`,
-        confirmLabel: "Disable",
-        variant: "destructive",
-      }),
-      run: (sel) =>
-        runPerRow(
-          sel,
-          async (id) => {
+        },
+      },
+      {
+        id: "disable", icon: Power, label: "Disable job", tone: "destructive",
+        appliesTo: (r) => r.enabled, unavailableTooltip: "Already disabled",
+        loading: (r) => busy.has(r.id), disabled: (r) => busy.has(r.id),
+        onClick: (r) => void toggleEnabled(r),
+        bulk: {
+          label: "Disable", done: "Disabled",
+          confirm: (t) => ({
+            title: `Disable ${jobsLabel(t.ids.length)}?`,
+            description: `${jobsLabel(t.ids.length)} stop running on schedule until re-enabled.`,
+            confirmLabel: "Disable",
+            variant: "destructive",
+          }),
+          runOne: async (id) => {
             applyPatched(await patchSystemTask(id, { enabled: false }));
           },
-          {
-            done: "Disabled",
-            noun: "job",
-            labelOf: (r) => r.title,
-            skipReason: (r) => (r.enabled ? null : "Already disabled"),
+        },
+      },
+      {
+        id: "edit", icon: Pencil, label: "Edit job",
+        disabled: (r) => busy.has(r.id),
+        onClick: (r) => setEditing(r),
+        bulk: false, noBulk: "edit",
+      },
+      {
+        id: "run", icon: Play, label: "Run job now",
+        appliesTo: (r) => r.handler_registered !== false,
+        unavailableTooltip: "No handler registered — nothing would run.",
+        disabled: (r) => busy.has(r.id),
+        onClick: (r) => void runNow(r),
+        bulk: {
+          label: "Run now", done: "Queued to run now",
+          skipReason: (r) => (r.handler_registered === false ? "No handler registered" : null),
+          confirm: (t) => {
+            const avgs = t.rows.map((r) => costById.get(r.id)?.avg_run_cost);
+            const known = avgs.filter((v): v is number => typeof v === "number");
+            const total = known.reduce((sum, v) => sum + v, 0);
+            const cost = known.length
+              ? `About ${formatCost(total)} for one run of each (${known.length} of ${t.ids.length} have a run history).`
+              : "None of them has a run history yet, so the cost is not known.";
+            return {
+              title: `Run ${jobsLabel(t.ids.length)} now?`,
+              description: `Each job runs once right now, outside its schedule, and spends what its tool spends. ${cost}`,
+              confirmLabel: "Run now",
+            };
           },
-          (r) => r.id,
-        ),
-    },
-  ];
+          runOne: async (id) => {
+            await runSystemTaskNow(id);
+          },
+        },
+      },
+    ],
+    { noun: "job", getRowId: (r) => r.id, getRowName: (r) => r.title },
+  );
   const jobBulk = useTableBulkSelection<SystemTaskResponse>({
     noun: "job",
     rows,
@@ -1079,29 +1104,7 @@ export default function SystemJobsPage() {
               ...jobCostColumns.slice(AUTOMATION_LEAD_COLUMNS),
             ]}
             getRowId={(r) => r.id}
-            rowActions={(r) => {
-              const isBusy = busy.has(r.id);
-              return [
-                {
-                  id: "toggle",
-                  icon: Power,
-                  label: r.enabled ? "Disable job" : "Enable job",
-                  tooltip: r.enabled ? "Disable job" : "Enable job",
-                  loading: isBusy,
-                  disabled: isBusy,
-                  onClick: () => void toggleEnabled(r),
-                },
-                { id: "edit", icon: Pencil, label: "Edit job", tooltip: "Edit job", disabled: isBusy, onClick: () => setEditing(r) },
-                {
-                  id: "run",
-                  icon: Play,
-                  label: "Run job now",
-                  tooltip: r.handler_registered === false ? "No handler registered — nothing would run." : "Run job now",
-                  disabled: isBusy || r.handler_registered === false,
-                  onClick: () => void runNow(r),
-                },
-              ];
-            }}
+            rowActionDefs={jobRowActionDefs}
             isLoading={loading}
             isFetching={fetching}
             pageSize={50}

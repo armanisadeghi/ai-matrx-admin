@@ -11,7 +11,7 @@
  * window pre-bound to the caller's scope (site/page/brand).
  *
  * This is the shell every keyword field in the product should wrap —
- * page intent, content-plan nodes, rank-target creation, research launchers.
+ * page intent, content-plan pages, rank-target creation, research launchers.
  * Callers own the value (controlled) and any save flow; this component owns
  * resolution, display, and connectivity.
  */

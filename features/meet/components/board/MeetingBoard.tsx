@@ -31,8 +31,8 @@
  */
 
 import dynamic from "next/dynamic";
-import { type ReactNode } from "react";
-import { ExternalLink, Lock } from "lucide-react";
+import { useRef, type ReactNode } from "react";
+import { ExternalLink, Lock, NotebookPen } from "lucide-react";
 import {
   participantSummary,
   useElapsed,
@@ -59,7 +59,7 @@ import { selectIsAuthenticated } from "@/lib/redux/selectors/userSelectors";
 import type { BoardDocument } from "@/features/board/board/document";
 import type { Camera } from "@/features/board/engine/camera";
 import { useSavedBoard } from "@/features/board/persistence/useSavedBoard";
-import { meetingNotesDocument } from "@/features/board/items/meeting-items.logic";
+import { MEETING_NOTES_FRAME_ID, meetingNotesDocument } from "@/features/board/items/meeting-items.logic";
 import { BoardOrganizationProvider } from "@/features/board/items/board-organization";
 import { LayoutSwitch, type MeetingLayoutChoice } from "./LayoutSwitch";
 import { PeopleStrip } from "./PeopleStrip";
@@ -73,7 +73,11 @@ const UserBoard = dynamic(() => import("@/features/board/home/UserBoard").then((
   loading: () => <BoardMessage>{<ShimmerText text={OPENING} />}</BoardMessage>,
 });
 
+/** Filled by the board with a camera jump to a frame; the header's Notes button calls it. */
+type FrameJump = { current: ((frameId: string) => void) | null };
+
 interface FrameProps {
+  jump?: FrameJump;
   onLayout: (next: MeetingLayoutChoice) => void;
   headerControls?: ReactNode;
 }
@@ -84,10 +88,11 @@ export function MeetingBoard({
   headerControls,
 }: FrameProps & { meeting: MeetingRecord }) {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const jump = useRef<FrameJump["current"]>(null);
   return isAuthenticated ? (
-    <SavedMeetingBoard meeting={meeting} onLayout={onLayout} headerControls={headerControls} />
+    <SavedMeetingBoard meeting={meeting} onLayout={onLayout} headerControls={headerControls} jump={jump} />
   ) : (
-    <GuestMeetingBoard meeting={meeting} onLayout={onLayout} headerControls={headerControls} />
+    <GuestMeetingBoard meeting={meeting} onLayout={onLayout} headerControls={headerControls} jump={jump} />
   );
 }
 
@@ -149,6 +154,7 @@ function SavedMeetingBoard({ meeting, ...frame }: FrameProps & { meeting: Meetin
               viewerCamera={ready.board.viewerCamera}
               onChange={ready.save}
               onCamera={ready.saveCamera}
+              jumpToFrame={frame.jump}
             />
           </BoardOrganizationProvider>
         </>
@@ -168,6 +174,7 @@ function GuestMeetingBoard({ meeting, ...frame }: FrameProps & { meeting: Meetin
         viewerCamera={board.viewerCamera}
         onChange={board.save}
         onCamera={board.saveCamera}
+        jumpToFrame={frame.jump}
         guest
       />
     </MeetingBoardFrame>
@@ -181,6 +188,7 @@ function BoardCanvas({ guest = false, ...props }: {
   viewerCamera: Camera | null;
   onChange: (build: () => BoardDocument) => void;
   onCamera: (camera: Camera) => void;
+  jumpToFrame?: FrameJump | undefined;
 }) {
   return (
     <div className="absolute inset-0">
@@ -192,6 +200,7 @@ function BoardCanvas({ guest = false, ...props }: {
 
 /** The meeting around the board: notices, header, people, captions, controls. */
 function MeetingBoardFrame({
+  jump,
   onLayout,
   headerControls,
   byline,
@@ -202,7 +211,7 @@ function MeetingBoardFrame({
     <div className="mx-meet">
       <ConsentNotice />
       <AttendanceNotice />
-      <BoardHeader onLayout={onLayout} headerControls={headerControls} byline={byline} boardHref={boardHref} />
+      <BoardHeader jump={jump} onLayout={onLayout} headerControls={headerControls} byline={byline} boardHref={boardHref} />
       <div className="relative min-h-0 flex-1">
         {children}
         {/* Screen space over the board: faces never shrink when it zooms out. */}
@@ -227,6 +236,7 @@ function BoardMessage({ children }: { children: ReactNode }) {
 /** Its own component so the per-second clock and roster changes re-render
  * only this line, never the board. */
 function BoardHeader({
+  jump,
   onLayout,
   headerControls,
   byline,
@@ -242,6 +252,11 @@ function BoardHeader({
         <span className="mx-meet__meta">
           {`${participantSummary(snapshot?.participants ?? [])}${elapsed > 0 ? ` · ${formatDurationMs(elapsed)}` : ""}`}
         </span>
+        {snapshot?.phase === "in_call" && (
+          <span className="mx-meet__badge" data-meeting-live>
+            <span className="h-2 w-2 rounded-full bg-destructive" /> Live
+          </span>
+        )}
         <RecordingIndicator />
         {snapshot?.locked === true && (
           <span className="mx-meet__badge">
@@ -252,6 +267,17 @@ function BoardHeader({
         {/* The package's own host menu (lock / end), @ai-matrx/meet 0.7.5. */}
         {isHost && <HostMenu />}
         {headerControls}
+        {jump && (
+          <Button
+            variant="quiet"
+            icon={<NotebookPen />}
+            title="Fly to the meeting notes"
+            aria-label="Fly to the meeting notes"
+            onClick={() => jump.current?.(MEETING_NOTES_FRAME_ID)}
+          >
+            Notes
+          </Button>
+        )}
         {boardHref ? (
           <OutboundLink
             href={boardHref}

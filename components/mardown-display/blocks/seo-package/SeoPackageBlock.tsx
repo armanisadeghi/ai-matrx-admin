@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
  * SeoPackageBlock — THE renderer for the `seo_package` kind. There is no other.
@@ -214,7 +215,7 @@ export function SeoPackageMeta({
       {slug !== null && (
         <Field label="Slug">
           <Button variant="quiet" icon={<Link2 />} onClick={() => copyText(slug, "Slug")} data-identifier>
-            {slug}
+            {humanizeIdentifier(slug)}
           </Button>
         </Field>
       )}

@@ -13,7 +13,7 @@ import { selectOrganizationsList } from "@/features/scopes/redux/selectors/tree"
 import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree";
 import { useWholeScopeTree } from "@/features/scopes/hooks/useWholeScopeTree";
 import { selectNoteHomeIds, selectNoteOrganizationIds, selectNotesListStatus } from "../redux/selectors";
-import { buildHomes, homeLabels, type ItemHome } from "@/features/scopes/homes/homeModel";
+import { buildHomes, homeLabelParts, homeLabels, type HomeLabelParts, type ItemHome } from "@/features/scopes/homes/homeModel";
 
 export interface UseNoteHomesReturn {
   homes: ItemHome[];
@@ -134,6 +134,8 @@ export interface NoteHomeNames {
   byId: ReadonlyMap<string, ItemHome>;
   generalByOrganization: ReadonlyMap<string, ItemHome>;
   labelOf: (scopeId: string | null | undefined) => string | null;
+  /** The label in two parts — render with `LabelWithTail` so the tail telling twins apart stays visible. */
+  labelPartsOf: (scopeId: string | null | undefined) => HomeLabelParts | null;
   notesSpanManyOrganizations: boolean;
 }
 
@@ -240,14 +242,18 @@ export function useNoteHomeNames(generalOfOrganizationId: string | null = null):
         generalByOrganization.set(home.organizationId, home);
       }
     }
-    const labels = homeLabels(homes, { notesSpanManyOrganizations });
-    const labelOf = (scopeId: string | null | undefined): string | null => {
+    const parts = homeLabelParts(homes, { notesSpanManyOrganizations });
+    const labelPartsOf = (scopeId: string | null | undefined): HomeLabelParts | null => {
       if (!scopeId) return null;
-      const label = labels.get(scopeId);
-      if (label) return label;
-      return scopeId in named ? "Unavailable home" : null;
+      const part = parts.get(scopeId);
+      if (part) return part;
+      return scopeId in named ? { text: "Unavailable home", tail: null } : null;
     };
-    return { homes, byId, generalByOrganization, labelOf, notesSpanManyOrganizations };
+    const labelOf = (scopeId: string | null | undefined): string | null => {
+      const part = labelPartsOf(scopeId);
+      return part ? part.text + (part.tail ?? "") : null;
+    };
+    return { homes, byId, generalByOrganization, labelOf, labelPartsOf, notesSpanManyOrganizations };
   }, [named, notesSpanManyOrganizations]);
 }
 

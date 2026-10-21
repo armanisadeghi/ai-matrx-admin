@@ -12,6 +12,11 @@ import {
   Network,
   Search,
 } from "lucide-react";
+import {
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentPx,
+} from "@/components/official/topic-tree/geometry";
 import { useMarketingSite } from "@/features/marketing/components/site/MarketingSiteContext";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useMarketingSubView } from "@/features/marketing/lib/useMarketingSubView";
@@ -115,7 +120,7 @@ function LevelChips({ node }: { node: RouteTreeNode }) {
         <span
           key={count.level}
           title={`${count.cumulativePages.toLocaleString()} pages within ${count.level} level${count.level === 1 ? "" : "s"} below (this page included); ${count.pages.toLocaleString()} exactly at that level`}
-          className="rounded bg-muted px-1.5 py-0.5 text-[10px] tabular-nums text-muted-foreground"
+          className="type-meta tabular-nums text-muted-foreground"
         >
           {"≤"}
           {count.level}: {count.cumulativePages.toLocaleString()}
@@ -124,7 +129,7 @@ function LevelChips({ node }: { node: RouteTreeNode }) {
       {node.levelCounts.length > shown.length ? (
         <span
           title={`${total.toLocaleString()} pages in the entire branch`}
-          className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-foreground"
+          className="type-meta font-medium tabular-nums text-foreground"
         >
           all: {total.toLocaleString()}
         </span>
@@ -170,28 +175,25 @@ function TreeRow({
         "group/row flex min-w-0 items-center gap-1.5 rounded-md px-2 py-1 hover:bg-muted/40",
         highlighted && "bg-primary/5 ring-1 ring-inset ring-primary/30",
       )}
-      style={{ paddingLeft: `${node.depth * 18 + 8}px` }}
+      style={{ paddingLeft: treeIndentPx(node.depth) }}
     >
+      <TreeDisclosure
+        expandable={node.childCount > 0}
+        expanded={expanded}
+        onToggle={onToggle}
+      />
       {node.childCount > 0 ? (
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label={expanded ? "Collapse" : "Expand"}
-          className="flex h-4 w-4 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          {expanded ? (
-            <ChevronDown className="h-3.5 w-3.5" />
-          ) : (
-            <ChevronRight className="h-3.5 w-3.5" />
-          )}
-        </button>
+        <TreeFolderIcon open={expanded} />
       ) : (
-        <span className="h-4 w-4 shrink-0" />
+        <FileText
+          aria-hidden="true"
+          className="h-4 w-4 shrink-0 text-muted-foreground"
+        />
       )}
 
       <span
         className={cn(
-          "shrink-0 font-mono text-xs",
+          "shrink-0 font-mono type-body",
           node.virtual ? "text-muted-foreground/70" : "text-foreground",
         )}
       >
@@ -201,7 +203,7 @@ function TreeRow({
       {node.virtual ? (
         <span
           title="No page is recorded at this exact path — it only exists as a prefix of deeper URLs."
-          className="shrink-0 rounded border border-dashed border-border px-1 py-0.5 text-[10px] text-muted-foreground"
+          className="shrink-0 type-meta italic text-muted-foreground"
         >
           no page
         </span>
@@ -209,14 +211,14 @@ function TreeRow({
       {node.pages.length > 1 ? (
         <span
           title={node.pages.map((variant) => variant.url).join("\n")}
-          className="shrink-0 rounded bg-muted px-1 py-0.5 text-[10px] tabular-nums text-muted-foreground"
+          className="shrink-0 type-meta tabular-nums text-muted-foreground"
         >
           {node.pages.length} URLs
         </span>
       ) : null}
       <StatusBadge status={page?.httpStatus ?? null} />
 
-      <span className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">
+      <span className="min-w-0 flex-1 truncate type-meta text-muted-foreground">
         {isRoot ? "Home page" : (page?.title ?? "")}
       </span>
 
@@ -225,14 +227,14 @@ function TreeRow({
       {node.childCount > 0 ? (
         <span
           title={`${node.childCount.toLocaleString()} direct child route${node.childCount === 1 ? "" : "s"}`}
-          className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] tabular-nums text-muted-foreground"
+          className="shrink-0 type-meta tabular-nums text-muted-foreground"
         >
           {node.childCount.toLocaleString()} sub
         </span>
       ) : null}
       <span
         title={`${node.subtreePages.toLocaleString()} total page${node.subtreePages === 1 ? "" : "s"} in this branch (this page included)`}
-        className="w-12 shrink-0 text-right text-xs font-medium tabular-nums text-foreground"
+        className="w-12 shrink-0 text-right type-body font-medium tabular-nums text-foreground"
       >
         {node.subtreePages.toLocaleString()}
       </span>

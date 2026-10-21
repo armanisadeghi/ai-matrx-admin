@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The shared-deck lens — what an Anyone link to a flashcard set shows. The
+ * The shared-deck lens — what an Anyone link to a flashcard deck shows. The
  * SAME public study page as the indexable `/p/e/fc_set/<id>` viewer
  * (`PublicFlashcardDeck`): study in place, no account, progress on the device.
  *
@@ -74,7 +74,7 @@ export function FlashcardSetShareLens({ result }: ShareLensProps) {
     };
   }, [setId, hasLinked]);
 
-  const title = str(result.resource, "name") || str(result.resource, "title") || "Flashcard set";
+  const title = str(result.resource, "name") || str(result.resource, "title") || "Flashcard deck";
   const description = str(result.resource, "description") || null;
 
   if (load.state === "loading") {
@@ -102,7 +102,7 @@ export function FlashcardSetShareLens({ result }: ShareLensProps) {
       setId={setId}
       title={title}
       description={description}
-      label={result.displayLabel ?? "Flashcard set"}
+      label={result.displayLabel ?? "Flashcard deck"}
       cards={load.cards}
     />
   );

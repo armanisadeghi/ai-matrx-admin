@@ -156,7 +156,7 @@ export function CrawledMediaView({
     kind: "web-site-media",
     label: "Site media inventory",
     description:
-      "Every image asset observed across this site's canonical pages (latest snapshot per page), deduped by src, with size-tier/aspect categorization, alt-text coverage, the pages each asset appears on, and the social share images.",
+      "Every image asset observed across this site's canonical pages (latest page capture per page), deduped by src, with size-tier/aspect categorization, alt-text coverage, the pages each asset appears on, and the social share images.",
     surface: `Media — ${site.name}`,
     data: {
       counts: {

@@ -12,6 +12,10 @@
 // filtering in JS over a 200-row page, no scopes, no sort, no columns, and a
 // search field flush against the shell's glass header.
 
+import { Archive, ArchiveRestore } from "lucide-react";
+import type { EntityBulkAction } from "@/lib/entity-list/selection";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import { setWorkflowFlag } from "./service";
 import dynamic from "next/dynamic";
 import type {
   EntityListConfig,
@@ -101,6 +105,30 @@ function useWorkflowListRowActions(
   );
 
   return { actions, modals };
+}
+
+/** The row menu's Archive / Unarchive (`setWorkflowFlag is_archived`), many at a time. */
+function workflowArchiveAction(verb: "archive" | "unarchive"): EntityBulkAction<WorkflowBrowseRow> {
+  const target = verb === "archive";
+  return {
+    id: verb,
+    label: target ? "Archive" : "Unarchive",
+    icon: target ? Archive : ArchiveRestore,
+    run: async (selection) => {
+      const result = await runPerRow(
+        selection,
+        async (id, row) => {
+          if (row && Boolean(row.is_archived) === target) {
+            throw new Error(target ? "already archived" : "not archived");
+          }
+          await setWorkflowFlag(id, { is_archived: target });
+        },
+        { done: target ? "Archived" : "Unarchived", noun: "workflow", labelOf: (row) => row.name },
+        (row) => row.id,
+      );
+      return { ...result, refresh: true };
+    },
+  };
 }
 
 export const workflowListConfig: EntityListConfig<WorkflowBrowseRow> = {

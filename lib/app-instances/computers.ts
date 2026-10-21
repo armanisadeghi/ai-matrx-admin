@@ -35,6 +35,7 @@ let held: { at: number; list: string[] } | null = null;
 /** The platforms that are installs but not computers (60 s window, like every knob read). */
 export async function nonComputerPlatforms(client: unknown): Promise<string[]> {
   if (held && Date.now() - held.at < TTL_MS) return held.list;
+  // archived-items-law-exempt: single knob value lookup that decides which installs count as computers; an archived knob is not in effect
   const { data, error } = await (client as KnobReader)
     .schema("platform")
     .from("feature_knob")

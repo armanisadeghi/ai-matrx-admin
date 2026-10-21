@@ -36,7 +36,7 @@ export interface PublicResource {
   description?: string;
   /** The public resource row (heavy/internal columns are not selected). */
   row: Record<string, unknown>;
-  /** Ordered cards when the type is a flashcard set. */
+  /** Ordered cards when the type is a flashcard deck. */
   cards?: PublicFlashcard[];
   /** One table row's fields (access ladder T-40), as the database projected them. */
   record?: SharedRecord;
@@ -73,7 +73,7 @@ export async function loadPublicResource(
 
   const supabase = await createClient();
 
-  // Flashcard sets: rich anon read (set + ordered cards) via SECURITY DEFINER RPC.
+  // Flashcard decks: rich anon read (set + ordered cards) via SECURITY DEFINER RPC.
   if (entry.resourceType === "fc_set") {
     const { data } = await supabase.rpc("get_public_flashcard_set", { p_set_id: id });
     const r = data as PublicFlashcardSetPayload | null;
@@ -82,7 +82,7 @@ export async function loadPublicResource(
       resourceType: "fc_set",
       resourceId: id,
       displayLabel: entry.displayLabel,
-      title: firstString(r.set, ["name", "title"]) ?? "Flashcard set",
+      title: firstString(r.set, ["name", "title"]) ?? "Flashcard deck",
       description: firstString(r.set, ["description"]),
       row: r.set,
       cards: r.cards ?? [],

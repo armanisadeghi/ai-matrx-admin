@@ -31,6 +31,7 @@ import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type DragEvent } from "react";
 
+import { TreeDisclosure, treeIndentStyle } from "@/components/official/topic-tree/geometry";
 import { toast } from "@/lib/toast";
 
 import type { SpaceId, SpaceSummary } from "../contract";
@@ -262,7 +263,7 @@ function TreeRow({
           data-current={currentId === space.id ? "true" : undefined}
           ref={currentId === space.id ? scrollIntoViewOnce : undefined}
           data-drop={dropHere ?? undefined}
-          style={{ paddingLeft: 8 + depth * 12 }}
+          style={treeIndentStyle(depth)}
           draggable
           onDragStart={(e) => {
             e.dataTransfer.effectAllowed = "move";
@@ -289,24 +290,10 @@ function TreeRow({
           }}
         >
           <RowLink id={space.id} title={space.title} />
-          <span className="spaces-row-icon">
-            <span className="spaces-row-glyph">
-              <SpaceIcon media={space.icon} size={17} />
-            </span>
-            {/* ui-exception: Notion's tree disclosure — a 22px toggle that takes the icon's own slot on
-                hover; the 28px controls Button cannot sit inside a tree row's icon slot. */}
-            <button
-              type="button"
-              className="spaces-row-chevron"
-              data-open={isOpen || undefined}
-              aria-label={isOpen ? "Collapse" : "Expand"}
-              onClick={(e) => {
-                e.stopPropagation();
-                toggle(space.id);
-              }}
-            >
-              <ChevronRight size={14} strokeWidth={2.25} />
-            </button>
+          {/* The disclosure slot sits on the row's own pressable layer (the row link fills the row beneath). */}
+          <TreeDisclosure expandable expanded={isOpen} onToggle={() => toggle(space.id)} className="relative z-[2] pointer-events-auto" />
+          <span className="pointer-events-none relative z-[1] flex h-4 w-4 shrink-0 items-center justify-center">
+            <SpaceIcon media={space.icon} size={16} />
           </span>
           <span className="spaces-row-title">{space.title || "Untitled"}</span>
           <span className="spaces-row-actions">
@@ -328,13 +315,15 @@ function TreeRow({
       </RenamePopover>
       {isOpen ? (
         !kidsLoaded && !kids.length ? (
-          <div style={{ paddingLeft: 8 + (depth + 1) * 12 }}>
+          <div style={treeIndentStyle(depth + 1)}>
             <RegionSkeleton shape="rows" count={1} aria-label="Reading pages inside" />
           </div>
         ) : kids.length ? (
           kids.map((k) => <TreeRow key={k.id} space={k} depth={depth + 1} expanded={expanded} toggle={toggle} currentId={currentId} drag={drag} setDrag={setDrag} />)
         ) : (
-          <div className="spaces-row-empty" style={{ paddingLeft: 8 + (depth + 1) * 12 + 22 }}>
+          <div className="spaces-row-empty flex items-center gap-1.5" style={treeIndentStyle(depth + 1)}>
+            <TreeDisclosure expandable={false} />
+            <span aria-hidden="true" className="h-4 w-4 shrink-0" />
             {/* read-gate-exempt: children come from pages already loaded into the tree */}
             No pages inside
           </div>

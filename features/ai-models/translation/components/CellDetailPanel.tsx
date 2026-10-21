@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
  * EVERYTHING ONE TRANSLATION CELL CARRIES, for the admin deciding on it — the
@@ -155,7 +156,7 @@ function EvidenceEntry({
           {index + 1}
         </span>
         {entry.kind ? (
-          <Badge tone="info">{entry.kind}</Badge>
+          <Badge tone="info">{humanizeIdentifier(entry.kind)}</Badge>
         ) : (
           <Badge tone="warning">No kind</Badge>
         )}

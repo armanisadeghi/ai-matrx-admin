@@ -6,7 +6,7 @@
 // PublicFlashcardDeck's single dynamic edge — never import it directly.
 //
 // `deviceOnly` keeps the deck off every per-learner read; no `setId` is passed,
-// so the owner-only affordances (enrich, split into sub-cards) and the set
+// so the owner-only affordances (enrich, split into sub-cards) and the deck
 // AccessGate never appear; no `sessionId`, so no session review. Every AI tool
 // the learner asks for (Ask AI, tutor, memory aid, read aloud) still calls the
 // server exactly as it does for members — the server decides.
@@ -111,10 +111,10 @@ export default function PublicStudySessionImpl({
           grade={study.grade}
           onRestart={study.restart}
           onExit={onClose}
-          emptyBody="This set has no cards yet."
-          completionTitle={mode === "learn" ? "All cards learned" : "Set complete"}
+          emptyBody="This deck has no cards yet."
+          completionTitle={mode === "learn" ? "All cards learned" : "Deck complete"}
           completionSubtitle="Progress is saved on this device."
-          completionPrimary={{ label: "Back to set", icon: Layers, onClick: onClose }}
+          completionPrimary={{ label: "Back to deck", icon: Layers, onClick: onClose }}
         />
       </div>
     </div>

@@ -23,6 +23,8 @@ import { ItemMenu } from "@ai-matrx/design-system/item";
 import { itemMenuConfigToExtraSections } from "@ai-matrx/context-menu/engine";
 import { buildDefaultTableRowMenuDescriptor, createTableRowMenuDescriptor } from "@ai-matrx/context-menu/engine";
 import { buildCmsPageMenu } from "@/features/cms/actions/buildCmsPageMenu";
+import { CMS_PAGE_BULK_ACTIONS } from "@/features/cms/actions/cmsPageBulkActions";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import {
   CmsPageAiActionDialog,
   type CmsPageAiIntent,
@@ -301,6 +303,18 @@ export default function PageListView({
     ? pages.filter((page) => page.category === categoryFilter)
     : pages;
 
+  // Bulk twins of the page menu (Publish drafts, Move to Trash) — one declaration
+  // in cmsPageBulkActions, keyed by the menu's own ids.
+  const bulk = useTableBulkSelection<ClientPageSummary>({
+    noun: "page",
+    rows: categoryRows,
+    getRowId: (page) => page.id,
+    getRowName: (page) => page.title,
+    actions: CMS_PAGE_BULK_ACTIONS,
+    standardBulkActions: false,
+    onRefresh,
+  });
+
   // ── Loading ──────────────────────────────────────────────────────────
   if (isLoading && pages.length === 0) {
     return (
@@ -377,6 +391,7 @@ export default function PageListView({
             });
           },
         }}
+        selection={bulk.selection}
         detail={{ enabled: false }}
         onRowOpen={(page) => onOpenPage(page.id)}
         isLoading={isLoading && pages.length === 0}

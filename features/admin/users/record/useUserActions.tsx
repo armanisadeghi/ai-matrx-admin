@@ -35,6 +35,7 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 import { pushAppHref } from "@/lib/deployment/navigate";
 import { setTopTierAccess } from "@/features/ai-models/topTierAccess";
+import { setUserPlan } from "@/features/admin/limits/service";
 import { ChangePlanDialog, type ChangePlanSubject } from "@/features/admin/limits/components/ChangePlanDialog";
 import { SendTutorialDialog, type TutorialRecipient } from "@/features/guided-tutorials/admin/SendTutorialDialog";
 import { GiveFreeMonthsDialog, type FreeMonthsPerson } from "../components/GiveFreeMonthsDialog";
@@ -109,6 +110,99 @@ async function rpcError(promise: PromiseLike<{ data: unknown; error: { message: 
   return data;
 }
 
+/** The registry actions that change one person on a reason: one door per action, row and bulk alike. */
+export type ReasonDoorId =
+  | "magic_link"
+  | "password_reset"
+  | "mcp_access"
+  | "top_tier"
+  | "onboarded"
+  | "verify_email"
+  | "close"
+  | "reopen"
+  | "sign_out_everywhere"
+  | "default_plan";
+
+async function patchAccount(subject: Pick<UserActionSubject, "id">, body: Record<string, boolean | string>) {
+  const res = await fetch("/api/admin/users", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId: subject.id, ...body }),
+  });
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Failed");
+}
+
+/** What a reason door answers, for the row's own toast. */
+export interface ReasonDoorOutcome {
+  /** A magic / recovery link the server minted (also emailed). */
+  actionLink?: string | null;
+  /** The door found nothing to change (already verified, was not closed). */
+  unchanged?: boolean;
+  /** Sign-ins ended. */
+  sessions?: number | null;
+}
+
+/**
+ * THE door for every reason-based change on a person. The row menu calls it with the reason it
+ * asked; the bulk twin calls the SAME function once per selected person with the one reason. A
+ * toggle takes `on` (the bulk twin names the direction; the row flips the person's current state).
+ * Throws the server's own refusal sentence. Does not toast and does not refresh — callers do.
+ */
+export async function runReasonDoor(
+  id: ReasonDoorId,
+  subject: UserActionSubject,
+  reason: string,
+  options: { on?: boolean } = {},
+): Promise<ReasonDoorOutcome> {
+  switch (id) {
+    case "magic_link":
+    case "password_reset": {
+      const res = await fetch("/api/admin/users/auth-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: subject.id,
+          email: subject.email,
+          type: id === "magic_link" ? "magiclink" : "recovery",
+          send: true,
+          reason,
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error ?? "Failed to send");
+      return { actionLink: json.action_link ?? null };
+    }
+    case "mcp_access":
+      await patchAccount(subject, { mcpFullAccess: options.on ?? !subject.mcp_full_access, reason });
+      return {};
+    case "onboarded":
+      await patchAccount(subject, { onboardingCompleted: options.on ?? !subject.onboarding_completed, reason });
+      return {};
+    case "top_tier":
+      await setTopTierAccess(subject.id, options.on ?? !subject.top_tier_models, reason);
+      return {};
+    case "close":
+      await rpcError(createClient().schema("iam").rpc("close_account", { p_user: subject.id, p_reason: reason }));
+      return {};
+    case "reopen": {
+      const data = await rpcError(createClient().schema("iam").rpc("reopen_account", { p_user: subject.id, p_reason: reason }));
+      // iam.reopen_account answers `reopened: false` when nothing was closed (B2).
+      return { unchanged: isJsonObject(data) && data.reopened === false };
+    }
+    case "sign_out_everywhere": {
+      const data = await rpcError(createClient().schema("iam").rpc("sign_out_everywhere", { p_user: subject.id, p_reason: reason }));
+      return { sessions: isJsonObject(data) && typeof data.sessions === "number" ? data.sessions : null };
+    }
+    case "verify_email": {
+      const data = await rpcError(createClient().schema("iam").rpc("admin_confirm_email", { p_user: subject.id, p_reason: reason }));
+      return { unchanged: isJsonObject(data) && data.changed === false };
+    }
+    case "default_plan":
+      await setUserPlan({ userId: subject.id, planKey: null, note: reason, expiresAt: null });
+      return {};
+  }
+}
+
 export function useUserActions({ onChanged }: UseUserActionsOptions = {}) {
   const router = useRouter();
   const { copyText } = useClipboard({ notify: copyNotify });
@@ -129,15 +223,6 @@ export function useUserActions({ onChanged }: UseUserActionsOptions = {}) {
     onChanged?.(userId, patch);
   };
 
-  const patchAccount = async (subject: UserActionSubject, body: Record<string, boolean | string>) => {
-    const res = await fetch("/api/admin/users", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: subject.id, ...body }),
-    });
-    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Failed");
-  };
-
   const sendAuthLink = (subject: UserActionSubject, type: "magiclink" | "recovery") => {
     const noun = type === "magiclink" ? "magic sign-in link" : "password reset link";
     askReason({
@@ -145,16 +230,10 @@ export function useUserActions({ onChanged }: UseUserActionsOptions = {}) {
       description: `Single-use link, emailed to ${subject.email}.`,
       confirmLabel: "Send",
       run: async (reason) => {
-        const res = await fetch("/api/admin/users/auth-link", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: subject.id, email: subject.email, type, send: true, reason }),
-        });
-        const json = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(json.error ?? "Failed to send");
+        const json = await runReasonDoor(type === "magiclink" ? "magic_link" : "password_reset", subject, reason);
         changed(subject.id);
         recordToast.success(personRef(subject), `Sent ${noun} to ${subject.email}`, {
-          action: json.action_link ? { label: "Copy link", onClick: () => void copyText(json.action_link) } : undefined,
+          action: json.actionLink ? { label: "Copy link", onClick: () => void copyText(json.actionLink as string) } : undefined,
         });
       },
     });
@@ -167,7 +246,7 @@ export function useUserActions({ onChanged }: UseUserActionsOptions = {}) {
       description: next ? "Onboarding is skipped on their next visit." : "Onboarding shows again on their next visit.",
       confirmLabel: next ? "Mark onboarded" : "Mark as new",
       run: async (reason) => {
-        await patchAccount(subject, { onboardingCompleted: next, reason });
+        await runReasonDoor("onboarded", subject, reason, { on: next });
         changed(subject.id, { onboarding_completed: next });
         recordToast.success(personRef(subject), next ? "Marked as onboarded" : "Marked as new");
       },
@@ -181,7 +260,7 @@ export function useUserActions({ onChanged }: UseUserActionsOptions = {}) {
       description: next ? "Every MCP tool opens to them, not only the default set." : "They keep only the default MCP tools.",
       confirmLabel: next ? "Grant" : "Revoke",
       run: async (reason) => {
-        await patchAccount(subject, { mcpFullAccess: next, reason });
+        await runReasonDoor("mcp_access", subject, reason, { on: next });
         changed(subject.id, { mcp_full_access: next });
         recordToast.success(personRef(subject), next ? `Granted full MCP access to ${whoOf(subject)}` : `Revoked full MCP access from ${whoOf(subject)}`);
       },
@@ -197,7 +276,7 @@ export function useUserActions({ onChanged }: UseUserActionsOptions = {}) {
       description: next ? `${who} can run top-tier models at top-tier prices.` : "Top-tier models are refused for them again.",
       confirmLabel: next ? "Allow" : "Turn off",
       run: async (reason) => {
-        await setTopTierAccess(subject.id, next, reason);
+        await runReasonDoor("top_tier", subject, reason, { on: next });
         changed(subject.id, { top_tier_models: next });
         recordToast.success(personRef(subject), next ? `Top-tier models on for ${who}` : `Top-tier models off for ${who}`);
       },
@@ -213,7 +292,7 @@ export function useUserActions({ onChanged }: UseUserActionsOptions = {}) {
       description: "They can't sign in; API keys are revoked, records stay.",
       confirmLabel: "Close account",
       run: async (reason) => {
-        await rpcError(createClient().schema("iam").rpc("close_account", { p_user: subject.id, p_reason: reason }));
+        await runReasonDoor("close", subject, reason);
         changed(subject.id, { banned: true });
         recordToast.success(personRef(subject), `Closed ${who}`);
       },
@@ -227,9 +306,9 @@ export function useUserActions({ onChanged }: UseUserActionsOptions = {}) {
       description: "They can sign in again; revoked API keys stay revoked.",
       confirmLabel: "Reopen",
       run: async (reason) => {
-        const data = await rpcError(createClient().schema("iam").rpc("reopen_account", { p_user: subject.id, p_reason: reason }));
+        const outcome = await runReasonDoor("reopen", subject, reason);
         // iam.reopen_account answers `reopened: false` when nothing was closed (B2): say so.
-        if (isJsonObject(data) && data.reopened === false) {
+        if (outcome.unchanged) {
           changed(subject.id);
           recordToast.warning(personRef(subject), `${who} was not closed`);
           return;
@@ -247,8 +326,7 @@ export function useUserActions({ onChanged }: UseUserActionsOptions = {}) {
       description: "Every device signs out within an hour.",
       confirmLabel: "Sign out everywhere",
       run: async (reason) => {
-        const data = await rpcError(createClient().schema("iam").rpc("sign_out_everywhere", { p_user: subject.id, p_reason: reason }));
-        const ended = isJsonObject(data) && typeof data.sessions === "number" ? data.sessions : null;
+        const ended = (await runReasonDoor("sign_out_everywhere", subject, reason)).sessions ?? null;
         changed(subject.id);
         recordToast.success(personRef(subject), ended === null ? `Signed ${who} out everywhere` : `Ended ${ended} sign-in${ended === 1 ? "" : "s"} for ${who}`);
       },
@@ -262,9 +340,9 @@ export function useUserActions({ onChanged }: UseUserActionsOptions = {}) {
       description: `${subject.email} counts as verified; no confirmation email is sent.`,
       confirmLabel: "Mark verified",
       run: async (reason) => {
-        const data = await rpcError(createClient().schema("iam").rpc("admin_confirm_email", { p_user: subject.id, p_reason: reason }));
+        const outcome = await runReasonDoor("verify_email", subject, reason);
         changed(subject.id, { email_confirmed: true });
-        const already = isJsonObject(data) && data.changed === false;
+        const already = outcome.unchanged === true;
         recordToast.success(personRef(subject), already ? `${who} was already verified` : `Marked ${who}'s email verified`);
       },
     });

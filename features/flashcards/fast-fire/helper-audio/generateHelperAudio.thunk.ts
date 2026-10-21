@@ -62,7 +62,7 @@ const HELPER_SPEECH_STYLE = {
 } as const;
 
 /**
- * Read-only readiness: how many of a set's cards already have CACHED helper
+ * Read-only readiness: how many of a deck's cards already have CACHED helper
  * audio (a durable fc_detail(kind='helper') with audio_file_id) vs the total.
  */
 export async function getHelperAudioReadiness(
@@ -259,8 +259,8 @@ export function generateHelperAudio(
 }
 
 /**
- * Ensure every card in a set has cached helper audio, generating the missing
- * ones concurrently. Returns cardId → audio file_id for the whole set.
+ * Ensure every card in a deck has cached helper audio, generating the missing
+ * ones concurrently. Returns cardId → audio file_id for the whole deck.
  * On-demand only — call from a Prepare affordance, never at creation.
  */
 export function ensureHelperAudioForSet(

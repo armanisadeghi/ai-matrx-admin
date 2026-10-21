@@ -573,7 +573,7 @@ export function SiteLinkComplianceView() {
             </section>
           ) : null}
           <p className="shrink-0 pb-2 text-[11px] text-muted-foreground">
-            Scoring uses each source page's latest accepted snapshot only (
+            Scoring uses each source page's latest accepted page capture only (
             {report.currentEdges.toLocaleString()} current edges). Declare
             policies and plans on each page's Link plan card.
           </p>

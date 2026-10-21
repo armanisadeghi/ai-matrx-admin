@@ -44,7 +44,7 @@ import { ErrorNotice } from "@ai-matrx/design-system";
 export interface KeywordResearchLauncherProps {
   run: ResearchRunState;
   runResearch: (primaryKeyword: string) => Promise<void>;
-  /** Pre-fill the input (e.g. a content-plan node's target keyword). */
+  /** Pre-fill the input (e.g. a content-plan page's target keyword). */
   initialKeyword?: string;
   /** Fire the research immediately on mount when `initialKeyword` is set. */
   autoRun?: boolean;

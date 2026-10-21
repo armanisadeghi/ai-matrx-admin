@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * PlanContextPanel — THE canonical read-only view of a plan node's context:
+ * PlanContextPanel — THE canonical read-only view of a plan page's context:
  * what a page was SUPPOSED to be, rendered wherever that page is worked on.
  *
  * This is the BEFORE half of the before/during/after doctrine
@@ -14,7 +14,7 @@
  * either one improved.
  *
  * READ-ONLY BY DESIGN. Editing a brief / keyword / status stays in the plan
- * workspace's NodePanel — the ONE editor for a plan node (THE CANONICAL
+ * workspace's NodePanel — the ONE editor for a plan page (THE CANONICAL
  * COMPONENT LAW). Every section that has nothing to show says so honestly and
  * hands the user the door to the place where it gets filled in.
  *
@@ -97,7 +97,7 @@ export function PlanContextPanel({
         <p className="text-xs text-muted-foreground">
           {node.error instanceof Error
             ? node.error.message
-            : "The plan node may have been deleted, or it belongs to a plan you cannot see."}
+            : "The plan page may have been deleted, or it belongs to a plan you cannot see."}
         </p>
         <div className="flex flex-wrap gap-2">
           <Button

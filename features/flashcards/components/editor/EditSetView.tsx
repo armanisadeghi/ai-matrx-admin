@@ -1,11 +1,11 @@
 // features/flashcards/components/editor/EditSetView.tsx
 //
-// The flashcard set AUTHORING surface (the view↔edit split, ROUTING.md §2). This
-// is the real edit page, not a placeholder: rename the set + edit its details,
+// The flashcard deck AUTHORING surface (the view↔edit split, ROUTING.md §2). This
+// is the real edit page, not a placeholder: rename the deck + edit its details,
 // set its Shown to / Published to the web + folders/tags, edit each card's front/back inline
 // (dirty-tracked, per-card save, markdown/LaTeX preview toggle, delete,
 // up/down reorder), and add a new card. Writes go through fcService
-// (RLS-gated — you can only edit sets you own); the VIEW-vs-EDIT permission
+// (RLS-gated — you can only edit decks you own); the VIEW-vs-EDIT permission
 // gate + duplicate-to-edit for view-only sharees is the Wave-5 sharing
 // follow-up. Card images are wired (CardImageSlot, via the
 // canonical fileHandler); card audio is NOT yet wired — not faked.
@@ -96,7 +96,7 @@ import { buildDeckWriteHandlers } from "./deckWriteHandlers";
 
 const EDU_BASE = "/education/flashcards";
 
-/** This route's own surface — the set EDITOR, not the flashcards library. */
+/** This route's own surface — the deck EDITOR, not the flashcards library. */
 const SURFACE_NAME = "matrx-user/education-flashcard-editor";
 
 interface HeaderFields {
@@ -142,7 +142,7 @@ export function EditSetView({ setId }: { setId: string }) {
   const headerAutosave = useAutosave<HeaderFields>({
     save: async (h) => {
       const res = await fcService.updateSet(setId, {
-        name: h.name.trim() || "Untitled set",
+        name: h.name.trim() || "Untitled deck",
         description: h.description.trim() || null,
         topic: h.topic.trim() || null,
       });
@@ -161,7 +161,7 @@ export function EditSetView({ setId }: { setId: string }) {
       const res = await fcService.getSetWithCards(setId);
       if (cancelled) return;
       if (!res.data) {
-        setError(res.error ?? recordUnavailableMessage("flashcard set", "unknown"));
+        setError(res.error ?? recordUnavailableMessage("flashcard deck", "unknown"));
         setData(null);
       } else {
         setData(res.data);
@@ -289,7 +289,7 @@ export function EditSetView({ setId }: { setId: string }) {
 
   // ── Surface scope (the read half) ───────────────────────────────────────
   // Assembled at TRIGGER time from the live render values, so an agent always
-  // sees the set as it stands right now — including edits the learner has just
+  // sees the deck as it stands right now — including edits the learner has just
   // autosaved. `header` (not `data.set`) is what the inputs show.
   const buildScope = () => {
     const loaded = !!data && !error;
@@ -415,7 +415,7 @@ export function EditSetView({ setId }: { setId: string }) {
                 onClick={goView}
                 disabled={isPending}
               >
-                View set
+                View deck
               </Button>
             </div>
           ) : null}
@@ -439,12 +439,12 @@ export function EditSetView({ setId }: { setId: string }) {
           />
         ) : (
           <>
-            {/* Set details */}
+            {/* Deck details */}
             <section className="rounded-xl border border-border bg-card p-4">
               <div className="mb-3 flex items-center justify-between gap-2 text-sm font-medium text-foreground">
                 <span className="flex items-center gap-2">
                   <Layers className="h-4 w-4 text-primary" />
-                  Set details
+                  Deck details
                 </span>
                 <AutosaveIndicator
                   status={headerAutosave.status}
@@ -460,7 +460,7 @@ export function EditSetView({ setId }: { setId: string }) {
                     value={header.name}
                     onChange={(e) => editHeader({ name: e.target.value })}
                     onBlur={headerAutosave.flush}
-                    placeholder="Set name"
+                    placeholder="Deck name"
                   />
                 </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -485,7 +485,7 @@ export function EditSetView({ setId }: { setId: string }) {
                         editHeader({ description: e.target.value })
                       }
                       onBlur={headerAutosave.flush}
-                      placeholder="What this set covers"
+                      placeholder="What this deck covers"
                     />
                   </div>
                 </div>
@@ -588,7 +588,7 @@ export function EditSetView({ setId }: { setId: string }) {
         title="Delete this card"
         description={
           <>
-            Remove &ldquo;{deleteTarget?.front}&rdquo; from this set. The card
+            Remove &ldquo;{deleteTarget?.front}&rdquo; from this deck. The card
             is archived, not erased.
           </>
         }
@@ -598,7 +598,7 @@ export function EditSetView({ setId }: { setId: string }) {
         onConfirm={confirmDeleteCard}
       />
 
-      {/* Never-lose-work: platform version history + restore for this set. */}
+      {/* Never-lose-work: platform version history + restore for this deck. */}
       <SetVersionHistoryDialog
         open={historyOpen}
         onOpenChange={setHistoryOpen}

@@ -260,7 +260,7 @@ function AddValueForm({
           value={value}
           disabled={add.isPending}
           onChange={(event) => setValue(event.target.value)}
-          className="min-w-[14rem] flex-1"
+          className="font-mono min-w-[14rem] flex-1"
           data-identifier
           placeholder="value_written_by_the_classifier"
         />

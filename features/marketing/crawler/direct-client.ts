@@ -555,7 +555,7 @@ async function streamCommand(
   const sessionId = response.headers.get("X-Crawl-Session-Id") || "";
   const siteId = response.headers.get("X-Site-Id");
   if (!sessionId) {
-    throw new Error("The scraper did not return a crawl session identifier.");
+    throw new Error("The scraper did not return a crawl identifier.");
   }
   callbacks.onConnected?.({ sessionId, siteId });
 

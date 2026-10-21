@@ -14,7 +14,7 @@
 //      `fc_detail.metadata.credit` and renders under the image
 //      (Unsplash API guidelines).
 //   3. WHAT WE STORE IS DURABLE. Unsplash's own CDN URL is permanent and
-//      anonymous-readable — safe for shared/public sets (media-durability).
+//      anonymous-readable — safe for shared/public decks (media-durability).
 //
 // The ToS download event fires on USE (attach), not on render of results.
 

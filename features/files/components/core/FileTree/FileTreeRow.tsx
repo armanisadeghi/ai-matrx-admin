@@ -8,7 +8,7 @@
 "use client";
 
 import { forwardRef, memo } from "react";
-import { ChevronDown, ChevronRight, MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
 import { FileIcon } from "@ai-matrx/media/react";
@@ -19,12 +19,16 @@ import {
   FileRowContextMenu,
   FolderRowContextMenu,
 } from "@/features/files/components/core/RowContextMenu/RowContextMenu";
+import {
+  TreeDisclosure,
+  TreeFolderIcon,
+  TREE_ROW_HEIGHT,
+  TREE_ROW_TEXT,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import type { TreeRow } from "./useTreeExpansion";
 
-const INDENT_PX = 14;
-const ROW_HEIGHT_PX = 24;
-
-export const FILE_TREE_ROW_HEIGHT = ROW_HEIGHT_PX;
+export const FILE_TREE_ROW_HEIGHT = TREE_ROW_HEIGHT.compact;
 
 export interface FileTreeRowProps {
   row: TreeRow;
@@ -101,7 +105,8 @@ function FileTreeRowImpl(
       onClick={onClick}
       onDoubleClick={onDoubleClick}
       className={cn(
-        "group flex items-center text-xs select-none cursor-pointer",
+        "group flex items-center gap-1 select-none cursor-pointer",
+        TREE_ROW_TEXT,
         "hover:bg-accent/60",
         selected && "bg-accent text-accent-foreground",
         focused && !selected && "ring-1 ring-inset ring-ring/40",
@@ -109,42 +114,28 @@ function FileTreeRowImpl(
         isDragging && "opacity-50",
       )}
       style={{
-        height: `${ROW_HEIGHT_PX}px`,
-        paddingLeft: `${row.depth * INDENT_PX + 4}px`,
+        ...treeIndentStyle(row.depth),
+        height: FILE_TREE_ROW_HEIGHT,
       }}
     >
-      <div className="flex h-full w-[14px] items-center justify-center">
-        {isFolder ? (
-          <button
-            type="button"
-            tabIndex={-1}
-            aria-label={row.expanded ? "Collapse" : "Expand"}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (!row.empty) onChevronClick();
-            }}
-            className={cn(
-              "flex h-full w-full items-center justify-center rounded",
-              !row.empty && "hover:bg-accent",
-              row.empty && "opacity-30 cursor-default",
-            )}
-          >
-            {row.expanded ? (
-              <ChevronDown className="h-3 w-3" aria-hidden="true" />
-            ) : (
-              <ChevronRight className="h-3 w-3" aria-hidden="true" />
-            )}
-          </button>
-        ) : null}
-      </div>
+      {isFolder ? (
+        <TreeDisclosure
+          expandable
+          expanded={row.expanded}
+          onToggle={() => {
+            if (!row.empty) onChevronClick();
+          }}
+          className={cn(row.empty && "opacity-30 cursor-default")}
+        />
+      ) : (
+        <TreeDisclosure expandable={false} />
+      )}
 
-      <FileIcon
-        fileName={isFolder ? undefined : name}
-        isFolder={isFolder}
-        open={isFolder && row.expanded}
-        size={14}
-        className="mx-1"
-      />
+      {isFolder ? (
+        <TreeFolderIcon open={row.expanded} />
+      ) : (
+        <FileIcon fileName={name} size={16} />
+      )}
 
       <span className="truncate pr-2 flex-1 min-w-0 inline-flex items-center gap-1">
         <span className="truncate">{name}</span>

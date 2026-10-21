@@ -1,6 +1,6 @@
 // record-view: none — a sub-view (test) inside a record or scope, not the record page; the record's own page carries the section
 // /education/flashcards/[setId]/test — Phase 1B "Test" mode: multiple-choice
-// quiz using in-set distractors (AI fallback for small sets), method='test'.
+// quiz using in-set distractors (AI fallback for small decks), method='test'.
 import type { Metadata } from "next";
 import { toolMetadata } from "@/features/education/route-helpers";
 import { TestSurface } from "@/features/flashcards/components/study/TestSurface";

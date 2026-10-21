@@ -6,7 +6,7 @@ todos:
     content: Extract versionSnapshotRowToAgentDefinition from fetchAgentVersionSnapshot thunk into converters.ts (shared for SSR + client); push result to Redux via upsertAgent
     status: pending
   - id: data-layer
-    content: Create lib/agents/data.ts with import 'server-only' + cache()-wrapped getAgentListSeed (agx_get_list RPC paginated), getAgent (full row), getAgentSnapshot (agx_get_version_snapshot)
+    content: Create lib/agents/data.ts with import 'server-only' + cache()-wrapped getAgent (full row), getAgentSnapshot (agx_get_version_snapshot). (The getAgentListSeed SSR list seed this plan once proposed was removed 2026-10-21: the one agent list is /agents/all.)
     status: pending
   - id: tools-slice
     content: Create ../aidream/apps/shared/chat/src/agents/redux/tools/ slice + fetchAvailableTools thunk (skips if succeeded) + selectors; register in store; wire AgentToolsModal to dispatch on open
@@ -154,22 +154,7 @@ import { notFound } from 'next/navigation'
 import { dbRowToAgentDefinition, versionSnapshotRowToAgentDefinition } from '@ai-matrx/chat/agents/redux/agent-definition/converters'
 import type { AgentDefinition } from '@ai-matrx/chat/agents/types/agent-definition.types'
 
-/**
- * SSR seed for the agents list page.
- * Uses the updated agx_get_list RPC which now accepts p_limit / p_offset.
- * p_limit: NULL → unlimited (original behavior). p_limit: 30 → first page.
- * Ordered: favorites first, then most recently updated.
- * Client then dispatches fetchAgentsList() (no limit) to backfill all agents.
- */
-export const getAgentListSeed = cache(async () => {
-  const supabase = await createClient()
-  const { data, error } = await supabase.rpc('agx_get_list', {
-    p_limit: 30,
-    p_offset: 0,
-  })
-  if (error) throw error
-  return (data ?? []) as AgentListRow[]
-})
+// (getAgentListSeed was removed 2026-10-21 — the one agent list is /agents/all; no SSR list seed.)
 
 /**
  * Full live agent row. Wrapped in cache() so layout + generateMetadata + page
@@ -282,7 +267,8 @@ export const metadata: Metadata = {
 }
 
 export default async function AgentsListPage() {
-  const seeds = await getAgentListSeed()  // agx_get_list(p_limit:30)
+  // SUPERSEDED 2026-10-21: getAgentListSeed was removed; signed-in visitors go to /agents/all.
+  const seeds: AgentListRow[] = []
   return (
     <>
       <PageHeader>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { ArrowLeft, CircleSlash, Power, PowerOff, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
@@ -13,7 +13,10 @@ import { Spinner } from "@/components/ui/loaders/Spinner";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import { formatRelativeTime } from "@/utils/datetime";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import {
+  mustChange,
   cancelVerification,
   loadToolDetail,
   setToolPaused,
@@ -118,43 +121,98 @@ export function ToolDetail({ toolId }: { toolId: string }) {
     }));
   const history: HistoryLine[] = data ? mergeHistory(data.entry, data.endpoints, data.providers) : [];
 
+  const sourcesLabel = (n: number) => `${n} source${n === 1 ? "" : "s"}`;
+  const { rowActionDefs: sourceRowActions, bulkActions: sourceBulkActions } = defineRowVerbs<SourceRow>(
+    [
+      {
+        id: "check", icon: ShieldCheck, label: "Check",
+        appliesTo: (r) => r.ep.state !== "verifying",
+        unavailableTooltip: "A check is already running",
+        disabled: () => busy !== null,
+        onClick: (r) => void verify(r.ep, r.name, r.ep.state !== "live"),
+        bulk: {
+          label: "Check",
+          done: "Checked",
+          skipReason: (r) => (r.ep.state === "verifying" ? "A check is already running" : null),
+          confirm: (t) => ({
+            title: `Check ${sourcesLabel(t.ids.length)}?`,
+            description: `Makes ${t.ids.length} real call${t.ids.length === 1 ? "" : "s"}, one per source. A source that is not on turns on only if its call succeeds.`,
+            confirmLabel: "Run checks",
+          }),
+          runOne: async (id) => {
+            const result = await verifyEndpoint(id);
+            if (!result.passed) throw new Error(result.message);
+          },
+        },
+      },
+      {
+        id: "turn-on", icon: Power, label: "Turn on",
+        appliesTo: (r) => r.ep.state !== "live" && r.ep.state !== "verifying",
+        unavailableTooltip: "Already on",
+        disabled: () => busy !== null,
+        onClick: (r) => void turnOn(r.ep),
+        bulk: {
+          done: "Turned on",
+          skipReason: (r) => (r.ep.state === "live" ? "Already on" : r.ep.state === "verifying" ? "A check is running" : null),
+          confirm: (t) => ({
+            title: `Turn on ${sourcesLabel(t.ids.length)}?`,
+            description: "A source turns on only after a real call succeeded; the others are skipped and named.",
+            confirmLabel: "Turn on",
+          }),
+          runOne: async (id) => mustChange(await turnOnEndpoint(id)),
+        },
+      },
+      {
+        id: "turn-off", icon: PowerOff, label: "Turn off", tone: "destructive",
+        appliesTo: (r) => r.ep.state === "live",
+        unavailableTooltip: "Not on",
+        disabled: () => busy !== null,
+        onClick: (r) => void turnOff(r.ep, r.name),
+        bulk: {
+          done: "Turned off",
+          skipReason: (r) => (r.ep.state === "live" ? null : "Not on"),
+          confirm: (t) => ({
+            title: `Turn off ${sourcesLabel(t.ids.length)}?`,
+            description: "Calls stop using these sources. Each stays off until a check passes.",
+            confirmLabel: "Turn off",
+            variant: "destructive",
+          }),
+          runOne: async (id) => {
+            await turnOffEndpoint(id, "paused");
+          },
+        },
+      },
+      {
+        id: "cancel-check", icon: CircleSlash, label: "Cancel check",
+        appliesTo: (r) => r.ep.state === "verifying",
+        unavailableTooltip: "No check running",
+        disabled: () => busy !== null,
+        onClick: (r) => void cancel(r.ep),
+        bulk: {
+          done: "Canceled",
+          skipReason: (r) => (r.ep.state === "verifying" ? null : "No check running"),
+          runOne: async (id) => mustChange(await cancelVerification(id)),
+        },
+      },
+    ],
+    { noun: "source", getRowId: (r) => r.ep.id, getRowName: (r) => r.name },
+  );
+  const sourceBulk = useTableBulkSelection<SourceRow>({
+    noun: "source",
+    rows: sources,
+    getRowId: (r) => r.ep.id,
+    getRowName: (r) => r.name,
+    actions: sourceBulkActions,
+    standardBulkActions: false,
+    onRefresh: () => {
+      void query.refetch();
+      void refreshAll();
+    },
+  });
+
   const sourceColumns: MatrxColumnDef<SourceRow>[] = [
     { id: "source", accessorFn: (r) => r.name, header: "Source", width: 200, filter: "select" },
     { id: "state", accessorFn: (r) => stateWords(r.ep.state).label, header: "State", width: 120, filter: "select", tone: (r) => stateWords(r.ep.state).tone },
-    {
-      id: "actions",
-      header: "",
-      width: 260,
-      filter: false,
-      sortable: false,
-      cell: (r) => {
-        const state = r.ep.state;
-        const working = busy?.endsWith(r.ep.id) ?? false;
-        return (
-          <div className="flex items-center gap-2">
-            {state === "verifying" ? (
-              <Button variant="outline" disabled={working} onClick={() => void cancel(r.ep)}>
-                Cancel check
-              </Button>
-            ) : (
-              <Button variant={state === "live" ? "outline" : "primary"} disabled={working} onClick={() => void verify(r.ep, r.name, state !== "live")}>
-                {working && busy?.startsWith("verify") ? <Spinner size="xs" /> : null}
-                {state === "live" ? "Check" : "Check and turn on"}
-              </Button>
-            )}
-            {state === "live" ? (
-              <Button variant="outline" disabled={working} onClick={() => void turnOff(r.ep, r.name)}>
-                Turn off
-              </Button>
-            ) : state !== "verifying" ? (
-              <Button variant="outline" disabled={working} onClick={() => void turnOn(r.ep)}>
-                Turn on
-              </Button>
-            ) : null}
-          </div>
-        );
-      },
-    },
     { id: "success7", accessorFn: (r) => successLabel(r.card7), sortValue: (r) => (r.card7?.samples ? r.card7.decided / r.card7.samples : -1), header: "Success, 7 days", width: 160 },
     { id: "success30", accessorFn: (r) => successLabel(r.card30), sortValue: (r) => (r.card30?.samples ? r.card30.decided / r.card30.samples : -1), header: "Success, 30 days", width: 160 },
     { id: "p50", accessorFn: (r) => speedLabel(r.card7?.p50_ms), sortValue: (r) => r.card7?.p50_ms ?? Number.MAX_SAFE_INTEGER, header: "Typical speed", width: 120 },
@@ -218,6 +276,8 @@ export function ToolDetail({ toolId }: { toolId: string }) {
       <div className="min-h-[16rem] flex-[2]">
         <MatrxDataTable
           data={sources}
+          rowActionDefs={sourceRowActions}
+          selection={sourceBulk.selection}
           columns={sourceColumns}
           getRowId={(r) => r.ep.id}
           isLoading={loading}

@@ -770,6 +770,7 @@ function GatingSection({
               value={customGate}
               onChange={(e) => setCustomGate(e.target.value)}
               data-identifier
+              className="font-mono"
               placeholder="my_custom_gate"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {

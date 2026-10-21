@@ -257,9 +257,9 @@ export function CrawlUrlsTable({ crawlId }: { crawlId: string }) {
               rowKind: "web-crawl-url",
               listKind: "web-crawl-urls-list",
               rowDescription:
-                "One URL this crawl session encountered, with its classification and outcome.",
+                "One URL this crawl encountered, with its classification and outcome.",
               listDescription:
-                "The currently loaded run-URL rows for this crawl session (respecting search, filters, sort, and pagination).",
+                "The currently loaded run-URL rows for this crawl (respecting search, filters, sort, and pagination).",
               humanRow: (row) =>
                 humanLines([
                   ["Seq", row.sequence],

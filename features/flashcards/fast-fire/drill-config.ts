@@ -28,7 +28,7 @@ export interface FastFireConfig {
   setId: string | null;
   setName: string | null;
   secondsPerCard: number;
-  /** Cap the card count (0 / undefined = all cards in the set). */
+  /** Cap the card count (0 / undefined = all cards in the deck). */
   cardLimit: number;
   /** Show running grades live, or only reveal at the scoreboard. */
   liveScore: boolean;
@@ -176,7 +176,7 @@ export function parseDrillConfigPatch(
         .map((k) => JSON.stringify(k))
         .join(", ")}. Writable fields are: ${AGENT_WRITABLE_DRILL_FIELDS.join(", ")}.` +
         (unknownKeys.some((k) => k === "setId" || k === "setName")
-          ? " Choosing the flashcard set is not agent-writable on this surface — the learner picks it in the set picker."
+          ? " Choosing the flashcard deck is not agent-writable on this surface — the learner picks it in the deck picker."
           : ""),
     );
   }

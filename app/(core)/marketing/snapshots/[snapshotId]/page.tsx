@@ -1,4 +1,4 @@
-// record-view: none — an immutable web snapshot (a ledger record) that takes no custom fields
+// record-view: none — an immutable page capture (a ledger record) that takes no custom fields
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
@@ -56,17 +56,17 @@ export default async function MarketingSnapshotPage({
           <header className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Immutable web snapshot
+                Immutable page capture
               </p>
               <h1 className="truncate text-xl font-semibold">
                 {snapshot.final_url || snapshot.id}
               </h1>
-              <RecordId value={snapshot.id} label="Snapshot" show="full" className="mt-1" />
+              <RecordId value={snapshot.id} label="Page capture" show="full" className="mt-1" />
             </div>
             <ShareButton
               resourceType="web_snapshot"
               resourceId={snapshot.id}
-              resourceName={snapshot.final_url || `Snapshot ${snapshot.id.slice(0, 8)}`}
+              resourceName={snapshot.final_url || `Page capture ${snapshot.id.slice(0, 8)}`}
             />
           </header>
           <dl className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -104,7 +104,7 @@ export default async function MarketingSnapshotPage({
               ))}
             </div>
           ) : (
-            <p className="mt-2 text-sm text-muted-foreground">No screenshots belong to this snapshot.</p>
+            <p className="mt-2 text-sm text-muted-foreground">No screenshots belong to this page capture.</p>
           )}
         </section>
       </div>

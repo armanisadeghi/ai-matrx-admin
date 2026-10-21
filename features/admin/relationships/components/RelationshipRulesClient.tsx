@@ -31,6 +31,8 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { CanvasPagePanel } from "@/features/canvas/host/pagePanel";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { useRelationshipRuleMenu } from "./relationship-rule-actions";
@@ -479,6 +481,56 @@ export function RelationshipRulesClient({ rules, initialEditKey }: Props) {
     onDelete: (rule) => setDeleteTarget(rule),
   });
 
+  const rulesLabel = (n: number) => `${n} rule${n === 1 ? "" : "s"}`;
+  const { rowActionDefs, bulkActions } = defineRowVerbs<RelationshipRule>(
+    [
+      {
+        id: "edit", icon: Pencil, label: "Edit rule",
+        onClick: (rule) => openEditInSidePanel(rule),
+        bulk: false, noBulk: "edit",
+      },
+      {
+        id: "delete", icon: Trash2, label: "Delete rule", tone: "destructive",
+        onClick: (rule) => setDeleteTarget(rule),
+        bulk: {
+          label: "Delete",
+          done: "Deleted",
+          removesRows: true,
+          confirm: (t) => {
+            const edges = t.rows.reduce((sum, r) => sum + r.edge_count, 0);
+            return {
+              title: `Delete ${rulesLabel(t.ids.length)}?`,
+              description: `They are removed from the registry and the closure cache is rebuilt for each.${
+                edges > 0 ? ` ${edges} existing association${edges === 1 ? "" : "s"} become UNREGISTERED.` : ""
+              }`,
+              confirmLabel: "Delete",
+              variant: "destructive",
+            };
+          },
+          runOne: async (_id, rule) => {
+            if (!rule) throw new Error("Rule not loaded");
+            const { error } = await supabase.rpc("admin_delete_relationship_rule", {
+              p_source_type: rule.source_type,
+              p_target_type: rule.target_type,
+              p_label: rule.label ?? undefined,
+            });
+            if (error) throw error;
+          },
+        },
+      },
+    ],
+    { noun: "rule", getRowId: ruleKey, getRowName: (r) => ruleSentence(r) },
+  );
+  const ruleBulk = useTableBulkSelection<RelationshipRule>({
+    noun: "rule",
+    rows: filtered,
+    getRowId: ruleKey,
+    getRowName: (r) => ruleSentence(r),
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: refresh,
+  });
+
   // -- render ------------------------------------------------------------------
 
   return (
@@ -651,7 +703,8 @@ export function RelationshipRulesClient({ rules, initialEditKey }: Props) {
             // Edit tab reuses detail.render (RuleEditorForm) via MatrxDataTable
             // fallback. View tab = DataRowInspector.
           }}
-          rowActions={(rule) => [...[{ id: "edit", icon: Pencil, label: "Edit rule", onClick: () => openEditInSidePanel(rule), variant: "ghost" as const, tooltip: "Edit rule" }], ...[{ id: "delete", icon: Trash2, tone: "destructive" as const, label: "Delete rule", onClick: () => setDeleteTarget(rule), variant: "ghost" as const, tooltip: "Delete rule" }]]}
+          rowActionDefs={rowActionDefs}
+          selection={ruleBulk.selection}
         />
         </NonEditableContextMenu>
       </div>

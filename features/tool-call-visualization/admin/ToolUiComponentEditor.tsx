@@ -605,6 +605,7 @@ export function ToolUiComponentEditor({
                   }))
                 }
                 data-identifier
+                className="font-mono"
                 placeholder="e.g. web_search_v1"
                 disabled={!!toolName}
               />
@@ -992,6 +993,7 @@ export function ToolUiComponentEditor({
                   }))
                 }
                 data-identifier
+                className="font-mono"
                 placeholder="e.g. web_search_v1"
                 disabled={!!toolName}
               />

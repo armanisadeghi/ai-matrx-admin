@@ -133,7 +133,7 @@ All nested pages under `[id]` (view, build, run, versions) share this header and
 | `[id]/error.tsx`, `[id]/not-found.tsx` | Segment error / not-found |
 | `[id]/loading.tsx` | Agent detail loading |
 
-List page: `app/(a)/agents/page.tsx` uses `getAgentListSeed`, `AgentListHydrator`, `AgentsGrid`.
+List page: `app/(core)/agents/page.tsx` sends signed-in visitors to the one agent list at `/agents/all` (guests get the marketing landing). The old SSR seed `getAgentListSeed` was removed 2026-10-21 — a second agent-list path is not allowed.
 
 ---
 

@@ -1,12 +1,12 @@
 // features/flashcards/data/useDueReview.ts
 //
 // The adaptive "Review due" study hook — the vision's north-star (surface the
-// exact cards a learner needs, across ALL their sets, on the FSRS schedule).
+// exact cards a learner needs, across ALL their decks, on the FSRS schedule).
 // Loads the due queue from the shared spine (`studyService.listDue('fc_card')`,
 // ordered by `item_mastery.due_at`), hydrates the cards cross-set
 // (`fcService.getCardsByIds`, preserving the due order), and drives the same
 // flip + grade flow as `useFlashcardStudy` — but over a dynamic, cross-set queue
-// instead of one set.
+// instead of one deck.
 //
 // Grading funnels through the SAME canonical path — `recordAttemptOfflineAware`
 // over `studyService.recordAttempt` → study_attempt + item_mastery (the wrapper
@@ -42,7 +42,7 @@ const FC_CARD_ITEM_TYPE = "fc_card";
 /** mode + provenance for the adaptive due queue (source_kind CHECK allows it). */
 const STUDY_MODE = "adaptive";
 
-/** Same shape the shared StudyDeck consumes, minus `set` (there is no single set). */
+/** Same shape the shared StudyDeck consumes, minus `set` (there is no single deck). */
 export type UseDueReviewResult = Omit<UseFlashcardStudyResult, "set">;
 
 function clampIndex(index: number, length: number): number {
@@ -178,13 +178,13 @@ export function useDueReview(
   // ── Close the adaptive session (don't leak it 'active'; the reaper is only a
   //    6h backstop). A ref holds the close flag so the completion + unmount
   //    effects coordinate without set-state-in-effect. Mirrors FastFire's
-  //    finish/abort close. (The classic set-study path has a pre-existing leak
+  //    finish/abort close. (The classic deck-study path has a pre-existing leak
   //    this doesn't touch.)
   const closeRef = useRef<{ id: string; closed: boolean } | null>(null);
   useEffect(() => {
     closeRef.current = session ? { id: session.id, closed: false } : null;
     // Closing over the latch we just installed: when the session is REPLACED
-    // (the learner moved to another set without unmounting), the outgoing
+    // (the learner moved to another deck without unmounting), the outgoing
     // session would otherwise be dropped on the floor and leak 'active' until
     // the 6h reaper — the exact defect this close-path exists to remove.
     const outgoing = closeRef.current;

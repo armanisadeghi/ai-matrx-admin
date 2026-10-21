@@ -104,6 +104,11 @@ const ALIAS: Record<string, string> = {
     __dirname,
     "runtime/FrameKindImage.tsx",
   ),
+  // A shape's video, audio and embed: the frame-safe defaults (Play asks the host).
+  "@/features/content-ir/react/kind-media/AppKindMedia": resolve(
+    __dirname,
+    "runtime/FrameKindMedia.tsx",
+  ),
   // Word/PDF export (pdfmake + docx) — announced stand-in; the menu's other
   // formats are the real ones.
   "@ai-matrx/print/document": resolve(

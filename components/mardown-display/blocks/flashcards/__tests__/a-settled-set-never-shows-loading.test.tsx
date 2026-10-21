@@ -1,5 +1,5 @@
 /**
- * A flashcard set whose producer is done never shows "Loading" again.
+ * A flashcard deck whose producer is done never shows "Loading" again.
  *
  * 2026-10-06: a recitation-stopped Flashcard Generator turn left its last
  * card on "Loading flashcard..." forever — live AND after reload. The card

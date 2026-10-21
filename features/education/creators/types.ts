@@ -14,7 +14,7 @@ export interface FeaturedYouTube {
   publishedAt?: string | null;
 }
 
-/** A featured free tool (public flashcard set, study guide, note, media…). */
+/** A featured free tool (public flashcard deck, study guide, note, media…). */
 export interface FeaturedResource {
   kind: "resource";
   resourceType: string; // entity token: fc_set | learn_doc | note | study_media

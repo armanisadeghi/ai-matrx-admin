@@ -531,32 +531,40 @@ export function OrganizationsAdminClient() {
   // are off: a membership is not a favouritable or trashable record.
   const memberBulkActions: EntityBulkAction<MemberDisplayRow>[] = [
     {
-      id: "set-role-admin",
-      label: "Make admin",
+      id: "set-role",
+      label: "Set role…",
       icon: UserRound,
       confirm: (sel) => ({
-        title: `Make ${sel.count} member${sel.count === 1 ? "" : "s"} admin?`,
-        description: `${sel.count} ${sel.count === 1 ? "person" : "people"} will become Admin in ${selectedOrganization?.name ?? "this organization"}.`,
-        confirmLabel: "Make admin",
-        reason: { placeholder: REASON_PLACEHOLDER },
+        title: `Set role for ${sel.count} member${sel.count === 1 ? "" : "s"}?`,
+        description: `${sel.count} ${sel.count === 1 ? "person" : "people"} get the role you pick in ${selectedOrganization?.name ?? "this organization"}. Anyone already in it is skipped; the last owner stays an owner.`,
+        confirmLabel: "Set role",
+        ask: {
+          kind: "choice",
+          label: "Role",
+          options: ROLE_OPTIONS.map((role) => ({ value: role, label: role.charAt(0).toUpperCase() + role.slice(1) })),
+          defaultValue: "admin",
+        },
       }),
       run: (sel, input) =>
         runPerRow(
           sel,
           async (_id, member) => {
             if (!selectedOrganization || !member) throw new Error("No organization selected");
+            const role = ROLE_OPTIONS.find((r) => r === input?.value);
+            if (!role) throw new Error("Pick a role");
+            if (member.role === role) throw new Error(`Already ${role}`);
             await mutateMembership("PATCH", {
               organizationId: selectedOrganization.id,
               userId: member.user_id,
-              role: "admin",
-              reason: requireReason(input?.reason),
+              role,
+              // The bulk dialog asks one value (the role); the audit note says what was done.
+              reason: `Bulk role change from the organizations admin page: set to ${role}`,
             });
           },
           {
-            done: "Made admin",
+            done: "Role set",
             noun: "member",
             labelOf: (m) => m.display_name ?? m.email ?? m.user_id,
-            skipReason: (m) => (m.role === "admin" ? "Already admin" : null),
           },
           (m) => m.id,
         ),

@@ -11,6 +11,8 @@ import HtmlPageGridView, {
   formatRelativeDate,
 } from "@/features/html-pages/components/HtmlPageGridView";
 import { HtmlPagesContextMenu } from "@/features/html-pages/components/HtmlPagesContextMenu";
+import { buildHtmlPageBulkActions } from "@/features/html-pages/utils/htmlPageBulkActions";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { PromoteToSiteDialog } from "@/features/html-pages/components/PromoteToSiteDialog";
 import { setHtmlPagesNavOrder } from "@/features/html-pages/utils/nav-order";
 import {
@@ -258,6 +260,23 @@ export default function HtmlPageListView({
     [listState],
   );
 
+  // Bulk twins of the row menu — one declaration in htmlPageBulkActions.
+  const bulkActions = useMemo(
+    () => buildHtmlPageBulkActions(onDeletePage),
+    [onDeletePage],
+  );
+  const bulk = useTableBulkSelection<HtmlPageSummary>({
+    noun: "page",
+    rows: filtered,
+    getRowId: (page) => page.id,
+    getRowName: (page) => page.meta_title || "Untitled",
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh,
+    // onDeletePage already dropped each row locally; nothing more to remove.
+    onRemoveRows: () => {},
+  });
+
   const setViewPersist = (mode: HtmlPagesViewMode) => {
     replaceListState({ view: mode });
   };
@@ -416,6 +435,7 @@ export default function HtmlPageListView({
             `/cms/html-pages/${page.id}?ret=${encodeURIComponent(listReturnQuery)}`
           }
           onRowOpen={(page) => captureScrollAndOpen(page.id, {})}
+          selection={bulk.selection}
           detail={{ enabled: false }}
           isLoading={isLoading && pages.length === 0}
           isFetching={isLoading && pages.length > 0}

@@ -1,7 +1,7 @@
 // features/flashcards/data/useFlashcardStudy.ts
 //
 // Canonical flashcard STUDY hook — the reusable study flow over a single
-// `education.fc_set`. Loads the set's ordered cards (`fcService.getSetWithCards`)
+// `education.fc_set`. Loads the deck's ordered cards (`fcService.getSetWithCards`)
 // plus the current user's per-card mastery (`studyService.getMasteryBulk`), and
 // drives an interactive review: flip, navigate, and self-grade.
 //
@@ -50,7 +50,7 @@ const LEARN_REQUEUE_OFFSET = 3;
 export interface FlashcardStudyProgress {
   /** Distinct cards the user has graded at least once this load. */
   done: number;
-  /** Total cards in the set. */
+  /** Total cards in the deck. */
   total: number;
   /** Distinct cards last graded `correct`. */
   correct: number;
@@ -59,7 +59,7 @@ export interface FlashcardStudyProgress {
 export interface UseFlashcardStudyResult {
   /** The loaded set row (null until loaded / on error). */
   set: FcSetRow | null;
-  /** The set's ordered cards with their detail rows. */
+  /** The deck's ordered cards with their detail rows. */
   cards: CardWithDetails[];
   loading: boolean;
   /** Structured error string (service-style), or null. */
@@ -155,7 +155,7 @@ export interface UseFlashcardStudyOptions {
    */
   enabled?: boolean;
   /**
-   * Deal a shuffled ROUND instead of the whole deck in set order (Write mode).
+   * Deal a shuffled ROUND instead of the whole deck in deck order (Write mode).
    * `size` is the cards dealt (0 = every card); `cardIds`, when set, deals
    * only those cards (a "missed cards" retake); changing `key` deals again.
    * Absent = the classic whole deck in order, unchanged.
@@ -264,7 +264,7 @@ export function useFlashcardStudy(
     userIdRef.current = userId;
   }, [userId]);
 
-  // Load the set, its cards, and the current user's existing mastery per card.
+  // Load the deck, its cards, and the current user's existing mastery per card.
   // All state writes happen inside the async body so none fire synchronously in
   // the effect (which would trigger cascading renders).
   useEffect(() => {
@@ -293,7 +293,7 @@ export function useFlashcardStudy(
       // Reset the grade map HERE, before any await — not after the mastery
       // fetch. Otherwise there is a committed render where `cards` is the NEW
       // set but `resultsByCard` still holds the PREVIOUS set's grades, and if
-      // the old set had at least as many grades as the new set has cards,
+      // the old set had at least as many grades as the new deck has cards,
       // `progress.done >= progress.total` is briefly true — which made the
       // completion effect stamp the PREVIOUS session 'completed', fabricating
       // exactly the metric this session-close work exists to make honest.
@@ -304,7 +304,7 @@ export function useFlashcardStudy(
       // THE OFFLINE READ PATH. A deck the learner downloaded must OPEN with
       // no connection — that is the entire point of the download, and until
       // this branch existed `getOfflineDeck` had zero callers, so a downloaded
-      // deck still showed "Failed to load flashcard set" on a train.
+      // deck still showed "Failed to load flashcard deck" on a train.
       //
       // Offline-first when the device says it is offline (skip a fetch that
       // cannot succeed), and offline-as-fallback when the fetch fails for a
@@ -341,7 +341,7 @@ export function useFlashcardStudy(
         setError(
           offlineFirst || isNetworkFailure(setRes.error)
             ? "You're offline and this deck isn't downloaded. Open it once with a signal and choose Download to study it anywhere."
-            : (setRes.error ?? "Failed to load flashcard set"),
+            : (setRes.error ?? "Failed to load flashcard deck"),
         );
         setLoading(false);
         return;
@@ -424,7 +424,7 @@ export function useFlashcardStudy(
   //
   // THE SESSION QUEUE IS STATE, NOT A VIEW OF THE SET. Learn mode requeues
   // missed cards and drops mastered ones, so the queue's ORDER and MEMBERSHIP
-  // are the session; rebuilding from set order would resurrect mastered cards
+  // are the session; rebuilding from deck order would resurrect mastered cards
   // and teleport the learner off the card they just enriched. So: refresh each
   // queued card's row IN PLACE (new layers/sub-card details show immediately),
   // drop only cards deleted server-side, append genuinely new cards (deepen's
@@ -600,7 +600,7 @@ export function useFlashcardStudy(
   useEffect(() => {
     closeRef.current = session ? { id: session.id, closed: false } : null;
     // Closing over the latch we just installed: when the session is REPLACED
-    // (the learner moved to another set without unmounting), the outgoing
+    // (the learner moved to another deck without unmounting), the outgoing
     // session would otherwise be dropped on the floor and leak 'active' until
     // the 6h reaper — the exact defect this close-path exists to remove.
     const outgoing = closeRef.current;

@@ -1,21 +1,12 @@
 "use client";
 
-import { useState, type ComponentType } from "react";
+import type { ComponentType } from "react";
 import { Badge } from "@/components/ui/badge";
+import { useAiTableBulk } from "../useAiTableBulk";
 import {
   MatrxDataTable,
   type MatrxColumnDef,
 } from "@ai-matrx/design-system/data-table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -29,11 +20,8 @@ import {
   Package,
   Globe,
   ImageOff,
+  Pencil,
 } from "lucide-react";
-import {
-  PencilTapButton,
-  TrashTapButton,
-} from "@ai-matrx/design-system/tap-target/buttons";
 import type { AiProvider } from "../../types";
 import { readOf } from "@ai-matrx/design-system";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
@@ -140,68 +128,6 @@ function TruncatedText({
   );
 }
 
-function RowActions({
-  item,
-  onEdit,
-  onDelete,
-}: {
-  item: AiProvider;
-  onEdit: (item: AiProvider) => void;
-  onDelete: (item: AiProvider) => void;
-}) {
-  const [pendingDelete, setPendingDelete] = useState(false);
-  return (
-    <>
-      <PencilTapButton
-        variant="transparent"
-        ariaLabel={`Edit ${item.name}`}
-        tooltip="Edit provider"
-        onClick={() => onEdit(item)}
-      />
-      <TrashTapButton
-        variant="solid"
-        bgColor="bg-destructive/10"
-        iconColor="text-destructive"
-        hoverBgColor="hover:bg-destructive/20"
-        activeBgColor="active:bg-destructive/25"
-        ariaLabel={
-          item.is_system
-            ? "System providers cannot be deleted"
-            : `Delete ${item.name}`
-        }
-        tooltip={
-          item.is_system ? "System providers cannot be deleted" : "Delete provider"
-        }
-        disabled={item.is_system}
-        onClick={() => setPendingDelete(true)}
-      />
-      <AlertDialog open={pendingDelete} onOpenChange={setPendingDelete}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete &quot;{item.name}&quot;?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will remove the provider &quot;{item.name}&quot; from the
-              active provider list.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                setPendingDelete(false);
-                onDelete(item);
-              }}
-            >
-              Delete Provider
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
-}
-
 export interface ProviderTableProps {
   providers: AiProvider[];
   isLoading: boolean;
@@ -209,7 +135,7 @@ export interface ProviderTableProps {
   selectedId: string | null;
   onSelect: (provider: AiProvider) => void;
   onEdit: (provider: AiProvider) => void;
-  onDelete: (provider: AiProvider) => void;
+  onDelete: (provider: AiProvider) => Promise<void>;
   onCreate: () => void;
   onRetry: () => void;
 }
@@ -225,6 +151,18 @@ export default function ProviderTable({
   onCreate,
   onRetry,
 }: ProviderTableProps) {
+  const { rowActionDefs, selection } = useAiTableBulk<AiProvider>({
+    noun: "provider",
+    rows: providers,
+    getRowName: (item) => item.name,
+    deleteOne: onDelete,
+    protectedReason: (item) => (item.is_system ? "System providers cannot be deleted" : null),
+    deleteLabel: "Delete provider",
+    consequence: "The provider leaves the active provider list.",
+    extraVerbs: [
+      { id: "edit", icon: Pencil, label: "Edit provider", onClick: onEdit, bulk: false, noBulk: "edit" },
+    ],
+  });
   const columns: MatrxColumnDef<AiProvider>[] = [
     {
       accessorKey: "name",
@@ -278,9 +216,9 @@ export default function ProviderTable({
         data={providers}
         isLoading={isLoading && providers.length === 0}
         isFetching={isLoading && providers.length > 0}
-        columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (item) => (
-          <RowActions item={item} onEdit={onEdit} onDelete={onDelete} />
-        ) }]}
+        columns={columns}
+        rowActionDefs={rowActionDefs}
+        selection={selection}
         getRowId={(item) => item.id}
         pageSize={50}
         pageSizeOptions={[10, 25, 50, 100]}

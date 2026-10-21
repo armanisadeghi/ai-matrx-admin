@@ -60,8 +60,6 @@ import {
   Search,
   Save,
   X,
-  ChevronDown,
-  ChevronRight,
   Edit2,
   Settings,
   Check,
@@ -79,6 +77,11 @@ import {
   ContentBlockBlockType,
   type CreateContentBlockInput as CreateContentBlockInputShape,
 } from "@/types/content-blocks-db";
+import {
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import { PUBLISHED_TO_WEB_LABEL, publishedToWebPatch } from "@/lib/row-access";
 import { getUserId } from "@/utils/auth/getUserId";
 
@@ -1236,24 +1239,18 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                   <div key={cat.id}>
                     {/* Category Header - Collapsible */}
                     <div
-                      className="flex items-center gap-2 px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition-colors"
-                      style={{ paddingLeft: `${depth * 12 + 8}px` }}
+                      className="flex min-h-7 items-center gap-1 pr-2 type-body font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition-colors"
+                      style={treeIndentStyle(depth)}
                       onClick={() => toggleCategoryExpanded(cat.id)}
                     >
-                      {hasChildren || categoryBlocks.length > 0 ? (
-                        isExpanded ? (
-                          <ChevronDown className="w-4 h-4 flex-shrink-0" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4 flex-shrink-0" />
-                        )
-                      ) : (
-                        <div className="w-4 h-4 flex-shrink-0" />
-                      )}
-                      {depth === 0 ? (
-                        <Folder className="w-4 h-4 flex-shrink-0" />
-                      ) : (
-                        <FolderOpen className="w-4 h-4 flex-shrink-0" />
-                      )}
+                      <TreeDisclosure
+                        expandable={Boolean(
+                          hasChildren || categoryBlocks.length > 0,
+                        )}
+                        expanded={isExpanded}
+                        onToggle={() => toggleCategoryExpanded(cat.id)}
+                      />
+                      <TreeFolderIcon open={isExpanded} />
                       <span className="truncate">{cat.label}</span>
                       <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
                         ({totalInTree})
@@ -1273,18 +1270,19 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                           <div
                             key={block.id}
                             onClick={() => setSelectedBlockId(block.id)}
-                            className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors
+                            className={`flex min-h-7 items-center gap-1 pr-2 rounded-md cursor-pointer transition-colors
                                                             ${
                                                               selectedBlockId ===
                                                               block.id
                                                                 ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
                                                                 : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
                                                             }`}
-                            style={{ paddingLeft: `${(depth + 1) * 12 + 8}px` }}
+                            style={treeIndentStyle(depth + 1)}
                           >
+                            <TreeDisclosure expandable={false} />
                             <FileText className="w-4 h-4 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
-                              <div className="text-sm font-medium truncate">
+                              <div className="type-body font-medium truncate">
                                 {block.label}
                               </div>
                               <div className="text-xs text-gray-500 dark:text-gray-400 truncate">

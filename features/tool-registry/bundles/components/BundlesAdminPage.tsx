@@ -15,8 +15,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
-import { XTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import { X } from "lucide-react";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -591,6 +593,37 @@ function BundleDetail({
     }
   };
 
+  const { rowActionDefs, bulkActions } = defineRowVerbs<BundleMemberWithTool>(
+    [
+      {
+        id: "remove", icon: X, label: "Remove from bundle", tone: "destructive",
+        onClick: (m) => void onRemove(m),
+        bulk: {
+          label: "Remove",
+          done: "Removed",
+          removesRows: true,
+          confirm: (t) => ({
+            title: `Remove ${t.ids.length} ${t.ids.length === 1 ? "tool" : "tools"} from "${bundle.name}"?`,
+            description: "Agents loading this bundle will no longer see these tools under their aliases.",
+            confirmLabel: "Remove",
+            variant: "destructive",
+          }),
+          runOne: (toolId) => removeBundleMember(bundle.id, toolId),
+        },
+      },
+    ],
+    { noun: "tool", getRowId: (m) => m.member.tool_id, getRowName: (m) => m.tool?.name ?? m.member.tool_id },
+  );
+  const memberBulk = useTableBulkSelection<BundleMemberWithTool>({
+    noun: "tool",
+    rows: members,
+    getRowId: (m) => m.member.tool_id,
+    getRowName: (m) => m.tool?.name ?? m.member.tool_id,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: () => void load(),
+  });
+
   return (
     <div className="p-6 space-y-6 max-w-4xl">
       {/* Identity */}
@@ -695,9 +728,9 @@ function BundleDetail({
             detail={{ enabled: false }}
             read={readOf({ loading, error }, { what: "this bundle's tools", onRetry: () => void load() })}
             emptyState={{ title: "No tools in this bundle yet" }}
-            columns={[...(memberColumns(onSaveAlias)), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (row) => (
-              <XTapButton variant="transparent" onClick={() => void onRemove(row)} ariaLabel="Remove from bundle" />
-            ) }]}
+            columns={[...(memberColumns(onSaveAlias))]}
+            rowActionDefs={rowActionDefs}
+            selection={memberBulk.selection}
             tableId={`tool-registry/bundles/${bundle.id}/members`}
             getRowId={(row) => row.member.tool_id}
             rowClassName={(row) =>

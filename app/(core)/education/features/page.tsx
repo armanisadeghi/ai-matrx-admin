@@ -12,5 +12,5 @@ export const metadata = createRouteMetadata("/education", {
 });
 
 export default function EducationFeaturesPage() {
-  return <AxisIndex axisId="features" entries={FEATURES} heroTitle="Features" heroAccent="that set us apart" />;
+  return <AxisIndex axisId="features" entries={FEATURES} heroTitle="Features" heroAccent="that deck us apart" />;
 }

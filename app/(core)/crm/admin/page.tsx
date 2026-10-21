@@ -5,15 +5,15 @@ const CRM_ADMIN_MAP: FeatureAdminMap = {
   name: "CRM",
   slug: "crm",
   description:
-    "The canonical people-and-companies workspace. CRM records use crm.party; email and phone values use the shared contact-medium and party-contact-point model.",
+    "The canonical contacts workspace. CRM records use crm.party; email and phone values use the shared contact-medium and party-contact-point model.",
   docs: [{ label: "CRM FEATURE.md", href: "/features/crm/FEATURE.md" }],
   routeScanPath: "app/(core)/crm",
   routes: [
     {
       url: "/crm",
-      label: "People & Companies",
+      label: "Contacts",
       description:
-        "Scoped, server-paginated manager for people and companies with search, filters, sorting, create actions, saved smart views (?view=<id> opens one), and bulk work-queue actions (outreach list, do-not-contact, allow contact, delete).",
+        "Scoped, server-paginated manager for contacts with search, filters, sorting, create actions, saved smart views (?view=<id> opens one), and bulk work-queue actions (outreach list, do-not-contact, allow contact, delete).",
       filePath: "app/(core)/crm/page.tsx",
       status: "Live",
     },

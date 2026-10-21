@@ -1,12 +1,12 @@
 // features/flashcards/data/useMatchGame.ts
 //
-// Phase 1B (Match mode) — a timed click-to-pair matching game over a set's
+// Phase 1B (Match mode) — a timed click-to-pair matching game over a deck's
 // cards (front tiles vs back tiles, shuffled onto one board). Click-to-pair
 // rather than drag-and-drop: identical interaction on desktop and mobile, no
 // custom drag/touch plumbing, same engagement loop as a Quizlet-style
 // "Match" game. The learner picks the pairs per round (MATCH_PAIR_COUNT_OPTIONS,
 // persisted at `userPreferences.flashcard.matchPairCount`, default 8) and the
-// round clamps it to the deck size — a full 40-card set as one board is a
+// round clamps it to the deck size — a full 40-card deck as one board is a
 // UX/perf non-starter, not a real constraint.
 //
 // Each card, once paired, writes ONE study_attempt (method='match',
@@ -229,7 +229,7 @@ export function useMatchGame(
         setDeckCards([]);
         setRoundCards([]);
         setTiles([]);
-        setError(setRes.error ?? "Failed to load flashcard set");
+        setError(setRes.error ?? "Failed to load flashcard deck");
         setLoading(false);
         return;
       }
@@ -365,7 +365,7 @@ export function useMatchGame(
   useEffect(() => {
     closeRef.current = session ? { id: session.id, closed: false } : null;
     // Closing over the latch we just installed: when the session is REPLACED
-    // (the learner moved to another set without unmounting), the outgoing
+    // (the learner moved to another deck without unmounting), the outgoing
     // session would otherwise be dropped on the floor and leak 'active' until
     // the 6h reaper — the exact defect this close-path exists to remove.
     const outgoing = closeRef.current;

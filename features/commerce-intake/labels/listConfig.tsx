@@ -25,6 +25,7 @@ import {
   labelBatchHref,
   type LabelBatchListRow,
 } from "./types";
+import { LABEL_BATCH_BULK_ACTIONS } from "./bulkVerbs";
 import { useLabelBatchRowActions } from "./useLabelBatchRowActions";
 
 function stateFilterValues(query: EntityListQuery): string[] | null {
@@ -98,6 +99,7 @@ export function buildLabelBatchListConfig(): EntityListConfig<LabelBatchListRow>
     getRowName: (row) => row.purpose || "Label batch",
     door: { hrefFor: labelBatchHref },
     useRowActions: useLabelBatchRowActions,
+    bulkActions: LABEL_BATCH_BULK_ACTIONS,
     supportsArchived: false,
     facetSections: [],
     emptyState: {

@@ -241,7 +241,7 @@ export const FLASHCARDS_CANONICAL_ADAPTER: ArtifactPersistenceAdapter<Flashcards
       info: MaterializedArtifactInfo,
     ): Promise<ArtifactLink | void> {
       // 1) Dedup: a set already materialized from this exact artifact? One
-      //    message can carry several flashcard sets, so the key is the source
+      //    message can carry several flashcard decks, so the key is the source
       //    AND the artifact's position in it — keying on the message alone
       //    linked every later set in a message to the first one's deck.
       const { data: sameSource } = await supabase

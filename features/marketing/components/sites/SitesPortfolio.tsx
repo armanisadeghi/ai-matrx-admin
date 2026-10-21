@@ -1,5 +1,6 @@
 "use client";
 
+import { buildSiteBulkActions } from "./site-bulk-actions";
 import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -198,6 +199,7 @@ export function SitesPortfolio({
       title: row.name,
       resourceType: "web_site",
     }),
+    bulkActions: buildSiteBulkActions(deleteMutation.mutateAsync),
     useRowActions: (list) => {
       listRef.current = list;
       return {

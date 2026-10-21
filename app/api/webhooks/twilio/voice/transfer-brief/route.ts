@@ -6,6 +6,8 @@ import {
   readVoiceTransferBrief,
   VOICE_TRANSFER_BRIEF_PATH,
 } from "@/lib/communications/providers/twilio/voice-twiml";
+import { createAdminClient } from "@/utils/supabase/adminClient";
+import { readTransferWorkSummary } from "@/lib/communications/voice/transfer-work-summary";
 export const runtime = "nodejs";
 export async function POST(request: Request): Promise<NextResponse> {
   const validation = await validateTwilioWebhook(
@@ -31,7 +33,19 @@ export async function POST(request: Request): Promise<NextResponse> {
           }),
         )
       : null;
-  return new NextResponse(buildVoiceTransferBriefTwiml(brief), {
+  let work = null;
+  if (validation.params.AccountSid && validation.params.ParentCallSid) {
+    try {
+      work = await readTransferWorkSummary(
+        createAdminClient(),
+        validation.params.AccountSid,
+        validation.params.ParentCallSid,
+      );
+    } catch {
+      // A summary read must never strand a caller who is already transferring.
+    }
+  }
+  return new NextResponse(buildVoiceTransferBriefTwiml(brief, work), {
     headers: { "Content-Type": "text/xml" },
   });
 }

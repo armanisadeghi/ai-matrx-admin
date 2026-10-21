@@ -52,7 +52,7 @@ export function PracticeSetup({
   mode: SpokenPracticeMode;
   onBack: () => void;
   start: (config: PracticeConfig) => Promise<boolean>;
-  /** Deep-linked deck (a set detail page's "Oral practice" door). */
+  /** Deep-linked deck (a deck detail page's "Oral practice" door). */
   initialDeckId?: string | null;
 }) {
   const cfg = MODE_CONFIG[mode];

@@ -58,6 +58,7 @@ import { contextPreviewManifest } from "@ai-matrx/chat/surfaces/manifests/contex
 import { agentRunManifest } from "@ai-matrx/chat/surfaces/manifests/agent-run.manifest";
 import { agentComparisonModelManifest } from "./agent-comparison-model.manifest";
 import { agentBattleManifest } from "./agent-battle.manifest";
+import { agentStudioManifest } from "./agent-studio.manifest";
 import { scraperManifest } from "./scraper.manifest";
 import { searchManifest } from "./search.manifest";
 import { documentsManifest } from "./documents.manifest";
@@ -353,6 +354,7 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   agentRunManifest,
   agentComparisonModelManifest,
   agentBattleManifest,
+  agentStudioManifest,
   scraperManifest,
   searchManifest,
   documentsManifest,

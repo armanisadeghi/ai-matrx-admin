@@ -67,7 +67,7 @@ export interface IntentTargetPickerProps {
   offersTopicOverride: boolean;
   /** merge / redirect — a live page or a planned one. */
   needsTarget: boolean;
-  /** The distinct sites the selected rows belong to. A plan node belongs to one. */
+  /** The distinct sites the selected rows belong to. A plan page belongs to one. */
   selectionSiteIds: readonly string[];
   draft: BulkIntentDraft;
   onChange: (draft: BulkIntentDraft) => void;
@@ -334,7 +334,7 @@ function PlannedPageSegment({
   draft: BulkIntentDraft;
   onChange: (draft: BulkIntentDraft) => void;
 }) {
-  // A plan node belongs to ONE site. `?site=` picks it when it is set; with
+  // A plan page belongs to ONE site. `?site=` picks it when it is set; with
   // every site in view the selection has to agree on one by itself.
   const siteId = context.siteId ?? (selectionSiteIds.length === 1 ? selectionSiteIds[0] : null);
   const [label, setLabel] = useState("");
@@ -374,7 +374,7 @@ function PlannedPageSegment({
     cannot = "Organization not loaded yet.";
   } else if (siteId === null) {
     cannot =
-      "Pick one site (?site=) to make a planned page — a plan node belongs to one site.";
+      "Pick one site (?site=) to make a planned page — a plan page belongs to one site.";
   } else if (!draft.topicSlug) {
     cannot = "Choose the topic first — the planned page is created under it.";
   }

@@ -1,8 +1,8 @@
 // record-view: fc_set
-// /education/flashcards/[setId] — set detail (header + card grid + Study).
+// /education/flashcards/[setId] — deck detail (header + card grid + Study).
 // Server shell: resolves async params, then renders the client detail island.
 // SetDetailView is a "use client" leaf — importing it here forms the client
-// boundary (Next.js code-splits it); it loads the set via supabase-js / RLS.
+// boundary (Next.js code-splits it); it loads the deck via supabase-js / RLS.
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { toolMetadata } from "@/features/education/route-helpers";
@@ -17,7 +17,7 @@ import { displayTitle } from "@ai-matrx/rich-content/markdown-core/plain-title";
 const DECK_NAME_READ_MS = 1500;
 
 /** The deck's name for the header's first paint (page-pass 2026-09-27: the
- *  header said "Flashcard set" for seconds while the client loaded). */
+ *  header said "Flashcard deck" for seconds while the client loaded). */
 async function readDeckName(setId: string): Promise<string | null> {
   const read = (async () => {
     const supabase = await createClient();

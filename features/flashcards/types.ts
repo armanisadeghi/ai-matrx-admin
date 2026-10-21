@@ -2,7 +2,7 @@
  * Flashcard Persistence Types
  *
  * Lightweight types for the user_flashcard_sets and user_flashcard_reviews tables.
- * These flashcard sets are auto-generated from chat and linked to cx_message/cx_conversation.
+ * These flashcard decks are auto-generated from chat and linked to cx_message/cx_conversation.
  */
 
 import type { GradeResult } from "@/features/education/trust/types";

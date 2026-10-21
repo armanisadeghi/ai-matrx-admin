@@ -43,11 +43,11 @@ is no status column. **Writes** go only through `is_super_admin()`-gated SECURIT
   disables publish. Generation/verification use `flashcards.generate_from_source` /
   `flashcards.verify_against_source`.
 - Publish is a visible human transition: the pipeline drafts and verifies privately; the button makes
-  the set public as an AI-built starter and never writes WP9's human-verification fields or claims Certified.
+  the deck public as an AI-built starter and never writes WP9's human-verification fields or claims Certified.
 - Interrupted work is recoverable: the admin recovers the newest private draft per exam and plan,
   generates only missing plans, never changes visibility or duplicates. Persisted verdicts are reused
   only while `verified` and `verifiedBack` equals the current answer. A zero-card shell is rejected
-  visibly; verification refuses zero-card sets.
+  visibly; verification refuses zero-card decks.
 
 Open: grounded guide drafting waits on a requested `education.learn_doc_draft` mandate (not yet
 declared) returning strict `EduSection[]`; it stays a draft until the admin publishes.

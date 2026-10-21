@@ -77,7 +77,7 @@ export function WeakAreaDrillSurface() {
           }
           emptyBody={
             topicName
-              ? "You haven't studied any cards in this topic yet. Study its set first and practice will pick them up."
+              ? "You haven't studied any cards in this topic yet. Study its deck first and practice will pick them up."
               : deckId
                 ? "Every card you've studied in this deck is going well."
                 : "Nothing is flagged as struggling or low-retention yet. Keep studying — cards that need extra practice will surface here automatically."

@@ -15,12 +15,12 @@
 //     so an agent can name its own deck; and
 //   • this module is the floor for every agent that still does not: a
 //     PLACEHOLDER title is never treated as a name. A real name is derived
-//     from what the set and the request that produced it actually say.
+//     from what the deck and the request that produced it actually say.
 //
 // A title the agent or the person actually chose is never rewritten — only the
 // platform's own placeholders are. PURE: no I/O, no React.
 
-/** The placeholder the platform writes when a flashcard set carries no title. */
+/** The placeholder the platform writes when a flashcard deck carries no title. */
 export const GENERIC_FLASHCARD_TITLE = "Flashcards";
 
 const GENERIC_TITLES = new Set([
@@ -28,8 +28,8 @@ const GENERIC_TITLES = new Set([
   "flashcard",
   "flash cards",
   "flash card",
-  "flashcard set",
-  "flashcards set",
+  "flashcard deck",
+  "flashcards deck",
   "flashcard deck",
   "flashcards deck",
   "study cards",
@@ -162,7 +162,7 @@ export function subjectFromRequest(request: unknown): string | null {
 }
 
 // ---------------------------------------------------------------------------
-// Name from the set itself.
+// Name from the deck itself.
 // ---------------------------------------------------------------------------
 
 export interface DeckNameCard {
@@ -215,7 +215,7 @@ export interface DeckName {
 }
 
 /**
- * The name a deck made from a flashcard set gets.
+ * The name a deck made from a flashcard deck gets.
  *
  * A real title always wins. Only a placeholder is replaced, by the first of:
  * the topic the cards share, the subject of the request that produced them,

@@ -445,6 +445,8 @@ export const EnhancedSQLEditor = ({
                         →
                       </span>
                       <Input mono
+                        className="font-mono"
+                        data-identifier
                         placeholder="Replace with (e.g., my_table)"
                         value={pair.replace}
                         onChange={(e) =>

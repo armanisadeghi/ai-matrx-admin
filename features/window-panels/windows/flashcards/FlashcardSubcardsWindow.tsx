@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * FlashcardSubcardsWindow — a parent's nested subcards as a flip-card set.
+ * FlashcardSubcardsWindow — a parent's nested subcards as a flip-card deck.
  */
 
 import React, { useEffect, useRef, useState } from "react";

@@ -30,7 +30,7 @@ export const CATEGORY_DIMENSIONS = {
   industry: "industry",
   /** Context-item groupings (was hardcoded DEFAULT_CATEGORIES). */
   contextItem: "context-item",
-  /** Flashcard set folders/tags (fc_set → category via EDGE_ROLE.theme). */
+  /** Flashcard deck folders/tags (fc_set → category via EDGE_ROLE.theme). */
   flashcardFolder: "flashcard-folder",
   /** Content Planning (`plan` schema) — plan.node.page_type_id. System seeds, public. */
   planPageType: "plan_page_type",

@@ -12,7 +12,7 @@
  */
 
 import { execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { emitItem, endItems } from "./checks/items.mjs";
 import { exitAfterDrain } from "./lib/exit-after-drain";
@@ -376,9 +376,17 @@ function main(): void {
     selfTest();
     return;
   }
+  // `--files a.tsx …` (matrx-ship lint-guard's stop hook): judge only those files, skip a tracked
+  // file deleted in the working tree, and never print MATRX-ITEMS-END (the scan was filtered).
+  const at = process.argv.indexOf("--files");
+  const only = at < 0 ? null : new Set(process.argv.slice(at + 1).filter((a) => !a.startsWith("--")));
   const findings: Finding[] = [];
+  const scanned =
+    only === null
+      ? sourceFiles()
+      : sourceFiles().filter((file) => only.has(file) && existsSync(path.join(ROOT, file)));
 
-  for (const file of sourceFiles()) {
+  for (const file of scanned) {
     const text = readFileText(path.join(ROOT, file));
 
     const retiredModelPicker = text.code.indexOf("SmartModelSelect");
@@ -411,7 +419,7 @@ function main(): void {
     });
   }
 
-  endItems(); // every source file was scanned
+  if (only === null) endItems(); // every source file was scanned
 
   if (findings.length === 0) {
     console.log(

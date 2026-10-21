@@ -90,6 +90,10 @@ Kit (use FIRST — see <kit>):
 "@/components/kind-kit/StreamingSkeleton"
 "@/components/kind-kit/KindActionButton"
 "@/components/kind-kit/KindImage"
+"@/components/kind-kit/KindVideo"
+"@/components/kind-kit/KindAudio"
+"@/components/kind-kit/KindEmbed"
+"@/components/kind-kit/KindLocale"
 
 Copy:
 "@/components/agent-copy/CopyButtons"
@@ -179,7 +183,7 @@ grid, sortable list, chip list, skeleton, action button or image is a defect.
   add input), `addPlaceholder?`. KeywordChip: `label`, `meta?`, `selected?`, `onSelect?`,
   `onRemove?`, `tone?: 'default'|'primary'|'muted'`.
 - `StreamingSkeleton`, `useStreamingValue`, `streamList`, `streamText` — see <streaming>.
-- `KindActionButton` — see <actions>. `KindImage` — see <media>.
+- `KindActionButton` — see <actions>. `KindImage`, `KindVideo`, `KindAudio`, `KindEmbed`, `useKindLocale` — see <media>.
 
 Import each by its exact path with the named export: `import { KindPanel } from "@/components/kind-kit/KindPanel"`.
 </kit>
@@ -246,6 +250,18 @@ Platform image shortcuts: `c70e1694-9b84-4843-9999-cb5471478bb4` (idea → image
 - Images inside `data` as `data:` URIs and inline `<svg>` render normally.
 - Images from other websites do not load. Do not reference them.
 - Never save a `src`, URL or download link into item state — only the ref.
+- Video: `<KindVideo video={ref} title="…" runAction={runAction} maxHeight={480} />`; audio:
+  `<KindAudio audio={ref} title="…" runAction={runAction} />`. `ref` is `{ file_id, mime_type, width?, height?, duration? }`
+  (a saved file) or a web address string / `{ url }`. Whole video at its real aspect, never cropped. In the frame a saved file
+  shows a poster card and downloads nothing until Play; a web address opens the platform player in a window.
+  Never a bare `<video>` / `<audio>` / `<source>`.
+- Embeds (YouTube, Vimeo, Loom, Google Maps, Figma): `<KindEmbed url={link} title="…" runAction={runAction} />`. Never an
+  `<iframe>` — the frame cannot open one; its Play opens the real embed in a window. Any other link becomes an Open card.
+- The reader's language and time zone: `const { locale, timeZone, dir } = useKindLocale();` then
+  `new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone })`, `Intl.NumberFormat(locale, …)`,
+  `Intl.RelativeTimeFormat(locale)` (date-fns: pass the matching locale). Never hard-code `"en-US"` or UTC. The frame's
+  `<html lang dir>` already follows the reader, so flow and alignment mirror for right-to-left languages; use logical
+  classes (`ms-*`, `ps-*`, `text-start`) instead of left/right.
 </media>
 
 <links>

@@ -30,6 +30,8 @@ import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useAdminSchedulingScopeSlice } from "@/features/scheduling/lib/admin-scheduling-scope";
 import { useScheduledRunMenuSection } from "@/features/scheduling/components/shared/scheduling-menu-sections";
 import { readOf } from "@ai-matrx/design-system";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 
 export default function OrphanLeasesPage() {
   const [rows, setRows] = useState<AdminRunRow[]>([]);
@@ -126,6 +128,41 @@ export default function OrphanLeasesPage() {
     },
     [load],
   );
+
+  const { rowActionDefs, bulkActions } = defineRowVerbs<AdminRunRow>(
+    [
+      {
+        id: "mark-failed", icon: XCircle, tone: "destructive", label: "Mark failed",
+        disabled: (r) => busyId === r.id,
+        onClick: (r, e) => {
+          e.stopPropagation();
+          void handleKill(r);
+        },
+        bulk: {
+          done: "Marked failed",
+          removesRows: true,
+          confirm: (t) => ({
+            title: `Mark ${t.ids.length} ${t.ids.length === 1 ? "run" : "runs"} as failed?`,
+            description: "Each run is force-failed now. The scanner re-enqueues recurring triggers on the next tick.",
+            confirmLabel: "Mark failed",
+            variant: "destructive",
+          }),
+          runOne: async (id) => {
+            await markRunFailedAdmin(id, "Marked failed by admin (orphan lease)");
+          },
+        },
+      },
+    ],
+    { noun: "orphan lease", getRowId: (r) => r.id, getRowName: (r) => r.task_title ?? r.id },
+  );
+  const bulk = useTableBulkSelection<AdminRunRow>({
+    noun: "orphan lease",
+    rows,
+    getRowId: (r) => r.id,
+    getRowName: (r) => r.task_title ?? r.id,
+    actions: bulkActions,
+    onRefresh: () => void load(),
+  });
 
   const columns = useMemo((): MatrxColumnDef<AdminRunRow>[] => {
     return [
@@ -255,10 +292,8 @@ export default function OrphanLeasesPage() {
               />
             ),
           }}
-          rowActions={(r) => [{ id: "mark-failed", icon: XCircle, tone: "destructive" as const, label: "Mark failed", onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
-                e.stopPropagation();
-                void handleKill(r);
-              }, disabled: busyId === r.id, variant: "ghost" as const }]}
+          rowActionDefs={rowActionDefs}
+          selection={bulk.selection}
         />
         </NonEditableContextMenu>
       </div>

@@ -5,7 +5,7 @@ import {
 } from "./fastfire-initial-load";
 
 const SURFACE_TIMEOUT_COPY = "Fast Fire took too long to load. Try again.";
-const SETS_TIMEOUT_COPY = "Your flashcard sets took too long to load. Try again.";
+const SETS_TIMEOUT_COPY = "Your flashcard decks took too long to load. Try again.";
 
 describe("FastFire initial load boundaries", () => {
   beforeEach(() => jest.useFakeTimers());

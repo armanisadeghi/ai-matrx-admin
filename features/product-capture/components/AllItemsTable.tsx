@@ -49,6 +49,8 @@ import type { CaptureItem } from "../types";
 import { closeItem, deleteItem, listAllFiles, listAllItems } from "../service";
 import { ItemSwipeRow } from "./ItemSwipeRow";
 import { ItemActionsDrawer } from "./ItemActionsDrawer";
+import { itemBulkActions } from "./allItemsBulkActions";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { OrganizationTag } from "@/features/commerce-review/components/OrganizationTag";
 
 interface ItemTableRow {
@@ -177,6 +179,21 @@ export function AllItemsTable() {
       toast.error("Could not delete the item.");
     }
   }, []);
+
+  // The ticked items take Mark ready / Reprocess / Delete through the doors the row calls (allItemsBulkActions.ts).
+  const bulk = useTableBulkSelection<ItemTableRow>({
+    noun: "item",
+    rows: rows ?? [],
+    getRowId: (row) => row.id,
+    getRowName: (row) => row.code ?? "No code",
+    actions: itemBulkActions(
+      (id, saved) =>
+        setRows((prev) => prev?.map((r) => (r.id === id ? { ...r, status: saved.status, item: saved } : r)) ?? prev),
+      (id) => setRows((prev) => prev?.filter((r) => r.id !== id) ?? prev),
+    ),
+    standardBulkActions: false,
+    onRefresh: () => void load(),
+  });
 
   const columns: MatrxColumnDef<ItemTableRow>[] = [
     {
@@ -501,6 +518,7 @@ export function AllItemsTable() {
           </>
         ) }]}
         getRowId={(row) => row.id}
+        selection={bulk.selection}
         isLoading={rows === null}
         urlState={{
           id: "product-capture-items",

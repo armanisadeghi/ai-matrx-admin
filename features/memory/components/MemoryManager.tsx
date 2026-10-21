@@ -33,6 +33,9 @@ import {
 } from "../service/memoryService";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
+import { memoryBulkActions } from "./memoryBulkActions";
 
 const PATH_RE = /^[A-Za-z0-9._/-]+$/;
 
@@ -169,6 +172,16 @@ export default function MemoryManager() {
     }
   }, [selectedPath, refresh]);
 
+  const ticked = useRowSelection(entries, (e) => e.path);
+  const bulkActions = memoryBulkActions((paths) => {
+    // The open file left with the bulk move: close its editor too.
+    if (selectedPath && paths.includes(selectedPath)) {
+      setSelectedPath(null);
+      setDraft("");
+      loadedContentRef.current = "";
+    }
+  });
+
   const dirty = creatingNew
     ? draft.length > 0 || newPath.length > 0
     : selectedPath !== null && draft !== loadedContentRef.current;
@@ -197,6 +210,19 @@ export default function MemoryManager() {
               New
             </button>
           </div>
+          {entries.length > 0 ? (
+            <div className="border-b border-border p-1">
+              <RowSelectionBar
+                selection={ticked}
+                idOf={(e) => e.path}
+                actions={bulkActions}
+                noun="memory file"
+                plural="files"
+                compact
+                onRefresh={() => void refresh()}
+              />
+            </div>
+          ) : null}
           <div className="flex-1 overflow-y-auto py-1">
             {loading ? (
               <div className="flex items-center gap-2 px-2 py-3 text-xs text-muted-foreground">
@@ -216,18 +242,24 @@ export default function MemoryManager() {
               </p>
             ) : (
               entries.map((e) => (
-                <button
-                  key={e.path}
-                  onClick={() => selectEntry(e)}
-                  className={`flex w-full items-center gap-1.5 px-2 py-1.5 text-left text-xs transition-colors ${
-                    selectedPath === e.path
-                      ? "bg-accent text-foreground"
-                      : "text-muted-foreground hover:bg-accent/60"
-                  }`}
-                >
-                  <FileText className="h-3 w-3 shrink-0" />
-                  <span className="truncate">{e.path}</span>
-                </button>
+                <div key={e.path} className="flex items-center pl-2">
+                  <Checkbox
+                    checked={ticked.has(e.path)}
+                    onCheckedChange={() => ticked.toggle(e.path)}
+                    aria-label={`Select ${e.path}`}
+                  />
+                  <button
+                    onClick={() => selectEntry(e)}
+                    className={`flex min-w-0 flex-1 items-center gap-1.5 px-2 py-1.5 text-left text-xs transition-colors ${
+                      selectedPath === e.path
+                        ? "bg-accent text-foreground"
+                        : "text-muted-foreground hover:bg-accent/60"
+                    }`}
+                  >
+                    <FileText className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{e.path}</span>
+                  </button>
+                </div>
               ))
             )}
           </div>

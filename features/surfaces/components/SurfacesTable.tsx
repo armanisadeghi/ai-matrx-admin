@@ -10,11 +10,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { dismissRecordToasts } from "@/lib/toast";
 import {
-  PencilTapButton,
-  TrashTapButton,
-  ViewTapButton,
-} from "@ai-matrx/design-system/tap-target/buttons";
+  deleteSurface,
+  updateSurface,
+} from "@ai-matrx/chat/surfaces/services/surfaces.service";
 import {
   AppWindow,
   Eye,
@@ -411,6 +413,82 @@ export function SurfacesTable({
 }: Props) {
   const isMobile = useIsMobile();
   const roomForValues = useMediaQuery("(min-width: 1200px)");
+  const surfacesLabel = (n: number) => `${n} surface${n === 1 ? "" : "s"}`;
+  const { rowActionDefs, bulkActions } = defineRowVerbs<SurfaceWithStats>(
+    [
+      { id: "peek", icon: Eye, label: "Peek", onClick: (row) => onPeek(row), bulk: false, noBulk: "view" },
+      {
+        id: "edit", icon: Pencil, label: "Open editor",
+        disabled: (row) => row.name === navigatingName,
+        onClick: (row) => onEdit(row),
+        bulk: false, noBulk: "edit",
+      },
+      {
+        id: "activate", icon: Power, label: "Activate",
+        appliesTo: (row) => row.is_active === false, unavailableTooltip: "Already active",
+        onClick: (row) => onToggleActive(row),
+        bulk: {
+          done: "Activated",
+          skipReason: (row) => (row.is_active === false ? null : "Already active"),
+          confirm: (t) => ({
+            title: `Activate ${surfacesLabel(t.ids.length)}?`,
+            description: "They show up in the app again.",
+            confirmLabel: "Activate",
+          }),
+          runOne: async (id) => {
+            await updateSurface(id, { is_active: true });
+          },
+        },
+      },
+      {
+        id: "deactivate", icon: PowerOff, label: "Deactivate",
+        appliesTo: (row) => row.is_active !== false, unavailableTooltip: "Already inactive",
+        onClick: (row) => onToggleActive(row),
+        bulk: {
+          done: "Deactivated",
+          skipReason: (row) => (row.is_active !== false ? null : "Already inactive"),
+          confirm: (t) => ({
+            title: `Deactivate ${surfacesLabel(t.ids.length)}?`,
+            description: "They stop showing up in the app until you activate them again.",
+            confirmLabel: "Deactivate",
+            variant: "destructive",
+          }),
+          runOne: async (id) => {
+            await updateSurface(id, { is_active: false });
+          },
+        },
+      },
+      {
+        id: "delete", icon: Trash2, label: "Delete", tone: "destructive",
+        onClick: (row) => onDelete(row),
+        bulk: {
+          label: "Move to Trash",
+          done: "Moved to Trash",
+          removesRows: true,
+          confirm: (t) => ({
+            title: `Move ${surfacesLabel(t.ids.length)} to Trash?`,
+            description: "Each surface leaves the registry and anything bound to it stops resolving. They can be restored from Trash.",
+            confirmLabel: "Move to Trash",
+            variant: "destructive",
+          }),
+          runOne: async (id) => {
+            await deleteSurface(id);
+            dismissRecordToasts({ type: "ui_surface", id });
+          },
+        },
+      },
+    ],
+    { noun: "surface", getRowId: (row) => row.name, getRowName: (row) => row.label ?? row.name },
+  );
+  const bulk = useTableBulkSelection<SurfaceWithStats>({
+    noun: "surface",
+    rows,
+    getRowId: (row) => row.name,
+    getRowName: (row) => row.label ?? row.name,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: () => void onRefresh(),
+  });
   const hasSpecializedFilters =
     filters.client !== "__all__" ||
     filters.status !== "all" ||
@@ -426,29 +504,9 @@ export function SurfacesTable({
       columns={[...(surfaceColumns(
         navigatingName,
         !peeking || isMobile ? "off" : roomForValues ? "wide" : "narrow",
-      )), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (row) => (
-        <>
-          <ViewTapButton
-            variant="transparent"
-            onClick={() => onPeek(row)}
-            ariaLabel={`Peek ${surfaceRowTitle(row)}`}
-            tooltip="Peek"
-          />
-          <PencilTapButton
-            variant="transparent"
-            disabled={row.name === navigatingName}
-            onClick={() => onEdit(row)}
-            ariaLabel={`Open editor for ${surfaceRowTitle(row)}`}
-            tooltip="Open editor"
-          />
-          <TrashTapButton
-            variant="transparent"
-            onClick={() => onDelete(row)}
-            ariaLabel={`Delete ${surfaceRowTitle(row)}`}
-            tooltip="Delete"
-          />
-        </>
-      ) }]}
+      ))]}
+      rowActionDefs={rowActionDefs}
+      selection={bulk.selection}
       tableId="administration/ui/surfaces"
       // One view control: the saved-views menu. The working-view tab strip
       // repeated its name ("Default view" twice).

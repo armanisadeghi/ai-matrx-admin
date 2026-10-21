@@ -49,13 +49,13 @@ export async function GET(
     if (error) {
       if (error.code === "PGRST116") {
         return NextResponse.json(
-          { error: "Sandbox instance not found" },
+          { error: "Sandbox not found" },
           { status: 404 },
         );
       }
-      console.error("Error fetching sandbox instance:", error);
+      console.error("Error fetching sandbox:", error);
       return NextResponse.json(
-        { error: "Failed to fetch sandbox instance" },
+        { error: "Failed to fetch sandbox" },
         { status: 500 },
       );
     }
@@ -113,13 +113,13 @@ export async function PATCH(
         .eq("user_id", user.id)
         .is("deleted_at", null)
         .select(),
-      { action: "update", noun: "sandbox instance" },
+      { action: "update", noun: "sandbox" },
     );
 
     if (error) {
       if (error.code === "PGRST116") {
         return NextResponse.json(
-          { error: "Sandbox instance not found" },
+          { error: "Sandbox not found" },
           { status: 404 },
         );
       }

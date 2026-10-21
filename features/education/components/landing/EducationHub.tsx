@@ -111,7 +111,7 @@ export function EducationHub() {
       columns: 2,
       items: [
         { icon: AGENT_ICON, title: "Fast Fire", description: "Rapid-fire spoken recall, graded live and adapting mid-session.", href: eduHref("features", "fastfire") },
-        { icon: GraduationCap, title: "An AI tutor that knows everything", description: "Your sets, your history, your exam dates — present at every surface.", href: eduHref("features", "ai-tutor") },
+        { icon: GraduationCap, title: "An AI tutor that knows everything", description: "Your decks, your history, your exam dates — present at every surface.", href: eduHref("features", "ai-tutor") },
         { icon: Upload, title: "Ingest anything", description: "PDF, video, audio, photos, YouTube, live lectures — all become study material.", href: "/education/kits/new" },
         { icon: Trophy, title: "Graded the way you actually answer", description: "Spoken, written, typed, and handwritten — all graded with feedback.", href: eduHref("features", "ai-grading") },
       ],

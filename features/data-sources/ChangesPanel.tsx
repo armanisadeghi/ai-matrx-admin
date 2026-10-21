@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
  * What a refresh changed — the body of the "Changes" window. A list of every finished refresh of the
@@ -135,7 +136,7 @@ function KeyList({ rows, empty }: { rows: ChangedKey[]; empty: string }) {
       {rows.map((r) => (
         <li key={r.key} className="flex items-baseline gap-2 border-b border-border px-2 py-1 text-xs" data-change-row={r.key}>
           <span className="min-w-0 flex-1 truncate text-foreground">{r.label ?? r.key}</span>
-          {r.label && <span className="max-w-[40%] shrink-0 truncate text-muted-foreground">{r.key}</span>}
+          {r.label && <span className="max-w-[40%] shrink-0 truncate text-muted-foreground">{humanizeIdentifier(r.key)}</span>}
         </li>
       ))}
     </ul>

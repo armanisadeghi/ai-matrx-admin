@@ -890,7 +890,7 @@ function ExtraInputRow({
         <Input mono
           value={row.name}
           onChange={(e) => onPatch({ name: e.target.value })}
-          className="w-1/3"
+          className="font-mono w-1/3"
           data-identifier
           placeholder="variable_name"
         />

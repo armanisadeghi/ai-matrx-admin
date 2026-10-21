@@ -228,7 +228,7 @@ export function AssessmentDetail({
   // The shareable take URL renders the runner directly.
   if (start) {
     // A missed-items retake takes only the named items (in their order); an
-    // id that no longer exists is dropped, and none left means the full set.
+    // id that no longer exists is dropped, and none left means the full deck.
     const only = onlyItemIds && onlyItemIds.length > 0 ? new Set(onlyItemIds) : null;
     const subset = only ? items.filter((item) => only.has(item.id)) : [];
     const takeItems = subset.length > 0 ? subset : items;

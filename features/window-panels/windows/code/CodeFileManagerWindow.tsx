@@ -18,12 +18,15 @@
  * All state + actions flow through useCodeFileManager. Redux owns persistence.
  */
 
+import {
+  TreeDisclosure,
+  TreeFolderIcon,
+  TREE_ROW_HEIGHT,
+  TREE_ROW_TEXT,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import React, { useCallback, useMemo, useState } from "react";
 import {
-  ChevronDown,
-  ChevronRight,
-  Folder,
-  FolderOpen,
   FolderPlus,
   FilePlus,
   Search,
@@ -610,41 +613,31 @@ function FolderTree({
           <li key={node.id}>
             <div
               className={cn(
-                "flex items-center gap-0.5 pr-1 py-0.5 text-xs cursor-pointer group",
+                "flex items-center gap-1 pr-1 cursor-pointer group",
+                TREE_ROW_TEXT,
                 selected
                   ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
                   : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800",
               )}
-              style={{ paddingLeft: 4 + depth * 10 }}
+              style={{
+                ...treeIndentStyle(depth),
+                height: TREE_ROW_HEIGHT.compact,
+              }}
               onClick={() => onSelect(dbId)}
             >
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (hasKids) onToggleExpand(node.id as string);
-                }}
-                className={cn(
-                  "w-4 h-4 flex items-center justify-center text-gray-400",
-                  !hasKids && "opacity-0 pointer-events-none",
-                )}
-              >
-                {expanded ? (
-                  <ChevronDown className="h-3 w-3" />
-                ) : (
-                  <ChevronRight className="h-3 w-3" />
-                )}
-              </button>
+              <TreeDisclosure
+                expandable={hasKids}
+                expanded={expanded}
+                onToggle={() => onToggleExpand(node.id as string)}
+              />
               {isRoot ? (
-                <Inbox className="h-3.5 w-3.5 text-gray-500 shrink-0" />
-              ) : expanded ? (
-                <FolderOpen className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                <Inbox className="h-4 w-4 text-gray-500 shrink-0" />
               ) : (
-                <Folder className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                <TreeFolderIcon open={expanded} />
               )}
               <span className="flex-1 truncate">{node.name}</span>
               {node.fileCount > 0 ? (
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 shrink-0">
+                <span className="text-gray-400 dark:text-gray-500 shrink-0">
                   {node.fileCount}
                 </span>
               ) : null}
@@ -763,10 +756,10 @@ function FileRow({
       >
         {file.name}
       </button>
-      <span className="text-[10px] text-gray-400 dark:text-gray-500 shrink-0 hidden md:inline">
+      <span className="text-gray-400 dark:text-gray-500 shrink-0 hidden md:inline">
         {file.language}
       </span>
-      <span className="text-[10px] text-gray-400 dark:text-gray-500 shrink-0 tabular-nums hidden md:inline">
+      <span className="text-gray-400 dark:text-gray-500 shrink-0 tabular-nums hidden md:inline">
         {formatRelativeTime(file.updated_at, { fallback: "" })}
       </span>
       <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100">

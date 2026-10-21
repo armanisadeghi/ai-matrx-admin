@@ -43,7 +43,7 @@ export interface HelpLiveContext {
   recentWrong?: string[];
   /** Distinct topics the learner is currently struggling with. */
   struggledTopics?: string[];
-  /** How many items are due for review right now, across the learner's sets. */
+  /** How many items are due for review right now, across the learner's decks. */
   dueCount?: number;
   /** Milliseconds spent on this card before asking. */
   timeOnCardMs?: number;

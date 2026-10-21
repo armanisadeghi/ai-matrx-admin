@@ -1842,13 +1842,13 @@ export const primaryNavItems: ShellNavItem[] = [
     section: "primary",
     profileMenu: false,
     dashboard: false,
-    description: "Manage people, companies, and their contact history",
+    description: "Manage contacts and their history",
     color: "teal",
     guestHidden: true,
     children: [
       {
         id: "crm.people-and-companies",
-        label: "People & Companies",
+        label: "Contacts",
         href: "/crm",
         iconName: "Users",
         exact: true,

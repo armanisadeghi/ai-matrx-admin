@@ -58,8 +58,8 @@ const CHILD_EXPR = />\s*\{\s*([\w$.?]+)\s*\}/g;
 const LONE_CHILD = /^\s*\{\s*([\w$.?]+)\s*\}\s*$/;
 const PROP_EXPR = new RegExp(String.raw`\b(?:${VISIBLE_PROPS})=\{\s*([\w$.?]+)\s*\}`, "g");
 const PROP_LIT = new RegExp(String.raw`\b(?:${VISIBLE_PROPS})\s*=\s*(["'])((?:(?!\1).){1,300})\1`, "g");
-const JSX_TEXT = />([^<>{}]{1,300})</g;
-const CODE_LIKE = /=>|===|\);|\breturn\b|\bconst\b|\bcase\s*["']|(?<!:)\/\/|\?\.\w|\(|\)/;
+const JSX_TEXT = /(?<![=\s])>([^<>{}]{1,300})</g; // not `=>` or a comparison `a > b`
+const CODE_LIKE = /=>|===|&&|\|\||\?\?|;\s|\);|\breturn\b|\bconst\b|\bcase\s*["']|(?<!:)\/\/|\?\.\w|\(|\)/;
 /** A code view: the identifier is the content. */
 const CODE_VIEW = /<code\b|<kbd\b|<pre\b/;
 /**

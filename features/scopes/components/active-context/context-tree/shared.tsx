@@ -289,7 +289,7 @@ export function InlineAddRow({
   }, [editing]);
 
   return (
-    <div className="flex h-6 items-center" style={{ paddingLeft: indentPx }}>
+    <div className="flex h-7 items-center" style={{ paddingLeft: indentPx }}>
       {editing ? (
         <input
           ref={inputRef}
@@ -319,9 +319,9 @@ export function InlineAddRow({
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="flex h-5 items-center gap-1 rounded-sm px-1 text-[11px] text-muted-foreground/60 hover:bg-muted hover:text-foreground"
+          className="type-body flex h-6 items-center gap-1 rounded-sm px-1 text-muted-foreground hover:bg-muted hover:text-foreground"
         >
-          <Plus className="h-3 w-3" />
+          <Plus className="h-4 w-4" />
           {placeholder}
         </button>
       )}

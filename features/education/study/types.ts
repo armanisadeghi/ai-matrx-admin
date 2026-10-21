@@ -134,7 +134,7 @@ export interface OverrideAttemptInput {
 // ─── Session browsing (history / results UI) ──────────────────────────────────
 /** Filters for `listSessions` — all optional; the RLS layer scopes to the user. */
 export interface ListSessionsFilter {
-  /** Restrict to one source set (study_session.source_set_id). */
+  /** Restrict to one source deck (study_session.source_set_id). */
   setId?: string;
   /** Restrict to one mode (e.g. 'fast_fire', 'classic_review'). */
   mode?: string;
@@ -295,7 +295,7 @@ export interface StudyGoalMetadata {
   itemType?: string;
   /** A free-form topic tag (matches `fc_card.topic` for flashcards). */
   topic?: string;
-  /** Optional: scope the goal to one set instead of a whole topic. */
+  /** Optional: scope the goal to one deck instead of a whole topic. */
   setId?: string;
   [key: string]: unknown;
 }

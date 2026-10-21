@@ -4,14 +4,24 @@
 // (views, KPIs, tones). Each row opens its record page; ?id=<alarm> highlights that row.
 
 import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, RefreshCw, X } from "lucide-react";
+import { Bell, BellOff, Check, CheckCircle2, ExternalLink, Loader2, Play, RefreshCw, RotateCcw, X } from "lucide-react";
 import { Button, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { readOf } from "@ai-matrx/design-system";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ProTextarea } from "@/components/official/ProTextarea";
+import { MuteDialog } from "@/features/admin/attention/MuteDialog";
+import { MUTE_CHOICES, muteLabel } from "@/features/admin/attention/item-mute";
+import { decideSpendApproval } from "@/features/admin/spend-approvals/spendApprovals";
+import { patchSystemTask } from "@/features/scheduling/service/schedulerClient";
+import { toast } from "@/lib/toast";
 import { useListViewPrefs } from "@/lib/list-views/useListViewPrefs";
 import { useAttentionTriage } from "@/features/admin/attention/sources/useAttentionTriage";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -32,6 +42,7 @@ import {
   refHref,
   whose,
   fetchSpendAlarms,
+  setSpendAlarmStatus,
   isRinging,
   spendAlarmHref,
   type SpendAlarmAttentionRow as SpendAlarmRecord,
@@ -88,6 +99,144 @@ export function SpendAlarmsBoard() {
   const counts = spendAlarmCounts(rows.filter(inScope));
   const ringing = counts.critical + counts.warning + counts.info;
   const resolvedCount = rows.filter((r) => r.status === "resolved" && inScope(r)).length;
+
+  // ── The verbs: ONE declaration feeds the row icons and the bulk bar (the bulk twin rule). ──
+  const queryClient = useQueryClient();
+  const reload = async () => {
+    await query.refetch();
+    void queryClient.invalidateQueries({ queryKey: ["admin-attention"] });
+  };
+  type RowDialog = { verb: "resolve" | "approve" | "reject" | "resume"; row: SpendAlarmRecord } | { verb: "mute"; row: SpendAlarmRecord } | null;
+  const [dialog, setDialog] = useState<RowDialog>(null);
+  const [dialogNote, setDialogNote] = useState("");
+  const [dialogBusy, setDialogBusy] = useState(false);
+  const open = (r: SpendAlarmRecord) => r.status === "open" || (r.status === "snoozed" && isRinging(r));
+  const muted = (r: SpendAlarmRecord) => r.status === "snoozed" && !isRinging(r);
+  const approvalOpen = (r: SpendAlarmRecord, want: "approved" | "rejected") => !!r.refs.approval_id && r.approval_status !== want;
+  const canResume = (r: SpendAlarmRecord) => !!r.refs.task_id && r.task_enabled === false;
+  const alarmLabel = (r: SpendAlarmRecord) => alarmTitle(r);
+  const runResolve = (id: string, _row: SpendAlarmRecord | undefined, input: { reason?: string }) => setSpendAlarmStatus(id, "resolved", { note: input.reason });
+  const runApproval = (decision: "approve" | "reject") => (_id: string, row: SpendAlarmRecord | undefined) =>
+    decideSpendApproval(String(row?.refs.approval_id), decision, row?.approval_status ? { expectedStatus: row.approval_status } : {});
+  const runResume = (_id: string, row: SpendAlarmRecord | undefined) => patchSystemTask(String(row?.refs.task_id), { enabled: true }).then(() => undefined);
+  const { rowActionDefs, bulkActions } = defineRowVerbs<SpendAlarmRecord>(
+    [
+      {
+        id: "resolve", icon: CheckCircle2, label: "Resolve", tone: "success",
+        appliesTo: (r) => r.status !== "resolved", unavailableTooltip: "Already resolved",
+        onClick: (r) => setDialog({ verb: "resolve", row: r }),
+        bulk: {
+          done: "Resolved",
+          confirm: (t) => ({
+            title: `Resolve ${t.ids.length} ${t.ids.length === 1 ? "alarm" : "alarms"}?`,
+            description: "Marks each resolved for everyone; each reopens if it happens again.",
+            confirmLabel: "Resolve",
+            reason: { placeholder: "Note (optional)", optional: true },
+          }),
+          runOne: (id, row, input) => runResolve(id, row, input),
+        },
+      },
+      {
+        id: "reopen", icon: RotateCcw, label: "Reopen",
+        appliesTo: (r) => r.status === "resolved", unavailableTooltip: "Not resolved",
+        onClick: (r) => void act(() => setSpendAlarmStatus(r.id, "open"), "Alarm reopened"),
+        bulk: { done: "Reopened", runOne: (id) => setSpendAlarmStatus(id, "open") },
+      },
+      {
+        id: "mute", icon: BellOff, label: "Mute",
+        appliesTo: (r) => r.status !== "resolved", unavailableTooltip: "Already resolved",
+        onClick: (r) => setDialog({ verb: "mute", row: r }),
+        bulk: {
+          done: "Muted",
+          confirm: (t) => ({
+            title: `Mute ${t.ids.length} ${t.ids.length === 1 ? "alarm" : "alarms"}?`,
+            description: "Muted for every super admin until the time is up.",
+            confirmLabel: "Mute",
+            ask: { kind: "choice", label: "Mute for", options: MUTE_CHOICES.map((c) => ({ value: String(c.ms), label: c.label })), defaultValue: String(MUTE_CHOICES[2].ms) },
+          }),
+          runOne: (id, _row, input) =>
+            setSpendAlarmStatus(id, "snoozed", { snoozedUntil: new Date(Date.now() + Number(input.value)).toISOString() }),
+        },
+      },
+      {
+        id: "unmute", icon: Bell, label: "Unmute",
+        appliesTo: muted, unavailableTooltip: "Not muted",
+        onClick: (r) => void act(() => setSpendAlarmStatus(r.id, "open"), "Unmuted"),
+        bulk: { done: "Unmuted", runOne: (id) => setSpendAlarmStatus(id, "open") },
+      },
+      {
+        id: "approve", icon: Check, label: "Approve spend", tone: "success",
+        appliesTo: (r) => approvalOpen(r, "approved"), unavailableTooltip: "No approval to approve",
+        onClick: (r) => setDialog({ verb: "approve", row: r }),
+        bulk: {
+          done: "Approved",
+          confirm: (t) => ({ title: `Approve spend for ${t.ids.length} ${t.ids.length === 1 ? "alarm" : "alarms"}?`, description: "Each alarm's spend approval is approved.", confirmLabel: "Approve" }),
+          runOne: runApproval("approve"),
+        },
+      },
+      {
+        id: "reject", icon: X, label: "Reject spend", tone: "destructive",
+        appliesTo: (r) => approvalOpen(r, "rejected"), unavailableTooltip: "No approval to reject",
+        onClick: (r) => setDialog({ verb: "reject", row: r }),
+        bulk: {
+          done: "Rejected",
+          confirm: (t) => ({ title: `Reject spend for ${t.ids.length} ${t.ids.length === 1 ? "alarm" : "alarms"}?`, description: "Each alarm's spend approval is rejected; the work stays blocked.", confirmLabel: "Reject", variant: "destructive" }),
+          runOne: runApproval("reject"),
+        },
+      },
+      {
+        id: "resume", icon: Play, label: "Resume automation",
+        appliesTo: canResume, unavailableTooltip: "Automation is not paused",
+        onClick: (r) => setDialog({ verb: "resume", row: r }),
+        bulk: {
+          done: "Resumed",
+          confirm: (t) => ({ title: `Resume automation for ${t.ids.length} ${t.ids.length === 1 ? "alarm" : "alarms"}?`, description: "Each paused automation runs on its schedule again.", confirmLabel: "Resume" }),
+          runOne: runResume,
+        },
+      },
+      { id: "open", icon: ExternalLink, label: "Open alarm", onClick: (r) => router.push(spendAlarmHref(r.id)), bulk: false, noBulk: "open" },
+    ],
+    { noun: "alarm", getRowId: (r) => r.id, getRowName: alarmLabel },
+  );
+  const bulk = useTableBulkSelection<SpendAlarmRecord>({
+    noun: "alarm",
+    rows: visible,
+    getRowId: (r) => r.id,
+    getRowName: alarmLabel,
+    actions: bulkActions,
+    onRefresh: reload,
+  });
+  const act = async (fn: () => Promise<unknown>, done: string) => {
+    setDialogBusy(true);
+    try {
+      await fn();
+      toast.success(done);
+      setDialog(null);
+      setDialogNote("");
+      await reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : String(e));
+    } finally {
+      setDialogBusy(false);
+    }
+  };
+  const dialogRow = dialog?.row;
+  const dialogCopy = {
+    resolve: { title: "Resolve this alarm", description: "Marks it resolved for everyone; it reopens if it happens again.", confirmLabel: "Resolve" },
+    approve: { title: "Approve spend", description: "The spend approval this alarm names is approved.", confirmLabel: "Approve" },
+    reject: { title: "Reject spend", description: "The spend approval this alarm names is rejected; the work stays blocked.", confirmLabel: "Reject" },
+    resume: { title: "Resume automation", description: "The paused automation runs on its schedule again.", confirmLabel: "Resume" },
+  } as const;
+  const runDialog = () => {
+    if (!dialog || dialog.verb === "mute") return;
+    const row = dialog.row;
+    const done = { resolve: "Alarm resolved", approve: "Approved", reject: "Rejected", resume: "Automation resumed" }[dialog.verb];
+    const call =
+      dialog.verb === "resolve" ? runResolve(row.id, row, { reason: dialogNote })
+      : dialog.verb === "resume" ? runResume(row.id, row)
+      : runApproval(dialog.verb)(row.id, row);
+    void act(() => call, done);
+  };
 
   const columns: MatrxColumnDef<SpendAlarmRecord>[] = [
     {
@@ -197,6 +346,8 @@ export function SpendAlarmsBoard() {
           data={visible}
           columns={columns}
           getRowId={(r) => r.id}
+          rowActionDefs={rowActionDefs}
+          selection={bulk.selection}
           isLoading={loading}
           tableId="spend-alarms-admin"
           viewTabsStore={{ views: viewPrefs.savedViews ?? [], onChange: (savedViews) => setViewPrefs({ savedViews }) }}
@@ -261,6 +412,35 @@ export function SpendAlarmsBoard() {
           }}
         />
       </div>
+      <ConfirmDialog
+        open={!!dialog && dialog.verb !== "mute"}
+        onOpenChange={(o) => !o && setDialog(null)}
+        title={dialog && dialog.verb !== "mute" ? dialogCopy[dialog.verb].title : ""}
+        description={dialog && dialog.verb !== "mute" ? dialogCopy[dialog.verb].description : undefined}
+        confirmLabel={dialog && dialog.verb !== "mute" ? dialogCopy[dialog.verb].confirmLabel : "Confirm"}
+        variant={dialog?.verb === "reject" ? "destructive" : "default"}
+        busy={dialogBusy}
+        onConfirm={runDialog}
+        content={
+          dialog?.verb === "resolve" ? (
+            <ProTextarea value={dialogNote} onChange={(e) => setDialogNote(e.target.value)} placeholder="Note (optional)" surfaceName="spend-alarm-board-resolve" />
+          ) : undefined
+        }
+      />
+      <MuteDialog
+        open={dialog?.verb === "mute"}
+        onOpenChange={(o) => !o && setDialog(null)}
+        subject={dialogRow ? alarmTitle(dialogRow) : "this alarm"}
+        scope="server"
+        initialNote={dialogRow?.snooze_note ?? null}
+        onConfirm={async (choice, muteNote) => {
+          if (!dialogRow) return;
+          await act(
+            () => setSpendAlarmStatus(dialogRow.id, "snoozed", { snoozedUntil: new Date(Date.now() + choice.ms).toISOString(), note: muteNote }),
+            `Muted for ${muteLabel(choice.ms)}`,
+          );
+        }}
+      />
     </div>
   );
 }

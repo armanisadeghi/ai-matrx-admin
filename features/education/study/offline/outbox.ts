@@ -171,7 +171,7 @@ export interface OfflineDeck {
   /** `fc_set.id`. */
   setId: string;
   userId: string;
-  /** The set row, its cards, and the per-card detail needed to render. */
+  /** The deck row, its cards, and the per-card detail needed to render. */
   payload: unknown;
   /** The learner's item_mastery snapshot for this deck at cache time. */
   mastery: unknown;

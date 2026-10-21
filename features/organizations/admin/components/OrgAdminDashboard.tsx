@@ -106,7 +106,7 @@ interface Props {
 }
 
 export function OrgAdminDashboard({ orgId, organization, role }: Props) {
-  const { members, overview, loading, error } = useOrgRoster(orgId);
+  const { members, overview, loading, error, refresh } = useOrgRoster(orgId);
   const [showInvite, setShowInvite] = useState(false);
   const [showAudit, setShowAudit] = useState(false);
   const [showAutomations, setShowAutomations] = useState(false);
@@ -183,7 +183,12 @@ export function OrgAdminDashboard({ orgId, organization, role }: Props) {
       ) : (
         <>
           {overview && <OverviewTiles overview={overview} />}
-          <MemberRosterTable orgSlug={organization.slug} members={members} />
+          <MemberRosterTable
+            orgId={orgId}
+            orgSlug={organization.slug}
+            members={members}
+            onRefresh={refresh}
+          />
         </>
       )}
 

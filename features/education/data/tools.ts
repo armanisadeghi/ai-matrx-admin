@@ -45,7 +45,7 @@ export const EDU_TOOLS: EduToolEntry[] = [
       "Rich-text editor on both card sides (text, image, audio, video, LaTeX, charts, SVG, embedded YouTube)",
       "AI generation from PDF / slides / lecture / photo / prompt",
       "Bulk import: CSV, paste, Quizlet",
-      "Sets, folders, courses, tags; public/shared/private",
+      "Decks, folders, courses, tags; public/shared/private",
       "Study modes: classic, Learn, spaced repetition, write, match",
     ],
     featured: true,
@@ -80,7 +80,7 @@ export const EDU_TOOLS: EduToolEntry[] = [
     accessTier: "trial",
     visionRef: "VISION §4 AI Tutor",
     capabilities: [
-      "Full session + cross-session memory (sets seen, answers, performance trends, exam dates)",
+      "Full session + cross-session memory (decks seen, answers, performance trends, exam dates)",
       "Socratic mode + inline 'I'm confused' voice entry from any card",
       "Source-grounded, citation-backed answers (no open-web unless asked)",
       "Tunable personality / teaching style",
@@ -363,7 +363,7 @@ export const EDU_TOOLS: EduToolEntry[] = [
     slug: "creator",
     name: "Creator page",
     tagline: "Your public page — feature your videos, free tools & classes",
-    description: "Claim a public handle and get an SEO-first landing page at /c/<handle>. Feature your YouTube videos, your free flashcard sets and study guides, and your classes with enroll CTAs. Teachers and creators bring their audience; the page converts them.",
+    description: "Claim a public handle and get an SEO-first landing page at /c/<handle>. Feature your YouTube videos, your free flashcard decks and study guides, and your classes with enroll CTAs. Teachers and creators bring their audience; the page converts them.",
     icon: BadgeCheck,
     letter: "Cp",
     status: "live", // Convergence C — creator profiles + public landing pages; manage at /education/creator, public at /c/[handle]
@@ -372,7 +372,7 @@ export const EDU_TOOLS: EduToolEntry[] = [
     capabilities: [
       "Claim a unique public handle → indexable page at /c/<handle>",
       "Feature YouTube videos (privacy-friendly nocookie embeds)",
-      "Feature your public flashcard sets + study guides as instantly-usable free tools",
+      "Feature your public flashcard decks + study guides as instantly-usable free tools",
       "Feature your classes with open / closed / paid enroll CTAs (edu_class_join contract)",
       "Anonymous funnel: free tools usable logged-out, sign-up saves progress + enrolls",
     ],

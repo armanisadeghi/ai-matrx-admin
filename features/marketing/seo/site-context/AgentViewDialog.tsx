@@ -69,7 +69,7 @@ export function AgentViewDialog({
         <DialogContent size="xl">
           <DialogHeader>
             <DialogTitle>What agents see</DialogTitle>
-            <DialogDescription>The exact site context an agent receives.</DialogDescription>
+            <DialogDescription>The exact context values an agent receives.</DialogDescription>
           </DialogHeader>
           <div className="flex flex-wrap items-center gap-2">
             {envelope ? (

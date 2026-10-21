@@ -17,6 +17,8 @@
 
 import { useMemo } from "react";
 import {
+  ArchiveRestore,
+  CopyPlus,
   Download,
   FolderInput,
   Globe,
@@ -29,7 +31,7 @@ import {
 import { downloadUrl } from "@ai-matrx/kit/download";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { EntityBulkActions } from "@/lib/entity-list/components/EntityBulkBar";
-import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import { runPerRow, shareBulkAction } from "@/lib/entity-list/standardBulkActions";
 import type {
   EntityBulkAction,
   EntityBulkSelection,
@@ -45,6 +47,9 @@ import {
   deleteFolder as deleteFolderThunk,
   getFileUrl as getFileUrlThunk,
   moveFile as moveFileThunk,
+  restoreFile as restoreFileThunk,
+  restoreFolder as restoreFolderThunk,
+  uploadFiles as uploadFilesThunk,
   updateFileMetadata,
   updateFolder as updateFolderThunk,
 } from "@/features/files/redux/thunks";
@@ -58,7 +63,14 @@ const NON_INGESTABLE_MIME_PREFIXES = ["image/", "video/", "audio/"];
 
 const idOf = (id: string) => id;
 
-export function BulkActionsBar({ ids }: { ids: readonly string[] }) {
+export function BulkActionsBar({
+  ids,
+  mode = "live",
+}: {
+  ids: readonly string[];
+  /** "trash": the Trash view, where the one verb is Restore (live-only verbs are not offered). */
+  mode?: "live" | "trash";
+}) {
   const dispatch = useAppDispatch();
   const filesById = useAppSelector(selectAllFilesMap);
   const foldersById = useAppSelector(selectAllFoldersMap);
@@ -110,6 +122,41 @@ export function BulkActionsBar({ ids }: { ids: readonly string[] }) {
           idOf,
         ),
     });
+
+    if (mode === "trash") {
+      // The row menu's trash items, many at a time: the same restore doors.
+      return [
+        {
+          id: "files-restore",
+          label: "Restore",
+          icon: ArchiveRestore,
+          run: (sel) =>
+            runPerRow(
+              sel,
+              async (fid) => {
+                if (isFile(fid)) {
+                  await dispatch(restoreFileThunk({ fileId: fid })).unwrap();
+                } else if (isFolder(fid)) {
+                  await dispatch(restoreFolderThunk({ folderId: fid })).unwrap();
+                } else {
+                  throw new Error("No longer in the list.");
+                }
+              },
+              {
+                done: "Restored",
+                noun: "item",
+                labelOf: nameOf,
+                skipReason: (fid) => {
+                  const deletedAt =
+                    filesById[fid]?.deletedAt ?? foldersById[fid]?.deletedAt;
+                  return deletedAt ? null : "Not in Trash";
+                },
+              },
+              idOf,
+            ),
+        },
+      ] satisfies EntityBulkAction<string>[];
+    }
 
     return [
       {
@@ -276,6 +323,60 @@ export function BulkActionsBar({ ids }: { ids: readonly string[] }) {
           );
         },
       },
+      shareBulkAction<string>({
+        token: "file",
+        noun: "file",
+        rowIdOf: idOf,
+        labelOf: nameOf,
+        appliesTo: filesOnly,
+      }),
+      {
+        // The row's Duplicate, per file: fetch the bytes, upload "<name> (copy)" beside it.
+        id: "files-duplicate",
+        label: "Duplicate",
+        icon: CopyPlus,
+        run: (sel) =>
+          runPerRow(
+            sel,
+            async (fid) => {
+              const file = filesById[fid];
+              if (!file) throw new Error("No longer in the list.");
+              const result = await dispatch(getFileUrlThunk({ fileId: fid }));
+              const url = (result as { payload?: { url?: string } } | undefined)
+                ?.payload?.url;
+              if (!url) throw new Error("No download link came back.");
+              const blob = await fetch(url).then((r) => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.blob();
+              });
+              const dot = file.fileName.lastIndexOf(".");
+              const newName =
+                dot > 0
+                  ? `${file.fileName.slice(0, dot)} (copy)${file.fileName.slice(dot)}`
+                  : `${file.fileName} (copy)`;
+              await dispatch(
+                uploadFilesThunk({
+                  files: [new File([blob], newName, { type: file.mimeType ?? blob.type })],
+                  parentFolderId: file.parentFolderId,
+                  visibility: file.visibility,
+                }),
+              ).unwrap();
+            },
+            {
+              done: "Duplicated",
+              noun: "file",
+              labelOf: nameOf,
+              skipReason: (fid) => {
+                const f = filesById[fid];
+                if (!f) return "Folders cannot be duplicated here.";
+                if (f.source.kind === "virtual")
+                  return "Virtual sources have their own copy door.";
+                return null;
+              },
+            },
+            idOf,
+          ),
+      },
       {
         id: "files-trash",
         label: "Move to Trash",
@@ -313,7 +414,7 @@ export function BulkActionsBar({ ids }: { ids: readonly string[] }) {
           ),
       },
     ];
-  }, [dispatch, filesById, foldersById]);
+  }, [dispatch, filesById, foldersById, mode]);
 
   if (ids.length === 0) return null;
 
@@ -327,7 +428,7 @@ export function BulkActionsBar({ ids }: { ids: readonly string[] }) {
       orgId: null,
       search: "",
       deep: false,
-      archived: "active",
+      archived: mode === "trash" ? "archived" : "active",
       filters: {},
     },
   });

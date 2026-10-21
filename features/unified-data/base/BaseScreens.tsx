@@ -44,6 +44,9 @@ import {
   type BaseIdentity, type BaseSnapshotRow, type HomeTable, type KeptAccess,
 } from "./baseStore";
 import { useBasePort } from "./useBasePort";
+import { baseBulkActions, type BaseListRow } from "./baseBulkActions";
+import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { sayError } from "./sayError";
 
 type Client = ReturnType<typeof useRecordsClient>;
@@ -96,7 +99,8 @@ function BasesBody() {
   const everyOrg = useAppSelector(selectOrganizationsList).map((o) => o.id);
   const orgKey = everyOrg.join(",");
   const router = useRouter();
-  const [state, setState] = useState<{ bases: Array<{ homeId: string; name: string; icon: string | null; color: string | null; description: string | null; tables: number }> } | { error: string } | null>(null);
+  const [state, setState] = useState<{ bases: Array<BaseListRow & { icon: string | null; color: string | null; description: string | null; tables: number }> } | { error: string } | null>(null);
+  const port = useBasePort();
   const [creating, setCreating] = useState(false);
 
   const readBases = useCallback(async (): Promise<NonNullable<typeof state>> => {
@@ -107,7 +111,7 @@ function BasesBody() {
       const named = new Map(identities.map((b) => [b.home_id, b]));
       const bases = [...byHome.entries()].map(([homeId, ts]) => {
         const id = named.get(homeId);
-        return { homeId, name: id?.name ?? ts[0]?.name ?? "Untitled base", icon: id?.icon ?? null, color: id?.color ?? null, description: id?.description ?? null, tables: ts.length };
+        return { homeId, name: id?.name ?? ts[0]?.name ?? "Untitled base", icon: id?.icon ?? null, color: id?.color ?? null, description: id?.description ?? null, tables: ts.length, tableList: ts.map((t) => ({ id: t.id, name: t.name })), identityId: id?.id ?? null };
       });
       // A Base someone named comes first; the rest are Homes that hold tables and have not been named yet.
       bases.sort((a, b) => Number(named.has(b.homeId)) - Number(named.has(a.homeId)) || a.name.localeCompare(b.name));
@@ -122,6 +126,17 @@ function BasesBody() {
     return () => { live = false; };
   }, [readBases]);
 
+  const shown = state !== null && "bases" in state ? state.bases : [];
+  const picked = useRowSelection(shown, (b) => b.homeId);
+  const bulkActions = baseBulkActions({
+    archiveTable: async (id) => {
+      if (!port.archive) return { ok: false, message: "Archiving is not available here." };
+      const r = await port.archive(id);
+      return r.ok ? { ok: true } : { ok: false, message: r.error.message };
+    },
+    archiveIdentity: archiveBaseIdentity,
+  });
+  const reload = () => void readBases().then(setState);
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 p-4" data-bases-home="">
       <div className="flex items-center justify-between">
@@ -129,10 +144,13 @@ function BasesBody() {
         <Button variant="primary" onClick={() => setCreating(true)}>New base</Button>
       </div>
       {state === null ? <Words>Reading your bases…</Words> : "error" in state ? <ErrorNotice message={state.error} size="inline" /> : state.bases.length === 0 ? <Words>No tables yet. Make a base to begin.</Words> : (
+        <>
+        <RowSelectionBar selection={picked} idOf={(b) => b.homeId} actions={bulkActions} noun="base" plural="bases" onRefresh={reload} />
         <ul className="grid gap-2 sm:grid-cols-2">
           {state.bases.map((b) => (
-            <li key={b.homeId}>
-              <Link href={`/data/bases/${b.homeId}`} className="flex items-start gap-3 rounded-md border border-border p-3 hover:bg-muted" data-base-card={b.homeId}>
+            <li key={b.homeId} className="flex items-start gap-2">
+              <Checkbox className="mt-4" checked={picked.has(b.homeId)} onCheckedChange={() => picked.toggle(b.homeId)} aria-label={`Select ${b.name}`} />
+              <Link href={`/data/bases/${b.homeId}`} className="flex min-w-0 flex-1 items-start gap-3 rounded-md border border-border p-3 hover:bg-muted" data-base-card={b.homeId}>
                 <Swatch color={b.color} icon={b.icon} name={b.name} />
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{b.name}</span>
@@ -142,6 +160,7 @@ function BasesBody() {
             </li>
           ))}
         </ul>
+        </>
       )}
       {creating ? <NewBaseHost onClose={() => setCreating(false)} onMade={(homeId) => router.push(`/data/bases/${homeId}`)} /> : null}
     </div>

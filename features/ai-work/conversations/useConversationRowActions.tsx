@@ -10,9 +10,9 @@
 // consumes that same builder — three divergent hard-coded action lists for one
 // entity is the defect the entity-list doctrine exists to kill.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AssociationPicker } from "@ai-matrx/associations/react";
+import { AssociationPicker, useAssociationsStore } from "@ai-matrx/associations/react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { buildConversationMenu } from "@ai-matrx/chat/agents/components/conversation-actions/conversationActionRegistry";
 import { toast } from "@/lib/toast";
@@ -25,6 +25,7 @@ import type {
 import { isCodePluginSourceApp } from "@/features/ai-work/lib/providerSource";
 import type { ConversationBrowseRow } from "./types";
 import { applyAudience } from "./types";
+import { onBulkProjectAsked } from "./conversationBulkActions";
 import { conversationTitleText } from "@/features/content-ir/surfaces/kind-text-label";
 
 /**
@@ -52,6 +53,10 @@ export function useConversationRowActions(
   const router = useRouter();
   const [projectPickerRow, setProjectPickerRow] =
     useState<ConversationBrowseRow | null>(null);
+  // "Add to project…" on a SELECTION (conversationBulkActions.ts) opens the SAME picker for every ticked row.
+  const associations = useAssociationsStore();
+  const [bulkProjectRows, setBulkProjectRows] = useState<ConversationBrowseRow[] | null>(null);
+  useEffect(() => onBulkProjectAsked(setBulkProjectRows), []);
   const projectRelationships = useAssociations({
     type: "conversation",
     id: projectPickerRow?.id ?? null,
@@ -121,6 +126,43 @@ export function useConversationRowActions(
       },
     },
     modals: (
+      <>
+      <AssociationPicker
+        open={bulkProjectRows !== null}
+        onOpenChange={(open) => {
+          if (!open) setBulkProjectRows(null);
+        }}
+        token="project"
+        containerLabel={`${bulkProjectRows?.length ?? 0} conversations`}
+        orgId={
+          bulkProjectRows && new Set(bulkProjectRows.map((r) => r.organization_id)).size === 1
+            ? (bulkProjectRows[0]?.organization_id ?? null)
+            : null
+        }
+        attachedIds={new Set<string>()}
+        onAttach={async (projectId) => {
+          const rows = bulkProjectRows ?? [];
+          const refused: string[] = [];
+          for (const row of rows) {
+            const added = await associations.add({
+              sourceType: "conversation",
+              sourceId: row.id,
+              targetType: "project",
+              targetId: projectId,
+              ...(row.organization_id ? { orgId: row.organization_id } : {}),
+            });
+            if (!added.ok) refused.push(`${conversationTitleText(row.title?.trim() || null) || "Untitled conversation"}: ${added.error ?? "refused"}`);
+          }
+          if (refused.length > 0) {
+            toast.error(`${refused.length} of ${rows.length} not added. ${refused.slice(0, 3).join("; ")}`);
+            return { ok: false, error: `${refused.length} not added` };
+          }
+          toast.success(`Added ${rows.length} ${rows.length === 1 ? "conversation" : "conversations"} to the project`);
+          list.refresh();
+          return { ok: true };
+        }}
+        onDetach={async () => ({ ok: true })}
+      />
       <AssociationPicker
         open={projectPickerRow !== null}
         onOpenChange={(open) => {
@@ -149,6 +191,7 @@ export function useConversationRowActions(
           })
         }
       />
+      </>
     ),
   };
 }

@@ -44,6 +44,7 @@ import { DEFAULT_THROW_ACTIONS } from "../engine/throw";
 import { type BoardStore, useBoardLayout, useBoardStore, useBoardTile, useBoardView } from "../board/useBoard";
 import type { PaceTier } from "../engine/lod";
 import { useBoardKeys } from "../board/useBoardKeys";
+import { frameKey } from "../engine/selection";
 import { BoardNavigationContext } from "../engine/tile-navigation";
 import { appPagePath, pageSource, pageTitleFor } from "../items/page-items";
 import { useWheelModePreference } from "../board/useWheelModePreference";
@@ -123,13 +124,22 @@ export interface UserBoardTile {
   chapter?: string;
 }
 
-/** An item's kind word and the agent surface its feature publishes (null for board-only content). */
-function describeItem(source: NodeSource): { kind: string; surface: string | null } {
+/**
+ * An item's kind word and the agent surface its feature publishes (null for board-only content). An item
+ * whose content publishes its surface (a Page tile) names the one its tile's capture holds now
+ * (`published`), else the one it is expected to publish; `loadsSurface` says it has one once it loads.
+ */
+function describeItem(
+  source: NodeSource,
+  captured?: string | null,
+): { kind: string; surface: string | null; loadsSurface?: true } {
   const type = itemTypeFor(source);
-  return {
-    kind: type?.kindLabel ?? type?.key ?? "item",
-    surface: type && "name" in type.surface ? type.surface.name : null,
-  };
+  const kind = type?.kindLabel ?? type?.key ?? "item";
+  if (!type || "none" in type.surface) return { kind, surface: null };
+  if ("published" in type.surface) {
+    return { kind, surface: captured ?? type.surface.published(source), loadsSurface: true };
+  }
+  return { kind, surface: type.surface.name };
 }
 
 /** Down only takes a tile off this board — what it shows lives on. */
@@ -160,6 +170,7 @@ export function UserBoard({
   chapterOrder = null,
   saveLayout,
   layoutSwitch,
+  jumpToFrame,
   outline,
   pagesHost,
 }: {
@@ -188,6 +199,8 @@ export function UserBoard({
   saveLayout?: (patch: Record<string, JsonValue | null>) => Promise<void>;
   /** Filled with this board's layout switch, for the host's title menu. */
   layoutSwitch?: { current: ((next: BoardLayoutMode) => Promise<void>) | null };
+  /** Filled with a function that flies the camera to a frame, for a host's header button. */
+  jumpToFrame?: { current: ((frameId: string) => void) | null };
   /** The outline rail (chapters + pages): shown or not, and the board's pages. Absent = no outline. */
   outline?: { open: boolean; onOpenChange: (open: boolean) => void; pages: OutlinePages | null };
   /** Layout and pages for the agent tools (`board_set_layout`, `board_add_page`). */
@@ -332,7 +345,7 @@ export function UserBoard({
         const tiles = [...now.tiles, ...now.parked].map((t) => ({
           id: t.id,
           title: t.title,
-          ...describeItem(t.source),
+          ...describeItem(t.source, itemSurfaces.get(t.id)?.primary()?.surfaceName),
           basics: t.basics,
         }));
         for (const update of await sampleItemBasics(tiles, itemSurfaces)) {
@@ -858,7 +871,7 @@ export function UserBoard({
       return out;
     },
     editTile: (tile, input) => agentEdit(tile, input),
-    describe: (tile) => describeItem(tile.source),
+    describe: (tile) => describeItem(tile.source, itemSurfaces.get(tile.id)?.primary()?.surfaceName),
     ...(pagesHost ? { pages: { ...pagesHost, setLayout: pageLayout.switchLayout } } : {}),
     // The same threads each tile's comment door opens (`useTileComment`).
     ...(boardId && !guest
@@ -878,6 +891,15 @@ export function UserBoard({
       : {}),
   };
 
+
+  useEffect(() => {
+    if (!jumpToFrame) return;
+    const jump = (frameId: string) => store?.fitItem(frameKey(frameId), 48);
+    jumpToFrame.current = jump;
+    return () => {
+      if (jumpToFrame.current === jump) jumpToFrame.current = null;
+    };
+  });
 
   useEffect(() => {
     if (!layoutSwitch) return;

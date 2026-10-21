@@ -135,7 +135,7 @@ export function BulkEnrichWindow({
         {run.cards.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             {run.alreadyEnriched > 0
-              ? `Every card in this set already has detail layers (${run.alreadyEnriched}). Nothing to do — select the cards you want more on and run it again.`
+              ? `Every card in this deck already has detail layers (${run.alreadyEnriched}). Nothing to do — select the cards you want more on and run it again.`
               : "No cards to enrich."}
           </p>
         ) : (

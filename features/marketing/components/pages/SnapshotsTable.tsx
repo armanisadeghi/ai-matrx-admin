@@ -76,7 +76,7 @@ export function SnapshotsTable({ pageId }: { pageId: string }) {
           <Checkbox
             checked={compareIds.includes(row.id)}
             onCheckedChange={() => toggleCompare(row.id)}
-            aria-label="Select snapshot for comparison"
+            aria-label="Select page capture for comparison"
           />
         </span>
       ),
@@ -278,8 +278,8 @@ export function SnapshotsTable({ pageId }: { pageId: string }) {
               onClick={() => setShowCompare(true)}
               title={
                 compareIds.length === 2
-                  ? "Compare the two selected snapshots"
-                  : "Select two snapshots to compare"
+                  ? "Compare the two selected page captures"
+                  : "Select two page captures to compare"
               }
             >
               Compare ({compareIds.length}/2)
@@ -287,24 +287,24 @@ export function SnapshotsTable({ pageId }: { pageId: string }) {
           ),
         }}
         copy={{
-          label: "Snapshot",
-          listLabel: "All snapshots",
-          location: webLocation("Page snapshot history"),
+          label: "Page capture",
+          listLabel: "All page captures",
+          location: webLocation("Page capture history"),
           rowKind: "web-snapshot",
           listKind: "web-snapshots-list",
           rowDescription:
-            "One immutable content snapshot of this canonical page.",
+            "One immutable capture of this canonical page.",
           listDescription:
-            "The currently loaded snapshot rows for this page (respecting search, filters, sort, and pagination).",
+            "The currently loaded page capture rows for this page (respecting search, filters, sort, and pagination).",
           humanRow: (row) =>
             humanLines([
-              ["Snapshot", row.id],
+              ["Page capture", row.id],
               ["Captured", formatCompactDate(row.captured_at)],
               ["Final URL", row.final_url],
               ["HTTP", row.http_status],
               ["Words", row.word_count],
               ["Content hash", row.content_hash],
-              ["Crawl session", row.session_id],
+              ["Crawl", row.session_id],
             ]),
           rowAttributes: (row) => ({
             snapshot_id: row.id,
@@ -329,8 +329,8 @@ export function SnapshotsTable({ pageId }: { pageId: string }) {
         }
         emptyState={{
           icon: <Camera className="h-8 w-8 text-muted-foreground" />,
-          title: "No snapshots yet",
-          description: "A crawl captures this page's first snapshot.",
+          title: "No page captures yet",
+          description: "A crawl records this page's first capture.",
           action: (
             <Button asChild variant="primary">
               <Link href={marketingRoutes.site(brandId, site.id, "/crawls/new")}>

@@ -291,6 +291,7 @@ async function aPortalEdits(tableId: string, fieldKey: string): Promise<boolean>
   if (error) throw new Error(`Reading the portals on this table failed: ${error.message}`);
   const ids = ((edits as { portal_id: string }[] | null) ?? []).map((r) => r.portal_id);
   if (ids.length === 0) return false;
+  // archived-items-law-exempt: machine check before charging — only an open portal can let a client edit the amount; never rendered as a list
   const { data: open, error: openError } = await custom().from("portal").select("id").in("id", ids).is("archived_at", null);
   if (openError) throw new Error(`Reading the portals on this table failed: ${openError.message}`);
   return ((open as unknown[] | null) ?? []).length > 0;

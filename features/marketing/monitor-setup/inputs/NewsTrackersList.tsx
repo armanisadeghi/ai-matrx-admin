@@ -33,6 +33,8 @@ import {
 } from "@/components/ui/tooltip";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { toast } from "@/lib/toast";
+import { bulkActionsFromRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import {
   setTrackerState,
   useInvalidateTrackerInputs,
@@ -297,6 +299,12 @@ function buildColumns(): MatrxColumnDef<NewsTrackerInputs>[] {
   ];
 }
 
+const TRACKER_VERBS = [
+  { id: "pause", label: "Pause", icon: Pause },
+  { id: "resume", label: "Resume", icon: Play },
+  { id: "archive", label: "Archive", icon: Archive, danger: true },
+] as const;
+
 const ACTION_WORDS: Record<TrackerAction, { done: string; failed: string }> = {
   pause: { done: "Paused", failed: "Could not pause" },
   resume: { done: "Resumed", failed: "Could not resume" },
@@ -305,7 +313,6 @@ const ACTION_WORDS: Record<TrackerAction, { done: string; failed: string }> = {
 
 export function NewsTrackersList() {
   const [view, setView] = useState<"live" | "archived">("live");
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
   const query = useTrackerInputsList(view === "archived");
   const invalidate = useInvalidateTrackerInputs();
@@ -317,7 +324,6 @@ export function NewsTrackersList() {
     setBusyId(key);
     try {
       await setTrackerState(ids, action);
-      setSelectedIds((current) => current.filter((id) => !ids.includes(id)));
       await invalidate();
       toast.success(
         `${ACTION_WORDS[action].done} ${ids.length === 1 ? "1 monitor" : `${ids.length} monitors`}`,
@@ -354,6 +360,74 @@ export function NewsTrackersList() {
   }
 
   const testIds = rows.filter((row) => row.isDisposable).map((row) => row.id);
+
+  // The bulk twins of the row verbs below (pause / resume / archive), one
+  // declaration keyed by the row actions' own ids.
+  const bulkActions = bulkActionsFromRowVerbs<
+    (typeof TRACKER_VERBS)[number],
+    NewsTrackerInputs
+  >(
+    TRACKER_VERBS,
+    {
+      pause: {
+        done: ACTION_WORDS.pause.done,
+        run: async (targets) => {
+          await setTrackerState(targets.ids, "pause");
+        },
+      },
+      resume: {
+        done: ACTION_WORDS.resume.done,
+        run: async (targets) => {
+          await setTrackerState(targets.ids, "resume");
+        },
+      },
+      archive: {
+        done: ACTION_WORDS.archive.done,
+        removesRows: true,
+        confirm: (targets) => {
+          const scheduled = targets.rows.filter(
+            (row) => row.status === "active",
+          ).length;
+          return {
+            title:
+              targets.ids.length === 1
+                ? "Archive 1 monitor?"
+                : `Archive ${targets.ids.length} monitors?`,
+            description:
+              scheduled > 0
+                ? `Their scheduled runs stop now (${scheduled} still running on a schedule). Past stories stay; archived monitors move to the Archived view.`
+                : "No more runs. Past stories stay; archived monitors move to the Archived view.",
+            confirmLabel: "Archive",
+          };
+        },
+        run: async (targets) => {
+          await setTrackerState(targets.ids, "archive");
+        },
+      },
+    },
+    {
+      noun: "monitor",
+      getRowId: (row) => row.id,
+      getRowName: (row) => row.name,
+      blocked: (verb, row) =>
+        verb.id === "pause" && row.status !== "active"
+          ? "Not running on a schedule"
+          : verb.id === "resume" && row.status !== "paused"
+            ? "Not paused"
+            : verb.id === "archive" && row.status === "archived"
+              ? "Already archived"
+              : null,
+    },
+  );
+  const bulk = useTableBulkSelection<NewsTrackerInputs>({
+    noun: "monitor",
+    rows,
+    getRowId: (row) => row.id,
+    getRowName: (row) => row.name,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: () => void invalidate(),
+  });
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-2 p-2">
@@ -392,7 +466,7 @@ export function NewsTrackersList() {
                 aria-label="Which monitors"
                 value={view}
                 onValueChange={(next) => {
-                  setSelectedIds([]);
+                  bulk.clear();
                   setView(next);
                 }}
                 data={[
@@ -404,7 +478,7 @@ export function NewsTrackersList() {
                 <Button
                   variant="quiet"
                   icon={<FlaskConical className="h-4 w-4" />}
-                  onClick={() => setSelectedIds(testIds)}
+                  onClick={() => bulk.select(testIds)}
                 >
                   {`Select ${testIds.length} test monitors`}
                 </Button>
@@ -426,24 +500,7 @@ export function NewsTrackersList() {
               </Button>
             ),
         }}
-        selection={
-          view === "archived"
-            ? false
-            : {
-                selectedIds,
-                onSelectedIdsChange: setSelectedIds,
-                actions: (selected) => (
-                  <Button
-                    variant="danger"
-                    icon={<Archive className="h-4 w-4" />}
-                    disabled={busyId === "bulk"}
-                    onClick={() => void archive(selected, "bulk")}
-                  >
-                    {`Archive ${selected.length}`}
-                  </Button>
-                ),
-              }
-        }
+        selection={view === "archived" ? false : bulk.selection}
         rowActions={(row) =>
           row.status === "archived"
             ? []

@@ -37,6 +37,9 @@ import {
   rosterMemberRow,
   rosterMemberSummary,
 } from "../copy";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { usePointsRate } from "@/components/cost/pointsRate.client";
+import { rosterBulkActions } from "../bulkVerbs";
 import { UserSearchField } from "@/features/user-search/UserSearchField";
 
 type SortKey = "name" | "role" | "lastActive" | "storage" | "spend";
@@ -70,11 +73,14 @@ function ActivityDot({ member }: { member: OrgAdminMember }) {
 }
 
 interface Props {
+  orgId: string;
+  /** Re-read the roster after a bulk action changed it. */
+  onRefresh: () => void;
   orgSlug: string;
   members: OrgAdminMember[];
 }
 
-export function MemberRosterTable({ orgSlug, members }: Props) {
+export function MemberRosterTable({ orgId, orgSlug, members, onRefresh }: Props) {
   const { unit, rate: costRate } = useCostDisplay();
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -232,6 +238,20 @@ export function MemberRosterTable({ orgSlug, members }: Props) {
     ],
     [unit, costRate],
   );
+  const pointsRate = usePointsRate();
+  const bulkActions = useMemo(
+    () => rosterBulkActions({ orgId, rate: pointsRate }),
+    [orgId, pointsRate],
+  );
+  const bulk = useTableBulkSelection<OrgAdminMember>({
+    noun: "member",
+    rows,
+    getRowId: (m) => m.userId,
+    getRowName: (m) => m.displayName ?? m.email ?? m.userId,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh,
+  });
   const selectionCopy = useMemo<MatrxDataTableCopyConfig<OrgAdminMember>>(
     () => ({
       label: "Organization member",
@@ -376,6 +396,7 @@ export function MemberRosterTable({ orgSlug, members }: Props) {
         getRowId={(member) => member.userId}
         density="condensed"
         copy={selectionCopy}
+        selection={bulk.selection}
         toolbar={{ search: false }}
         detail={{ enabled: false }}
         window={{ enabled: false }}

@@ -273,7 +273,7 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
     generation_question_types: (value: unknown) => {
       if (!Array.isArray(value))
         throw new Error(
-          `generation_question_types expects an array of strings drawn from: ${QUESTION_TYPES.join(", ")}. It replaces the full set; [] means an automatic mix.`,
+          `generation_question_types expects an array of strings drawn from: ${QUESTION_TYPES.join(", ")}. It replaces the full deck; [] means an automatic mix.`,
         );
       const bad = value.filter((t) => typeof t !== "string" || !isQuestionType(t));
       if (bad.length > 0)

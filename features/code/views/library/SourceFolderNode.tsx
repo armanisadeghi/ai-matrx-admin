@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { ChevronRight, MoreHorizontal, RefreshCw } from "lucide-react";
+import { MoreHorizontal, RefreshCw } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import { useLibrarySource } from "../../hooks/useLibrarySource";
 import { useOpenSourceEntry } from "../../hooks/useOpenSourceEntry";
 import { SourceEntryNode } from "./SourceEntryNode";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { TreeDisclosure, treeIndentStyle } from "@/components/official/topic-tree/geometry";
 
 interface SourceFolderNodeProps {
   adapter: LibrarySourceAdapter;
@@ -177,26 +178,20 @@ export const SourceFolderNode: React.FC<SourceFolderNodeProps> = ({
             }
           }}
           className={cn(
-            "group flex items-center gap-1 text-[13px] cursor-pointer rounded-sm",
+            "group flex items-center gap-1 cursor-pointer rounded-sm",
             ROW_HEIGHT,
             "max-lg:h-11",
             TEXT_BODY,
             HOVER_ROW,
           )}
-          style={{ paddingLeft: 8 + depth * 12 }}
+          style={treeIndentStyle(depth)}
           title={adapter.description ?? adapter.label}
         >
-          <ChevronRight
-            size={12}
-            className={cn(
-              "shrink-0 text-neutral-500 transition-transform",
-              expanded && "rotate-90",
-            )}
-          />
-          <Icon size={14} className="shrink-0 text-purple-500" />
+          <TreeDisclosure expandable expanded={expanded} />
+          <Icon size={16} className="shrink-0 text-purple-500" />
           <span className="min-w-0 flex-1 truncate">{adapter.label}</span>
           {status === "ready" && (
-            <span className="ml-1 text-[10px] text-neutral-500">
+            <span className="ml-1 type-body text-neutral-500">
               {entries.length}
             </span>
           )}
@@ -233,8 +228,8 @@ export const SourceFolderNode: React.FC<SourceFolderNodeProps> = ({
         <div role="group">
           {status === "loading" && (
             <div
-              className="text-[11px] text-neutral-500"
-              style={{ paddingLeft: 8 + (depth + 1) * 12 }}
+              className="type-body text-neutral-500"
+              style={treeIndentStyle(depth + 1)}
             >
               <SuspenseLoader
                 centered={false}
@@ -245,8 +240,8 @@ export const SourceFolderNode: React.FC<SourceFolderNodeProps> = ({
           )}
           {status === "error" && (
             <div
-              className="flex flex-col gap-1 text-[11px]"
-              style={{ paddingLeft: 8 + (depth + 1) * 12 }}
+              className="flex flex-col gap-1 type-body"
+              style={treeIndentStyle(depth + 1)}
             >
               <span className="text-red-500">Failed to load <ErrorAlchemyMenu /></span>
               <span className="text-neutral-500">{error} <ErrorAlchemyMenu error={error} /></span>
@@ -261,8 +256,8 @@ export const SourceFolderNode: React.FC<SourceFolderNodeProps> = ({
           )}
           {status === "ready" && entries.length === 0 && (
             <div
-              className="text-[11px] text-neutral-500"
-              style={{ paddingLeft: 8 + (depth + 1) * 12 }}
+              className="type-body text-neutral-500"
+              style={treeIndentStyle(depth + 1)}
             >
               No {adapter.label.toLowerCase()} yet.
             </div>

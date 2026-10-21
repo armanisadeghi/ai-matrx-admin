@@ -38,7 +38,7 @@ export function NewsTriageView({
   return (
     <KindCard
       testId="news-triage"
-      title={`Triage — ${num(summary.pitch_ready_count)} pitch-ready · ${num(summary.big_story_count)} big · ${num(summary.watch_count)} context`}
+      title={`Triage — ${num(summary.pitch_ready_count)} pitch-ready · ${num(summary.big_story_count)} big · ${num(summary.watch_count)} background`}
       subtitle={
         Object.keys(standing).length
           ? `Standing: ${Object.entries(standing).map(([k, n]) => `${n} ${k}`).join(" · ")}`

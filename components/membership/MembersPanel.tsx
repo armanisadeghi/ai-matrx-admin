@@ -78,6 +78,12 @@ import {
   type MembershipCopyContainer,
 } from "./copy";
 import type { MembershipRole, MembershipRoleOption } from "./types";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  RowSelectionBar,
+  useRowSelection,
+} from "@/lib/entity-list/RowSelectionBar";
+import type { EntityBulkAction } from "@/lib/entity-list/selection";
 import { UserSearchField } from "@/features/user-search/UserSearchField";
 
 /**
@@ -179,6 +185,15 @@ export interface MembersPanelProps {
    * the host says where it is decided through `renderMemberExtra`.
    */
   canRemoveMember?: (member: PanelMember) => boolean;
+  /**
+   * The bulk twins of the row menu (THE BULK TWIN RULE). When supplied, every
+   * member the viewer can manage (not themselves) gets a checkbox and a
+   * selection bar offers `actions`. Omit it and the list is exactly as before.
+   */
+  bulk?: {
+    actions: EntityBulkAction<PanelMember>[];
+    onRefresh: () => void;
+  };
 }
 
 const ROLE_ICONS: Record<MembershipRole, LucideIcon> = {
@@ -220,6 +235,7 @@ export function MembersPanel({
   canTransferOwnership,
   onTransferOwnership,
   canRemoveMember,
+  bulk,
 }: MembersPanelProps) {
   const container: MembershipCopyContainer = {
     noun: copyContainer?.noun ?? containerNoun,
@@ -292,6 +308,15 @@ export function MembersPanel({
   const canShowRole = (member: PanelMember, role: MembershipRole) =>
     canAssignRole ? canAssignRole(member, role) : true;
 
+  // Rows no verb can ever touch (yourself, a member you may not manage) have no
+  // checkbox; every other refusal is skipped and named by the bulk twin.
+  const isTickable = (member: PanelMember) =>
+    canManageMember(member) && member.userId !== currentUser?.id;
+  const selection = useRowSelection<PanelMember>(
+    filteredMembers.filter(isTickable),
+    (m) => m.id,
+  );
+
   return (
     <div className="space-y-4">
       {/* Search and count */}
@@ -357,6 +382,17 @@ export function MembersPanel({
         )}
       </div>
 
+      {bulk && filteredMembers.some(isTickable) && (
+        <RowSelectionBar
+          selection={selection}
+          idOf={(m) => m.id}
+          actions={bulk.actions}
+          noun={memberNoun}
+          plural={`${memberNoun}s`}
+          onRefresh={bulk.onRefresh}
+        />
+      )}
+
       {/* Members List */}
       <div className="space-y-2">
         {filteredMembers.map((member) => {
@@ -370,6 +406,13 @@ export function MembersPanel({
               key={member.id}
               className="group/member flex flex-wrap items-center justify-between gap-x-3 gap-y-2 p-4 rounded-lg border bg-card hover:shadow-sm transition-shadow"
             >
+              {bulk && isTickable(member) && (
+                <Checkbox
+                  checked={selection.has(member.id)}
+                  onCheckedChange={() => selection.toggle(member.id)}
+                  aria-label={`Select ${memberName(member)}`}
+                />
+              )}
               {/* Member Info */}
               <UserIdentity
                 user={member.user}

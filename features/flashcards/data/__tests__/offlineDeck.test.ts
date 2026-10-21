@@ -37,7 +37,7 @@ const getMasteryBulk = jest.fn(async () => ({
   error: null as string | null,
 }));
 const listDue = jest.fn(async () => ({
-  // Includes a card from ANOTHER deck — the snapshot must filter to this set.
+  // Includes a card from ANOTHER deck — the snapshot must filter to this deck.
   data: [
     { item_id: "card-2", item_type: "fc_card" },
     { item_id: "card-from-other-deck", item_type: "fc_card" },
@@ -98,7 +98,7 @@ describe("offline deck download", () => {
 
   it("never serves one learner's download to another on the same device", async () => {
     await downloadDeckOffline(ALICE, SET.id);
-    // Same device, same set id, different signed-in learner.
+    // Same device, same deck id, different signed-in learner.
     expect(await readOfflineDeck(BOB, SET.id)).toBeNull();
     expect((await getOfflineDeckStatus(BOB, SET.id)).downloaded).toBe(false);
     // Alice's copy is untouched by Bob's miss.

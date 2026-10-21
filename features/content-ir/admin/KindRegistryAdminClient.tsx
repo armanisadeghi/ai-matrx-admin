@@ -25,8 +25,15 @@ import {
   Loader2,
   RefreshCw,
   Search,
+  Tag,
   TriangleAlert,
 } from "lucide-react";
+import {
+  TREE_ROW_TEXT,
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import { toast } from "@/lib/toast";
 
 import { Badge } from "@/components/ui/badge";
@@ -63,6 +70,10 @@ const SOURCE_LABELS: Record<KindCatalogSource, string> = {
 /** One row per field, inline_object children flattened with dotted names. */
 type FieldRow = {
   name: string;
+  /** The field's own key (no parent prefix) — what the indented row shows. */
+  label: string;
+  /** An inline object: its fields follow at depth + 1. */
+  container: boolean;
   depth: number;
   type: string;
   required: boolean;
@@ -82,6 +93,8 @@ function flattenFields(
     const kindRefs = fieldKindRefs(field);
     rows.push({
       name: `${prefix}${name}`,
+      label: name,
+      container: field.type === "inline_object",
       depth,
       type: fieldTypeSummary(field),
       required: field.required ?? false,
@@ -197,11 +210,17 @@ export default function KindRegistryAdminClient() {
         width: 265,
         cell: (row) => (
           <span
-            className="block truncate font-mono text-xs text-foreground"
-            style={{ paddingLeft: `${row.depth * 16}px` }}
+            className={`flex min-w-0 items-center gap-1 font-mono text-foreground ${TREE_ROW_TEXT}`}
+            style={treeIndentStyle(row.depth)}
             title={row.name}
           >
-            {row.name}
+            <TreeDisclosure expandable={false} />
+            {row.container ? (
+              <TreeFolderIcon open />
+            ) : (
+              <Tag aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
+            )}
+            <span className="truncate">{row.label}</span>
           </span>
         ),
       },

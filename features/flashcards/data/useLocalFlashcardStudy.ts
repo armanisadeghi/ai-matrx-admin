@@ -246,7 +246,7 @@ export function useLocalFlashcardStudy({
     });
   };
 
-  /** A new pass over the whole deck, in set order. */
+  /** A new pass over the whole deck, in deck order. */
   const restart = () => {
     setIsFlipped(false);
     setState(freshProgress(deck));

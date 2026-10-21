@@ -169,7 +169,7 @@ const IDEAS: { key: string; title: string; note: string; config: ItemMenuConfig 
   },
   {
     key: "flashcard",
-    title: "Flashcard set",
+    title: "Flashcard deck",
     note: "Study verbs first, organizing after.",
     config: menu(
       [

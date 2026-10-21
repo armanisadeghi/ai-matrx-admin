@@ -55,7 +55,7 @@ export function MergeCardsDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** The selected cards, in set order. Two or more. */
+  /** The selected cards, in deck order. Two or more. */
   cards: CardWithDetails[];
   onMerged: () => void;
 }) {
@@ -110,7 +110,7 @@ export function MergeCardsDialog({
         <DialogHeader>
           <DialogTitle>Merge {cards.length} cards</DialogTitle>
           <DialogDescription>
-            One card survives and keeps this set&apos;s history; the others are
+            One card survives and keeps this deck&apos;s history; the others are
             removed and their extras (audio, examples, images) move onto it.
           </DialogDescription>
         </DialogHeader>

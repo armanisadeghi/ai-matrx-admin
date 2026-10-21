@@ -4,7 +4,7 @@
  * Resolve the ONE SEO plan record for a PLAN NODE — and create it when the
  * node has none.
  *
- * A plan node's SEO plan lives where every page's SEO plan lives: on
+ * A plan page's SEO plan lives where every page's SEO plan lives: on
  * `web.page` (content-planning invariant 9). Two ways a node reaches its row,
  * tried in that order, both already-loaded and neither a new join:
  *

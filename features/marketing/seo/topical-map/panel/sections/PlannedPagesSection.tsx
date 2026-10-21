@@ -4,7 +4,7 @@
  * Planned pages — the `plan.node` rows whose `topic_id` is this topic (the
  * function's `plan_node` / `home` edges), and "Make a page here".
  *
- * Doors: the plan node's own record through `EntityRef` (route from the entity
+ * Doors: the plan page's own record through `EntityRef` (route from the entity
  * registry, the same one `useMapLinks().planNode` reads), in a new tab so the
  * panel is never traded for the answer.
  *

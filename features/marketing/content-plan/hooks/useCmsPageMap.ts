@@ -5,7 +5,7 @@
  *
  * WF-11: the plan workspace's CMS-page overlay. One cached read of the paired
  * CMS site's pages (GET /content-plan/sites/{id}/cms-pages via aidream — the
- * FE deliberately has no CMS Supabase client), keyed by plan node id for O(1)
+ * FE deliberately has no CMS Supabase client), keyed by plan page id for O(1)
  * badge lookups in tree/table rows and the NodePanel's linked-page card.
  *
  * `null` data = the plan site has no resolved CMS site yet — a normal state,

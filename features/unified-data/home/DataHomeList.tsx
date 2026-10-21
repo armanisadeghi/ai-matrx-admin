@@ -209,6 +209,8 @@ export function DataHomeList({ dataSource, sharedOnlyHere = false }: DataHomeLis
       door: { column: "name", hrefFor: (row) => row.href },
       // ⌘K offers the focused row's menu as commands (TABLE-ACTIONS T4.1).
       useRowActions: (list) => withFocusedRow(rowMenus.useRowActions(list), list.rows),
+      // THE ROW MENU'S VERBS ON A SELECTION: Archive, Restore, favorites (dataHomeBulkActions.ts).
+      bulkActions: rowMenus.bulkActions,
       // WHAT A ROW IS, for right-click's Attach To (a record-store table is a `record`). No
       // `resourceType`: the action list carries Share, so v3's generic Share is not drawn beside it.
       getRowEntity: (row) =>

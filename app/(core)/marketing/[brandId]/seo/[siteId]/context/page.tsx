@@ -12,7 +12,7 @@ import { SiteContextWorkspace } from "@/features/marketing/seo/site-context/Site
  */
 export default function MarketingSeoContextPage() {
   return (
-    <Suspense fallback={<LoadingSurface label="Loading site context…" />}>
+    <Suspense fallback={<LoadingSurface label="Loading site details…" />}>
       <SiteContextWorkspace />
     </Suspense>
   );

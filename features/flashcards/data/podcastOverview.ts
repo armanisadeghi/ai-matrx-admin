@@ -1,6 +1,6 @@
 // features/flashcards/data/podcastOverview.ts
 //
-// Phase 7 (Flashcards Competitive Parity Push) — turns a flashcard set into
+// Phase 7 (Flashcards Competitive Parity Push) — turns a flashcard deck into
 // the podcast generator's request shape. Lives in flashcards (not
 // features/podcasts) because the dependency runs one way: flashcards is a
 // consumer of the generic content→audio pipeline, the pipeline knows nothing
@@ -16,7 +16,7 @@ import type { FcSetRow, CardWithDetails } from "./types";
 const MAX_CARDS_IN_OVERVIEW = 60;
 
 /**
- * Build the podcast request for a set's "audio overview" — an audio-only
+ * Build the podcast request for a deck's "audio overview" — an audio-only
  * (no images/video) run so it stays fast and cheap for a per-set action
  * button. Truncates past `MAX_CARDS_IN_OVERVIEW` so a huge deck doesn't blow
  * the script agent's context; the truncation is surfaced in the returned
@@ -30,7 +30,7 @@ export function buildDeckOverviewRequest(
   const included = truncated ? cards.slice(0, MAX_CARDS_IN_OVERVIEW) : cards;
 
   const header = [
-    `# Flashcard set: ${set.name}`,
+    `# Flashcard deck: ${set.name}`,
     set.topic ? `Topic: ${set.topic}` : null,
     set.description ? set.description : null,
   ]

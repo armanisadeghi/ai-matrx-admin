@@ -38,6 +38,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
@@ -307,16 +309,10 @@ function AdminsManagementPageContent() {
       if (level === row.level) return;
       setRowBusy((s) => ({ ...s, [row.user_id]: true }));
       try {
-        const res = await fetch(`/api/admin/admins/${row.user_id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ level }),
-        });
-        if (!res.ok) {
-          const { error } = await res
-            .json()
-            .catch(() => ({ error: res.statusText }));
-          toast.error(`Update failed: ${error}`);
+        try {
+          await patchAdminLevel(row.user_id, level);
+        } catch (e) {
+          toast.error(`Update failed: ${e instanceof Error ? e.message : String(e)}`);
           return;
         }
         toast.success(`${row.email ?? row.user_id} → ${LEVEL_LABEL[level]}`);
@@ -340,14 +336,10 @@ function AdminsManagementPageContent() {
 
       setRowBusy((s) => ({ ...s, [row.user_id]: true }));
       try {
-        const res = await fetch(`/api/admin/admins/${row.user_id}`, {
-          method: "DELETE",
-        });
-        if (!res.ok) {
-          const { error } = await res
-            .json()
-            .catch(() => ({ error: res.statusText }));
-          toast.error(`Revoke failed: ${error}`);
+        try {
+          await revokeAdmin(row.user_id);
+        } catch (e) {
+          toast.error(`Revoke failed: ${e instanceof Error ? e.message : String(e)}`);
           return;
         }
         toast.success(`Revoked admin access for ${row.email ?? row.user_id}.`);
@@ -358,6 +350,71 @@ function AdminsManagementPageContent() {
     },
     [fetchAdmins, fetchAudit],
   );
+
+  // One declaration: the row's Revoke and Set level and their bulk twins (the same admin doors, once
+  // per person). The row keeps its inline level select, so Set level is not drawn as a row button.
+  const { rowActionDefs: allAdminRowActions, bulkActions: adminBulkActions } = defineRowVerbs<AdminRow>(
+    [
+      {
+        id: "set-level",
+        icon: ShieldCheck,
+        label: "Set level",
+        appliesTo: () => false,
+        unavailableTooltip: "Use the level menu on the row",
+        onClick: () => undefined,
+        bulk: {
+          label: "Set level…",
+          done: "Level set",
+          confirm: (targets) => ({
+            title: `Set the admin level for ${targets.ids.length} admin${targets.ids.length === 1 ? "" : "s"}?`,
+            description: "Each person moves to the level you pick. Anyone already there is skipped.",
+            confirmLabel: "Set level",
+            ask: {
+              kind: "choice",
+              label: "Level",
+              options: LEVELS.map((l) => ({ value: l, label: LEVEL_LABEL[l] })),
+              defaultValue: LEVELS[0],
+            },
+          }),
+          runOne: async (id, row, input) => {
+            const level = LEVELS.find((l) => l === input.value);
+            if (!level) throw new Error("Pick a level");
+            if (row?.level === level) throw new Error(`Already ${LEVEL_LABEL[level]}`);
+            await patchAdminLevel(id, level);
+          },
+        },
+      },
+      {
+        id: "revoke",
+        icon: Trash2,
+        label: "Revoke",
+        tone: "destructive",
+        onClick: (row) => void handleRevoke(row),
+        disabled: (row) => !!rowBusy[row.user_id],
+        bulk: {
+          done: "Revoked",
+          confirm: (targets) => ({
+            title: `Revoke admin access for ${targets.ids.length} admin${targets.ids.length === 1 ? "" : "s"}?`,
+            description: "They can no longer open /administration. You can re-promote them later; the server refuses anyone it must keep.",
+            confirmLabel: "Revoke",
+            variant: "destructive",
+          }),
+          runOne: (id) => revokeAdmin(id),
+        },
+      },
+    ],
+    { noun: "admin", getRowId: (r) => r.user_id, getRowName: (r) => r.email ?? r.user_id },
+  );
+  const rowActionDefs = allAdminRowActions.filter((def) => def.id !== "set-level");
+  const adminBulk = useTableBulkSelection<AdminRow>({
+    noun: "admin",
+    rows: admins,
+    getRowId: (r) => r.user_id,
+    getRowName: (r) => r.email ?? r.user_id,
+    actions: adminBulkActions,
+    standardBulkActions: false,
+    onRefresh: () => void Promise.all([fetchAdmins(), fetchAudit()]),
+  });
 
   const adminColumns = useMemo((): MatrxColumnDef<AdminRow>[] => {
     return [
@@ -686,21 +743,11 @@ function AdminsManagementPageContent() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <Button
-                      icon={busy ? (
-                        <Loader2 className="animate-spin" />
-                      ) : (
-                        <Trash2 />
-                      )}
-                      variant="quiet"
-                      onClick={() => void handleRevoke(row)}
-                      disabled={busy}
-                    >
-                      <span className="ml-1.5">Revoke</span>
-                    </Button>
                   </>
                 );
               } }]}
+              rowActionDefs={rowActionDefs}
+              selection={adminBulk.selection}
               getRowId={(r) => r.user_id}
               isLoading={loading}
               pageSize={25}
@@ -847,6 +894,27 @@ function AdminsManagementPageContent() {
       </div>
     </div>
   );
+}
+
+// The two doors an admin row uses; the bulk twins call the same ones once per person.
+async function patchAdminLevel(userId: string, level: AdminLevel): Promise<void> {
+  const res = await fetch(`/api/admin/admins/${userId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ level }),
+  });
+  if (!res.ok) {
+    const { error } = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(String(error));
+  }
+}
+
+async function revokeAdmin(userId: string): Promise<void> {
+  const res = await fetch(`/api/admin/admins/${userId}`, { method: "DELETE" });
+  if (!res.ok) {
+    const { error } = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(String(error));
+  }
 }
 
 export default function AdminsManagementPage() {

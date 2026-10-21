@@ -4,7 +4,7 @@
 // `fc_detail` rows (helper / example / detailed / hint / mnemonic / simplified)
 // since the depth-on-demand lane shipped, and until now NO surface rendered a
 // single one of them: StudyDeck read `details` only to find the `spoken_front`
-// audio file, and set detail read them only to compute a boolean badge. The
+// audio file, and deck detail read them only to compute a boolean badge. The
 // learner paid for text they could never see again.
 //
 // This module is the ONE place that decides which stored detail rows are

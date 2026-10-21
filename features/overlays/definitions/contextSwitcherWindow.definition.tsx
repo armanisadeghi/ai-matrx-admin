@@ -7,7 +7,7 @@ import type { ContextSwitcherWindowDefinitionData } from "./contextSwitcherWindo
 
 export const contextSwitcherWindowOverlay = defineOverlay<ContextSwitcherWindowDefinitionData>()({
   id: "contextSwitcherWindow",
-  label: "Context Switcher Window",
+  label: "Scope Switcher Window",
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,

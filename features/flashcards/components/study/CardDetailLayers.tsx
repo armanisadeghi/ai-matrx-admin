@@ -7,7 +7,7 @@
 // The defect: `education.enrich_card` has been writing `fc_detail` layers
 // (helper / example / detailed / hint / mnemonic / simplified) for months, and
 // no surface ever displayed one. StudyDeck touched `details` only to find the
-// `spoken_front` audio id; set detail turned helper/example into a boolean
+// `spoken_front` audio id; deck detail turned helper/example into a boolean
 // badge. The learner watched the text stream past in a dialog and could never
 // get it back. This component is the missing half — and it is the reason the
 // two enrich buttons are worth anything.

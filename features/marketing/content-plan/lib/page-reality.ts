@@ -103,7 +103,7 @@ function parseTime(value: string | null): number | null {
  * timestamps are NOT treated as drift: a missing stamp means we cannot tell, and
  * inventing a "stale" verdict from absent data would nag the user forever.
  *
- * Publishing writes the PAGE and then advances the plan node's status, so the
+ * Publishing writes the PAGE and then advances the plan page's status, so the
  * node's `updated_at` always lands a moment AFTER the page's. Without a grace
  * window every publish immediately reported its own page as "behind plan" —
  * a false verdict caused by the very action that produced it.

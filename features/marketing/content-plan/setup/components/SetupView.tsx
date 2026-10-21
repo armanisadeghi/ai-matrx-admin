@@ -13,7 +13,7 @@
  * same screen answers "what is missing?" on an empty site, a half-built one,
  * and a finished one.
  *
- * Data: plan nodes and the archetype library come DIRECT from Supabase under
+ * Data: plan pages and the archetype library come DIRECT from Supabase under
  * RLS; writes go through the feature's ONE plan write path. The CMS foundation
  * half comes from the existing `/api/cms/*` seam. The ONLY Python calls are
  * the "Make it real" rungs (SetupBridgeSection → setup/bridge.ts): guarded CMS

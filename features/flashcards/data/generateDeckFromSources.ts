@@ -583,7 +583,7 @@ export async function generateDeckFromSources({
 
   await beforeSave?.();
   // Single-writer contract (D-WP3): a single-pass live run's render block may
-  // already have materialized a set — adopt it; a segmented run creates one.
+  // already have materialized a deck — adopt it; a segmented run creates one.
   const created = await fcService.createGeneratedSetForConversation(
     covered.conversationId,
     {

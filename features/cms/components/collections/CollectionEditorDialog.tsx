@@ -376,6 +376,7 @@ export function CollectionEditorDialog({
                   }))
                 }
                 data-identifier
+                className="font-mono"
                 placeholder="contact_requests"
               />
             </div>

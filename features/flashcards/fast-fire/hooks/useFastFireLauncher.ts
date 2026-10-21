@@ -1,6 +1,6 @@
 // features/flashcards/fast-fire/hooks/useFastFireLauncher.ts
 //
-// The START gesture. Loading a set's cards, opening a study session, and warming
+// The START gesture. Loading a deck's cards, opening a study session, and warming
 // the mic are all kicked off from the user's click on "Start" so iOS grants the
 // mic + resumes the AudioContext in a gesture (REQUIREMENTS §6). On success it
 // dispatches `startDrill` — the slice takes over from there (countdown → cards).
@@ -88,7 +88,7 @@ export function useFastFireLauncher(
       }
     }
     if (!config.setId) {
-      setStartError("Pick a flashcard set first.");
+      setStartError("Pick a flashcard deck first.");
       return false;
     }
     setStarting(true);
@@ -97,14 +97,14 @@ export function useFastFireLauncher(
       // 1. Load the real set + ordered cards.
       const res = await fcService.getSetWithCards(config.setId);
       if (!res.data) {
-        const msg = res.error ?? "Could not load the set.";
+        const msg = res.error ?? "Could not load the deck.";
         setStartError(msg);
         dispatch(setError(msg));
         return false;
       }
       const { set, cards: loaded } = res.data;
       if (loaded.length === 0) {
-        setStartError("This set has no cards yet.");
+        setStartError("This deck has no cards yet.");
         return false;
       }
 

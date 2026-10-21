@@ -5,7 +5,7 @@
 // Phase 7 (Flashcards Competitive Parity Push) — "Generate audio overview"
 // action on SetDetailView. Reuses the generic podcast generator
 // (usePodcastRun → POST /podcast/generate) rather than the full multi-step
-// Studio UI — the source is already known (this set), so there's nothing for
+// Studio UI — the source is already known (this deck), so there's nothing for
 // a picker to pick. Persists ONLY a durable file_id to
 // `fc_set.audio_overview_file_id` (never the raw/signed audioUrl — media
 // durability doctrine) and plays back via the shared `SessionAudio`.
@@ -38,7 +38,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 /**
  * WP3 gap 12 + Q15 lane 1 — deck-level per-card audio prep, ONE component for
  * both cached batch lanes (spoken fronts, instant-help audio). The thunks are
- * cached + resumable, so the deck preps a whole set once instead of one tap at
+ * cached + resumable, so the deck preps a whole deck once instead of one tap at
  * a time mid-study.
  */
 const DETAIL_PREP_LANES = {
@@ -221,7 +221,7 @@ export function AudioOverviewSection({
 }) {
   useFlashcardMandates(["spokenFrontTts", "enrichCard", "helperTts"]);
   const { state, start, cancel, reset } = usePodcastRun();
-  // The SERVER saves the finished audio onto the set (`audio_overview_for_set`
+  // The SERVER saves the finished audio onto the deck (`audio_overview_for_set`
   // on the request, 2026-10-11) — a closed tab or a locked phone no longer
   // leaves an episode no deck points at. This page only shows what landed.
   const shownRef = useRef(false);
@@ -245,7 +245,7 @@ export function AudioOverviewSection({
 
   const handleGenerate = () => {
     if (cards.length === 0) {
-      toast.error("Add some cards to this set first");
+      toast.error("Add some cards to this deck first");
       return;
     }
     shownRef.current = false;

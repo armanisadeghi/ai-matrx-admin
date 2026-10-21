@@ -207,7 +207,7 @@ export function useCrawlLinkStatusEvidence(
   });
 }
 
-/** Controlled broken-link register for one immutable crawl session. */
+/** Controlled broken-link register for one immutable crawl. */
 export function useBrokenCrawlLinks(
   siteId: string,
   crawlId: string,

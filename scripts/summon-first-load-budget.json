@@ -11,6 +11,7 @@
     "^app:features/overlays/definitions/(registry|register|overlay-definitions\\.gen|render-map)",
     "^summon/core/(overlaysSlice|windowManagerSlice|linksSlice|overlayStateSlice|store)\\.ts",
     "^summon/core/(middleware|geometry)/",
+    "^summon/handles/callbackManager",
     "^summon/react/",
     "^summon/window/",
     "^app:features/overlays/definitions/[^/]+\\.definition\\.tsx?$",

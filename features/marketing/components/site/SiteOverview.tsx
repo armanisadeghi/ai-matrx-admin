@@ -397,7 +397,7 @@ export function SiteOverview() {
       ["Pages blocked from indexing", metrics.blockedPages],
       ["Pages failing SERP metadata checks", metrics.serpIssues],
       ["Sitemaps", metrics.sitemaps],
-      ["Crawl sessions", metrics.crawlSessions],
+      ["Crawls", metrics.crawlSessions],
       [
         "Last crawl",
         metrics.latestCrawl

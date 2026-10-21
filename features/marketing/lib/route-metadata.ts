@@ -665,13 +665,13 @@ function getPageIdentity(rest: readonly string[]): MarketingRouteIdentity {
   if (!rest[2]) {
     return {
       titlePrefix: "Page History",
-      description: "Review the immutable snapshot history for this page.",
+      description: "Review the immutable page capture history for this page.",
       letter: "Ph",
     };
   }
   return {
-    titlePrefix: "Snapshot Detail",
-    description: "Inspect one immutable page snapshot and its artifacts.",
+    titlePrefix: "Page capture",
+    description: "Inspect one immutable page capture and its artifacts.",
     letter: "Sn",
   };
 }

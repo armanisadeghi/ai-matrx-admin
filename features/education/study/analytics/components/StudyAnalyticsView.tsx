@@ -166,7 +166,7 @@ export function StudyAnalyticsView({
             <p className="text-sm font-medium text-foreground">No progress yet</p>
             <p className="max-w-sm text-xs text-muted-foreground">
               {emptyHint ??
-                "Study a set or run a Fast Fire drill and your mastery, accuracy, trends, and what to study next will show up here."}
+                "Study a deck or run a Fast Fire drill and your mastery, accuracy, trends, and what to study next will show up here."}
             </p>
             {!readOnly && (
               <Button

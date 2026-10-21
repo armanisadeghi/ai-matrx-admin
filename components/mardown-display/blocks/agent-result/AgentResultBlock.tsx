@@ -26,7 +26,7 @@
  * canonical markdown pipeline (`MarkdownStream`), or `structured_output` when
  * the agent was schema-bound. A payload carrying a `__kind` of its own is fenced as JSON,
  * which means the pipeline routes it to ITS kind component — a schema-bound
- * flashcard set renders as flashcards here, for free, exactly as THE CANONICAL
+ * flashcard deck renders as flashcards here, for free, exactly as THE CANONICAL
  * COMPONENT LAW requires.
  *
  * A payload with NO `__kind` has no component to reach, so fencing it only

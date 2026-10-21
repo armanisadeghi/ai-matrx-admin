@@ -2,7 +2,7 @@
 //
 // Converter generator: source text -> a flashcard deck (fc_set + fc_card). Wraps
 // the flashcards "from source" mandate + fcService (the single deck writer) and
-// links a set-level `source` lineage edge to the ingest anchor file so the kit
+// links a deck-level `source` lineage edge to the ingest anchor file so the kit
 // results page can trace provenance.
 //
 // COVERAGE (2026-08-21): this generator used to send the whole source in ONE
@@ -142,7 +142,7 @@ async function run(
   // its flashcard render block via the canonical adapter, so it goes through the
   // conversation-scoped dedupe path and exactly ONE fc_set exists. A segmented
   // run is background by construction (no render block to race), so it creates
-  // the set directly.
+  // the deck directly.
   const created = await fcService.createGeneratedSetForConversation(
     covered.conversationId,
     {

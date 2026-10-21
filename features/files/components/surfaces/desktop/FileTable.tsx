@@ -770,14 +770,13 @@ export function FileTable({
             // Bulk actions ride the table's own selection bar. "Select all N"
             // resolves through the list's current filters (every row is in
             // memory from the whole-tree read), never through the loaded window.
-            // Trash has no bulk actions: its rows restore one at a time.
-            ...(section === "trash"
-              ? {}
-              : {
-                  actions: (_loaded: FileListRow[], ids: string[], scope: MatrxDataTableSelectionScope) => (
-                    <BulkActionsBar ids={scope.allMatching ? rows.map(rowIdOf) : ids} />
-                  ),
-                }),
+            // Trash offers Restore only; the live view offers the full set.
+            actions: (_loaded: FileListRow[], ids: string[], scope: MatrxDataTableSelectionScope) => (
+              <BulkActionsBar
+                ids={scope.allMatching ? rows.map(rowIdOf) : ids}
+                mode={section === "trash" ? "trash" : "live"}
+              />
+            ),
           }}
           {...(view === "grid"
             ? {

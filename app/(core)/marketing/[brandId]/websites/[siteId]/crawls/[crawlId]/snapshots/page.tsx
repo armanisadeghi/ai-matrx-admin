@@ -10,7 +10,7 @@ export default async function MarketingCrawlSnapshotsPage({
 }) {
   const { crawlId } = await params;
   return (
-    <Suspense fallback={<LoadingSurface label="Loading crawl snapshots…" />}>
+    <Suspense fallback={<LoadingSurface label="Loading crawl page captures…" />}>
       <CrawlSnapshotsInspectionTable crawlId={crawlId} />
     </Suspense>
   );

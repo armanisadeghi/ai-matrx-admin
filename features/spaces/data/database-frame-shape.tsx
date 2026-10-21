@@ -137,16 +137,16 @@ export function DatabaseFrameShape({
       ) : null}
       <div className="spaces-db-bar">
         <div className="spaces-db-tabs" role="tablist">
-          {views.map((v) =>
-            isChart || v.id === active.id ? (
-              <button key={v.id} type="button" className={isChart ? "spaces-chart-title" : "spaces-chart-title spaces-view-pill"} role="tab" aria-selected={v.id === active.id} title={v.name} tabIndex={-1}>
-                {viewIcon(v, isChart ? 16 : 14)}
-                <span>{v.name}</span>
+          {views.map((view) =>
+            isChart || view.id === active.id ? (
+              <button key={view.id} type="button" className={isChart ? "spaces-chart-title" : "spaces-chart-title spaces-view-pill"} role="tab" aria-selected={view.id === active.id} title={view.name} tabIndex={-1}>
+                {viewIcon(view, isChart ? 16 : 14)}
+                <span>{view.name}</span>
               </button>
             ) : (
-              <Button key={v.id} variant="quiet" role="tab" aria-selected={false} tabIndex={-1}>
-                {viewIcon(v, 14)}
-                <span>{v.name}</span>
+              <Button key={view.id} variant="quiet" role="tab" aria-selected={false} tabIndex={-1}>
+                {viewIcon(view, 14)}
+                <span>{view.name}</span>
               </Button>
             ),
           )}

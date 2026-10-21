@@ -83,7 +83,7 @@ export type KindActionResult =
  * that need a new dependency extend THIS type (reviewed centrally), never the
  * component-facing surface.
  */
-export interface KindActionContext {
+export interface KindActionContext extends KindMediaKitCapabilities {
   /** Launch an agent execution. Bound to the viewing user by the host. */
   launchAgent: LaunchAgentFn;
   /** The acting (viewing) user's id, or null when unauthenticated. */
@@ -108,6 +108,28 @@ export interface KindActionContext {
   shareFile: (fileId: string, name: string) => void;
   /** Open an already-validated link in a new tab (`noopener`). */
   openUrl: (url: string) => void;
+  /** Fetch a saved file's bytes with the reader's own authorization (`load_media`). Absent: refused with a sentence. */
+  loadMedia?: (fileId: string, organizationId: string | null) => Promise<{ blob: Blob; mime_type: string | null }>;
+  /** Open a provider embed or media address in the platform's player window (`play_embed`). */
+  playEmbed?: (url: string, title: string) => void;
+}
+
+/** What a shape asks the print system to print (`print`). */
+export type KindPrintRequest = { title: string; markdown: string } | { title: string; html: string };
+
+/**
+ * The media kit's capabilities (lane M1): image bytes, downloads, printing.
+ * Optional so a host without them refuses with a sentence instead of a type hole.
+ */
+export interface KindMediaKitCapabilities {
+  /** An image's bytes: a web address through the image door, or a saved file with the reader's authorization. */
+  fetchImage?: (source: { url: string } | { fileId: string }) => Promise<Blob>;
+  /** Save content the shape built through the platform download door. */
+  downloadContent?: (filename: string, content: BlobPart, mime: string) => void;
+  /** Save a saved file through the canonical file-handler byte path. */
+  downloadSavedFile?: (fileId: string, filename: string | null) => Promise<void>;
+  /** Print through @ai-matrx/print; "downloaded" when the popup was blocked. */
+  printDocument?: (request: KindPrintRequest) => Promise<"opened" | "downloaded">;
 }
 
 /** A kind capability. Pure w.r.t. globals — all deps arrive via ctx. */

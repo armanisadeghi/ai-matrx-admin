@@ -1803,7 +1803,7 @@ export type SnapshotReceiptPage = {
 /** A receipt failure means the user must restart from a new immutable boundary. */
 export class SnapshotReceiptError extends Error {
   constructor(message: string) {
-    super(`Snapshot history changed while loading. Refresh required: ${message}`);
+    super(`Page capture history changed while loading. Refresh required: ${message}`);
     this.name = "SnapshotReceiptError";
   }
 }
@@ -1888,7 +1888,7 @@ export function snapshotSourceIdentity(state: MatrxDataTableQueryState) {
   };
 }
 
-const assertSnapshotReceiptData = makeAssertData("read this page's snapshots");
+const assertSnapshotReceiptData = makeAssertData("read this page's page captures");
 
 export async function getSnapshotReceiptWatermark(
   siteId: string,
@@ -1921,7 +1921,7 @@ export async function listSnapshotReceiptPage(input: {
   const { siteId, pageId, state, watermark, cursor, expectedTotal, verifyTerminal, signal } = input;
   if (state.search && state.searchMatchMode === "whole_words") {
     throw new SnapshotReceiptError(
-      "whole-word search is not available for snapshot history; clear that search mode and try again",
+      "whole-word search is not available for page capture history; clear that search mode and try again",
     );
   }
   const sort = snapshotSort(state);
@@ -2144,7 +2144,7 @@ export async function getCrawl(
   return assertFound(
     response.data,
     response.error,
-    "crawl session",
+    "crawl",
     crawlId,
     "web_crawl_session",
   );
@@ -2174,9 +2174,9 @@ export async function getAnalysisProvider(
 }
 
 /**
- * Is `candidateId` one of this site's crawl sessions?
+ * Is `candidateId` one of this site's crawls?
  *
- * `web.analysis_result.run_id` carries NO foreign key — it is a crawl session
+ * `web.analysis_result.run_id` carries NO foreign key — it is a crawl
  * for analyzer passes that ran inside a crawl, and an opaque provider run id
  * otherwise. A surface may not print it as a door on a guess (THE DOOR LAW's
  * fourth corollary: an unresolvable reference is its own loud state), so it
@@ -3889,7 +3889,7 @@ export async function archiveBrandAssociatedItems(
 
 /**
  * Soft-delete a site: the row leaves every list and its schedules, presets,
- * crawl sessions and property are removed in the same statement. Its bulk parts
+ * crawls and property are removed in the same statement. Its bulk parts
  * (pages, links, crawl history…) are `cascade_deferred` edges in
  * `platform.soft_delete_edge` and follow in bounded background batches, so a
  * large crawl never times the request out (`features/trash/cascade.ts`).
@@ -4468,7 +4468,7 @@ export async function deleteBusinessFact(factId: string): Promise<void> {
 }
 
 // ============================================================================
-// Screenshots + crawl sessions — soft-delete of stored evidence records
+// Screenshots + crawls — soft-delete of stored evidence records
 // ============================================================================
 
 /** Soft-delete a stored screenshot (the canonical file record remains). */
@@ -4488,7 +4488,7 @@ export async function deleteScreenshot(
   assertMutated(response.data, response.error, "delete this capture");
 }
 
-/** Soft-delete a crawl session (its URL ledger and events stay attached). */
+/** Soft-delete a crawl (its URL ledger and events stay attached). */
 export async function deleteCrawlSession(
   siteId: string,
   crawlId: string,
@@ -4502,7 +4502,7 @@ export async function deleteCrawlSession(
     .eq("id", crawlId)
     .is("deleted_at", null)
     .select("id");
-  assertMutated(response.data, response.error, "delete this crawl session");
+  assertMutated(response.data, response.error, "delete this crawl");
 }
 
 // ---------------------------------------------------------------------------

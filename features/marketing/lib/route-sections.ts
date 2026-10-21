@@ -110,7 +110,7 @@ export const MARKETING_WEBSITE_SECTIONS = [
     slug: "crawls",
     name: "Crawls",
     titlePrefix: "Crawls",
-    description: "Inspect and run website crawl sessions.",
+    description: "Inspect and run website crawls.",
     letter: "Cr",
     group: "The Website",
   },
@@ -315,13 +315,13 @@ export const MARKETING_SITE_LEGACY_REDIRECTS = [
   "intake",
 ] as const;
 
-/** Every visible mode under one durable crawl session. */
+/** Every visible mode under one durable crawl. */
 export const MARKETING_CRAWL_SECTIONS = [
   {
     slug: "",
     name: "Summary",
     titlePrefix: "Crawl Detail",
-    description: "Inspect a crawl session and its durable results.",
+    description: "Inspect a crawl and its durable results.",
     letter: "Cd",
     exact: true,
   },
@@ -341,8 +341,8 @@ export const MARKETING_CRAWL_SECTIONS = [
   },
   {
     slug: "snapshots",
-    name: "Snapshots",
-    titlePrefix: "Crawl Captures",
+    name: "Page captures",
+    titlePrefix: "Page captures",
     description: "Inspect page captures produced by this crawl.",
     letter: "Cs",
   },

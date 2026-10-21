@@ -180,7 +180,7 @@ export function usePlanDrift(
           {
             id: `${item.key}:realize`,
             label: "Create the page",
-            explainer: `Creates a draft page at ${item.route} on the connected site and links it to this plan node. Nothing is published.`,
+            explainer: `Creates a draft page at ${item.route} on the connected site and links it to this plan page. Nothing is published.`,
             tone: "default",
             run: async (dryRun) =>
               fromAlign(

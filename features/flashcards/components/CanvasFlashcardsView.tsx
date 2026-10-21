@@ -161,7 +161,7 @@ export function CanvasFlashcardsView({
         linkedSetId
           ? `linked fc_set: ${linkedSetId}`
           : `external_system: ${row?.external_system ?? "none"}`,
-        set ? `loaded set row: ${set.id}` : "set not loaded",
+        set ? `loaded deck row: ${set.id}` : "deck not loaded",
       ]}
     />
   );
@@ -195,7 +195,7 @@ export function CanvasFlashcardsView({
       <div className={cn("flex flex-col", className)}>
         <Notice
           icon={<Info className="h-5 w-5" />}
-          title="This set isn't in the new format yet"
+          title="This deck isn't in the new format yet"
           body="Regenerate these flashcards from chat to study them with progress tracking."
           debug={debugStrip}
         />
@@ -213,9 +213,9 @@ export function CanvasFlashcardsView({
       <div className={cn("flex flex-col", className)}>
         <Notice
           icon={<Info className="h-5 w-5" />}
-          title="Couldn't load this flashcard set"
+          title="Couldn't load this flashcard deck"
           body={error}
-          menu={<ErrorAlchemyMenu error={error} operation="Load this flashcard set" />}
+          menu={<ErrorAlchemyMenu error={error} operation="Load this flashcard deck" />}
           debug={debugStrip}
         />
       </div>
@@ -227,8 +227,8 @@ export function CanvasFlashcardsView({
       <div className={cn("flex flex-col", className)}>
         <Notice
           icon={<BookOpen className="h-5 w-5" />}
-          title="No flashcards in this set"
-          body="This set has no cards yet. Regenerate from chat to add some."
+          title="No flashcards in this deck"
+          body="This deck has no cards yet. Regenerate from chat to add some."
           debug={debugStrip}
         />
       </div>

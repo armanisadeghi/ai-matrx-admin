@@ -4,7 +4,7 @@
 //
 // Drop-anywhere "Test me" button — the single entry point for the single-card
 // voice test. Give it a card (+ optional cached spoken-front) and it owns the
-// dialog. This is what goes on ANY flashcard surface: the study deck, set detail,
+// dialog. This is what goes on ANY flashcard surface: the study deck, deck detail,
 // chat flashcard blocks, window panels. One import, no wiring.
 
 import { useState } from "react";

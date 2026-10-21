@@ -9,10 +9,12 @@
  * The edit functions are pure (record in, record out) so the rules are tested without a store.
  */
 
-import { mergeJsonColumn } from "@ai-matrx/data/db";
+import { conversationMetadataKey } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversation-metadata-key";
 import { createClient } from "@/utils/supabase/client";
 
 export const WORKSPACE_KEY = "agent_studio_workspace";
+/** The workspace key on the conversation row, written the one way (`conversationMetadataKey`). */
+const workspaceKey = conversationMetadataKey<unknown>(WORKSPACE_KEY);
 
 export type WorkspaceBy = "assistant" | "person" | "code";
 
@@ -237,45 +239,31 @@ export function keepSuggestedInput(ws: StudioWorkspace, input: WorkspaceInput): 
 
 // ── storage ──
 
-export async function loadWorkspace(conversationId: string): Promise<StudioWorkspace> {
+/** One read of the row: its version (the realtime echo guard) and metadata. Throws when the read fails. */
+export async function loadWorkspaceRow(conversationId: string): Promise<{ version: number; metadata: unknown } | null> {
   const { data, error } = await createClient()
     .schema("chat")
     .from("conversation")
-    .select("metadata")
+    .select("version,metadata")
     .eq("id", conversationId)
     .maybeSingle();
   if (error) throw new Error(`The workspace did not load: ${error.message}`);
-  return readWorkspace(data?.metadata);
+  return data ? { version: Number(data.version), metadata: data.metadata } : null;
+}
+
+export async function loadWorkspace(conversationId: string): Promise<StudioWorkspace> {
+  return readWorkspace((await loadWorkspaceRow(conversationId))?.metadata);
 }
 
 /**
- * Applies ONE edit to the record as it stands NOW (re-read inside the guarded merge, so the assistant's
- * concurrent write to another field survives) and saves only this key.
+ * Applies ONE edit to the record as it stands NOW (the one conversation-metadata door re-reads it inside
+ * its guarded merge, so the assistant's concurrent write to another field survives) and saves only this key.
  */
 export async function editWorkspace(
   conversationId: string,
   edit: (current: StudioWorkspace) => StudioWorkspace,
 ): Promise<StudioWorkspace> {
-  const supabase = createClient();
-  let saved: StudioWorkspace | null = null;
-  const result = await mergeJsonColumn<{ id: string; version: number; metadata: unknown }>({
-    fetchCurrent: () =>
-      supabase.schema("chat").from("conversation").select("id,version,metadata").eq("id", conversationId).maybeSingle(),
-    readColumn: (row) => row.metadata,
-    merge: (current) => {
-      saved = edit(readWorkspace(current));
-      return { ...current, [WORKSPACE_KEY]: saved };
-    },
-    applyUpdate: ({ value, expectedVersion, nextVersion }) =>
-      supabase
-        .schema("chat")
-        .from("conversation")
-        .update({ metadata: value, version: nextVersion })
-        .eq("id", conversationId)
-        .eq("version", expectedVersion)
-        .select("id,version,metadata")
-        .maybeSingle(),
-  });
-  if (result.status !== "saved" || !saved) throw new Error(`The workspace did not save (${result.status})`);
-  return saved;
+  const saved = await workspaceKey.edit(conversationId, (current) => edit(readWorkspace({ [WORKSPACE_KEY]: current })));
+  if (!saved) throw new Error("The workspace did not save");
+  return readWorkspace({ [WORKSPACE_KEY]: saved });
 }

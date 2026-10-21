@@ -23,20 +23,15 @@ describe("the Studio doer", () => {
     expect(strip(page)).toMatch(/STUDIO_ASSISTANT_MANDATE/);
     expect(readFileSync(join(__dirname, "..", "workspace-api.ts"), "utf8")).toMatch(/"agent_studio\.do_the_job_together"/);
     expect(strip(page)).not.toMatch(/launchAgent\(doerId/);
-    expect(strip(page)).not.toMatch(/assistantId/);
-    expect(strip(run)).toMatch(/launchMandate\(/);
-  });
-
-  it("shows the chat once a mandate chat exists: a mandate run has no agent id, and must not stay on the skeleton", () => {
-    // Found live 2026-10-17: `if (!agentId || !shown)` kept every mandate chat on the loading skeleton forever.
-    expect(strip(run)).not.toMatch(/if \(!agentId \|\| !shown\)/);
-    expect(strip(run)).toMatch(/\(!agentId && !mandateKey\) \|\| !shown/);
+    // Lane 5A: the canvas hook launches it, under the page's own `launch.mandateKey`.
+    expect(strip(page)).toMatch(/launch: \{ mandateKey: ASSISTANT_MANDATE/);
+    expect(strip(run)).not.toMatch(/launchMandate\(|launchAgent\(/);
   });
 
   it("runs on its own surface before an agent exists, so the server hands the assistant its workspace tool", () => {
     // Found live 2026-10-17: the run went out as client.surface "matrx-user/canvas" (the route's guess) and the
     // assistant never got studio_workspace. A mounted SurfaceRuntimeProvider is what the launch adopts.
-    expect(strip(page)).toMatch(/<SurfaceRuntimeProvider surfaceName=\{STUDIO_SURFACE_NAME\}/);
-    expect(strip(page)).toMatch(/<StudioSurface>\{page\}<\/StudioSurface>/);
+    // Lane 5A: ONE stable provider whose surfaceName is the Studio's until an agent exists.
+    expect(strip(page)).toMatch(/surfaceName=\{agentId \? AGENT_BUILDER_CONTEXT_MENU_PROPS\.surfaceName : STUDIO_SURFACE_NAME\}/);
   });
 });

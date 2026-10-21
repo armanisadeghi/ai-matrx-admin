@@ -34,6 +34,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { SANDBOX_DRILL } from "./sandboxDrill";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -397,6 +399,75 @@ export default function AdminSandboxManagementPage() {
         : {}),
     });
 
+  const submitOne = async (instance: SandboxInstance | undefined, kind: "stop" | "delete") => {
+    if (!instance) throw new Error("Sandbox not loaded");
+    const result = await submitLifecycle({ rowId: instance.id, sandboxId: instance.sandbox_id, kind });
+    if (!result.admitted) {
+      throw new Error(
+        result.reason === "already_pending"
+          ? "A sandbox operation is already pending"
+          : "Sandbox lifecycle is still connecting to your account",
+      );
+    }
+  };
+  const sandboxesLabel = (n: number) => `${n} sandbox${n === 1 ? "" : "es"}`;
+  const isActive = (i: SandboxInstance) => ["ready", "running"].includes(i.status);
+  const { rowActionDefs, bulkActions } = defineRowVerbs<SandboxInstance>(
+    [
+      {
+        id: "ssh", icon: KeyRound, label: "SSH",
+        appliesTo: isActive, unavailableTooltip: "Not running",
+        onClick: (i) => void handleRequestSsh(i),
+        bulk: false, noBulk: "single",
+      },
+      {
+        id: "stop", icon: Square, label: "Stop",
+        appliesTo: isActive, unavailableTooltip: "Not running",
+        disabled: (i) => isLifecycleReserved(i.id),
+        onClick: (i) => void handleStop(i),
+        bulk: {
+          done: "Stop requested",
+          skipReason: (i) => (isActive(i) ? (isLifecycleReserved(i.id) ? "An operation is already pending" : null) : "Not running"),
+          confirm: (t) => ({
+            title: `Stop ${sandboxesLabel(t.ids.length)}?`,
+            description: "Running work inside them ends. Each can be started again later.",
+            confirmLabel: "Stop",
+            variant: "destructive",
+          }),
+          runOne: (_id, i) => submitOne(i, "stop"),
+        },
+      },
+      {
+        id: "delete", icon: Trash2, label: "Delete sandbox", tone: "destructive",
+        disabled: (i) => isLifecycleReserved(i.id),
+        onClick: (i) => setDeleteTarget(i),
+        bulk: {
+          label: "Delete",
+          done: "Delete requested",
+          removesRows: true,
+          skipReason: (i) => (isLifecycleReserved(i.id) ? "An operation is already pending" : null),
+          confirm: (t) => ({
+            title: `Delete ${sandboxesLabel(t.ids.length)}?`,
+            description: "Each sandbox and everything stored inside it is removed. This cannot be undone.",
+            confirmLabel: "Delete",
+            variant: "destructive",
+          }),
+          runOne: (_id, i) => submitOne(i, "delete"),
+        },
+      },
+    ],
+    { noun: "sandbox", getRowId: (i) => i.id, getRowName: (i) => i.sandbox_id },
+  );
+  const sandboxBulk = useTableBulkSelection<SandboxInstance>({
+    noun: "sandbox",
+    rows: instances,
+    getRowId: (i) => i.id,
+    getRowName: (i) => i.sandbox_id,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: () => void fetchInstances(),
+  });
+
   const columns: MatrxColumnDef<SandboxInstance>[] = [
     {
       accessorKey: "sandbox_id",
@@ -620,49 +691,9 @@ export default function AdminSandboxManagementPage() {
               tableId="administration/compute/sandbox"
               data={instances}
               drill={SANDBOX_DRILL}
-              columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (instance) => {
-                const busy = isLifecycleReserved(instance.id);
-                const active = ["ready", "running"].includes(instance.status);
-                return (
-                  <>
-                    {active && (
-                      <Button
-                        icon={<KeyRound />}
-                        variant="outline"
-                        onClick={() => handleRequestSsh(instance)}
-                      >
-                        SSH
-                      </Button>
-                    )}
-                    {active && (
-                      <Button
-                        icon={busy ? (
-                          <Loader2 className="animate-spin" />
-                        ) : (
-                          <Square />
-                        )}
-                        variant="outline"
-                        onClick={() => handleStop(instance)}
-                        disabled={busy}
-                      >
-                        Stop
-                      </Button>
-                    )}
-                    <Button
-                      icon={busy ? (
-                        <Loader2 className="animate-spin" />
-                      ) : (
-                        <Trash2 />
-                      )}
-                      variant="quiet"
-                      aria-label="Delete sandbox"
-                      title="Delete sandbox"
-                      onClick={() => setDeleteTarget(instance)}
-                      disabled={busy}
-                    />
-                  </>
-                );
-              } }]}
+              columns={[...(columns)]}
+              rowActionDefs={rowActionDefs}
+              selection={sandboxBulk.selection}
               getRowId={(instance) => instance.id}
               density="condensed"
               isLoading={loading}
@@ -791,15 +822,15 @@ export default function AdminSandboxManagementPage() {
                 ),
               }}
               copy={{
-                label: "Sandbox instance",
+                label: "Sandbox",
                 listLabel: "Accessible sandboxes",
                 location: PAGE_LOCATION,
                 rowKind: "sandbox-instance",
                 listKind: "sandbox-instances",
                 rowDescription:
-                  "A single sandbox instance from the admin sandbox management table.",
+                  "A single sandbox from the admin sandbox management table.",
                 listDescription:
-                  "Sandbox instances currently listed within this account's authorized access scope.",
+                  "Sandboxes currently listed within this account's authorized access scope.",
                 humanRow: sandboxInstanceSummary,
                 agentRow: (instance) => instance,
                 rowAttributes: (instance) => ({
@@ -842,12 +873,12 @@ export default function AdminSandboxManagementPage() {
                 matched: instances.length,
                 total: accessibleSandboxes.length,
                 answeredBy: "client",
-                noun: "sandbox instance",
+                noun: "sandbox",
               }}
-              read={readOf({ loading, error: loadError }, { what: "sandbox instances", onRetry: () => void fetchInstances() })}
+              read={readOf({ loading, error: loadError }, { what: "sandboxes", onRetry: () => void fetchInstances() })}
               emptyState={{
                 title:
-                  "No accessible sandbox instances found for the selected filter.",
+                  "No accessible sandboxes found for the selected filter.",
               }}
             />
           </div>
@@ -863,7 +894,7 @@ export default function AdminSandboxManagementPage() {
           description={
             <>
               {/* destroy-label-ok: a compute sandbox instance, not a platform record */}
-              This will permanently remove this sandbox instance
+              This will permanently remove this sandbox
               {deleteTarget &&
               ["ready", "running"].includes(deleteTarget.status)
                 ? " and destroy the running container"

@@ -7,72 +7,10 @@
  *    bounded wait), so Describe moves to Test & improve by itself;
  *  - applied-but-unsaved edits are stored and read back against the saved state they were made on.
  */
-import { act, useState } from "react";
-import { createRoot } from "react-dom/client";
-import { useMeasuredWidth } from "../use-width";
 import { buildIsSettled, MAX_POLLS_FOR_AGENT_ID } from "@/features/agents/factory/components/BuildProgress";
 import { readUnsaved, savedBaseOf, unsavedFromRecord, UNSAVED_KEY } from "../unsaved-edits";
 
-type RoCallback = (entries: { contentRect: { width: number } }[]) => void;
-const observers: { el: Element; cb: RoCallback; live: boolean }[] = [];
-beforeAll(() => {
-  (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver = class {
-    private rec: { el: Element; cb: RoCallback; live: boolean } | null = null;
-    constructor(private cb: RoCallback) {}
-    observe(el: Element) {
-      this.rec = { el, cb: this.cb, live: true };
-      observers.push(this.rec);
-    }
-    disconnect() {
-      if (this.rec) this.rec.live = false;
-    }
-  };
-});
-
-let bodyW = 1400;
-beforeAll(() => {
-  HTMLElement.prototype.getBoundingClientRect = () => ({ width: bodyW }) as DOMRect;
-});
-
-function Probe({ swap, onWidth }: { swap: boolean; onWidth: (w: number | null) => void }) {
-  const { ref, width } = useMeasuredWidth<HTMLDivElement>();
-  onWidth(width);
-  // The Studio's flip: a different wrapper around the same body → a NEW body element.
-  return swap ? (
-    <section>
-      <div data-testid="b" ref={ref} />
-    </section>
-  ) : (
-    <div data-testid="a" ref={ref} />
-  );
-}
-
-describe("Studio width follows the body element across the flip", () => {
-  it("keeps the real width after the body is re-parented; a detached node's 0 is never a width", () => {
-    let seen: number | null = null;
-    let setSwap: (v: boolean) => void = () => {};
-    function Host() {
-      const [swap, set] = useState(false);
-      setSwap = set;
-      return <Probe swap={swap} onWidth={(w) => (seen = w)} />;
-    }
-    const host = document.createElement("div");
-    document.body.appendChild(host);
-    act(() => createRoot(host).render(<Host />));
-    expect(seen).toBe(1400);
-    const first = observers[observers.length - 1];
-    act(() => setSwap(true));
-    // The old node goes away; its observer must be disconnected and a 0 from it ignored.
-    act(() => first.cb([{ contentRect: { width: 0 } }]));
-    expect(seen).toBe(1400);
-    const current = observers.filter((o) => o.live);
-    expect(current).toHaveLength(1);
-    expect(current[0].el).not.toBe(first.el);
-    bodyW = 1200;
-    act(() => current[0].cb([{ contentRect: { width: 1200 } }]));
-    expect(seen).toBe(1200);
-  });
-});
+// The width hook this file once proved (use-width.ts) is gone: the Studio measures with kit `useMeasure` (lane 5A).
 
 describe("a kept build is finished only with its agent id", () => {
   const over = { spineStatus: "completed" as const };

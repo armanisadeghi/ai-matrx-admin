@@ -37,6 +37,7 @@ import {
   MemberEmployeeSeam,
   useMemberEmployeeCopyDetails,
 } from "@/features/hr/entry-points/MemberEmployeeSeam";
+import { orgMemberBulkActions } from "../bulk/orgRosterVerbs";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 interface MemberManagementProps {
@@ -147,6 +148,7 @@ export function MemberManagement({
         onChangeRole={handleChangeRole}
         onRemove={handleRemove}
         onTransferOwnership={handleTransferOwnership}
+        onRefresh={refresh}
       />
     </HrMemberEmployeeSeamProvider>
   );
@@ -163,6 +165,7 @@ function OrganizationMembersPanel({
   onChangeRole,
   onRemove,
   onTransferOwnership,
+  onRefresh,
 }: {
   members: PanelMember[];
   organizationId: string;
@@ -174,6 +177,7 @@ function OrganizationMembersPanel({
   onChangeRole: (member: PanelMember, role: MembershipRole) => Promise<void>;
   onRemove: (member: PanelMember) => Promise<void>;
   onTransferOwnership: (member: PanelMember) => Promise<void>;
+  onRefresh: () => void;
 }) {
   const memberEmployeeCopyDetails = useMemberEmployeeCopyDetails();
   const viewerId = useAppSelector(selectUserId);
@@ -185,6 +189,13 @@ function OrganizationMembersPanel({
     organizationId,
     viewerGoverns,
   );
+  const canManageMember = (member: PanelMember) =>
+    isOwner || (userRole === "admin" && member.role !== "owner");
+  const bulkActions = orgMemberBulkActions({
+    organizationId,
+    canManage: canManageMember,
+    ownerCount,
+  });
   const people = members.map((m) => ({
     id: m.userId,
     name: m.user?.displayName ?? m.user?.email ?? "A member",
@@ -237,9 +248,8 @@ function OrganizationMembersPanel({
       // Only the OWNER is untouchable by an admin. The database enforces exactly
       // this in mbr_remove / mbr_update_role — these predicates mirror it, they
       // do not invent a second rule.
-      canManageMember={(member) =>
-        isOwner || (userRole === "admin" && member.role !== "owner")
-      }
+      canManageMember={canManageMember}
+      bulk={{ actions: bulkActions, onRefresh }}
       // R21: one owner per organization. "Make Owner" does not exist as a role
       // change — the database refuses it and names Transfer ownership, so the
       // menu item is ABSENT rather than present-and-failing.

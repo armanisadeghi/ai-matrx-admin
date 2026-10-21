@@ -1025,6 +1025,8 @@ if $STRICT; then
         # hand-rolled utm_source outside @ai-matrx/kit/outbound. Shrink-only baseline.
         "Raw outbound link outside the referral door (@ai-matrx/kit/outbound)|pnpm check:outbound-referral"
         "Outbound-referral guard self-test|pnpm check:outbound-referral:self-test"
+        "Hand-coded tree indent outside the shared tree geometry|pnpm check:tree-indent"
+        "Tree-indent guard self-test|pnpm check:tree-indent:self-test"
         # UNIVER ADD-ONS — every free add-on loads, survives a save, and a signed-in person can
         # actually type in a cell (the owner-role identity); reds on a planted break. Static, no database.
         "Univer add-ons load, save back, and a signed-in person can edit|pnpm check:univer-addons"
@@ -1819,6 +1821,8 @@ else
         # hand-rolled utm_source outside @ai-matrx/kit/outbound. Shrink-only baseline.
         "Raw outbound link outside the referral door (@ai-matrx/kit/outbound)|pnpm check:outbound-referral"
         "Outbound-referral guard self-test|pnpm check:outbound-referral:self-test"
+        "Hand-coded tree indent outside the shared tree geometry|pnpm check:tree-indent"
+        "Tree-indent guard self-test|pnpm check:tree-indent:self-test"
         # UNIVER ADD-ONS — every free add-on loads, survives a save, and a signed-in person can
         # actually type in a cell (the owner-role identity); reds on a planted break. Static, no database.
         "Univer add-ons load, save back, and a signed-in person can edit|pnpm check:univer-addons"

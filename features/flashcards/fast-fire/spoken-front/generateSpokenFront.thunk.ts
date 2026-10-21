@@ -13,7 +13,7 @@
 // that block by requestId and persist the fileId. No manual upload needed.
 //
 // Timing: generate ON-DEMAND (first time the option is used) — NEVER at card
-// creation (a 50-card set would be far too expensive). Every missing card is
+// creation (a 50-card deck would be far too expensive). Every missing card is
 // dispatched immediately; matrx-ai owns provider admission and rate limits.
 
 import type { AppDispatch, RootState } from "@/lib/redux/store";
@@ -32,7 +32,7 @@ import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 export const SPOKEN_FRONT_TTS_MANDATE = MANDATE_KEYS.flashcards__spoken_front_tts;
 
 /**
- * Read-only: how many of a set's cards already have a CACHED spoken front (a
+ * Read-only: how many of a deck's cards already have a CACHED spoken front (a
  * durable fc_detail(kind='spoken_front') with audio_file_id) vs the total. Lets
  * the UI show "Audio ready (N/M)" on return WITHOUT re-generating — the audio is
  * persisted and durable, never lost, never re-generated for a card that has it.
@@ -59,8 +59,8 @@ interface SpokenFrontCard {
   topic?: string | null;
 }
 
-/** The set run this card is being narrated in — present only when the caller
- *  really walks a set (then `index`/`total` are the card's true position). */
+/** The deck run this card is being narrated in — present only when the caller
+ *  really walks a deck (then `index`/`total` are the card's true position). */
 interface SpokenFrontSetRun {
   setId: string;
   setName?: string | null;
@@ -205,8 +205,8 @@ export function generateSpokenFront(
 }
 
 /**
- * Ensure every card in a set has a spoken front, generating the missing ones
- * concurrently. Returns a map of cardId → audio file_id for the whole set
+ * Ensure every card in a deck has a spoken front, generating the missing ones
+ * concurrently. Returns a map of cardId → audio file_id for the whole deck
  * (existing + newly generated). `onProgress(done, total)` fires as each resolves.
  * On-demand only — call this when the learner enables/starts a spoken drill.
  */

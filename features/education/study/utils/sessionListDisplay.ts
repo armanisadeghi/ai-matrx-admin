@@ -114,8 +114,8 @@ export function buildSessionListLines(
 }
 
 /**
- * A session with no source set is not an "Unknown set" — it is a queue that
- * spans every set (due review, a weak-area drill, one topic's practice).
+ * A session with no source deck is not an "Unknown set" — it is a queue that
+ * spans every deck (due review, a weak-area drill, one topic's practice).
  * Name what it was.
  */
 function titleForSetlessSession(session: StudySessionRow): string {
@@ -127,9 +127,9 @@ function titleForSetlessSession(session: StudySessionRow): string {
   switch (session.source_kind) {
     case "adaptive":
     case "due":
-      return "Due review · all sets";
+      return "Due review · all decks";
     case "weak_area":
-      return topic ? `Practice: ${topic}` : "Weak-area drill · all sets";
+      return topic ? `Practice: ${topic}` : "Weak-area drill · all decks";
     case "topic":
       return topic ? `Topic: ${topic}` : "Topic practice";
     case "game":

@@ -1,7 +1,7 @@
 /**
  * The READER that finally makes card enrichment visible. Every surface that
  * shows "what does this card already have" — the study card's "More on this
- * card" strip, set detail's layer badge, and the bulk planner's "does this card
+ * card" strip, deck detail's layer badge, and the bulk planner's "does this card
  * need enriching" decision — goes through `selectCardDetailLayers`, so these
  * are the rules all three obey.
  */

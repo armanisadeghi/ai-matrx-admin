@@ -169,7 +169,13 @@ export interface BoardToolHost<T extends BoardTileBase & { title: string }> {
   editTile?: (tile: T, input: EditTileInput) => Partial<T> | Failure;
   /** "note", "markdown", a kind label… a status word, and the agent surface
    * the tile's feature publishes while the tile is live, for board_read. */
-  describe: (tile: T) => { kind: string; status?: string | null; surface?: string | null };
+  describe: (tile: T) => {
+    kind: string;
+    status?: string | null;
+    surface?: string | null;
+    /** Its content publishes a surface once it loads (a Page tile), even while `surface` is not known yet. */
+    loadsSurface?: boolean;
+  };
   /**
    * Each tile's own surface capture (`item-surfaces.ts`), live or dormant —
    * what `board_open_item` / `board_item_act` and the `board_items` value read.
@@ -959,7 +965,8 @@ export function useBoardAgentTools<T extends BoardTileBase & { title: string }>(
   const reachItem = async (id: unknown, show: boolean) => {
     const tile = find(id);
     if (!tile) return missing(id);
-    const surface = host.describe(tile).surface ?? null;
+    const described = host.describe(tile);
+    const surface = described.surface ?? (described.loadsSurface ? "page's" : null);
     if (!surface) {
       return fail(
         `"${tile.title}" is board-only content with no feature behind it, so it has no surface to open. board_update_tile changes it.`,

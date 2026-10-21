@@ -253,6 +253,7 @@ export async function fetchOfferingsVerdict(brandId: string): Promise<OfferingsV
 
 /** The newest products-and-services run for the brand (to watch while it goes). */
 export async function fetchLatestOfferingsRun(brandId: string): Promise<OfferingsRun | null> {
+  // archived-items-law-exempt: lineage lookup of the run definition's ids by name — the newest run is wanted even if its definition was archived
   const defs = await supabase.schema("workflow").from("definition").select("id").eq("name", RUN_DEFINITION_NAME).limit(5);
   if (defs.error) throw new Error(`The run could not be read: ${defs.error.message}`);
   const ids = (defs.data ?? []).map((d) => d.id);

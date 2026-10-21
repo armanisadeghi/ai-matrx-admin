@@ -7,12 +7,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { LifeBuoy, X } from "lucide-react";
 import { readOf } from "@ai-matrx/design-system";
-import { Badge, Button, type BadgeTone } from "@ai-matrx/design-system/controls";
+import { Badge, type BadgeTone } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { useReasonPrompt } from "../record/useReasonPrompt";
 import { personChanged } from "../record/useUserActions";
 import { toast } from "@/lib/toast";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { AdminUserRef } from "../components/AdminUserRef";
 import {
   endSupportSession,
@@ -187,6 +189,51 @@ export function SupportSessionsTableClient({ targetUserId, reloadKey = 0, onChan
       },
     });
 
+  // One declaration: the row's End button and the bar's End twin (the same endSupportSession door).
+  const { rowActionDefs, bulkActions } = defineRowVerbs<Row>(
+    [
+      {
+        id: "end",
+        icon: X,
+        label: "End session",
+        tone: "destructive",
+        appliesTo: (r) => r.status !== "ended",
+        unavailableTooltip: "Already ended",
+        disabled: (r) => ending === r.id,
+        onClick: end,
+        bulk: {
+          label: "End sessions",
+          done: "Ended",
+          confirm: (targets) => ({
+            title: `End ${targets.ids.length} support session${targets.ids.length === 1 ? "" : "s"}?`,
+            description: `${targets.ids.length === 1 ? "That support window signs" : "Those support windows sign"} out now. Sessions already ended are skipped.`,
+            confirmLabel: "End sessions",
+            variant: "destructive",
+            reason: { placeholder: "Reason (recorded with each session)" },
+          }),
+          runOne: async (id, row, input) => {
+            if (!input.reason) throw new Error("A reason is required.");
+            await endSupportSession(id, input.reason);
+            if (row) personChanged(row.target_user_id);
+          },
+        },
+      },
+    ],
+    { noun: "session", getRowId: (r) => r.id, getRowName: (r) => r.target_email ?? r.id },
+  );
+  const bulk = useTableBulkSelection<Row>({
+    noun: "session",
+    rows,
+    getRowId: (r) => r.id,
+    getRowName: (r) => r.target_email ?? r.id,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: () => {
+      onChanged?.();
+      void load();
+    },
+  });
+
   return (
     <div className={targetUserId ? "flex flex-col" : "flex h-full flex-col p-4"}>
       {reasonDialog}
@@ -196,24 +243,9 @@ export function SupportSessionsTableClient({ targetUserId, reloadKey = 0, onChan
           data={rows}
           columns={[
             ...(targetUserId ? COLUMNS.filter((c) => c.id !== "target_email") : COLUMNS),
-            {
-              id: "custom-actions",
-              header: "",
-              sortable: false,
-              filter: false,
-              customActions: (row) =>
-                row.status === "ended" ? null : (
-                  <Button
-                    variant="quiet"
-                    icon={<X />}
-                    aria-label="End session"
-                    title="End session"
-                    disabled={ending === row.id}
-                    onClick={() => end(row)}
-                  />
-                ),
-            },
           ]}
+          rowActionDefs={rowActionDefs}
+          selection={bulk.selection}
           getRowId={(r) => r.id}
           isLoading={loading}
           pageSize={50}

@@ -2,7 +2,7 @@
  * Surface manifest — FastFire (`matrx-user/education-fastfire`).
  *
  * The `/education/fastfire` spoken rapid-drill lane: the learner races a
- * per-card clock through a flashcard set, answering out loud while the mic
+ * per-card clock through a flashcard deck, answering out loud while the mic
  * records continuously; each clip is graded fire-and-forget by the spoken
  * grader agent and the scoreboard fills in live. The whole drill is ONE Redux
  * state machine (`fastFireSlice`) — phase, config, the card queue, per-card
@@ -12,7 +12,7 @@
  * Curated groups (band 0-899):
  *
  *   drill    Where the session is: phase, timing config, session identity
- *   deck     The set being drilled and the card currently on screen
+ *   deck     The deck being drilled and the card currently on screen
  *   scoring  Per-card grades as they resolve + the holistic session review
  *
  * Emitter: `features/flashcards/fast-fire/components/FastFireSurface.tsx`
@@ -48,7 +48,7 @@ const groups: SurfaceValueGroup[] = [
     label: "Deck",
     sortOrder: 200,
     description:
-      "The flashcard set loaded into the drill queue, and the card the learner is answering right now.",
+      "The flashcard deck loaded into the drill queue, and the card the learner is answering right now.",
   },
   {
     key: "scoring",
@@ -143,9 +143,9 @@ const surfaceSpecific: SurfaceValue[] = [
   // ── Deck ──────────────────────────────────────────────────────────────
   {
     name: "set_id",
-    label: "Flashcard set ID",
+    label: "Flashcard deck ID",
     description:
-      "UUID of the set loaded into the drill. Absent in setup when the learner arrived without a `?set=` and has not picked one yet.",
+      "UUID of the deck loaded into the drill. Absent in setup when the learner arrived without a `?set=` and has not picked one yet.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 36,
@@ -154,9 +154,9 @@ const surfaceSpecific: SurfaceValue[] = [
   },
   {
     name: "set_name",
-    label: "Flashcard set name",
+    label: "Flashcard deck name",
     description:
-      "Display name of the loaded set. Absent until a set is chosen and its cards load.",
+      "Display name of the loaded set. Absent until a deck is chosen and its cards load.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 40,
@@ -167,7 +167,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "card_count",
     label: "Cards in drill",
     description:
-      "How many cards are in the drill queue (after any card limit is applied). Zero until a set's cards load. Always present.",
+      "How many cards are in the drill queue (after any card limit is applied). Zero until a deck's cards load. Always present.",
     valueType: "number",
     alwaysAvailable: true,
     typicalCharCount: 3,
@@ -200,7 +200,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "drill_cards",
     label: "All drill cards",
     description:
-      "The full ordered drill queue as { id, front, back, position }. Empty array until a set's cards load. Can be large — bindable-only, so it never silently consumes the context window.",
+      "The full ordered drill queue as { id, front, back, position }. Empty array until a deck's cards load. Can be large — bindable-only, so it never silently consumes the context window.",
     valueType: "array",
     alwaysAvailable: true,
     typicalCharCount: 4000,
@@ -277,7 +277,7 @@ const surfaceSpecific: SurfaceValue[] = [
  *   • The SET PICKER (`setId`/`setName`) is not writable, for exactly the
  *     reason `education-assessment` left its deck/document pickers out: the
  *     surface exposes no options to choose FROM. The read half publishes only
- *     the set already loaded (`set_id`/`set_name`) — the learner's library
+ *     the deck already loaded (`set_id`/`set_name`) — the learner's library
  *     lives in `FastFireSetup`'s local React state and never reaches the scope.
  *     An agent handed a `set_id` target could only guess a UUID, and a
  *     confidently-wrong deck is worse than no target at all. If the library is
@@ -311,7 +311,7 @@ const writeTargets: SurfaceWriteTarget[] = [
   {
     name: "drill_config",
     label: "Drill configuration",
-    description: `Stages the drill's pace and behavior into the FastFire setup form, before the learner starts. Accepts a PARTIAL object — include only the fields you mean to change; omitted fields keep their current value (read drill_config first to see them). Writable fields: secondsPerCard (whole number ${DRILL_CONFIG_BOUNDS.secondsPerCard.min}-${DRILL_CONFIG_BOUNDS.secondsPerCard.max}, the answer clock per card); cardLimit (whole number ${DRILL_CONFIG_BOUNDS.cardLimit.min}-${DRILL_CONFIG_BOUNDS.cardLimit.max}, where 0 means every card in the set); warningSeconds (whole number ${DRILL_CONFIG_BOUNDS.warningSeconds.min}-${DRILL_CONFIG_BOUNDS.warningSeconds.max}, seconds-left for the warning beep, 0 = off); liveScore (boolean, show grades during the drill vs only on the scoreboard); spokenFronts (boolean, read each question aloud — voice mode); voiceAnswerSeconds (whole number ${DRILL_CONFIG_BOUNDS.voiceAnswerSeconds.min}-${DRILL_CONFIG_BOUNDS.voiceAnswerSeconds.max}, voice-mode answer window, and it may not exceed secondsPerCard); adaptive (boolean, live session adaptation — as grades resolve mid-drill the not-yet-seen queue reorders toward the learner's struggling topics; on by default); answerMode ("voice" to answer aloud, graded from the recording, or "typed" to type each answer, graded on meaning — typed needs no microphone and is the only choice when the browser has none or it is blocked). Out-of-range or wrongly-typed values are REJECTED, never clamped. Only these fields are accepted — notably the flashcard set is NOT writable here; the learner picks that themselves. Applies only while the setup screen is up (drill_phase "setup"); once the drill is running the config is locked. The user still presses Start FastFire.`,
+    description: `Stages the drill's pace and behavior into the FastFire setup form, before the learner starts. Accepts a PARTIAL object — include only the fields you mean to change; omitted fields keep their current value (read drill_config first to see them). Writable fields: secondsPerCard (whole number ${DRILL_CONFIG_BOUNDS.secondsPerCard.min}-${DRILL_CONFIG_BOUNDS.secondsPerCard.max}, the answer clock per card); cardLimit (whole number ${DRILL_CONFIG_BOUNDS.cardLimit.min}-${DRILL_CONFIG_BOUNDS.cardLimit.max}, where 0 means every card in the deck); warningSeconds (whole number ${DRILL_CONFIG_BOUNDS.warningSeconds.min}-${DRILL_CONFIG_BOUNDS.warningSeconds.max}, seconds-left for the warning beep, 0 = off); liveScore (boolean, show grades during the drill vs only on the scoreboard); spokenFronts (boolean, read each question aloud — voice mode); voiceAnswerSeconds (whole number ${DRILL_CONFIG_BOUNDS.voiceAnswerSeconds.min}-${DRILL_CONFIG_BOUNDS.voiceAnswerSeconds.max}, voice-mode answer window, and it may not exceed secondsPerCard); adaptive (boolean, live session adaptation — as grades resolve mid-drill the not-yet-seen queue reorders toward the learner's struggling topics; on by default); answerMode ("voice" to answer aloud, graded from the recording, or "typed" to type each answer, graded on meaning — typed needs no microphone and is the only choice when the browser has none or it is blocked). Out-of-range or wrongly-typed values are REJECTED, never clamped. Only these fields are accepted — notably the flashcard deck is NOT writable here; the learner picks that themselves. Applies only while the setup screen is up (drill_phase "setup"); once the drill is running the config is locked. The user still presses Start FastFire.`,
     valueType: "object",
     updatesValue: "drill_config",
     mode: "draft",
@@ -327,16 +327,16 @@ export const educationFastfireManifest: SurfaceManifest = {
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description:
-    "FastFire spoken rapid-drill over a flashcard set (/education/fastfire).",
+    "FastFire spoken rapid-drill over a flashcard deck (/education/fastfire).",
   readiness: "partial",
   readinessNote:
     "Manifest + emitter shipped for everything the drill state machine holds. Not yet stamped verified: a live non-matching-name binding test and the Matrx-vs-matrix context check have not been run, and no Locate anchors are tagged.",
   label: "FastFire",
   urlPattern: "/education/fastfire",
   intro: `<surface_intro>
-You are on FastFire at /education/fastfire — a spoken rapid-fire drill over one flashcard set. The learner answers each card OUT LOUD against a per-card clock; the mic records continuously, each clip is graded asynchronously by a spoken-grader agent, and the scoreboard fills in as grades resolve.
-Read drill_phase first — it decides what is true. In "setup" the learner is choosing a set and timing (set values may be absent). During "card_recording"/"advancing" the learner is mid-drill and racing a clock: current_card is what they are answering, and anything you do must not interrupt them. In "finalizing"/"complete" the drill is over and the scoreboard is on screen: grade_summary and session_review are the material to reason about, and graded_count may still be climbing as late grades resolve — do not treat a pending card as wrong.
-Grades stream in asynchronously, so absence of a grade means "not resolved yet", never "incorrect". The deck values name the set; per-card records live in card_grades (bindable-only).
+You are on FastFire at /education/fastfire — a spoken rapid-fire drill over one flashcard deck. The learner answers each card OUT LOUD against a per-card clock; the mic records continuously, each clip is graded asynchronously by a spoken-grader agent, and the scoreboard fills in as grades resolve.
+Read drill_phase first — it decides what is true. In "setup" the learner is choosing a deck and timing (set values may be absent). During "card_recording"/"advancing" the learner is mid-drill and racing a clock: current_card is what they are answering, and anything you do must not interrupt them. In "finalizing"/"complete" the drill is over and the scoreboard is on screen: grade_summary and session_review are the material to reason about, and graded_count may still be climbing as late grades resolve — do not treat a pending card as wrong.
+Grades stream in asynchronously, so absence of a grade means "not resolved yet", never "incorrect". The deck values name the deck; per-card records live in card_grades (bindable-only).
 </surface_intro>`,
   groups,
   values: mergeBaselineValues(

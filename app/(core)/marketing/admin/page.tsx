@@ -180,9 +180,9 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
     },
     {
       url: "/marketing/snapshots/[snapshotId]",
-      label: "Snapshot short link",
+      label: "Page capture short link",
       description:
-        "Standalone captured-snapshot view (metadata, body/markdown file refs) for a snapshot-only grantee.",
+        "Standalone page capture view (metadata, body/markdown file refs) for a grantee who can open only this page capture.",
       filePath: "app/(core)/marketing/snapshots/[snapshotId]/page.tsx",
       status: "Live",
     },
@@ -212,7 +212,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
     },
     {
       url: "/marketing/content-plan/nodes/[nodeId]",
-      label: "Plan node short link",
+      label: "Plan page short link",
       description:
         "Resolves a plan.node id to its site's Content Plan workspace with `?node=` selection.",
       filePath: "app/(core)/marketing/content-plan/nodes/[nodeId]/page.tsx",
@@ -375,7 +375,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
     },
     {
       url: "/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots",
-      label: "Snapshot timeline",
+      label: "Page capture timeline",
       description:
         "SnapshotsTable — paginated immutable captures for one canonical page.",
       filePath:
@@ -384,7 +384,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
     },
     {
       url: "/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/[snapshotId]",
-      label: "Snapshot detail",
+      label: "Page capture detail",
       description:
         "SnapshotDetail — captured metadata, extraction, links, images, and durable body reference.",
       filePath:
@@ -428,7 +428,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
     },
     {
       url: "/marketing/[brandId]/websites/[siteId]/crawls",
-      label: "Crawl sessions",
+      label: "Crawls",
       description:
         "CrawlsTable — frozen crawl events with status, scope, timing, and rollup stats.",
       filePath:
@@ -439,7 +439,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/[brandId]/websites/[siteId]/crawls/new",
       label: "New crawl",
       description:
-        "NewCrawlWorkspace — configure and launch a crawl session for this site.",
+        "NewCrawlWorkspace — configure and launch a crawl for this site.",
       filePath:
         "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/new/page.tsx",
       status: "Live",
@@ -466,7 +466,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports",
       label: "Crawl report catalog",
       description:
-        "CrawlReportsIndex — the bulk technical-SEO report index for one crawl session.",
+        "CrawlReportsIndex — the bulk technical-SEO report index for one crawl.",
       filePath:
         "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports/page.tsx",
       status: "Live",
@@ -482,9 +482,9 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
     },
     {
       url: "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/snapshots",
-      label: "Crawl snapshots",
+      label: "Crawl page captures",
       description:
-        "CrawlSnapshotsInspectionTable — immutable captures produced by one crawl session.",
+        "CrawlSnapshotsInspectionTable — immutable captures produced by one crawl.",
       filePath:
         "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/snapshots/page.tsx",
       status: "Live",

@@ -582,7 +582,7 @@ export interface SiteOverviewMetrics {
   serpIssues: number;
   /** Live sitemap documents discovered for the site. */
   sitemaps: number;
-  /** Total crawl sessions recorded for the site. */
+  /** Total crawls recorded for the site. */
   crawlSessions: number;
 }
 

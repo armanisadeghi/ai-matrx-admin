@@ -85,7 +85,7 @@ export function contentPlanKpiLine(kpis: ContentPlanKpis): string {
   return parts.join(" · ");
 }
 
-/** One plan node, the way the tree and the table render it. */
+/** One plan page, the way the tree and the table render it. */
 export function planNodeSummary(node: PlanNodeRow): string {
   const bits = [
     node.route ?? "(no route yet)",
@@ -100,7 +100,7 @@ export function planNodeSummary(node: PlanNodeRow): string {
   return `${node.label} — ${bits.join(" · ")}`;
 }
 
-/** A plan node projected to the fields a reader actually needs. */
+/** A plan page projected to the fields a reader actually needs. */
 export function planNodeKeyFields(node: PlanNodeRow) {
   return {
     id: node.id,

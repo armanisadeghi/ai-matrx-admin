@@ -49,17 +49,17 @@ export async function POST(
       .single();
     if (beforeError?.code === "PGRST116")
       return NextResponse.json(
-        { error: "Sandbox instance not found" },
+        { error: "Sandbox not found" },
         { status: 404 },
       );
     if (beforeError)
       return NextResponse.json(
-        { error: "Failed to read sandbox instance" },
+        { error: "Failed to read sandbox" },
         { status: 500 },
       );
     if (!before)
       return NextResponse.json(
-        { error: "Sandbox instance not found" },
+        { error: "Sandbox not found" },
         { status: 404 },
       );
     if (before.expires_at == null)
@@ -103,7 +103,7 @@ export async function POST(
       .single();
     if (freshError?.code === "PGRST116" || !fresh)
       return NextResponse.json(
-        { error: "Sandbox instance not found" },
+        { error: "Sandbox not found" },
         { status: 404 },
       );
     if (
@@ -124,7 +124,7 @@ export async function POST(
     });
   } catch {
     return NextResponse.json(
-      { error: "Failed to read sandbox instance" },
+      { error: "Failed to read sandbox" },
       { status: 500 },
     );
   }

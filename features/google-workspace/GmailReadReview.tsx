@@ -27,6 +27,9 @@ import type {
 import { GOOGLE_SCOPE, hasGoogleGrantedScope } from "@/lib/googleScopes";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
+import { gmailBulkActions } from "./gmailBulkActions";
 
 /** Reviewer-sized mailbox read. Nothing is fetched until the user searches. */
 export function GmailReadReview() {
@@ -121,6 +124,16 @@ export function GmailReadReview() {
   const activeMutationStatus = sameMailbox ? mutationStatus : "";
   const activeUndo = sameMailbox ? undo : null;
   const activeError = sameMailbox ? error : "";
+
+  // The ticked results take the same changes the open message does (gmailBulkActions.ts).
+  const ticked = useRowSelection(activeResult?.messages ?? [], (row) => row.id, `${connectionId}|${query}`);
+  const bulkActions = connectionId
+    ? gmailBulkActions(connectionId, (messageId, labelIds) =>
+        setResult((now) =>
+          now ? { ...now, messages: now.messages.map((m) => (m.id === messageId ? { ...m, label_ids: labelIds } : m)) } : now,
+        ),
+      )
+    : [];
 
   async function onSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -539,23 +552,44 @@ export function GmailReadReview() {
             // read-gate-exempt: result is set only by a search that succeeded (a failed search clears it and sets the error shown above)
             <p className="p-3 text-sm">No messages matched this search.</p>
           ) : (
-            activeResult.messages.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className="block w-full border-b p-3 text-left last:border-b-0 hover:bg-muted/50"
-                onClick={() => void onOpen(item.id)}
-                disabled={busy}
-              >
-                <span className="block text-sm font-medium">
-                  {item.subject}
-                </span>
-                <span className="block text-xs text-muted-foreground">
-                  {item.from_address} · {item.date}
-                </span>
-                <span className="block text-xs">{item.snippet}</span>
-              </button>
-            ))
+            <>
+              {canModify ? (
+                <RowSelectionBar
+                  selection={ticked}
+                  idOf={(row) => row.id}
+                  actions={bulkActions}
+                  noun="message"
+                  plural="messages"
+                  onRefresh={() => {}}
+                />
+              ) : null}
+              {activeResult.messages.map((item) => (
+                <div key={item.id} className="flex items-start gap-2 border-b last:border-b-0 hover:bg-muted/50">
+                  {canModify ? (
+                    <Checkbox
+                      className="ml-3 mt-4"
+                      checked={ticked.has(item.id)}
+                      onCheckedChange={() => ticked.toggle(item.id)}
+                      aria-label={`Select ${item.subject}`}
+                    />
+                  ) : null}
+                  <button
+                    type="button"
+                    className="block min-w-0 flex-1 p-3 text-left"
+                    onClick={() => void onOpen(item.id)}
+                    disabled={busy}
+                  >
+                    <span className="block text-sm font-medium">
+                      {item.subject}
+                    </span>
+                    <span className="block text-xs text-muted-foreground">
+                      {item.from_address} · {item.date}
+                    </span>
+                    <span className="block text-xs">{item.snippet}</span>
+                  </button>
+                </div>
+              ))}
+            </>
           )}
           {activeResult.has_more ? (
             <p className="p-3 text-xs text-muted-foreground">

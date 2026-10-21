@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { treeIndentPx } from "@/components/official/topic-tree/geometry";
 import ToggleButton from "@/components/matrx/toggles/ToggleButton";
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Search } from "lucide-react";
 
@@ -212,6 +213,9 @@ const HierarchicalToggleMenu: React.FC<ToggleMenuButtonProps> = ({
         }
     };
 
+    // Same step as every tree; a menu item keeps its own 12px base inset (px-3).
+    const menuItemInset = (depth: number) => treeIndentPx(depth) + 8;
+
     // Recursively render options and categories
     const renderOptions = (opts: HierarchicalOption[], depth: number = 0) => {
         return opts.map((opt) => {
@@ -225,9 +229,9 @@ const HierarchicalToggleMenu: React.FC<ToggleMenuButtonProps> = ({
                                 "px-3 py-1.5 flex items-center gap-2",
                                 collapsibleCategories ? "cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700" : "",
                                 "font-medium bg-zinc-50 dark:bg-zinc-800",
-                                depth > 0 && `pl-${3 + depth * 2}`,
                                 categoryClassName
                             )}
+                            style={{ paddingLeft: menuItemInset(depth) }}
                         >
                             {showIcons && opt.icon && <span className="flex-shrink-0">{React.cloneElement(opt.icon, { size: 16 })}</span>}
                             <span className="truncate flex-1">{opt.label}</span>
@@ -253,9 +257,9 @@ const HierarchicalToggleMenu: React.FC<ToggleMenuButtonProps> = ({
                             "px-3 py-1.5 flex items-center gap-2 cursor-pointer",
                             opt.disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-zinc-100 dark:hover:bg-zinc-700",
                             selectedIds.includes(opt.id) && "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200",
-                            depth > 0 && `pl-${3 + depth * 3}`,
                             optionClassName
                         )}
+                        style={{ paddingLeft: menuItemInset(depth) }}
                     >
                         {showIcons && opt.icon && <span className="flex-shrink-0">{React.cloneElement(opt.icon, { size: 16 })}</span>}
                         <span className="truncate flex-1">{opt.label}</span>

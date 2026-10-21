@@ -572,7 +572,7 @@ export interface PromoteTopicsResult {
   failures: string[];
 }
 
-/** Explicitly turn a count-only family's researched titles into plan nodes. */
+/** Explicitly turn a count-only family's researched titles into plan pages. */
 export async function promoteTopicsToPages(args: {
   siteId: string;
   organizationId: string;

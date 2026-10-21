@@ -162,7 +162,7 @@ export function CrawlSnapshotsInspectionTable({
     {
       id: "id",
       accessorKey: "id",
-      header: "Snapshot",
+      header: "Page capture",
       filter: false,
       sortable: false,
       cellKind: "uuid",
@@ -210,10 +210,10 @@ export function CrawlSnapshotsInspectionTable({
       <section className="flex shrink-0 items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2">
         <div className="min-w-0">
           <h1 className="text-sm font-semibold text-foreground">
-            Crawl snapshots
+            Crawl page captures
           </h1>
           <p className="truncate text-[11px] text-muted-foreground">
-            Immutable page content captures produced during this crawl session.
+            Immutable page content captures produced during this crawl.
           </p>
         </div>
         <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
@@ -243,7 +243,7 @@ export function CrawlSnapshotsInspectionTable({
               return {
                 content: humanLines([
                   ["Page", pageUrl(row)],
-                  ["Snapshot", row.id],
+                  ["Page capture", row.id],
                   ["Captured", formatCompactDate(row.captured_at)],
                   ["Final URL", row.final_url],
                 ]),
@@ -274,19 +274,19 @@ export function CrawlSnapshotsInspectionTable({
               searchPlaceholder: "Search final URL, hash, or body reference…",
             }}
             copy={{
-              label: "Snapshot",
-              listLabel: "All crawl snapshots",
-              location: webLocation(`Crawl snapshots — session ${crawlId}`),
+              label: "Page capture",
+              listLabel: "All crawl page captures",
+              location: webLocation(`Crawl page captures — session ${crawlId}`),
               rowKind: "web-snapshot",
               listKind: "web-crawl-snapshots-list",
               rowDescription:
-                "One immutable page content capture from this crawl session.",
+                "One immutable page content capture from this crawl.",
               listDescription:
-                "The currently loaded snapshot rows for this crawl session (respecting search, filters, sort, and pagination).",
+                "The currently loaded page capture rows for this crawl (respecting search, filters, sort, and pagination).",
               humanRow: (row) =>
                 humanLines([
                   ["Page", pageUrl(row)],
-                  ["Snapshot", row.id],
+                  ["Page capture", row.id],
                   ["Captured", formatCompactDate(row.captured_at)],
                   ["Final URL", row.final_url],
                   ["HTTP", row.http_status],
@@ -312,9 +312,9 @@ export function CrawlSnapshotsInspectionTable({
             }}
             emptyState={{
               icon: <FileSearch className="h-8 w-8 text-muted-foreground" />,
-              title: "No snapshots persisted",
+              title: "No page captures persisted",
               description:
-                "Snapshots appear here as the crawler persists page captures for this session.",
+                "Page captures appear here as the crawler stores them for this crawl.",
             }}
           />
           </NonEditableContextMenu>

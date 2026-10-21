@@ -21,7 +21,7 @@
  *    inside its site), so the door is built from the site path the caller is
  *    already standing in — that is a route override, not a second registry.
  *  - `<AnalysisRunRef>`      `analysis_result.run_id` has NO foreign key. It is
- *    a crawl session for analyzer passes that ran inside a crawl, and an opaque
+ *    a crawl for analyzer passes that ran inside a crawl, and an opaque
  *    provider id otherwise. `useCrawlSessionRef` asks (one indexed read) and we
  *    render the crawl door when the answer is yes, and say plainly that the run
  *    is external when it is no.
@@ -100,7 +100,7 @@ export function AnalysisSubjectRef({
   );
 }
 
-/** Ask whether an id is one of this site's crawl sessions. */
+/** Ask whether an id is one of this site's crawls. */
 export function useCrawlSessionRef(
   siteId: string,
   candidateId: string | null | undefined,

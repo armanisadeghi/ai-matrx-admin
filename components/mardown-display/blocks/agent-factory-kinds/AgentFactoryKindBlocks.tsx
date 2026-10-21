@@ -198,7 +198,7 @@ export const AgentFactoryToolChoiceView: React.FC<ViewProps> = ({ value, classNa
         {tier ? <StateChip label={`${tier[0]?.toUpperCase()}${tier.slice(1)} tier`} tone={TIER_TONE[tier] ?? "neutral"} /> : null}
         {profile.needs_tools === true ? <StateChip label="Tools" icon={<Wrench className="size-3" />} /> : null}
         {profile.needs_structured_output === true ? <StateChip label="Structured output" /> : null}
-        {profile.needs_long_context === true ? <StateChip label="Long context" /> : null}
+        {profile.needs_long_context === true ? <StateChip label="Long context window" /> : null}
         {modalities.filter((m) => m !== "text").map((m) => (
           <StateChip key={m} label={m} />
         ))}

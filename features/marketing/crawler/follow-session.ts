@@ -331,7 +331,7 @@ export async function followCrawlSession(
           message:
             error instanceof Error
               ? error.message
-              : "Could not read the crawl session while following it.",
+              : "Could not read the crawl while following it.",
           userMessage:
             "Still following the crawl — its record could not be read just now.",
           raw: { siteId: input.siteId, sessionId: input.sessionId, error },

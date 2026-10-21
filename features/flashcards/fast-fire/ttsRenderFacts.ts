@@ -19,7 +19,7 @@ export interface TtsRenderFactsInput {
   cardFront?: string | null;
   cardBack?: string | null;
   cardTopic?: string | null;
-  /** Only when the card's real position in a set run is known. */
+  /** Only when the card's real position in a deck run is known. */
   position?: { index: number; total: number } | null;
   setId?: string | null;
   setName?: string | null;

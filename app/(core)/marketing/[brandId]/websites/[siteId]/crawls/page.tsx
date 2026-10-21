@@ -5,7 +5,7 @@ import { LoadingSurface } from "@/features/marketing/components/shared/Marketing
 
 export default function MarketingCrawlsPage() {
   return (
-    <Suspense fallback={<LoadingSurface label="Loading crawl sessions…" />}>
+    <Suspense fallback={<LoadingSurface label="Loading crawls…" />}>
       <CrawlsTable />
     </Suspense>
   );

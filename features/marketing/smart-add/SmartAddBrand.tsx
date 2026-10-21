@@ -1395,7 +1395,7 @@ export function SmartAddBrand({
         }
       }
       // Every site is crawled by the setup run on the server (brand.setup.crawl_sites): it survives a
-      // closed tab and shows on the run page with each crawl session.
+      // closed tab and shows on the run page with each crawl.
       // Nothing is lost: every finding the person did not answer is kept as a candidate in the
       // brand's discovery inbox (web.discovered_item); only "Not us" is left out.
       // Related items keep their relationship (and land in their home: people, competitors).

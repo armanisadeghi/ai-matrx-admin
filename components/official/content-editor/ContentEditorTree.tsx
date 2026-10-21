@@ -2,16 +2,13 @@
 "use client";
 
 import React, { useCallback, useMemo, useState } from "react";
-import {
-  ChevronDown,
-  ChevronRight,
-  Folder,
-  FolderOpen,
-  FileText,
-  Circle,
-  Dot,
-} from "lucide-react";
+import { FileText, Circle, Dot } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import type {
   ContentEditorListItemState,
   ContentEditorListItem,
@@ -42,8 +39,6 @@ export interface ContentEditorTreeProps {
   title?: string;
   emptyMessage?: string;
   className?: string;
-  /** Indentation per depth level in pixels. */
-  indent?: number;
 }
 
 const leafStateIcon: Record<ContentEditorListItemState, React.ReactNode> = {
@@ -72,7 +67,6 @@ export function ContentEditorTree({
   title,
   emptyMessage = "No items",
   className,
-  indent = 12,
 }: ContentEditorTreeProps) {
   const [internalExpanded, setInternalExpanded] = useState<string[]>(
     () => defaultExpandedIds,
@@ -116,9 +110,7 @@ export function ContentEditorTree({
     const isExpanded = expandedSet.has(node.id);
     const state = getState(node.id);
     const leafIcon = node.icon ?? FileText;
-    const folderIcon = isExpanded
-      ? (node.iconOpen ?? FolderOpen)
-      : (node.icon ?? Folder);
+    const folderIcon = isExpanded ? (node.iconOpen ?? node.icon) : node.icon;
 
     if (isFolder) {
       return (
@@ -127,21 +119,19 @@ export function ContentEditorTree({
             <button
               type="button"
               onClick={() => toggleExpanded(node.id)}
-              className="group w-full flex items-center gap-1 py-1 text-xs text-left transition-colors text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
-              style={{ paddingLeft: 8 + depth * indent }}
+              className="group w-full flex items-center gap-1 h-7 type-body text-left transition-colors border-l-2 border-l-transparent text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
+              style={treeIndentStyle(depth)}
               title={node.description ?? node.title}
             >
-              <span className="flex-none flex items-center justify-center w-4">
-                {isExpanded ? (
-                  <ChevronDown className="h-3 w-3 text-zinc-500" />
-                ) : (
-                  <ChevronRight className="h-3 w-3 text-zinc-500" />
-                )}
-              </span>
-              {React.createElement(folderIcon, {
-                className:
-                  "h-3.5 w-3.5 flex-none text-amber-500 dark:text-amber-400",
-              })}
+              <TreeDisclosure expandable expanded={isExpanded} />
+              {folderIcon ? (
+                React.createElement(folderIcon, {
+                  className:
+                    "h-4 w-4 flex-none text-amber-500 dark:text-amber-400",
+                })
+              ) : (
+                <TreeFolderIcon open={isExpanded} />
+              )}
               <span className="flex-1 truncate pr-2 font-medium">
                 {node.title}
               </span>
@@ -161,7 +151,7 @@ export function ContentEditorTree({
           aria-selected={state === "active"}
           onClick={() => handleLeafClick(node)}
           className={cn(
-            "group w-full flex items-center gap-2 py-1 text-xs text-left transition-colors border-l-2",
+            "group w-full flex items-center gap-1 h-7 type-body text-left transition-colors border-l-2",
             state === "active" &&
               "bg-zinc-100 dark:bg-zinc-800 border-l-emerald-500 text-zinc-900 dark:text-zinc-100",
             state === "open" &&
@@ -169,15 +159,13 @@ export function ContentEditorTree({
             state === "closed" &&
               "bg-transparent border-l-transparent text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-800 dark:hover:text-zinc-200",
           )}
-          style={{ paddingLeft: 8 + depth * indent }}
+          style={treeIndentStyle(depth)}
           title={node.description ?? node.title}
         >
-          <span className="flex-none flex items-center justify-center w-4">
-            {leafStateIcon[state]}
-          </span>
+          <TreeDisclosure expandable={false} />
           {React.createElement(leafIcon, {
             className: cn(
-              "h-3.5 w-3.5 flex-none",
+              "h-4 w-4 flex-none",
               state === "active"
                 ? "text-zinc-700 dark:text-zinc-200"
                 : state === "open"
@@ -192,6 +180,9 @@ export function ContentEditorTree({
             )}
           >
             {node.title}
+          </span>
+          <span className="flex-none flex items-center justify-center w-4">
+            {leafStateIcon[state]}
           </span>
         </button>
       </li>

@@ -132,7 +132,7 @@ export function FlagsEditor({
               addFlag();
             }
           }}
-          className="max-w-xs"
+          className="font-mono max-w-xs"
           data-identifier
           placeholder="new_flag_key"
           spellCheck={false}

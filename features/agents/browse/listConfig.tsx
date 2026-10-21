@@ -8,6 +8,11 @@
 // page lives HERE: the service functions, the column registry, the row-actions
 // hook + its modals, and the card / compact-row renderers.
 
+import { Archive, ArchiveRestore } from "lucide-react";
+import { getStore } from "@/lib/redux/store-singleton";
+import type { EntityBulkAction } from "@/lib/entity-list/selection";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import { saveAgentField } from "@/features/agents/redux/builder-write.thunks";
 import dynamic from "next/dynamic";
 import type {
   EntityListConfig,
@@ -145,6 +150,37 @@ function useAgentListRowActions(
   return { actions, modals };
 }
 
+/**
+ * The row menu's Archive / Unarchive (`saveAgentField is_archived`), many at a time. A refusal
+ * (not your agent) is skipped and named by the row's own write.
+ */
+function agentArchiveAction(verb: "archive" | "unarchive"): EntityBulkAction<AgentBrowseRow> {
+  const target = verb === "archive";
+  return {
+    id: verb,
+    label: target ? "Archive" : "Unarchive",
+    icon: target ? Archive : ArchiveRestore,
+    run: async (selection) => {
+      const result = await runPerRow(
+        selection,
+        async (id, row) => {
+          if (row && Boolean(row.is_archived) === target) {
+            throw new Error(target ? "already archived" : "not archived");
+          }
+          const store = getStore();
+          if (!store) throw new Error("the app is not ready");
+          await store
+            .dispatch(saveAgentField({ agentId: id, field: "isArchived", value: target as never }))
+            .unwrap();
+        },
+        { done: target ? "Archived" : "Unarchived", noun: "agent", labelOf: (row) => row.name },
+        (row) => row.id,
+      );
+      return { ...result, refresh: true };
+    },
+  };
+}
+
 export const agentListConfig: EntityListConfig<AgentBrowseRow> = {
   surfaceKey: "agents-browse",
   // DD-137c / §3.3: where this list OPENS comes from platform.entity_types, never a literal.
@@ -194,6 +230,8 @@ export const agentListConfig: EntityListConfig<AgentBrowseRow> = {
   // under the admin System Agents tree. Which one is a property of the ROW, and
   // ./agentPaths is the single place that decides it.
   door: { column: "name", hrefFor: (row) => agentHref(row) },
+  // The row menu's Archive / Unarchive, many at a time (see `agentArchiveAction`).
+  bulkActions: [agentArchiveAction("archive"), agentArchiveAction("unarchive")],
   useRowActions: useAgentListRowActions,
   favorite: {
     isFavorite: (row) => row.is_favorite,

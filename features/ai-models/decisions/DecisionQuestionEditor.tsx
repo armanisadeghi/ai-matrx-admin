@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 import { ChevronLeft, CircleCheck, Gauge, ListChecks, Percent, Plus, SlidersHorizontal, Trash2, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -315,7 +316,7 @@ function CriteriaRows({ question, onChange }: { question: DecisionQuestion; onCh
       {question.criteria.map((criterion, optionIndex) => (
         <div key={`${question.id}-${optionIndex}`} className={ROW}>
           {fixed ? (
-            <span className={cn(FIXED_CELL, "capitalize")}>{criterion.key}</span>
+            <span className={cn(FIXED_CELL, "capitalize")}>{humanizeIdentifier(criterion.key)}</span>
           ) : (
             <ProInput
               value={criterion.key}

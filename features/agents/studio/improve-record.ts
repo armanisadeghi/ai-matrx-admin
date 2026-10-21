@@ -6,11 +6,11 @@
  * The candidate is an UNSAVED draft: reload re-applies it to the Builder record, "Keep" is the only save.
  */
 
-import { mergeJsonColumn } from "@ai-matrx/data/db";
-import { createClient } from "@/utils/supabase/client";
+import { conversationMetadataKey } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversation-metadata-key";
 import type { StudioCandidate } from "./battle";
 
 export const IMPROVE_KEY = "agent_studio_improve";
+const improveKey = conversationMetadataKey<unknown>(IMPROVE_KEY);
 
 export interface StoredDebrief {
   message_id: string;
@@ -44,40 +44,14 @@ export function readImproveRecord(metadata: unknown): ImproveRecord {
 }
 
 export async function loadImproveRecord(conversationId: string): Promise<ImproveRecord> {
-  const { data, error } = await createClient()
-    .schema("chat")
-    .from("conversation")
-    .select("metadata")
-    .eq("id", conversationId)
-    .maybeSingle();
-  if (error) throw new Error(`The saved debrief did not load: ${error.message}`);
-  return readImproveRecord(data?.metadata);
+  return readImproveRecord({ [IMPROVE_KEY]: await improveKey.read(conversationId) });
 }
 
-/** Merges one part (`debrief` or `candidate`; `null` clears it); sibling metadata keys survive. */
+/** Merges one part (`debrief` or `candidate`; `null` clears it) through the one conversation-metadata door. */
 export async function saveImprovePart<K extends keyof ImproveRecord>(
   conversationId: string,
   part: K,
   value: ImproveRecord[K],
 ): Promise<void> {
-  const supabase = createClient();
-  const result = await mergeJsonColumn<{ id: string; version: number; metadata: unknown }>({
-    fetchCurrent: () =>
-      supabase.schema("chat").from("conversation").select("id,version,metadata").eq("id", conversationId).maybeSingle(),
-    readColumn: (row) => row.metadata,
-    merge: (current) => {
-      const prev = readImproveRecord(current);
-      return { ...current, [IMPROVE_KEY]: { ...prev, [part]: value } };
-    },
-    applyUpdate: ({ value: next, expectedVersion, nextVersion }) =>
-      supabase
-        .schema("chat")
-        .from("conversation")
-        .update({ metadata: next, version: nextVersion })
-        .eq("id", conversationId)
-        .eq("version", expectedVersion)
-        .select("id,version,metadata")
-        .maybeSingle(),
-  });
-  if (result.status !== "saved") throw new Error(`The ${part} did not save (${result.status})`);
+  await improveKey.edit(conversationId, (current) => ({ ...readImproveRecord({ [IMPROVE_KEY]: current }), [part]: value }));
 }

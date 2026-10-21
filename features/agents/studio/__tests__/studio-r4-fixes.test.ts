@@ -27,7 +27,7 @@ describe("the first test of an agent", () => {
   });
   it("fills the inputs from the first saved test case without running by itself", () => {
     expect(page).toContain("autoRun: false");
-    expect(read("../components/StudioRun.tsx")).toContain("seed?.autoRun !== false");
+    expect(page).toContain("launchSeed.autoRun !== false");
   });
 });
 

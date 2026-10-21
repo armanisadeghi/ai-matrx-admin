@@ -1,7 +1,7 @@
 /**
  * Test / Write round size — the saved choice is clamped to the deck, "All"
  * (0) deals every card, the choices never offer a count the deck cannot fill,
- * and a round is a shuffled subset rather than the deck in set order.
+ * and a round is a shuffled subset rather than the deck in deck order.
  */
 
 import {
@@ -61,7 +61,7 @@ describe("pickRound", () => {
     for (const c of round) expect(deck).toContain(c);
   });
 
-  it("deals every card for All, not in set order every time", () => {
+  it("deals every card for All, not in deck order every time", () => {
     const rounds = Array.from({ length: 5 }, () => pickRound(deck, 0));
     for (const r of rounds) expect([...r].sort((a, b) => a - b)).toEqual(deck);
     expect(rounds.some((r) => r.join() !== deck.join())).toBe(true);

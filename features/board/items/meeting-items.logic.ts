@@ -51,6 +51,21 @@ export function meetingPartOf(source: NodeSource): { meetingId: string; part: Me
   return isMeetingPart(part) ? { meetingId: source.id, part } : null;
 }
 
+// ── a part sent up into Notes ────────────────────────────────────────────────
+
+/** The note a meeting part becomes in Notes: named by part and meeting, holding the reference. */
+export function meetingPartNote(args: { meetingId: string; meetingTitle: string; part: MeetingPart }): {
+  label: string;
+  content: string;
+} {
+  const partTitle = meetingPartTitle(args.part);
+  const meeting = args.meetingTitle.trim() || "Meeting";
+  return {
+    label: `${partTitle} · ${meeting}`,
+    content: `# ${partTitle} · ${meeting}\n\n[Open ${partTitle.toLowerCase()} in the meeting](/meetings/${encodeURIComponent(args.meetingId)})\n`,
+  };
+}
+
 // ── the board a meeting opens on ─────────────────────────────────────────────
 
 const PAD = 48;

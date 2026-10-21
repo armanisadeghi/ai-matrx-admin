@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 // The conversation page's Usage & Cost and Errors views. Every number is THIS conversation's own
 // rows (chat.request + chat.tool_call where conversation_id = it) — a user request can fan out
@@ -255,7 +256,7 @@ export function ConversationErrorsView({
               <AppLink key={ur.id} href={REQUEST_HREF(ur.id)} className="flex items-start gap-3 rounded p-2 text-xs hover:bg-muted/50">
                 <RecordId value={ur.id} label="Request" inert />
                 <Badge tone={statusTone(ur.status)}>{ur.status}</Badge>
-                {ur.finish_reason === "max_tokens" && <Badge tone="warning">max_tokens</Badge>}
+                {ur.finish_reason === "max_tokens" && <Badge tone="warning">Max tokens</Badge>}
                 <span className="min-w-0 flex-1 truncate text-destructive">{ur.error ?? ""}</span>
                 <span className="text-muted-foreground">{formatDate(ur.created_at)}</span>
               </AppLink>
@@ -286,7 +287,7 @@ export function ConversationErrorsView({
             {failedTools.map((tc) => {
               const row = (
                 <>
-                  <span className="font-medium">{tc.tool_name}</span>
+                  <span className="font-medium">{humanizeIdentifier(tc.tool_name)}</span>
                   {tc.error_type && <Badge>{tc.error_type}</Badge>}
                   <span className="min-w-0 flex-1 truncate text-destructive">{tc.error_message ?? ""}</span>
                   <span className="text-muted-foreground">{formatDate(tc.started_at)}</span>

@@ -56,7 +56,7 @@ export async function loadStudyTerms(noteId: string): Promise<StudyTerm[]> {
   const terms = new Map<string, StudyTerm>();
   for (const setId of sets) {
     const members = await associationsService.listForTargetsVisible("fc_set", [setId]);
-    if (!members.ok) throw new Error("Could not load the flashcard set.", { cause: members.error });
+    if (!members.ok) throw new Error("Could not load the flashcard deck.", { cause: members.error });
     const edges = members.data.edges.filter((edge) => edge.sourceType === "fc_card" && edge.role === "member")
       .sort((a, b) => (a.position ?? 0) - (b.position ?? 0) || a.id.localeCompare(b.id));
     const ids = edges.map((edge) => edge.sourceId);

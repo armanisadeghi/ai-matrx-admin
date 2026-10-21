@@ -2,7 +2,7 @@
 //
 // The adaptive "Review due" surface — the vision's north-star. A thin driver:
 // useDueReview() → the shared <StudyDeck/>. Studies the FSRS due queue across ALL
-// the learner's sets (not one set), grading through the same canonical spine
+// the learner's decks (not one deck), grading through the same canonical spine
 // path. No "Study again" (the queue is dynamic — graded cards leave it as their
 // due date advances).
 //
@@ -49,7 +49,7 @@ export function ReviewDueSurface() {
           sessionId={study.sessionId}
           errorTitle="Couldn't load your due cards"
           emptyTitle="You're all caught up"
-          emptyBody="No cards are due for review right now. Study a set to build your queue — cards resurface on the spaced-repetition schedule."
+          emptyBody="No cards are due for review right now. Study a deck to build your queue — cards resurface on the spaced-repetition schedule."
           completionTitle="Review complete"
           completionSubtitle={`You reviewed all ${study.progress.total} due cards.`}
           completionPrimary={{

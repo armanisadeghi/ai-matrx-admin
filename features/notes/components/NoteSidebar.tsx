@@ -21,7 +21,7 @@
 //   places an organization name shows besides a General's label
 // - Empty state when no notes exist
 
-import { Skeleton } from "@ai-matrx/design-system";
+import { Popover, PopoverAnchor, PopoverContent, Skeleton } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { noteDisplayLabel } from "@/features/notes/format";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -104,6 +104,8 @@ import { toast } from "@/lib/toast";
 import { useNoteHomeNames } from "../homes/useNoteHomes";
 import { moveNoteToHome } from "../homes/moveNoteToHome";
 import { EntityOrgFilter } from "@/lib/entity-list/components/EntityOrgFilter";
+import { LabelWithTail } from "@/lib/labels/LabelWithTail";
+import { labelTails } from "@/lib/labels/tellApart";
 import { useOrgFilterParam } from "@/lib/entity-list/orgFilterUrl";
 import { NoteSidebarRow } from "./NoteSidebarRow";
 import {
@@ -535,12 +537,23 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
     });
   }, [groupBy, folderVisibleNotes, activeTabId]);
 
-  // Get group labels for display
+  // Get group labels for display. Two organizations (or homes) with one name each carry a tail
+  // that tells them apart; the header keeps it visible when the name truncates.
+  const orgTails = labelTails(memberOrgs.map((o) => ({ id: o.id, label: o.name })));
+  function getGroupLabelParts(key: string): { text: string; tail: string | null } {
+    if (isHomeMode(groupBy) && key !== "__all__" && key !== "__none__" && key !== "Unassigned") {
+      return homes.labelPartsOf(key) ?? { text: "Home", tail: null };
+    }
+    if (groupBy === "organization" && orgNameById.has(key)) {
+      return { text: orgNameById.get(key)!, tail: orgTails.get(key) ?? null };
+    }
+    return { text: getGroupLabel(key), tail: null };
+  }
   function getGroupLabel(key: string): string {
     if (key === "__all__") return "All Notes";
     if (key === "__none__" || key === "Unassigned") return "Unassigned";
     if (isHomeMode(groupBy)) return homes.labelOf(key) ?? "Home";
-    if (groupBy === "organization") return orgNameById.get(key) ?? "Organization";
+    if (groupBy === "organization") return orgNameById.has(key) ? orgNameById.get(key)! + (orgTails.get(key) ?? "") : "Organization";
     // Scope keys are already human-readable: "Department: SEO"
     if (groupBy === "scope") return key;
     // For project/task, the key is a UUID — show context name if matching
@@ -794,8 +807,8 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
   // Home labels already carry an organization exactly where it is the meaning
   // (a General when notes span organizations; same-named scopes) — nothing else
   // in the tree names one.
-  const headerOf = new Map<string, { label: string }>();
-  for (const key of groupKeys) headerOf.set(key, { label: labelByKey.get(key)! });
+  const headerOf = new Map<string, { label: string; parts: { text: string; tail: string | null } }>();
+  for (const key of groupKeys) headerOf.set(key, { label: labelByKey.get(key)!, parts: getGroupLabelParts(key) });
 
   type SidebarItem = NoteSidebarListItem &
     (
@@ -909,7 +922,7 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
   const renderFolderHeader = (groupKey: string) => {
     const groupNotes = groupedNotes.get(groupKey) ?? [];
     const isExpanded = expandedFolders.has(groupKey);
-    const { label } = headerOf.get(groupKey)!;
+    const { label, parts } = headerOf.get(groupKey)!;
     const count = groupNotes.length;
     const home = homes.byId.get(groupKey);
     const FolderIcon = isFolderMode
@@ -945,7 +958,11 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
             {isHomeMode(groupBy) && homes.labelOf(groupKey) === null && groupKey !== "__none__" && groupKey !== "Unassigned" ? (
               <span className="h-3 w-24 animate-pulse rounded bg-muted" data-home-name-pending="" />
             ) : (
-              <span className="min-w-[3.5rem] truncate normal-case tracking-normal">{label}</span>
+              <LabelWithTail
+                text={parts.text}
+                tail={parts.tail}
+                className="min-w-[3.5rem] normal-case tracking-normal"
+              />
             )}
           </span>
           <span className="shrink-0 text-xs font-normal opacity-50 tabular-nums">
@@ -1230,51 +1247,54 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
           Every control carries a proper tooltip. */}
       {/* At a narrow sidebar the row scrolls sideways instead of overflowing. */}
       <div className="shrink-0 flex min-h-[47px] items-center gap-1 overflow-x-auto px-2 py-1 border-b border-border/20 [scrollbar-width:none]">
-        {/* Group-by selector */}
-        <div className="relative shrink-0">
-          <SimpleTooltip text="Group notes by">
-            <button
-              onClick={() => setGroupByDropdown((v) => !v)}
-              className="flex shrink-0 items-center gap-1 whitespace-nowrap h-6 px-1.5 rounded-md text-xs font-medium text-muted-foreground bg-muted/40 hover:bg-muted hover:text-foreground cursor-pointer transition-colors [&_svg]:w-3 [&_svg]:h-3"
-            >
-              <Layers />
-              <span>
-                {GROUP_MODES.find((m) => m.mode === groupBy)?.label ?? "Home"}
-              </span>
-              <ChevronDown className="w-2! h-2! opacity-50" />
-            </button>
-          </SimpleTooltip>
-          {groupByDropdown && (
-            <>
-              <div
-                className="fixed inset-0 z-[100]"
-                onClick={() => setGroupByDropdown(false)}
-              />
-              <div className="absolute left-0 top-full mt-1 z-[110] min-w-[130px] py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg">
-                {GROUP_MODES.map((m) => {
-                  const Icon = m.icon;
-                  return (
-                    <button
-                      key={m.mode}
-                      className={cn(
-                        "flex items-center gap-2 w-full px-3 py-1.5 text-xs cursor-pointer transition-colors",
-                        groupBy === m.mode
-                          ? "bg-primary/10 text-primary-ink font-medium"
-                          : "text-foreground hover:bg-accent",
-                      )}
-                      onClick={() => {
-                        setGroupBy(m.mode);
-                        setGroupByDropdown(false);
-                      }}
-                    >
-                      <Icon className="w-3 h-3" /> {m.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          )}
-        </div>
+        {/* Group-by selector. The menu is portaled (Popover): this row scrolls
+            sideways (overflow-x-auto), which clipped an absolutely placed menu to
+            the row's 47px — no grouping could be chosen. */}
+        <Popover open={groupByDropdown} onOpenChange={setGroupByDropdown}>
+          <PopoverAnchor asChild>
+            <div className="shrink-0">
+              <SimpleTooltip text="Group notes by">
+                <button
+                  onClick={() => setGroupByDropdown((v) => !v)}
+                  aria-haspopup="menu"
+                  aria-expanded={groupByDropdown}
+                  data-notes-group-by
+                  className="flex shrink-0 items-center gap-1 whitespace-nowrap h-6 px-1.5 rounded-md text-xs font-medium text-muted-foreground bg-muted/40 hover:bg-muted hover:text-foreground cursor-pointer transition-colors [&_svg]:w-3 [&_svg]:h-3"
+                >
+                  <Layers />
+                  <span>
+                    {GROUP_MODES.find((m) => m.mode === groupBy)?.label ?? "Home"}
+                  </span>
+                  <ChevronDown className="w-2! h-2! opacity-50" />
+                </button>
+              </SimpleTooltip>
+            </div>
+          </PopoverAnchor>
+          <PopoverContent align="start" className="w-auto min-w-[130px] p-1" role="menu">
+            {GROUP_MODES.map((m) => {
+              const Icon = m.icon;
+              return (
+                <button
+                  key={m.mode}
+                  role="menuitemradio"
+                  aria-checked={groupBy === m.mode}
+                  className={cn(
+                    "flex items-center gap-2 w-full rounded-md px-3 py-1.5 text-xs cursor-pointer transition-colors",
+                    groupBy === m.mode
+                      ? "bg-primary/10 text-primary-ink font-medium"
+                      : "text-foreground hover:bg-accent",
+                  )}
+                  onClick={() => {
+                    setGroupBy(m.mode);
+                    setGroupByDropdown(false);
+                  }}
+                >
+                  <Icon className="w-3 h-3" /> {m.label}
+                </button>
+              );
+            })}
+          </PopoverContent>
+        </Popover>
 
         {/* Sort-field selector */}
         <SimpleTooltip text={`Sorted by ${sortLabel} \u2014 click to change`}>

@@ -92,9 +92,9 @@ const GRADES: AxisEntry[] = (
       kind: "steps",
       heading: "How a study session works",
       steps: [
-        { number: "01", title: "Pick a deck", description: "Choose a set of cards on letters, numbers, words, or a favorite topic." },
+        { number: "01", title: "Pick a deck", description: "Choose a deck of cards on letters, numbers, words, or a favorite topic." },
         { number: "02", title: "Listen and learn", description: "Cards read themselves aloud with a picture to match every idea." },
-        { number: "03", title: "Earn a reward", description: "Finish the set to collect stars and unlock a little celebration." },
+        { number: "03", title: "Earn a reward", description: "Finish the deck to collect stars and unlock a little celebration." },
       ],
     },
   ],
@@ -168,7 +168,7 @@ export const LEVELS: AxisEntry[] = [
           { number: "01", title: "Choose a deck", description: "Letters, numbers, sight words, or a topic from class — picked in a tap." },
           { number: "02", title: "Learn by listening", description: "Each card reads aloud with a picture so every learner can follow along." },
           { number: "03", title: "Practice gently", description: "Easy drills and matching games reinforce the idea without frustration." },
-          { number: "04", title: "Celebrate the finish", description: "Finishing the set earns stars and a celebration kids look forward to." },
+          { number: "04", title: "Celebrate the finish", description: "Finishing the deck earns stars and a celebration kids look forward to." },
         ],
       },
       {

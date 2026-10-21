@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
             deleted_count: deletedCount,
             retention_days: retentionDays,
             message: deletedCount > 0
-                ? `Permanently removed ${deletedCount} sandbox instance(s) older than ${retentionDays} days`
+                ? `Permanently removed ${deletedCount} sandbox(es) older than ${retentionDays} days`
                 : 'No expired sandboxes to clean up',
         });
     } catch (error) {

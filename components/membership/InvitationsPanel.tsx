@@ -72,6 +72,12 @@ import {
   type MembershipCopyContainer,
 } from "./copy";
 import type { MembershipRole, MembershipRoleOption } from "./types";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  RowSelectionBar,
+  useRowSelection,
+} from "@/lib/entity-list/RowSelectionBar";
+import type { EntityBulkAction } from "@/lib/entity-list/selection";
 import { UserSearchField } from "@/features/user-search/UserSearchField";
 // THE package initials formatter (`@ai-matrx/kit/format`, census H1
 // 2026-09-07). Recorded display decision: a multi-part name takes FIRST +
@@ -183,6 +189,15 @@ export interface InvitationsPanelProps {
    */
   copyContainer?: Omit<MembershipCopyContainer, "noun"> &
     Partial<Pick<MembershipCopyContainer, "noun">>;
+  /**
+   * The bulk twins of Resend / Cancel (THE BULK TWIN RULE). When supplied (and
+   * the viewer can manage), each invitation gets a checkbox and a selection
+   * bar offers `actions`. Omit it and the list is exactly as before.
+   */
+  bulk?: {
+    actions: EntityBulkAction<PanelInvitation>[];
+    onRefresh: () => void;
+  };
 }
 
 export function InvitationsPanel({
@@ -203,6 +218,7 @@ export function InvitationsPanel({
   canManage = true,
   inviteLabel,
   copyContainer,
+  bulk,
 }: InvitationsPanelProps) {
   const { copyText } = useClipboard({
     notify: copyNotify,
@@ -212,6 +228,10 @@ export function InvitationsPanel({
     id: copyContainer?.id,
     name: copyContainer?.name,
   };
+  const selection = useRowSelection<PanelInvitation>(
+    invitations,
+    (i) => i.id,
+  );
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<MembershipRole>(defaultRole);
   const [invitationToCancel, setInvitationToCancel] =
@@ -589,6 +609,16 @@ export function InvitationsPanel({
           </div>
         ) : (
           <div className="space-y-2">
+            {bulk && canManage && (
+              <RowSelectionBar
+                selection={selection}
+                idOf={(i) => i.id}
+                actions={bulk.actions}
+                noun="invitation"
+                plural="invitations"
+                onRefresh={bulk.onRefresh}
+              />
+            )}
             {invitations.map((invitation) => {
               const expiresAt = new Date(invitation.expiresAt);
               const isExpired = expiresAt < new Date();
@@ -609,6 +639,14 @@ export function InvitationsPanel({
                     isExpired ? "opacity-60 border-dashed" : ""
                   }`}
                 >
+                  {bulk && canManage && (
+                    <Checkbox
+                      className="mr-3"
+                      checked={selection.has(invitation.id)}
+                      onCheckedChange={() => selection.toggle(invitation.id)}
+                      aria-label={`Select invitation to ${invitation.email}`}
+                    />
+                  )}
                   {/* Invitation Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">

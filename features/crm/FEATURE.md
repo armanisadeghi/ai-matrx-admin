@@ -505,7 +505,7 @@ for once:
   not claim a member until this parent row is readable.
 - **The one-email door is data-gated to Lane B.** The member action renders only
   when the persisted `outreach_list.lane` is `cold_outreach`; there is no lane
-  boolean in the request. The workspace attaches a real org sending identity to
+  boolean in the request. The workspace attaches a real org sending mailbox to
   `outreach_list.sending_identity_id`, names its readiness, and links straight to
   the mailbox checklist when it cannot send. New lists explicitly persist Lane B
   instead of depending on a database default. The server still derives both lane
@@ -1250,7 +1250,7 @@ Settings → Configuration, Marketing → Public Relations). 🚨 `service.ts` c
   did, so `/crm/sending-identities` listed a person's personal Gmail as a `draft`
   outreach mailbox whose next step was "prove you own this domain" — on
   `gmail.com`, forever — and the Connect-mailbox dialog put the same account in
-  its BLOCKED list under "This mailbox is already set up as a sending identity",
+  its BLOCKED list under "This mailbox is already set up as a sending mailbox",
   which is false, while the server would have promoted it. Now: the list asks for
   `purpose=outreach` explicitly (`listSendingIdentities(org, purpose)`, aidream's
   own filter and default), the audit rows are ONE click away through a second
@@ -1761,7 +1761,7 @@ Settings → Configuration, Marketing → Public Relations). 🚨 `service.ts` c
   message path.
 - 2026-08-15 — **Outreach Phase 4 / mailbox door:** every newly created
   outreach list now persists Lane B explicitly, and its workspace can attach an
-  organization sending identity to the campaign row. The selected mailbox is
+  organization sending mailbox to the campaign row. The selected mailbox is
   linked to its real checklist and cannot masquerade as ready; the member-level
   one-email action remains available only when the persisted lane is
   `cold_outreach`.

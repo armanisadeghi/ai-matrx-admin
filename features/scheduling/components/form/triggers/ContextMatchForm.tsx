@@ -63,7 +63,7 @@ export function ContextMatchForm({ value, onChange, error }: Props) {
           id="cm-kind"
           value={value.kind ?? ""}
           onChange={(e) => update({ kind: e.target.value })}
-          className="max-w-md"
+          className="font-mono max-w-md"
           data-identifier
           placeholder="pull_request"
         />

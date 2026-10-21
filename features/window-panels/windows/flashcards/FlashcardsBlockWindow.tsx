@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * FlashcardsBlockWindow — window composition root for a flashcard set.
+ * FlashcardsBlockWindow — window composition root for a flashcard deck.
  *
- * Body: card grid only (no ChatCollapsibleWrapper). Footer: all set controls.
+ * Body: card grid only (no ChatCollapsibleWrapper). Footer: all deck controls.
  */
 
 import React, { useEffect, useRef, useState } from "react";
@@ -108,7 +108,7 @@ export function FlashcardsBlockWindow({
     },
     unavailable: {
       "flashcard-flip": "Works on the Study window",
-      "flashcard-study-set": "This set has no separate study session",
+      "flashcard-study-set": "This deck has no separate study session",
     },
   });
 

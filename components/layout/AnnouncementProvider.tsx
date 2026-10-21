@@ -9,7 +9,7 @@
  *  - WHERE the person is: announcements are in-app news, so they show only
  *    inside the app shell (`.shell-root`). A public page, a share link, a
  *    meeting stage or a kiosk is someone else's page to the person viewing
- *    it — a signed-in owner reading their own public flashcard set is a
+ *    it — a signed-in owner reading their own public flashcard deck is a
  *    visitor there — and an in-app banner floating over it covers its
  *    controls (live 2026-10-10: it sat on the study deck's Ask button).
  *

@@ -8,7 +8,7 @@ import { ImportWizard } from "@/features/crm/components/import/ImportWizard";
 export const metadata: Metadata = {
   title: "Import contacts — CRM",
   description:
-    "Import people and companies from native CSV, TSV, Excel, and vCard exports.",
+    "Import contacts from native CSV, TSV, Excel, and vCard exports.",
 };
 
 /**
@@ -22,7 +22,7 @@ export default async function CrmImportRoute() {
       <ModuleSignInGate
         title="Import contacts"
         route="/crm/import"
-        description="Bring your people and companies into the CRM from CSV, TSV, Excel, or vCard exports."
+        description="Bring your contacts into the CRM from CSV, TSV, Excel, or vCard exports."
         icon={FileUp}
       />
     );

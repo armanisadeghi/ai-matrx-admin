@@ -7,7 +7,7 @@
 // floating LiveRunWindow, where `diagram_spec` renders as its registered kind
 // component while it is written (THE FLOATING LAW — never a spinner while AI
 // works). The structured payload is a diagram_spec (nodes + edges) instead of a
-// card set. The caller persists the result to study_media and renders it via
+// card deck. The caller persists the result to study_media and renders it via
 // the content-IR diagram renderer.
 //
 // React Compiler is on: no manual memo.

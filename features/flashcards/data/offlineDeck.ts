@@ -16,7 +16,7 @@
 // study. Putting it under education would invert that edge.
 //
 // WHAT A SNAPSHOT CONTAINS, and why each part:
-//   • the set row + ordered cards with their detail rows — everything
+//   • the deck row + ordered cards with their detail rows — everything
 //     `<StudyDeck/>` renders, so a downloaded deck opens with no request;
 //   • the learner's `item_mastery` rows for those cards — so the mastery pills
 //     and the FSRS-derived ordering are honest offline instead of blank;
@@ -155,7 +155,7 @@ export async function downloadDeckOffline(
 
 /**
  * Read a downloaded deck back. THE READ PATH — this is what lets a deck open
- * with no connection instead of showing "couldn't load this set".
+ * with no connection instead of showing "couldn't load this deck".
  */
 export async function readOfflineDeck(
   userId: string,

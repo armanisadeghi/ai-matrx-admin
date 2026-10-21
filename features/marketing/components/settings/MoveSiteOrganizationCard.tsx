@@ -215,7 +215,7 @@ export function MoveSiteOrganizationCard({ site }: { site: MarketingSite }) {
         </div>
 
         <p className="text-[11px] leading-4 text-muted-foreground">
-          Everything under this site moves with it — pages, crawl sessions,
+          Everything under this site moves with it — pages, crawls,
           competitors, rankings and plans. Its recorded history (snapshots and
           crawl facts) stays stamped with the organization that held the site at
           the time.

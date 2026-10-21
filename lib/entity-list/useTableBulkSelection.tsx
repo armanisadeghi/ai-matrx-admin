@@ -51,6 +51,8 @@ export function useTableBulkSelection<TRow>(args: UseTableBulkSelectionArgs<TRow
   selection: MatrxDataTableSelectionConfig<TRow> | undefined;
   selectedIds: string[];
   clear: () => void;
+  /** Replace the ticked ids (a "select these N" shortcut on the toolbar). */
+  select: (ids: string[]) => void;
 } {
   const [tickedIds, setIds] = useState<string[]>([]);
   // A selection here is what the person can SEE: ticks on rows that a filter,
@@ -93,12 +95,13 @@ export function useTableBulkSelection<TRow>(args: UseTableBulkSelectionArgs<TRow
   };
 
   if (actions.length === 0) {
-    return { selection: undefined, selectedIds: ids, clear };
+    return { selection: undefined, selectedIds: ids, clear, select: setIds };
   }
 
   return {
     selectedIds: ids,
     clear,
+    select: setIds,
     selection: {
       selectedIds: ids,
       onSelectedIdsChange: setIds,

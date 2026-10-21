@@ -13,6 +13,19 @@ import type { SpacesEditor } from "./schema";
 const STYLE_ID = "spaces-rubber-band";
 const START_PX = 5;
 
+/** The mounted editor's block selection (B7: Esc and the second Cmd+A select blocks without a band). */
+let selectFromKeys: ((ids: string[]) => void) | null = null;
+
+/**
+ * Select whole blocks (blue), as a drawn box would: the caret leaves the text, and Backspace, Cmd+D, the
+ * arrows, Enter and Esc act on the blocks. False when no editable editor is mounted.
+ */
+export function selectBlocks(ids: string[]): boolean {
+  if (!selectFromKeys || !ids.length) return false;
+  selectFromKeys(ids);
+  return true;
+}
+
 /** Where a band may begin: the page around the text column, never on a control or inside the text. */
 function canStart(target: HTMLElement): boolean {
   if (!target.closest(".spaces-scroll")) return false;
@@ -84,6 +97,22 @@ export function useRubberBand(editor: SpacesEditor, editable: boolean) {
     const clear = () => {
       selected = [];
       paint([]);
+    };
+
+    selectFromKeys = (ids) => {
+      selected = ids;
+      paint(ids);
+      // The caret leaves the text, so the next key is the selection's (Notion), never a typed letter.
+      editor.prosemirrorView?.dom.blur();
+      window.getSelection()?.removeAllRanges();
+    };
+
+    /** The block before or after a selected one, at the same level first, then its parent. */
+    const neighbour = (id: string, dir: "up" | "down"): string | null => {
+      const outers = [...document.querySelectorAll<HTMLElement>(".spaces-editor .bn-block-outer[data-id]")];
+      const at = outers.findIndex((o) => o.dataset.id === id);
+      const next = outers[dir === "up" ? at - 1 : at + 1];
+      return at < 0 || !next ? null : next.dataset.id!;
     };
 
     const onDown = (e: MouseEvent) => {
@@ -161,7 +190,30 @@ export function useRubberBand(editor: SpacesEditor, editable: boolean) {
         duplicateBlocks(editor, selected);
         clear();
       } else if (e.key === "Escape") {
+        e.preventDefault();
         clear();
+      } else if (e.key === "Enter" && !e.shiftKey) {
+        // Enter on a selected block goes back to writing at its end (Notion).
+        e.preventDefault();
+        e.stopPropagation();
+        const id = selected[0];
+        clear();
+        try {
+          editor.focus();
+          editor.setTextCursorPosition(id, "end");
+        } catch {
+          // A block with no text (a divider, a database): nothing to write in, the selection just ends.
+        }
+      } else if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !e.shiftKey && !(e.metaKey || e.ctrlKey)) {
+        // The arrows move the blue selection one block (Notion).
+        e.preventDefault();
+        e.stopPropagation();
+        const from = e.key === "ArrowUp" ? selected[0] : selected[selected.length - 1];
+        const to = neighbour(from, e.key === "ArrowUp" ? "up" : "down");
+        if (to) {
+          selected = [to];
+          paint(selected);
+        }
       } else if (!["Shift", "Meta", "Control", "Alt"].includes(e.key) && !(e.metaKey || e.ctrlKey)) {
         clear();
       }
@@ -178,6 +230,7 @@ export function useRubberBand(editor: SpacesEditor, editable: boolean) {
       document.removeEventListener("mouseup", onUp, true);
       document.removeEventListener("click", onClick, true);
       document.removeEventListener("keydown", onKey, true);
+      selectFromKeys = null;
       band?.remove();
       paint([]);
     };

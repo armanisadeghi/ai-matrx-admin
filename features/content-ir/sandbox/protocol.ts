@@ -153,6 +153,17 @@ export const HOST_RELAY_ACTION_KEYS = {
     sendToGoogle: "send_to_google",
 } as const;
 
+/**
+ * The READER's language, time zone and text direction, sent by the host at init and on every change.
+ * The frame sets `<html lang dir>` and hands the value to `useKindLocale()` — a shape formats dates and
+ * numbers for the person reading, never for the browser default of a sealed document.
+ */
+export interface SandboxLocale {
+    locale: string;
+    timeZone: string;
+    dir: "ltr" | "rtl";
+}
+
 export interface SandboxInitMessage {
     type: "matrx:sandbox:init";
     protocolVersion: number;
@@ -170,6 +181,7 @@ export interface SandboxInitMessage {
     props: Record<string, unknown>;
     themeTokens?: Record<string, string>;
     colorScheme?: "light" | "dark";
+    locale?: SandboxLocale;
     /**
      * The READER'S viewport width in CSS pixels — `documentElement.clientWidth`
      * of the host page, the same number the host's own media queries answer
@@ -203,6 +215,7 @@ export interface SandboxThemeMessage {
     instanceId: string;
     themeTokens?: Record<string, string>;
     colorScheme?: "light" | "dark";
+    locale?: SandboxLocale;
 }
 
 export interface SandboxActionResultMessage {

@@ -83,11 +83,44 @@ export const BOOT_GRAPH = [
 export const HEAVY_SUMMON_ENTRY =
   /^@ai-matrx\/summon(?:\/(?:react|window|window-host|url|persistence|lite|dialog|sheet|dock|handles))?$/;
 
+/**
+ * Heavy summon entries statically imported by a boot-graph root OR by any repo file a root reaches
+ * through static imports (incident 2026-10-21: features/user-search/callbacks.ts imported
+ * `@ai-matrx/summon/handles` and rode a hook into first load because only the roots were scanned).
+ * Each finding carries `chain`: root -> ... -> file.
+ */
 export function findBootGraphSummonImports(files, read = (f) => readFileSync(f, "utf8")) {
+  const known = new Set(files);
   const violations = [];
+  const parent = new Map();
+  const queue = [];
   for (const f of files) {
     if (!BOOT_GRAPH.some((re) => re.test(f))) continue;
-    for (const spec of staticSpecifiers(read(f))) if (HEAVY_SUMMON_ENTRY.test(spec)) violations.push({ file: f, target: spec });
+    parent.set(f, null);
+    queue.push(f);
+  }
+  while (queue.length) {
+    const f = queue.shift();
+    let text;
+    try {
+      text = read(f);
+    } catch {
+      continue;
+    }
+    if (text == null) continue;
+    for (const spec of staticSpecifiers(text)) {
+      if (HEAVY_SUMMON_ENTRY.test(spec)) {
+        const chain = [];
+        for (let c = f; c != null; c = parent.get(c)) chain.unshift(c);
+        violations.push({ file: f, target: spec, chain });
+        continue;
+      }
+      const next = resolveSpecifier(f, spec, known);
+      if (next && !parent.has(next)) {
+        parent.set(next, f);
+        queue.push(next);
+      }
+    }
   }
   return violations;
 }
@@ -189,6 +222,19 @@ function selfTest() {
     redBoot[file] = findBootGraphSummonImports([file], () => `import { x } from "${spec}";`).length === 1;
   }
   const redBootAll = Object.values(redBoot).every(Boolean);
+  // Transitive: a boot root reaches a plain file that statically imports a heavy entry.
+  const chainGraph = {
+    "app/layout.tsx": 'import { useThing } from "@/features/thing/useThing";',
+    "features/thing/useThing.ts": 'import { cb } from "./callbacks";\nexport const useThing = cb;',
+    "features/thing/callbacks.ts": 'import { callbackManager } from "@ai-matrx/summon/handles";\nexport const cb = callbackManager;',
+  };
+  const chainRd = (f) => chainGraph[f];
+  const chainFound = findBootGraphSummonImports(Object.keys(chainGraph), chainRd);
+  const redChain = chainFound.length === 1 && chainFound[0].chain.join(">") === "app/layout.tsx>features/thing/useThing.ts>features/thing/callbacks.ts";
+  chainGraph["features/thing/callbacks.ts"] = 'import type { H } from "@ai-matrx/summon/handles";\nimport { registerHandleEntry } from "@ai-matrx/summon/open";\nexport const cb = registerHandleEntry;';
+  const greenChain = findBootGraphSummonImports(Object.keys(chainGraph), chainRd).length === 0;
+  console.log(`self-test RED (boot root -> plain file -> @ai-matrx/summon/handles, chain printed): ${redChain ? "caught" : "MISSED"}`);
+  console.log(`self-test GREEN (same chain once the heavy import is removed / type-only / light entry): ${greenChain ? "ok" : "FALSE ALARM"}`);
   console.log(`self-test GREEN (boot graph: light entries, type-only heavy imports, heavy import outside the boot graph): ${greenBoot ? "ok" : "FALSE ALARM"}`);
   for (const [file, ok] of Object.entries(redBoot)) console.log(`self-test RED (heavy summon entry imported by ${file}): ${ok ? "caught" : "MISSED"}`);
   const greenTypes = findOffenders(["b.ts"], () => typesOnly).length === 0;
@@ -196,7 +242,7 @@ function selfTest() {
   console.log(`self-test RED (${MAX_TARGETS + 1} per-item import() targets): ${red ? "caught" : "MISSED"}`);
   console.log(`self-test GREEN (50 type-position imports): ${greenTypes ? "ok" : "FALSE ALARM"}`);
   console.log(`self-test GREEN (50 calls into ONE module): ${greenShared ? "ok" : "FALSE ALARM"}`);
-  process.exit(red && greenTypes && greenShared && greenHost && redMap && redRender && greenBoot && redBootAll ? 0 : 1);
+  process.exit(red && greenTypes && greenShared && greenHost && redMap && redRender && greenBoot && redBootAll && redChain && greenChain ? 0 : 1);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
@@ -221,7 +267,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   const bootHeavy = findBootGraphSummonImports(files);
   if (bootHeavy.length) {
     console.error(`[import-fanout] ${bootHeavy.length} boot-graph file(s) statically import a heavy @ai-matrx/summon entry:`);
-    for (const v of bootHeavy) console.error(`  ${v.file} -> ${v.target}`);
+    for (const v of bootHeavy) console.error(`  ${v.chain.join(" -> ")} -> ${v.target}`);
     console.error("  Fix: import from @ai-matrx/summon/open, /root or /define, use `import type`, or load the heavy entry with import() on first open.");
     process.exitCode = 1;
   } else console.log("[import-fanout] boot graph (layouts, providers, lib/redux, shell) imports summon only through its light entries.");

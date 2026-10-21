@@ -131,12 +131,16 @@
  *
  * Run: pnpm check:archived-items-law
  * Prove the detector: pnpm check:archived-items-law:self-test
+ * File-scoped (matrx-ship lint-guard's stop hook): `--files <path> ...` — the
+ * settled classes are still derived from the WHOLE repo (rule 3 needs them),
+ * but only the named files are judged, and a tracked file deleted in the
+ * working tree is skipped instead of crashing the read. Default run unchanged.
  */
 
 import { exitAfterDrain } from "./lib/exit-after-drain";
 
 import { execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const ROOT = path.resolve(__dirname, "..");
@@ -1343,14 +1347,31 @@ function selfTest(): void {
   );
 }
 
+/** `--files a.ts b.tsx` (repo-relative) -> the set to judge; null = whole repo. */
+function filesArg(): Set<string> | null {
+  const at = process.argv.indexOf("--files");
+  if (at < 0) return null;
+  const out = new Set<string>();
+  for (const arg of process.argv.slice(at + 1)) {
+    if (arg.startsWith("--")) break;
+    out.add(arg);
+  }
+  return out;
+}
+
 function main(): void {
   if (process.argv.includes("--self-test")) {
     selfTest();
     return;
   }
 
+  const only = filesArg();
   const entities = archivableEntities(readFileSync(DB_TYPES, "utf8"));
-  const files = sourceFiles().map((file) => ({
+  const listed =
+    only === null
+      ? sourceFiles()
+      : sourceFiles().filter((file) => existsSync(path.join(ROOT, file)));
+  const files = listed.map((file) => ({
     file,
     raw: readFileSync(path.join(ROOT, file), "utf8"),
   }));
@@ -1362,6 +1383,7 @@ function main(): void {
   const lawful = lawfulEntitiesIn(files, entities, helpers);
   const findings: Finding[] = [];
   for (const { file, raw } of files) {
+    if (only !== null && !only.has(file)) continue;
     findings.push(...scanFile(file, raw, entities, lawful, helpers));
   }
 

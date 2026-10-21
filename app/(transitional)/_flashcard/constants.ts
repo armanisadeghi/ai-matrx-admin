@@ -124,7 +124,7 @@ const CATEGORIES: Record<string, CategoryDetails> = {
         id: 'custom',
         label: 'Custom',
         icon: FileCode,
-        description: 'Create and study your own custom flashcard sets',
+        description: 'Create and study your own custom flashcard decks',
         customStyles: {
             backgroundColor: 'bg-gray-100 dark:bg-gray-900',
             textColor: 'default',

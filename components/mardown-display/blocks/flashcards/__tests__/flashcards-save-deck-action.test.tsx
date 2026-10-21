@@ -1,7 +1,7 @@
 /**
  * "Things in our system are real and don't die in the AI response."
  *
- * A flashcard set in an answer must offer a one-click "Save deck" (a real flashcard deck, the
+ * A flashcard deck in an answer must offer a one-click "Save deck" (a real flashcard deck, the
  * same one the canvas makes) in BOTH control layouts — the header icons and the footer bar —
  * until the set is linked; once it is linked the button gives way to "Open in Flashcards".
  */
@@ -20,7 +20,7 @@ const base = {
   onOpenCanvas: () => {},
 };
 
-describe("flashcard set controls", () => {
+describe("flashcard deck controls", () => {
   for (const variant of ["icons", "bar"] as const) {
     it(`${variant}: offers Save deck until the set is a saved deck`, () => {
       const html = renderToStaticMarkup(

@@ -3,7 +3,7 @@
  *
  * The break this catches (RC-B2 re-verification, 2026-09-25): a pasted note
  * titled from its raw first line ("# AP Chemistry Nomenclature …") named the
- * flashcard set, quiz and memory aid made from it, so every one of them read
+ * flashcard deck, quiz and memory aid made from it, so every one of them read
  * "# AP Chemistry …". The derivation sites each stripped a different subset
  * of syntax by hand (or none).
  *

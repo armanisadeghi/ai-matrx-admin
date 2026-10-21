@@ -7,7 +7,7 @@ import { DuplicateReviewPage } from "@/features/crm/components/dedup/DuplicateRe
 export const metadata: Metadata = {
   title: "Duplicates — CRM",
   description:
-    "Review suggested duplicate people and companies, merge them safely, and undo any merge.",
+    "Review suggested duplicate contacts, merge them safely, and undo any merge.",
 };
 
 /**
@@ -21,7 +21,7 @@ export default async function CrmDuplicatesRoute() {
       <ModuleSignInGate
         title="CRM duplicates"
         route="/crm/duplicates"
-        description="Find and merge duplicate people and companies without losing anything."
+        description="Find and merge duplicate contacts without losing anything."
         icon={Merge}
       />
     );

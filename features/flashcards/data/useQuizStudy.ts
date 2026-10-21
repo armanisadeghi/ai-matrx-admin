@@ -1,8 +1,8 @@
 // features/flashcards/data/useQuizStudy.ts
 //
-// Phase 1B (Test mode) — multiple-choice study over a set's cards. Distractors
+// Phase 1B (Test mode) — multiple-choice study over a deck's cards. Distractors
 // come from sibling cards' back text first (free, instant); questions that
-// come up short (small sets) get topped up on demand via the `fc_make_quiz_items`
+// come up short (small decks) get topped up on demand via the `fc_make_quiz_items`
 // agent (features/flashcards/data/quiz/makeQuizItems.ts) — a clean no-op if
 // that lane isn't configured, just fewer options for that one question.
 //
@@ -208,7 +208,7 @@ export function useQuizStudy(
         setSet(null);
         setDeckCards([]);
         setQuestions([]);
-        setError(setRes.error ?? "Failed to load flashcard set");
+        setError(setRes.error ?? "Failed to load flashcard deck");
         setLoading(false);
         return;
       }
@@ -236,7 +236,7 @@ export function useQuizStudy(
   }, [setId, withSession, enabled]);
 
   // Top up the current question's options via the AI fallback when the
-  // in-set distractor pool came up short (small sets). Fires once per card,
+  // in-set distractor pool came up short (small decks). Fires once per card,
   // lazily (only for the question actually being shown), and cleanly no-ops
   // if the lane isn't configured.
   useEffect(() => {
@@ -371,7 +371,7 @@ export function useQuizStudy(
   useEffect(() => {
     closeRef.current = session ? { id: session.id, closed: false } : null;
     // Closing over the latch we just installed: when the session is REPLACED
-    // (the learner moved to another set without unmounting), the outgoing
+    // (the learner moved to another deck without unmounting), the outgoing
     // session would otherwise be dropped on the floor and leak 'active' until
     // the 6h reaper — the exact defect this close-path exists to remove.
     const outgoing = closeRef.current;

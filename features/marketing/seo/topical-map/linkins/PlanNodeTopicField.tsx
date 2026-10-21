@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The plan node's TOPIC field (placement §7 #5, R3): which map topic this
+ * The plan page's TOPIC field (placement §7 #5, R3): which map topic this
  * planned page is written for. Writes `plan.node.topic_id` — the canonical
  * node→topic link from this round on; the associations path keeps being read
  * until the backfill (R3). The options are the live topics of the map the

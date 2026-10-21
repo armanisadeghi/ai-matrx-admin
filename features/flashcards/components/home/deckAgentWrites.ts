@@ -70,7 +70,7 @@ export interface DeckUpdatePlan {
   patch: DeckWriteFields;
   /** Who can see it; undefined = leave as is. */
   visibility?: DeckVisibility;
-  /** The folders it is filed under (replaces the set); undefined = leave. */
+  /** The folders it is filed under (replaces the deck); undefined = leave. */
   folderIds?: string[];
   /** true = archive, false = restore, undefined = leave as is. */
   archived?: boolean;

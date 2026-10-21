@@ -20,10 +20,14 @@ import {
   Code,
   Eye,
   RefreshCw,
-  ChevronRight,
-  ChevronDown,
+  Braces,
+  Brackets,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  TreeDisclosure,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import { formatScraperDiagnosticsJson } from "@/utils/scraper-diagnostics-json";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
@@ -136,9 +140,11 @@ function JsonNode({
   if (!isExpandable) {
     return (
       <div
-        className="flex items-start gap-2 py-0.5"
-        style={{ paddingLeft: depth * 16 }}
+        className="flex items-center gap-1 min-h-7"
+        style={treeIndentStyle(depth)}
       >
+        <TreeDisclosure expandable={false} />
+        <span aria-hidden="true" className="h-4 w-4 shrink-0" />
         {keyName && (
           <span className="text-rose-600 dark:text-rose-400 font-medium shrink-0">
             "{keyName}":
@@ -156,23 +162,24 @@ function JsonNode({
     : Object.entries(data as object);
 
   return (
-    <div className="py-0.5">
+    <div>
       <div
-        className="flex items-center gap-1 cursor-pointer hover:bg-muted rounded px-1 -mx-1"
-        style={{ paddingLeft: depth * 16 }}
+        className="flex items-center gap-1 min-h-7 cursor-pointer hover:bg-muted rounded"
+        style={treeIndentStyle(depth)}
         onClick={() => setExpanded(!expanded)}
       >
-        {expanded ? (
-          <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
+        <TreeDisclosure expandable expanded={expanded} />
+        {isArray ? (
+          <Brackets className="h-4 w-4 shrink-0 text-muted-foreground" />
         ) : (
-          <ChevronRight className="w-3 h-3 text-muted-foreground shrink-0" />
+          <Braces className="h-4 w-4 shrink-0 text-muted-foreground" />
         )}
         {keyName && (
           <span className="text-rose-600 dark:text-rose-400 font-medium">
             "{keyName}":
           </span>
         )}
-        <span className="text-muted-foreground text-xs">{getPreview()}</span>
+        <span className="text-muted-foreground">{getPreview()}</span>
       </div>
       {expanded && (
         <div>

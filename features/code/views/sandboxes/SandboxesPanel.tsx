@@ -854,7 +854,7 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
         <div className="border-t border-border bg-background/70 px-3 py-2 text-[11px]">
           <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 font-mono text-neutral-600 dark:text-neutral-400">
             <dt className="text-neutral-500">ID</dt>
-            <dd className="truncate"><RecordId value={instance.id} label="Sandbox instance" show="full" /></dd>
+            <dd className="truncate"><RecordId value={instance.id} label="Sandbox" show="full" /></dd>
             <dt className="text-neutral-500">Runtime ID</dt>
             <dd className="truncate">{instance.sandbox_id ?? "—"}</dd>
             <dt className="text-neutral-500">status</dt>

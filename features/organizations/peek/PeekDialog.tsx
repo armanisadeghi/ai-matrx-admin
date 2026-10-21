@@ -16,7 +16,7 @@
  * registered — plus `/skills/<id>`, `/flashcards/<id>`,
  * `/quizzes/<id>`, `/canvas/<id>`, `/transcripts/<id>`) — the routes were
  * renamed and nothing tied the peek back to the truth. `href` still wins when
- * a peek genuinely has no registered token (e.g. sandbox instances).
+ * a peek genuinely has no registered token (e.g. sandboxes).
  */
 
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";

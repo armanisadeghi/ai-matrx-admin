@@ -40,7 +40,7 @@ function unwrap<T>(result: AssociationsRpcResult<T>): T {
   return result.data;
 }
 
-/** Every edge touching a plan node, both directions, one round trip. */
+/** Every edge touching a plan page, both directions, one round trip. */
 export async function listPlanNodeEdges(
   nodeId: string,
 ): Promise<AssociationEdge[]> {

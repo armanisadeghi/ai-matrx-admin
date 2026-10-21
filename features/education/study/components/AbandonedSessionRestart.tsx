@@ -3,7 +3,7 @@
 // features/education/study/components/AbandonedSessionRestart.tsx
 //
 // Abandoned sessions have nothing useful to review — offer a single restart path:
-// soft-delete this row, then open a fresh run for the same set/mode.
+// soft-delete this row, then open a fresh run for the same deck/mode.
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -99,7 +99,7 @@ export function AbandonedSessionRestart({
               <span className="font-medium text-foreground">{setName}</span>.
             </>
           ) : (
-            <> Start a new session for the same set.</>
+            <> Start a new session for the same deck.</>
           )}
         </p>
       </div>

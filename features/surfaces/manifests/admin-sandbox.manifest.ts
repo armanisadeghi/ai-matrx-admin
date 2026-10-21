@@ -2,7 +2,7 @@
  * Surface manifest — Sandbox Management (`matrx-admin/sandbox`).
  *
  * ADMIN SURFACE. Drives `/administration/compute/sandbox` — the RLS-bound
- * view of sandbox instances the current account is authorized to access (isolated agent
+ * view of sandboxes the current account is authorized to access (isolated agent
  * execution boxes; see `AdminSandboxManagementPage` in
  * `app/(admin)/administration/compute/sandbox/page.tsx`). The page polls
  * Supabase through `readAllRows` for the full accessible instance list, shows
@@ -118,7 +118,7 @@ const groups: SurfaceValueGroup[] = [
     label: "Instance list",
     sortOrder: 200,
     description:
-      "The filtered table of sandbox instances, the active status filter, and load/error state.",
+      "The filtered table of sandboxes, the active status filter, and load/error state.",
   },
   {
     key: "instance_detail",
@@ -190,9 +190,9 @@ const surfaceSpecific: SurfaceValue[] = [
   },
   {
     name: "accessible_sandbox_instances",
-    label: "Accessible sandbox instances",
+    label: "Accessible sandboxes",
     description:
-      "All sandbox instances the current account is authorized to access and that match the status filter, each with { id, sandbox_id, user_id, status, created_at, expires_at, tier, container_id, ttl_seconds, hot_path, cold_path }. Bindable rather than auto-context. Empty array when none match.",
+      "All sandboxes the current account is authorized to access and that match the status filter, each with { id, sandbox_id, user_id, status, created_at, expires_at, tier, container_id, ttl_seconds, hot_path, cold_path }. Bindable rather than auto-context. Empty array when none match.",
     valueType: "array",
     alwaysAvailable: true,
     typicalCharCount: 6000,

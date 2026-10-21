@@ -107,7 +107,9 @@ export function StudioControls({
         if (c.modelId) dispatch(setAgentField({ id: agentId, field: "modelId", value: c.modelId }));
         setCandidate(c);
       },
-      () => undefined, // nothing saved yet reads as no candidate; the next change writes it
+      // Nothing saved reads as no candidate; a FAILED read is said, never taken for "none".
+      (e: unknown) =>
+        toast.error("The saved candidate did not load", { description: e instanceof Error ? e.message : String(e) }),
     );
   }, [agentId, record, runConversationId, candidate, dispatch]);
   const remember = (c: StudioCandidate | null) => {
@@ -435,7 +437,8 @@ function DebriefTab({
           setDebrief(key, { status: "done", text: d.text, model: d.model, forkConversationId: d.fork_conversation_id, error: null });
         }
       },
-      () => undefined,
+      (e: unknown) =>
+        toast.error("The saved debrief did not load", { description: e instanceof Error ? e.message : String(e) }),
     );
   }, [runConversationId, messageId, key]);
   const doneText = debrief?.status === "done" ? debrief.text : null;
@@ -448,7 +451,9 @@ function DebriefTab({
       fork_conversation_id: doneFork,
       model: doneModel,
       text: doneText,
-    }).catch(() => undefined);
+    }).catch((e: unknown) =>
+      toast.error("The debrief was not saved", { description: e instanceof Error ? e.message : String(e) }),
+    );
   }, [runConversationId, messageId, doneText, doneFork, doneModel]);
   if (!runConversationId || !messageId) {
     return (

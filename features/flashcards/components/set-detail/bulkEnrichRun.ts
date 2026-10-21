@@ -407,7 +407,7 @@ export function summarizeBulkEnrichCounts(c: BulkEnrichCounts): string {
 // ---------------------------------------------------------------------------
 
 export interface BulkEnrichStartArgs {
-  /** Every card in the set — the plan decides which of them run. */
+  /** Every card in the deck — the plan decides which of them run. */
   cards: CardWithDetails[];
   /** The user's current multi-select, if any. See `planBulkEnrich`. */
   selectedIds?: ReadonlySet<string> | null;

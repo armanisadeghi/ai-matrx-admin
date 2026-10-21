@@ -16,6 +16,8 @@ import { Ban, Gift, Plus, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { useReasonPrompt } from "../record/useReasonPrompt";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
@@ -245,40 +247,57 @@ export function CouponsAdminClient() {
         header: "Note",
         width: 160,
       },
-      {
-        id: "actions",
-        header: "",
-        sortable: false,
-        cell: (r) => (
-          <div className="flex items-center gap-1">
-            <Button
-              icon={<Send />}
-              variant="quiet"
-              disabled={r.status !== "active" || r.kind === "new_account"}
-              title={r.kind === "new_account" ? "Links can be sent only when made" : "Send"}
-              aria-label="Send coupon"
-              onClick={(e) => {
-                e.stopPropagation();
-                openSend(r);
-              }}
-            />
-            <Button
-              icon={<Ban />}
-              variant="quiet"
-              disabled={r.status === "revoked"}
-              title="Revoke"
-              aria-label="Revoke coupon"
-              onClick={(e) => {
-                e.stopPropagation();
-                void revoke(r);
-              }}
-            />
-          </div>
-        ),
-        width: 90,
-      },
     ];
-  }, [planNames, openSend, revoke]);
+  }, [planNames]);
+
+  // One declaration: the row's Send / Revoke and the bar's Revoke twin (the same coupon_revoke door).
+  const { rowActionDefs, bulkActions } = defineRowVerbs<Row>(
+    [
+      {
+        id: "send",
+        icon: Send,
+        label: "Send",
+        appliesTo: (r) => r.status === "active" && r.kind !== "new_account",
+        unavailableTooltip: "Only an active coupon can be sent, and links are sent when made",
+        onClick: openSend,
+        bulk: false,
+        noBulk: "single",
+      },
+      {
+        id: "revoke",
+        icon: Ban,
+        label: "Revoke",
+        tone: "destructive",
+        appliesTo: (r) => r.status !== "revoked",
+        unavailableTooltip: "Already revoked",
+        onClick: revoke,
+        bulk: {
+          done: "Revoked",
+          confirm: (targets) => ({
+            title: `Revoke ${targets.ids.length} coupon${targets.ids.length === 1 ? "" : "s"}?`,
+            description: "Nobody can redeem them after this, and they cannot be restored. Free time already given stays.",
+            confirmLabel: "Revoke",
+            variant: "destructive",
+            reason: { placeholder: "Reason (recorded with each coupon)" },
+          }),
+          runOne: async (id, _row, input) => {
+            if (!input.reason) throw new Error("A reason is required.");
+            await revokeCoupon(id, input.reason);
+          },
+        },
+      },
+    ],
+    { noun: "coupon", getRowId: (r) => r.id, getRowName: (r) => r.code ?? r.id },
+  );
+  const bulk = useTableBulkSelection<Row>({
+    noun: "coupon",
+    rows: data,
+    getRowId: (r) => r.id,
+    getRowName: (r) => r.code ?? r.id,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: () => void load(),
+  });
 
   return (
     <div className="flex h-full flex-col gap-3 p-4">
@@ -288,6 +307,8 @@ export function CouponsAdminClient() {
           urlState={{ id: "user-coupons", selectedRow: false }}
           data={data}
           columns={columns}
+          rowActionDefs={rowActionDefs}
+          selection={bulk.selection}
           getRowId={(r) => r.id}
           isLoading={loading}
           pageSize={50}

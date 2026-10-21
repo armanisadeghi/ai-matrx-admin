@@ -39,9 +39,9 @@ export async function GET(request: NextRequest) {
         const { data, error, count } = await query
 
         if (error) {
-            console.error('Error fetching sandbox instances:', error)
+            console.error('Error fetching sandboxes:', error)
             return NextResponse.json(
-                { error: 'Failed to fetch sandbox instances', details: error.message },
+                { error: 'Failed to fetch sandboxes', details: error.message },
                 { status: 500 }
             )
         }

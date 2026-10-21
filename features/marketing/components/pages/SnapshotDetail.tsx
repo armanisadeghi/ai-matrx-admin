@@ -44,7 +44,7 @@ export function SnapshotDetail({
     // A component: created_by is the parent owner (db-rules §6d-1), so only the saver is named.
     snapshot.data?.updated_by,
   ]);
-  // access-errors: ok — door ref to the crawl session; the snapshot primary is gated below and a failed ref only weakens the door label
+  // access-errors: ok — door ref to the crawl; the snapshot primary is gated below and a failed ref only weakens the door label
   const crawl = useCrawlSessionRef(site.id, snapshot.data?.session_id);
   if (snapshot.isLoading) return <LoadingSurface label="Loading snapshot…" />;
   if (snapshot.isError || !snapshot.data) {
@@ -74,7 +74,7 @@ export function SnapshotDetail({
       ["HTTP", row.http_status],
       ["Words", row.word_count],
       ["Content hash", row.content_hash],
-      ["Crawl session", row.session_id],
+      ["Crawl", row.session_id],
       ["Page", pageId],
       ["Body file", row.body_file_id],
       ["Markdown file", row.markdown_file_id],
@@ -190,7 +190,7 @@ export function SnapshotDetail({
                 span: 2,
               },
               {
-                label: "Crawl session",
+                label: "Crawl",
                 value: (
                   <CrawlSessionRef
                     brandId={brandId}

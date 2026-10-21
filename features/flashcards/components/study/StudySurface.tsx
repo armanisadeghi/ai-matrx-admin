@@ -1,10 +1,10 @@
 // features/flashcards/components/study/StudySurface.tsx
 //
-// The focused classic-flip study session for ONE flashcard set. A thin driver:
+// The focused classic-flip study session for ONE flashcard deck. A thin driver:
 // useFlashcardStudy(setId, { withSession: true }) → the shared <StudyDeck/>. Every
 // grade funnels through the hook's `grade` (writes study_attempt + advances
 // item_mastery) — the ONLY canonical write path. The deck owns all the study UI
-// (flip, grade, keyboard, progress, completion); this file only wires the set
+// (flip, grade, keyboard, progress, completion); this file only wires the deck
 // data + set-specific copy/actions.
 //
 // React Compiler is on: no manual useMemo / useCallback / React.memo.
@@ -81,11 +81,11 @@ export function StudySurface({ setId }: { setId: string }) {
           sessionId={study.sessionId}
           setId={setId}
           onCardsChanged={() => void study.refreshCards?.()}
-          errorTitle="Couldn't load this set"
-          emptyBody="This set has no cards yet. Generate some in chat to study it."
+          errorTitle="Couldn't load this deck"
+          emptyBody="This deck has no cards yet. Generate some in chat to study it."
           onRestart={() => study.goTo(0)}
           completionPrimary={{
-            label: "Back to set",
+            label: "Back to deck",
             icon: Layers,
             onClick: () => router.push(`${EDU_BASE}/${setId}`),
           }}

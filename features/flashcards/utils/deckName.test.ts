@@ -30,7 +30,7 @@ const POLYATOMIC_CARDS = [
 ];
 
 describe("isGenericFlashcardTitle", () => {
-  it.each(["Flashcards", "flashcards ", "Flashcard Set", "Flashcards 2", "", "Untitled"])(
+  it.each(["Flashcards", "flashcards ", "Flashcard Deck", "Flashcards 2", "", "Untitled"])(
     "treats the placeholder %p as naming nothing",
     (title) => {
       expect(isGenericFlashcardTitle(title)).toBe(true);

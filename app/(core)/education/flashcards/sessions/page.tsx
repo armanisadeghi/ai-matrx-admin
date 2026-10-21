@@ -1,4 +1,4 @@
-// /education/flashcards/sessions — the learner's study-session history (all sets).
+// /education/flashcards/sessions — the learner's study-session history (all decks).
 // Server shell → the mode-agnostic SessionsBrowser client island. The study spine
 // is shared, so this same browser will serve every study mode's history.
 import type { Metadata } from "next";

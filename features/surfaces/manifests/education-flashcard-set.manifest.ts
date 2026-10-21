@@ -1,5 +1,5 @@
 /**
- * Surface manifest — Flashcard set (`matrx-user/education-flashcard-set`).
+ * Surface manifest — Flashcard deck (`matrx-user/education-flashcard-set`).
  *
  * The `/education/flashcards/[setId]` detail route: one loaded deck and the
  * cards the learner can study, enrich, export, or open in a focused card
@@ -8,7 +8,7 @@
  *
  * WRITES (2026-10-04, Board parity): a person changes the deck's name, topic and
  * description and its cards on the Edit page, which a Board tile only links to, so the
- * same five targets the editor declares (`flashcardDeckWriteTargets`, one set, same
+ * same five targets the editor declares (`flashcardDeckWriteTargets`, one deck, same
  * names, one shared handler module `deckWriteHandlers.ts`) are declared here. Not
  * targets, as on the editor: sharing / who can see it, the class, deleting the deck,
  * reordering, and the study signal.
@@ -27,7 +27,7 @@ import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
 const groups: SurfaceValueGroup[] = [
   {
     key: "set_details",
-    label: "Set details",
+    label: "Deck details",
     sortOrder: 100,
     description:
       "The loaded deck's identity and learner-visible header metadata.",
@@ -51,9 +51,9 @@ const groups: SurfaceValueGroup[] = [
 const surfaceSpecific: SurfaceValue[] = [
   {
     name: "set_loaded",
-    label: "Set loaded",
+    label: "Deck loaded",
     description:
-      "True once this set and its cards loaded successfully. False while loading and after a load failure, when load_error explains the problem and the set values are absent.",
+      "True once this deck and its cards loaded successfully. False while loading and after a load failure, when load_error explains the problem and the deck values are absent.",
     valueType: "boolean",
     alwaysAvailable: true,
     typicalCharCount: 5,
@@ -62,9 +62,9 @@ const surfaceSpecific: SurfaceValue[] = [
   },
   {
     name: "set_id",
-    label: "Set ID",
+    label: "Deck ID",
     description:
-      "UUID of the flashcard set in this route. Always present because the route identifies one set before its data loads.",
+      "UUID of the flashcard deck in this route. Always present because the route identifies one deck before its data loads.",
     valueType: "string",
     alwaysAvailable: true,
     typicalCharCount: 36,
@@ -73,7 +73,7 @@ const surfaceSpecific: SurfaceValue[] = [
   },
   {
     name: "set_details",
-    label: "Set details",
+    label: "Deck details",
     description:
       "The deck header as { name, topic, lesson, description, difficulty, visibility }. Absent until set_loaded is true; nullable fields are null when the learner has not provided them.",
     valueType: "object",
@@ -86,7 +86,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "card_count",
     label: "Card count",
     description:
-      "Number of cards in this set, matching the count beside the deck title. Zero for an empty loaded set and absent until set_loaded is true.",
+      "Number of cards in this deck, matching the count beside the deck title. Zero for an empty loaded set and absent until set_loaded is true.",
     valueType: "number",
     alwaysAvailable: false,
     typicalCharCount: 3,
@@ -120,7 +120,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "load_error",
     label: "Load error",
     description:
-      "The actual error shown when this set cannot be loaded. Absent on a successful load so an agent does not mistake a failed read for an empty deck.",
+      "The actual error shown when this deck cannot be loaded. Absent on a successful load so an agent does not mistake a failed read for an empty deck.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 160,
@@ -136,7 +136,7 @@ export const educationFlashcardSetManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  label: "Flashcard set",
+  label: "Flashcard deck",
   // What a Board agent sees of a deck that is not live: its name and topic, how many cards.
   briefValues: ["set_details", "card_count"],
   urlPattern: "/education/flashcards/[setId]",
@@ -144,7 +144,7 @@ export const educationFlashcardSetManifest: SurfaceManifest = {
   readinessNote:
     "Live registration, the deck-detail production context run, and an independent User/Me binding mutation are verified. Broader full surface certification remains required before verified.",
   intro: `<surface_intro>
-You are on one flashcard SET at /education/flashcards/[setId], not the flashcards library and not its editor. This page shows the deck's title and metadata, all cards, and the learner's real study signal so they can study, enrich, or understand this particular deck.
+You are on one flashcard DECK at /education/flashcards/[setId], not the flashcards library and not its editor. This page shows the deck's title and metadata, all cards, and the learner's real study signal so they can study, enrich, or understand this particular deck.
 Check set_loaded first. When it is false, do not describe the deck as empty: load_error may explain why it is unavailable. When it is true, cards is the complete deck visible on this page. Use card_kind to interpret each entry: matching cards use pairs, and cloze cards preserve deletion markup in front. card_mastery is evidence about learning, not content an agent may invent or change.
 To change the deck use its write targets, each asks the person first: set_details (name, topic, description), card_content and matching_card_content (rewrite one card), add_cards, delete_cards (archive one card). Do not use generic tools for this data.
 </surface_intro>`,

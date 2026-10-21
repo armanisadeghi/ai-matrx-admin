@@ -1,6 +1,6 @@
 /**
  * A card belongs with its SET (coordinator ruling, 2026-09-25): `addCards`
- * files new cards — and their membership edges — in the set's organization,
+ * files new cards — and their membership edges — in the deck's organization,
  * never the selected one. EditSetView and AddMoreCardsButton called it with
  * no org (or the selected one), so a card added while another organization
  * was picked landed away from its deck.
@@ -49,7 +49,7 @@ function install() {
 
 afterEach(() => jest.clearAllMocks());
 
-describe("fcService.addCards files cards in the set's organization", () => {
+describe("fcService.addCards files cards in the deck's organization", () => {
   it.each([
     ["no org passed (EditSetView)", undefined],
     ["the selected org passed (AddMoreCardsButton)", SELECTED_ORG],

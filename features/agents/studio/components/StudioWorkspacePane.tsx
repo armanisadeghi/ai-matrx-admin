@@ -9,6 +9,8 @@
  */
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useChannel } from "@ai-matrx/data/realtime/react";
+import { defineChannelNamespace } from "@ai-matrx/data/realtime";
 import { useDraftField } from "../use-draft-field";
 import { Plus, X } from "lucide-react";
 import { Button, EmptyState } from "@ai-matrx/design-system/controls";
@@ -20,7 +22,8 @@ import { toast } from "@/lib/toast";
 import {
   editWorkspace,
   keepSuggestedInput,
-  loadWorkspace,
+  loadWorkspaceRow,
+  readWorkspace,
   personAddListItem,
   personRemoveInput,
   personRemoveListItem,
@@ -34,7 +37,12 @@ import {
   type WorkspaceInput,
 } from "../workspace";
 
-const POLL_MS = 2500;
+/** One place names this channel: the Studio's own conversation row, for its workspace key. */
+const studioWorkspaceChannel = defineChannelNamespace({
+  namespace: "agent-studio-workspace",
+  parts: ["conversationId"],
+  description: "chat.conversation UPDATEs for one Studio assistant conversation (its studio_workspace key)",
+});
 
 /**
  * A field that shows its WHOLE text (it grows with the content and wraps, never truncates) and, while
@@ -75,11 +83,16 @@ function QuietText({
   );
 }
 
-/** The record, re-read while the assistant is working; `refresh` after the person's own edit. */
+/**
+ * The record: ONE read on open, then the row's own realtime UPDATEs (`chat.conversation id=eq.<id>`,
+ * published). A `version` echo guard drops any delivery not newer than what is on screen (our own
+ * save's echo, a late event). Idle = zero reads. A failed read is shown, never swallowed.
+ */
 export function useStudioWorkspace(conversationId: string | null) {
   // The record is held WITH the conversation it belongs to, so a closed or switched conversation shows
   // nothing without a synchronous reset in the effect.
   const [held, setHeld] = useState<{ id: string; ws: StudioWorkspace } | null>(null);
+  const [readError, setReadError] = useState<{ id: string; message: string } | null>(null);
   const ws = held && held.id === conversationId ? held.ws : null;
   const setWs = (update: StudioWorkspace | null | ((w: StudioWorkspace | null) => StudioWorkspace | null)) => {
     if (!conversationId) return;
@@ -90,29 +103,54 @@ export function useStudioWorkspace(conversationId: string | null) {
     });
   };
   const edits = useRef(0); // edits queued or in flight
-  const gen = useRef(0); // bumps on every edit, so a read that started earlier is discarded
+  const shownVersion = useRef<{ id: string; version: number } | null>(null); // the row version on screen
   const chain = useRef<Promise<unknown>>(Promise.resolve()); // saves land in the order they were made
+  /** Applies a row only when it is NEWER than the one on screen (the echo guard) and no edit is pending. */
+  const applyRow = (id: string, version: number, metadata: unknown) => {
+    const known = shownVersion.current;
+    if (known && known.id === id && version <= known.version) return;
+    shownVersion.current = { id, version };
+    if (edits.current > 0) return; // never overwrite the screen under a pending edit; its save brings the row
+    setHeld({ id, ws: readWorkspace(metadata) });
+  };
+  const readOnce = async (id: string) => {
+    try {
+      const row = await loadWorkspaceRow(id);
+      setReadError(null);
+      if (row) applyRow(id, row.version, row.metadata);
+    } catch (e) {
+      setReadError({ id, message: e instanceof Error ? e.message : String(e) });
+    }
+  };
   useEffect(() => {
     if (!conversationId) return;
-    let live = true;
-    const read = async () => {
-      if (edits.current > 0) return; // never overwrite the screen under a pending edit
-      const started = gen.current;
-      try {
-        const next = await loadWorkspace(conversationId);
-        if (!live || edits.current > 0 || gen.current !== started) return; // an edit began while this read was out
-        setHeld(next ? { id: conversationId, ws: next } : null);
-      } catch {
-        /* the next poll tries again; a failed read never blanks what is on screen */
-      }
-    };
-    void read();
-    const t = setInterval(read, POLL_MS);
-    return () => {
-      live = false;
-      clearInterval(t);
-    };
+    void readOnce(conversationId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one read per conversation opened
   }, [conversationId]);
+  useChannel(
+    conversationId
+      ? {
+          topic: studioWorkspaceChannel.topic({ conversationId }),
+          postgresChanges: [
+            {
+              event: "UPDATE",
+              schema: "chat",
+              table: "conversation",
+              filter: `id=eq.${conversationId}`,
+              rowId: (row) => (typeof row.id === "string" ? row.id : undefined),
+              onChange: ({ row }) => {
+                if (!row || typeof row.version !== "number") return;
+                applyRow(conversationId, row.version, row.metadata);
+              },
+            },
+          ],
+          // Realtime has no replay: a reconnect or a wake re-reads once.
+          onBackfill: () => {
+            void readOnce(conversationId);
+          },
+        }
+      : null,
+  );
   const edit = (change: (w: StudioWorkspace) => StudioWorkspace): Promise<void> => {
     if (!conversationId) return Promise.resolve();
     edits.current += 1;
@@ -121,8 +159,9 @@ export function useStudioWorkspace(conversationId: string | null) {
     const run = chain.current.then(async () => {
       try {
         const saved = await editWorkspace(conversationId, change);
+        shownVersion.current = { id: conversationId, version: saved.version };
         // Only the LAST queued save's echo is shown: an earlier echo would land on top of newer typing.
-        if (edits.current === 1) setWs(saved);
+        if (edits.current === 1) setWs(saved.ws);
       } catch (e) {
         toast.error("That edit did not save", { description: e instanceof Error ? e.message : String(e) });
       } finally {
@@ -132,7 +171,7 @@ export function useStudioWorkspace(conversationId: string | null) {
     chain.current = run;
     return run;
   };
-  return { ws, edit };
+  return { ws, edit, readError: readError && readError.id === conversationId ? readError.message : null };
 }
 
 /**

@@ -19,7 +19,14 @@
 
 import type { Scope } from "@ai-matrx/records/scopes";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Briefcase, ChevronRight, FolderKanban, Search, X } from "lucide-react";
+import { Briefcase, Building2, FileText, FolderKanban, Search, X } from "lucide-react";
+import {
+  TREE_INDENT_PX,
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentPx,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import { cn } from "@/lib/utils";
 import { resolveColor } from "@/features/scopes/constants/scope-colors";
 import { resolveIcon } from "@/features/scopes/utils/resolveIcon";
@@ -76,7 +83,29 @@ interface TreeRow {
   add?: { placeholder: string; commit: (v: string) => void };
 }
 
-const INDENT = 12;
+/** The glyph of a row: its own icon, else by what it is. Containers wear the folder, leaves a document. */
+function rowIcon(r: TreeRow, open: boolean): React.ReactNode {
+  if (r.icon) return r.icon;
+  switch (r.kind) {
+    case "org":
+      return <Building2 aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />;
+    case "scope":
+      return <TreeFolderIcon open={open} />;
+    case "item":
+      return <FileText aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />;
+    case "project":
+      return <FolderKanban aria-hidden="true" className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />;
+    case "task":
+      return <Briefcase aria-hidden="true" className="h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400" />;
+    default:
+      // A Projects / Tasks section is a container; a message row keeps an empty slot so text aligns.
+      return r.expandable ? (
+        <TreeFolderIcon open={open} />
+      ) : (
+        <span aria-hidden="true" className="h-4 w-4 shrink-0" />
+      );
+  }
+}
 
 export function ContextTree({
   data,
@@ -224,6 +253,9 @@ export function ContextTree({
               id: t.id,
               label: `All ${t.label_plural}`,
               tone: cn("font-medium", c.fg),
+              icon: React.createElement(resolveIcon(t.icon), {
+                className: cn("h-4 w-4 shrink-0", c.fg),
+              }),
               tag: o.name,
             });
           for (const s of scopesOf(t)) {
@@ -330,7 +362,7 @@ export function ContextTree({
           label: t.label_plural,
           tone: cn("font-medium", c.fg),
           icon: React.createElement(resolveIcon(t.icon), {
-            className: cn("h-3 w-3 shrink-0", c.fg),
+            className: cn("h-4 w-4 shrink-0", c.fg),
           }),
           meta: countOf(t),
           expandKey: tKey,
@@ -376,7 +408,7 @@ export function ContextTree({
               key: `${sKey}:none`,
               depth: 3,
               label: "no fields on this type",
-              tone: "text-muted-foreground/50 italic",
+              tone: "text-muted-foreground italic",
             });
           }
           for (const it of items ?? []) {
@@ -455,7 +487,7 @@ export function ContextTree({
         label: p?.name ?? "Selected project",
         tone: "font-medium text-amber-700 dark:text-amber-300",
         icon: (
-          <FolderKanban className="h-3 w-3 shrink-0 text-amber-600 dark:text-amber-400" />
+          <FolderKanban className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
         ),
         tag: "project",
         meta: p
@@ -473,7 +505,7 @@ export function ContextTree({
         label: t?.title ?? "Selected task",
         tone: "font-medium text-sky-700 dark:text-sky-300",
         icon: (
-          <Briefcase className="h-3 w-3 shrink-0 text-sky-600 dark:text-sky-400" />
+          <Briefcase className="h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400" />
         ),
         tag: "task",
         meta: t?.status ?? undefined,
@@ -732,7 +764,7 @@ export function ContextTree({
                   key={r.key}
                   placeholder={r.add.placeholder}
                   onCommit={r.add.commit}
-                  indentPx={4 + r.depth * INDENT + 14}
+                  indentPx={treeIndentPx(r.depth) + TREE_INDENT_PX}
                 />
               );
             }
@@ -750,25 +782,20 @@ export function ContextTree({
                 onMouseEnter={() => setActive(i)}
                 onClick={() => onRowClick(r)}
                 className={cn(
-                  "flex h-9 cursor-pointer items-center gap-1.5 pr-2 md:h-[22px] md:gap-1 md:pr-1.5",
+                  "flex h-9 cursor-pointer items-center gap-1 pr-2 md:h-7 md:pr-1.5",
                   i === activeIdx ? "bg-accent" : "hover:bg-muted/60",
                 )}
-                style={{ paddingLeft: 4 + r.depth * INDENT }}
+                style={treeIndentStyle(r.depth)}
               >
-                {r.expandable ? (
-                  <ChevronRight
-                    className={cn(
-                      "h-4 w-4 shrink-0 text-muted-foreground/70 transition-transform md:h-3 md:w-3",
-                      open && "rotate-90",
-                    )}
-                  />
-                ) : (
-                  <span className="w-4 shrink-0 md:w-3" />
-                )}
-                {r.icon}
+                <TreeDisclosure
+                  expandable={!!r.expandable}
+                  expanded={open}
+                  onToggle={() => doExpand(r)}
+                />
+                {rowIcon(r, open)}
                 <span
                   className={cn(
-                    "min-w-0 flex-1 truncate text-sm md:text-xs",
+                    "type-body min-w-0 flex-1 truncate",
                     r.tone,
                     r.isCreate && "text-primary",
                   )}
@@ -784,7 +811,7 @@ export function ContextTree({
                 </span>
                 {r.loading && <InlineSpinner />}
                 {(r.tag ?? r.meta) && (
-                  <span className="max-w-[40%] shrink-0 truncate font-mono text-[9px] text-muted-foreground/60">
+                  <span className="type-body max-w-[40%] shrink-0 truncate text-muted-foreground">
                     {r.tag ?? r.meta}
                   </span>
                 )}

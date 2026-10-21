@@ -18,7 +18,7 @@
  * per-card token.
  *
  * 🚨 NO NEW WRITE PATH LIVES HERE. Copy actions are read-only; "Open full
- * view" / "Study this set" / "Flip card" delegate to callbacks (openers /
+ * view" / "Study this deck" / "Flip card" delegate to callbacks (openers /
  * host state) the surface already owns.
  */
 
@@ -51,7 +51,7 @@ export function flashcardEntityRef(
   row: FlashcardMenuRow | null,
 ): ContextMenuEntityRef | null {
   if (!row?.setId) return null;
-  return { type: "fc_set", id: row.setId, title: row.setTitle ?? "Flashcard set" };
+  return { type: "fc_set", id: row.setId, title: row.setTitle ?? "Flashcard deck" };
 }
 
 export interface FlashcardMenuActions {
@@ -159,7 +159,7 @@ export function buildFlashcardMenuSection(opts: {
     {
       kind: "item",
       id: "flashcard-study-set",
-      label: "Study this set",
+      label: "Study this deck",
       icon: BookOpen,
       onSelect: withRow(actions.onStudySet),
       disabled: !row?.setId || !actions.onStudySet,

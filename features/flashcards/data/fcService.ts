@@ -208,7 +208,7 @@ export const fcService = {
   },
 
   /**
-   * Save a set's row controls — "Shown to" and "Published to the web" — from the RowAccessControl
+   * Save a deck's row controls — "Shown to" and "Published to the web" — from the RowAccessControl
    * menu (access ladder Words table). The one writer for a deck's row controls.
    */
   async updateSetRowAccess(
@@ -257,7 +257,7 @@ export const fcService = {
   },
 
   /**
-   * Merge set metadata without dropping keys written by another surface.
+   * Merge deck metadata without dropping keys written by another surface.
    * Public-library classification (`exam_slug`, curation provenance, etc.)
    * shares this column with folders/import metadata, so a blind spread/write
    * is not safe.
@@ -292,12 +292,12 @@ export const fcService = {
     return fail(
       "mergeSetMetadata",
       result.status === "not_found"
-        ? "That set is no longer available"
-        : "Another edit kept winning — the set metadata was not updated",
+        ? "That deck is no longer available"
+        : "Another edit kept winning — the deck metadata was not updated",
     );
   },
 
-  /** Soft-delete a set (RLS/ownership-gated by the update itself). */
+  /** Soft-delete a deck (RLS/ownership-gated by the update itself). */
   async deleteSet(setId: string): Promise<FcResult<null>> {
     return softDeleteOne("fc_set", setId, "deleteSet", "set");
   },
@@ -344,7 +344,7 @@ export const fcService = {
         return {
           data: null,
           error: recordUnavailable({
-            entity: "flashcard set",
+            entity: "flashcard deck",
             reason: "unknown",
             recordId: setId,
             token: "fc_set",
@@ -413,9 +413,9 @@ export const fcService = {
 
   // ─── CARDS (+ membership / lineage edges) ────────────────────────────────
   /**
-   * Insert cards and attach each to the set as an ordered `member` edge. When a
+   * Insert cards and attach each to the deck as an ordered `member` edge. When a
    * card carries `source`, also create a `source` lineage edge (fc_card → file).
-   * `startPosition` lets callers append to an existing set. Org is resolved by the
+   * `startPosition` lets callers append to an existing deck. Org is resolved by the
    * assoc RPC's generic source fallback, so no org need be threaded for the edges.
    */
   async addCards(
@@ -425,10 +425,10 @@ export const fcService = {
   ): Promise<FcResult<FcCardRow[]>> {
     try {
       if (cards.length === 0) return { data: [], error: null };
-      // A card belongs with its SET: it is filed in the set's organization,
+      // A card belongs with its SET: it is filed in the deck's organization,
       // never the selected one (callers used to pass nothing, so cards landed
-      // in whatever organization was picked). The set's org wins; the
-      // caller's org applies only when the set names none.
+      // in whatever organization was picked). The deck's org wins; the
+      // caller's org applies only when the deck names none.
       const { data: parentSet, error: parentError } = await EDU()
         .from("fc_set")
         .select("organization_id")
@@ -529,7 +529,7 @@ export const fcService = {
     }
   },
 
-  /** Create a set and its cards in one call (the from-topic / from-chat shape). */
+  /** Create a deck and its cards in one call (the from-topic / from-chat shape). */
   async createSetWithCards(
     input: NewSetInput,
     cards: NewCardInput[],
@@ -553,11 +553,11 @@ export const fcService = {
   //   • every headless generation runs in its own fresh conversation, so the
   //     conversation id IS the run's identity;
   //   • a surface save goes through `createGeneratedSetForConversation`, which
-  //     ADOPTS the adapter's set if the adapter won the race (updates
-  //     name/topic/difficulty on it) and otherwise creates the set stamped
+  //     ADOPTS the adapter's deck if the adapter won the race (updates
+  //     name/topic/difficulty on it) and otherwise creates the deck stamped
   //     `metadata.source_system="cx_conversation"` / `source_id=<cid>`;
   //   • the adapter, before creating, looks up that cx_conversation stamp and
-  //     LINKS to the surface's set instead of creating a twin.
+  //     LINKS to the surface's deck instead of creating a twin.
   // Ordinary multi-deck chat conversations are untouched: only surface saves
   // ever stamp cx_conversation, and the adopt lookup matches only
   // adapter-generated rows (`metadata.generation="chat_render_block"`).
@@ -717,10 +717,10 @@ export const fcService = {
 
   /**
    * THE canonical surface-save path for an agent-generated deck. Adopt the
-   * adapter's set when it already exists for this run's conversation
+   * adapter's deck when it already exists for this run's conversation
    * (enriching it with the surface's name/topic/difficulty — the cards are
    * byte-identical, both writers persist the same envelope); otherwise create
-   * the set stamped with the run's conversation identity so the adapter's
+   * the deck stamped with the run's conversation identity so the adapter's
    * dedupe finds it and links instead of double-creating.
    */
   async createGeneratedSetForConversation(
@@ -872,14 +872,14 @@ export const fcService = {
     }
   },
 
-  // ─── READ: a set with its ordered cards + details ────────────────────────
+  // ─── READ: a deck with its ordered cards + details ────────────────────────
   async getSetWithCards(setId: string): Promise<FcResult<SetWithCards>> {
     try {
       const setRes = await this.getSet(setId);
       if (!setRes.data) return { data: null, error: setRes.error };
 
-      // Membership edges (cards → this set), ordered by position. VISIBILITY-AWARE
-      // read: a cross-account caller who can VIEW this set (public/link/share
+      // Membership edges (cards → this deck), ordered by position. VISIBILITY-AWARE
+      // read: a cross-account caller who can VIEW this deck (public/link/share
       // grant) reads its card membership even without org access — the org-gated
       // `listForTargets` returned 0 edges for a stranger on a public deck, which
       // loaded an empty deck into cross-account multiplayer games (FOUND_DEFECTS
@@ -895,7 +895,7 @@ export const fcService = {
           (e) => e.sourceType === "fc_card" && e.role === EDGE_ROLE.member,
         )
         // Deterministic order: position first (null → last), then createdAt, then id —
-        // so a set never silently reshuffles when positions are missing/duplicated.
+        // so a deck never silently reshuffles when positions are missing/duplicated.
         .sort(
           (a, b) =>
             (a.position ?? Number.MAX_SAFE_INTEGER) -
@@ -955,7 +955,7 @@ export const fcService = {
    * Load cards by an ARBITRARY id list (cross-set) with their details, RETURNED
    * IN THE CALLER'S ORDER. This is the primitive behind cross-set study surfaces
    * (adaptive "Review due", weak-areas drill) where the card order is the FSRS
-   * due order from `studyService.listDue`, not a set's membership order. Missing
+   * due order from `studyService.listDue`, not a deck's membership order. Missing
    * or soft-deleted ids are skipped. `position` is null (no set context).
    */
   async getCardsByIds(ids: string[]): Promise<FcResult<CardWithDetails[]>> {
@@ -1194,7 +1194,7 @@ export const fcService = {
    * Rewrite the `member` edges' `position` to match `orderedCardIds` exactly
    * (index = new position). Each write is an idempotent upsert
    * (`assoc_add` ON CONFLICT), so a partial failure just leaves some cards at
-   * their old position rather than corrupting the set.
+   * their old position rather than corrupting the deck.
    */
   async reorderCards(
     setId: string,
@@ -1253,7 +1253,7 @@ export const fcService = {
         return {
           data: null,
           error:
-            "This card could not be opened, so the new layer was not saved. Reopen the set and try again.",
+            "This card could not be opened, so the new layer was not saved. Reopen the deck and try again.",
         };
       }
       const payload = {
@@ -1498,7 +1498,7 @@ export const fcService = {
       if ((removed ?? []).length !== losers.length) {
         return fail(
           "mergeCards",
-          `The merged card was saved, but ${losers.length - (removed ?? []).length} of the merged-away cards could not be removed (your access does not allow it) — they are still in the set`,
+          `The merged card was saved, but ${losers.length - (removed ?? []).length} of the merged-away cards could not be removed (your access does not allow it) — they are still in the deck`,
         );
       }
 

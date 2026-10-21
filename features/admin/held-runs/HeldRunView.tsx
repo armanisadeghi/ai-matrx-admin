@@ -230,7 +230,7 @@ export function HeldRunView({ id }: { id: string }) {
             </Section>
 
             {run.context_entries && Object.keys(run.context_entries).length ? (
-              <Section title="Context">
+              <Section title="Context values">
                 {variableRows(run.context_entries).map((row) => (
                   <div key={row.name} className="mb-2">
                     <div className="mb-1 text-xs font-medium text-muted-foreground">{row.name}</div>

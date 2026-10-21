@@ -2,7 +2,7 @@
 
 /**
  * THE PLAN NODE'S ACTIONS — ONE definition of what a right-clicked
- * `plan.node` row offers, shared by every surface that shows a plan node
+ * `plan.node` row offers, shared by every surface that shows a plan page
  * (`PlanNodesTable` today; `PlanTree` / `SiteMap` / `NodePanel` are future
  * adopters — they render the same `PlanNodeRow` shape and currently have no
  * menu of their own).
@@ -43,7 +43,7 @@ export interface PlanNodeMenuRow {
   keywordPhrase?: string | null;
 }
 
-/** There is no separate "plan node row" record — this IS the `plan.node` row. */
+/** There is no separate "plan page row" record — this IS the `plan.node` row. */
 export function planNodeEntityRef(
   row: PlanNodeMenuRow | null,
 ): ContextMenuEntityRef | null {

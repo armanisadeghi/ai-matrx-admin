@@ -33,7 +33,7 @@ jest.mock("@/features/flashcards/components/set-detail/SetDetailView", () => ({
 
 import FlashcardSetPage from "./page";
 
-describe("flashcard set detail auth boundary", () => {
+describe("flashcard deck detail auth boundary", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     redirectMock.mockImplementation((href: string) => {

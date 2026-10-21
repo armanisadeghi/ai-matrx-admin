@@ -3,7 +3,7 @@
 /**
  * features/marketing/content-plan/hooks/useNodeMeasurement.ts
  *
- * THE AFTER of one plan node — what the page it became is actually doing on
+ * THE AFTER of one plan page — what the page it became is actually doing on
  * the web (`docs/handoffs/cms-page-hub.md` item 6: before / during / after are
  * all captured, and the *during* surface may never forget the other two).
  *
@@ -30,7 +30,7 @@ import type { NodeReality } from "./useNodeReality";
 
 /** Which sentence the panel owes the user about this node's AFTER. */
 export type NodeMeasurementState =
-  | "no-page" // the plan node was never built on the website
+  | "no-page" // the plan page was never built on the website
   | "unpublished" // built, but nothing public exists to measure
   | "resolving" // published; still reading the CMS row that carries the join
   | "unjoined" // published, but no `web_page_id` — nothing measures it yet

@@ -1,7 +1,7 @@
 /**
  * Deterministic Assists producer for the Content Plan workspace — the
  * "planned pages not on your site yet" noticer. When the plan site has a
- * paired CMS site and some plan nodes have no CMS page behind them, one
+ * paired CMS site and some plan pages have no CMS page behind them, one
  * chip takes the user straight to Setup → the bridge's "Realize planned
  * pages" rung — the literal fix, with its mandatory dry-run preview.
  *
@@ -11,7 +11,7 @@
  * - capped: at most ONE chip per site per sweep (the gap aggregates),
  *   expires set.
  * - cheapest-first: a pure join of two datasets the workbench already
- *   loaded (plan nodes × the WF-11 CMS page map); zero extra reads, zero
+ *   loaded (plan pages × the WF-11 CMS page map); zero extra reads, zero
  *   tokens to notice. An UNPAIRED site never fires — no CMS site is a
  *   normal state, not a defect (useCmsPageMap contract).
  * - the action is real: navigate lands on the setup bridge whose
@@ -168,9 +168,9 @@ export async function producePlanAssists(args: {
   siteId: string;
   /** Domain (preferred) or name — used in the chip body. */
   siteLabel: string;
-  /** The workbench's already-loaded plan nodes. */
+  /** The workbench's already-loaded plan pages. */
   nodeRows: readonly PlanNodeRow[];
-  /** WF-11 page map keyed by plan node id (useCmsPageMap.pagesByNodeId).
+  /** WF-11 page map keyed by plan page id (useCmsPageMap.pagesByNodeId).
    * Callers must only sweep when the site IS paired (map !== null). */
   pagesByNodeId: ReadonlyMap<string, CmsPageMapEntry>;
   userId: string;

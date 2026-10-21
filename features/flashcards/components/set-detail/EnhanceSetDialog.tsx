@@ -1,7 +1,7 @@
 // features/flashcards/components/set-detail/EnhanceSetDialog.tsx
 //
 // "Make this deeper" — the per-card depth-on-demand surface. Opened from the
-// set detail view's Enhance button (owner/editor only). Pick a depth tier
+// deck detail view's Enhance button (owner/editor only). Pick a depth tier
 // (recall → applied → exam, the SAME vocabulary P1 quizzes use) and, per card,
 // either ENRICH it (add helper/example/mnemonic detail layers) or DEEPEN it
 // (split into atomic sub-cards linked by an `expands_into` edge). The chosen
@@ -335,7 +335,7 @@ export function EnhanceSetDialog({
         <div className="space-y-2.5 px-5 py-4">
           {cards.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
-              This set has no cards to enhance yet.
+              This deck has no cards to enhance yet.
             </p>
           ) : (
             cards.map((card, i) => {

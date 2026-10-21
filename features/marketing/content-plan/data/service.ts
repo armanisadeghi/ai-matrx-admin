@@ -97,7 +97,7 @@ export async function getPlanNode(
     .is("deleted_at", null)
     .abortSignal(signal ?? new AbortController().signal)
     .maybeSingle();
-  return assertFound(response.data, response.error, "plan node", id, "plan_node");
+  return assertFound(response.data, response.error, "plan page", id, "plan_node");
 }
 
 /**
@@ -132,7 +132,7 @@ export async function updatePlanNode(
     .is("deleted_at", null)
     .select("*");
   const rows = assertData(response.data, response.error);
-  assertMutated(rows, null, "update this plan node");
+  assertMutated(rows, null, "update this plan page");
   return rows[0];
 }
 
@@ -168,7 +168,7 @@ export async function softDeletePlanNode(id: string): Promise<void> {
     .eq("id", id)
     .is("deleted_at", null)
     .select("id");
-  assertMutated(response.data, response.error, "delete this plan node");
+  assertMutated(response.data, response.error, "delete this plan page");
 }
 
 // ─── Pipeline records (Website Factory P4 — plan.node_step / node_artifact) ──
@@ -272,7 +272,7 @@ export async function listPlanSiteStats(
       // Loud recovery: >30k plan rows means the list page needs a real
       // aggregate RPC, not a silently incomplete overview.
       throw new Error(
-        "More than 30,000 plan nodes visible — the overview needs a server-side aggregate before it can render honestly.",
+        "More than 30,000 plan pages visible — the overview needs a server-side aggregate before it can render honestly.",
       );
     }
   }

@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 // "Make an agent from this chat" — the window every conversation menu opens.
 //
@@ -439,7 +440,7 @@ function AgentFromChatResult({
         <dl className="min-h-0 flex-1 space-y-2 overflow-y-auto text-sm">
           {variables.map((v) => (
             <div key={v.name}>
-              <dt className="font-medium">{v.name}</dt>
+              <dt className="font-medium">{humanizeIdentifier(v.name)}</dt>
               <dd className="truncate text-muted-foreground" title={v.test_value}>
                 {v.test_value}
               </dd>

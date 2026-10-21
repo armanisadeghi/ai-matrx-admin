@@ -199,7 +199,7 @@ export function ContentPlanWorkbench({
   const nodes = usePlanNodes(siteId);
   const nodeSteps = useNodeSteps(siteId);
   const entities = usePlanEntities(siteId);
-  // access-errors: ok — party options for the node panels; a failed read only trims options, the plan nodes are the workbench's primary
+  // access-errors: ok — party options for the node panels; a failed read only trims options, the plan pages are the workbench's primary
   const siteParties = useSiteParties(siteId);
   const profiles = usePlanProfiles(site?.organization_id ?? null);
   const reparent = useReparentPlanNode(siteId ?? "none");
@@ -617,7 +617,7 @@ export function ContentPlanWorkbench({
   const requirePlanNode = useCallback(
     (toolName: string, value: unknown): PlanNodeRow => {
       if (typeof value !== "string" || !value.trim()) {
-        throw new Error(`${toolName} expects a plan node UUID string`);
+        throw new Error(`${toolName} expects a plan page UUID string`);
       }
       const node = nodeById.get(value);
       if (!node) {
@@ -641,7 +641,7 @@ export function ContentPlanWorkbench({
   }, [nodeRows]);
 
   // Workspace-level write handler (manifest writeTargets): select_node opens
-  // a plan node in the panel — the same UI move as a row/node click. The
+  // a plan page in the panel — the same UI move as a row/node click. The
   // per-view surfaces (setup/entities/node panel) mount their own nested
   // providers deeper in this tree and win resolution while active.
   // (Declared BEFORE the error early-return — hooks must run every render.)

@@ -7,7 +7,7 @@
  *
  * "Save code to Scratch / Save to Code" take the first fenced block as CODE. A
  * ```json fence holding a kind is not code the person saw (it rendered as a
- * flashcard set), so it is skipped: no code snippet is offered for it and Save
+ * flashcard deck), so it is skipped: no code snippet is offered for it and Save
  * to Code opens with the readable markdown instead.
  */
 import { ensureWebRichDocumentRegistrations } from "@/features/rich-content-host/rich-document-registrations";

@@ -53,8 +53,9 @@ export function useDraftField(
       pending = Promise.reject(e);
     }
     void pending
-      .catch(() => {
-        /* the commit reports its own failure; the draft stays so nothing the person typed is lost */
+      .catch((e: unknown) => {
+        // The commit shows its own failure to the person; the draft stays so nothing typed is lost.
+        console.warn("[studio] a field did not save; the draft is kept", e);
       })
       .finally(() => {
         inFlight.current -= 1;

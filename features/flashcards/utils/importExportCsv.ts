@@ -150,7 +150,7 @@ export function buildSetCsv(cards: Pick<CardWithDetails, "front" | "back">[]): s
   });
 }
 
-/** Trigger a browser download of the set's cards as CSV. Client-only. */
+/** Trigger a browser download of the deck's cards as CSV. Client-only. */
 export function downloadSetCsv(set: FcSetRow, cards: Pick<CardWithDetails, "front" | "back">[]): void {
   const csv = buildSetCsv(cards);
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });

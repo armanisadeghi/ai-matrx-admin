@@ -317,9 +317,12 @@ see and misses the biggest problems). Preflight:
 1. Note the live server build (`GET https://server.app.matrxserver.com/health/version`) and whether the
    change under test is in it. If not, wait for the next release (about 30 minutes) — never test it locally.
 2. No-screen playbook: the AI Dream MCP `server_status` healthy plus one harmless call through the same door.
-3. Browser playbook: the in-app browser opens the sheet's first route on aimatrx.com signed in as
-   `admin@admin.com`, with no error page.
-4. The memory rules in `RUNNER-ADDENDUM.md` (watcher, heap per step) are in the brief.
+3. Browser playbook: the runner's browser is a **cloud machine of its own** (`pw-cloud.mjs`, never the
+   in-app pane or a Chrome on this Mac, which drop when the Mac's load runs 110–190): `start`, `signin`
+   (`--as test@test.com` for a seat), then `goto` the sheet's first route on aimatrx.com shows it signed
+   in, with no error page. One machine per run name, so runs may go side by side; `stop` deletes it.
+   Commands and set-up: `RUNNER-ADDENDUM.md` § Browser driver.
+4. The memory rules in `RUNNER-ADDENDUM.md` (heap per step, reset over 600 MB) are in the brief.
 
 **Two INCONCLUSIVE runs from the environment on one net → stop dispatching** (a crash that happened
 with the memory rules followed counts too). Fix the environment, or
@@ -391,9 +394,9 @@ cannot vouch for the fix. Method and proof: the retired data-doctrine lane repor
 **Runners on one machine.** The provider's in-app browser pane is one per machine: every runner and every fixer takes
 a lock before its first browser step — `mkdir /tmp/matrx-browser-lane.lock && echo <name> > …/owner` — checks the
 owner is itself before every browser step, releases only its own lock, and never removes another's (2026-10-01: a
-fixer tested without the lock and deleted a runner's; the runner's tab was navigated away twice). Each seat drives its own private headless browser on the live site (matrx-frontend
-`node scripts/real-tests/pw.mjs <run> signin` then `goto https://www.aimatrx.com/<route>`), signed in by the helper,
-never by typing a password. A run during which the live build changed is INCONCLUSIVE; say so and rerun.
+fixer tested without the lock and deleted a runner's; the runner's tab was navigated away twice). Each seat drives its own browser in its own cloud machine on the live site (matrx-frontend
+`node scripts/real-tests/pw-cloud.mjs <run> start`, `signin`, then `goto https://www.aimatrx.com/<route>`; §4a), signed
+in by the helper, never by typing a password; cloud runs need no lock. A run during which the live build changed is INCONCLUSIVE; say so and rerun.
 
 **Many playbooks, one lane: the owner serialises, the runner never parks.** Eight runners dispatched at once
 on 2026-10-02 did eight minutes of work: one took the lane, the other seven started a background wait for the

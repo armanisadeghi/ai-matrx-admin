@@ -864,7 +864,7 @@ function EducationTutorClientInner({
   // POSTURE: a READ-ONLY SHARED VIEW registers NO handlers at all, so
   // `listAgentWritableTargets()` offers an agent nothing on someone else's
   // conversation. The owner's standalone route and the embedded Ask-Tutor
-  // panel both get the full set — same learner, same live conversation.
+  // panel both get the full deck — same learner, same live conversation.
   //
   // Every handler validates and THROWS on a bad shape; the writeback seam
   // turns a throw into a safe error envelope the agent reads. Nothing is

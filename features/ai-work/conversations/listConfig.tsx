@@ -23,6 +23,7 @@ import type {
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { CONVERSATION_COLUMNS } from "./columns";
 import { conversationTrashBulkAction } from "./bulkTrash";
+import { conversationBulkActions } from "./conversationBulkActions";
 import {
   fetchConversationFacets,
   fetchConversationPage,
@@ -59,7 +60,7 @@ export const conversationListConfig: EntityListConfig<ConversationBrowseRow> = {
   registryToken: "conversation",
   // Trash goes through the conversation's own cascade (bulkTrash.ts): same id as the
   // built-in, so it REPLACES it in place rather than sitting beside it.
-  bulkActions: [conversationTrashBulkAction],
+  bulkActions: [conversationTrashBulkAction, ...conversationBulkActions],
   // The list RPC applies platform.list_dimension_match (lib/entity-list/dimensionFilter.ts).
   dimensionFilter: true,
   entityLabel: { singular: "conversation", plural: "conversations" },

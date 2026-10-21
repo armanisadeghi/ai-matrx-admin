@@ -23,7 +23,7 @@
 
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { useMemo } from "react";
-import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
+import { AlertCircle, Loader2, PauseCircle, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,9 +32,14 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
+  disableTaskAdmin,
   fetchTasksAdminPage,
   type AdminTaskRow,
 } from "@/lib/services/scheduling-admin-service";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { toast } from "@/lib/toast";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import {
   serverTableInitialState,
   useServerTable,
@@ -97,6 +102,56 @@ export default function AdminTasksPage() {
       ].join("\n"),
     onDisabled: (r) =>
       setRows((prev) => prev.map((row) => (row.id === r.id ? { ...row, enabled: false } : row))),
+  });
+
+  const { rowActionDefs, bulkActions } = defineRowVerbs<AdminTaskRow>(
+    [
+      {
+        id: "disable", icon: PauseCircle, label: "Disable schedule", tone: "destructive",
+        appliesTo: (r) => r.enabled,
+        unavailableTooltip: "Already paused",
+        onClick: async (r) => {
+          const ok = await confirm({
+            title: `Disable "${r.title}"?`,
+            description:
+              "It stops firing now. There is no re-enable control on this console yet; edit the schedule to turn it back on.",
+            confirmLabel: "Disable",
+            variant: "destructive",
+          });
+          if (!ok) return;
+          try {
+            await disableTaskAdmin(r.id);
+            toast.success(`${r.title} disabled`);
+            reload();
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : String(err));
+          }
+        },
+        bulk: {
+          label: "Disable",
+          done: "Disabled",
+          skipReason: (r) => (r.enabled ? null : "Already paused"),
+          confirm: (t) => ({
+            title: `Disable ${t.ids.length} ${t.ids.length === 1 ? "schedule" : "schedules"}?`,
+            description: "Each schedule stops firing now. There is no re-enable control on this console yet; edit a schedule to turn it back on.",
+            confirmLabel: "Disable",
+            variant: "destructive",
+          }),
+          runOne: async (id) => {
+            await disableTaskAdmin(id);
+          },
+        },
+      },
+    ],
+    { noun: "schedule", getRowId: (r) => r.id, getRowName: (r) => r.title },
+  );
+  const bulk = useTableBulkSelection<AdminTaskRow>({
+    noun: "schedule",
+    rows,
+    getRowId: (r) => r.id,
+    getRowName: (r) => r.title,
+    actions: bulkActions,
+    onRefresh: reload,
   });
 
   const columns = useMemo((): MatrxColumnDef<AdminTaskRow>[] => {
@@ -258,6 +313,8 @@ export default function AdminTasksPage() {
                     {...tableProps}
           columns={columns}
           getRowId={(r) => r.id}
+          rowActionDefs={rowActionDefs}
+          selection={bulk.selection}
           emptyState={{ title: "No tasks match" }}
           toolbar={{
             search: true,

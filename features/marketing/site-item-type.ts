@@ -106,14 +106,14 @@ export function siteFields(row: DetailRow): DetailField[] {
   push("description", "What it is", text(row, "description"));
   const status = text(row, "status");
   push("status", "Status", status ? humanizeIdentifier(status) : null);
-  // The owning marketing account — a door, on the token that actually names it
+  // The owning brand — a door, on the token that actually names it
   // (`brand_id` → `web_brand`; the generic column→token rule would derive
   // "brand", which names nothing, so the record would lose the door).
   const brandId = text(row, "brand_id");
   if (brandId) {
     out.push({
       key: "brand_id",
-      label: "Marketing account",
+      label: "Brand",
       text: brandId,
       ref: { token: "web_brand", id: brandId },
     });

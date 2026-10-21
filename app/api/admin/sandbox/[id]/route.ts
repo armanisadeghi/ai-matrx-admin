@@ -70,7 +70,7 @@ async function load(id: string) {
   } catch {
     return {
       error: NextResponse.json(
-        { error: "Failed to read sandbox instance" },
+        { error: "Failed to read sandbox" },
         { status: 500 },
       ),
     };
@@ -79,14 +79,14 @@ async function load(id: string) {
     if (error?.code === "PGRST116") {
       return {
         error: NextResponse.json(
-          { error: "Sandbox instance not found" },
+          { error: "Sandbox not found" },
           { status: 404 },
         ),
       };
     }
     return {
       error: NextResponse.json(
-        { error: "Failed to read sandbox instance" },
+        { error: "Failed to read sandbox" },
         { status: 500 },
       ),
     };
@@ -113,7 +113,7 @@ async function loadForRead(id: string) {
   } catch {
     return {
       error: NextResponse.json(
-        { error: "Failed to read sandbox instance" },
+        { error: "Failed to read sandbox" },
         { status: 500 },
       ),
     };
@@ -122,14 +122,14 @@ async function loadForRead(id: string) {
   if (error?.code === "PGRST116") {
     return {
       error: NextResponse.json(
-        { error: "Sandbox instance not found" },
+        { error: "Sandbox not found" },
         { status: 404 },
       ),
     };
   }
   return {
     error: NextResponse.json(
-      { error: "Failed to read sandbox instance" },
+      { error: "Failed to read sandbox" },
       { status: 500 },
     ),
   };

@@ -95,7 +95,7 @@ export function buildLinkEdgeMenuSection(
     {
       kind: "link",
       id: "link-edge-open-snapshot",
-      label: "Open source snapshot",
+      label: "Open source page capture",
       icon: FileSearch,
       href:
         row && row.snapshotId
@@ -106,7 +106,7 @@ export function buildLinkEdgeMenuSection(
             )
           : "#",
       disabled: !row || !row.snapshotId,
-      description: "No snapshot recorded for this link",
+      description: "No page capture recorded for this link",
     },
   ];
   return {

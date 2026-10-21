@@ -3,7 +3,7 @@
 /**
  * The `content_ir_kind_instance` share lens — a POLYMORPHIC token.
  *
- * One entity token carries many kinds (keyword research, flashcard sets,
+ * One entity token carries many kinds (keyword research, flashcard decks,
  * briefs, decks…), and the token's public projection deliberately does not
  * include the kind — only `data`. So this lens dispatches on the DATA SHAPE
  * with a safe fallback, the same pattern as

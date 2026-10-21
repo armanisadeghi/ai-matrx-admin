@@ -15,7 +15,13 @@
  * same selector.
  */
 
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { FileText } from "lucide-react";
+
+import {
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentPx,
+} from "@/components/official/topic-tree/geometry";
 
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 
@@ -36,45 +42,44 @@ export function MapTopicTreeList({ mapId }: { mapId: string }) {
       {rows.map((row) => (
         <li key={row.slug}>
           <div
-            className={`flex items-center gap-2 px-3 py-2 ${
+            className={`flex min-h-7 items-center gap-1 py-1 pr-3 type-body ${
               row.selected ? "bg-primary/10" : ""
             }`}
-            style={{ paddingLeft: `${12 + row.depth * 18}px` }}
+            style={{ paddingLeft: treeIndentPx(row.depth) }}
           >
+            <TreeDisclosure
+              expandable={row.hasChildren}
+              expanded={row.expanded}
+              onToggle={() => dispatch(toggleExpanded({ mapId, slug: row.slug }))}
+            />
             {row.hasChildren ? (
-              <button
-                type="button"
-                aria-label={row.expanded ? `Collapse ${row.name}` : `Expand ${row.name}`}
-                aria-expanded={row.expanded}
-                className="rounded p-0.5 text-muted-foreground hover:bg-muted"
-                onClick={() => dispatch(toggleExpanded({ mapId, slug: row.slug }))}
-              >
-                {row.expanded ? (
-                  <ChevronDown className="h-4 w-4" aria-hidden />
-                ) : (
-                  <ChevronRight className="h-4 w-4" aria-hidden />
-                )}
-              </button>
+              <TreeFolderIcon open={row.expanded} />
             ) : (
-              <span className="inline-block h-5 w-5" aria-hidden />
+              <FileText aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
             )}
             <button
               type="button"
-              className="min-w-0 flex-1 truncate text-left text-sm"
+              className="min-w-0 flex-1 truncate text-left"
               aria-current={row.selected ? "true" : undefined}
+              aria-expanded={row.hasChildren ? row.expanded : undefined}
+              onDoubleClick={
+                row.hasChildren
+                  ? () => dispatch(toggleExpanded({ mapId, slug: row.slug }))
+                  : undefined
+              }
               onClick={() => dispatch(selectTopic({ mapId, slug: row.slug }))}
             >
               <span className={row.selected ? "font-semibold" : ""}>{row.name}</span>
             </button>
             {row.topic.status && row.topic.status !== "active" ? (
-              <span className="shrink-0 rounded border border-border px-1.5 py-0.5 text-xs text-muted-foreground">
+              <span className="shrink-0 type-meta text-muted-foreground">
                 {row.topic.status}
               </span>
             ) : null}
             {/* An absent count means the tree was loaded WITHOUT `counts` — it
                 never means zero, so nothing is printed in that case. */}
             {countsLoaded ? (
-              <span className="shrink-0 text-xs text-muted-foreground">
+              <span className="shrink-0 type-meta text-muted-foreground">
                 {row.topic.pages ?? 0} pages · {row.topic.planned ?? 0} planned ·{" "}
                 {row.topic.keywords ?? 0} keywords
               </span>

@@ -2,7 +2,7 @@
 //
 // The SHARED mastery visualization: a per-item tier pill and a per-deck
 // distribution bar, both driven by the canonical `masteryTier` vocabulary
-// (utils/masteryFsrs). Any surface — the flashcards editor + set detail, a P5
+// (utils/masteryFsrs). Any surface — the flashcards editor + deck detail, a P5
 // dashboard, the game recap — renders mastery the SAME way through these, so the
 // display language never forks. Reads `item_mastery` rows the caller already has.
 //

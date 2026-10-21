@@ -247,7 +247,7 @@ function NodeReadout({
     // A step that has not started yet RESERVES the shape it will produce,
     // when its definition declares one. A single line of gray text reserved
     // nothing, so the surface lurched the moment any step settled — the
-    // reader's page jumping by whatever height a flashcard set or a deck
+    // reader's page jumping by whatever height a flashcard deck or a deck
     // happened to need. Still and quiet: nothing has started.
     //
     // A TERMINAL run reserves nothing: there is no future to hold space for,

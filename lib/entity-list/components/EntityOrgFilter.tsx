@@ -31,6 +31,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { LabelWithTail } from "@/lib/labels/LabelWithTail";
+import { labelTails } from "@/lib/labels/tellApart";
 import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { usePagedOrganizations } from "@/features/organizations/hooks/usePagedOrganizations";
 import type { EntityScopeCounts } from "@/lib/entity-list/types";
@@ -89,6 +91,8 @@ export function EntityOrgFilter({ orgId, onChange, counts, countsLoading, onOpen
     ...(extraOrganizations ?? []).filter((o) => !memberIds.has(o.id)),
   ].sort((a, b) => a.name.localeCompare(b.name));
   const selected = orgId ? choices.find((c) => c.id === orgId) : undefined;
+  // Two organizations with one name never read alike: each carries a short id tail.
+  const tails = labelTails(choices.map((c) => ({ id: c.id, label: c.name })));
 
   // Offer the filter only where it helps (law rule 3): one organization or
   // none leaves nothing to choose. A URL that names an organization always
@@ -96,7 +100,7 @@ export function EntityOrgFilter({ orgId, onChange, counts, countsLoading, onOpen
   if (!orgId && (loading || (choices.length < 2 && !paged.isPartial))) return null;
 
   const label = orgId
-    ? `Org: ${selected?.name ?? (loading ? "…" : "an organization you are not in")}`
+    ? `Org: ${selected ? selected.name + (tails.get(selected.id) ?? "") : loading ? "…" : "an organization you are not in"}`
     : ALL_ORGANIZATIONS_LABEL;
   // `paged.organizations` is already the answer to the query (local while whole, the server's when a page).
   const shown = choices;
@@ -142,6 +146,8 @@ export function EntityOrgFilter({ orgId, onChange, counts, countsLoading, onOpen
             <input
               value={needle}
               onChange={(e) => setNeedle(e.target.value)}
+              // The menu opens to find one: typing goes here, not to the menu's first item.
+              autoFocus
               // Keep Radix's typeahead from stealing the keystrokes.
               onKeyDown={(e) => e.stopPropagation()}
               placeholder="Find an organization…"
@@ -171,7 +177,7 @@ export function EntityOrgFilter({ orgId, onChange, counts, countsLoading, onOpen
                 ) : (
                   <span className="w-3.5 shrink-0" />
                 )}
-                <span className="truncate">{org.name}</span>
+                <LabelWithTail text={org.name} tail={tails.get(org.id)} />
               </span>
               {n !== undefined && (
                 <span className="type-secondary tabular-nums text-muted-foreground">{n}</span>

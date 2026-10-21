@@ -12,7 +12,7 @@
 // bracketed ANTICIPATION cue, then the dynamic question text is appended by the
 // caller. The four agent STYLE variables (context / speaker / director / scene)
 // also rotate. Selection is DETERMINISTIC per card (hash of the card id) so a
-// re-generation is stable, but VARIED across cards so a set doesn't feel canned.
+// re-generation is stable, but VARIED across cards so a deck doesn't feel canned.
 //
 // These are just strings — they intentionally do NOT have to match the agent's
 // preset options. Tune freely.

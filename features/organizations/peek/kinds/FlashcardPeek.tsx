@@ -53,10 +53,10 @@ export default function FlashcardPeek({ id, open, onClose }: PeekProps) {
     body.push({ fact: "Flashcard not found." });
   }
 
-  const title = row?.name || row?.topic || "Flashcard set";
+  const title = row?.name || row?.topic || "Flashcard deck";
   return (
     <PeekWindow open={open} onClose={onClose} label={title}>
-      <Peek size="lg" record={{ kind: "Flashcard set", id, title, glyph: Layers, body, ...doors }} loading={loading} />
+      <Peek size="lg" record={{ kind: "Flashcard deck", id, title, glyph: Layers, body, ...doors }} loading={loading} />
     </PeekWindow>
   );
 }

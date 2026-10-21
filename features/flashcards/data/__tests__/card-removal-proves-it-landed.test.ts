@@ -1,9 +1,9 @@
 /**
- * Removing a set or detail must PROVE the soft-delete landed.
+ * Removing a deck or detail must PROVE the soft-delete landed.
  *
  * A PostgREST `update` that RLS filters to zero rows returns `error: null`.
  * The old `deleteSet` / `softDeleteDetail` / `mergeCards`
- * trusted that, so the set editor toasted "Card deleted" while the card stayed
+ * trusted that, so the deck editor toasted "Card deleted" while the card stayed
  * (2026-09-25). Each path now reads back the rows it wrote and fails loudly on
  * zero. The fake below behaves like PostgREST: the update answers with the rows
  * RLS let through (none when refused), and never an error for a refusal.

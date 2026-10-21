@@ -124,11 +124,11 @@ export function CrawlsTable() {
         }
       }
       await deleteMutation.mutateAsync(deleting.id);
-      toast.success("Crawl session deleted");
+      toast.success("Crawl deleted");
       setDeleting(null);
       crawlActivity.refresh();
     } catch (error) {
-      toast.error("Could not delete crawl session", {
+      toast.error("Could not delete crawl", {
         description: extractErrorMessage(error),
       });
     }
@@ -254,14 +254,14 @@ export function CrawlsTable() {
   const pageHuman = () =>
     humanLines([
       ["Site", site.root_url],
-      ["Loaded crawl sessions", rows.length],
+      ["Loaded crawls", rows.length],
       ["Total recorded", crawls.data?.total ?? 0],
       ["Search", table.state.search || undefined],
     ]);
   const groomerSections = (): AgentCopyGroomerSection[] => [
     {
       id: "sessions",
-      title: "Crawl sessions",
+      title: "Crawls",
       description: `${rows.length} loaded of ${crawls.data?.total ?? 0} recorded (current table page + filters).`,
       levelLabels: {
         full: `Loaded ${rows.length} (raw)`,
@@ -290,10 +290,10 @@ export function CrawlsTable() {
     },
   ];
   const groomerConfig = (): AgentCopyGroomerConfig => ({
-    label: `Crawl sessions — ${site.root_url}`,
+    label: `Crawls — ${site.root_url}`,
     kind: "marketing-crawls-page",
     location: pageLocation,
-    description: `Crawl sessions recorded for ${site.root_url}.`,
+    description: `Crawls recorded for ${site.root_url}.`,
     attributes: { site_id: site.id, domain: site.root_url },
     summary: pageHuman(),
     sections: groomerSections(),
@@ -336,7 +336,7 @@ export function CrawlsTable() {
     <main className="flex h-full min-h-0 flex-col gap-2 overflow-hidden bg-textured p-3 sm:p-4">
       <header className="flex shrink-0 flex-wrap items-center justify-between gap-2">
         <h1 className="flex items-center gap-2 text-base font-semibold text-foreground">
-          Crawl sessions
+          Crawls
           <span className="text-xs font-normal tabular-nums text-muted-foreground">
             {(crawls.data?.total ?? 0).toLocaleString()}
           </span>
@@ -350,7 +350,7 @@ export function CrawlsTable() {
             agent={() => ({
               kind: "marketing-crawls-page",
               location: pageLocation,
-              description: `Crawl sessions recorded for ${site.root_url}.`,
+              description: `Crawls recorded for ${site.root_url}.`,
               data: pageFullData(),
               summary: pageHuman(),
               attributes: { site_id: site.id, domain: site.root_url },
@@ -376,7 +376,7 @@ export function CrawlsTable() {
           />
         </div>
       </header>
-      {/* Crawl session identity is page-local — `grep -rl "CrawlSession\b"
+      {/* Crawl identity is page-local — `grep -rl "CrawlSession\b"
           features app` returns CrawlSubnav.tsx (a nav header, not a row
           render) and crawl-surface.tsx (a context provider); this table is
           the only surface that renders CrawlSession rows. No entity: sessions
@@ -391,19 +391,19 @@ export function CrawlsTable() {
           setClickedRow(row);
           if (!row) return null;
           return {
-            content: `Crawl session ${row.id} — ${row.status} (${row.trigger})`,
+            content: `Crawl ${row.id} — ${row.status} (${row.trigger})`,
           };
         }}
         extraSections={[
           {
             id: "crawl-session-row",
-            label: "This crawl session",
+            label: "This crawl",
             anchor: "after-compare",
             items: [
               {
                 kind: "item",
                 id: "crawl-session-open",
-                label: "Open crawl session",
+                label: "Open crawl",
                 icon: ScanSearch,
                 disabled: !clickedRow,
                 onSelect: () => {
@@ -427,7 +427,7 @@ export function CrawlsTable() {
               {
                 kind: "item",
                 id: "crawl-session-delete",
-                label: "Delete crawl session",
+                label: "Delete crawl",
                 icon: Trash2,
                 disabled: !clickedRow,
                 onSelect: () => {
@@ -489,14 +489,14 @@ export function CrawlsTable() {
             ),
           }}
           copy={{
-            label: "Crawl session",
-            listLabel: "All crawl sessions",
+            label: "Crawl",
+            listLabel: "All crawls",
             location: webLocation(`Crawls — ${site.root_url}`),
             rowKind: "web-crawl-session",
             listKind: "web-crawl-sessions-list",
-            rowDescription: "One frozen crawl session for this site.",
+            rowDescription: "One frozen crawl for this site.",
             listDescription:
-              "The currently loaded crawl session rows (respecting search, filters, sort, and pagination).",
+              "The currently loaded crawl rows (respecting search, filters, sort, and pagination).",
             humanRow: (row) =>
               humanLines([
                 ["Session", row.id],
@@ -526,13 +526,13 @@ export function CrawlsTable() {
           rowActions={(row) => [...(ACTIVE_STATUSES.has(row.status) ? [{ id: "cancel", icon: Ban, tone: "destructive" as const, label: "Cancel crawl", onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
                     event.stopPropagation();
                     void requestCancel(row);
-                  }, disabled: cancelingId === row.id, tooltip: "Cancel crawl" }] : []), ...[{ id: "delete", icon: Trash2, tone: "destructive" as const, label: "Delete crawl session", onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+                  }, disabled: cancelingId === row.id, tooltip: "Cancel crawl" }] : []), ...[{ id: "delete", icon: Trash2, tone: "destructive" as const, label: "Delete crawl", onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
                   event.stopPropagation();
                   setDeleting(row);
-                }, tooltip: "Delete crawl session" }]]}
+                }, tooltip: "Delete crawl" }]]}
           emptyState={{
             icon: <ScanSearch className="h-8 w-8 text-muted-foreground" />,
-            title: "No crawl sessions",
+            title: "No crawls",
             description:
               "Crawl commands are sent directly to the scraper; durable sessions will appear here from Supabase.",
           }}
@@ -545,8 +545,8 @@ export function CrawlsTable() {
         onOpenChange={(open) => !open && setDeleting(null)}
         title={
           deleting && ACTIVE_STATUSES.has(deleting.status)
-            ? "Cancel and delete crawl session?"
-            : "Delete crawl session?"
+            ? "Cancel and delete crawl?"
+            : "Delete crawl?"
         }
         description={
           deleting && ACTIVE_STATUSES.has(deleting.status)

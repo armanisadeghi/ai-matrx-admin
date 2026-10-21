@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
+import { useStableOrder } from "@/hooks/useStableOrder";
 import { providerMeta } from "@/features/agent-connections/coding-sessions/catalog";
 import {
   agentRoomKind,
@@ -61,6 +62,22 @@ function SectionHeader({
       <span className="flex-1" />
       {action}
     </div>
+  );
+}
+
+/** Shown only while a held list is out of its live order: one press adopts it. */
+function SortAction({ pending, onSort }: { pending: boolean; onSort: () => void }) {
+  if (!pending) return null;
+  return (
+    <Button
+      type="button"
+      variant="link"
+      onClick={onSort}
+      title="Order by latest activity"
+      className="h-auto px-0 text-xs normal-case tracking-normal"
+    >
+      Sort
+    </Button>
   );
 }
 
@@ -241,7 +258,7 @@ export function LiveSidebar({
   const visible = sessions.filter((s) =>
     match([s.title, s.providerLabel, s.workspace ?? "", s.account ?? ""].join(" ")),
   );
-  const active = visible
+  const liveActive = visible
     .filter((s) => s.presence !== "ended")
     .sort((a, b) =>
       a.presence === b.presence
@@ -250,12 +267,28 @@ export function LiveSidebar({
           ? -1
           : 1,
     );
-  const ended = visible.filter((s) => s.presence === "ended");
+  // Every list holds its order while the person looks at it (useStableOrder):
+  // a heartbeat or a new message changes a row in place, never its position.
+  // The live order is adopted when the tab comes back, the filter changes, or
+  // the person presses Sort.
+  const activeOrder = useStableOrder(liveActive, (s) => s.address, q);
+  const active = activeOrder.items;
+  const ended = useStableOrder(
+    visible.filter((s) => s.presence === "ended"),
+    (s) => s.address,
+    q,
+  ).items;
   const busy = active.filter((s) => s.presence === "busy").length;
   const matchedRooms = rooms.filter((r) => match(r.displayName));
   // The same split the hub's summary counts (presence.splitRooms): the numbers add up.
-  const { listed: shownRooms, review: reviewRooms } = splitRooms(matchedRooms);
-  const agentMembers = members.filter((m) => m.member_kind === "agent_conversation");
+  const split = splitRooms(matchedRooms);
+  const roomOrder = useStableOrder(split.listed, (r) => r.conversation.id, q);
+  const shownRooms = roomOrder.items;
+  const reviewRooms = useStableOrder(split.review, (r) => r.conversation.id, q).items;
+  const agentMembers = useStableOrder(
+    members.filter((m) => m.member_kind === "agent_conversation"),
+    (m) => m.id,
+  ).items;
   const membersOf = (s: LiveSession) => members.filter((m) => s.bindingIds.includes(m.member_id));
   const roomMemberCount = (id: string) =>
     members.filter((m) => m.conversation_id === id && m.member_kind === "coding_session").length;
@@ -282,17 +315,24 @@ export function LiveSidebar({
         <SectionHeader
           label="Sessions"
           count={loaded ? active.length : undefined}
-          action={busy > 0 ? <span className="normal-case tracking-normal text-success-ink">{busy} busy</span> : null}
+          action={
+            <>
+              {busy > 0 && <span className="normal-case tracking-normal text-success-ink">{busy} busy</span>}
+              <SortAction pending={activeOrder.pending} onSort={activeOrder.resort} />
+            </>
+          }
         />
         <PresenceLegend />
-        {error ? (
+        {/* A failed background re-read keeps the rows on screen: the notice sits above them. */}
+        {error && (
           <div className="px-3 py-2">
             <ErrorNotice message={error} size="inline" />
             <button type="button" className="text-xs underline" onClick={onRetry}>
               Retry
             </button>
           </div>
-        ) : !loaded ? (
+        )}
+        {error && !loaded ? null : !loaded ? (
           <div className="space-y-1 px-2.5 py-1">
             {[0, 1, 2].map((i) => (
               <div key={i} className="h-9 animate-pulse rounded-md bg-muted/60" />
@@ -352,6 +392,7 @@ export function LiveSidebar({
         <SectionHeader
           label="Rooms"
           count={loaded ? `${shownRooms.length}${roomsComplete ? "" : "+"}` : undefined}
+          action={<SortAction pending={roomOrder.pending} onSort={roomOrder.resort} />}
         />
         {!loaded ? (
           <div className="mx-2.5 my-1 h-9 animate-pulse rounded-md bg-muted/60" />

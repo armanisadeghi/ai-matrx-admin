@@ -102,7 +102,7 @@ export function rawCardsOf(value: unknown): unknown[] {
   return [];
 }
 
-/** The set title a raw `flashcard_set` payload carries ("" when none). */
+/** The deck title a raw `flashcard_set` payload carries ("" when none). */
 export function setTitleOf(value: unknown): string {
   return (isRecord(value) && optionalString(value.title)) || "";
 }

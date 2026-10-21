@@ -1,7 +1,7 @@
 // features/flashcards/data/useWeakAreaDrill.ts
 //
 // Phase 3 (Flashcards Competitive Parity Push) — the weak-area drill: the
-// learner's worst cards across ALL their sets, worst-first. Mirrors
+// learner's worst cards across ALL their decks, worst-first. Mirrors
 // `useDueReview` almost exactly (same shared-spine session/grade plumbing,
 // same <StudyDeck/> result shape) — the only real difference is the queue
 // source: every mastery row filtered by the dashboard's `needsWork` rule

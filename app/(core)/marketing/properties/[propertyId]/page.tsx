@@ -51,7 +51,7 @@ export default async function MarketingPropertyPage({
             <PropertyKindMark kind={property.kind} size={48} />
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Marketing property · {property.kind.replaceAll("_", " ")}
+                Brand property · {property.kind.replaceAll("_", " ")}
               </p>
               <h1 className="truncate text-2xl font-semibold">{name}</h1>
               {property.handle ? (

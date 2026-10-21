@@ -1,7 +1,7 @@
 // /education/fastfire — the FastFire voice-graded flashcard drill.
 //
 // Server shell: resolves the optional `?set=<id>` query (a deep link straight
-// into a set's drill) and renders the client island. FastFire is a heavy,
+// into a deck's drill) and renders the client island. FastFire is a heavy,
 // browser-only client (mic, MediaRecorder, AudioContext, rAF timers), so it is
 // code-split behind `next/dynamic({ ssr: false })` via FastFireClient — it must
 // never enter a server/SSR render path.

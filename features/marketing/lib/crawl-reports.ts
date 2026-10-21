@@ -1,4 +1,4 @@
-/** Stable, URL-safe report identities for one crawl session. */
+/** Stable, URL-safe report identities for one crawl. */
 export const CRAWL_REPORT_KEYS = [
   "response-codes",
   "broken-links",

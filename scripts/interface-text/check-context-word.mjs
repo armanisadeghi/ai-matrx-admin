@@ -89,7 +89,7 @@ export function findOffenders(src) {
     // quoted string literals inside it (those can render), never the code around them.
     if (CODE_LIKE.test(m[1])) {
       // a bare lowercase literal is a code key, not rendered text
-      for (const q of m[1].matchAll(QUOTED)) if (!/^[a-z_]+$/.test(q[2])) consider(q[2]);
+      for (const q of m[1].matchAll(QUOTED)) if (!/^[a-z][a-z0-9_-]*$/.test(q[2])) consider(q[2]);
     } else consider(m[1]);
   }
   for (const m of src.matchAll(TOAST)) consider(m[2]);

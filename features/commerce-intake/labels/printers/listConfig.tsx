@@ -25,6 +25,7 @@ import {
   printerDisplayName,
   type CertifiedPrinterListRow,
 } from "./types";
+import { CERTIFIED_PRINTER_BULK_ACTIONS } from "./bulkVerbs";
 import { useCertifiedPrinterRowActions } from "./useCertifiedPrinterRowActions";
 
 function textFilter(query: EntityListQuery, id: string): string | undefined {
@@ -107,6 +108,7 @@ export function buildCertifiedPrinterListConfig(): EntityListConfig<CertifiedPri
     // wizard against the stored printer + stock (the re-check lane).
     door: { hrefFor: (row) => certifyPrinterHref(row.id) },
     useRowActions: useCertifiedPrinterRowActions,
+    bulkActions: CERTIFIED_PRINTER_BULK_ACTIONS,
     supportsArchived: false,
     facetSections: [],
     emptyState: {

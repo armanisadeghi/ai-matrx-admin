@@ -4,7 +4,7 @@
  * as it is a valid place to be.
  *
  * Brand-section paths are static per brand, so they carry over verbatim.
- * Entity-scoped segments (a site, a location, an initiative, a plan node)
+ * Entity-scoped segments (a site, a location, an initiative, a plan page)
  * belong to the OLD brand and would 404 or leak context on the new one, so the
  * path degrades to the nearest valid ancestor list for the target brand.
  * Query strings carry over minus entity-selection params (`site`, `location`,

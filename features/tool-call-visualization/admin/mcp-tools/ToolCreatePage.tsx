@@ -223,6 +223,7 @@ export function ToolCreatePage() {
             value={tool.name}
             onChange={(e) => setField("name", e.target.value)}
             data-identifier
+            className="font-mono"
             placeholder="e.g., core_web_search"
           />
         </div>

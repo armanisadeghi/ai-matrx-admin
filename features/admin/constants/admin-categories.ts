@@ -123,7 +123,7 @@ export const adminCategoriesData: AdminCategory[] = [
       {
         title: "Sandbox Management",
         description:
-          "Monitor all sandbox instances, manage containers, and access running sandboxes via SSH",
+          "Monitor all sandboxes, manage containers, and access running sandboxes via SSH",
         iconName: "Server",
         link: "/administration/compute/sandbox",
       },

@@ -43,6 +43,12 @@ import {
   type ResourceType,
 } from "@/utils/permissions/registry";
 import { ArchivedDisclosure } from "@ai-matrx/design-system";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  RowSelectionBar,
+  useRowSelection,
+} from "@/lib/entity-list/RowSelectionBar";
+import { standardBulkActionsFor } from "@/lib/entity-list/standardBulkActions";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { csvExportItem, jsonExportItem } from "@/components/agent-copy/export";
@@ -154,6 +160,29 @@ export function OrgResourceList({
   const [showArchived, setShowArchived] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [reloadTick, setReloadTick] = React.useState(0);
+
+  // THE BULK TWIN RULE: the built-ins (Trash, Restore, Add tag, Move, Share) come from the
+  // entity token the cards' doors already use. Cards stay a grid; ticks drop when the org or
+  // resource tab changes.
+  const bulkToken = doorToken ?? resourceType;
+  const selection = useRowSelection<ResourceCardData>(
+    items,
+    (item) => item.id,
+    `${orgId}:${resourceType}`,
+  );
+  const bulkActions = React.useMemo(
+    () =>
+      standardBulkActionsFor<ResourceCardData>({
+        token: bulkToken,
+        noun: resourceType.replace(/_/g, " "),
+        rowIdOf: (item) => item.id,
+        labelOf: (item) => item.title || "Untitled",
+        config: { favorite: false },
+        archivedView: "all",
+      }),
+    [bulkToken, resourceType],
+  );
 
   React.useEffect(() => {
     let cancelled = false;
@@ -218,7 +247,7 @@ export function OrgResourceList({
     return () => {
       cancelled = true;
     };
-  }, [orgId, resourceType, tableName, hydrateShared, selectColumns, ownedQuery, mapRow]);
+  }, [orgId, resourceType, tableName, hydrateShared, selectColumns, ownedQuery, mapRow, reloadTick]);
 
   if (loading) {
     return (
@@ -362,6 +391,13 @@ export function OrgResourceList({
         return (
           <div key={item.id} className="group relative">
             {card}
+            <div className="absolute -left-1.5 -top-1.5 z-10 rounded bg-card">
+              <Checkbox
+                checked={selection.has(item.id)}
+                onCheckedChange={() => selection.toggle(item.id)}
+                aria-label={`Select ${item.title || "Untitled"}`}
+              />
+            </div>
             {aside ? <div className="absolute bottom-2 left-4 max-w-[calc(100%-6.5rem)] truncate">{aside}</div> : null}
             {peekControl}
           </div>
@@ -370,7 +406,19 @@ export function OrgResourceList({
 
   return (
     <>
-      <div className="mb-2 flex justify-end">
+      <div className="mb-2 flex items-center justify-end gap-2">
+        {bulkActions.length > 0 && (
+          <div className="min-w-0 flex-1">
+            <RowSelectionBar
+              selection={selection}
+              idOf={(item) => item.id}
+              actions={bulkActions}
+              noun={resourceType.replace(/_/g, " ")}
+              plural={`${resourceType.replace(/_/g, " ")}s`}
+              onRefresh={() => setReloadTick((t) => t + 1)}
+            />
+          </div>
+        )}
         {/* Copy/export cover EVERY card, archived included, never a slice. */}
         <CopyButtons
           size="icon"

@@ -1,7 +1,7 @@
 // features/flashcards/fast-fire/components/FastFireSetup.tsx
 //
 // The setup screen (REQUIREMENTS §2.1): pick a real fc_set, seconds-per-card,
-// card count, and live-score vs summary. The set picker reads real sets from
+// card count, and live-score vs summary. The deck picker reads real sets from
 // `fcService.listSets` (hard-requirement #7) — no hardcoded deck. "Start" warms
 // the mic + opens the session inside the click gesture (one mic prompt).
 //
@@ -192,7 +192,7 @@ export function FastFireSetup() {
     });
   };
 
-  // Reflect the PERSISTED helper-audio state when a set is (re)selected — same
+  // Reflect the PERSISTED helper-audio state when a deck is (re)selected — same
   // never-look-unprepared contract as the spoken fronts below.
   useEffect(() => {
     const setId = config.setId;
@@ -214,12 +214,12 @@ export function FastFireSetup() {
     };
   }, [config.setId]);
 
-  // Reflect the PERSISTED spoken-front state when a set is (re)selected — the
+  // Reflect the PERSISTED spoken-front state when a deck is (re)selected — the
   // audio is cached durably in fc_detail, so returning to a prepared set must
   // show "Audio ready", never look un-prepared (which would scare the user into
   // an expensive re-run). Re-generation only ever touches cards still missing it.
   useEffect(() => {
-    // Only meaningful when a set is chosen + voice is on (the prepare section is
+    // Only meaningful when a deck is chosen + voice is on (the prepare section is
     // hidden otherwise, so stale flags never show). All setState is post-await.
     const setId = config.setId;
     if (!setId || !config.spokenFronts) return undefined;

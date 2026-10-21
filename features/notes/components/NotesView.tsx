@@ -7,6 +7,7 @@
 // ZERO PROP DRILLING — each child receives only an instanceId or noteId.
 
 import { HomePickerDialog } from "../homes/HomePicker";
+import { useMoveNoteShortcut } from "../homes/useMoveNoteShortcut";
 import React, {
   useEffect,
   useRef,
@@ -476,6 +477,8 @@ export function NotesView({
   // Answered only for keys pressed in THIS notes view (utils/keyboard-scope):
   // a board or a panel mounts several, and each must not act at once.
   const shortcutRootRef = useRef<HTMLDivElement | null>(null);
+  // Ctrl/⌘+Shift+M — move the active note (the home picker); capture phase, ahead of the editor.
+  useMoveNoteShortcut(shortcutRootRef, activeTabId, setMovePickerNoteId);
 
   useEffect(() => {
     const root = shortcutRootRef.current;
@@ -600,12 +603,6 @@ export function NotesView({
         return;
       }
 
-      // Ctrl/⌘+Shift+M — move the active note (the home picker).
-      if (mod && e.shiftKey && e.key.toLowerCase() === "m") {
-        e.preventDefault();
-        if (activeTabId) setMovePickerNoteId(activeTabId);
-        return;
-      }
       // Ctrl+Tab — cycle to next tab
       if (mod && e.key === "Tab") {
         e.preventDefault();

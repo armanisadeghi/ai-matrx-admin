@@ -2,7 +2,7 @@ jest.mock("@/utils/supabase/client", () => ({ createClient: () => ({}) }));
 
 import type { LinkedOperation, OperationsByLink } from "@/lib/runtime-operations/operationsByLink";
 
-import { followSyncRun, isSyncWaiting, runningSync, syncRunFailure } from "../notionSyncWaiting";
+import { followSyncRun, isSyncWaiting, runningSync, SyncFollowTimedOut, syncRunFailure } from "../notionSyncWaiting";
 
 const PRESS = Date.parse("2026-10-21T10:00:00Z");
 
@@ -52,6 +52,15 @@ describe("Sync now while the table's own import runs (server answers 202 waiting
       return { link_kind: kind, link_id: id, operation_count: 1, operations };
     };
     expect((await followSyncRun("t1", { since: PRESS, read, sleep: noSleep }))?.status).toBe("completed");
+  });
+
+  it("stops spinning at the ceiling when no run for this press ever settles", async () => {
+    const { read } = answers([]); // no operation row ever appears
+    let clock = 0;
+    const sleep = async (ms: number) => { clock += ms; };
+    await expect(followSyncRun("t1", { since: PRESS, read, sleep, now: () => clock, ceilingMs: 60_000 })).rejects.toBeInstanceOf(SyncFollowTimedOut);
+    expect(clock).toBeGreaterThanOrEqual(60_000);
+    expect(clock).toBeLessThan(70_000);
   });
 
   it("stops when the bar leaves", async () => {

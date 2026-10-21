@@ -53,7 +53,7 @@ export interface MapLinks {
   topicById: (topicId: string) => string;
   /** One canonical web page. */
   page: (pageId: string) => string;
-  /** One content-plan node (a planned page). */
+  /** One content-plan page (a planned page). */
   planNode: (nodeId: string) => string;
   /** One site. */
   site: (siteId: string) => string;

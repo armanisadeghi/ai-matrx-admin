@@ -3,7 +3,7 @@
 /**
  * features/marketing/content-plan/components/NodeMeasureCard.tsx
  *
- * "What the real page is DOING" — the plan node's AFTER, in the panel where
+ * "What the real page is DOING" — the plan page's AFTER, in the panel where
  * the page is planned (`docs/handoffs/cms-page-hub.md` item 6). Before, during
  * and after are all captured: a planner looking at a live page must not have to
  * remember that measurement exists somewhere else.

@@ -17,7 +17,7 @@ export const SEVERITY_OPTIONS = [
 export const SUBJECT_TYPE_OPTIONS = [
   { value: "site", label: "Site" },
   { value: "page", label: "Page" },
-  { value: "snapshot", label: "Snapshot" },
+  { value: "snapshot", label: "Page capture" },
 ];
 
 export const RESULT_STATUS_OPTIONS = [

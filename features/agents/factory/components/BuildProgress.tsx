@@ -383,7 +383,7 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
     try {
       const savedId = detail?.state?.agent_id;
       if (!savedId) throw new Error("This build has no saved draft to keep");
-      const agentId = await keepBuildAnyway(savedId);
+      const agentId = await keepBuildAnyway(currentId);
       setKeptAgent(agentId);
       onKept?.(agentId);
     } catch (e) {

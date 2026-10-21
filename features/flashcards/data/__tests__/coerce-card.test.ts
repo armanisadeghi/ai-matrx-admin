@@ -101,7 +101,7 @@ describe("coerceCards / rawCardsOf / setTitleOf", () => {
     expect(rawCardsOf(null)).toEqual([]);
   });
 
-  it("reads the set title only from the kind's title key", () => {
+  it("reads the deck title only from the kind's title key", () => {
     expect(setTitleOf(LIVE_SET)).toBe("Photosynthesis — Light and Dark Reactions");
     expect(setTitleOf({ name: "x" })).toBe("");
     expect(setTitleOf(LIVE_SET.cards)).toBe("");

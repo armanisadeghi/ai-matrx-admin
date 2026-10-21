@@ -4,10 +4,16 @@
 // rows with inline actions. Every count is a real number from the DB, not decoration.
 
 import { useState } from "react";
-import { ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
+import { FileText, Pencil, Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  TREE_ROW_TEXT,
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import type { NodeDialogState } from "./NodeDialog";
 import { STATUS_STYLES, type TaxonomyTreeNode } from "./types";
 import AppLink from "@/components/navigation/AppLink";
@@ -62,46 +68,42 @@ function TreeRow({
     <div className={cn(depth === 0 && !isLast && "border-b border-border")}>
       <div
         className={cn(
-          "group flex items-center gap-2 px-3 py-2 transition-colors hover:bg-muted/50",
-          depth === 0 && "py-2.5",
+          "group flex min-h-7 items-center gap-1 py-1 pr-3 transition-colors hover:bg-muted/50",
         )}
-        style={{ paddingLeft: `${0.75 + depth * 1.5}rem` }}
+        style={treeIndentStyle(depth)}
       >
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className={cn(
-            "flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground transition-transform hover:text-foreground",
-            !hasChildren && "invisible",
-            open && "rotate-90",
-          )}
-          aria-label={open ? "Collapse" : "Expand"}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
+        <TreeDisclosure
+          expandable={hasChildren}
+          expanded={open}
+          onToggle={() => setOpen((v) => !v)}
+        />
+        {node.level === "subfeature" ? (
+          <FileText aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
+        ) : (
+          <TreeFolderIcon open={hasChildren && open} />
+        )}
         <span className={cn("h-2 w-2 shrink-0 rounded-full", status.dot)} />
         <span
           className={cn(
-            "truncate",
-            depth === 0
-              ? "text-sm font-semibold text-foreground"
-              : "text-sm text-foreground",
+            "truncate text-foreground",
+            TREE_ROW_TEXT,
+            depth === 0 && "font-semibold",
           )}
         >
           {node.name}
         </span>
-        <code className="hidden shrink-0 rounded bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground sm:inline">
+        <code className="hidden shrink-0 rounded bg-muted px-1.5 py-0.5 type-body text-muted-foreground sm:inline">
           {node.slug}
         </code>
         <span
           className={cn(
-            "hidden shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium md:inline",
+            "hidden shrink-0 rounded-full border px-2 py-0.5 type-body font-medium md:inline",
             status.badge,
           )}
         >
           {status.label}
         </span>
-        <div className="ml-auto flex shrink-0 items-center gap-3 text-[11px] text-muted-foreground">
+        <div className="ml-auto flex shrink-0 items-center gap-3 type-body text-muted-foreground">
           {node.level === "domain" && (
             <span title="Features in this domain">{node.child_count} features</span>
           )}

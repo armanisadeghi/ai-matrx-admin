@@ -29,6 +29,9 @@ import {
   type EntryKind,
   type TermList,
 } from "../types";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
+import { termListBulkActions } from "./termListBulkActions";
 import { TermEntriesTable } from "./TermEntriesTable";
 import { replaceAddressOrNavigate } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -71,6 +74,8 @@ export function TermListsWorkspace() {
     () => new Map(memberOrgs.map((o) => [o.id, o.name] as const)),
     [memberOrgs],
   );
+
+  const ticked = useRowSelection(lists ?? [], (l) => l.id);
 
   const reload = async () => {
     try {
@@ -158,13 +163,28 @@ export function TermListsWorkspace() {
               No term lists yet. Create one.
             </button>
           ) : (
-            lists.map((list) => (
+            <>
+            <RowSelectionBar
+              selection={ticked}
+              idOf={(l) => l.id}
+              actions={termListBulkActions()}
+              noun="term list"
+              plural="term lists"
+              compact
+              onRefresh={() => void reload()}
+            />
+            {lists.map((list) => (
+              <div key={list.id} className="flex items-center gap-1">
+              <Checkbox
+                checked={ticked.has(list.id)}
+                onCheckedChange={() => ticked.toggle(list.id)}
+                aria-label={`Select ${list.name}`}
+              />
               <button
-                key={list.id}
                 type="button"
                 onClick={() => select(list.id)}
                 className={cn(
-                  "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted",
+                  "flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted",
                   list.id === selectedId && "bg-muted font-medium",
                 )}
               >
@@ -177,7 +197,9 @@ export function TermListsWorkspace() {
                 ) : null}
                 <span className="type-secondary text-muted-foreground">{list.entries.length}</span>
               </button>
-            ))
+              </div>
+            ))}
+            </>
           )}
         </div>
       </aside>

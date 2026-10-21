@@ -8,13 +8,13 @@
  * Fire drill. Agents create, change and archive the person's own decks
  * through `create_decks` / `update_decks` / `delete_decks`.
  *
- * Scoped to the LIST surface. The set-detail / study / FastFire routes are their
+ * Scoped to the LIST surface. The deck-detail / study / FastFire routes are their
  * own surfaces (a study session's vocabulary — the current card, the grade, the
  * timer — is nothing like a library listing) and are not covered here.
  *
  * Curated groups (band 0-899):
  *
- *   library       The learner's sets and folders as loaded
+ *   library       The learner's decks and folders as loaded
  *   list_view     The live filter/search state deciding what is on screen
  *   study_signal  The cross-mode streak shown in the header
  *
@@ -34,7 +34,7 @@ import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
 const groups: SurfaceValueGroup[] = [
   {
     key: "library",
-    label: "Set library",
+    label: "Deck library",
     sortOrder: 100,
     description:
       "The flashcard decks the learner can see (the page on screen), plus the folder taxonomy decks are filed under.",
@@ -66,9 +66,9 @@ const surfaceSpecific: SurfaceValue[] = [
   // ── Library ───────────────────────────────────────────────────────────
   {
     name: "sets_loaded",
-    label: "Sets loaded",
+    label: "Decks loaded",
     description:
-      "True once the set list has finished loading successfully. False while loading and after a load failure — in which case `set_count` and the set values are absent and `load_error` explains why. Always present.",
+      "True once the deck list has finished loading successfully. False while loading and after a load failure — in which case `set_count` and the deck values are absent and `load_error` explains why. Always present.",
     valueType: "boolean",
     alwaysAvailable: true,
     typicalCharCount: 5,
@@ -77,7 +77,7 @@ const surfaceSpecific: SurfaceValue[] = [
   },
   {
     name: "set_count",
-    label: "Total set count",
+    label: "Total deck count",
     description:
       "How many decks match the list right now — the active lane, search, filters and archive filter — across every page (the \"of N\" under the list). The per-lane totals are on the lane tabs. Absent until `sets_loaded` is true.",
     valueType: "number",
@@ -88,7 +88,7 @@ const surfaceSpecific: SurfaceValue[] = [
   },
   {
     name: "visible_sets",
-    label: "Sets on screen",
+    label: "Decks on screen",
     description:
       "The decks on the current page of the list — the active lane, search, filters, archive filter and sort applied, in the order rendered — as { id, name, topic, lesson, description, visibility, updated_at, folder_ids }. Empty array when nothing matches. Absent until `sets_loaded` is true. `deck_list` is the same page condensed.",
     valueType: "array",
@@ -99,9 +99,9 @@ const surfaceSpecific: SurfaceValue[] = [
   },
   {
     name: "visible_set_ids",
-    label: "Visible set IDs",
+    label: "Visible deck IDs",
     description:
-      "UUIDs of the sets currently on screen, in render order. Empty array when the filters match nothing. Absent until `sets_loaded` is true. The cheap handle for 'act on what I'm looking at'.",
+      "UUIDs of the decks currently on screen, in render order. Empty array when the filters match nothing. Absent until `sets_loaded` is true. The cheap handle for 'act on what I'm looking at'.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 400,

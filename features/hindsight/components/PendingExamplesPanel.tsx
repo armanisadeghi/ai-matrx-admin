@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
  * PendingExamplesPanel — what the NEXT review would read, with the settle
@@ -168,7 +169,7 @@ export function PendingExamplesPanel({
             >
               <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                 <span className="inline-flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
-                  {ex.kind} <RecordId value={ex.id} label={ex.kind} />
+                  {humanizeIdentifier(ex.kind)} <RecordId value={ex.id} label={humanizeIdentifier(ex.kind)} />
                 </span>
                 <span className="text-[11px] text-muted-foreground">
                   {fmtDate(ex.at)}

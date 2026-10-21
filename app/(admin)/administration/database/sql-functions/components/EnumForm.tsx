@@ -194,6 +194,8 @@ export default function EnumForm(props: EnumFormProps) {
               Enum Name *
             </Label>
             <Input mono
+              className="font-mono"
+              data-identifier
               placeholder="my_enum"
               id="name"
               value={name}

@@ -49,6 +49,9 @@ import {
   clearTemplateCache,
 } from "@/features/message-templates/services/message-templates-service";
 import { MessageTemplatesPageHeader } from "./MessageTemplatesPageHeader";
+import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { buildTemplateBulkActions } from "@/features/message-templates/utils/templateBulkActions";
 import { TemplateCard } from "./TemplateCard";
 import { TemplateActionDrawer } from "./TemplateActionDrawer";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -356,6 +359,17 @@ export function UserMessageTemplateManager() {
 
   const canEdit = (t: MessageTemplateDB) => t.created_by === currentUserId;
 
+  // Bulk twin of the drawer's Move to Trash — one declaration in templateBulkActions.
+  const rowSelection = useRowSelection(
+    filteredTemplates,
+    (t: MessageTemplateDB) => t.id,
+    `${activeTab}|${searchTerm}`,
+  );
+  const bulkActions = useMemo(
+    () => buildTemplateBulkActions(currentUserId),
+    [currentUserId],
+  );
+
   const handleNewTemplate = () =>
     startTransition(() => router.push("/chat/message-templates/new"));
   const handleView = (t: MessageTemplateDB) =>
@@ -476,15 +490,37 @@ export function UserMessageTemplateManager() {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-              {filteredTemplates.map((t) => (
-                <TemplateCard
-                  key={t.id}
-                  template={t}
-                  onClick={handleCardClick}
-                  isDisabled={isPending}
-                />
-              ))}
+            <div className="space-y-2">
+              <RowSelectionBar
+                selection={rowSelection}
+                idOf={(t: MessageTemplateDB) => t.id}
+                actions={bulkActions}
+                noun="template"
+                plural="templates"
+                onRefresh={() => {
+                  clearTemplateCache();
+                  void loadData();
+                }}
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+                {filteredTemplates.map((t) => (
+                  <div key={t.id} className="flex items-start gap-1.5">
+                    <Checkbox
+                      className="mt-3"
+                      checked={rowSelection.has(t.id)}
+                      onCheckedChange={() => rowSelection.toggle(t.id)}
+                      aria-label={`Select ${t.label || "template"}`}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <TemplateCard
+                        template={t}
+                        onClick={handleCardClick}
+                        isDisabled={isPending}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

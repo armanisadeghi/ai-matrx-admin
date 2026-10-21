@@ -87,7 +87,7 @@ export function StudyTodayBlock({ snapshot }: { snapshot: EducationSnapshot }) {
               You&apos;re all caught up.
             </p>
             <p className="text-xs text-muted-foreground">
-              Nothing due — get ahead with a new set or a quiz
+              Nothing due — get ahead with a new deck or a quiz
             </p>
           </div>
           <Button asChild variant="outline">

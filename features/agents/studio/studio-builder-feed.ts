@@ -72,8 +72,9 @@ export function useStudioBuilderFeed(chatId: string | null, ws: StudioWorkspace 
             ref: { type: "ai_run", conversationId: chatId },
           },
         ]);
-      } catch {
-        /* a capture is a courtesy to the admin window; a failure never touches the person's chat */
+      } catch (e) {
+        // A capture is a courtesy to the admin window; a failure never touches the person's chat.
+        console.warn("[studio] the Builder feed capture failed", e);
       }
     })();
     return () => {

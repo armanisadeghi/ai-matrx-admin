@@ -83,7 +83,7 @@ export function displayMasteryPct(
 // ─── Mastery tiers — the SHARED display vocabulary ────────────────────────────
 //
 // One canonical bucketing of an item's mastery into named tiers, so every
-// surface (P5 dashboards, the flashcards editor + set detail, the game) speaks
+// surface (P5 dashboards, the flashcards editor + deck detail, the game) speaks
 // the SAME language for "how well do I know this". Derived from the live decayed
 // mastery % and whether the item has ever been studied.
 

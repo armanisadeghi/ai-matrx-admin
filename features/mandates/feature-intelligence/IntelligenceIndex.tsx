@@ -15,14 +15,19 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   CircleAlert,
-  ChevronRight,
   CircleCheck,
+  FileText,
   Loader2,
   MapPin,
   Workflow,
 } from "lucide-react";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { cn } from "@/lib/utils";
+import {
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/selectors/userSelectors";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -155,19 +160,16 @@ function ChildRow({ child, depth }: { child: DirectoryChild; depth: number }) {
   const [open, setOpen] = useState(false);
   return (
     <li className="min-w-0">
-      <div className="flex min-w-0 items-center gap-1" style={{ paddingLeft: depth * 14 }}>
+      <div className="flex min-h-7 min-w-0 items-center gap-1" style={treeIndentStyle(depth)}>
+        <TreeDisclosure
+          expandable={child.children.length > 0}
+          expanded={open}
+          onToggle={() => setOpen((value) => !value)}
+        />
         {child.children.length > 0 ? (
-          <button
-            type="button"
-            onClick={() => setOpen((value) => !value)}
-            aria-expanded={open}
-            aria-label={open ? `Collapse ${child.label}` : `Expand ${child.label}`}
-            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
-          >
-            <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-90")} aria-hidden />
-          </button>
+          <TreeFolderIcon open={open} />
         ) : (
-          <span className="h-6 w-6 shrink-0" aria-hidden />
+          <FileText aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
         )}
         <Link
           href={featureIntelligenceHref(child.slug)}

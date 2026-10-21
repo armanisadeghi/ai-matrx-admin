@@ -24,8 +24,9 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { createScope } from "@/features/scopes/redux/thunks/scopeTreeMutations";
 import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
+import { LabelWithTail } from "@/lib/labels/LabelWithTail";
 import {
-  homeLabels,
+  homeLabelParts,
   homeMatchScore,
   homeSections,
   isGeneralScopeType,
@@ -42,6 +43,8 @@ export interface HomePickerListProps {
   busy?: boolean;
   /** Placement of the scrolling list (height). */
   listClassName?: string;
+  /** Focus the filter on open (default). Off on touch: a keyboard would cover the list. */
+  autoFocus?: boolean;
 }
 
 export function HomePickerList({
@@ -50,6 +53,7 @@ export function HomePickerList({
   onPick,
   busy = false,
   listClassName,
+  autoFocus = true,
 }: HomePickerListProps) {
   const dispatch = useAppDispatch();
   const { homes, organizations, status } = useHomeChoices();
@@ -62,11 +66,19 @@ export function HomePickerList({
 
   const sections = useMemo(() => homeSections(homes), [homes]);
   // In a list that spans organizations, every General names its organization; no two rows read the same.
-  const labels = useMemo(
-    () => homeLabels(homes, { notesSpanManyOrganizations: homes.filter((h) => h.isGeneral).length > 1 }),
+  const parts = useMemo(
+    () => homeLabelParts(homes, { notesSpanManyOrganizations: homes.filter((h) => h.isGeneral).length > 1 }),
     [homes],
   );
-  const labelFor = (home: ItemHome) => labels.get(home.scopeId) ?? home.name;
+  const labelFor = (home: ItemHome) => {
+    const part = parts.get(home.scopeId);
+    return part ? part.text + (part.tail ?? "") : home.name;
+  };
+  // Every host opens this to type a home's name: a dialog's focus trap otherwise lands on its
+  // Close button, and the first keystrokes went nowhere (tab "…" Move to…, bulk, Ctrl/⌘+Shift+M).
+  const [focusFilter] = useState(
+    () => autoFocus && !(typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches),
+  );
   // Each item's value is its scope id (unique, never searched); the filter ranks by the home's name.
   const homeById = useMemo(() => new Map(homes.map((home) => [home.scopeId, home])), [homes]);
   const filterHomes = (value: string, search: string) => {
@@ -117,7 +129,7 @@ export function HomePickerList({
 
   return (
     <Command shouldFilter filter={filterHomes} className="flex min-h-0 flex-1 flex-col">
-      <CommandInput placeholder="Find a home" value={query} onValueChange={setQuery} />
+      <CommandInput placeholder="Find a home" value={query} onValueChange={setQuery} autoFocus={focusFilter} />
       <CommandList className={cn("max-h-[360px]", listClassName)}>
         <CommandEmpty>{status === "ready" ? "No home matches" : "Loading homes"}</CommandEmpty>
         {sections.map((section) => (
@@ -135,7 +147,11 @@ export function HomePickerList({
                   data-home-scope-id={home.scopeId}
                 >
                   <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <span className="flex-1 truncate">{label}</span>
+                  <LabelWithTail
+                    text={parts.get(home.scopeId)?.text ?? label}
+                    tail={parts.get(home.scopeId)?.tail}
+                    className="flex-1"
+                  />
                   {isCurrent ? <Check className="h-3.5 w-3.5 shrink-0 text-primary" /> : null}
                 </CommandItem>
               );

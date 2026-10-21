@@ -1,3 +1,4 @@
+import type { TransferWorkSummary } from "@/lib/communications/voice/transfer-work-summary";
 /** TwiML for the disclosed owner Voice beta control plane. */
 
 import twilio from "twilio";
@@ -284,6 +285,7 @@ export function readVoiceTransferBrief(
 
 export function buildVoiceTransferBriefTwiml(
   brief: VoiceTransferBrief | null,
+  work: TransferWorkSummary | null = null,
 ): string {
   const response = new twilio.twiml.VoiceResponse();
   response.say(
@@ -291,6 +293,9 @@ export function buildVoiceTransferBriefTwiml(
     "A caller has requested to speak to a person through A.I. Matrix. " +
       (brief
         ? `The A.I. assistant started ${brief.agentRequests} ${brief.agentRequests === 1 ? "response" : "responses"}. There ${brief.interruptions === 1 ? "was" : "were"} ${brief.interruptions} ${brief.interruptions === 1 ? "interruption" : "interruptions"}. `
+        : "") +
+      (work
+        ? `Saved work for this call: ${work.completed} completed agent requests, ${work.failed} failed, and ${work.unfinished} not confirmed complete. ${work.toolCalls} tool call attempts recorded. These records do not confirm that external actions succeeded. `
         : "") +
       "Connecting you now.",
   );

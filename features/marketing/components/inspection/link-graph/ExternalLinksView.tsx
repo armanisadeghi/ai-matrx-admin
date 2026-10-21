@@ -337,7 +337,7 @@ export function ExternalLinksView({ crawlId }: { crawlId?: string }) {
           No outbound links recorded
         </p>
         <p className="max-w-sm text-xs text-muted-foreground">
-          External links appear after snapshots are captured for pages that
+          External links appear after page captures exist for pages that
           link beyond {displayUrl(site.root_url, site.root_url) || "this site"}.
         </p>
       </div>

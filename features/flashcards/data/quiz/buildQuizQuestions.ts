@@ -1,9 +1,9 @@
 // features/flashcards/data/quiz/buildQuizQuestions.ts
 //
-// Phase 1B (Test mode) — turns a set's cards into multiple-choice questions
-// using OTHER cards in the same set as distractors (free, instant, always
+// Phase 1B (Test mode) — turns a deck's cards into multiple-choice questions
+// using OTHER cards in the same deck as distractors (free, instant, always
 // plausible-ish since they're from the same topic/set). `needsFallback`
-// flags questions that came up short (small sets) for the AI fallback
+// flags questions that came up short (small decks) for the AI fallback
 // (`makeQuizItems`) to top up on demand.
 
 import type { Json } from "@/types/database.types";
@@ -71,7 +71,7 @@ export interface QuizQuestion {
   correctAnswer: string;
   /** Shuffled; always includes `correctAnswer`. */
   options: string[];
-  /** True when the set didn't have enough distinct sibling answers. */
+  /** True when the deck didn't have enough distinct sibling answers. */
   needsFallback: boolean;
   /**
    * The AI-authored question stem, when this card has one. Preferred over the

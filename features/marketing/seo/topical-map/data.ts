@@ -529,7 +529,7 @@ export async function setPagesMapTopics(
 
 /**
  * Every edge attached to one topic, in both directions, with the other end
- * resolved through `platform.resolve_entity_ref`. Plan nodes and keywords are
+ * resolved through `platform.resolve_entity_ref`. Plan pages and keywords are
  * column links rather than association rows, and are presented as edges too.
  *
  * An edge whose other end the caller cannot open is NOT listed — no id, no

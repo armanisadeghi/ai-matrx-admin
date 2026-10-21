@@ -44,7 +44,7 @@ export default async function MarketingScreenshotPage({
       <section className="mx-auto grid max-w-3xl gap-5 rounded-xl border border-border bg-card p-5 shadow-sm">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Web screenshot</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Screenshot</p>
             <h1 className="text-2xl font-semibold capitalize">{name}</h1>
             <RecordId value={screenshot.id} label="Screenshot" show="full" className="mt-1" />
           </div>

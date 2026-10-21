@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
  * PerformanceWatchConsole — /administration/reporting/performance.
@@ -435,8 +436,8 @@ function WatchBoard({
           >
             {r.watch.label}
           </button>
-          <div className="truncate font-mono text-[11px] text-muted-foreground" title={r.watch.slug}>
-            {r.watch.slug}
+          <div className="truncate font-mono text-[11px] text-muted-foreground" title={humanizeIdentifier(r.watch.slug)}>
+            {humanizeIdentifier(r.watch.slug)}
             {r.watch.is_active ? "" : " · off"}
           </div>
         </div>
@@ -621,7 +622,7 @@ function WatchDrill({
         </Button>
         <span className="text-sm font-semibold">{w.label}</span>
         <StateBadge state={row.state} />
-        <span className="font-mono text-[11px] text-muted-foreground">{w.slug}</span>
+        <span className="font-mono text-[11px] text-muted-foreground">{humanizeIdentifier(w.slug)}</span>
         {w.perf_state_since ? (
           <span className="text-muted-foreground">since {formatRelativeTime(w.perf_state_since)}</span>
         ) : null}

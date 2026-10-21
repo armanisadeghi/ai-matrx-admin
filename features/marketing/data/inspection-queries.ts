@@ -274,7 +274,7 @@ export function listSiteLinks(
   return listLinks(siteId, null, state, signal);
 }
 
-/** List only link edges captured by one crawl session. */
+/** List only link edges captured by one crawl. */
 export function listCrawlLinks(
   siteId: string,
   crawlId: string,
@@ -284,7 +284,7 @@ export function listCrawlLinks(
   return listLinks(siteId, crawlId, state, signal);
 }
 
-/** Broken (no response, 4xx, or 5xx) link edges from one crawl session. */
+/** Broken (no response, 4xx, or 5xx) link edges from one crawl. */
 export function listBrokenCrawlLinks(
   siteId: string,
   crawlId: string,
@@ -360,7 +360,7 @@ export async function listLinkGraphEdges(
   return { rows, total, truncated: total > rows.length };
 }
 
-/** List immutable content captures produced by one crawl session. */
+/** List immutable content captures produced by one crawl. */
 export async function listCrawlSnapshots(
   siteId: string,
   crawlId: string,
@@ -431,7 +431,7 @@ const FINGERPRINT_SELECT: string =
   "id, page_id, final_url, word_count, captured_at, fingerprint:extracted->fingerprint, page:page(url)";
 
 /**
- * Fetch EVERY capture's content fingerprint for one crawl session — duplicate
+ * Fetch EVERY capture's content fingerprint for one crawl — duplicate
  * clustering needs the whole session, not one table page. Capped at
  * FINGERPRINT_ROW_CAP rows with a loud `truncated` flag.
  */
@@ -479,7 +479,7 @@ const CANONICAL_MAP_SELECT: string =
   "id, page_id, final_url, http_status, canonical_url:head_tags->>canonical_url, page:page(url)";
 
 /**
- * Fetch EVERY capture's observed canonical for one crawl session — canonical
+ * Fetch EVERY capture's observed canonical for one crawl — canonical
  * CHAIN resolution (A → B → C, loops, canonical-to-error) needs the whole
  * session, not one table page. Capped with a loud `truncated` flag.
  */
@@ -518,7 +518,7 @@ export async function listCrawlCanonicalMap(
 }
 
 /**
- * Probe whether one crawl session recorded redirect-hop evidence at all —
+ * Probe whether one crawl recorded redirect-hop evidence at all —
  * `web.crawl_url.metadata.redirect_chain` exists on every row of crawls run
  * after 2026-08-08 and on none before. Distinguishes "no redirects on this
  * site" from "crawled before chain evidence existed" so the report can say

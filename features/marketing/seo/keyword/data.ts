@@ -572,7 +572,7 @@ export async function listSitePerformanceForKeyword(
 /**
  * The phrases behind a set of keyword ids, keyed by id.
  *
- * KI-026 — a surface that stores a keyword as an id (a content-plan node's
+ * KI-026 — a surface that stores a keyword as an id (a content-plan page's
  * `primary_keyword_id`, a change theory's `keyword_id`) must be able to NAME
  * the keyword rather than print "Bound", and it needs the phrase for the Why
  * receipt's link context. Bounded by the explicit id list, so no cap applies.

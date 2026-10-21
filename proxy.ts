@@ -207,7 +207,7 @@ const EDU_ALLOWED_EXACT = new Set([
 const EDU_ALLOWED_PREFIXES = [
   "/education", // the education hub itself
   "/c/", // public creator landing pages
-  "/p/", // public share viewer (e.g. flashcard sets) — consumed by the anon funnel
+  "/p/", // public share viewer (e.g. flashcard decks) — consumed by the anon funnel
   "/auth", // auth callback routes (excluded from the proxy matcher, kept for defensiveness)
   "/api", // API routes gate their own auth (excluded from the proxy matcher, kept for defensiveness)
   "/_next",

@@ -233,7 +233,7 @@ export function buildMarketingPageScope(input: {
    */
   cmsPush?: Record<string, unknown> | null;
   /**
-   * The plan node behind this page (`readPlanContextFromCache` over the plan
+   * The plan page behind this page (`readPlanContextFromCache` over the plan
    * node's react-query entry) — the BEFORE. Null when nothing planned it.
    */
   planContext?: Record<string, unknown> | null;

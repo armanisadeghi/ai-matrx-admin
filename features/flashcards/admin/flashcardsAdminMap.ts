@@ -16,7 +16,7 @@ export const flashcardsAdminMap: FeatureAdminMap = {
   name: "Flashcards",
   slug: "flashcards",
   description:
-    "The flashcard creation + study tool under /education/flashcards. Canonical content lives in the education schema (fc_set / fc_card / fc_detail); studying writes the shared study spine (study_attempt + item_mastery). Today: a list-first browser + set detail + a classic-flip study surface.",
+    "The flashcard creation + study tool under /education/flashcards. Canonical content lives in the education schema (fc_set / fc_card / fc_detail); studying writes the shared study spine (study_attempt + item_mastery). Today: a list-first browser + deck detail + a classic-flip study surface.",
   docs: [
     { label: "Education VISION", href: "/common-docs/systems/education/VISION.md" },
     { label: "Education admin map", href: "/education/admin" },
@@ -94,7 +94,7 @@ export const flashcardsAdminMap: FeatureAdminMap = {
       url: "/education/flashcards/[setId]/test",
       label: "Test mode",
       description:
-        "Multiple-choice quiz — distractors from sibling cards' back text first (free/instant), topped up via fc_make_quiz_items for small sets. method='test'.",
+        "Multiple-choice quiz — distractors from sibling cards' back text first (free/instant), topped up via fc_make_quiz_items for small decks. method='test'.",
       filePath: "app/(core)/education/flashcards/[setId]/test/page.tsx",
       status: "Live",
       notes: [
@@ -141,7 +141,7 @@ export const flashcardsAdminMap: FeatureAdminMap = {
       url: "/education/fastfire",
       label: "Fast Fire drill",
       description:
-        "Voice-graded, timed flashcard drill (?set=<id> deep-links a set). Web-Audio PCM→WAV capture core.",
+        "Voice-graded, timed flashcard drill (?set=<id> deep-links a deck). Web-Audio PCM→WAV capture core.",
       filePath: "app/(core)/education/fastfire/page.tsx",
       status: "Live",
       notes: [
@@ -163,9 +163,9 @@ export const flashcardsAdminMap: FeatureAdminMap = {
     },
     {
       url: "/education/flashcards/sessions",
-      label: "Study history (all sets)",
+      label: "Study history (all decks)",
       description:
-        "The learner's study/Fast Fire session history across all sets (mode-agnostic SessionsBrowser over the study spine).",
+        "The learner's study/Fast Fire session history across all decks (mode-agnostic SessionsBrowser over the study spine).",
       filePath: "app/(core)/education/flashcards/sessions/page.tsx",
       status: "Live",
     },
@@ -179,9 +179,9 @@ export const flashcardsAdminMap: FeatureAdminMap = {
     },
     {
       url: "/education/flashcards/[setId]/sessions",
-      label: "Sessions for a set",
+      label: "Sessions for a deck",
       description:
-        "Study/Fast Fire sessions scoped to one set; rows open the shared session detail.",
+        "Study/Fast Fire sessions scoped to one deck; rows open the shared session detail.",
       filePath: "app/(core)/education/flashcards/[setId]/sessions/page.tsx",
       status: "Live",
     },
@@ -261,14 +261,14 @@ export const flashcardsAdminMap: FeatureAdminMap = {
       name: "EditSetView",
       filePath: "features/flashcards/components/editor/EditSetView.tsx",
       description:
-        "The set authoring surface: rename set, inline per-card edit, add card (basic/cloze/matching kind menu). F1: debounced autosave with a status indicator (no manual save), a version-history/restore entry point, per-card mastery pills, and the trust footer (verify-against-source) on generated cards. Writes via fcService.",
+        "The deck authoring surface: rename set, inline per-card edit, add card (basic/cloze/matching kind menu). F1: debounced autosave with a status indicator (no manual save), a version-history/restore entry point, per-card mastery pills, and the trust footer (verify-against-source) on generated cards. Writes via fcService.",
       tier: "internal",
     },
     {
       name: "SetVersionHistoryDialog",
       filePath: "features/flashcards/components/editor/SetVersionHistoryDialog.tsx",
       description:
-        "F1: never-lose-work version restore — lists the set's platform row-versions (get_version_history) and restores any prior version (restore_version, append-only). Opened from the editor's History button.",
+        "F1: never-lose-work version restore — lists the deck's platform row-versions (get_version_history) and restores any prior version (restore_version, append-only). Opened from the editor's History button.",
       tier: "internal",
     },
     {
@@ -339,7 +339,7 @@ export const flashcardsAdminMap: FeatureAdminMap = {
       filePath:
         "features/flashcards/components/set-detail/AudioOverviewSection.tsx",
       description:
-        'Phase 7 — "Generate audio overview" action on set detail. Calls the generic podcast generator (usePodcastRun) with the deck serialized to markdown (podcastOverview.ts), persists the durable file_id to fc_set.audio_overview_file_id, plays back via the shared SessionAudio.',
+        'Phase 7 — "Generate audio overview" action on deck detail. Calls the generic podcast generator (usePodcastRun) with the deck serialized to markdown (podcastOverview.ts), persists the durable file_id to fc_set.audio_overview_file_id, plays back via the shared SessionAudio.',
       tier: "internal",
     },
     {
@@ -362,7 +362,7 @@ export const flashcardsAdminMap: FeatureAdminMap = {
       filePath:
         "components/mardown-display/blocks/flashcards/FlashcardsBlock.tsx",
       description:
-        "Markdown/stream render block that surfaces a flashcard set inline in chat.",
+        "Markdown/stream render block that surfaces a flashcard deck inline in chat.",
       tier: "internal",
     },
     {

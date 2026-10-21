@@ -44,6 +44,9 @@ import type { DataHomeRow } from "./dataHomeRows";
 import { archiveTableFromHome } from "./archiveTableFromHome";
 import { archiveFormFromHome, restoreFormFromHome } from "./archiveFormFromHome";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import type { EntityBulkAction } from "@/lib/entity-list/selection";
+import { dataHomeBulkActions } from "./dataHomeBulkActions";
+import { DATA_HOME_STAR_CAP, useDataHomeMarks } from "./useDataHomeMarks";
 
 /** How many table ids one `custom.my_levels_across` call asks about (the door answers at most 500). */
 const LEVELS_PER_CALL = 200;
@@ -228,6 +231,8 @@ function withQuery(href: string, query: string): string {
 }
 
 export interface DataHomeRowMenus {
+  /** The row verbs' bulk twins (Archive, Restore, favorites), from `dataHomeBulkActions`. */
+  bulkActions: EntityBulkAction<DataHomeRow>[];
   /** The shell's `useRowActions` for the Data home, with the dialogs a row's menu opened. */
   useRowActions: (list: EntityListController<DataHomeRow>) => EntityRowActionsResult<DataHomeRow>;
 }
@@ -259,6 +264,7 @@ export function useDataHomeRowMenus({
   // The host the data home's lazy `RecordsMount` was given (records-ui's `useRecordsUi`, through the front door).
   const recordsUi = useScreenRecordsUiHost();
   const stars = useStarToggle();
+  const marks = useDataHomeMarks();
   const [asked, setAsked] = useState<Asked | null>(null);
   const ask = (what: Asked["what"], row: DataHomeRow) =>
     setAsked((now) => ({ what, row, count: (now?.count ?? 0) + 1 }));
@@ -588,6 +594,73 @@ export function useDataHomeRowMenus({
 
   // The shell calls this as a hook, every render: the levels are asked for the rows it SHOWS
   // (a list read that failed and was retried still gets its rights).
+  const bulkActions = dataHomeBulkActions({
+    archiveTable: async (row) => {
+      if (!row.tableId) return "Only tables and forms archive from here";
+      const inOrganization = row.organizationId
+        ? createRecordsClient({ ...client.config, organizationId: row.organizationId })
+        : client;
+      const result = await archiveTableFromHome({
+        client: inOrganization,
+        tableId: row.tableId,
+        notify: recordsUi.notify,
+        fallbackName: row.name,
+        announce: false,
+        onOptimisticHide: () => onHide(row.id),
+        onRollback: () => onUnhide(row.id),
+        onRestored: () => onUnhide(row.id),
+      });
+      if (result.outcome === "archived") return null;
+      if (result.outcome === "needs-confirm") return "Too big to archive in a batch. Archive it from its own menu.";
+      return result.sentence;
+    },
+    archiveForm: async (row) => {
+      const inOrganization = row.organizationId
+        ? createRecordsClient({ ...client.config, organizationId: row.organizationId })
+        : client;
+      const done = await archiveFormFromHome({
+        client: inOrganization,
+        formId: row.itemId,
+        onOptimisticHide: () => onHide(row.id),
+        onRollback: () => onUnhide(row.id),
+      });
+      return done.outcome === "refused" ? done.sentence : null;
+    },
+    restoreTable: async (row) => {
+      if (!row.organizationId || !row.tableId) return "Restore it from its table";
+      const answered = await restoreTableIn(client.config.dataSource, row.organizationId, row.tableId);
+      if (answered.ok) return null;
+      return answered.error.sqlstate === "57014" ? "The restore took too long. Try again in a moment." : answered.error.message;
+    },
+    restoreForm: async (row) => {
+      if (!row.organizationId) return "Restore it from its table";
+      const back = await restoreFormFromHome({
+        client: createRecordsClient({ ...client.config, organizationId: row.organizationId }),
+        formId: row.itemId,
+      });
+      return back.outcome === "refused" ? back.sentence : null;
+    },
+    isStarred: (row) => starred.has(row.id),
+    setStarred: (ids, on) => {
+      const current = marks.starred;
+      if (!on) {
+        const drop = new Set(ids);
+        marks.setStarred(current.filter((id) => !drop.has(id)));
+        return [];
+      }
+      const next = [...current];
+      const refused: string[] = [];
+      for (const id of ids) {
+        if (next.includes(id)) continue;
+        if (next.length >= DATA_HOME_STAR_CAP) refused.push(id);
+        else next.unshift(id);
+      }
+      marks.setStarred(next);
+      return refused;
+    },
+    onChanged,
+  });
+
   const useRowActions = (list: EntityListController<DataHomeRow>): EntityRowActionsResult<DataHomeRow> => {
     const levels = useTableLevels(
       list.rows
@@ -608,5 +681,5 @@ export function useDataHomeRowMenus({
     };
   };
 
-  return { useRowActions };
+  return { useRowActions, bulkActions };
 }

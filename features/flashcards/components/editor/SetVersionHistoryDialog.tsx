@@ -1,7 +1,7 @@
 // features/flashcards/components/editor/SetVersionHistoryDialog.tsx
 //
-// The never-lose-work "version restore" affordance for a flashcard set. Reads
-// the set's history from the PLATFORM row-versioning system (lib/versioning —
+// The never-lose-work "version restore" affordance for a flashcard deck. Reads
+// the deck's history from the PLATFORM row-versioning system (lib/versioning —
 // get_version_history) and restores any prior version atomically
 // (restore_version). Restoring is itself a new version, so nothing is ever
 // destroyed — the wedge against Knowt's data-loss reputation.
@@ -38,7 +38,7 @@ import {
 } from "@/lib/versioning/versionHistory";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
-/** The platform entity token the version system keys a flashcard set by. */
+/** The platform entity token the version system keys a flashcard deck by. */
 const FC_SET_ENTITY = "fc_set";
 
 export function SetVersionHistoryDialog({
@@ -50,7 +50,7 @@ export function SetVersionHistoryDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   setId: string;
-  /** Called after a successful restore so the editor can refetch the set. */
+  /** Called after a successful restore so the editor can refetch the deck. */
   onRestored: () => void;
 }) {
   const isMobile = useIsMobile();
@@ -207,7 +207,7 @@ export function SetVersionHistoryDialog({
           if (!o && !restoring) setRestoreTarget(null);
         }}
         title={`Restore version ${restoreTarget?.versionNumber ?? ""}`}
-        description="This set's fields will be reset to that version. Your current version is kept in history, so you can always come back to it."
+        description="This deck's fields will be reset to that version. Your current version is kept in history, so you can always come back to it."
         confirmLabel="Restore"
         busy={restoring}
         onConfirm={confirmRestore}

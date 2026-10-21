@@ -3,6 +3,7 @@ import combinedProcessor, {
     OutputNode,
     AstNode,
 } from "@/components/mardown-display/markdown-classification/processors/custom/combined-processor";
+import { treeIndentStyle } from "@/components/official/topic-tree/geometry";
 
 interface AstRendererProps {
     data: AstNode;
@@ -18,10 +19,9 @@ interface NodeRendererProps {
 }
 
 const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, animated = true }) => {
-    const getDepthIndentation = (depth: number) => {
-        if (depth <= 0) return "";
-        return `ml-${Math.min(depth * 3, 12)}`;
-    };
+    // Document depth is capped at 4 levels, each one tree step.
+    const getDepthStyle = (depth: number) =>
+      depth <= 0 ? undefined : treeIndentStyle(Math.min(depth, 4));
 
     const getTypeStyles = (type: string) => {
         const baseClasses = animated ? "transition-all duration-200 ease-out" : "";
@@ -66,7 +66,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, anima
 
     const renderListItem = (node: OutputNode) => {
         return (
-            <div className={`${getTypeStyles(node.type)} ${getDepthIndentation(node.depth || 0)}`}>
+            <div className={getTypeStyles(node.type)} style={getDepthStyle(node.depth || 0)}>
                 <span className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                     {node.content && (
@@ -100,7 +100,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, anima
         };
 
         return (
-            <div className={`${getTypeStyles(node.type)} ${getDepthIndentation(node.depth || 0)}`}>
+            <div className={getTypeStyles(node.type)} style={getDepthStyle(node.depth || 0)}>
                 {React.createElement(
                     HeadingTag,
                     {
@@ -121,7 +121,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, anima
 
     const renderTable = (node: OutputNode) => {
         return (
-            <div className={getDepthIndentation(node.depth || 0)}>
+            <div style={getDepthStyle(node.depth || 0)}>
                 <table className={getTypeStyles("table")}>
                     <tbody>
                         {node.children && node.children.map((row, rowIndex) => (
@@ -181,7 +181,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, anima
 
     if (node.type === "text - strong" || node.type === "strong") {
         return (
-            <div className={getDepthIndentation(node.depth || 0)}>
+            <div style={getDepthStyle(node.depth || 0)}>
                 <strong className={getTypeStyles(node.type)}>
                     {node.content}
                     {node.children && node.children.length > 0 && (
@@ -198,7 +198,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, anima
 
     if (node.type === "text - emphasis" || node.type === "emphasis") {
         return (
-            <div className={getDepthIndentation(node.depth || 0)}>
+            <div style={getDepthStyle(node.depth || 0)}>
                 <em className={getTypeStyles(node.type)}>
                     {node.content}
                     {node.children && node.children.length > 0 && (
@@ -215,7 +215,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, anima
 
     if (node.type === "paragraph" || node.type === "text - paragraph") {
         return (
-            <div className={`${getTypeStyles(node.type)} ${getDepthIndentation(node.depth || 0)}`}>
+            <div className={getTypeStyles(node.type)} style={getDepthStyle(node.depth || 0)}>
                 <span>{node.content}</span>
                 {node.children && node.children.length > 0 && (
                     <div className="mt-2">
@@ -230,7 +230,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, anima
 
     // Default text rendering
     return (
-        <div className={getDepthIndentation(node.depth || 0)}>
+        <div style={getDepthStyle(node.depth || 0)}>
             <span className={getTypeStyles(node.type)}>
                 {node.content && <span>{node.content}</span>}
                 {node.children && node.children.length > 0 && (

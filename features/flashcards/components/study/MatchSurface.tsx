@@ -1,7 +1,7 @@
 // features/flashcards/components/study/MatchSurface.tsx
 //
 // Phase 1B (Match mode) — the click-to-pair matching game surface for ONE
-// flashcard set. A thin driver over useMatchGame → this presentational
+// flashcard deck. A thin driver over useMatchGame → this presentational
 // board (tile grid, timer, attempts, completion summary).
 //
 // React Compiler is on: no manual useMemo / useCallback / React.memo.
@@ -90,7 +90,7 @@ export function MatchSurface({ setId }: { setId: string }) {
             <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-card px-6 py-16 text-center">
               <BookOpen className="h-6 w-6 text-muted-foreground" />
               <p className="text-sm font-medium text-foreground">
-                This set has no cards yet
+                This deck has no cards yet
               </p>
               <p className="max-w-sm text-xs text-muted-foreground">
                 Generate some in chat to play Match.
@@ -243,7 +243,7 @@ function CompletionScreen({
           Play again
         </Button>
         <Button icon={<Layers />} variant="primary" className="flex-1" onClick={onBackToSet}>
-          Back to set
+          Back to deck
         </Button>
       </div>
     </div>

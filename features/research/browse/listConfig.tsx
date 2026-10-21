@@ -12,6 +12,10 @@
 // (restorable, edges included), so the shell's Archived filter maps onto it
 // through `rsx_list_scoped(p_archived)`; the row menu offers Archive / Restore.
 
+import { Archive, ArchiveRestore } from "lucide-react";
+import type { EntityBulkAction } from "@/lib/entity-list/selection";
+import { runPerRow } from "@/lib/entity-list/standardBulkActions";
+import { archiveTopic, restoreTopic } from "./actions";
 import type { EntityListConfig } from "@/lib/entity-list/config";
 import { RESEARCH_TOPIC_COLUMNS, formatAutonomy, formatTopicStatus } from "./columns";
 import { organizationLabel, projectLabel, researchTopicListService } from "./service";
@@ -23,6 +27,51 @@ import {
   topicHref,
   type ResearchTopicListRow,
 } from "./types";
+
+/**
+ * The row menu's Archive / Restore (`archiveTopic` / `restoreTopic`), many at a time. The ids
+ * replace the built-in Move to Trash / Restore, so the topic's own writes (edges included) run.
+ */
+const TOPIC_BULK_ACTIONS: EntityBulkAction<ResearchTopicListRow>[] = [
+  {
+    id: "move-to-trash",
+    label: "Archive",
+    icon: Archive,
+    variant: "destructive",
+    confirm: (selection) => ({
+      title: `Archive ${selection.count === 1 ? "this topic" : `${selection.count} topics`}?`,
+      description:
+        "Each topic leaves the list with its sources, analyses and documents. Nothing is lost: Restore in the Archived view brings it all back.",
+      confirmLabel: "Archive",
+      variant: "destructive",
+    }),
+    run: (selection) =>
+      runPerRow(
+        selection,
+        async (id, row) => {
+          if (row?.archived_at) throw new Error("already archived");
+          await archiveTopic(id);
+        },
+        { done: "Archived", noun: "topic", labelOf: (row) => row.name, removesRows: true },
+        (row) => row.id,
+      ),
+  },
+  {
+    id: "restore",
+    label: "Restore",
+    icon: ArchiveRestore,
+    run: (selection) =>
+      runPerRow(
+        selection,
+        async (id, row) => {
+          if (row && !row.archived_at) throw new Error("not archived");
+          await restoreTopic(id);
+        },
+        { done: "Restored", noun: "topic", labelOf: (row) => row.name, removesRows: true },
+        (row) => row.id,
+      ),
+  },
+];
 
 export const RESEARCH_TOPIC_LIST_CONFIG: EntityListConfig<ResearchTopicListRow> = {
   surfaceKey: "research-topics",
@@ -45,6 +94,7 @@ export const RESEARCH_TOPIC_LIST_CONFIG: EntityListConfig<ResearchTopicListRow> 
     title: row.name,
   }),
   useRowActions: useTopicRowActions,
+  bulkActions: TOPIC_BULK_ACTIONS,
   supportsArchived: true,
   searchPlaceholder: "Search topics and research questions",
   facetSections: [

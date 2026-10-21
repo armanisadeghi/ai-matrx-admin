@@ -22,7 +22,7 @@ export default async function CrmRoute() {
       <ModuleSignInGate
         title="CRM"
         route="/crm"
-        description="Manage people and companies — contacts, affiliations, activity, notes, and files in one place."
+        description="Manage contacts — affiliations, activity, notes, and files in one place."
         icon={Contact}
       />
     );

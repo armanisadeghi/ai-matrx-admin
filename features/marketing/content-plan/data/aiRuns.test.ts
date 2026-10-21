@@ -22,8 +22,8 @@ describe("brief run history is one Supabase RPC, not a server call", () => {
   });
 
   it("surfaces a database error instead of an empty list", async () => {
-    rpc.mockResolvedValue({ data: null, error: { message: "Plan node n1 not found." } });
-    await expect(fetchBriefRunHistory("n1")).rejects.toThrow("Plan node n1 not found.");
+    rpc.mockResolvedValue({ data: null, error: { message: "Plan page n1 not found." } });
+    await expect(fetchBriefRunHistory("n1")).rejects.toThrow("Plan page n1 not found.");
   });
 
   it("the site history and one run are RPCs too", async () => {

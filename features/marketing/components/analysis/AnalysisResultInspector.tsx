@@ -12,7 +12,7 @@
  * Every stored column now renders, and every id that resolves to a record is a
  * door (THE DOOR LAW): the subject through `AnalysisSubjectRef`, the page and
  * site through `EntityRef`, the run through `AnalysisRunRef` (which asks
- * whether that unconstrained id is a crawl session before offering a door),
+ * whether that unconstrained id is a crawl before offering a door),
  * and the actors through `RecordStamps`.
  *
  * ONE component, rendered by the results table's row detail AND its window —

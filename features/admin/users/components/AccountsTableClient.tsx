@@ -14,17 +14,13 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   BadgeCheck,
   Building2,
-  Gift,
   MoreHorizontal,
   UserRound,
   X,
 } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
-import { isJsonObject } from "@/types/json";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
-import { runPerRow } from "@/lib/entity-list/standardBulkActions";
-import type { EntityBulkAction } from "@/lib/entity-list/selection";
-import { Lock, Unlock } from "lucide-react";
+import { bulkActionsFromRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { accountBulkTwins } from "./accountBulkTwins";
 import { formatCount } from "@ai-matrx/kit/format";
 import { Cost } from "@/components/cost/Cost";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
@@ -66,6 +62,7 @@ import { personChanged, useUserActions } from "../record/useUserActions";
 import {
   allUserActions,
   userDoors,
+  type UserActionDef,
   userRecordHref,
 } from "../record/userSurfaces";
 import { AI_REQUESTS_LABEL } from "../record/userOverview";
@@ -789,106 +786,20 @@ function AccountsRoster() {
     });
   }
 
-  // BULK CLOSE / REOPEN — the roster's own iam.close_account / reopen_account,
-  // once per person; refusals (your own account, an erased one) are skipped and
-  // named. Built-ins are off: people are not favouritable/trashable records.
-  const accountBulkActions: EntityBulkAction<AdminUserRow>[] = [
+  // THE BULK BAR comes from the same registry as the Manage menu (`allUserActions()`): every verb has
+  // a twin or a stated reason it has none (accountBulkTwins.ts). A person the registry refuses
+  // (`blockedReason`: guest, no email, your own account) is skipped and named. Built-ins are off:
+  // people are not favouritable/trashable records.
+  const accountBulkActions = bulkActionsFromRowVerbs<UserActionDef, AdminUserRow>(
+    allUserActions(),
+    accountBulkTwins({ giveFreeMonths: userActions.giveFreeMonths }),
     {
-      id: "give-free-months",
-      label: "Give free months…",
-      icon: Gift,
-      // The dialog resolves nothing, so the selection stays; people without
-      // an account of their own are named and left out, never unticked.
-      run: (sel) => {
-        const people = sel.rows.filter((row) => !row.is_anonymous);
-        if (people.length === 0) throw new Error("Anonymous visitors have no billing account to credit.");
-        if (people.length < sel.rows.length) {
-          toast.warning(`${sel.rows.length - people.length} anonymous visitor(s) left out`);
-        }
-        userActions.giveFreeMonths(
-          people.map((row) => ({ id: row.id, label: row.display_name ?? row.email ?? row.id })),
-        );
-      },
+      noun: "account",
+      getRowId: (row) => row.id,
+      getRowName: (row) => row.email ?? row.display_name ?? row.id,
+      blocked: (verb, row) => userActions.blockedReason(verb.id, row),
     },
-    {
-      id: "close-accounts",
-      label: "Close",
-      icon: Lock,
-      variant: "destructive",
-      confirm: (sel) => ({
-        title: `Close ${sel.count} account${sel.count === 1 ? "" : "s"}?`,
-        description: `${sel.count} ${sel.count === 1 ? "person" : "people"} can't sign in again (open sessions last up to an hour); API keys are revoked, schedules pause. Records stay; reopen any time.`,
-        confirmLabel: "Close accounts",
-        variant: "destructive",
-        reason: { placeholder: "Reason (recorded with each closure)" },
-      }),
-      run: async (sel, input) => {
-        const reason = input?.reason;
-        if (!reason) throw new Error("A reason is required to close accounts.");
-        return runPerRow(
-          sel,
-          async (id) => {
-            const { error } = await createClient()
-              .schema("iam")
-              .rpc("close_account", { p_user: id, p_reason: reason });
-            // access-errors: ok — a write refusal, named per row in the bulk result.
-            if (error) throw new Error(error.message);
-            personChanged(id);
-          },
-          {
-            done: "Closed",
-            noun: "account",
-            labelOf: (row) => row.email ?? row.display_name ?? row.id,
-            skipReason: (row) =>
-              row.id === researchOwnerId
-                ? "Your own account"
-                : row.banned
-                  ? "Already closed"
-                  : null,
-          },
-          (row) => row.id,
-        );
-      },
-    },
-    {
-      id: "reopen-accounts",
-      label: "Reopen",
-      icon: Unlock,
-      confirm: (sel) => ({
-        title: `Reopen ${sel.count} account${sel.count === 1 ? "" : "s"}?`,
-        description: `${sel.count} ${sel.count === 1 ? "person" : "people"} can sign in again; paused schedules and connections resume. Revoked API keys stay revoked.`,
-        confirmLabel: "Reopen",
-        reason: { placeholder: "Reason (recorded in the admin history)" },
-      }),
-      run: async (sel, input) => {
-        const reason = input?.reason;
-        if (!reason) throw new Error("A reason is required to reopen accounts.");
-        return runPerRow(
-          sel,
-          async (id) => {
-            const { data, error } = await createClient()
-              .schema("iam")
-              .rpc("reopen_account", { p_user: id, p_reason: reason });
-            // access-errors: ok — a write refusal, named per row in the bulk result.
-            if (error) throw new Error(error.message);
-            // `reopened: false` = nothing was closed: a skip with its reason, never a "Reopened" (B2).
-            if (isJsonObject(data) && data.reopened === false) {
-              throw new Error("Already open");
-            }
-            personChanged(id);
-          },
-          {
-            done: "Reopened",
-            noun: "account",
-            labelOf: (row) => row.email ?? row.display_name ?? row.id,
-            skipReason: (row) =>
-              row.erased ? "Erased — cannot be reopened" : !row.banned ? "Already open" : null,
-          },
-          (row) => row.id,
-        );
-      },
-    },
-  ];
+  );
   const accountBulk = useTableBulkSelection<AdminUserRow>({
     noun: "account",
     rows: visibleRows,

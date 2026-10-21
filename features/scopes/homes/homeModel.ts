@@ -7,6 +7,7 @@
 // sidebar and the move thunk all read these.
 
 import type { ScopeTypeWithScopes } from "@ai-matrx/records/scopes";
+import { shortDistinctIds } from "@/lib/labels/tellApart";
 
 /** The slug of the built-in General scope type every organization carries. */
 export const GENERAL_SCOPE_TYPE_SLUG = "general";
@@ -17,8 +18,6 @@ export interface ItemHome {
   name: string;
   organizationId: string;
   organizationName: string;
-  /** The organization's slug — the tie-breaker when two organizations share a name. */
-  organizationSlug?: string;
   scopeTypeId: string;
   /** The scope type's singular label ("Client", "Case", "General"). */
   scopeTypeLabel: string;
@@ -64,7 +63,6 @@ export function buildHomes(organizations: readonly HomeOrganization[]): ItemHome
         name: "General",
         organizationId: org.id,
         organizationName: org.name,
-        ...(org.slug ? { organizationSlug: org.slug } : {}),
         scopeTypeId: "",
         scopeTypeLabel: "General",
         isGeneral: true,
@@ -79,8 +77,7 @@ export function buildHomes(organizations: readonly HomeOrganization[]): ItemHome
           name: scope.name,
           organizationId: org.id,
           organizationName: org.name,
-          ...(org.slug ? { organizationSlug: org.slug } : {}),
-          scopeTypeId: type.id,
+            scopeTypeId: type.id,
           scopeTypeLabel: isGeneral ? "General" : type.label_singular,
           isGeneral,
         });
@@ -126,49 +123,62 @@ export function collidingHomeNames(homes: readonly ItemHome[]): Set<string> {
   return colliding;
 }
 
+/** A home's label in two parts: `text`, then the `tail` that tells it apart from a home whose
+ *  text reads the same (null when none does). The label is `text + tail`; a renderer keeps the
+ *  tail visible when it truncates (`HomeLabelText`), or two rows would still read alike. */
+export interface HomeLabelParts {
+  text: string;
+  tail: string | null;
+}
+
 /**
  * Every home's label, never two the same. `homeDisplayName` first; then, wherever two
  * homes still read identically (two organizations with the same name, two same-named
- * scopes of one organization), each gets a short suffix that tells them apart: the
- * organization's slug when those differ, else the kind of home, else a short id.
+ * scopes of one organization), each gets a short tail that tells them apart: the kind of
+ * home when those differ, else a short id. Never the organization's slug: the sidebar names
+ * homes without slugs, so the same home must read the same in every list, and a slug is
+ * long enough to be cut off itself.
  */
-export function homeLabels(
+export function homeLabelParts(
   homes: readonly ItemHome[],
   options: { notesSpanManyOrganizations: boolean },
-): Map<string, string> {
+): Map<string, HomeLabelParts> {
   const collidingNames = collidingHomeNames(homes);
-  const labels = new Map<string, string>();
+  const parts = new Map<string, HomeLabelParts>();
   const byLabel = new Map<string, ItemHome[]>();
   for (const home of homes) {
-    const label = homeDisplayName(home, { ...options, collidingNames });
-    labels.set(home.scopeId, label);
-    const key = label.toLocaleLowerCase();
+    const text = homeDisplayName(home, { ...options, collidingNames });
+    parts.set(home.scopeId, { text, tail: null });
+    const key = text.toLocaleLowerCase();
     const group = byLabel.get(key);
     if (group) group.push(home);
     else byLabel.set(key, [home]);
   }
   for (const group of byLabel.values()) {
     if (group.length < 2) continue;
-    const distinct = (pick: (home: ItemHome) => string | undefined) => {
-      const values = group.map(pick);
-      return values.every(Boolean) && new Set(values.map((v) => v!.toLocaleLowerCase())).size === group.length;
-    };
-    const suffix: (home: ItemHome) => string = distinct((h) => h.organizationSlug)
-      ? (h) => h.organizationSlug!
-      : distinct((h) => h.scopeTypeLabel)
-        ? (h) => h.scopeTypeLabel
-        : shortIds(group);
-    for (const home of group) labels.set(home.scopeId, `${labels.get(home.scopeId)} · ${suffix(home)}`);
+    const kinds = group.map((h) => h.scopeTypeLabel.toLocaleLowerCase());
+    const suffix: (home: ItemHome) => string =
+      kinds.every(Boolean) && new Set(kinds).size === group.length ? (h) => h.scopeTypeLabel : shortIds(group);
+    for (const home of group) parts.set(home.scopeId, { text: parts.get(home.scopeId)!.text, tail: ` · ${suffix(home)}` });
   }
+  return parts;
+}
+
+/** Every home's label as one string (`homeLabelParts` joined): toasts, agents, search. */
+export function homeLabels(
+  homes: readonly ItemHome[],
+  options: { notesSpanManyOrganizations: boolean },
+): Map<string, string> {
+  const labels = new Map<string, string>();
+  for (const [scopeId, { text, tail }] of homeLabelParts(homes, options)) labels.set(scopeId, text + (tail ?? ""));
   return labels;
 }
 
-/** The shortest id prefix (at least four characters) that tells each home of the group apart. */
+/** The shortest id prefix that tells each home of the group apart (a placeholder General by its organization). */
 function shortIds(group: readonly ItemHome[]): (home: ItemHome) => string {
-  const full = new Map(group.map((h) => [h.scopeId, (placeholderGeneralOrganization(h.scopeId) ?? h.scopeId).replace(/-/g, "")]));
-  let size = 4;
-  while (size < 32 && new Set(Array.from(full.values(), (id) => id.slice(0, size))).size < group.length) size += 2;
-  return (h) => full.get(h.scopeId)!.slice(0, size);
+  const idOf = (h: ItemHome) => placeholderGeneralOrganization(h.scopeId) ?? h.scopeId;
+  const short = shortDistinctIds(group.map(idOf));
+  return (h) => short.get(idOf(h))!;
 }
 
 export interface HomeSection {

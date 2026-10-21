@@ -455,8 +455,8 @@ export function SandboxInstancesTable({
           searchPlaceholder: "Search sandboxes…",
         }}
         copy={{
-          label: "Sandbox instance",
-          listLabel: "Sandbox instances",
+          label: "Sandbox",
+          listLabel: "Sandboxes",
           location: "Code workspace",
           rowKind: "sandbox_instance",
           listKind: "sandbox_instances",
@@ -554,7 +554,7 @@ export function SandboxInstancesTable({
           );
         }}
         emptyState={{
-          title: showingHistory ? "No ended sandboxes" : "No sandbox instances",
+          title: showingHistory ? "No ended sandboxes" : "No sandboxes",
           description: showingHistory
             ? "Stopped, expired, and failed sandboxes appear here."
             : "Create a sandbox to give a workspace an isolated runtime.",

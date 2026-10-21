@@ -3,7 +3,7 @@
 
 // app/(admin)/administration/compute/sandbox/[id]/page.tsx
 //
-// The ADMIN seat's record page for one sandbox instance. The user page
+// The ADMIN seat's record page for one sandbox. The user page
 // `/sandbox/<id>` treats an admin as an ordinary person, so a sandbox owned by
 // someone else is a dead end there; this page reads it through the admin door
 // (`GET /api/admin/sandbox/[id]`, lane + super-admin checked server-side) and

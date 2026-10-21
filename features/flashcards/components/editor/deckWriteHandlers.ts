@@ -100,12 +100,12 @@ export function buildDeckWriteHandlers(ctx: DeckWriteContext): SurfaceWriteHandl
         description: description ?? current.description,
       };
       const res = await fcService.updateSet(ctx.setId, {
-        name: next.name.trim() || "Untitled set",
+        name: next.name.trim() || "Untitled deck",
         description: next.description.trim() || null,
         topic: next.topic.trim() || null,
       });
       if (res.error || !res.data) {
-        throw new Error(res.error ?? "Couldn't save the set details.");
+        throw new Error(res.error ?? "Couldn't save the deck details.");
       }
       ctx.onSetSaved(res.data);
     },
@@ -123,7 +123,7 @@ export function buildDeckWriteHandlers(ctx: DeckWriteContext): SurfaceWriteHandl
       const card = data?.cards.find((c) => c.id === cardId.trim());
       if (!card) {
         throw new Error(
-          `card_content: no card with id "${cardId.trim()}" is in this set. Read the \`cards\` value for the ids actually on this page.`,
+          `card_content: no card with id "${cardId.trim()}" is in this deck. Read the \`cards\` value for the ids actually on this page.`,
         );
       }
       const kind = asCardKind(card.card_kind);
@@ -160,10 +160,10 @@ export function buildDeckWriteHandlers(ctx: DeckWriteContext): SurfaceWriteHandl
     matching_card_content: async (value: unknown) => {
       ctx.assertWritable?.("matching_card_content");
       const data = ctx.getData();
-      if (!data) throw new Error("matching_card_content: the set has not loaded.");
+      if (!data) throw new Error("matching_card_content: the deck has not loaded.");
       const plan = parseMatchingCardUpdate(value, data.cards);
       const card = data.cards.find((current) => current.id === plan.id);
-      if (!card) throw new Error("matching_card_content: this card is no longer in the open set.");
+      if (!card) throw new Error("matching_card_content: this card is no longer in the open deck.");
       const result = await fcService.updateCardVersioned(card.id, plan.expectedVersion, {
         ...(plan.prompt === undefined ? {} : { front: plan.prompt }),
         ...(plan.pairs === undefined
@@ -242,16 +242,16 @@ export function buildDeckWriteHandlers(ctx: DeckWriteContext): SurfaceWriteHandl
     delete_cards: async (value: unknown) => {
       ctx.assertWritable?.("delete_cards");
       const data = ctx.getData();
-      if (!data) throw new Error("delete_cards: the set has not loaded.");
+      if (!data) throw new Error("delete_cards: the deck has not loaded.");
       const request = writeRecord(value, "delete_cards");
       const id = writeText(request, "card_id", "delete_cards")?.trim();
       const version = request.version;
       if (!id || !Number.isSafeInteger(version) || Object.keys(request).some((key) => key !== "card_id" && key !== "version")) {
-        throw new Error("delete_cards: provide { card_id, version } from this loaded set.");
+        throw new Error("delete_cards: provide { card_id, version } from this loaded deck.");
       }
       const current = data.cards.find((card) => card.id === id);
       if (!current) {
-        throw new Error(`delete_cards: card ${id} is no longer in the open set.`);
+        throw new Error(`delete_cards: card ${id} is no longer in the open deck.`);
       }
       if (current.version !== version) {
         throw new Error("delete_cards: this card changed. Reload before deleting it.");

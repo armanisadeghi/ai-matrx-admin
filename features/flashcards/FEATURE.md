@@ -16,7 +16,7 @@ per-card layers (text, audio, `front_image`/`back_image`). Every read filters `d
 - A detail row carries its CARD's `organization_id` (`addDetail`); a null lets a trigger file it in the writer's personal workspace. Guard: `pnpm check:organization-context`.
 - Removals prove they landed: `softDeleteOne` / `setDetailAudio` / `reviewCardImage` ride `tryWriteOne` (`utils/supabase/writeOne.ts`); an RLS-filtered update returns no error, so a bare `update().eq()` toasts success while nothing changed. Guards: `data/__tests__/card-removal-proves-it-landed.test.ts`, `pnpm check:single-record-writes`.
 - `fcService.mergeSetMetadata` is THE compare-and-swap merge for `fc_set.metadata`. Keys written there (`source_set`, `source_names`, `continued_from`, …) must be registered in `platform.metadata_reserved_keys`, or `platform._metadata_guard` refuses the save.
-- `/education/flashcards/**` is authenticated (guests go through `loginHref` with the destination intact; set detail also checks `getServerAuth`). Public decks: `/p/e/fc_set/[id]`; shared deck `/s/<token>`.
+- `/education/flashcards/**` is authenticated (guests go through `loginHref` with the destination intact; deck detail also checks `getServerAuth`). Public decks: `/p/e/fc_set/[id]`; shared deck `/s/<token>`.
 - Retired, do not revive: prototype tables `education.flashcard_*` (schema `graveyard`) and `users.user_flashcard_sets` / `user_flashcard_reviews`. `education.fc_*` is canonical.
 
 ## Routes
@@ -47,7 +47,7 @@ Sources (the one Source input, surfaceKey `flashcards:new`) -> Style -> Make; "I
 
 A headless run has two possible `fc_set` writers: the surface's save and the stream's render-block materialization (`FLASHCARDS_CANONICAL_ADAPTER`). Keep ONE row, keyed by the run's conversation id:
 
-- Surfaces never call `createSetWithCards` for a generated deck; they call `fcService.createGeneratedSetForConversation(conversationId, input, cards)`, which adopts the adapter's set if it won the race, else creates it stamped `metadata.source_system="cx_conversation"` / `source_id=<cid>`.
+- Surfaces never call `createSetWithCards` for a generated deck; they call `fcService.createGeneratedSetForConversation(conversationId, input, cards)`, which adopts the adapter's deck if it won the race, else creates it stamped `metadata.source_system="cx_conversation"` / `source_id=<cid>`.
 - Every generation here launches with `surfaceOwnsOutput: true`, so neither stream commit nor reload reconcile materializes a twin.
 - Try again continues the stopped run's deck (`{ continues }` -> `continueGeneratedSet`) instead of saving a second.
 - Pinned by `data/__tests__/generated-set-single-writer.test.ts` and `try-again-continues-the-stopped-runs-deck.test.ts`. Limit: dedupe is look-before-write, not a DB constraint (a global unique would break multi-deck chats).

@@ -7,7 +7,7 @@ import { getCategoriesArray, base_app_path } from "./constants";
 const FlashcardHeader = () => {
   return (
     <div className="mb-6 pt-4">
-      <h1 className="text-2xl font-bold text-white mb-2">Flashcard Sets</h1>
+      <h1 className="text-2xl font-bold text-white mb-2">Flashcard Decks</h1>
       <p className="text-gray-300 text-sm mb-4">
         Select a category to begin studying with flashcards
       </p>

@@ -232,6 +232,7 @@ export function ScopeMappingEditor({
             }}
             mono
             data-identifier
+            className="font-mono"
             placeholder="custom_key"
           />
           <Button

@@ -7,7 +7,6 @@ import {
   Check,
   ChevronRight,
   FileText,
-  Folder,
   Layers,
   Search,
   X,
@@ -21,6 +20,12 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import {
+  TREE_ROW_TEXT,
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import { filterAndSortBySearch } from "@ai-matrx/kit/search-scoring";
 
 import { useSkillCategories } from "../hooks/useSkillCategories";
@@ -442,16 +447,17 @@ function CategoryButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex w-full items-center gap-2 rounded-md py-1.5 pr-2 text-left text-xs transition-colors",
+        `flex min-h-7 w-full items-center gap-1 rounded-md pr-2 text-left ${TREE_ROW_TEXT} transition-colors`,
         selected
           ? "bg-accent font-medium text-accent-foreground"
           : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
       )}
-      style={{ paddingLeft: `${8 + depth * 14}px` }}
+      style={treeIndentStyle(depth)}
     >
-      <Folder className="h-3.5 w-3.5 shrink-0" />
+      <TreeDisclosure expandable={false} />
+      <TreeFolderIcon />
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      <span className="shrink-0 tabular-nums text-[10px] opacity-70">
+      <span className="shrink-0 tabular-nums">
         {count}
       </span>
     </button>

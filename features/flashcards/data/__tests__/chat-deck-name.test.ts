@@ -1,7 +1,7 @@
 /**
- * The deck a chat flashcard set is saved as gets a real name.
+ * The deck a chat flashcard deck is saved as gets a real name.
  *
- * Real case (conversation 10d796b4…, 2026-09-30): the set arrived titled with
+ * Real case (conversation 10d796b4…, 2026-09-30): the deck arrived titled with
  * the platform's placeholder "Flashcards" and `education.fc_set.name` became
  * "Flashcards". The adapter must name the deck after the request that asked
  * for it — and must leave a real title exactly as written.

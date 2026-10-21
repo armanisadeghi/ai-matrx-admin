@@ -88,7 +88,7 @@ export async function POST(
         })
         .eq("id", id)
         .select(),
-      { action: "update", noun: "sandbox instance" },
+      { action: "update", noun: "sandbox" },
     );
 
     if (updateError) {

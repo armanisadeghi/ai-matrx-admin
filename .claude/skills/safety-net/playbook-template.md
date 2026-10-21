@@ -18,8 +18,8 @@ that cannot perform this job and say why.
 ## STEPS — this half is handed to the runner as its own file. Nothing below the line is.
 
 **Who you are:** `admin@admin.com` on the live site (https://www.aimatrx.com), signed in by
-`pw.mjs <run> signin`, against the live database. Use only the in-app browser and the read queries
-named here.
+`pw-cloud.mjs <run> signin` (your own browser in a cloud machine; `RUNNER-ADDENDUM.md` § Browser driver), against
+the live database. Use only that browser and the read queries named here.
 
 **Start state:** <the real-use-case dataset by name, and how the runner reaches the state — e.g.
 "open the Harbor Dental note 'New-patient intake checklist'; attach the file `intake-2026-10.md`

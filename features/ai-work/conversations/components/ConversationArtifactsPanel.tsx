@@ -22,22 +22,22 @@
 import { useState } from "react";
 import {
   AlertTriangle,
-  ChevronDown,
-  ChevronRight,
   Download,
   ExternalLink,
   FileText,
-  Folder,
-  FolderOpen,
   Loader2,
   RefreshCw,
 } from "lucide-react";
+import {
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
-  CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { toast } from "@/lib/toast";
 import { formatFileSize, formatRelativeTime } from "@/features/files/utils/format";
@@ -338,30 +338,32 @@ function FolderRow({
   return (
     <li>
       <Collapsible open={open} onOpenChange={() => onToggle(key)}>
-        <CollapsibleTrigger asChild>
-          <button
-            type="button"
-            className="flex h-7 w-full items-center gap-1.5 px-2 text-left hover:bg-accent"
-            style={{ paddingLeft: `${8 + depth * 14}px` }}
-          >
-            {open ? (
-              <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-            ) : (
-              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-            )}
-            {open ? (
-              <FolderOpen className="h-3.5 w-3.5 shrink-0 text-sky-600 dark:text-sky-400" />
-            ) : (
-              <Folder className="h-3.5 w-3.5 shrink-0 text-sky-600 dark:text-sky-400" />
-            )}
-            <span className="min-w-0 flex-1 truncate font-medium text-foreground">
-              {folder.name}
-            </span>
-            <span className="shrink-0 tabular-nums text-muted-foreground">
-              {folder.totalFiles}
-            </span>
-          </button>
-        </CollapsibleTrigger>
+        {/* A div, not a button: the disclosure slot is itself a button and may not nest in one. */}
+        <div
+          role="button"
+          tabIndex={0}
+          aria-expanded={open}
+          onClick={() => onToggle(key)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onToggle(key);
+            }
+            if (e.key === "ArrowRight" && !open) onToggle(key);
+            if (e.key === "ArrowLeft" && open) onToggle(key);
+          }}
+          className="flex h-7 w-full items-center gap-1 pr-2 text-left hover:bg-accent"
+          style={treeIndentStyle(depth)}
+        >
+          <TreeDisclosure expandable expanded={open} onToggle={() => onToggle(key)} />
+          <TreeFolderIcon open={open} />
+          <span className="type-body min-w-0 flex-1 truncate font-medium text-foreground">
+            {folder.name}
+          </span>
+          <span className="type-body shrink-0 tabular-nums text-muted-foreground">
+            {folder.totalFiles}
+          </span>
+        </div>
         <CollapsibleContent asChild>
           <ul>
             <FolderChildren
@@ -411,10 +413,11 @@ function FileRow({ file, depth }: { file: ArtifactFile; depth: number }) {
 
   return (
     <li
-      className="group flex h-7 items-center gap-1.5 pr-1 hover:bg-accent"
-      style={{ paddingLeft: `${8 + depth * 14 + 18}px` }}
+      className="group flex h-7 items-center gap-1 pr-1 hover:bg-accent"
+      style={treeIndentStyle(depth)}
     >
-      <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+      <TreeDisclosure expandable={false} />
+      <FileText aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
       <button
         type="button"
         onClick={open}
@@ -423,7 +426,7 @@ function FileRow({ file, depth }: { file: ArtifactFile; depth: number }) {
             ? `Open ${file.relativePath} in a new tab`
             : `Preview ${file.relativePath}`
         }
-        className="min-w-0 flex-1 truncate text-left text-foreground hover:underline"
+        className="type-body min-w-0 flex-1 truncate text-left text-foreground hover:underline"
       >
         {file.name}
       </button>

@@ -119,7 +119,7 @@ describe("judgePageReality — the three false verdicts found by adversarial rev
     });
 
     it("does not report a page as behind plan because publishing it bumped the node", () => {
-        // Publish writes the page, THEN advances the plan node's status — so
+        // Publish writes the page, THEN advances the plan page's status — so
         // the node is always a moment newer than the page it just published.
         const verdict = judgePageReality({
             cmsLinked: true,

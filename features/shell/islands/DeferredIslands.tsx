@@ -19,6 +19,8 @@ import { OrganizationCapReminder } from "@/features/organizations/limits/Organiz
 // Sign-up welcome's found search, in the background: renders nothing, reads only the session on idle, and loads the
 // search itself only for an account with something to do (start, watch, or new information).
 import { FoundSearchIsland } from "@/features/marketing/smart-add/welcome/FoundSearchIsland";
+// A page framed by a board (a Page tile) hands its surface to the board's agent; elsewhere it does nothing.
+import { BoardEmbedSurfaceBridge } from "@/features/board/embed/BoardEmbedSurfaceBridge";
 
 
 export default function DeferredIslands() {
@@ -27,6 +29,7 @@ export default function DeferredIslands() {
       <CommandBarHotkey />
       <OrganizationCapReminder />
       <FoundSearchIsland />
+      <BoardEmbedSurfaceBridge />
     </>
   );
 }

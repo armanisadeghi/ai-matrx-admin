@@ -1,6 +1,6 @@
 // features/flashcards/fast-fire/components/FastFireSetPicker.tsx
 //
-// Searchable set picker for FastFire setup — dropdown with filter + sort (name /
+// Searchable deck picker for FastFire setup — dropdown with filter + sort (name /
 // date). Uses the same Popover + Command combobox pattern as OccupationCombobox.
 
 "use client";

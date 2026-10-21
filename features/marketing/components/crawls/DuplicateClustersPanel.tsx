@@ -23,7 +23,7 @@ import { Chip, Select } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
- * Duplicate-content clusters for one crawl session — exact duplicates grouped
+ * Duplicate-content clusters for one crawl — exact duplicates grouped
  * by content hash, near-duplicates clustered on capture-time simhash
  * fingerprints above a user-visible similarity threshold (Screaming Frog's
  * 90% default). Crawls that predate fingerprints get an explicit re-crawl
@@ -73,7 +73,7 @@ export function DuplicateClustersPanel({ crawlId }: { crawlId: string }) {
     return (
       <EmptyPanel
         title="No captures in this crawl"
-        description="Duplicate detection runs over the content snapshots a crawl captures."
+        description="Duplicate detection runs over the page captures a crawl records."
       />
     );
   }

@@ -4,7 +4,7 @@ import { createRouteMetadata } from "@/utils/route-metadata";
 export const metadata = createRouteMetadata("/crm", {
   title: "CRM",
   description:
-    "Manage people and companies, including contact details, affiliations, activity, notes, and files.",
+    "Manage contacts, including contact details, affiliations, activity, notes, and files.",
   letter: "CR",
 });
 

@@ -1,7 +1,7 @@
 // features/education/study/utils/sessionRestart.ts
 //
 // Maps a persisted study_session row to the route that starts the same activity
-// again (new drill / study run for the same set).
+// again (new drill / study run for the same deck).
 
 import type { StudySessionRow } from "../types";
 

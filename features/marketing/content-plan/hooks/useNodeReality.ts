@@ -14,7 +14,7 @@
  *               plus `write: true`; the UI only used it as a bulk-run preview.
  *   - publish → `cms-publish`, which has ALWAYS taken `page_ids`. (Deliberately
  *               NOT the CMS editor's `publishDraft`: only the bridge advances
- *               the plan node to `published`.)
+ *               the plan page to `published`.)
  * Nothing new was opened. The defect was a surface that ignored what it had.
  *
  * The page facts come from the FULL CMS row (`CmsPageService.getPage`), not the
@@ -224,7 +224,7 @@ export function useNodeReality(args: UseNodeRealityArgs) {
                             : `"${preview.title}" was written but not saved.`,
                     );
                 } else {
-                    // access-errors: ok — the plan node carries no page id at all, so there is no read to be denied; publishing simply has no target.
+                    // access-errors: ok — the plan page carries no page id at all, so there is no read to be denied; publishing simply has no target.
                     if (!pageId) throw new Error("This page does not exist yet.");
                     const result = await bridgePublish(dispatch, args.siteId, {
                         dryRun: false,

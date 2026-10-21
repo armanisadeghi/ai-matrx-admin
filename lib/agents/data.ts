@@ -7,25 +7,7 @@ import {
   versionSnapshotRowToAgentDefinition,
 } from "@ai-matrx/chat/agents/redux/agent-definition/converters";
 import { parseAgentVersionSnapshot } from "@ai-matrx/chat/agents/redux/agent-definition/parse-output-snapshot";
-import type {
-  AgentDefinition,
-  AgentListRow,
-} from "@ai-matrx/chat/agents/types/agent-definition.types";
-
-/**
- * SSR seed for the agents list page.
- * Uses agx_get_list RPC with pagination — p_limit: 30 for the initial page.
- * Client dispatches fetchAgentsList() (no limit) to backfill all agents.
- */
-export const getAgentListSeed = cache(async () => {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("agx_get_list", {
-    p_limit: 30,
-    p_offset: 0,
-  });
-  if (error) throw error;
-  return (data ?? []) as AgentListRow[];
-});
+import type { AgentDefinition } from "@ai-matrx/chat/agents/types/agent-definition.types";
 
 /**
  * Full live agent row. Wrapped in cache() so layout + generateMetadata + page

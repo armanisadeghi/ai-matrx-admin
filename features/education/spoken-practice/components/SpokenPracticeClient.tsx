@@ -28,7 +28,7 @@ export function SpokenPracticeClient({
   initialDeckId,
 }: {
   initialMode?: string | null;
-  /** Deep-linked deck (e.g. from a set detail page's "Oral practice" door). */
+  /** Deep-linked deck (e.g. from a deck detail page's "Oral practice" door). */
   initialDeckId?: string | null;
 }) {
   return <SpokenPracticeSurface initialMode={initialMode} initialDeckId={initialDeckId} />;

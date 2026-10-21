@@ -27,7 +27,7 @@ import {
 } from "@ai-matrx/context-menu/engine";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 
-/** The one thing every snapshot-showing surface can say about a snapshot. */
+/** The one thing every surface that shows a page capture can say about it. */
 export interface SnapshotMenuRow {
   siteId: string;
   brandId: string | null;
@@ -61,7 +61,7 @@ export function buildSnapshotMenuSection(
     {
       kind: "link",
       id: "snapshot-open",
-      label: "Open snapshot",
+      label: "Open page capture",
       icon: Camera,
       href: row
         ? marketingRoutes.site(
@@ -85,7 +85,7 @@ export function buildSnapshotMenuSection(
   ];
   return {
     id: "snapshot-actions",
-    label: opts?.label ?? "Snapshot",
+    label: opts?.label ?? "Page capture",
     icon: Camera,
     items: applyAvailability(items, opts?.unavailable),
   };

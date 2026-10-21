@@ -29,7 +29,7 @@ export interface ContentPlanScopeInput {
   site: MarketingSite | null;
   /** Sites offered by the header picker (org-scoped with fallback). */
   siteOptions: readonly MarketingSite[];
-  /** Live plan nodes — undefined while loading / no site selected. */
+  /** Live plan pages — undefined while loading / no site selected. */
   nodes: readonly PlanNodeRow[] | undefined;
   /** Live plan entities — undefined while loading / no site selected. */
   entities: readonly PlanEntityRow[] | undefined;

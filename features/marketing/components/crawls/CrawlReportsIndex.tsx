@@ -73,7 +73,7 @@ export function CrawlReportsIndex({ crawlId }: { crawlId: string }) {
     kind: "web-crawl-report-catalogue",
     label: "Crawl report catalog",
     description:
-      "The dedicated bulk reports available for this crawl session and the evidence each one presents.",
+      "The dedicated bulk reports available for this crawl and the evidence each one presents.",
     surface: `Crawl reports — session ${crawlId}`,
     data: CRAWL_REPORTS,
     lines: CRAWL_REPORTS.map(

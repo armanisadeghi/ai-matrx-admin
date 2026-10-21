@@ -64,6 +64,7 @@ function AddToOrganizationDialog({
     if (!open || term.length < 2) return;
     let alive = true;
     const t = setTimeout(() => {
+      // archived-items-law-exempt: enrollment candidate picker — a person can only be added to an open organization, so archived ones are never offered
       createClient()
         .schema("iam")
         .from("organizations")

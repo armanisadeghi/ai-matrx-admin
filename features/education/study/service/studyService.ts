@@ -230,7 +230,7 @@ export const studyService = {
 
   /**
    * The current user's explicitly scoped study sessions, newest-first. Optional
-   * filters narrow by source set, mode, and status. This is the read path the
+   * filters narrow by source deck, mode, and status. This is the read path the
    * sessions-history / results UI consumes — the mode-agnostic spine means the
    * same browser serves flashcards, quizzes, and every future mode.
    */
@@ -271,7 +271,7 @@ export const studyService = {
 
   /**
    * Which lanes each readable session sits in (education.study_session_list_lanes) — the
-   * sessions page header's counts, under the same set / mode narrowing as the list.
+   * sessions page header's counts, under the same deck / mode narrowing as the list.
    */
   async listSessionLanes(
     filter: Pick<ListSessionsFilter, "setId" | "mode"> = {},

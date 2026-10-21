@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileText } from 'lucide-react';
 import combinedProcessor, { OutputNode, AstNode } from '@/components/mardown-display/markdown-classification/processors/custom/combined-processor';
+import { treeIndentStyle } from "@/components/official/topic-tree/geometry";
 
 interface AstRendererProps {
   data: AstNode;
@@ -16,10 +17,9 @@ interface NodeRendererProps {
 }
 
 const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, animated = true }) => {
-  const getDepthIndentation = (depth: number) => {
-    if (depth <= 0) return '';
-    return `ml-${Math.min(depth * 4, 16)}`;
-  };
+  // Document depth is capped at 4 levels, each one tree step.
+  const getDepthStyle = (depth: number) =>
+    depth <= 0 ? undefined : treeIndentStyle(Math.min(depth, 4));
 
   const getTypeStyles = (type: string) => {
     const baseClasses = animated 
@@ -68,7 +68,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, anima
     );
     
     return (
-      <div className={`${getTypeStyles(node.type)} ${getDepthIndentation(node.depth || 0)}`}>
+      <div className={getTypeStyles(node.type)} style={getDepthStyle(node.depth || 0)}>
         {bullet}
         <div className="flex-1 min-w-0">
           {node.content && (
@@ -102,7 +102,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, anima
     };
     
     return (
-      <div className={`${getTypeStyles(node.type)} ${getDepthIndentation(node.depth || 0)}`}>
+      <div className={getTypeStyles(node.type)} style={getDepthStyle(node.depth || 0)}>
         {React.createElement(
           HeadingTag,
           {
@@ -184,7 +184,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, anima
 
   if (node.type === 'paragraph' || node.type === 'text - paragraph') {
     return (
-      <div className={`${getTypeStyles(node.type)} ${getDepthIndentation(node.depth || 0)}`}>
+      <div className={getTypeStyles(node.type)} style={getDepthStyle(node.depth || 0)}>
         <span className="break-words text-base">{node.content}</span>
         {node.children && node.children.length > 0 && (
           <div className="mt-3 space-y-2 text-base font-normal">
@@ -199,7 +199,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, anima
 
   // Default text rendering
   return (
-    <div className={`${getTypeStyles(node.type)} ${getDepthIndentation(node.depth || 0)} text-base`}>
+    <div className={`${getTypeStyles(node.type)} text-base`} style={getDepthStyle(node.depth || 0)}>
       {node.content && <span className="break-words">{node.content}</span>}
       {node.children && node.children.length > 0 && (
         <span className="inline-flex flex-wrap items-center">

@@ -14,11 +14,16 @@
  *
  * Saved as a reference to the address (`entity: "page"`, `id` = path + query),
  * so `recordKeyOf` shows an existing tile instead of opening the page twice.
- * Known gap (agents): the page's own surface registers inside the frame, so
- * the board's agent sees it by title only.
+ *
+ * Its surface is the framed page's own: the page hands it to the board over
+ * the framed-surface bridge (embed/framed-surface-bridge.ts), and the body
+ * registers it as this tile's surface (`useFramedPageSurface`), so the
+ * board's agent reads the page's values and runs its write targets and tools
+ * exactly as on the page itself.
  */
 
 import { useState } from "react";
+import { expectedPageSurface, useFramedPageSurface } from "../embed/useFramedPageSurface";
 import { AppWindow } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
@@ -71,10 +76,14 @@ function frameTitle(frame: HTMLIFrameElement): string | null {
 
 function PageBody({ source, title, interacting, onSource }: ItemBodyProps) {
   const path = pagePathOf(source);
+  // The iframe element, so the page's surface can be followed through it.
+  const [frame, setFrame] = useState<HTMLIFrameElement | null>(null);
+  useFramedPageSurface(frame, path ?? "");
   if (!path) return null;
   return (
     <div className="relative h-full overflow-hidden bg-background">
       <iframe
+        ref={setFrame}
         aria-label={title}
         src={path}
         // The app itself: same origin, so the page is signed in as the person.
@@ -127,7 +136,7 @@ function PagePicker({ onPick, onCancel }: PickerProps) {
 export const PAGE_ITEMS: BoardItemType[] = [
   {
     key: PAGE_ENTITY,
-    surface: { none: "The page's own surface registers inside its frame; the board sees it by title." },
+    surface: { published: (s) => expectedPageSurface(pagePathOf(s) ?? "") },
     comments: null,
     label: "Page",
     icon: AppWindow,

@@ -167,7 +167,7 @@ export interface PodcastGenerateRequest {
   /** TTS quality mode — saved audio uses "high_quality"; the backend resolves
    *  the latest model for that tier on each provider. */
   tts_quality?: "high_quality" | "fast";
-  /** A flashcard set this episode is the audio overview of: the SERVER saves the
+  /** A flashcard deck this episode is the audio overview of: the SERVER saves the
    *  finished audio onto it (aidream `stamp_deck_audio_overview`), so the
    *  overview is kept even when the page that started it has closed. */
   audio_overview_for_set?: string | null;
@@ -361,7 +361,7 @@ export interface PodcastRunState {
   /** Durable file_id for `audioUrl`, when the backend reports one (from
    *  `audio_stream_end`) — the ONLY thing safe to persist long-term (see
    *  the media-durability doctrine: a signed URL expires, a file_id doesn't).
-   *  Consumers that need to store the result (e.g. a flashcard set's
+   *  Consumers that need to store the result (e.g. a flashcard deck's
    *  `audio_overview_file_id`) must use this, not `audioUrl`. */
   audioFileId: string | null;
   script: string;

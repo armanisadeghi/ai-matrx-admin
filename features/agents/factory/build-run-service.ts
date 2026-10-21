@@ -106,6 +106,7 @@ export async function readBuildRun(runId: string, signal?: AbortSignal): Promise
 
 /** Every `agent_build` run the caller can read, newest first. */
 export async function listBuildRuns(): Promise<BuildRunRow[]> {
+  // archived-items-law-exempt: lineage lookup of build-workflow ids — the list is of runs, and runs of an archived definition still belong in it
   const definitions = await readAllRows<{ id: string }>(
     ({ from, to }) =>
       supabase()
@@ -147,11 +148,4 @@ export async function answerBuildGate(dispatch: AppDispatch, gate: BuildGate, va
     }),
   );
   if (result.error) throw new Error(result.error.message || "The answer did not go through");
-}
-
-/** An old build's "Keep it anyway" (D7): the agent's own un-archive. */
-export async function unarchiveAgent(agentId: string): Promise<string> {
-  const { error } = await supabase().schema("agent").from("definition").update({ is_archived: false }).eq("id", agentId);
-  if (error) throw operationFailed("keep the draft", error);
-  return agentId;
 }

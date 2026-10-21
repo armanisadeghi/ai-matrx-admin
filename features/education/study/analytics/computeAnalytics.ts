@@ -107,7 +107,7 @@ function emptyStats(): OverallStats {
 /**
  * THE one "needs work" rule: flagged struggling, or live (decayed) mastery
  * under 40%. The dashboard's counts, the topic list and the weak-area drill all
- * read it, so a button never opens a different set than the number beside it.
+ * read it, so a button never opens a different deck than the number beside it.
  */
 export function needsWork(m: ItemMasteryRow, now: Date): boolean {
   return Boolean(m.struggle_flag) || (displayMasteryPct(m, now) ?? 0) < 0.4;

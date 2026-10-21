@@ -63,7 +63,7 @@ export interface KeywordApplyResult {
   plannedLinks: number;
   /** Keyword phrases newly created in the library. */
   createdKeywords: number;
-  /** Assignment routes with no matching plan node. */
+  /** Assignment routes with no matching plan page. */
   unknownRoutes: string[];
   failures: string[];
 }

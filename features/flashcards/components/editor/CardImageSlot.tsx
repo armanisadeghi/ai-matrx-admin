@@ -7,7 +7,7 @@
 //   FREE (no metering, no AI spend):
 //   Upload  → the learner's own picture through the canonical file primitive
 //             (`useFileUpload`). Uploaded PUBLIC on purpose: cards are
-//             shareable and public sets render for anonymous visitors, so the
+//             shareable and public decks render for anonymous visitors, so the
 //             face needs a permanent CDN URL, never a signed one. We stamp
 //             BOTH `image_file_id` (our identity) and `image_url` (the durable
 //             public URL) — the anon RPC and print lanes can only use the URL.
@@ -121,7 +121,7 @@ function FaceRow({
     setBusy("upload");
     try {
       // PUBLIC on purpose: a card image must survive being shared and must
-      // render for anonymous visitors on a public set, so it needs the
+      // render for anonymous visitors on a public deck, so it needs the
       // permanent CDN URL a public file carries.
       const uploaded = await upload({ kind: "file", file }, {
         visibility: "public",

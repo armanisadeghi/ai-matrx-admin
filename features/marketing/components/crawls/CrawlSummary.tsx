@@ -89,9 +89,9 @@ export function CrawlSummary({ crawlId }: { crawlId: string }) {
   ];
   const sessionCopy = webCopy({
     kind: "web-crawl-session",
-    label: `Crawl session ${row.id.slice(0, 8)}`,
+    label: `Crawl ${row.id.slice(0, 8)}`,
     description:
-      "One frozen crawl session: the full row including timing, scope, stats, and metadata.",
+      "One frozen crawl: the full row including timing, scope, stats, and metadata.",
     surface: `Crawl summary — session ${row.id}`,
     data: row,
     lines: sessionLines,
@@ -120,7 +120,7 @@ export function CrawlSummary({ crawlId }: { crawlId: string }) {
     {
       id: "session",
       title: "Session timing",
-      description: "The full crawl session row (timing, trigger, status).",
+      description: "The full crawl row (timing, trigger, status).",
       build: (level) => (level === "brief" ? { status: row.status } : row),
     },
     {
@@ -146,16 +146,16 @@ export function CrawlSummary({ crawlId }: { crawlId: string }) {
     {
       id: "metadata",
       title: "Session metadata",
-      description: "Metadata recorded on this crawl session.",
+      description: "Metadata recorded on this crawl.",
       cuttable: true,
       build: (level) => (level === "full" ? row.metadata : { note: "Full only" }),
     },
   ];
   const groomerConfig = (): AgentCopyGroomerConfig => ({
-    label: `Crawl session ${row.id.slice(0, 8)}`,
+    label: `Crawl ${row.id.slice(0, 8)}`,
     kind: "marketing-crawl-summary-page",
     location: pageLocation,
-    description: `The full crawl session summary for session ${row.id}.`,
+    description: `The full crawl summary for session ${row.id}.`,
     attributes: { session_id: row.id, site_id: site.id, status: row.status },
     summary: sessionCopy.human(),
     sections: groomerSections(),
@@ -210,7 +210,7 @@ export function CrawlSummary({ crawlId }: { crawlId: string }) {
           agent={() => ({
             kind: "marketing-crawl-summary-page",
             location: pageLocation,
-            description: `The full crawl session summary for session ${row.id}.`,
+            description: `The full crawl summary for session ${row.id}.`,
             data: pageFullData(),
             summary: sessionCopy.human(),
             attributes: { session_id: row.id, site_id: site.id },
@@ -318,7 +318,7 @@ export function CrawlSummary({ crawlId }: { crawlId: string }) {
           copy={sessionSection(
             "web-crawl-scope",
             "Frozen crawl scope",
-            "The scope this crawl session was frozen with (seeds, limits, inclusion rules).",
+            "The scope this crawl was frozen with (seeds, limits, inclusion rules).",
             row.scope,
           )}
         >
@@ -332,7 +332,7 @@ export function CrawlSummary({ crawlId }: { crawlId: string }) {
           copy={sessionSection(
             "web-crawl-run-stats",
             "Reconciliation and run stats",
-            "The run statistics and registry reconciliation counts recorded for this crawl session.",
+            "The run statistics and registry reconciliation counts recorded for this crawl.",
             row.stats,
           )}
         >
@@ -346,7 +346,7 @@ export function CrawlSummary({ crawlId }: { crawlId: string }) {
           copy={sessionSection(
             "web-crawl-metadata",
             "Session metadata",
-            "The metadata recorded on this crawl session.",
+            "The metadata recorded on this crawl.",
             row.metadata,
           )}
         >

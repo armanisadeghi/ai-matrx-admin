@@ -319,7 +319,7 @@ const EDUCATION_ADMIN_MAP: FeatureAdminMap = {
       url: "/education/memory",
       label: "Memory Aids",
       description:
-        "VISION §11 — AI mnemonics, analogies/memory bridges, and memory-palace scaffolding from a deck or topic. Structured aids persist to education.study_media (media_kind='memory_aid', content in ir_envelope). TrustEnvelope on every set; converter target 'memory_aid'; proactive per-card affordance in the flashcards StudyDeck.",
+        "VISION §11 — AI mnemonics, analogies/memory bridges, and memory-palace scaffolding from a deck or topic. Structured aids persist to education.study_media (media_kind='memory_aid', content in ir_envelope). TrustEnvelope on every deck; converter target 'memory_aid'; proactive per-card affordance in the flashcards StudyDeck.",
       filePath: "app/(core)/education/memory/page.tsx",
       status: "Live",
       notes: [
@@ -521,7 +521,7 @@ const EDUCATION_ADMIN_MAP: FeatureAdminMap = {
       url: "/c/[handle]",
       label: "Public creator landing page (SEO) — Convergence C",
       description:
-        "The growth lever: a public, INDEXABLE, server-rendered landing page for each creator. Features their YouTube videos (nocookie embeds), public free tools (flashcard sets/guides → /p/e viewer, usable logged-out), and classes with enroll CTAs. Free-vs-paid layout + signup funnel. Person + Course JSON-LD, per-page OG image, sitemap entry. Anon read via creator_public_page RPC; force-dynamic (view-source has full content).",
+        "The growth lever: a public, INDEXABLE, server-rendered landing page for each creator. Features their YouTube videos (nocookie embeds), public free tools (flashcard decks/guides → /p/e viewer, usable logged-out), and classes with enroll CTAs. Free-vs-paid layout + signup funnel. Person + Course JSON-LD, per-page OG image, sitemap entry. Anon read via creator_public_page RPC; force-dynamic (view-source has full content).",
       filePath: "app/(public)/c/[handle]/page.tsx",
       status: "Live",
       notes: [

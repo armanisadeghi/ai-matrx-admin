@@ -672,7 +672,7 @@ export async function bridgeAdopt(
 }
 
 /**
- * Resolve a route conflict between a plan node and the CMS page linked to it.
+ * Resolve a route conflict between a plan page and the CMS page linked to it.
  * `plan_yields` rewrites the planned route to the live one; `cms_yields` moves
  * the page to the planned route — the server refuses that on a PUBLISHED page
  * unless `force`, and when forced it records the old route for a redirect.
@@ -974,7 +974,7 @@ export async function bridgeFillStart(
      */
     effortTier?: EffortTier | null;
     /**
-     * Run only THESE plan nodes. Omit = every fillable linked draft on the
+     * Run only THESE plan pages. Omit = every fillable linked draft on the
      * site, which is what the Setup rung does. This is how "run the rest of
      * the pipeline on the pages I picked" reaches the same durable queue as
      * the whole-site button — one engine, two selections, never a second path.

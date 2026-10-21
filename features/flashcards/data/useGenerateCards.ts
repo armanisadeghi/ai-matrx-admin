@@ -29,7 +29,7 @@ import type { NewCardInput } from "./types";
 
 /**
  * The normalized generation result. The agent's canonical response shape is
- * the `flashcard_set` kind `{ title, cards[] }`; `title` is the set's name
+ * the `flashcard_set` kind `{ title, cards[] }`; `title` is the deck's name
  * (persistence consumers read it as such).
  */
 export interface GeneratedCardSet {
@@ -73,7 +73,7 @@ export interface GenerateFromSourceVariables {
   document_id?: string;
   count: number;
   difficulty: string;
-  /** A name for the material — the agent titles the set from it. */
+  /** A name for the material — the agent titles the deck from it. */
   title?: string;
   /** Freeform emphasis; the depth tier is folded in front of it. */
   focus?: string;
@@ -126,7 +126,7 @@ export interface GenerateCardsResult {
   activeRequestId: string | null;
 }
 
-// The agent is gemini-3.5-flash producing a full card set — generous ceiling.
+// The agent is gemini-3.5-flash producing a full card deck — generous ceiling.
 const EXTRACTION_TIMEOUT_MS = 240_000;
 const POLL_INTERVAL_MS = 250;
 

@@ -14,7 +14,7 @@
 // `ensure()` runs the opener (the same `studyService.createSession` /
 // `gameService.startGameSession` call the mode always used, so the
 // organization hold is unchanged); every later or concurrent call shares that
-// one result. Re-arming (a new set, a new round) forgets the old session
+// one result. Re-arming (a new deck, a new round) forgets the old session
 // without writing anything. With the device offline `ensure()` writes nothing
 // and returns null: attempts are valid session-less and queue in the outbox.
 

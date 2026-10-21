@@ -21,6 +21,8 @@ import { toastWriteFailure } from "@/lib/errors/toastWriteFailure";
 import { usePendingWrites } from "@/lib/errors/usePendingWrites";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import CreateAnnouncementDialog from "./CreateAnnouncementDialog";
 import {
@@ -121,6 +123,80 @@ export function AnnouncementsTableClient() {
     }
   }, []);
 
+  // One declaration: the row's activate / deactivate / delete and their bulk twins (the same
+  // updateAnnouncement / deleteAnnouncement doors, once per announcement).
+  const door = async (run: () => Promise<{ success: boolean; error?: unknown }>) => {
+    const res = await run();
+    if (!res.success) throw new Error(res.error instanceof Error ? res.error.message : String(res.error ?? "Refused"));
+  };
+  const { rowActionDefs, bulkActions } = defineRowVerbs<SystemAnnouncement>(
+    [
+      {
+        id: "activate",
+        icon: Power,
+        label: "Activate",
+        appliesTo: (r) => !r.is_active,
+        unavailableTooltip: "Already active",
+        disabled: (r) => pendingWrites.isPending(r.id),
+        onClick: (r) => void toggleActive(r),
+        bulk: {
+          done: "Activated",
+          runOne: async (id) => {
+            await door(() => updateAnnouncement(id, { is_active: true }));
+            setRows((prev) => prev.map((r) => (r.id === id ? { ...r, is_active: true } : r)));
+          },
+        },
+      },
+      {
+        id: "deactivate",
+        icon: Power,
+        label: "Deactivate",
+        appliesTo: (r) => r.is_active,
+        unavailableTooltip: "Already inactive",
+        disabled: (r) => pendingWrites.isPending(r.id),
+        onClick: (r) => void toggleActive(r),
+        bulk: {
+          done: "Deactivated",
+          runOne: async (id) => {
+            await door(() => updateAnnouncement(id, { is_active: false }));
+            setRows((prev) => prev.map((r) => (r.id === id ? { ...r, is_active: false } : r)));
+          },
+        },
+      },
+      {
+        id: "delete",
+        icon: Trash2,
+        label: "Delete",
+        tone: "destructive",
+        onClick: (r) => void remove(r),
+        bulk: {
+          removesRows: true,
+          done: "Deleted",
+          confirm: (targets) => ({
+            title: `Delete ${targets.ids.length} announcement${targets.ids.length === 1 ? "" : "s"}?`,
+            description: "They are permanently removed and stop showing to everyone.",
+            confirmLabel: "Delete",
+            variant: "destructive",
+          }),
+          runOne: async (id) => {
+            await door(() => deleteAnnouncement(id));
+            setRows((prev) => prev.filter((r) => r.id !== id));
+          },
+        },
+      },
+    ],
+    { noun: "announcement", getRowId: (r) => r.id, getRowName: (r) => r.title },
+  );
+  const bulk = useTableBulkSelection<SystemAnnouncement>({
+    noun: "announcement",
+    rows,
+    getRowId: (r) => r.id,
+    getRowName: (r) => r.title,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: () => void load(),
+  });
+
   const columns = useMemo((): MatrxColumnDef<SystemAnnouncement>[] => {
     return [
       { id: "title", accessorKey: "title", header: "Title", width: 220 },
@@ -216,44 +292,9 @@ export function AnnouncementsTableClient() {
         <MatrxDataTable
           urlState={{ id: "user-announcements" }}
           data={rows}
-          columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (row) => (
-            <>
-              <Button
-                icon={<Power
-                  className={
-                    row.is_active
-                      ? "h-3.5 w-3.5 text-emerald-500"
-                      : "h-3.5 w-3.5"
-                  }
-                />} aria-label={pendingWrites.isPending(row.id)
-                    ? row.is_active
-                      ? "Deactivating…"
-                      : "Activating…"
-                    : row.is_active
-                      ? "Deactivate"
-                      : "Activate"}
-                variant="quiet"
-                title={
-                  pendingWrites.isPending(row.id)
-                    ? row.is_active
-                      ? "Deactivating…"
-                      : "Activating…"
-                    : row.is_active
-                      ? "Deactivate"
-                      : "Activate"
-                }
-                disabled={pendingWrites.isPending(row.id)}
-                aria-busy={pendingWrites.isPending(row.id) || undefined}
-                onClick={() => void toggleActive(row)}
-              />
-              <Button
-                icon={<Trash2 />} aria-label="Delete"
-                variant="quiet"
-                title="Delete"
-                onClick={() => void remove(row)}
-              />
-            </>
-          ) }]}
+          columns={columns}
+          rowActionDefs={rowActionDefs}
+          selection={bulk.selection}
           getRowId={(r) => r.id}
           isLoading={loading}
           pageSize={50}

@@ -731,7 +731,7 @@ export function PagesTable() {
         title="Dismiss page?"
         description={
           dismissing
-            ? `${dismissing.url} is hidden from primary views (find it under the Dismissed filter). Its snapshots and history stay. The crawler treats this URL as observed reality: if a future crawl, sitemap, or GSC sync finds it again, it returns automatically — flagged as previously dismissed.`
+            ? `${dismissing.url} is hidden from primary views (find it under the Dismissed filter). Its page captures and history stay. The crawler treats this URL as observed reality: if a future crawl, sitemap, or GSC sync finds it again, it returns automatically — flagged as previously dismissed.`
             : ""
         }
         confirmLabel="Dismiss page"

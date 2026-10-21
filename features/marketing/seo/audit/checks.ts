@@ -1945,7 +1945,7 @@ export function checkTextHtmlRatio(ev: PageEvidence): CheckOutcome {
 // --- Images & media --------------------------------------------------------
 //
 // All five read the per-<img> inventory. Two of them are bounded by what the
-// crawl captures today and SAY SO in their own reasoning rather than passing
+// page captures today and SAY SO in their own reasoning rather than passing
 // on unverified images: `broken_images` needs a per-image HTTP status nothing
 // writes yet, and `image_oversized` falls back to srcset `w` descriptors
 // because transfer bytes need a fetch. Both gaps are filed in FOUND_DEFECTS.md.
@@ -2317,7 +2317,7 @@ export function checkBrokenImages(ev: PageEvidence): CheckOutcome {
  * 302/307 where a 301/308 was meant.
  *
  * ⚠️ SINGLE-SESSION TIER ONLY. The catalog row scores a 302 that survives
- * three or more crawl sessions harder than one seen once; this sweep reads
+ * three or more crawls harder than one seen once; this sweep reads
  * only the latest accepted snapshot per page, so that tier is not evaluated
  * here and this check never claims it.
  */

@@ -27,6 +27,9 @@ import {
   listSavedRequests,
   type SavedRequest,
 } from "../savedRequests";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
+import { savedRequestBulkActions } from "./savedRequestsBulkActions";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 export function SavedRequestsList() {
@@ -59,6 +62,8 @@ export function SavedRequestsList() {
       cancelled = true;
     };
   }, [userId]);
+
+  const ticked = useRowSelection(requests ?? [], (r) => r.id);
 
   const confirmDelete = async () => {
     if (!pendingDelete) return;
@@ -122,12 +127,27 @@ export function SavedRequestsList() {
           </Button>
         </div>
       ) : (
+        <>
+        <RowSelectionBar
+          selection={ticked}
+          idOf={(r) => r.id}
+          actions={savedRequestBulkActions()}
+          noun="saved request"
+          plural="saved requests"
+          onRefresh={() => {}}
+          onRemoveRows={(ids) => setRequests((current) => current?.filter((row) => !ids.includes(row.id)) ?? null)}
+        />
         <ul className="flex flex-col gap-2">
           {requests.map((request) => (
             <li
               key={request.id}
               className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5"
             >
+              <Checkbox
+                checked={ticked.has(request.id)}
+                onCheckedChange={() => ticked.toggle(request.id)}
+                aria-label={`Select ${request.label}`}
+              />
               <button
                 type="button"
                 onClick={() => router.push(`/work/new?request=${request.id}`)}
@@ -160,6 +180,7 @@ export function SavedRequestsList() {
             </li>
           ))}
         </ul>
+        </>
       )}
 
       <ConfirmDialog

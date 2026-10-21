@@ -9,7 +9,7 @@
 
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { CmsCollectionService } from "@/features/cms/services/cmsService";
@@ -21,6 +21,9 @@ import { useSiteContext } from "../SiteLayoutClient";
 import { CollectionEditorDialog } from "@/features/cms/components/collections/CollectionEditorDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   AlertCircle,
@@ -215,6 +218,82 @@ export default function CollectionsPage() {
     void refresh();
   }, [refresh]);
 
+  // Bulk twins of the card's Archive / Restore / Delete — the same service doors.
+  const rowSelection = useRowSelection(
+    collections,
+    (collection) => collection.id,
+    siteId,
+  );
+  const bulkActions = useMemo(
+    () =>
+      defineRowVerbs<SiteCollectionSummary>(
+        [
+          {
+            id: "edit",
+            icon: Pencil,
+            label: "Edit",
+            onClick: () => {},
+            bulk: false,
+            noBulk: "edit",
+          },
+          {
+            id: "archive",
+            icon: Archive,
+            label: "Archive",
+            appliesTo: (c) => c.status !== "archived",
+            unavailableTooltip: "Already archived",
+            onClick: () => {},
+            bulk: {
+              done: "Archived",
+              runOne: async (id) => {
+                await CmsCollectionService.archiveCollection(id);
+              },
+            },
+          },
+          {
+            id: "restore",
+            icon: ArchiveRestore,
+            label: "Restore",
+            appliesTo: (c) => c.status === "archived",
+            unavailableTooltip: "Not archived",
+            onClick: () => {},
+            bulk: {
+              done: "Restored",
+              runOne: async (id) => {
+                await CmsCollectionService.updateCollection(id, {
+                  status: "active",
+                });
+              },
+            },
+          },
+          {
+            id: "delete",
+            icon: Trash2,
+            label: "Delete",
+            tone: "destructive",
+            onClick: () => {},
+            bulk: {
+              done: "Deleted",
+              removesRows: true,
+              confirm: (targets) => ({
+                title: `Delete ${targets.ids.length} ${targets.ids.length === 1 ? "collection" : "collections"}?`,
+                description:
+                  "Each collection and its items disappear from every surface (soft delete). Public reads and writes stop immediately.",
+                confirmLabel: "Delete",
+              }),
+              runOne: (id) => CmsCollectionService.deleteCollection(id),
+            },
+          },
+        ],
+        {
+          noun: "collection",
+          getRowId: (c) => c.id,
+          getRowName: (c) => c.name,
+        },
+      ).bulkActions,
+    [],
+  );
+
   const handleSaved = async (_saved: SiteCollection, mintedKey: boolean) => {
     await refresh();
     if (mintedKey) await refreshSite();
@@ -359,11 +438,25 @@ export default function CollectionsPage() {
           </div>
         ) : (
           <div className="space-y-3">
+            <RowSelectionBar
+              selection={rowSelection}
+              idOf={(collection) => collection.id}
+              actions={bulkActions}
+              noun="collection"
+              plural="collections"
+              onRefresh={() => void refresh()}
+            />
             {collections.map((collection) => (
               <div
                 key={collection.id}
-                className="rounded-lg border border-border bg-card"
+                className="flex items-center gap-3 rounded-lg border border-border bg-card pl-3"
               >
+                <Checkbox
+                  checked={rowSelection.has(collection.id)}
+                  onCheckedChange={() => rowSelection.toggle(collection.id)}
+                  aria-label={`Select ${collection.name}`}
+                />
+                <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center justify-between gap-3 p-4">
                   <Link
                     href={`/cms/${siteId}/collections/${collection.id}`}
@@ -429,6 +522,7 @@ export default function CollectionsPage() {
                       aria-label="Delete"
                     />
                   </div>
+                </div>
                 </div>
               </div>
             ))}

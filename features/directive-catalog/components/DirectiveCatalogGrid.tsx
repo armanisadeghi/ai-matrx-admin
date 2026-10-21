@@ -9,6 +9,10 @@
  */
 
 import { useMemo, useState } from "react";
+import { Power, PowerOff } from "lucide-react";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { setEntityTypeAgentWritable } from "@/features/admin/relationships/entityTypeMutations";
 import {
   MatrxDataTable,
   type MatrxColumnDef,
@@ -53,8 +57,11 @@ export function DirectiveCatalogGrid({
   onToggleWritable,
   onInspect,
   onPickNoun,
+  onRefresh,
 }: {
   catalog: DirectiveCatalog;
+  /** Re-read the catalog after a bulk change. */
+  onRefresh?: () => void;
   busyToggle: string | null;
   onToggleWritable: (noun: NounDirectives, enabled: boolean) => void;
   onInspect: (selection: DirectiveShapeSelection) => void;
@@ -162,6 +169,62 @@ export function DirectiveCatalogGrid({
     return matrixColumns;
   }, [busyToggle, onInspect, onToggleWritable, onPickNoun]);
 
+  const canToggle = (n: NounDirectives) =>
+    n.create !== "no" || n.update !== "no" || n.delete !== "no";
+  const isOn = (n: NounDirectives) => n.create === "yes" || n.update === "yes";
+  const typesLabel = (n: number) => `${n} type${n === 1 ? "" : "s"}`;
+  const { rowActionDefs, bulkActions } = defineRowVerbs<NounDirectives>(
+    [
+      {
+        id: "enable-writes", icon: Power, label: "Enable generic writes",
+        appliesTo: (n) => canToggle(n) && !isOn(n),
+        unavailableTooltip: "Already on, or no write Directives exist",
+        disabled: (n) => busyToggle === n.noun,
+        onClick: (n) => onToggleWritable(n, true),
+        bulk: {
+          label: "Enable writes",
+          done: "Enabled",
+          skipReason: (n) => (!canToggle(n) ? "No write Directives exist" : isOn(n) ? "Already on" : null),
+          confirm: (t) => ({
+            title: `Enable generic write Directives for ${typesLabel(t.ids.length)}?`,
+            description: "Agents can create, update and delete records of these types through generic Directives.",
+            confirmLabel: "Enable",
+          }),
+          runOne: (id) => setEntityTypeAgentWritable(id, true),
+        },
+      },
+      {
+        id: "disable-writes", icon: PowerOff, label: "Disable generic writes", tone: "destructive",
+        appliesTo: (n) => canToggle(n) && isOn(n),
+        unavailableTooltip: "Already off, or no write Directives exist",
+        disabled: (n) => busyToggle === n.noun,
+        onClick: (n) => onToggleWritable(n, false),
+        bulk: {
+          label: "Disable writes",
+          done: "Disabled",
+          skipReason: (n) => (!canToggle(n) ? "No write Directives exist" : isOn(n) ? null : "Already off"),
+          confirm: (t) => ({
+            title: `Disable generic write Directives for ${typesLabel(t.ids.length)}?`,
+            description: "Agents can no longer write records of these types through generic Directives.",
+            confirmLabel: "Disable",
+            variant: "destructive",
+          }),
+          runOne: (id) => setEntityTypeAgentWritable(id, false),
+        },
+      },
+    ],
+    { noun: "type", getRowId: (n) => n.noun, getRowName: (n) => nounLabel(n) },
+  );
+  const bulk = useTableBulkSelection<NounDirectives>({
+    noun: "type",
+    rows: filtered,
+    getRowId: (n) => n.noun,
+    getRowName: (n) => nounLabel(n),
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: () => onRefresh?.(),
+  });
+
   return (
     // Phone: natural height inside the page's one scroll area, the table at a
     // definite height of its own. lg: fills its pane.
@@ -170,6 +233,8 @@ export function DirectiveCatalogGrid({
         <MatrxDataTable<NounDirectives>
           data={filtered}
           columns={columns}
+          rowActionDefs={rowActionDefs}
+          selection={bulk.selection}
           getRowId={(noun) => noun.noun}
           defaultSort={{ id: "noun", direction: "asc" }}
           // PAGED, never "show all" (G10B review, 2026-10-02): all 1,089 types

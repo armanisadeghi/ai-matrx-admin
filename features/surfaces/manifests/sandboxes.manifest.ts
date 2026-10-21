@@ -139,7 +139,7 @@ const surfaceSpecific: SurfaceValue[] = [
   // ── Identity ────────────────────────────────────────────────────────
   {
     name: "sandbox_instance_id",
-    label: "Sandbox instance id",
+    label: "Sandbox id",
     description:
       "UUID of the `sandbox_instances` row the user has open. Empty on the `/sandbox` list page, where no single sandbox is focused.",
     valueType: "string",

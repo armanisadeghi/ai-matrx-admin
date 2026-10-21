@@ -30,6 +30,10 @@ import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { bulkCountLabel } from "@/lib/entity-list/selection";
+import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
 import { cn } from "@/lib/utils";
 import { fcService } from "@/features/flashcards/data/fcService";
 import { studyService } from "../service/studyService";
@@ -99,7 +103,7 @@ export function SessionsBrowser({
   hideEmpty = false,
   embedded = false,
 }: {
-  /** Restrict to one set (study_session.source_set_id). */
+  /** Restrict to one deck (study_session.source_set_id). */
   setId?: string;
   /** Restrict to one mode (e.g. 'fast_fire'). */
   mode?: string;
@@ -205,6 +209,41 @@ export function SessionsBrowser({
           s.status === "active" || (attemptSummaries[s.id]?.total ?? 0) > 0,
       )
     : sessions;
+
+  const selection = useRowSelection(shown, (s) => s.id, `${laneScope ?? ""}:${laneOrgId ?? ""}`);
+
+  // Delete is declared once: the trash button on a row and the bulk bar both come from it.
+  // Only a finished (completed / abandoned) session can go; a running one is skipped and named.
+  const { bulkActions } = defineRowVerbs<StudySessionRow>(
+    [
+      {
+        id: "delete",
+        icon: Trash2,
+        label: "Delete",
+        tone: "destructive",
+        onClick: (session) => requestDelete(session),
+        appliesTo: (session) => session.status === "completed" || session.status === "abandoned",
+        unavailableTooltip: "Finish this session before deleting it",
+        bulk: {
+          done: "Deleted",
+          removesRows: true,
+          confirm: (targets) => ({
+            title: `Delete ${bulkCountLabel(targets.ids.length, "session")}?`,
+            description:
+              "This removes each session and its results from your history. Your card mastery is not affected.",
+            confirmLabel: "Delete",
+            variant: "destructive",
+          }),
+          runOne: async (id, session) => {
+            if (!session) throw new Error("not on screen any more");
+            const res = await studyService.deleteSession(id, session.version);
+            if (res.error) throw new Error(res.error);
+          },
+        },
+      },
+    ],
+    { noun: "session", getRowId: (s) => s.id, getRowName: (s) => s.id },
+  );
 
   const getScope = () =>
     createEducationSessionsScope({
@@ -369,6 +408,17 @@ export function SessionsBrowser({
               </p>
             </div>
           ) : (
+            <>
+            <div className="mb-2.5">
+              <RowSelectionBar
+                selection={selection}
+                idOf={(s) => s.id}
+                actions={bulkActions}
+                noun="session"
+                plural="sessions"
+                onRefresh={() => setReloadKey((k) => k + 1)}
+              />
+            </div>
             <ul className="space-y-2.5">
               {shown.map((s) => (
                 <SessionRow
@@ -385,9 +435,12 @@ export function SessionsBrowser({
                   onOpen={() => open(s.id)}
                   onDelete={() => requestDelete(s)}
                   isDeleting={deletingId === s.id}
+                  selected={selection.has(s.id)}
+                  onToggleSelect={() => selection.toggle(s.id)}
                 />
               ))}
             </ul>
+            </>
           )}
         </div>
 
@@ -417,7 +470,11 @@ function SessionRow({
   onOpen,
   onDelete,
   namedByMode = false,
+  selected,
+  onToggleSelect,
 }: {
+  selected: boolean;
+  onToggleSelect: () => void;
   session: StudySessionRow;
   setName?: string;
   /** Title the row by its mode (the deck is already named by the page). */
@@ -474,6 +531,13 @@ function SessionRow({
         )}
       />
 
+      <div className="flex shrink-0 items-center pl-3">
+        <Checkbox
+          checked={selected}
+          onCheckedChange={onToggleSelect}
+          aria-label="Select session"
+        />
+      </div>
       <Link
         href={detailHref}
         onClick={handleOpen}

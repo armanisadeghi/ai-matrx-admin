@@ -1,6 +1,6 @@
 // features/flashcards/components/set-detail/SetDetailView.tsx
 //
-// The detail view for a single flashcard set: header (name, topic, card count)
+// The detail view for a single flashcard deck: header (name, topic, card count)
 // + a grid of cards (front/back peek + detail-presence badges) + a "Study"
 // affordance into the focused study surface. Loads via fcService.getSetWithCards
 // (ordered cards + their fc_detail rows). Graceful loading / empty / not-found.
@@ -468,7 +468,7 @@ function CardPeek({
   /** Opens the canonical flashcard window when the tile is not in selection mode. */
   onOpen?: () => void;
   /**
-   * Per-card "make this deeper", initiated FROM THIS TILE. The set-level action
+   * Per-card "make this deeper", initiated FROM THIS TILE. The deck-level action
    * is Enrich all (one button, whole deck); a modal LIST of every card you
    * scroll and pick from was the nonsense flow this replaces.
    */
@@ -746,7 +746,7 @@ export function SetDetailView({
   const data: SetWithCards | null = deckRead.isError ? null : (deckRead.data ?? null);
   const loading = !deckRead.hasData && !deckRead.isError;
   const currentName = data?.set.name ?? null;
-  // The open set, by id, on every turn of the page guide: the server reads the cards, what the set was made
+  // The open set, by id, on every turn of the page guide: the server reads the cards, what the deck was made
   // from, related items and the class (`study_record` packet) — the browser never ships them.
   usePageGuidanceRecord(() => ({ id: setId, type: "fc_set", title: currentName }), { everyTurn: true });
   useEffect(() => {
@@ -824,7 +824,7 @@ export function SetDetailView({
   };
   const viewOnly = !access.loading && !canEdit;
 
-  // ── Illustrate this set (per-SET image lane) ──────────────────────────────
+  // ── Illustrate this deck (per-SET image lane) ──────────────────────────────
   // One agent run per card over aidream /education/images/source-set: search
   // the open web, judge the source, attach only what clears the bar. Metered
   // BEFORE the spend (guard), streamed into a floating window (THE FLOATING
@@ -2184,7 +2184,7 @@ export function SetDetailView({
 
             {/* Per-card "make this deeper", opened from a specific card tile —
                 never a modal list of the whole deck to scroll and pick from.
-                The set-level action is "Enrich all cards" above. */}
+                The deck-level action is "Enrich all cards" above. */}
             {enhanceCard && (
               <EnhanceSetDialog
                 open={enhanceCard !== null}
@@ -2259,7 +2259,7 @@ export function SetDetailView({
 }
 
 /**
- * The way back to the chat a deck was born in. Chat-emitted flashcard sets are
+ * The way back to the chat a deck was born in. Chat-emitted flashcard decks are
  * saved here by the canvas flashcards adapter (`generation: chat_render_block`)
  * and stamped with their conversation; the chat block links forward with
  * "Open in Flashcards", the deck's "See chat" button links back.

@@ -4,7 +4,7 @@
 // grade UI, progress bar, dot strip, and completion summary. It owns NO data
 // loading: it takes a study-result shape (cards, currentIndex, flip/next/grade,
 // progress, …) so ANY driver renders identically. Consumers:
-//   - StudySurface        → useFlashcardStudy (one set)
+//   - StudySurface        → useFlashcardStudy (one deck)
 //   - ReviewDueSurface    → useDueReview (cross-set FSRS due queue)
 // Every grade still funnels through the driver's `grade` (→ study spine); this
 // component just advances the UI. Extracted from StudySurface so the two surfaces
@@ -212,7 +212,7 @@ export interface StudyDeckProps {
   completionSubtitle?: string;
   /** "Study again" — omit to hide the restart button. */
   onRestart?: () => void;
-  /** The primary completion action (e.g. Back to set / Back to flashcards). */
+  /** The primary completion action (e.g. Back to deck / Back to flashcards). */
   completionPrimary?: {
     label: string;
     icon: typeof BookOpen;
@@ -455,7 +455,7 @@ export function StudyDeck(props: StudyDeckProps) {
     : false;
   const [askOpen, setAskOpen] = useState(false);
   const [question, setQuestion] = useState("");
-  // "Improve this card" — the set-level enhance dialog scoped to the card in
+  // "Improve this card" — the deck-level enhance dialog scoped to the card in
   // view. Only offered when the driver knows the owning set (setId).
   const [enhanceOpen, setEnhanceOpen] = useState(false);
   // THE FLOATING LAW: the tutor's answer and the end-of-session review both
@@ -1135,7 +1135,7 @@ export function StudyDeck(props: StudyDeckProps) {
     );
   }
 
-  // A set-scoped driver (study / learn) failed to open ITS set: denied,
+  // A set-scoped driver (study / learn) failed to open ITS deck: denied,
   // deleted, never existed, or signed out all read as the same failed load, so
   // the access gate asks the platform which one it is. Cross-set drivers (due
   // review, weak-area drill) omit setId and keep the plain error below. The one
@@ -1629,7 +1629,7 @@ export function StudyDeck(props: StudyDeckProps) {
       </div>
 
       {/* The canonical enhance flow (enrich layers / deepen into sub-cards),
-          scoped to the card in view — the SAME dialog set detail mounts, so
+          scoped to the card in view — the SAME dialog deck detail mounts, so
           previews, entitlement metering, and pending-enhancement durability
           are one implementation. Mounted only after the first open. */}
       {setId && current && enhanceOpen && (

@@ -189,7 +189,7 @@ export function CrawlLogsTable({ crawlId }: { crawlId: string }) {
               rowKind: "web-crawl-event",
               listKind: "web-crawl-events",
               rowDescription:
-                "One durable event from this crawl session's ordered history.",
+                "One durable event from this crawl's ordered history.",
               listDescription:
                 "The currently loaded durable crawl-event rows for this session (respecting search, filters, sort, and pagination).",
               humanRow: (row) =>

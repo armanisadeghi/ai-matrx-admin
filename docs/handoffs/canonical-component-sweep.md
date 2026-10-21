@@ -89,7 +89,7 @@ No class-E box-in-a-box was found: every non-canvas consumer wraps at most in `h
   upward), then compose it here. Only the project/scope pickers and the create action stay.
 - **Effort:** L.
 
-### 4. Flashcard set editor is a bespoke editable copy — C
+### 4. Flashcard deck editor is a bespoke editable copy — C
 - **Where:** `features/flashcards/components/editor/EditSetView.tsx:477-760` (`CardEditor`),
   consumed at `:428`.
 - **See it:** `/education/flashcards/<setId>/edit`.

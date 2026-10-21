@@ -13,14 +13,14 @@
  */
 
 import { useEffect, useRef } from "react";
-import { mergeJsonColumn } from "@ai-matrx/data/db";
+import { conversationMetadataKey } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversation-metadata-key";
 import type { AgentDefinition, AgentDefinitionRecord } from "@ai-matrx/chat/agents/types/agent-definition.types";
-import { createClient } from "@/utils/supabase/client";
 import { setAgentField } from "@/features/agents/redux/agent-builder.slice";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
 
 export const UNSAVED_KEY = "agent_studio_unsaved";
+const unsavedKey = conversationMetadataKey<StudioUnsavedEdits & { saved_at?: string }>(UNSAVED_KEY);
 
 export interface StudioUnsavedEdits {
   agent_id: string;
@@ -55,40 +55,12 @@ export function readUnsaved(metadata: unknown, agentId: string, base: string): S
 }
 
 async function loadMetadata(conversationId: string): Promise<unknown> {
-  const { data, error } = await createClient()
-    .schema("chat")
-    .from("conversation")
-    .select("metadata")
-    .eq("id", conversationId)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  return data?.metadata ?? null;
+  return { [UNSAVED_KEY]: await unsavedKey.read(conversationId) };
 }
 
-/** Writes (or with `null`, clears) the edits — a guarded merge, so sibling metadata keys survive. */
+/** Writes (or with `null`, clears) the edits — the one guarded conversation-metadata door; sibling keys survive. */
 export async function saveUnsaved(conversationId: string, value: StudioUnsavedEdits | null): Promise<void> {
-  const supabase = createClient();
-  const result = await mergeJsonColumn<{ id: string; version: number; metadata: unknown }>({
-    fetchCurrent: () =>
-      supabase.schema("chat").from("conversation").select("id,version,metadata").eq("id", conversationId).maybeSingle(),
-    readColumn: (row) => row.metadata,
-    merge: (current) => {
-      const next = { ...current };
-      if (value) next[UNSAVED_KEY] = { ...value, saved_at: new Date().toISOString() };
-      else delete next[UNSAVED_KEY];
-      return next;
-    },
-    applyUpdate: ({ value: merged, expectedVersion, nextVersion }) =>
-      supabase
-        .schema("chat")
-        .from("conversation")
-        .update({ metadata: merged, version: nextVersion })
-        .eq("id", conversationId)
-        .eq("version", expectedVersion)
-        .select("id,version,metadata")
-        .maybeSingle(),
-  });
-  if (result.status !== "saved") throw new Error(`Unsaved edits were not kept (${result.status})`);
+  await unsavedKey.edit(conversationId, () => (value ? { ...value, saved_at: new Date().toISOString() } : null));
 }
 
 const PERSIST_DELAY_MS = 800;

@@ -14,8 +14,9 @@ import type { SelectionToolbarUi } from "@ai-matrx/rich-content/selection-toolba
 import { Bold, CheckSquare, Code, Heading1, Heading2, Heading3, Italic, Link as LinkIcon, List, ListOrdered, MessageSquare, Palette, Quote, Strikethrough } from "lucide-react";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import type { SpacesEditor } from "./schema";
+import { applyColor } from "./notion-keys";
 
-const COLORS = ["default", "gray", "brown", "red", "orange", "yellow", "green", "blue", "purple", "pink"] as const;
+export const COLORS = ["default", "gray", "brown", "red", "orange", "yellow", "green", "blue", "purple", "pink"] as const;
 const LINK_PANEL = "space-link";
 const COLOR_PANEL = "space-color";
 
@@ -136,8 +137,8 @@ function ColorPanel({ editor, ui }: { editor: SpacesEditor; ui: SelectionToolbar
   // Notion's "A" menu: a row of text colors, then a row of background colors (a highlight on the words).
   const pick = (style: "textColor" | "backgroundColor", c: (typeof COLORS)[number]) => {
     editor.focus();
-    if (c === "default") editor.removeStyles({ [style]: "default" } as never);
-    else editor.addStyles({ [style]: c } as never);
+    // Through notion-keys so Cmd+Shift+H re-applies this pick (B7).
+    applyColor(editor, { style, color: c });
     ui.close();
   };
   return (

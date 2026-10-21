@@ -50,6 +50,11 @@ long-lived media and agent execution stay in aidream.
   content-free brief supplies bounded counts of started agent requests and interruptions through
   the signed query; absent/invalid counts get a generic introduction. It returns only `<Say>`,
   without hangup or redial. Raw speech, model output, tools and inferred actions never enter it.
+  Signed parent identity also reads a complete bounded snapshot of this call's saved agent requests,
+  through the shared canonical call/session/conversation validator. Explicit reserved voice session,
+  interaction and provider-call stamps isolate calls sharing one conversation; request statuses and
+  tool-call attempts never claim external action success. Unavailable/ambiguous evidence leaves
+  the introduction usable and the bridge intact; no saved work facts enter the callback URL.
   Official contract: https://www.twilio.com/docs/voice/twiml/number#url.
 - Signed `transfer-ended` deliveries now append `voice.call.transfer_result.observed` through
   `platform.log_activity`, correlated to the exact active parent call provider/account/SID.

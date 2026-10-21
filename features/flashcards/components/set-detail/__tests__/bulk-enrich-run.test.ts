@@ -2,7 +2,7 @@
  * Bulk enrichment's PLAN and its accounting.
  *
  * The plan is the newer half and the more dangerous one: it decides which
- * cards get a paid model call. It reads the set page's existing multi-select,
+ * cards get a paid model call. It reads the deck page's existing multi-select,
  * and an explicitly picked card beats the "already has layers" skip heuristic —
  * which means the summary owes the user a separate, out-loud line for those.
  *
@@ -91,7 +91,7 @@ describe("planBulkEnrich — which cards actually run", () => {
     expect(planBulkEnrich(deck).todo).toHaveLength(2);
   });
 
-  it("ignores selected ids that are not in this set", () => {
+  it("ignores selected ids that are not in this deck", () => {
     const plan = planBulkEnrich(deck, new Set(["a", "ghost"]));
     expect(plan.todo.map((c) => c.id)).toEqual(["a"]);
     expect(bulkEnrichActionLabel(plan)).toBe("Enrich selected (1)");

@@ -29,6 +29,8 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Switch } from "@/components/ui/switch";
 import { CanvasPagePanel } from "@/features/canvas/host/pagePanel";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
@@ -600,6 +602,65 @@ export function EntityTypesClient({ entityTypes }: Props) {
     }
   }
 
+  const typesLabel = (n: number) => `${n} entity type${n === 1 ? "" : "s"}`;
+  const setActiveOne = async (token: string, active: boolean) => {
+    const { error } = await supabase.rpc("admin_set_entity_type_active", {
+      p_token: token,
+      p_is_active: active,
+    });
+    if (error) throw error;
+  };
+  const { rowActionDefs, bulkActions } = defineRowVerbs<EntityTypeRow>(
+    [
+      {
+        id: "edit", icon: Pencil, label: "Edit entity type",
+        onClick: (row) => openEditInSidePanel(row),
+        bulk: false, noBulk: "edit",
+      },
+      {
+        id: "deactivate", icon: Power, label: "Deactivate", tone: "destructive",
+        appliesTo: (r) => r.is_active, unavailableTooltip: "Already inactive",
+        onClick: (row) => setActiveTarget(row),
+        bulk: {
+          done: "Deactivated",
+          skipReason: (r) => (r.is_active ? null : "Already inactive"),
+          confirm: (t) => ({
+            title: `Deactivate ${typesLabel(t.ids.length)}?`,
+            description: "They leave the live vocabulary. Run pnpm gen:entity-types afterwards to update the TS vocabulary.",
+            confirmLabel: "Deactivate",
+            variant: "destructive",
+          }),
+          runOne: (token) => setActiveOne(token, false),
+        },
+      },
+      {
+        id: "reactivate", icon: Power, label: "Reactivate",
+        appliesTo: (r) => !r.is_active, unavailableTooltip: "Already active",
+        onClick: (row) => setActiveTarget(row),
+        bulk: {
+          done: "Reactivated",
+          skipReason: (r) => (r.is_active ? "Already active" : null),
+          confirm: (t) => ({
+            title: `Reactivate ${typesLabel(t.ids.length)}?`,
+            description: "They return to the live vocabulary. Run pnpm gen:entity-types afterwards to update the TS vocabulary.",
+            confirmLabel: "Reactivate",
+          }),
+          runOne: (token) => setActiveOne(token, true),
+        },
+      },
+    ],
+    { noun: "entity type", getRowId: (r) => r.token, getRowName: (r) => r.label },
+  );
+  const typeBulk = useTableBulkSelection<EntityTypeRow>({
+    noun: "entity type",
+    rows: filtered,
+    getRowId: (r) => r.token,
+    getRowName: (r) => r.label,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: refresh,
+  });
+
   // -- right-click menu -------------------------------------------------------
 
   const resolveContextOnOpen = (target: HTMLElement | null) => {
@@ -802,7 +863,8 @@ export function EntityTypesClient({ entityTypes }: Props) {
                 </div>
               ) : null,
           }}
-          rowActions={(row) => [...[{ id: "edit", icon: Pencil, label: "Edit entity type", onClick: () => openEditInSidePanel(row), variant: "ghost" as const, tooltip: "Edit entity type" }], ...[{ id: "power", icon: Power, label: row.is_active ? "Deactivate" : "Reactivate", onClick: () => setActiveTarget(row), variant: "ghost" as const, tooltip: row.is_active ? "Deactivate" : "Reactivate" }]]}
+          rowActionDefs={rowActionDefs}
+          selection={typeBulk.selection}
         />
         </NonEditableContextMenu>
       </div>

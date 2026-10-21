@@ -1,7 +1,7 @@
 /**
  * A quiz in an answer becomes a real flashcard deck: each question is a card, the right answer
  * (and the explanation, when there is one) is its back. Saved through the platform's one deck
- * writer (`fcService.createSetWithCards`) — the same deck the flashcard sets and the canvas make,
+ * writer (`fcService.createSetWithCards`) — the same deck the flashcard decks and the canvas make,
  * so it is studied, scheduled and kept like any other deck.
  */
 import type { NewCardInput } from "@/features/flashcards/data/types";

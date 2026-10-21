@@ -574,7 +574,7 @@ export function useSnapshots(
         expectedTotal: seen.current.total, verifyTerminal: seen.current.ids.size + state.pageSize >= seen.current.total!, signal,
       });
       const duplicates = page.rows.some((row) => seen.current.ids.has(row.id));
-      if (duplicates) throw new SnapshotReceiptError("a page repeated a snapshot");
+      if (duplicates) throw new SnapshotReceiptError("a page repeated a page capture");
       const nextSize = seen.current.ids.size + page.rows.length;
       const nextCursor = nextSize >= page.total ? null : page.nextCursor;
       if (nextSize > page.total || (nextCursor === null && nextSize !== page.total)) {
@@ -645,7 +645,7 @@ export function useRecentLiveCrawlEvents(
     queryKey: marketingKeys.liveCrawlEvents(siteId, crawlId ?? "none"),
     queryFn: ({ signal }) => {
       if (!crawlId) {
-        throw new Error("A crawl session is required to load live events.");
+        throw new Error("A crawl is required to load live events.");
       }
       return listRecentLiveCrawlEvents(siteId, crawlId, signal);
     },
@@ -1232,7 +1232,7 @@ export function useDeleteSite() {
 
 // ============================================================================
 // Full-CRUD mutations — pages, sitemaps, discovery, properties, assets,
-// facts, screenshots, crawl sessions
+// facts, screenshots, crawls
 // ============================================================================
 
 /** Invalidate one site's subtree (pages, sitemaps, coverage, crawls, …). */

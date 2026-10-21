@@ -18,13 +18,16 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  ChevronDown,
   ChevronRight,
-  Folder,
   Grid3x3,
   List,
   Loader2,
 } from "lucide-react";
+import {
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import { Checkbox } from "@/components/ui/checkbox";
 import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
 import { cn } from "@/lib/utils";
@@ -427,9 +430,6 @@ interface TreeNodeProps {
   showSystemFiles: boolean;
 }
 
-/** Indent per tree level, in rem. */
-const TREE_INDENT_REM = 1;
-
 function FolderNode({
   folderId,
   label,
@@ -475,7 +475,10 @@ function FolderNode({
     fileSort,
   );
 
-  const childIndent = `${folderId === null ? 0 : (level + 1) * TREE_INDENT_REM}rem`;
+  // Children (folders and files) sit one level deeper than this folder row;
+  // the root has no row of its own, so its children start at level 0.
+  const childLevel = folderId === null ? 0 : level + 1;
+  const childIndentStyle = treeIndentStyle(childLevel);
 
   const handleToggle = () => {
     const nextOpen = !open;
@@ -491,20 +494,28 @@ function FolderNode({
   return (
     <div>
       {folderId !== null ? (
-        <div style={{ paddingLeft: `${level * TREE_INDENT_REM}rem` }}>
+        <div style={treeIndentStyle(level)}>
           <PickerRow
             leading={
               <span className="flex shrink-0 items-center gap-1">
                 {isLoadingChildren ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                ) : open ? (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" />
                 ) : (
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  // PickerRow is itself a <button>, so the 16px slot is a plain span
+                  // (TreeDisclosure's chevron is a button; nesting is invalid).
+                  <span
+                    aria-hidden="true"
+                    className="flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground"
+                  >
+                    <ChevronRight
+                      className={cn(
+                        "h-3.5 w-3.5 transition-transform",
+                        open && "rotate-90",
+                      )}
+                    />
+                  </span>
                 )}
-                <span className="flex h-7 w-7 items-center justify-center rounded-md bg-muted">
-                  <Folder className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                </span>
+                <TreeFolderIcon open={open} />
               </span>
             }
             label={label}
@@ -518,8 +529,8 @@ function FolderNode({
           {isLoadingChildren ? null : children.folderIds.length === 0 &&
             children.fileIds.length === 0 ? (
             <div
-              className="py-1.5 pl-2 text-xs text-muted-foreground"
-              style={{ marginLeft: childIndent }}
+              className="py-1.5 text-muted-foreground type-body"
+              style={childIndentStyle}
             >
               Empty folder
             </div>
@@ -535,7 +546,7 @@ function FolderNode({
                     key={id}
                     folderId={id}
                     label={folder.folderName}
-                    level={folderId === null ? 0 : level + 1}
+                    level={childLevel}
                     onFileSelect={onFileSelect}
                     viewMode={viewMode}
                     fileFilter={fileFilter}
@@ -548,14 +559,19 @@ function FolderNode({
                   />
                 );
               })}
-              <div style={{ paddingLeft: childIndent }}>
-                <FileListOrGrid
-                  files={childFiles}
-                  viewMode={viewMode}
-                  onSelect={onFileSelect}
-                  multiple={multiple}
-                  selectedFileIds={selectedFileIds}
-                />
+              {/* The empty disclosure slot keeps a file's thumbnail on the same
+                  vertical line as a sibling folder's icon. */}
+              <div className="flex gap-1" style={childIndentStyle}>
+                <TreeDisclosure expandable={false} />
+                <div className="min-w-0 flex-1">
+                  <FileListOrGrid
+                    files={childFiles}
+                    viewMode={viewMode}
+                    onSelect={onFileSelect}
+                    multiple={multiple}
+                    selectedFileIds={selectedFileIds}
+                  />
+                </div>
               </div>
             </>
           )}

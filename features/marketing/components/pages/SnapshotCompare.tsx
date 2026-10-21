@@ -143,8 +143,8 @@ export function SnapshotCompare({
 
   if (first.isLoading || second.isLoading) {
     return (
-      <SectionCard title="Snapshot comparison" headerExtra={closeButton}>
-        <LoadingSurface label="Loading snapshots…" />
+      <SectionCard title="Page capture comparison" headerExtra={closeButton}>
+        <LoadingSurface label="Loading page captures…" />
       </SectionCard>
     );
   }
@@ -154,7 +154,7 @@ export function SnapshotCompare({
     const firstFailed = first.isError || !first.data;
     const failed = firstFailed ? first : second;
     return (
-      <SectionCard title="Snapshot comparison" headerExtra={closeButton}>
+      <SectionCard title="Page capture comparison" headerExtra={closeButton}>
         <AccessGate
           token="web_snapshot"
           id={firstFailed ? firstId : secondId}
@@ -243,10 +243,10 @@ export function SnapshotCompare({
 
   const copy = webCopy({
     kind: "web-page-snapshot-diff",
-    label: "Snapshot comparison",
+    label: "Page capture comparison",
     description:
-      "A field-by-field diff between two immutable content snapshots of one canonical page.",
-    surface: `Snapshot comparison — ${after.final_url ?? after.id}`,
+      "A field-by-field diff between two immutable captures of one canonical page.",
+    surface: `Page capture comparison — ${after.final_url ?? after.id}`,
     data: {
       page_id: pageId,
       site_id: site.id,
@@ -263,8 +263,8 @@ export function SnapshotCompare({
       })),
     },
     lines: [
-      ["Before snapshot", `${before.id} (${formatDate(before.captured_at)})`],
-      ["After snapshot", `${after.id} (${formatDate(after.captured_at)})`],
+      ["Before page capture", `${before.id} (${formatDate(before.captured_at)})`],
+      ["After page capture", `${after.id} (${formatDate(after.captured_at)})`],
       ["Changed fields", changedCount],
       ...fields
         .filter((field) => field.changed)
@@ -305,15 +305,15 @@ export function SnapshotCompare({
       contextData={{ content: copy.human() }}
       entity={snapshotEntityRef(afterRow) ?? undefined}
       extraSections={[
-        buildSnapshotMenuSection(beforeRow, { label: "Before snapshot" }),
-        buildSnapshotMenuSection(afterRow, { label: "After snapshot" }),
+        buildSnapshotMenuSection(beforeRow, { label: "Before page capture" }),
+        buildSnapshotMenuSection(afterRow, { label: "After page capture" }),
       ]}
     >
     <SectionCard
       title={
         changedCount > 0
-          ? `Snapshot comparison — ${changedCount} field${changedCount === 1 ? "" : "s"} changed`
-          : "Snapshot comparison — no field changes"
+          ? `Page capture comparison — ${changedCount} field${changedCount === 1 ? "" : "s"} changed`
+          : "Page capture comparison — no field changes"
       }
       copy={copy}
       headerExtra={closeButton}

@@ -77,7 +77,7 @@ export interface PublicFlashcardDeckProps {
   setId: string;
   title: string;
   description?: string | null;
-  /** Small chip above the title ("Flashcard set"). */
+  /** Small chip above the title ("Flashcard deck"). */
   label?: string;
   cards: readonly PublicFlashcard[];
   /** The host's secondary action — "Save a copy" (DuplicateToEditButton). */
@@ -90,7 +90,7 @@ export function PublicFlashcardDeck({
   setId,
   title,
   description,
-  label = "Flashcard set",
+  label = "Flashcard deck",
   cards: publicCards,
   saveAction,
   headingLevel = "h1",

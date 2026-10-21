@@ -122,3 +122,13 @@ describe("getMeetingBoard", () => {
     expect(settingsForCopy({ meeting_id: "m1", home: true, theme: "dark" })).toEqual({ theme: "dark" });
   });
 });
+
+import { meetingPartNote } from "../items/meeting-items.logic";
+
+describe("meetingPartNote (a meeting part sent up into Notes)", () => {
+  it("names the note by part and meeting and links back to the meeting", () => {
+    const note = meetingPartNote({ meetingId: "m 1", meetingTitle: "Weekly sync", part: "decisions" });
+    expect(note.label).toBe("Decisions · Weekly sync");
+    expect(note.content).toContain("](/meetings/m%201)");
+  });
+});

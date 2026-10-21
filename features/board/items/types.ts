@@ -161,6 +161,18 @@ export type ItemSurface =
       Host?: ComponentType<{ source: NodeSource; children: ReactNode }>;
     }
   | {
+      /**
+       * The surface is the one the item's CONTENT publishes at run time: a
+       * Page tile frames an app page, and that page's own surface becomes the
+       * tile's (embed/framed-surface-bridge.ts). The Body registers it (into
+       * the tile's capture, globally while live), so there is no Host. This
+       * names the surface expected before the content has said (null =
+       * unknown until it loads); the board reads the live name from the
+       * tile's capture.
+       */
+      published: (source: NodeSource) => string | null;
+    }
+  | {
       /** Board-only content with no feature behind it (a label, a web page):
        * why it has no surface. The board's own tools edit it. Never for a
        * record — a record item without its surface is a defect. */

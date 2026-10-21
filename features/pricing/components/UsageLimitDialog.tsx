@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AlertOctagon, ArrowRight, Check, Clock, Crown, X } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { formatDurationMs } from "@ai-matrx/kit/format";
 import { usePlanCatalog } from "@/features/entitlements/catalog/usePlanCatalog";
@@ -99,7 +99,7 @@ export function UsageLimitDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden border-border/70 p-0 sm:max-w-2xl [&>button.absolute]:hidden">
+      <DialogContent size="lg" padding="none" showCloseButton={false}>
         <div className="relative">
           <div
             aria-hidden
@@ -114,9 +114,9 @@ export function UsageLimitDialog({
             </span>
             <div className="flex flex-1 flex-col gap-1">
               <div className="flex items-center justify-between gap-2">
-                <h2 className="text-lg font-semibold tracking-tight">
+                <DialogTitle className="text-lg font-semibold tracking-tight">
                   You've reached your {meter.toLowerCase()} limit
-                </h2>
+                </DialogTitle>
                 <button
                   type="button"
                   onClick={() => onOpenChange(false)}

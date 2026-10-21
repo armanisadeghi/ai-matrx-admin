@@ -1,7 +1,7 @@
 /**
  * features/marketing/content-plan/lib/reality-actions.ts
  *
- * THE ONE confirmed way to rewrite or publish a plan node's real page.
+ * THE ONE confirmed way to rewrite or publish a plan page's real page.
  *
  * Both actions are offered in two places — the reality card and the pipeline
  * rail's step runners — and both are governed by the destructive/expensive

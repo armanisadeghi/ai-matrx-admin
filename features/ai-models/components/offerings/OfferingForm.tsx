@@ -163,6 +163,7 @@ export default function OfferingForm({
             value={data.usage_basis}
             onChange={set("usage_basis")}
             data-identifier
+            className="font-mono"
             placeholder="e.g. per_image"
           />
         </FormField>

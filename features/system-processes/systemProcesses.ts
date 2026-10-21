@@ -79,12 +79,14 @@ export async function fetchQueue(): Promise<QueueSnapshot> {
     };
   });
 
+  // archived-items-law-exempt: effective-setting lookup — these knobs decide each process's On/Off state, and an archived knob is not in effect
   const knobRows = await readAllRows(({ from, to }) =>
     supabase
       .schema("platform")
       .from("feature_knob")
       .select("key, label, value", { count: "exact" })
       .eq("feature", "system_processes")
+      .is("archived_at", null)
       .order("key", { ascending: true })
       .range(from, to),
     { label: "platform.feature_knob (system_processes)" },

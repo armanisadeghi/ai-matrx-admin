@@ -183,7 +183,7 @@ export function PlanNodesTable({
   }));
 
   /**
-   * KI-026 — a plan node names a keyword, so the table SAYS which keyword and
+   * KI-026 — a plan page names a keyword, so the table SAYS which keyword and
    * what the site thinks it is worth: the phrase, then Class · Score · Level
    * through the ONE stamp resolver (`seo.gsc_keyword_value_for`) every other
    * keyword table on the platform reads. Never a locally-derived class.

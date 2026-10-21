@@ -141,6 +141,10 @@ export async function turnOffEndpoint(endpointId: string, to: "paused" | "retire
 export async function cancelVerification(endpointId: string): Promise<StateChangeResult> {
   return (await postJson<StateChangeResult>(`${BASE}/endpoints/${endpointId}/cancel-verification`, {})).data;
 }
+/** A per-row door for a bulk twin: a refusal throws, so the bar skips the row and names why. */
+export function mustChange(result: StateChangeResult): void {
+  if (!result.changed) throw new Error(result.message);
+}
 export async function setToolPaused(toolId: string, paused: boolean): Promise<StateChangeResult> {
   return (await postJson<StateChangeResult>(`${BASE}/tools/${toolId}/pause`, { paused })).data;
 }

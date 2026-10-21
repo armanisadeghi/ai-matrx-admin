@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
  * THE one Insert menu of a prompt message (system, user, assistant): every way
@@ -58,7 +59,7 @@ export interface InsertMenuContextItem {
 const SECTION_ROWS: readonly { id: string; label: string; insert: () => PromptInsert }[] = [
   { id: "example", label: "Input & Output Example", insert: exampleInsert },
   { id: "instructions", label: "Instructions", insert: () => sectionInsert("instructions") },
-  { id: "context", label: "Context", insert: () => sectionInsert("context") },
+  { id: "context", label: "Context items", insert: () => sectionInsert("context") },
   { id: "examples", label: "Examples", insert: () => sectionInsert("examples") },
   { id: "output_format", label: "Output Format", insert: () => sectionInsert("output_format") },
 ];
@@ -214,7 +215,7 @@ export function MessageInsertMenu<T extends string = string>({
                   <ComposerMenuRow
                     key={item.key}
                     label={item.label ?? item.key}
-                    detail={item.label && item.label !== item.key ? <span className="font-mono">{item.key}</span> : undefined}
+                    detail={item.label && item.label !== item.key ? <span className="font-mono" data-identifier>{item.key}</span> : undefined}
                     onClick={() => run(() => onInsert(contextReferenceInsert(item.key)))}
                   />
                 ))

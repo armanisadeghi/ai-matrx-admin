@@ -239,12 +239,12 @@ export function PushToCmsCard({
           const bump = await bumpPlanNodeStatusAfterPush(planNodeId);
           if (bump.bumped) {
             toast.success(
-              `Linked plan node moved to In production${bump.fromSlug ? ` (was ${bump.fromSlug})` : ""}`,
+              `Linked plan page moved to In production${bump.fromSlug ? ` (was ${bump.fromSlug})` : ""}`,
             );
           }
         } catch (error) {
           toast.warning(
-            "Pushed, but updating the linked plan node status failed",
+            "Pushed, but updating the linked plan page status failed",
             { description: extractErrorMessage(error) },
           );
         }
@@ -368,7 +368,7 @@ export function PushToCmsCard({
               {matched?.plan_node_id ? (
                 // `plan_node` has a route — the id was printed as mono text.
                 <div className="flex flex-wrap items-center gap-1 text-[11px] text-muted-foreground">
-                  Linked plan node:
+                  Linked plan page:
                   <EntityRef
                     token="plan_node"
                     id={matched.plan_node_id}

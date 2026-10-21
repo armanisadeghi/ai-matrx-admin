@@ -9,7 +9,7 @@ One list of everything the person studies from. Four record types share it:
 
 | `kind` | What it is | `format` values | Opens at |
 |---|---|---|---|
-| `fc_set` | a flashcard set (deck) | `flashcards` | `/education/flashcards/<id>` |
+| `fc_set` | a flashcard deck (deck) | `flashcards` | `/education/flashcards/<id>` |
 | `assessment` | a quiz or practice test | `quiz`, `practice_test` | `/education/quizzes/<id>`, `/education/practice-tests/<id>` |
 | `study_media` | generated study media | `audio`, `summary`, `mind_map`, `memory_aid` | `/education/audio-study/<id>`, `/education/summaries/<id>`, `/education/mind-maps/<id>`, `/education/memory/<id>` |
 | `note` | a study note | `notes` | `/education/notes/<id>` |

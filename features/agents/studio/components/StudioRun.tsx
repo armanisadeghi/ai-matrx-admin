@@ -1,201 +1,60 @@
 "use client";
 
 /**
- * One agent conversation inside a Studio pane — the shared chat, never a copy: the ONE launch
- * (`useAgentLauncher().launchAgent`, `displayMode: "direct"`, the pane owns the UI) and the ONE
- * runner (`AgentRunner`: transcript, variables, composer, every answer's actions incl. Debrief).
- *
- * - `conversationId` set → that stored conversation is reopened (`loadConversation`); if it cannot
- *   be (never sent — it would reopen with no composer — or deleted), a fresh one starts and
- *   `onConversation` reports its id.
- * - `runKey` changes → a NEW conversation (the Studio's "run again, fresh every time").
- * - `seed` set → the first turn runs at once with those inputs (mode 2's original request).
- * - Above the runner: "Next message on" — the composer's "This message only" model, in sight.
+ * One conversation inside a Studio pane, drawn from the platform's canvas conversation hook
+ * (`useCanvasWorkspaceConversation`, owned by the page): the ONE runner (`AgentRunner`) once it is
+ * ready, the hook's own honest states before that. This pane launches nothing, reopens nothing and
+ * keeps no ledger — the hook does (open → `resumeConversation`, reconnect, unsent text, the address).
  */
 
-import { useEffect, useRef, useState } from "react";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { RegionSkeleton } from "@ai-matrx/design-system/controls";
+import { Button, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { AgentRunner } from "@ai-matrx/chat/agents/components/smart/AgentRunner";
-import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
-import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
-import { loadConversation } from "@ai-matrx/chat/agents/redux/execution-system/thunks/load-conversation.thunk";
-import { followWhatIsStillInFlight } from "@ai-matrx/chat/agents/runtime-reconnect/follow-what-is-still-in-flight";
-import { selectOrderedMessageIds } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
-import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
+import type { CanvasWorkspaceConversation } from "@ai-matrx/chat/canvas/workspace/useCanvasWorkspaceConversation";
 import { StudioTurnModel } from "./StudioTurnModel";
 import { PaneBar } from "./PaneBar";
 
-/**
- * Which conversation each launched run (agent/mandate + runKey) opened, kept ABOVE the component. A mount
- * (a window resize swapping three panes for tabs, a layout change, a parent re-key) must never start a run:
- * the only thing that launches is the person's own action (a new `runKey`, a first send). A mount that finds
- * its run already launched reopens that conversation instead.
- */
-const launchedRuns = new Map<string, string>();
-
-/** What a mount does: reopen a stored conversation, or (first time only) launch. Pure, so it is tested. */
-export function mountAction(
-  key: string,
-  conversationId: string | null,
-  runKey: number,
-  launched: ReadonlyMap<string, string> = launchedRuns,
-): { kind: "open"; conversationId: string } | { kind: "launch" } {
-  if (conversationId && runKey === 0) return { kind: "open", conversationId };
-  const known = launched.get(key);
-  if (known) return { kind: "open", conversationId: known };
-  return { kind: "launch" };
-}
-
-export function rememberLaunchedRun(key: string, conversationId: string): void {
-  launchedRuns.set(key, conversationId);
-}
-
-export interface StudioRunSeed {
-  variables?: Record<string, string>;
-  userInput?: string;
-  /** false → the inputs are only filled in (the person presses Run); default true runs at once. */
-  autoRun?: boolean;
-}
-
 interface StudioRunProps {
-  agentId?: string | null;
-  /**
-   * Run through a MANDATE (the server resolves the holder; never an agent id). Used by the Studio assistant.
-   * The page's offered values ride every turn through the host-values channel (`useMandateHostValues`
-   * with `everyTurn`); the server builds the rest from the conversation id.
-   */
-  mandateKey?: AnyMandateKey | null;
-  /** What the mandate's agent does HERE, for the top Agents menu (the run declares the job it runs). */
-  mandateDoes?: string;
-  /** The surface the server resolves this chat's tool defaults from. */
-  surfaceName?: string;
-  conversationId?: string | null;
+  conversation: CanvasWorkspaceConversation;
   surfaceKey: string;
-  seed?: StudioRunSeed | null;
-  showVariables?: boolean;
-  runKey?: number;
-  /** The "Next reply on" bar above an agent's run; off when the host draws it in its own bar (the compare). */
+  /** The "Next reply on" bar above an agent's run; off for the assistant and where the host draws it. */
   turnModelBar?: boolean;
-  /** Per-conversation context entries (`runtime.context`), sent with the first launch. */
-  context?: Record<string, unknown>;
-  onConversation?: (conversationId: string) => void;
+  /** What failed, for the error notice ("Open the Studio assistant", "Run the agent"). */
+  operation: string;
 }
 
-export function StudioRun({
-  agentId = null,
-  mandateKey = null,
-  mandateDoes,
-  surfaceName,
-  conversationId = null,
-  surfaceKey,
-  seed = null,
-  showVariables = false,
-  runKey = 0,
-  turnModelBar = true,
-  context,
-  onConversation,
-}: StudioRunProps) {
-  const { launchAgent, launchMandate } = useAgentLauncher();
-  useDeclaredSurfaceMandates(mandateKey && mandateDoes ? [{ mandateKey, does: mandateDoes }] : []);
-  const dispatch = useAppDispatch();
-  const store = useAppStore();
-  const [shown, setShown] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  // A conversation reopened from the URL (a reload) lands on its LATEST turn: `AgentRunner` does it
-  // itself (@ai-matrx/chat `useOpenAtLatest`, 0.8.198), so the Studio keeps no pin of its own.
-  const startedFor = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!agentId && !mandateKey) return;
-    const key = `${agentId ?? mandateKey}:${runKey}`;
-    if (startedFor.current === key) return;
-    startedFor.current = key;
-    const action = mountAction(key, conversationId, runKey);
-    const openId = action.kind === "open" ? action.conversationId : null;
-    setShown(null);
-    setError(null);
-
-    const options = {
-      initiation: "user" as const,
-      surfaceKey,
-      sourceFeature: "agent-studio",
-      config: {
-        displayMode: "direct" as const,
-        autoRun: Boolean(seed) && seed?.autoRun !== false,
-        allowChat: true,
-        showVariablePanel: showVariables,
-      },
-      runtime:
-        seed || context || mandateKey
-          ? {
-              ...(seed?.variables && Object.keys(seed.variables).length > 0 ? { variables: seed.variables } : {}),
-              ...(seed?.userInput ? { userInput: seed.userInput } : {}),
-              ...(context ? { context } : {}),
-              ...(surfaceName ? { surfaceName } : {}),
-            }
-          : undefined,
-      onConversationCreated: (id: string) => {
-        rememberLaunchedRun(key, id);
-        setShown(id);
-        onConversation?.(id);
-      },
-    };
-    const fresh = () =>
-      (mandateKey ? launchMandate(mandateKey, options as never) : launchAgent(agentId as string, options as never)).catch(
-        (e: unknown) => setError(e instanceof Error ? e.message : String(e)),
-      );
-    if (openId) {
-      dispatch(
-        loadConversation({
-          conversationId: openId,
-          surfaceKey,
-          displayOverrides: { displayMode: "direct", allowChat: true, autoRun: false, showVariablePanel: showVariables },
-        }),
-      )
-        .unwrap()
-        .then(() => {
-          // A conversation that was opened but never sent reloads with no composer: start fresh.
-          if (selectOrderedMessageIds(openId)(store.getState()).length === 0) {
-            void fresh();
-            return;
-          }
-          rememberLaunchedRun(key, openId);
-          // Every reopen runs the shared second half: a turn still running on the server
-          // (a refresh mid-answer, a question answered elsewhere) is followed, never lost.
-          followWhatIsStillInFlight(dispatch, openId);
-          setShown(openId);
-          onConversation?.(openId);
-        })
-        .catch(() => void fresh());
-    } else {
-      void fresh();
-    }
-  }, [agentId, mandateKey, surfaceName, launchMandate, conversationId, runKey, surfaceKey, seed, showVariables, context, launchAgent, dispatch, store, onConversation]);
-
-  if (error) {
+export function StudioRun({ conversation, surfaceKey, turnModelBar = false, operation }: StudioRunProps) {
+  if (conversation.state === "failed") {
     return (
       <div className="flex h-full flex-col items-center justify-center px-6">
         <ErrorNotice
           size="compact"
-          title="This chat could not start"
-          message={error}
-          operation="Start the Studio chat"
+          title={conversation.purpose === "open" ? "This chat could not open" : "This chat could not start"}
+          message={conversation.reason}
+          operation={operation}
+          onRetry={conversation.retry}
         />
       </div>
     );
   }
-  if ((!agentId && !mandateKey) || !shown) return <RegionSkeleton />;
+  if (conversation.state === "needs-organization") {
+    return (
+      <div className="flex h-full flex-col items-center justify-center px-6">
+        <Button variant="primary" onClick={conversation.choose}>
+          Choose an organization
+        </Button>
+      </div>
+    );
+  }
+  if (conversation.state !== "ready") return <RegionSkeleton />;
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {mandateKey || !turnModelBar ? null : (
+      {turnModelBar ? (
         <PaneBar>
-          <StudioTurnModel conversationId={shown} />
+          <StudioTurnModel conversationId={conversation.conversationId} />
         </PaneBar>
-      )}
-      <AgentRunner conversationId={shown} surfaceKey={surfaceKey} className="min-h-0 flex-1" />
+      ) : null}
+      <AgentRunner conversationId={conversation.conversationId} surfaceKey={surfaceKey} className="min-h-0 flex-1" />
     </div>
   );
 }
-

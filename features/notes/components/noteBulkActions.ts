@@ -7,7 +7,7 @@
 // `runPerRow`, so a refused note is skipped and NAMED instead of tallied.
 // The sidebar keeps its own selection state (it is not a MatrxDataTable).
 
-import { Database, Download, House, Share2, Tag, Trash2 } from "lucide-react";
+import { ArrowRightLeft, Copy, Database, Download, House, Share2, Tag, Trash2 } from "lucide-react";
 import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
@@ -23,8 +23,11 @@ import {
   standardBulkActionsFor,
 } from "@/lib/entity-list/standardBulkActions";
 import type { AppDispatch } from "@/lib/redux/store";
+import { openOverlay } from "@ai-matrx/summon/open";
+import { changeReviewOverlayData } from "@/features/overlays/definitions/changeReviewWindow.overlay";
 import { removeInstanceTab } from "../redux/slice";
 import {
+  copyNote,
   deleteNote,
   ensureNoteBodiesLoaded,
   restoreNote,
@@ -62,6 +65,52 @@ export function buildNoteBulkActions(args: {
       // the dialog's own onMoved clears it.
       run: () => {
         openMove();
+      },
+    },
+    {
+      // The row's "Move to organization…" review window, opened for every selected note at once
+      // (the window takes a list of ids). Its dialog owns the outcome, so the selection stays.
+      id: "move-organization",
+      label: "Move to organization…",
+      icon: ArrowRightLeft,
+      run: (selection) => {
+        const orgs = new Set(selection.rows.map((n) => n.organization_id ?? null));
+        const [only] = [...orgs];
+        const base = changeReviewOverlayData({
+          verb: "move",
+          entityType: "note",
+          id: selection.ids[0] ?? "",
+          name: bulkCountLabel(selection.count, NOUN),
+          organizationId: orgs.size === 1 ? only : null,
+        });
+        dispatch(
+          openOverlay({
+            ...base,
+            data: { ...base.data, ids: selection.ids },
+          }),
+        );
+      },
+    },
+    {
+      // The row's Duplicate (`copyNote`), one copy per selected note.
+      id: "duplicate",
+      label: "Duplicate",
+      icon: Copy,
+      run: async (selection) => {
+        try {
+          await dispatch(ensureNoteBodiesLoaded(selection.ids)).unwrap();
+        } catch {
+          throw new Error("Could not load these notes to copy them. Try again.");
+        }
+        const result = await runPerRow(
+          selection,
+          async (id) => {
+            await dispatch(copyNote({ noteId: id, instanceId })).unwrap();
+          },
+          { done: "Duplicated", noun: NOUN, labelOf },
+          rowIdOf,
+        );
+        return { ...result, keepSelection: true };
       },
     },
     {

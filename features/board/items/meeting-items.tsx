@@ -16,7 +16,7 @@
  */
 
 import { useState, type ReactNode } from "react";
-import { ListChecks, NotebookPen, Video } from "lucide-react";
+import { ListChecks, NotebookPen, StickyNote, Video } from "lucide-react";
 import { useMeeting } from "@ai-matrx/meet/react";
 import { Button } from "@/components/ui/button";
 import { readOf } from "@ai-matrx/design-system";
@@ -40,6 +40,7 @@ import {
   type MeetingPart,
 } from "./meeting-items.logic";
 import { MeetingNotesStructure } from "./structures";
+import { sendMeetingPartToNotes } from "./meeting-to-notes";
 
 function MeetingPartItemBody({ source }: ItemBodyProps) {
   const target = meetingPartOf(source);
@@ -197,6 +198,10 @@ export const MEETING_ITEMS: BoardItemType[] = [
     surface: { name: MEETING_SURFACE_NAME, Host: MeetingPartSurface },
     // A part of a meeting (its transcript, its decisions) is discussed on the meeting's own thread.
     comments: entityComments("meet_meeting"),
+    menuActions: ({ source, title }) =>
+      meetingPartOf(source)
+        ? [{ key: "send-to-notes", label: "Send to Notes", icon: StickyNote, onSelect: () => void sendMeetingPartToNotes(source, title) }]
+        : [],
     bringIn: { label: "Meeting notes", Picker: MeetingPartPicker },
     href: (source) => {
       const target = meetingPartOf(source);

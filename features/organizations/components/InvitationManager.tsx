@@ -23,6 +23,7 @@ import type {
   MembershipRole,
   MembershipRoleOption,
 } from "@/components/membership/types";
+import { orgInvitationBulkActions } from "../bulk/orgRosterVerbs";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ConnectionsReadNotice } from "@/features/messaging/components/ConnectionsReadNotice";
 
@@ -188,6 +189,10 @@ export function InvitationManager({
       onCancel={handleCancel}
       onResend={handleResend}
       onRefresh={refresh}
+      bulk={{
+        actions: orgInvitationBulkActions({ organizationId }),
+        onRefresh: refresh,
+      }}
       refreshing={loading}
       deliveryNotice={deliveryNotice}
       onDismissDeliveryNotice={() => setDeliveryNotice(null)}

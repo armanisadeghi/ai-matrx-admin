@@ -16,7 +16,7 @@
  *                      dry-run preview before apply; nothing is written the
  *                      user has not seen.
  *   4. Generate content — the durable fill pipeline: author every linked
- *                      draft's html_content from its plan node's brief +
+ *                      draft's html_content from its plan page's brief +
  *                      keyword + attributes (aidream cms-fill job; DB
  *                      frontier, crash-safe, restart-agnostic). ALWAYS
  *                      preview ONE authored page before fanning out; live
@@ -235,7 +235,7 @@ export function SetupBridgeSection({
 }: {
   site: MarketingSite;
   cms: CmsFacts | null;
-  /** Live plan node ids — compared against the CMS page map for real status. */
+  /** Live plan page ids — compared against the CMS page map for real status. */
   planNodeIds: string[];
 }) {
   const dispatch = useAppDispatch();
@@ -582,7 +582,7 @@ export function SetupBridgeSection({
       const ok = await confirm({
         title: `Create ${report.ghosts.length} draft page${report.ghosts.length === 1 ? "" : "s"}?`,
         description:
-          `Every planned page missing from CMS site "${report.cmsSiteSlug}" is created as an EMPTY, UNPUBLISHED draft and linked to its plan node. Nothing is published and nothing existing is touched.`,
+          `Every planned page missing from CMS site "${report.cmsSiteSlug}" is created as an EMPTY, UNPUBLISHED draft and linked to its plan page. Nothing is published and nothing existing is touched.`,
         confirmLabel: "Create drafts",
       });
       if (!ok) return;
@@ -645,7 +645,7 @@ export function SetupBridgeSection({
     const ok = await confirm({
       title: `Build the content for every drafted page — ${EFFORT_TIER_LABEL[effortTier]}?`,
       description:
-        `Every unpublished draft page linked to a plan node on CMS site "${cms?.link.cmsSlug ?? ""}" ` +
+        `Every unpublished draft page linked to a plan page on CMS site "${cms?.link.cmsSlug ?? ""}" ` +
         `runs the ${EFFORT_TIER_LABEL[effortTier].toLowerCase()} pathway (${steps.join(" → ")}). ` +
         EFFORT_TIER_BLURB[effortTier] +
         (pages ? ` That covers ${pages} page(s).` : "") +
@@ -1573,7 +1573,7 @@ function PublishSummary({ result }: { result: BridgePublishResult }) {
       </p>
       {result.statusesAdvanced.length > 0 ? (
         <p className="mt-0.5 text-muted-foreground">
-          {result.statusesAdvanced.length} plan node(s) advanced to published.
+          {result.statusesAdvanced.length} plan page(s) advanced to published.
         </p>
       ) : null}
       {[...result.warnings].map((line) => (
@@ -1649,7 +1649,7 @@ function AlignSummary({ result }: { result: BridgeAlignResult }) {
       </p>
       {result.statusesAdvanced.length > 0 ? (
         <p className="mt-0.5 text-muted-foreground">
-          {result.statusesAdvanced.length} plan node(s) advanced to published.
+          {result.statusesAdvanced.length} plan page(s) advanced to published.
         </p>
       ) : null}
       {result.items.slice(0, 30).map((item, index) => (

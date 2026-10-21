@@ -2,7 +2,7 @@
 //
 // The kit OUTLINE — the kit's own clean, sectioned document of what its
 // Sources teach (living-kit plan, decisions 2–4). Rows live in
-// `education.study_structured_section` (one ordered set per kit, written by the
+// `education.study_structured_section` (one ordered deck per kit, written by the
 // server workflow `education_kit_outline`); every generated card / question
 // made against an outline carries `metadata.outline_section_id` so coverage is
 // counted by section id, never by a title a person may rename.

@@ -651,7 +651,7 @@ function Editor({ initial }: { initial: CreatorProfileMine }) {
           </div>
         ) : (
           <p className="rounded-lg border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
-            Nothing featured yet. Add videos, your public flashcard sets and guides, or your classes.
+            Nothing featured yet. Add videos, your public flashcard decks and guides, or your classes.
           </p>
         )}
 
@@ -661,7 +661,7 @@ function Editor({ initial }: { initial: CreatorProfileMine }) {
             size="compact"
             title="Your free tools couldn't load"
             error={resourcesError}
-            operation="List your public flashcard sets and guides"
+            operation="List your public flashcard decks and guides"
             actions={
               <Button variant="outline" onClick={loadResources}>
                 Retry
@@ -687,7 +687,7 @@ function Editor({ initial }: { initial: CreatorProfileMine }) {
           </div>
         ) : (
           <p className="text-xs text-muted-foreground">
-            Make a flashcard set or study guide public to feature it here as a free tool.
+            Make a flashcard deck or study guide public to feature it here as a free tool.
           </p>
         )}
 

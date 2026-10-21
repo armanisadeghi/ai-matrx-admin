@@ -4,7 +4,7 @@ export const FASTFIRE_INITIAL_LOAD_TIMEOUT_MS = 20_000;
 export const FASTFIRE_SURFACE_LOAD_TIMEOUT_MESSAGE =
   "Fast Fire took too long to load. Try again.";
 export const FASTFIRE_SETS_LOAD_TIMEOUT_MESSAGE =
-  "Your flashcard sets took too long to load. Try again.";
+  "Your flashcard decks took too long to load. Try again.";
 
 /**
  * The browser cannot abort a JavaScript chunk request, but it can stop waiting

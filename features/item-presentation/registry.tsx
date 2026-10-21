@@ -334,7 +334,7 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
   },
   app: {
     type: "app",
-    label: "App",
+    label: "Applet",
     icon: AppWindow,
     open: { kind: "app" },
     detailSource: {

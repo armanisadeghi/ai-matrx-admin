@@ -1,7 +1,7 @@
 /**
  * Surface manifest — Education Library (`matrx-user/education-library`).
  *
- * `/education/library` exactly: the person's study items — flashcard sets,
+ * `/education/library` exactly: the person's study items — flashcard decks,
  * assessments (quizzes, practice tests), study media (audio studies,
  * summaries, mind maps, memory aids) and notes — in one scoped list with
  * three tabs (Mine / Shared with me / Public), search, a filter panel (type,
@@ -101,7 +101,7 @@ const surfaceSpecific: SurfaceValue[] = [
   {
     name: "library_list",
     label: "Library list",
-    description: `What the page lists, in its current tab, search, filters and sort: the first 25 rows of the current page (fewer only when long rows would not fit in 4000 characters — library_rows always has the whole page), each ${ROW_SCAN_SHAPE}. format is the item's type: "flashcards" (a flashcard set), "quiz" or "practice_test" (assessments), "audio", "summary", "mind_map" or "memory_aid" (study media), "notes" (a note). A title longer than 60 characters is cut (library_rows has it whole). Fields with nothing to say are LEFT OUT: items (card/question count) only when the format has one; due (items due for review now) only when above 0; accuracy_pct (0-100) and last_studied (YYYY-MM-DD) only once studied; mine: false only on an item someone else owns. library_total is how many match in all; library_rows has every field. Absent unless library_state is "ready"; [] when nothing matches.`,
+    description: `What the page lists, in its current tab, search, filters and sort: the first 25 rows of the current page (fewer only when long rows would not fit in 4000 characters — library_rows always has the whole page), each ${ROW_SCAN_SHAPE}. format is the item's type: "flashcards" (a flashcard deck), "quiz" or "practice_test" (assessments), "audio", "summary", "mind_map" or "memory_aid" (study media), "notes" (a note). A title longer than 60 characters is cut (library_rows has it whole). Fields with nothing to say are LEFT OUT: items (card/question count) only when the format has one; due (items due for review now) only when above 0; accuracy_pct (0-100) and last_studied (YYYY-MM-DD) only once studied; mine: false only on an item someone else owns. library_total is how many match in all; library_rows has every field. Absent unless library_state is "ready"; [] when nothing matches.`,
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 3000,
@@ -238,7 +238,7 @@ export const educationLibraryManifest: SurfaceManifest = {
   urlPattern: "/education/library",
   guide: "features/surfaces/guides/education-library.md",
   intro: `<surface_intro>
-You are on the Education Library at /education/library: the person's study items — flashcard sets, quizzes and practice tests, study media (audio studies, summaries, mind maps, memory aids) and notes — in three tabs: Mine, Shared with me, Public.
+You are on the Education Library at /education/library: the person's study items — flashcard decks, quizzes and practice tests, study media (audio studies, summaries, mind maps, memory aids) and notes — in three tabs: Mine, Shared with me, Public.
 
 library_list is what the page shows right now (current tab, search, filters and sort; first 25 rows) and library_total how many match in all. Answer "what's in my library" from library_list and tab_counts directly; library_rows has every field when you need descriptions or sources. If library_state is not "ready", the list has not loaded — say so instead of calling the library empty.
 

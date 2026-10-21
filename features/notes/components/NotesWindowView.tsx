@@ -12,6 +12,7 @@
 // DRILLING.
 
 import { HomePickerDialog } from "../homes/HomePicker";
+import { useMoveNoteShortcut } from "../homes/useMoveNoteShortcut";
 import React, { useCallback, useEffect, useRef } from "react";
 import { surfaceOwnsKey } from "@ai-matrx/kit/keyboard-scope";
 import { X } from "lucide-react";
@@ -70,6 +71,8 @@ export function NotesWindowView({
   // Answered only for keys pressed in THIS view (utils/keyboard-scope): a
   // board or a panel mounts several, and each must not act at once.
   const shortcutRootRef = useRef<HTMLDivElement | null>(null);
+  // Ctrl/⌘+Shift+M — move the active note (the home picker); capture phase, ahead of the editor.
+  useMoveNoteShortcut(shortcutRootRef, activeTabId, setMovePickerNoteId);
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!surfaceOwnsKey(e, shortcutRootRef.current)) return;
@@ -85,12 +88,6 @@ export function NotesWindowView({
           dispatch(markTabInteraction({ instanceId }));
           dispatch(removeInstanceTab({ instanceId, noteId: activeTabId }));
         }
-        return;
-      }
-      // Ctrl/⌘+Shift+M — move the active note (the home picker).
-      if (mod && e.shiftKey && e.key.toLowerCase() === "m") {
-        e.preventDefault();
-        if (activeTabId) setMovePickerNoteId(activeTabId);
         return;
       }
       if (mod && e.key === "Tab") {

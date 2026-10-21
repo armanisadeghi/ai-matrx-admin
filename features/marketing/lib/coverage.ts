@@ -138,11 +138,11 @@ export const COVERAGE_FILTER_COPY: Record<
   },
   crawled: {
     label: "Crawled",
-    description: "Has an accepted content snapshot",
+    description: "Has an accepted content page capture",
   },
   never_crawled: {
     label: "Never crawled",
-    description: "No accepted snapshot yet",
+    description: "No accepted page capture yet",
   },
   sitemap_not_crawled: {
     label: "In sitemaps, never crawled",

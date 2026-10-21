@@ -5,7 +5,7 @@
  *
  * Runs the deterministic missing-pages sweep (plan-assists-producer.ts)
  * once per site per browser session over data the workbench already loaded
- * (plan nodes × the WF-11 CMS page map — zero extra reads), then renders
+ * (plan pages × the WF-11 CMS page map — zero extra reads), then renders
  * THIS site's pending assists through the canonical per-page AssistStrip
  * (never a forked chip component). The same rows also appear in the global
  * AssistsDock; deciding a chip in either place clears both — one ledger,

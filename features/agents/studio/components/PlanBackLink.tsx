@@ -6,6 +6,7 @@
  * onto that step (`usesAgentId`) through the plan's own store (`features/agents/orchestra-studio`).
  */
 
+import { toast } from "@/lib/toast";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { loadPlan, savePlanChanges } from "@/features/agents/orchestra-studio/plan-store";
@@ -20,7 +21,9 @@ export function PlanBackLink({ state }: { state: StudioState }) {
       .then((plan) => {
         if (live) setTitle(plan?.title ?? null);
       })
-      .catch(() => undefined);
+      .catch((e: unknown) =>
+        toast.error("The plan did not load", { description: e instanceof Error ? e.message : String(e) }),
+      );
     return () => {
       live = false;
     };

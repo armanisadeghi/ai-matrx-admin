@@ -1,7 +1,7 @@
 // record-view: none — a sub-view (components) inside a record or scope, not the record page; the record's own page carries the section
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { CmsComponentService } from "@/features/cms/services/cmsService";
 import type { ClientComponent } from "@/features/cms/types";
@@ -19,6 +19,9 @@ import { Button } from "@/components/ui/button";
 import { Input, Select } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Dialog,
@@ -105,6 +108,52 @@ export default function ComponentsPage() {
     null,
   );
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Bulk twin of the row's Delete (Move to Trash) — Edit/Save stay single.
+  const rowSelection = useRowSelection(
+    components,
+    (comp: ClientComponent) => comp.id,
+    siteId,
+  );
+  const bulkActions = useMemo(
+    () =>
+      defineRowVerbs<ClientComponent>(
+        [
+          {
+            id: "edit",
+            icon: Pencil,
+            label: "Edit",
+            onClick: () => {},
+            bulk: false,
+            noBulk: "edit",
+          },
+          {
+            id: "delete",
+            icon: Trash2,
+            label: "Move to Trash",
+            tone: "destructive",
+            onClick: () => {},
+            bulk: {
+              done: "Moved to Trash",
+              removesRows: true,
+              confirm: (targets) => ({
+                title: `Move ${targets.ids.length} ${targets.ids.length === 1 ? "component" : "components"} to Trash?`,
+                description:
+                  "Each component leaves the site now, and any page using it as a header or footer renders without it. You can restore them from Trash.",
+                confirmLabel: "Move to Trash",
+              }),
+              runOne: (id) => CmsComponentService.deleteComponent(id),
+            },
+          },
+        ],
+        {
+          noun: "component",
+          getRowId: (comp) => comp.id,
+          getRowName: (comp) => comp.name,
+        },
+      ).bulkActions,
+    [],
+  );
 
   const handleCreate = async () => {
     if (!createName || !createType) return;
@@ -373,6 +422,14 @@ export default function ComponentsPage() {
             </div>
           ) : (
             <div className="space-y-3">
+              <RowSelectionBar
+                selection={rowSelection}
+                idOf={(comp: ClientComponent) => comp.id}
+                actions={bulkActions}
+                noun="component"
+                plural="components"
+                onRefresh={() => void refreshComponents()}
+              />
               {components.map((comp) => {
                 const isEditingThis = editingId === comp.id;
                 const rowExtraSections = createCmsComponentExtraSections({
@@ -410,6 +467,11 @@ export default function ComponentsPage() {
                     <NonEditableContextMenu {...rowMenuProps}>
                       <div className="flex items-center justify-between p-4">
                         <div className="flex items-center gap-3">
+                          <Checkbox
+                            checked={rowSelection.has(comp.id)}
+                            onCheckedChange={() => rowSelection.toggle(comp.id)}
+                            aria-label={`Select ${comp.name}`}
+                          />
                           <div className="w-8 h-8 rounded-md bg-muted/50 flex items-center justify-center">
                             <Puzzle className="h-4 w-4 text-muted-foreground" />
                           </div>

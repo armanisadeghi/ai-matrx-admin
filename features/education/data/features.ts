@@ -260,7 +260,7 @@ export const FEATURES: AxisEntry[] = [
         items: [
           { icon: Mic, title: "Answer out loud, no buttons", description: "Continuous streaming audio capture — never press record per card. Just respond as fast as the cards come." },
           { icon: Flame, title: "Graded while you go", description: "Cards 1–17 are already graded while you answer card 20. Grading runs in parallel with the session, not after." },
-          { icon: GraduationCap, title: "A professor watching the whole set", description: "After every ~10 cards a higher-order grader connects the dots and flags systematic misconceptions." },
+          { icon: GraduationCap, title: "A professor watching the whole deck", description: "After every ~10 cards a higher-order grader connects the dots and flags systematic misconceptions." },
         ],
       },
       {
@@ -280,7 +280,7 @@ export const FEATURES: AxisEntry[] = [
     name: "AI Tutor",
     tagline: "A context-aware tutor at every surface",
     description:
-      "Not a chatbot — a persistent, memory-carrying tutor that knows your current set, your full performance history, and your exam dates. Socratic by default, grounded in your own materials via Knowledge.",
+      "Not a chatbot — a persistent, memory-carrying tutor that knows your current deck, your full performance history, and your exam dates. Socratic by default, grounded in your own materials via Knowledge.",
     icon: GraduationCap,
     letter: "Tu",
     status: "live",
@@ -339,7 +339,7 @@ export const FEATURES: AxisEntry[] = [
       {
         kind: "cta",
         heading: "Talk through your toughest cards",
-        body: "Start a voice session grounded in your own set — ask, answer aloud, and get graded in real time.",
+        body: "Start a voice session grounded in your own deck — ask, answer aloud, and get graded in real time.",
         primary: { label: "Start with the Tutor", href: "/education/tutor" },
         secondary: { label: "Try FastFire", href: "/education/fastfire" },
       },

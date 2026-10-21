@@ -66,6 +66,8 @@ function contentSecurityPolicy(origin: string): string {
         `script-src ${origin} 'unsafe-eval'`,
         `style-src 'unsafe-inline' ${origin}`,
         `img-src data: blob: ${origin}/api/image-proxy`,
+        // Saved video/audio: the host fetches the bytes, the frame plays them from its own blob: URL. No frame-src, ever.
+        "media-src blob:",
         `font-src data: ${origin}`,
         "connect-src 'none'",
         "form-action 'none'",

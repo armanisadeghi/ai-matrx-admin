@@ -116,8 +116,8 @@ export const PRINT_CATALOG: PrintCatalogEntry[] = [
     },
     {
         id: "decks",
-        label: "Your flashcard sets",
-        blurb: "Open a set you already have and print it straight from its page.",
+        label: "Your flashcard decks",
+        blurb: "Open a deck you already have and print it straight from its page.",
         href: "/education/flashcards",
         icon: Layers,
         group: "education",

@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
  * THE Triggers manager — every workflow trigger (schedule, event, webhook) that
@@ -24,6 +25,8 @@ import { toast } from "@/lib/toast";
 import { TapTargetButtonTransparent, TapTargetCopyButton } from "@ai-matrx/design-system/tap-target";
 import { PauseTapButton, PlayTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
@@ -280,7 +283,7 @@ export function TriggersManager({
       accessorFn: (t) => t.overview.kind,
       filter: "select",
       width: 90,
-      cell: (t) => <span className="text-xs">{t.overview.kind}</span>,
+      cell: (t) => <span className="text-xs">{humanizeIdentifier(t.overview.kind)}</span>,
     },
     {
       id: "cadence",
@@ -411,6 +414,94 @@ export function TriggersManager({
     ? `${pending.t.cost.owner_email ?? "an unknown account"} for ${pending.t.cost.organization_name ?? "no organization"}`
     : "";
 
+  const stateOne = (action: TriggerAction) => (id: string) => setWorkflowTriggerState(id, action);
+  const monthlyOf = (rows: ManagedTrigger[]) =>
+    rows.reduce((sum, r) => sum + (r.overview.is_active ? r.cost.est_monthly_cost : 0), 0);
+  const triggersLabel = (n: number) => `${n} ${n === 1 ? "trigger" : "triggers"}`;
+  const { rowActionDefs, bulkActions } = defineRowVerbs<ManagedTrigger>(
+    [
+      {
+        id: "resume-limit", icon: OctagonPause, label: "Resume", tooltip: "Resume (paused by a limit)",
+        appliesTo: (t) => t.cost.guardrail_pause,
+        unavailableTooltip: "Not paused by a limit",
+        onClick: (t) => {
+          resumeAutomation("workflow_trigger", t.overview.trigger_id)
+            .then(() => {
+              toast.success("Resumed");
+              return load();
+            })
+            .catch((e: unknown) => toast.error(e instanceof Error ? e.message : String(e)));
+        },
+        bulk: {
+          label: "Resume (limit)",
+          done: "Resumed",
+          confirm: (t) => ({
+            title: `Resume ${triggersLabel(t.ids.length)} paused by a limit?`,
+            description: "Each trigger starts firing again and spends at its recent rate.",
+            confirmLabel: "Resume",
+          }),
+          runOne: (id) => resumeAutomation("workflow_trigger", id),
+        },
+      },
+      {
+        id: "pause", icon: Pause, label: "Pause", tooltip: "Pause",
+        appliesTo: (t) => !t.cost.guardrail_pause && t.overview.is_active,
+        unavailableTooltip: "Already paused",
+        onClick: (t) => setPending({ t, action: "pause" }),
+        bulk: {
+          done: "Paused",
+          skipReason: (t) => (t.cost.guardrail_pause ? "Paused by a limit" : t.overview.is_active ? null : "Already paused"),
+          confirm: (t) => ({
+            title: `Pause ${triggersLabel(t.ids.length)}?`,
+            description: `They stop firing on their own right now, about ${format(monthlyOf(t.rows))} a month combined. Runs already started finish and Resume turns them back on.`,
+            confirmLabel: "Pause",
+          }),
+          runOne: stateOne("pause"),
+        },
+      },
+      {
+        id: "resume", icon: Play, label: "Resume", tooltip: "Resume",
+        appliesTo: (t) => !t.cost.guardrail_pause && !t.overview.is_active,
+        unavailableTooltip: "Already running",
+        onClick: (t) => setPending({ t, action: "resume" }),
+        bulk: {
+          done: "Resumed",
+          skipReason: (t) => (t.cost.guardrail_pause ? "Paused by a limit" : t.overview.is_active ? "Already running" : null),
+          confirm: (t) => ({
+            title: `Resume ${triggersLabel(t.ids.length)}?`,
+            description: `They start firing on their own again and spend at their recent rate. A trigger that came due while paused may fire once right away.`,
+            confirmLabel: "Resume",
+          }),
+          runOne: stateOne("resume"),
+        },
+      },
+      {
+        id: "archive", icon: Archive, label: "Archive", tooltip: "Archive",
+        onClick: (t) => setPending({ t, action: "archive" }),
+        bulk: {
+          done: "Archived",
+          removesRows: true,
+          confirm: (t) => ({
+            title: `Archive ${triggersLabel(t.ids.length)}?`,
+            description: "They stop firing and leave this list. Past runs and costs stay on record. Archived triggers cannot be turned back on from this page.",
+            confirmLabel: "Archive",
+            variant: "destructive",
+          }),
+          runOne: stateOne("archive"),
+        },
+      },
+    ],
+    { noun: "trigger", getRowId: (t) => t.overview.trigger_id, getRowName: (t) => t.cost.name },
+  );
+  const bulk = useTableBulkSelection<ManagedTrigger>({
+    noun: "trigger",
+    rows: shown,
+    getRowId: (t) => t.overview.trigger_id,
+    getRowName: (t) => t.cost.name,
+    actions: bulkActions,
+    onRefresh: () => void load(),
+  });
+
   return (
     <div className="flex h-full min-h-0 flex-col gap-2">
       <AutomationKillSwitch seat={seat} orgId={orgId} />
@@ -426,30 +517,8 @@ export function TriggersManager({
           data={shown}
           columns={columns}
           getRowId={(t) => t.overview.trigger_id}
-          rowActions={(t) => [
-            ...(t.cost.guardrail_pause
-              ? [
-                  {
-                    id: "resume-limit",
-                    icon: OctagonPause,
-                    label: "Resume",
-                    tooltip: "Resume (paused by a limit)",
-                    onClick: () => {
-                      resumeAutomation("workflow_trigger", t.overview.trigger_id)
-                        .then(() => {
-                          toast.success("Resumed");
-                          return load();
-                        })
-                        .catch((e: unknown) => toast.error(e instanceof Error ? e.message : String(e)));
-                    },
-                  },
-                ]
-              : []),
-            ...(t.cost.guardrail_pause ? [] : [t.overview.is_active
-              ? { id: "pause", icon: Pause, label: "Pause", tooltip: "Pause", onClick: () => setPending({ t, action: "pause" }) }
-              : { id: "resume", icon: Play, label: "Resume", tooltip: "Resume", onClick: () => setPending({ t, action: "resume" }) }]),
-            { id: "archive", icon: Archive, label: "Archive", tooltip: "Archive", onClick: () => setPending({ t, action: "archive" }) },
-          ]}
+          rowActionDefs={rowActionDefs}
+          selection={bulk.selection}
           isLoading={loading}
           defaultSort={{ id: "cost_total", direction: "desc" }}
           read={readOf({ loading, error }, { what: "workflow triggers" })}

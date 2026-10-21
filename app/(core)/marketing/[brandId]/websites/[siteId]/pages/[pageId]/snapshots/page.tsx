@@ -10,7 +10,7 @@ export default async function MarketingSnapshotsPage({
 }) {
   const { pageId } = await params;
   return (
-    <Suspense fallback={<LoadingSurface label="Loading snapshots…" />}>
+    <Suspense fallback={<LoadingSurface label="Loading page captures…" />}>
       <SnapshotsTable pageId={pageId} />
     </Suspense>
   );

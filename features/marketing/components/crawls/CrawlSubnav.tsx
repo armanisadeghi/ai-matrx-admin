@@ -45,10 +45,10 @@ export function CrawlSubnav({ crawl }: { crawl: CrawlSession }) {
   const root = marketingRoutes.site(brandId, site.id, `/crawls/${crawl.id}`);
   const sessionCopy = webCopy({
     kind: "web-crawl-session",
-    label: `Crawl session ${crawl.id}`,
+    label: `Crawl ${crawl.id}`,
     description:
-      "This crawl session's record: status, trigger, timing, scope, and stats.",
-    surface: `Crawl session — ${site.root_url}`,
+      "This crawl's record: status, trigger, timing, scope, and stats.",
+    surface: `Crawl — ${site.root_url}`,
     data: crawl,
     lines: [
       ["Session", crawl.id],

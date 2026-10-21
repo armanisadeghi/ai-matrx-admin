@@ -74,7 +74,7 @@ export function readPlanContextFromCache(
       null,
     // The page's SEO plan is deliberately NOT here: it has ONE store
     // (`web.page.desired_values.keyword_plan`) and this surface already
-    // carries it as its own value. A second copy read off the plan node is
+    // carries it as its own value. A second copy read off the plan page is
     // exactly the duplication invariant 9 removed.
   };
 }
@@ -221,7 +221,7 @@ export function PagePlanContextCard({
         kind: "web-page-plan-context",
         label: "Plan behind this page",
         description:
-          "The planning step that produced this measured page: the CMS page serving the URL and the plan node carrying its brief, target keyword, and keyword strategy.",
+          "The planning step that produced this measured page: the CMS page serving the URL and the plan page carrying its brief, target keyword, and keyword strategy.",
         surface: `Plan context — ${page.url}`,
         data: {
           url: page.url,
@@ -234,7 +234,7 @@ export function PagePlanContextCard({
         lines: [
           ["URL", page.url],
           ["CMS page", cmsPage?.id ?? "none"],
-          ["Plan node", planNodeId ?? "none — this page was not planned"],
+          ["Plan page", planNodeId ?? "none — this page was not planned"],
         ],
         attributes: { page_id: page.id, site_id: site.id },
       })}

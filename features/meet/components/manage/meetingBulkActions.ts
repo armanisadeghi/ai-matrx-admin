@@ -7,8 +7,8 @@
 // the row's own archive also tells invited guests when the meeting had not
 // ended, which a bare deleted_at stamp would not.
 
-import { Archive, ArchiveRestore } from "lucide-react";
-import type { MeetingRecord } from "@ai-matrx/meet/react";
+import { Archive, ArchiveRestore, CalendarCheck, XCircle } from "lucide-react";
+import type { MeetingRecord, RsvpAnswer } from "@ai-matrx/meet/react";
 import {
   bulkCountLabel,
   type EntityBulkAction,
@@ -50,7 +50,102 @@ export function buildMeetingBulkActions(args: {
     throw new Error("Choose an organization, then press the button again.");
   };
 
+  const ended = (m: MeetingRecord) => m.endedAt !== null && !m.recurrenceRule;
+
   const own: EntityBulkAction<MeetingRecord>[] = [
+    {
+      // The row menu's Going / Maybe / Not going, one answer for every meeting you are invited to.
+      id: "rsvp",
+      label: "Respond to invite…",
+      icon: CalendarCheck,
+      confirm: (selection) => ({
+        title: `Answer ${bulkCountLabel(selection.count, NOUN)}?`,
+        description:
+          "Your answer goes to each host. Meetings you host or that are over, canceled or archived are skipped and named.",
+        confirmLabel: "Send answer",
+        ask: {
+          kind: "choice",
+          label: "Your answer",
+          options: [
+            { value: "accepted", label: "Going" },
+            { value: "tentative", label: "Maybe" },
+            { value: "declined", label: "Not going" },
+          ],
+          defaultValue: "accepted",
+        },
+      }),
+      run: (selection, input) =>
+        runPerRow(
+          selection,
+          async (id) => {
+            const answer = input?.value as RsvpAnswer | undefined;
+            if (!answer) throw new Error("no answer picked");
+            await actions.respond(id as MeetingRecord["id"], answer);
+          },
+          {
+            done: "Answered",
+            noun: NOUN,
+            labelOf,
+            skipReason: (m) => {
+              if (roles.get(m.id as string) !== "invitee") return "you are not an invitee";
+              if (m.deletedAt) return "archived";
+              if (m.cancelledAt) return "canceled";
+              if (ended(m)) return "already over";
+              return null;
+            },
+          },
+          meetingIdOf,
+        ),
+    },
+    {
+      id: "cancel-meeting",
+      label: "Cancel meeting",
+      icon: XCircle,
+      variant: "destructive",
+      confirm: (selection) => {
+        const recurring = selection.rows.filter((m) => m.recurrenceRule).length;
+        return {
+          title: `Cancel ${bulkCountLabel(selection.count, NOUN)}?`,
+          description: `Nobody can join a canceled meeting, and every guest who was invited is emailed a cancellation that removes it from their calendar.${recurring > 0 ? ` ${recurring} ${recurring === 1 ? "is a recurring meeting" : "are recurring meetings"} — the whole series is canceled.` : ""}`,
+          confirmLabel: "Cancel and email guests",
+          variant: "destructive",
+          reason: { placeholder: "Reason shown on the meeting link (optional)", optional: true },
+        };
+      },
+      run: async (selection, input) => {
+        await ready();
+        return runPerRow(
+          selection,
+          async (_id, meeting) => {
+            if (!meeting) throw new Error("not loaded");
+            const invitees = actions.repository
+              ? await actions.repository.invitees(meeting.id)
+              : [];
+            await actions.cancel(meeting, input?.reason?.trim() || null);
+            if (invitees.length > 0) {
+              const told = await actions.announce(meeting.id, true);
+              if (!told) {
+                throw new Error("canceled, but its guests were not emailed the cancellation");
+              }
+            }
+          },
+          {
+            done: "Canceled",
+            noun: NOUN,
+            labelOf,
+            skipReason: (m) => {
+              const r = notYours(m);
+              if (r) return r;
+              if (m.deletedAt) return "archived";
+              if (m.cancelledAt) return "already canceled";
+              if (ended(m)) return "already over";
+              return null;
+            },
+          },
+          meetingIdOf,
+        );
+      },
+    },
     {
       id: "restore",
       label: "Restore",

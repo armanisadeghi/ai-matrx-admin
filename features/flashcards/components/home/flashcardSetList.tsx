@@ -24,6 +24,8 @@
 //   public → someone else's public deck
 
 import type { EntityListConfig } from "@/lib/entity-list/config";
+import type { EntityBulkSelection } from "@/lib/entity-list/selection";
+import type { ShownTo } from "@/lib/row-access";
 import type { EntityColumnSpec } from "@/lib/entity-list/columns";
 import { Muted, TextCell, timeCell } from "@/lib/entity-list/columns";
 import {
@@ -37,8 +39,12 @@ import type { ListScopeKind } from "@/lib/list-scope/types";
 import { withStandardLanes } from "@/lib/list-scope/types";
 import { visibilityWords } from "@/lib/record-words";
 import { PlayTapButton, ZapTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import { Archive } from "lucide-react";
-import { archiveRecord } from "@/features/trash/service";
+import { Archive, ArchiveRestore, FolderInput, Users } from "lucide-react";
+import { archiveRecord, restoreFromTrash } from "@/features/trash/service";
+import { associationsService } from "@/features/scopes/service/associationsService";
+import { EDGE_ROLE } from "@/features/flashcards/data/types";
+import { saveDeckRowAccess } from "@/features/flashcards/components/sharing/DeckRowAccess";
+import { SHOWN_TO_LABELS, shownToChoices, SHOWN_TO_LABEL } from "@/lib/row-access";
 import { runPerRow } from "@/lib/entity-list/standardBulkActions";
 import { archiveConfirmSentence } from "@/features/trash/archiveCopy";
 import {
@@ -66,7 +72,7 @@ export {
 export const flashcardFastFireHref = (row: { id: string }) =>
   `${FAST_FIRE_BASE}?set=${row.id}`;
 
-/** One row of the library: the set plus what the list needs to file it. */
+/** One row of the library: the deck plus what the list needs to file it. */
 export interface FlashcardSetListRow extends DeckListRow {
   /** True when the deck is archived (`deleted_at` set) — the archive axis. */
   archived: boolean;
@@ -356,6 +362,8 @@ export function buildFlashcardSetListConfig(input: {
   userId: string;
   useRowActions: EntityListConfig<FlashcardSetListRow>["useRowActions"];
   folderName: (id: string) => string;
+  /** The person's folders, for "Add to folder…". Absent: that verb is not offered. */
+  folders?: readonly { id: string; name: string }[];
   foldersKey: string;
 }): EntityListConfig<FlashcardSetListRow> {
   return {
@@ -426,6 +434,93 @@ export function buildFlashcardSetListConfig(input: {
               labelOf: (row) => row.name,
               removesRows: true,
             },
+            (row) => row.id,
+          ),
+      },
+      {
+        // The row menu's Restore (`restoreFromTrash`), many at a time. Same id as the
+        // built-in, so it replaces it and skips decks that are not archived.
+        id: "restore",
+        label: "Restore",
+        icon: ArchiveRestore,
+        run: (selection) =>
+          runPerRow(
+            selection,
+            async (id, row) => {
+              if (row && !row.archived) throw new Error("not archived");
+              await restoreFromTrash("fc_set", id);
+            },
+            { done: "Restored", noun: "deck", labelOf: (row) => row.name, removesRows: true },
+            (row) => row.id,
+          ),
+      },
+      ...(input.folders && input.folders.length > 0
+        ? [
+            {
+              // The row's Folders picker adds a folder tag (a `theme` edge); this adds one folder to many.
+              id: "add-to-folder",
+              label: "Add to folder…",
+              icon: FolderInput,
+              confirm: (selection: { count: number }) => ({
+                title: `Add ${selection.count === 1 ? "this deck" : `${selection.count} decks`} to a folder?`,
+                description: "Decks stay in any folders they are already in.",
+                confirmLabel: "Add to folder",
+                ask: {
+                  kind: "choice" as const,
+                  label: "Folder",
+                  options: (input.folders ?? []).map((f) => ({ value: f.id, label: f.name })),
+                },
+              }),
+              run: (selection: EntityBulkSelection<FlashcardSetListRow>, bulkInput?: { value?: string }) =>
+                runPerRow(
+                  selection,
+                  async (id, row) => {
+                    const folderId = bulkInput?.value;
+                    if (!folderId) throw new Error("no folder picked");
+                    if (row && row.created_by !== input.userId) throw new Error("not your deck");
+                    if (row?.archived) throw new Error("archived — restore it first");
+                    if (row?.folder_ids.includes(folderId)) throw new Error("already in that folder");
+                    const result = await associationsService.add({
+                      sourceType: "fc_set",
+                      sourceId: id,
+                      targetType: "category",
+                      targetId: folderId,
+                      role: EDGE_ROLE.theme,
+                    });
+                    if (!result.ok) throw new Error(result.error.message ?? "Not added");
+                  },
+                  { done: "Added to folder", noun: "deck", labelOf: (row) => row.name },
+                  (row) => row.id,
+                ),
+            },
+          ]
+        : []),
+      {
+        // The row's "Shown to" (`saveDeckRowAccess`), one value for every selected deck.
+        id: "shown-to",
+        label: `${SHOWN_TO_LABEL}…`,
+        icon: Users,
+        confirm: (selection) => ({
+          title: `Change who sees ${selection.count === 1 ? "this deck" : `${selection.count} decks`}?`,
+          description: "Only your own decks change; the rest are skipped and named.",
+          confirmLabel: "Change",
+          ask: {
+            kind: "choice",
+            label: SHOWN_TO_LABEL,
+            options: shownToChoices(false).map((v) => ({ value: v, label: SHOWN_TO_LABELS[v] })),
+          },
+        }),
+        run: (selection, bulkInput) =>
+          runPerRow(
+            selection,
+            async (id, row) => {
+              const value = bulkInput?.value;
+              if (!value) throw new Error("nothing picked");
+              if (row && row.created_by !== input.userId) throw new Error("not your deck");
+              if (row?.archived) throw new Error("archived — restore it first");
+              await saveDeckRowAccess(id, { shownTo: value as ShownTo });
+            },
+            { done: "Visibility changed", noun: "deck", labelOf: (row) => row.name },
             (row) => row.id,
           ),
       },

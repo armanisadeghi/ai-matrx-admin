@@ -62,5 +62,5 @@ export default function GrowthLoopRunRedirect({
     );
   }
 
-  return <LoadingSurface label="Opening the growth loop…" />;
+  return <LoadingSurface label="Opening the growth loop run…" />;
 }

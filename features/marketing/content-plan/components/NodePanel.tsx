@@ -573,7 +573,7 @@ export function NodePanel({
     write_page_content: async () => {
       if (!cmsPage) {
         throw new Error(
-          // access-errors: ok — guards an AGENT action against a plan node whose page is unbuilt; the same verdict the human card shows.
+          // access-errors: ok — guards an AGENT action against a plan page whose page is unbuilt; the same verdict the human card shows.
           "This page does not exist on the website yet — apply build_page first.",
         );
       }
@@ -583,7 +583,7 @@ export function NodePanel({
     publish_page: async () => {
       if (!cmsPage) {
         throw new Error(
-          // access-errors: ok — guards an AGENT action against a plan node whose page is unbuilt; the same verdict the human card shows.
+          // access-errors: ok — guards an AGENT action against a plan page whose page is unbuilt; the same verdict the human card shows.
           "This page does not exist on the website yet — apply build_page first.",
         );
       }
@@ -1727,7 +1727,7 @@ function ConfirmDialogSection({
       <ConfirmDialog
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
-        title="Delete this plan node?"
+        title="Delete this plan page?"
         description={`"${node.label}" will be soft-deleted. Nodes with live children are refused — move them first.`}
         confirmLabel="Delete"
         variant="destructive"

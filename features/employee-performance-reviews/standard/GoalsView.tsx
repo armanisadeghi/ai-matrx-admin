@@ -8,6 +8,7 @@ import { Archive, Pencil, Plus, Target, TrendingUp } from "lucide-react";
 import { Badge, Button, EmptyState } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable, type MatrxColumnDef, type MatrxDataTableCopyConfig } from "@ai-matrx/design-system/data-table";
 
+import { treeIndentPx } from "@/components/official/topic-tree/geometry";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/lib/toast";
 
@@ -124,7 +125,7 @@ export function GoalsView({
       width: 340,
       frozen: true,
       cell: (g) => (
-        <span style={{ paddingLeft: g.depth * 16 }} className="inline-block">
+        <span style={{ paddingLeft: treeIndentPx(g.depth) }} className="inline-block">
           {g.title}
         </span>
       ),

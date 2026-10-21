@@ -6,7 +6,7 @@
 // clear the card's pending proposal — shared by BOTH real entry points:
 //
 //   • the study surface's in-place "Add more on this card" (single card), and
-//   • "Enrich every card" on set detail (the batch),
+//   • "Enrich every card" on deck detail (the batch),
 //
 // so a layer written by the batch and a layer written on the card are the same
 // rows, written the same way. The preview-first path (EnhanceSetDialog, where

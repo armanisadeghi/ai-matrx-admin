@@ -46,8 +46,6 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import {
   ArrowLeft,
-  ChevronDown,
-  ChevronRight,
   FolderTree,
   GripVertical,
   Loader2,
@@ -58,6 +56,12 @@ import {
 import { toast } from "@/lib/toast";
 
 import { cn } from "@/lib/utils";
+import {
+  TREE_ROW_TEXT,
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -449,9 +453,9 @@ function SortableCategoryRow({
   return (
     <div
       ref={setNodeRef}
-      style={{ ...style, paddingLeft: `${node.depth * 16 + 8}px` }}
+      style={{ ...style, ...treeIndentStyle(node.depth) }}
       className={cn(
-        "flex items-center gap-1.5 py-1 pr-2 group rounded text-sm",
+        `flex min-h-7 items-center gap-1.5 pr-2 group rounded ${TREE_ROW_TEXT}`,
         "hover:bg-muted/40 transition-colors",
       )}
     >
@@ -472,22 +476,12 @@ function SortableCategoryRow({
       )}
 
       {/* Expand / collapse */}
-      {node.hasChildren ? (
-        <button
-          type="button"
-          onClick={onToggleCollapse}
-          aria-label={collapsed ? "Expand" : "Collapse"}
-          className="inline-flex items-center justify-center h-5 w-5 rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-        >
-          {collapsed ? (
-            <ChevronRight className="h-3 w-3" />
-          ) : (
-            <ChevronDown className="h-3 w-3" />
-          )}
-        </button>
-      ) : (
-        <span className="inline-block h-5 w-5" />
-      )}
+      <TreeDisclosure
+        expandable={node.hasChildren}
+        expanded={!collapsed}
+        onToggle={onToggleCollapse}
+      />
+      <TreeFolderIcon open={node.hasChildren && !collapsed} />
 
       {/* Color swatch + picker */}
       <ColorSwatchButton
@@ -532,13 +526,13 @@ function SortableCategoryRow({
 
       <Badge
         variant="outline"
-        className="h-4 px-1 text-[10px] font-normal text-muted-foreground"
+        className="h-5 px-1.5 type-body font-normal text-muted-foreground"
       >
         {node.row.categoryKey}
       </Badge>
 
       {isSystemRow && (
-        <Badge variant="secondary" className="h-4 px-1 text-[10px] font-normal">
+        <Badge variant="secondary" className="h-5 px-1.5 type-body font-normal text-muted-foreground">
           System
         </Badge>
       )}
@@ -820,9 +814,12 @@ function CreateCategoryRow({
 
   return (
     <div
-      className="flex items-center gap-1.5 py-1 pr-2 bg-accent/30 rounded text-sm"
-      style={{ paddingLeft: `${depth * 16 + 28}px` }}
+      className={`flex min-h-7 items-center gap-1.5 pr-2 bg-accent/30 rounded ${TREE_ROW_TEXT}`}
+      style={treeIndentStyle(depth)}
     >
+      <span aria-hidden="true" className="inline-block h-5 w-5" />
+      <TreeDisclosure expandable={false} />
+      <TreeFolderIcon />
       <Input
         value={label}
         onChange={(e) => setLabel(e.target.value)}
@@ -836,7 +833,7 @@ function CreateCategoryRow({
           keyTouchedRef.current = true;
           setKey(e.target.value);
         }}
-        className="w-40"
+        className="font-mono w-40"
         data-identifier
         placeholder="category_key"
       />

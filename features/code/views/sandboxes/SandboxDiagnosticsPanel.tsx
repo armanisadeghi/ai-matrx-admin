@@ -70,6 +70,7 @@ import SuspenseLoader from "@/components/loaders/SuspenseLoader";
 import { SandboxVersionHealthCard } from "./SandboxVersionHealthCard";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { RecordId } from "@ai-matrx/design-system";
+import { TreeDisclosure, TreeFolderIcon, treeIndentStyle } from "@/components/official/topic-tree/geometry";
 
 type DiagCheck = {
   ok?: boolean;
@@ -1291,48 +1292,36 @@ function FsTree({
   selectedPath?: string;
   depth?: number;
 }) {
-  const indent = { paddingLeft: `${depth * 12}px` };
+  const indent = treeIndentStyle(depth);
   const isSelected = selectedPath === node.path;
   return (
     <div>
       <div
-        className={`flex items-center gap-1 cursor-pointer hover:bg-muted/50 rounded px-1 ${isSelected ? "bg-muted" : ""}`}
+        className={`flex h-7 items-center gap-1 cursor-pointer hover:bg-muted/50 rounded pr-1 ${isSelected ? "bg-muted" : ""}`}
         style={indent}
         onClick={() => {
           if (node.isDir) onToggle(node);
           else onSelectFile(node.path, node.name);
         }}
       >
+        <TreeDisclosure expandable={node.isDir} expanded={node.expanded} />
         {node.isDir ? (
-          node.expanded ? (
-            <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" />
-          ) : (
-            <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground" />
-          )
+          <TreeFolderIcon open={node.expanded} />
         ) : (
-          <span className="w-3" />
+          <FileIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
         )}
-        {node.isDir ? (
-          node.expanded ? (
-            <FolderOpen className="h-3 w-3 shrink-0 text-blue-500" />
-          ) : (
-            <FolderIcon className="h-3 w-3 shrink-0 text-blue-500" />
-          )
-        ) : (
-          <FileIcon className="h-3 w-3 shrink-0 text-muted-foreground" />
-        )}
-        <span className="break-all">{node.name}</span>
+        <span className="type-body break-all">{node.name}</span>
         {node.loading && (
-          <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         )}
         {node.error && (
-          <span className="text-destructive text-[10px]" title={node.error}>
+          <span className="text-destructive type-body" title={node.error}>
             (error)
             <ErrorAlchemyMenu />
           </span>
         )}
         {!node.isDir && typeof node.size === "number" && (
-          <span className="text-[10px] text-muted-foreground ml-auto pr-1">
+          <span className="type-body text-muted-foreground ml-auto pr-1">
             {formatFileSize(node.size)}
           </span>
         )}

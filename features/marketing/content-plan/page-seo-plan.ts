@@ -17,7 +17,7 @@
  * Never a hand-rolled trailing-slash strip.
  *
  * Invariant 9 (`common-docs/systems/marketing/content-planning/FEATURE.md`, Arman
- * 2026-08-16): the plan lives on `web.page` and only there. A plan node no
+ * 2026-08-16): the plan lives on `web.page` and only there. A plan page no
  * longer carries one, so a plan surface reads it from here.
  */
 import { pageRouteKey } from "@/features/marketing/lib/page-url";

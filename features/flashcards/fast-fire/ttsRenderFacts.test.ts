@@ -42,7 +42,7 @@ describe("ttsRenderFacts", () => {
     });
   });
 
-  it("never claims a set position the caller does not really have", () => {
+  it("never claims a deck position the caller does not really have", () => {
     const facts = ttsRenderFacts(SPEECH, { renderLane: "helper", cardId: "c1", helperText: "Because." });
     expect(facts).toEqual({ ...SPEECH, render_lane: "helper", card_id: "c1", helper_text: "Because." });
     expect("card_index" in facts).toBe(false);

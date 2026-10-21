@@ -1,24 +1,24 @@
 /**
- * Surface manifest — Flashcard set editor (`matrx-user/education-flashcard-editor`).
+ * Surface manifest — Flashcard deck editor (`matrx-user/education-flashcard-editor`).
  *
- * The `/education/flashcards/[setId]/edit` AUTHORING route: ONE flashcard set
+ * The `/education/flashcards/[setId]/edit` AUTHORING route: ONE flashcard deck
  * opened for editing — its name / topic / description header, and every card in
  * it with an inline front/back editor (variant-aware: basic, cloze, matching).
  *
  * Deliberately NOT part of `matrx-user/education-flashcards`. That surface is
- * the LIBRARY LIST (search, sharing facet, folder chips, the whole set
+ * the LIBRARY LIST (search, sharing facet, folder chips, the whole deck
  * collection) and its own header says the detail routes are their own surfaces.
- * The two share no vocabulary: this page has no set list, no search, and no
+ * The two share no vocabulary: this page has no deck list, no search, and no
  * folder filter, while the list page has no cards. Mounting the list surface
  * here would force the emitter to promise `sets_loaded` / `folders` /
- * `visibility_filter` — values this page cannot honestly supply — and the set's
+ * `visibility_filter` — values this page cannot honestly supply — and the deck's
  * real content would land in "Undeclared (runtime only)". Different agents act
  * here too: a card-writing agent belongs on the editor, a "what should I study"
  * agent belongs on the library.
  *
  * Curated groups (band 0-899):
  *
- *   set_details   The set's authored header — name, topic, description
+ *   set_details   The deck's authored header — name, topic, description
  *   cards         The cards being edited, in render order
  *   study_signal  Per-card mastery, derived by the study spine (READ-ONLY)
  *
@@ -38,17 +38,17 @@ import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
 const groups: SurfaceValueGroup[] = [
   {
     key: "set_details",
-    label: "Set details",
+    label: "Deck details",
     sortOrder: 100,
     description:
-      "The set's authored header — the name, topic, and description the learner typed, plus its share setting.",
+      "The deck's authored header — the name, topic, and description the learner typed, plus its share setting.",
   },
   {
     key: "cards",
     label: "Cards",
     sortOrder: 200,
     description:
-      "Every card in this set in render order, with the front/back content each inline editor is bound to.",
+      "Every card in this deck in render order, with the front/back content each inline editor is bound to.",
   },
   {
     key: "study_signal",
@@ -60,12 +60,12 @@ const groups: SurfaceValueGroup[] = [
 ];
 
 const surfaceSpecific: SurfaceValue[] = [
-  // ── Set details ───────────────────────────────────────────────────────
+  // ── Deck details ───────────────────────────────────────────────────────
   {
     name: "set_loaded",
-    label: "Set loaded",
+    label: "Deck loaded",
     description:
-      "True once this set and its cards have finished loading successfully. False while loading and after a load failure — in which case the set and card values are absent and `load_error` explains why. Always present.",
+      "True once this deck and its cards have finished loading successfully. False while loading and after a load failure — in which case the deck and card values are absent and `load_error` explains why. Always present.",
     valueType: "boolean",
     alwaysAvailable: true,
     typicalCharCount: 5,
@@ -74,9 +74,9 @@ const surfaceSpecific: SurfaceValue[] = [
   },
   {
     name: "set_id",
-    label: "Set ID",
+    label: "Deck ID",
     description:
-      "UUID of the flashcard set open in the editor, taken from the route. Always present — it is known before the set loads.",
+      "UUID of the flashcard deck open in the editor, taken from the route. Always present — it is known before the deck loads.",
     valueType: "string",
     alwaysAvailable: true,
     typicalCharCount: 36,
@@ -85,9 +85,9 @@ const surfaceSpecific: SurfaceValue[] = [
   },
   {
     name: "set_details",
-    label: "Set details",
+    label: "Deck details",
     description:
-      "The set's authored header as one object — { name, topic, description } — exactly as the three Set details inputs show it. `topic` and `description` are null when the learner has left them empty. Absent until `set_loaded` is true. This is the read twin of the `set_details` write target.",
+      "The deck's authored header as one object — { name, topic, description } — exactly as the three Set details inputs show it. `topic` and `description` are null when the learner has left them empty. Absent until `set_loaded` is true. This is the read twin of the `set_details` write target.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 200,
@@ -96,9 +96,9 @@ const surfaceSpecific: SurfaceValue[] = [
   },
   {
     name: "set_name",
-    label: "Set name",
+    label: "Deck name",
     description:
-      "The set's title, as shown in the Name input. Absent until `set_loaded` is true. Falls back to 'Untitled set' on save when the learner clears it.",
+      "The deck's title, as shown in the Name input. Absent until `set_loaded` is true. Falls back to 'Untitled set' on save when the learner clears it.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 40,
@@ -107,9 +107,9 @@ const surfaceSpecific: SurfaceValue[] = [
   },
   {
     name: "set_topic",
-    label: "Set topic",
+    label: "Deck topic",
     description:
-      "The subject this set covers (e.g. 'Cell Biology'), as shown in the Topic input. Absent until `set_loaded` is true, and when the learner has left it empty.",
+      "The subject this deck covers (e.g. 'Cell Biology'), as shown in the Topic input. Absent until `set_loaded` is true, and when the learner has left it empty.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 30,
@@ -118,9 +118,9 @@ const surfaceSpecific: SurfaceValue[] = [
   },
   {
     name: "set_description",
-    label: "Set description",
+    label: "Deck description",
     description:
-      "The one-line summary of what this set covers, as shown in the Description input. Absent until `set_loaded` is true, and when the learner has left it empty.",
+      "The one-line summary of what this deck covers, as shown in the Description input. Absent until `set_loaded` is true, and when the learner has left it empty.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 120,
@@ -131,7 +131,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "set_visibility",
     label: "Share setting",
     description:
-      "The set's current share setting as shown in the Sharing control (e.g. 'private', 'link', 'public', 'organization'). Absent until `set_loaded` is true. Read-only here — changing who can see a set is a permissions decision that stays with the learner.",
+      "The deck's current share setting as shown in the Sharing control (e.g. 'private', 'link', 'public', 'organization'). Absent until `set_loaded` is true. Read-only here — changing who can see a deck is a permissions decision that stays with the learner.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 10,
@@ -142,7 +142,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "load_error",
     label: "Load error",
     description:
-      "The error message shown in place of the editor when the set could not be loaded (missing, or not editable by this learner). Absent on the happy path. Present so an agent can help with a real failure instead of describing an empty set.",
+      "The error message shown in place of the editor when the deck could not be loaded (missing, or not editable by this learner). Absent on the happy path. Present so an agent can help with a real failure instead of describing an empty deck.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 120,
@@ -155,7 +155,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "card_count",
     label: "Card count",
     description:
-      "How many cards this set contains, matching the 'Cards (n)' heading. Zero for a set with no cards yet. Absent until `set_loaded` is true.",
+      "How many cards this deck contains, matching the 'Cards (n)' heading. Zero for a deck with no cards yet. Absent until `set_loaded` is true.",
     valueType: "number",
     alwaysAvailable: false,
     typicalCharCount: 3,
@@ -166,7 +166,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "cards",
     label: "Cards",
     description:
-      "Every card in this set in render order, as { id, position, card_kind, front, back, pairs }. `card_kind` is the NORMALIZED editing kind — 'basic' (front/back), 'cloze' (front holds `{{c1::answer}}` deletion markup, back holds optional extra notes), or 'matching' (front is the prompt and `pairs` holds the { left, right } rows; `back` is unused). Legacy and generator-authored kinds stored on the row (e.g. 'definition', 'concept', 'image_prompt') normalize to 'basic', which is exactly how this editor renders them; the underlying row value is preserved on save. `pairs` is null for non-matching cards. Absent until `set_loaded` is true. This is the read twin of the `card_content` and `add_cards` write targets — read it to get the `card_id` a card edit needs.",
+      "Every card in this deck in render order, as { id, position, card_kind, front, back, pairs }. `card_kind` is the NORMALIZED editing kind — 'basic' (front/back), 'cloze' (front holds `{{c1::answer}}` deletion markup, back holds optional extra notes), or 'matching' (front is the prompt and `pairs` holds the { left, right } rows; `back` is unused). Legacy and generator-authored kinds stored on the row (e.g. 'definition', 'concept', 'image_prompt') normalize to 'basic', which is exactly how this editor renders them; the underlying row value is preserved on save. `pairs` is null for non-matching cards. Absent until `set_loaded` is true. This is the read twin of the `card_content` and `add_cards` write targets — read it to get the `card_id` a card edit needs.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 4000,
@@ -193,11 +193,11 @@ const surfaceSpecific: SurfaceValue[] = [
  * Write targets. The judgment bar: a flashcard's front and back are AUTHORED
  * CONTENT — "turn these lecture notes into 20 cards" and "rewrite this card's
  * back to be shorter" are exactly the work an agent does better than a human,
- * so card content and the set header both earn a target, and adding cards is a
+ * so card content and the deck header both earn a target, and adding cards is a
  * decomposition action in the same class.
  *
  * Deliberately NOT targets:
- *   • deleting a set — managed from the deck library.
+ *   • deleting a deck — managed from the deck library.
  *   • reordering cards — a mechanical nudge nobody asks an agent to perform.
  *   • share setting / folders — a permissions decision, not authored content.
  *   • everything in `study_signal` — derived review evidence. Letting an agent
@@ -209,9 +209,9 @@ const surfaceSpecific: SurfaceValue[] = [
 export const flashcardDeckWriteTargets: SurfaceWriteTarget[] = [
   {
     name: "set_details",
-    label: "Set details",
+    label: "Deck details",
     description:
-      "Set this set's name, topic, and/or description. Value: { name?: string, topic?: string, description?: string } — provide at least one; omitted fields keep their current value, and an empty string clears `topic`/`description`. Each field is PLAIN TEXT, not JSON and not JSON-encoded — no code fence, no surrounding quotes. Persists immediately through the same fcService.updateSet the learner's own typing autosaves through, and the Set details inputs update in place.",
+      "Set this deck's name, topic, and/or description. Value: { name?: string, topic?: string, description?: string } — provide at least one; omitted fields keep their current value, and an empty string clears `topic`/`description`. Each field is PLAIN TEXT, not JSON and not JSON-encoded — no code fence, no surrounding quotes. Persists immediately through the same fcService.updateSet the learner's own typing autosaves through, and the Set details inputs update in place.",
     valueType: "object",
     updatesValue: "set_details",
     mode: "entity",
@@ -223,7 +223,7 @@ export const flashcardDeckWriteTargets: SurfaceWriteTarget[] = [
     name: "card_content",
     label: "Card content",
     description:
-      "Rewrite ONE existing non-matching card's front and/or back. Value: { card_id: string, front?: string, back?: string } — `card_id` is REQUIRED and must be the id of a card in this set (read `cards` to get it), and you must provide `front` and/or `back`; the omitted face keeps its current text. Front and back are PLAIN TEXT (markdown and LaTeX render), not JSON and not JSON-encoded — no code fence, no surrounding quotes, real newlines. For a cloze card, `front` holds the deletion markup `{{c1::answer}}`. Use matching_card_content for matching cards. Persists immediately through fcService.updateCard and the card's editor updates in place.",
+      "Rewrite ONE existing non-matching card's front and/or back. Value: { card_id: string, front?: string, back?: string } — `card_id` is REQUIRED and must be the id of a card in this deck (read `cards` to get it), and you must provide `front` and/or `back`; the omitted face keeps its current text. Front and back are PLAIN TEXT (markdown and LaTeX render), not JSON and not JSON-encoded — no code fence, no surrounding quotes, real newlines. For a cloze card, `front` holds the deletion markup `{{c1::answer}}`. Use matching_card_content for matching cards. Persists immediately through fcService.updateCard and the card's editor updates in place.",
     valueType: "object",
     updatesValue: "cards",
     mode: "entity",
@@ -247,7 +247,7 @@ export const flashcardDeckWriteTargets: SurfaceWriteTarget[] = [
     name: "add_cards",
     label: "Add cards",
     description:
-      "Add one or more NEW cards to this set. Value: { cards: [{ front: string, back?: string, card_kind?: 'basic' | 'cloze' | 'matching', pairs?: [{ left: string, right: string }] }] } — `front` is required on every entry; `back` defaults to empty. `card_kind` defaults to 'basic'; use 'cloze' when `front` carries `{{c1::answer}}` deletion markup, in which case `back` is optional extra notes. A matching card requires a non-empty `pairs` array whose left/right text is non-empty; its `back` is unused. Every field is PLAIN TEXT, not JSON and not JSON-encoded — no code fence, no surrounding quotes. ADDS to the set — it never replaces or removes existing cards. New cards take the same placement the Add card button produces (they are not guaranteed to land last). Persists immediately through the same fcService.addCards that button calls.",
+      "Add one or more NEW cards to this deck. Value: { cards: [{ front: string, back?: string, card_kind?: 'basic' | 'cloze' | 'matching', pairs?: [{ left: string, right: string }] }] } — `front` is required on every entry; `back` defaults to empty. `card_kind` defaults to 'basic'; use 'cloze' when `front` carries `{{c1::answer}}` deletion markup, in which case `back` is optional extra notes. A matching card requires a non-empty `pairs` array whose left/right text is non-empty; its `back` is unused. Every field is PLAIN TEXT, not JSON and not JSON-encoded — no code fence, no surrounding quotes. ADDS to the deck — it never replaces or removes existing cards. New cards take the same placement the Add card button produces (they are not guaranteed to land last). Persists immediately through the same fcService.addCards that button calls.",
     valueType: "object",
     updatesValue: "cards",
     mode: "entity",
@@ -259,7 +259,7 @@ export const flashcardDeckWriteTargets: SurfaceWriteTarget[] = [
     name: "delete_cards",
     label: "Delete cards",
     description:
-      "Archive one card in this open set after the learner approves. Value is { card_id: string, version: number } using both fields from cards. The card leaves this editor and study modes; its stored history is not erased. A newer revision refuses the delete.",
+      "Archive one card in this open deck after the learner approves. Value is { card_id: string, version: number } using both fields from cards. The card leaves this editor and study modes; its stored history is not erased. A newer revision refuses the delete.",
     valueType: "object",
     updatesValue: "cards",
     mode: "entity",
@@ -275,15 +275,15 @@ export const educationFlashcardEditorManifest: SurfaceManifest = {
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description:
-    "Flashcard set editor — one set open for authoring (/education/flashcards/[setId]/edit).",
+    "Flashcard deck editor — one deck open for authoring (/education/flashcards/[setId]/edit).",
   readiness: "partial",
   readinessNote:
-    "Set details, card content, and add cards were verified against a live agent run. Delete cards is implemented through the same soft-delete service as the page's Delete action and still needs live agent acceptance. No agent roles or Locate anchors are declared; folder taxonomy and share links remain outside this surface's values.",
-  label: "Flashcard set editor",
+    "Deck details, card content, and add cards were verified against a live agent run. Delete cards is implemented through the same soft-delete service as the page's Delete action and still needs live agent acceptance. No agent roles or Locate anchors are declared; folder taxonomy and share links remain outside this surface's values.",
+  label: "Flashcard deck editor",
   urlPattern: "/education/flashcards/[setId]/edit",
   intro: `<surface_intro>
-You are on the flashcard set EDITOR at /education/flashcards/[setId]/edit — ONE set open for authoring, not the flashcards library and not a study session. The page shows the set's name, topic, and description, then every card in the set with an inline front/back editor.
-Check set_loaded first — while it is false the set is still in flight (or load_error explains a real failure), and you must not describe the set as empty. Read cards for the actual card content; each entry carries the id you need to edit that card, and card_kind tells you how to read it — a cloze card's front holds {{c1::answer}} deletion markup rather than a plain question, and a matching card's content lives in its pairs.
+You are on the flashcard deck EDITOR at /education/flashcards/[setId]/edit — ONE deck open for authoring, not the flashcards library and not a study session. The page shows the deck's name, topic, and description, then every card in the deck with an inline front/back editor.
+Check set_loaded first — while it is false the deck is still in flight (or load_error explains a real failure), and you must not describe the deck as empty. Read cards for the actual card content; each entry carries the id you need to edit that card, and card_kind tells you how to read it — a cloze card's front holds {{c1::answer}} deletion markup rather than a plain question, and a matching card's content lives in its pairs.
 You can WRITE here: set_details rewrites the header, card_content rewrites one non-matching card's front and/or back, matching_card_content rewrites one matching card's prompt and/or pairs, add_cards appends new cards of every editor-supported kind, and delete_cards archives selected cards. Drafting cards from material the learner gives you, tightening a wordy back, or splitting one overloaded card into several is exactly the work this surface exists for. Every write asks the learner first, so propose confidently — declining is normal and costs nothing.
 card_mastery is DERIVED from the learner's real review history. Use it to aim your help (a card that keeps failing is usually badly worded, not badly learned) and never present it as something you can change.
 </surface_intro>`,

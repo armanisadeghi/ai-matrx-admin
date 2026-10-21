@@ -518,7 +518,7 @@ export default function ProvidersContainer() {
   };
 
   const handleDelete = async (provider: AiProvider) => {
-    if (provider.is_system) return;
+    if (provider.is_system) throw new Error("System providers cannot be deleted");
     setActionError(null);
     try {
       await aiModelService.deleteProvider(provider.id);
@@ -527,6 +527,7 @@ export default function ProvidersContainer() {
       if (selectedProvider?.id === provider.id) closePanel();
     } catch (err) {
       setActionError(extractErrorMessage(err));
+      throw err;
     }
   };
 

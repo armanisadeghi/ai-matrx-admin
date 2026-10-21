@@ -1,4 +1,17 @@
-import { callbackManager } from "@ai-matrx/summon/handles";
+// Registration is summon's light path on `./open`: this module is reached from the boot graph, so the
+// full handles registry must not ride it into first load. Creating a group starts loading the
+// registry; the emit side runs long after, through the loaded registry (same pattern as the
+// projects window callbacks).
+import {
+  newHandleId,
+  registerHandleEntry,
+  removeHandleGroup,
+} from "@ai-matrx/summon/open";
+
+type Handles = typeof import("@ai-matrx/summon/handles");
+let handles: Handles | null = null;
+const loadHandles = (): Promise<Handles> =>
+  import("@ai-matrx/summon/handles").then((m) => (handles = m));
 import type { CanonicalStorageImport } from "@/features/files/storage-sources/types";
 
 export interface StorageSourcePickerHandlers {
@@ -10,10 +23,11 @@ const activeGroups = new Set<string>();
 export function createStorageSourcePickerCallbackGroup(
   handlers: StorageSourcePickerHandlers,
 ): { callbackGroupId: string; dispose: () => void } {
-  const callbackGroupId = callbackManager.createGroup();
+  const callbackGroupId = newHandleId();
+  void loadHandles();
   activeGroups.add(callbackGroupId);
-  callbackManager.registerWithContext<CanonicalStorageImport[]>(
-    async (files) => {
+  registerHandleEntry(
+    async (files: CanonicalStorageImport[]) => {
       await handlers.onImported(files);
     },
     { groupId: callbackGroupId },
@@ -31,9 +45,13 @@ export async function deliverStorageSourceImports(
   if (!activeGroups.has(callbackGroupId)) {
     throw new Error("The file destination is no longer available.");
   }
-  await callbackManager.triggerGroupCommand(callbackGroupId, files, {
-    removeAfterSuccess: false,
-  });
+  await (handles ?? (await loadHandles())).callbackManager.triggerGroupCommand(
+    callbackGroupId,
+    files,
+    {
+      removeAfterSuccess: false,
+    },
+  );
 }
 
 export function disposeStorageSourcePickerCallbackGroup(
@@ -41,5 +59,5 @@ export function disposeStorageSourcePickerCallbackGroup(
 ): void {
   if (!callbackGroupId) return;
   activeGroups.delete(callbackGroupId);
-  callbackManager.removeGroup(callbackGroupId);
+  removeHandleGroup(callbackGroupId);
 }

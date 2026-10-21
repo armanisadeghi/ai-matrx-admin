@@ -15,8 +15,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  ChevronDown,
-  ChevronRight,
   Copy,
   Edit2,
   Eye,
@@ -25,7 +23,12 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { DynamicIcon } from "@ai-matrx/icons";
+import {
+  TREE_ROW_TEXT,
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import {
   getPlacementTypeMeta,
   placementGroupKey,
@@ -161,39 +164,24 @@ export function CategoryTree({
     return (
       <div key={node.id}>
         <div
-          className={`flex items-center gap-2 px-2 py-1.5 rounded-md border border-transparent hover:bg-muted/50 ${
+          className={`flex min-h-7 items-center gap-1 pr-2 rounded-md border border-transparent hover:bg-muted/50 ${
             isSelected ? "bg-muted border-border" : ""
           }`}
-          style={{ paddingLeft: `${node.depth * 16 + 8}px` }}
+          style={treeIndentStyle(node.depth)}
         >
-          {hasChildren ? (
-            <Button
-              variant="quiet"
-              onClick={() => toggleExpand(node.id)}
-            >
-              {isExpanded ? (
-                <ChevronDown className="h-3 w-3" />
-              ) : (
-                <ChevronRight className="h-3 w-3" />
-              )}
-            </Button>
-          ) : (
-            <div className="w-5" />
-          )}
-          <DynamicIcon
-            name={node.iconName}
-            color={node.color || "zinc"}
-            size={4}
-            fallbackIcon="SquareMenu"
-            className="h-4 w-4 flex-shrink-0"
+          <TreeDisclosure
+            expandable={hasChildren}
+            expanded={isExpanded}
+            onToggle={() => toggleExpand(node.id)}
           />
+          <TreeFolderIcon open={hasChildren && isExpanded} />
           <button
             type="button"
             onClick={() => onSelect?.(node)}
             className="flex-1 min-w-0 text-left"
           >
             <div className="flex items-center gap-2">
-              <span className="font-medium text-sm truncate">{node.label}</span>
+              <span className={`${TREE_ROW_TEXT} truncate`}>{node.label}</span>
               {!node.isActive && (
                 <Badge variant="outline" className="text-xs">
                   Inactive

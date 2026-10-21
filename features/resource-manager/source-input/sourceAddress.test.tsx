@@ -4,7 +4,7 @@
  * 2026-10-01: a page added by its link carried its address (`draft.origin`, set by the door), but
  * the same page picked from Use existing → Websites arrived as a bare `processed_document` pointer
  * and its card said only "Web page". The address is the Source row's `canonical_identity`; the
- * card set reads it for every Source pointer that has none, whatever path added it.
+ * card deck reads it for every Source pointer that has none, whatever path added it.
  */
 
 import React, { act } from "react";

@@ -13,13 +13,13 @@ import { plainBuildState } from "./plain-stop-reason";
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
 import { createClient } from "@/utils/supabase/client";
 import { operationFailed } from "@/utils/errors";
-import { startBuild } from "@ai-matrx/api/agents";
+import { keepBuild, startBuild } from "@ai-matrx/api/agents";
 import { serverApi, callOptionsFrom } from "@/lib/api/server-api";
 import { readAllRows } from "@ai-matrx/data/db";
 import type { AppDispatch } from "@/lib/redux/store";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
 import { resolveBuildEngine } from "./build-engine";
-import { startBuildRun, unarchiveAgent } from "./build-run-service";
+import { startBuildRun } from "./build-run-service";
 import { followServerWork } from "@/features/ai-watch/followed-work";
 import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { applyServerTableState, type ServerTableSpec } from "@/features/admin/shared/server-table/postgrest";
@@ -345,7 +345,14 @@ export async function startAgentBuild(input: StartAgentBuildInput): Promise<stri
   return data.build_id;
 }
 
-/** Keep it anyway on an old build (D7): the saved agent's own un-archive. */
-export async function keepBuildAnyway(agentId: string): Promise<string> {
-  return unarchiveAgent(agentId);
+/**
+ * Keep it anyway on an old build (D7): the pipeline's own keep door (`POST /agent-factory/builds/{id}/keep`).
+ * The server un-archives the draft through the agent service's update (`crud.update_agent`), marks it
+ * `kept_unproven` and queues the first-runs judgment, and refuses a reader who may not edit the agent.
+ * The client never writes `agent.definition` itself.
+ */
+export async function keepBuildAnyway(buildId: string): Promise<string> {
+  const data = await keepBuild(serverApi, { path: { build_id: buildId } });
+  if (!data?.agent_id) throw new Error("The Agent Factory did not return the kept agent");
+  return data.agent_id;
 }

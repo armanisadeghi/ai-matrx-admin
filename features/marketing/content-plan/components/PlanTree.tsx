@@ -30,7 +30,13 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { POINTER_ACTIVATION_DISTANCE_6 } from "@/lib/dnd/sensor-options";
-import { ChevronDown, ChevronRight, Plus } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
+
+import {
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentPx,
+} from "@/components/official/topic-tree/geometry";
 
 import { Button } from "@/components/ui/button";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
@@ -573,33 +579,25 @@ function TreeRow({
           "bg-primary/10 outline outline-1 -outline-offset-1 outline-primary/40",
         dragging && "opacity-40",
       )}
-      style={{ paddingLeft: `${row.depth * 14 + (isHome ? 4 : 2)}px` }}
+      style={{ paddingLeft: treeIndentPx(row.depth) }}
     >
       {Array.from({ length: row.depth }, (_unused, index) => (
         <span
           key={index}
           aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 w-px bg-border/45"
-          style={{ left: `${index * 14 + 9}px` }}
+          style={{ left: treeIndentPx(index) + 8 }}
         />
       ))}
-      {!isHome ? (
-        <button
-          type="button"
-          aria-label={collapsed ? "Expand" : "Collapse"}
-          className={cn(
-            "relative z-[1] mt-0.5 flex h-5 w-4 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground",
-            !row.hasChildren && "invisible",
-          )}
-          onClick={onToggle}
-        >
-          {collapsed ? (
-            <ChevronRight className="h-3.5 w-3.5" />
-          ) : (
-            <ChevronDown className="h-3.5 w-3.5" />
-          )}
-        </button>
-      ) : null}
+      {/* The 16px disclosure slot is always reserved (empty on a leaf), so a
+          page's icon sits under its sibling section's icon. */}
+      <span className="relative z-[1] mt-1 shrink-0">
+        <TreeDisclosure
+          expandable={row.hasChildren && !isHome}
+          expanded={!collapsed}
+          onToggle={onToggle}
+        />
+      </span>
       <div
         ref={setDragRef}
         {...attributes}
@@ -612,16 +610,25 @@ function TreeRow({
         )}
         onClick={onSelect}
       >
+        {/* Container (has child pages) vs leaf page: two different glyphs. */}
+        {row.hasChildren ? (
+          <TreeFolderIcon open={!collapsed || isHome} className="mt-1" />
+        ) : (
+          <FileText
+            aria-hidden="true"
+            className="mt-1 h-4 w-4 shrink-0 text-muted-foreground"
+          />
+        )}
         <span
           className={cn(
-            "mt-[7px] h-2 w-2 shrink-0 rounded-full",
+            "mt-[9px] h-2 w-2 shrink-0 rounded-full",
             planStatusColor(statusSlug),
           )}
           title={statusSlug ?? "no status"}
         />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <span className="min-w-0 break-words text-sm leading-snug text-foreground">
+            <span className="min-w-0 break-words type-body leading-snug text-foreground">
               <span
                 className={cn(
                   selected || topLevelType ? "font-semibold" : "font-medium",
@@ -631,7 +638,7 @@ function TreeRow({
               </span>
               {collapsed && descendantCount > 0 ? (
                 <span
-                  className="ml-1.5 inline-block rounded-full bg-muted px-1.5 align-middle text-[10px] font-medium tabular-nums leading-4 text-muted-foreground"
+                  className="ml-1.5 type-meta tabular-nums text-muted-foreground"
                   title={`${descendantCount} pages inside`}
                 >
                   {descendantCount}
@@ -649,10 +656,10 @@ function TreeRow({
                   // (new tab — the tree keeps its selection and scroll). Only
                   // an unpaired site leaves it as plain text.
                   const badgeClass = cn(
-                    "ml-1.5 inline-block rounded px-1 align-middle text-[10px] font-medium leading-4",
+                    "ml-1.5 type-meta font-medium",
                     cmsPage.isPublished
-                      ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                      : "bg-sky-500/15 text-sky-600 dark:text-sky-400",
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-sky-600 dark:text-sky-400",
                   );
                   const stateTitle = cmsPage.isPublished
                     ? `Published CMS page: ${cmsPage.liveUrl ?? cmsPage.route ?? ""}`
@@ -696,13 +703,13 @@ function TreeRow({
                 <PipelineProgressBadge progress={pipelineProgress} dense />
               ) : null}
             </span>
-            <span className="mt-px shrink-0 rounded bg-muted px-1 py-px text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+            <span className="mt-px shrink-0 type-meta text-muted-foreground">
               {NODE_TYPE_LABELS[row.node.node_type as PlanNodeType] ??
                 row.node.node_type}
             </span>
           </div>
           {row.node.route ? (
-            <span className="block break-all font-mono text-[11px] leading-tight text-muted-foreground">
+            <span className="block break-all font-mono type-meta leading-tight text-muted-foreground">
               {row.node.route}
             </span>
           ) : null}

@@ -87,8 +87,8 @@ const SHARE_SOURCE_SURFACES: Record<string, Resolver> = {
   // The education HUB, not /education/flashcards: the hub is the "land with a
   // CTA" surface valuable to both audiences, and the flashcards workspace has
   // no verified guest branch.
-  fc_card: () => ({ href: "/education", label: "Study your own set" }),
-  fc_set: () => ({ href: "/education", label: "Study your own set" }),
+  fc_card: () => ({ href: "/education", label: "Study your own deck" }),
+  fc_set: () => ({ href: "/education", label: "Study your own deck" }),
   canvas_item: () => ({ href: "/canvas/discover", label: "Explore canvases" }),
   shared_canvas_item: () => ({
     href: "/canvas/discover",

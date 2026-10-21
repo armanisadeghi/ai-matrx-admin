@@ -220,6 +220,7 @@ function ExpectationRow({
                   })
                 }
                 data-identifier
+                className="font-mono"
                 placeholder="no_fabricated_routes"
               />
             </div>
@@ -581,6 +582,7 @@ export function ScenarioEditor({
               }))
             }
             data-identifier
+            className="font-mono"
             placeholder="family_planted_universe"
             disabled={Boolean(initial.slug)}
           />

@@ -205,6 +205,7 @@ export function DirectiveCatalogClient() {
               <DirectiveCatalogGrid
                 catalog={catalog}
                 busyToggle={busyToggle}
+                onRefresh={refresh}
                 onToggleWritable={(noun, enabled) =>
                   void toggleWritable(noun, enabled)
                 }

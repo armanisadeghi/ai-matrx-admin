@@ -69,7 +69,7 @@ function DeliverableCard({
 
   if (!ready) {
     // THE RESERVED SLOT. This used to be a fixed ~58px strip for every kind,
-    // so a deliverable settling into a flashcard set or a 12-slide deck threw
+    // so a deliverable settling into a flashcard deck or a 12-slide deck threw
     // the page down by hundreds of pixels. The slot now reserves the SHAPE the
     // declared `output_kind` will need — still while nothing has started,
     // working the moment it does — and the real component grows downward from

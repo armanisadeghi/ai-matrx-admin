@@ -127,7 +127,7 @@ export function useSitePlanIndex(siteId: string | null) {
 }
 
 /**
- * ONE plan node by id — for surfaces that hold a `plan_node_id` and never load
+ * ONE plan page by id — for surfaces that hold a `plan_node_id` and never load
  * the whole tree (the CMS page editor's Plan tab). Inside the workspace, read
  * from `usePlanNodes` instead; this is the single-record door.
  */

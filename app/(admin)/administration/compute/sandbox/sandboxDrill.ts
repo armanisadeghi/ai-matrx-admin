@@ -1,7 +1,7 @@
 import type { MatrxDataTableLocalDrillConfig } from "@ai-matrx/design-system/data-table";
 
 /**
- * LEVELS of the sandbox instances. A status asks who holds that state and why it ended; a tier,
+ * LEVELS of the sandboxes. A status asks who holds that state and why it ended; a tier,
  * how its instances are doing and how long they were given; a stop reason, which tier and
  * status it hit. Time comes last. The owner is an account id, so it is counted ("Owners"),
  * never offered as a thing to group by. Stop, SSH and delete stay on the rows.

@@ -54,6 +54,7 @@ import { listLibrarySources } from "../../library-sources/registry";
 import { SourceFolderNode } from "./SourceFolderNode";
 import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { TreeDisclosure, treeIndentStyle } from "@/components/official/topic-tree/geometry";
 
 const selectRootFiles = makeSelectFilesInFolder(null);
 
@@ -112,13 +113,13 @@ export const LibraryTree: React.FC<LibraryTreeProps> = ({
     rootFiles.length === 0
   ) {
     return (
-      <div className="px-3 py-1 text-[11px] text-neutral-500">Loading…</div>
+      <div className="px-3 py-1 type-body text-neutral-500">Loading…</div>
     );
   }
 
   if (listError) {
     return (
-      <div className="flex flex-col gap-1 px-3 py-2 text-[11px]">
+      <div className="flex flex-col gap-1 px-3 py-2 type-body">
         <span className="text-red-500">Failed to load library <ErrorAlchemyMenu /></span>
         <span className="text-neutral-500">{listError} <ErrorAlchemyMenu error={listError} /></span>
         <button
@@ -271,23 +272,17 @@ const MyFilesRoot: React.FC<MyFilesRootProps> = ({
             }
           }}
           className={cn(
-            "flex items-center gap-1 text-[13px] cursor-pointer rounded-sm",
+            "flex items-center gap-1 cursor-pointer rounded-sm",
             ROW_HEIGHT,
             "max-lg:h-11",
             TEXT_BODY,
             HOVER_ROW,
           )}
-          style={{ paddingLeft: 8 + depth * 12 }}
+          style={treeIndentStyle(depth)}
           title="Saved Library files. Separate from sandbox files."
         >
-          <ChevronRight
-            size={12}
-            className={cn(
-              "shrink-0 text-neutral-500 transition-transform",
-              expanded && "rotate-90",
-            )}
-          />
-          <FolderHeart size={14} className="shrink-0 text-emerald-500" />
+          <TreeDisclosure expandable expanded={expanded} />
+          <FolderHeart size={16} className="shrink-0 text-emerald-500" />
           <span className="min-w-0 flex-1 truncate">My Files</span>
           <Button
             icon={<MoreHorizontal />}
@@ -308,8 +303,8 @@ const MyFilesRoot: React.FC<MyFilesRootProps> = ({
         <div role="group">
           {empty && (
             <div
-              className="py-2 text-[11px] text-neutral-500"
-              style={{ paddingLeft: 8 + (depth + 1) * 12 }}
+              className="py-2 type-body text-neutral-500"
+              style={treeIndentStyle(depth + 1)}
             >
               <p>No saved code yet.</p>
               <p className="mt-1">

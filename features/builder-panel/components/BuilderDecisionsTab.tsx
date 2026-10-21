@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
  * Decisions tab — for each round (workflow run): the path it chose, every signal against its threshold, the
@@ -191,7 +192,7 @@ function EnrichSection({ enrich }: { enrich: EnrichDecisionsFeed }) {
       <ul className="mt-2 space-y-0.5">
         {changes.map((d) => (
           <li key={d.id} className="flex gap-1.5">
-            <Badge tone={d.kind === "conflict" ? "warning" : d.kind === "replace" ? "primary" : "success"}>{d.kind}</Badge>
+            <Badge tone={d.kind === "conflict" ? "warning" : d.kind === "replace" ? "primary" : "success"}>{humanizeIdentifier(d.kind)}</Badge>
             <span>{d.label}</span>
             <span className="truncate text-muted-foreground">
               · {d.current ?? ""}{d.current && d.next ? " → " : ""}{d.next ?? ""} · default {d.defaultChoice}
@@ -420,7 +421,7 @@ export function BuilderDecisionsTab({
             <Button variant="quiet" onClick={() => setShowRaw((v) => !v)}>
               {showRaw ? "Hide record" : "Show record"}
             </Button>
-            {showRaw ? <BuilderJson data={d.raw} label="path_decision" location="Decisions" className="mt-2 h-80" /> : null}
+            {showRaw ? <BuilderJson data={d.raw} label="Path decision" location="Decisions" className="mt-2 h-80" /> : null}
           </section>
         ) : null}
       </div>

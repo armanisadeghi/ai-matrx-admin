@@ -3,7 +3,7 @@
 // Phase 1B (Test mode) — the `fc_make_quiz_items` agent wrapper
 // (agent definition in the DB: front, back, topic, distractor_count → question,
 // correct, distractors[], explanation). Test mode's PRIMARY distractor
-// source is free and instant — other cards' back text from the same set
+// source is free and instant — other cards' back text from the same deck
 // (see quiz/buildQuizQuestions.ts) — this lane is only the FALLBACK for
 // sets too small to have enough sibling cards to draw from. Best-effort: on
 // any failure the caller gets `null` and Test mode simply ships fewer

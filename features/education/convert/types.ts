@@ -29,7 +29,7 @@ import type { GenerationSteer } from "./steering";
  * marks itself available (see `registry.isTargetAvailable`).
  */
 export type TargetKind =
-  | "deck" // flashcard set (fc_set)            — LIVE
+  | "deck" // flashcard deck (fc_set)            — LIVE
   | "summary" // grounded study summary          — LIVE
   | "mind_map" // diagram_spec (study_media)      — LIVE
   | "audio" // audio overview (study_media)      — registers when P3 audio wires in

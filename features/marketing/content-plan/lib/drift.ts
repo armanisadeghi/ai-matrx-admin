@@ -2,7 +2,7 @@
  * features/marketing/content-plan/lib/drift.ts
  *
  * PLAN-VS-REALITY DRIFT — the pure model behind every drift badge, count and
- * repair door in the workspace. No React, no network: given the plan nodes,
+ * repair door in the workspace. No React, no network: given the plan pages,
  * the paired CMS site's pages, and the crawl reconciler's report, it returns
  * ONE ranked list of drift items, each one a door with (where the platform
  * has one) a real one-click fix.
@@ -179,7 +179,7 @@ export function computePlanDrift(input: {
   const hasCrawlData =
     crawlMatchedNodeIds.size > 0 || crawlOrphans.length > 0;
 
-  // ── ghosts + conflicts (per plan node) ────────────────────────────────────
+  // ── ghosts + conflicts (per plan page) ────────────────────────────────────
   for (const node of nodes) {
     if (node.deleted_at) continue;
     const nodeRoute = normalizeRoute(node.route);
@@ -243,7 +243,7 @@ export function computePlanDrift(input: {
 
   // ── orphans (live pages the plan does not know) ───────────────────────────
   // Two independent witnesses, merged by route: the crawler (a real URL out
-  // there) and the paired CMS site (a page with no plan node). An orphan
+  // there) and the paired CMS site (a page with no plan page). An orphan
   // backed by a CMS page is one-click adoptable; a purely crawled URL is not
   // — and we say so rather than offering a button that cannot work.
   const orphansByRoute = new Map<string, OrphanDrift>();

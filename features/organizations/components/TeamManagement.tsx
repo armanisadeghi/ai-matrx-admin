@@ -58,6 +58,12 @@ import {
   type PanelMember,
 } from "@/components/membership/MembersPanel";
 import type { MembershipRoleOption } from "@/components/membership/types";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  RowSelectionBar,
+  useRowSelection,
+} from "@/lib/entity-list/RowSelectionBar";
+import { teamBulkActions, teamMemberBulkActions } from "../bulk/orgRosterVerbs";
 import { UserSearchField } from "@/features/user-search/UserSearchField";
 import { UserIdentity } from "@/components/user/UserIdentity";
 import { useOrganizationMembers } from "../hooks";
@@ -132,6 +138,13 @@ export function TeamManagement({
     setHasScrolledToFocus(true);
   }, [focusTeamId, hasScrolledToFocus, teams.data]);
 
+  const teamSelection = useRowSelection<Team>(
+    teams.data,
+    (t) => t.id,
+    String(showArchived),
+  );
+  const teamBulk = teamBulkActions({});
+
   const liveCount = teams.data.filter((t) => !t.archivedAt).length;
 
   if (teams.loading && teams.data.length === 0) {
@@ -179,10 +192,29 @@ export function TeamManagement({
         )}
       </div>
 
+      {canManageTeams && teams.data.length > 0 && (
+        <RowSelectionBar
+          selection={teamSelection}
+          idOf={(t) => t.id}
+          actions={teamBulk}
+          noun="team"
+          plural="teams"
+          onRefresh={teams.refresh}
+        />
+      )}
+
       <div className="space-y-2">
         {teams.data.map((team) => (
           <TeamRow
             key={team.id}
+            tick={
+              canManageTeams
+                ? {
+                    checked: teamSelection.has(team.id),
+                    onToggle: () => teamSelection.toggle(team.id),
+                  }
+                : undefined
+            }
             team={team}
             organizationId={organizationId}
             canManageTeams={canManageTeams}
@@ -234,7 +266,9 @@ function TeamRow({
   onToggle,
   onChanged,
   focusRef,
+  tick,
 }: {
+  tick?: { checked: boolean; onToggle: () => void };
   team: Team;
   organizationId: string;
   canManageTeams: boolean;
@@ -276,6 +310,13 @@ function TeamRow({
       )}
     >
       <div className="flex items-center gap-2 p-3">
+        {tick && (
+          <Checkbox
+            checked={tick.checked}
+            onCheckedChange={tick.onToggle}
+            aria-label={`Select ${team.name}`}
+          />
+        )}
         <button
           type="button"
           onClick={onToggle}
@@ -557,6 +598,14 @@ function TeamDetail({
           removeConsequence="They stay in the organization and keep everything they could open; lists just stop showing their work under My team for this team."
           copyContainer={{ noun: "team", id: team.id, name: team.name }}
           canManageMember={() => team.canManage}
+          bulk={{
+            actions: teamMemberBulkActions({
+              teamId: team.id,
+              teamName: team.name,
+              byUser,
+            }),
+            onRefresh: changed,
+          }}
           canRemoveMember={(m) => byUser.get(m.userId)?.isListed ?? false}
           isLastOwner={() => false}
           onChangeRole={(m, role) =>

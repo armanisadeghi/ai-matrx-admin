@@ -3,7 +3,7 @@
 // features/education/study-guides/components/StudyFlashcardLinks.tsx
 //
 // "Manage linked flashcards" — a thin wrapper over the canonical
-// UniversalAssociationPicker, linking flashcard sets to this guide's note.
+// UniversalAssociationPicker, linking flashcard decks to this guide's note.
 //
 // Hosted in the NON-BLOCKING docked panel, never a Sheet: a focus-trapping
 // Sheet blocks keystrokes into any nested interactive picker content

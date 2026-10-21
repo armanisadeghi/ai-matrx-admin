@@ -4,12 +4,13 @@ import { TASKS_DRILL } from "./tasksDrill";
 import { getStore } from "@/lib/redux/store-singleton";
 import { useTasksRead } from "@/features/tasks/hooks/useTasksRead";
 import React from "react";
-import { CheckCircle2, CircleDashed, Flag, Folder, RotateCcw, Trash2 } from "lucide-react";
+import { CalendarDays, CheckCircle2, CircleDashed, Flag, Folder, FolderInput, RotateCcw, Trash2, UserPlus } from "lucide-react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectFilteredTasks,
+  selectProjects,
   UNASSIGNED_PROJECT_ID,
 } from "@/features/tasks/redux/selectors";
 import {
@@ -20,6 +21,7 @@ import {
 } from "@/features/tasks/redux/taskUiSlice";
 import {
   deleteTaskThunk,
+  moveTaskThunk,
   toggleTaskCompleteThunk,
   updateTaskFieldThunk,
 } from "@/features/tasks/redux/thunks";
@@ -51,6 +53,7 @@ import {
 import { formatDateOnly } from "@ai-matrx/kit/dates";
 import type { TaskWithProject } from "@/features/tasks/types";
 import { toast } from "@/lib/toast";
+import { useUserConnections } from "@/features/messaging/hooks/useUserConnections";
 
 type DueBucket = "Overdue" | "Today" | "Next 7 days" | "Later" | "No due date";
 
@@ -110,6 +113,14 @@ export default function TasksTableView() {
     d.setDate(d.getDate() + 7);
     return d.toISOString().split("T")[0];
   }, [today]);
+
+  // The people list is read only once something is ticked (nothing loads until engaged).
+  const [assignEngaged, setAssignEngaged] = React.useState(false);
+  const { connections: people } = useUserConnections({
+    ...(filterOrgId ? { organizationId: filterOrgId } : {}),
+    enabled: assignEngaged,
+  });
+  const allProjects = useAppSelector(selectProjects);
 
   const taskId = (task: TaskWithProject) => task.id;
   const taskName = (task: TaskWithProject) => task.title;
@@ -175,6 +186,117 @@ export default function TasksTableView() {
     priorityAction("medium", "Medium priority"),
     priorityAction("low", "Low priority"),
     {
+      // The editor's own door (`updateTaskFieldThunk` with assignee_id): the server
+      // sends the assignment notice per task, same as the row editor.
+      id: "assign-to",
+      label: "Assign to…",
+      icon: UserPlus,
+      confirm: (selection) => ({
+        title: `Assign ${bulkCountLabel(selection.count, "task")}?`,
+        description: "Each task goes to the person you pick. They are told, same as one task.",
+        confirmLabel: "Assign",
+        ask: {
+          kind: "choice",
+          label: "Assign to",
+          options: [
+            { value: "__none__", label: "Nobody (unassign)" },
+            ...people.map((p) => ({
+              value: p.user_id,
+              label: p.display_name || p.email || p.user_id,
+            })),
+          ],
+          defaultValue: "__none__",
+        },
+      }),
+      run: (selection, input) =>
+        runPerRow(
+          selection,
+          async (id) => {
+            const value = input?.value;
+            if (!value) throw new Error("no person picked");
+            await dispatch(
+              updateTaskFieldThunk({
+                taskId: id,
+                patch: { assignee_id: value === "__none__" ? null : value },
+              }),
+            ).unwrap();
+          },
+          { done: "Assigned", noun: "task", labelOf: taskName },
+          taskId,
+        ),
+    },
+    {
+      id: "set-due-date",
+      label: "Due date…",
+      icon: CalendarDays,
+      confirm: (selection) => ({
+        title: `Set a due date for ${bulkCountLabel(selection.count, "task")}?`,
+        description: "Every selected task gets the same due date.",
+        confirmLabel: "Set due date",
+        ask: {
+          kind: "date",
+          label: "Due on",
+          defaultValue: todayStr,
+        },
+      }),
+      run: (selection, input) =>
+        runPerRow(
+          selection,
+          async (id) => {
+            const value = input?.value;
+            if (!value) throw new Error("no date picked");
+            await dispatch(
+              updateTaskFieldThunk({ taskId: id, patch: { due_date: value } }),
+            ).unwrap();
+          },
+          { done: "Due date set", noun: "task", labelOf: taskName },
+          taskId,
+        ),
+    },
+    {
+      // The row's own move door (`moveTaskThunk`): counts and optimistic move kept honest.
+      id: "move-to-project",
+      label: "Move to project…",
+      icon: FolderInput,
+      confirm: (selection) => ({
+        title: `Move ${bulkCountLabel(selection.count, "task")} to a project?`,
+        description: "Tasks already in that project are skipped.",
+        confirmLabel: "Move",
+        ask: {
+          kind: "choice",
+          label: "Project",
+          options: [
+            { value: UNASSIGNED_PROJECT_ID, label: "No project" },
+            ...allProjects
+              .filter((p) => p.id !== UNASSIGNED_PROJECT_ID)
+              .map((p) => ({ value: p.id, label: p.name })),
+          ],
+          defaultValue: UNASSIGNED_PROJECT_ID,
+        },
+      }),
+      run: (selection, input) =>
+        runPerRow(
+          selection,
+          async (id, row) => {
+            const to = input?.value;
+            if (!to) throw new Error("no project picked");
+            if (!row) throw new Error("not on screen any more");
+            if ((row.projectId || UNASSIGNED_PROJECT_ID) === to) {
+              throw new Error("already in that project");
+            }
+            await dispatch(
+              moveTaskThunk({
+                taskId: id,
+                fromProjectId: row.projectId ?? "",
+                toProjectId: to,
+              }),
+            ).unwrap();
+          },
+          { done: "Moved", noun: "task", labelOf: taskName },
+          taskId,
+        ),
+    },
+    {
       // The task's OWN delete door (`deleteTaskThunk`): optimistic slice removal,
       // subtasks leaving with their parent, project counts, rollback on refusal.
       // The built-in trash would skip all of that, so it is replaced by id.
@@ -223,6 +345,11 @@ export default function TasksTableView() {
     onRefresh: () => {},
     onRemoveRows: () => {},
   });
+
+  const hasTicked = bulk.selectedIds.length > 0;
+  React.useEffect(() => {
+    if (hasTicked) setAssignEngaged(true);
+  }, [hasTicked]);
 
   const columns = React.useMemo<MatrxColumnDef<TaskWithProject>[]>(
     () => [

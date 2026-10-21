@@ -273,7 +273,7 @@ function Pair({
         >
           {current}
         </div>
-        {/* The connector: a vertical gradient thread with a current→plan node.
+        {/* The connector: a vertical gradient thread with a current→plan page.
             Rendered only in the Studio split at xl+ (below xl the pair stacks). */}
         <div
           aria-hidden="true"
@@ -501,7 +501,7 @@ export function PageWorkspace({ pageId }: { pageId: string }) {
         );
         return facts ? summarizeCmsPushFacts(page, facts) : null;
       })(),
-      // THE BEFORE, for agents: the plan node this page was realized from,
+      // THE BEFORE, for agents: the plan page this page was realized from,
       // resolved through the same push-lane cache entry. Trigger-time cache
       // read — PagePlanContextCard owns both fetches.
       planContext: (() => {
@@ -1290,7 +1290,7 @@ export function PageWorkspace({ pageId }: { pageId: string }) {
                   )}
                 >
                   <History className="mr-1.5 h-3.5 w-3.5" />
-                  Snapshot history
+                  Page capture history
                 </Link>
               </Button>
             </div>
@@ -1313,7 +1313,7 @@ export function PageWorkspace({ pageId }: { pageId: string }) {
             <MetricCell
               label={L.word_count}
               value={snapshot?.word_count?.toLocaleString() ?? "—"}
-              detail="Latest snapshot"
+              detail="Latest page capture"
               anchor="word_count"
             />
             <MetricCell
@@ -1337,7 +1337,7 @@ export function PageWorkspace({ pageId }: { pageId: string }) {
           </section>
 
           {/* THE BEFORE (docs/handoffs/cms-page-hub.md item 6): a page realized
-              from a plan node is being measured against something — its brief,
+              from a plan page is being measured against something — its brief,
               target keyword, and keyword strategy. It sits ABOVE the split
               because it belongs to neither lane: it is not the observed page
               and not the editable plan, it is what the page was asked to be.
@@ -1384,7 +1384,7 @@ export function PageWorkspace({ pageId }: { pageId: string }) {
                 <FileQuestion className="h-6 w-6 text-muted-foreground" />
                 <p className="text-xs text-muted-foreground">
                   This canonical URL exists independently, but nothing has
-                  produced an accepted snapshot yet — observed sections appear
+                  produced an accepted page capture yet — observed sections appear
                   after the first capture.
                 </p>
                 <FetchPageButton

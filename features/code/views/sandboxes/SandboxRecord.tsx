@@ -639,7 +639,7 @@ export function SandboxRecord({
                 kind: "sandbox-instance",
                 location: "AI Matrx — Sandbox detail",
                 description:
-                  "The sandbox instance currently open on the detail page.",
+                  "The sandbox currently open on the detail page.",
                 data: instance,
                 summary: sandboxInstanceSummary(instance),
                 attributes: {

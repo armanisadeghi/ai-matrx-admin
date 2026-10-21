@@ -17,6 +17,7 @@
  * prove nothing.
  */
 
+import { treeIndentPx } from "@/components/official/topic-tree/geometry";
 import { useState, type ReactNode } from "react";
 import { CornerUpRight, Merge, Scissors, CircleSlash, ChevronDown } from "lucide-react";
 
@@ -613,8 +614,13 @@ function TopicPicker({
             </SelectItem>
           ) : null}
           {candidates.map((row) => (
-            <SelectItem key={row.slug} value={row.slug} className="text-xs">
-              {" ".repeat(row.depth * 2)}
+            <SelectItem
+              key={row.slug}
+              value={row.slug}
+              className="text-xs"
+              // The menu's own 28px check gutter plus one geometry step per level.
+              style={{ paddingLeft: 28 + treeIndentPx(row.depth) }}
+            >
               {row.name}
             </SelectItem>
           ))}

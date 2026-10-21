@@ -41,6 +41,8 @@ import {
 } from "@/features/marketing/lib/copy-payloads";
 import { formatCompactDate } from "@/features/marketing/components/shared/MarketingUi";
 import { gscScopeAttributes } from "@/features/marketing/search-console/lib/copy-payloads";
+import { bulkActionsFromRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import {
   getPageFirstDates,
@@ -70,6 +72,13 @@ interface LaunchRow extends TrackedPageRow {
   firstDates: GscPageFirstDatesRow | null;
   lifecycle: LaunchLifecycle;
 }
+
+const LAUNCH_VERBS = [
+  { id: "queries", label: "Queries for this page", icon: PanelTop },
+  { id: "mark-requested", label: "Mark indexing requested", icon: CalendarCheck },
+  { id: "notes", label: "Edit notes", icon: StickyNote },
+  { id: "untrack", label: "Untrack", icon: Trash2, danger: true },
+] as const;
 
 export function NewPagesTab({
   siteId,
@@ -167,6 +176,54 @@ export function NewPagesTab({
         fd?.first_impression_date ?? null,
       ),
     };
+  });
+
+  // Bulk twins of the row menu — Mark indexing requested and Untrack. Queries
+  // panel and Edit notes open one page's panel/dialog (single).
+  const bulkActions = bulkActionsFromRowVerbs<
+    (typeof LAUNCH_VERBS)[number],
+    LaunchRow
+  >(
+    LAUNCH_VERBS,
+    {
+      queries: { noBulk: "view" },
+      "mark-requested": {
+        done: "Marked indexing requested",
+        runOne: (_id, row) =>
+          row ? markIndexingRequested(row) : Promise.reject(new Error("Page not loaded")),
+      },
+      notes: { noBulk: "edit" },
+      untrack: {
+        label: "Untrack",
+        done: "Removed from the tracker",
+        removesRows: true,
+        confirm: (targets) => ({
+          title: `Stop tracking ${targets.ids.length} ${targets.ids.length === 1 ? "page" : "pages"}?`,
+          description:
+            "Only the tracker entries are removed — the pages and their data stay.",
+          confirmLabel: "Untrack",
+        }),
+        runOne: (id) => untrackPage(id),
+      },
+    },
+    {
+      noun: "page",
+      getRowId: (row) => row.id,
+      getRowName: (row) => row.url,
+      blocked: (verb, row) =>
+        verb.id === "mark-requested" && row.tracking.indexing_requested_at
+          ? "Already marked requested"
+          : null,
+    },
+  );
+  const bulk = useTableBulkSelection<LaunchRow>({
+    noun: "page",
+    rows,
+    getRowId: (row) => row.id,
+    getRowName: (row) => row.url,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: () => void invalidate(),
   });
 
   const openQueriesPanel = (row: LaunchRow) => {
@@ -497,6 +554,7 @@ export function NewPagesTab({
                   tracked_pages: rows.length,
                 }),
               }}
+              selection={bulk.selection}
               detail={{ enabled: false }}
               window={{ enabled: false }}
               onRowOpen={openQueriesPanel}

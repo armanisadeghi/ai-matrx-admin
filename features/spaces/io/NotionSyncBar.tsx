@@ -149,7 +149,16 @@ export function NotionSyncBar({ tableId, organizationId }: { tableId: string; or
     follow.current?.abort();
     const stop = new AbortController();
     follow.current = stop;
-    const settled = await followSyncRun(tableId, { since, signal: stop.signal });
+    let settled;
+    try {
+      settled = await followSyncRun(tableId, { since, signal: stop.signal });
+    } catch (err) {
+      if (stop.signal.aborted) return;
+      follow.current = null;
+      setWaiting(null);
+      toast.error(extractErrorMessage(err));
+      return;
+    }
     if (!settled || stop.signal.aborted) return;
     follow.current = null;
     setWaiting(null);

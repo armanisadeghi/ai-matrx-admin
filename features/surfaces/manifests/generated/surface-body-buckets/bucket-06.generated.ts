@@ -2,14 +2,14 @@
 // One of the lazily loaded surface-body groups (BODY_BUCKETS); pnpm check:surface-index proves them.
 export { barcodePreviewManifest as s2 } from "../../barcode-preview.manifest";
 export { aiWorkConversationsManifest as s6 } from "../../ai-work-conversations.manifest";
-export { codeEditorManifest as s20 } from "../../code-editor.manifest";
-export { listsManifest as s46 } from "../../lists.manifest";
-export { marketingAutomationsManifest as s88 } from "../../marketing-automations.manifest";
-export { marketingBrandMessagingManifest as s97 } from "../../marketing-brand-messaging.manifest";
-export { educationFamilyManifest as s120 } from "../../education-family.manifest";
-export { educationQuickMathAuthoringManifest as s147 } from "../../education-quick-math-authoring.manifest";
-export { educationGameSoloManifest as s150 } from "../../education-game-solo.manifest";
-export { settingsManifest as s158 } from "../../settings.manifest";
-export { meetingManifest as s177 } from "../../meeting.manifest";
-export { marketingSocialRollupManifest as s210 } from "../../marketing-social-rollup.manifest";
-export { commerceLabelBatchManifest as s234 } from "../../commerce-label-batch.manifest";
+export { codeEditorManifest as s21 } from "../../code-editor.manifest";
+export { listsManifest as s48 } from "../../lists.manifest";
+export { marketingAutomationsManifest as s90 } from "../../marketing-automations.manifest";
+export { marketingBrandMessagingManifest as s99 } from "../../marketing-brand-messaging.manifest";
+export { educationFamilyManifest as s122 } from "../../education-family.manifest";
+export { educationQuickMathAuthoringManifest as s149 } from "../../education-quick-math-authoring.manifest";
+export { educationGameSoloManifest as s152 } from "../../education-game-solo.manifest";
+export { settingsManifest as s160 } from "../../settings.manifest";
+export { meetingManifest as s179 } from "../../meeting.manifest";
+export { marketingSocialRollupManifest as s212 } from "../../marketing-social-rollup.manifest";
+export { commerceLabelBatchManifest as s236 } from "../../commerce-label-batch.manifest";
