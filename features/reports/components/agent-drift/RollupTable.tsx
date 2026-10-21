@@ -94,7 +94,7 @@ export function RollupTable({
           className="px-3 py-1.5"
         />
       ) : null}
-      <MatrxDataTable {...(table ? { query: { mode: "controlled-local" as const, state: table.state, onStateChange: table.onStateChange } } : { urlState: { id: `agent-drift-${mode}`, defaultSort: { id: sort.key === 'agentName' ? 'agent' : sort.key === 'totalUsages' ? 'usages' : sort.key === 'stalePins' ? 'stale' : sort.key, direction: sort.desc ? 'desc' as const : 'asc' as const } } })} onViewChange={onViewChange ? (view) => onViewChange(view.map((row) => row.agentId)) : undefined} data={canonicalRows} columns={columns} getRowId={(row) => row.agentId} pageSize={50} onRowOpen={(row) => onSelect(row.agentId)} tableStyle={oneRowTint(selectedAgentId)} toolbar={{ search: true, searchPlaceholder: 'Search agents…' }} detail={{ enabled: false }} />
+      <MatrxDataTable tableId={`agent-drift-${mode}`} {...(table ? { query: { mode: "controlled-local" as const, state: table.state, onStateChange: table.onStateChange } } : { urlState: { id: `agent-drift-${mode}`, defaultSort: { id: sort.key === 'agentName' ? 'agent' : sort.key === 'totalUsages' ? 'usages' : sort.key === 'stalePins' ? 'stale' : sort.key, direction: sort.desc ? 'desc' as const : 'asc' as const } } })} onViewChange={onViewChange ? (view) => onViewChange(view.map((row) => row.agentId)) : undefined} data={canonicalRows} columns={columns} getRowId={(row) => row.agentId} pageSize={50} onRowOpen={(row) => onSelect(row.agentId)} tableStyle={oneRowTint(selectedAgentId)} toolbar={{ search: true, searchPlaceholder: 'Search agents…' }} detail={{ enabled: false }} />
     </>
   );
 }
