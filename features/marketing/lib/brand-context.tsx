@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * Client context for the `/marketing/[brandId]` client workspace.
+ * Brand context for the `/marketing/[brandId]` brand workspace.
  *
  * The server layout resolves the dual-mode route param (key or UUID) ONCE and
- * provides the resolved identity here, so client pages/components consume real
+ * provides the resolved identity here, so brand pages/components consume real
  * UUIDs (`brand.id`, `site.id`) and never re-derive them from the URL. Route
  * params under the brand tree are ADDRESSES, not identifiers — anything that
  * queries the database goes through this context.

@@ -1,7 +1,7 @@
 // record-view: none — a sub-view (ads) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/marketing/[brandId]/ads/page.tsx
 //
-// One client's Advertising section. `GoogleAdsWorkspace` needs a live Google
+// One brand's Advertising section. `GoogleAdsWorkspace` needs a live Google
 // token, so it keeps the same `LazyGoogleAPIProvider` wrapper (and the same
 // reporting scopes) the flat `/marketing/ads` route gave it — the provider is
 // part of the mount, not page decoration.

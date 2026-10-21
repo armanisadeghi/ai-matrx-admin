@@ -7,7 +7,7 @@ import { KnowledgeRoomSurface } from "@/features/marketing/seo/value-system/disc
 import { DiscoveryPage } from "@/features/marketing/seo/value-system/discovery/DiscoveryPage";
 
 /**
- * Brand Knowledge — the Business Discovery Ladder. AI reads the client's
+ * Brand Knowledge — the Business Discovery Ladder. AI reads the brand's
  * website cold and proposes its business model, customers, money map, and
  * offerings; the human rules each rung. Register item KI-040.
  *

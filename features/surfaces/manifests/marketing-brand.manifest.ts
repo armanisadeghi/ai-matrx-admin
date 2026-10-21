@@ -2,7 +2,7 @@
  * Surface manifest — Marketing brand cockpit (`matrx-user/marketing-brand`).
  *
  * Drives `/marketing/[brandId]` — the brand cockpit of the Marketing
- * system (`features/marketing`, `BrandWorkspace`): one client company's
+ * system (`features/marketing`, `BrandWorkspace`): one brand's
  * identity, its managed websites (with connection chips), social properties,
  * confirmed business facts, brand asset library, and the pending
  * discovery-review count. This surface is the CONTEXT ROOT of the marketing
@@ -30,14 +30,14 @@ const groups: SurfaceValueGroup[] = [
     key: "brand_identity",
     label: "Brand identity",
     sortOrder: 100,
-    description: "Which client brand this is — id and display name.",
+    description: "Which brand this is — id and display name.",
   },
   {
     key: "brand_context",
     label: "Brand context",
     sortOrder: 200,
     description:
-      "The ground-truth client dossier: the XML context snapshot and the raw editorial profile.",
+      "The ground-truth brand dossier: the XML context snapshot and the raw editorial profile.",
   },
   {
     key: "brand_portfolio",
@@ -54,7 +54,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "brand_context",
     label: "Brand context (XML)",
     description:
-      "Compact XML snapshot of the brand this work belongs to: identity (name, industry, description, website) and the editorial brand profile (audience, voice, positioning, offerings, competitors, content guidelines — when the user has authored one) are always embedded once loaded; confirmed business facts, brand assets, social properties, and the managed-site list are included when their data is loaded (always on the brand cockpit; on site pages, when previously fetched). A missing section means NOT LOADED HERE, never that the brand has none. Built by buildBrandContextXml (features/marketing/lib/surface-context.ts). Read this FIRST — it is the ground truth about the client. Empty during initial load.",
+      "Compact XML snapshot of the brand this work belongs to: identity (name, industry, description, website) and the editorial brand profile (audience, voice, positioning, offerings, competitors, content guidelines — when the user has authored one) are always embedded once loaded; confirmed business facts, brand assets, social properties, and the managed-site list are included when their data is loaded (always on the brand cockpit; on site pages, when previously fetched). A missing section means NOT LOADED HERE, never that the brand has none. Built by buildBrandContextXml (features/marketing/lib/surface-context.ts). Read this FIRST — it is the ground truth about the brand. Empty during initial load.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 2500,
@@ -79,7 +79,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "brand_id",
     label: "Brand ID",
     description:
-      "UUID of the `web.brand` row (the anchor entity for this client/company). Always present — the route carries it.",
+      "UUID of the `web.brand` row (the anchor entity for this brand). Always present — the route carries it.",
     valueType: "string",
     alwaysAvailable: true,
     typicalCharCount: 36,
@@ -140,7 +140,7 @@ const surfaceSpecific: SurfaceValue[] = [
  * The WRITE half — what an agent may change on the brand cockpit. Both
  * targets persist through the canonical `updateBrand` service (version
  * guard included) and default to `ask`: the profile is the voice-of-the-
- * client document agents draft BEST, but a human still confirms in place.
+ * brand document agents draft BEST, but a human still confirms in place.
  *
  * Deliberately absent: `brand_business_facts`. The surface doctrine is that
  * confirmed facts are HUMAN-owned — machine discovery writes candidates to
@@ -156,7 +156,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "brand_profile",
     label: "Brand profile",
     description:
-      "Update the editorial brand profile (`web.brand.profile`) — the voice-of-the-client document downstream content and SEO agents rely on. Value: a partial object with any of { audience?: string, voice_tone?: string, positioning?: string, service_area?: string, content_guidelines?: string, notes?: string, value_props?: string[], competitors?: Array<string | { name: string, domain?: string, handles?: string[] }>, target_keywords?: string[] }. Offerings are not a profile field: they live in the brand's offerings list. Omitted fields keep their current value; an empty string or empty array CLEARS that field. List fields replace the FULL list — when extending, include the existing entries from the brand_profile read value. Persists immediately through updateBrand with the version guard. Ground every claim in confirmed facts and crawl evidence; separate inference from evidence.",
+      "Update the editorial brand profile (`web.brand.profile`) — the voice-of-the-brand document downstream content and SEO agents rely on. Value: a partial object with any of { audience?: string, voice_tone?: string, positioning?: string, service_area?: string, content_guidelines?: string, notes?: string, value_props?: string[], competitors?: Array<string | { name: string, domain?: string, handles?: string[] }>, target_keywords?: string[] }. Offerings are not a profile field: they live in the brand's offerings list. Omitted fields keep their current value; an empty string or empty array CLEARS that field. List fields replace the FULL list — when extending, include the existing entries from the brand_profile read value. Persists immediately through updateBrand with the version guard. Ground every claim in confirmed facts and crawl evidence; separate inference from evidence.",
     valueType: "object",
     updatesValue: "brand_profile",
     mode: "entity",
@@ -189,9 +189,9 @@ export const marketingBrandManifest: SurfaceManifest = {
   label: "Marketing Brand Cockpit",
   urlPattern: "/marketing/[brandId]",
   intro: `<surface_intro>
-You are on the Marketing brand cockpit: one client company (the brand) with its managed websites, social properties, confirmed business facts, and brand asset library — the ground-truth dossier every downstream marketing surface builds on. Read brand_context first: it is the compact XML snapshot of everything confirmed about this client.
+You are on the Marketing brand cockpit: one brand with its managed websites, social properties, confirmed business facts, and brand asset library — the ground-truth dossier every downstream marketing surface builds on. Read brand_context first: it is the compact XML snapshot of everything confirmed about this brand.
 The load-bearing rule here is ownership of truth: confirmed facts, assets, and properties are HUMAN-owned. Machine discovery only writes candidates to the review inbox (pending_review_count); a human promotes them to confirmed rows. You PROPOSE — draft profile text, recommend confirmations, flag gaps — you never fabricate a fact, invent an asset, or treat an unconfirmed guess as truth.
-The editorial brand profile (embedded in brand_context, raw in brand_profile) is the voice-of-the-client document that downstream content and SEO agents rely on; when drafting or refining it, ground every claim in confirmed facts and crawl evidence, and clearly separate inference from evidence.
+The editorial brand profile (embedded in brand_context, raw in brand_profile) is the voice-of-the-brand document that downstream content and SEO agents rely on; when drafting or refining it, ground every claim in confirmed facts and crawl evidence, and clearly separate inference from evidence.
 All values except brand_id populate only after the workspace loads — treat empty values as not-yet-loaded, never as "this brand has nothing".
 </surface_intro>`,
   groups,

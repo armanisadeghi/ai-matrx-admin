@@ -9,7 +9,7 @@
 // Copy comes from ONE place: the `marketing.*` row in lib/coming-soon/registry.ts
 // (the promise, and the label when nothing richer exists). An agency-plane route
 // also has a matching entry in lib/marketing-nav.ts, which adds the pillar, the
-// icon, and the live siblings; a CLIENT-workspace route (declared in
+// icon, and the live siblings; a brand-workspace route (declared in
 // brand-sections.ts instead) has none, and renders the promise alone.
 // Route files pass only an id — never prose.
 
@@ -97,7 +97,7 @@ export function MarketingComingSoon({
   }
 
   // MARKETING_PILLARS is the AGENCY plane's nav (2026-08-28 restructure); the
-  // client workspace's reserved sections (`/marketing/[brandId]/socials`,
+  // brand workspace's reserved sections (`/marketing/[brandId]/socials`,
   // `…/identity/audience`, …) live in MARKETING_BRAND_SECTIONS instead and
   // carry no pillar entry. Their promise still renders — with no pillar label
   // and no sibling list, because neither exists at this level.
@@ -116,7 +116,7 @@ export function MarketingComingSoon({
 
   return (
     <>
-      {/* No PageHeader occupant — under the client tree the [brandId] layout's
+      {/* No PageHeader occupant — under the brand tree the [brandId] layout's
           breadcrumb trail is the header, and it already names this section
           (Arman, 2026-08-30). The body card carries the promise + badge. */}
       <div className="h-full overflow-y-auto bg-textured">

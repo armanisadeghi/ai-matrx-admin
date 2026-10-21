@@ -1,7 +1,7 @@
 // record-view: none — a sub-view (pr) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/marketing/[brandId]/pr/page.tsx
 //
-// THE PRESS ROOM for one client — the Press & PR section of the brand
+// THE PRESS ROOM for one brand — the Press & PR section of the brand
 // workspace.
 //
 // Server Component. It owns route chrome and nothing else; everything

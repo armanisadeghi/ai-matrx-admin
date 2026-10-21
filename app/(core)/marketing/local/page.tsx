@@ -5,11 +5,11 @@ import { resolveBrandParam } from "@/features/marketing/lib/keys-server";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 /**
- * Legacy flat pillar. Locations belong to a client, so Local & Listings is a
+ * Legacy flat pillar. Locations belong to a brand, so Local & Listings is a
  * brand section now: /marketing/[brand]/locations (and /locations/[locationId]
  * for one canonical location). The old cross-brand door already accepted
  * `?brand=` / `?location=`; those keep resolving, straight onto the new
- * address with slug segments. A plain visit names no client, so it lands on
+ * address with slug segments. A plain visit names no brand, so it lands on
  * the roster.
  */
 export default async function MarketingLocalShim({

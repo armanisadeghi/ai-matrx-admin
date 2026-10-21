@@ -130,7 +130,7 @@ export interface ChannelBindRow {
 /**
  * Pairs each candidate with the other brands already bound to that channel and
  * puts the UNBOUND channels first (title order within each group), so a press
- * on the first row never silently moves a channel another client reads.
+ * on the first row never silently moves a channel another brand reads.
  */
 export function orderBindRows(
   candidates: readonly ChannelBindCandidate[],
@@ -142,7 +142,7 @@ export function orderBindRows(
       ...new Set(
         elsewhere
           .filter((binding) => binding.channelId === candidate.channelId)
-          .map((binding) => binding.brandName.trim() || "another client"),
+          .map((binding) => binding.brandName.trim() || "another brand"),
       ),
     ],
   }));

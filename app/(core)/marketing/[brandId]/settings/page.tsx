@@ -2,7 +2,7 @@
 "use client";
 
 /**
- * Brand settings — the keyword-value defaults and autonomy modes this client's
+ * Brand settings — the keyword-value defaults and autonomy modes this brand's
  * sites inherit unless a site overrides them. Third rung of the ladder
  * (KI-046): platform → organization → brand → site.
  *
@@ -29,7 +29,7 @@ export default function BrandSettingsPage() {
       <div className="mx-auto max-w-4xl space-y-4">
         <MarketingAddressCard
           title="Brand address"
-          description="This brand's address in the app. Every page under this client sits below it."
+          description="This brand's address in the app. Every page under this brand sits below it."
           addressPrefix="/marketing/"
           currentKey={brand.seg}
           previousKeys={brandRow.data?.previous_slugs ?? []}

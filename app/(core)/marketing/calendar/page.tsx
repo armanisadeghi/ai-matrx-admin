@@ -9,9 +9,9 @@ import { createClient } from "@/utils/supabase/server";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 /**
- * `/marketing/calendar` lands on the PR calendar. The calendar belongs to one client
+ * `/marketing/calendar` lands on the PR calendar. The calendar belongs to one brand
  * (`/marketing/<brand>/planning/calendar`), so with exactly one brand it goes straight
- * there, and with several it asks which — it never guesses a client.
+ * there, and with several it asks which — it never guesses a brand.
  *
  * It used to `permanentRedirect` to the Google read-only sweep, which was never a
  * calendar. This is a TEMPORARY redirect now: a 308 is cached by browsers indefinitely.
@@ -40,15 +40,15 @@ export default async function MarketingCalendarPage() {
           </div>
           {error ? (
             <p role="alert" className="text-sm text-destructive">
-              Your clients could not be read: {asClause(error.message)}. Open one from{" "}
+              Your brands could not be read: {asClause(error.message)}. Open one from{" "}
               <Link className="underline" href={marketingRoutes.brands()}>
-                your client list
+                your brands list
               </Link>{" "}
               and choose Planning, then Calendar.
             <ErrorAlchemyMenu /></p>
           ) : !brands?.length ? (
             <p className="text-sm text-muted-foreground">
-              There is no client yet. <Link className="underline" href={marketingRoutes.brands()}>Add one</Link> and
+              There is no brand yet. <Link className="underline" href={marketingRoutes.brands()}>Add one</Link> and
               its PR calendar will live here.
             </p>
           ) : (

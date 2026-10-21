@@ -11,9 +11,9 @@
  *
  *   • AGENCY  — `MARKETING_PILLARS` (lib/marketing-nav.ts): roster, roll-ups,
  *     operations, tools. Small by design.
- *   • BRAND   — one client's workspace: `MARKETING_BRAND_SECTIONS`
+ *   • BRAND   — one brand's workspace: `MARKETING_BRAND_SECTIONS`
  *     (lib/brand-sections.ts). Coming-soon sections stay VISIBLE with a tag —
- *     the client workspace's promised shape is part of the map (Arman,
+ *     the brand workspace's promised shape is part of the map (Arman,
  *     2026-08-28).
  *   • WEBSITE — one site's inventory: `MARKETING_WEBSITE_SECTIONS`, plus the
  *     door into the SEO practice on that site (the menu points at the
@@ -260,7 +260,7 @@ function AgencyMenu({
   );
 }
 
-/** BRAND state — one client's whole workspace. */
+/** BRAND state — one brand's whole workspace. */
 function BrandMenu({
   brandSeg,
   pathname,
@@ -290,7 +290,7 @@ function BrandMenu({
 
   return (
     <>
-      <BackRow href={marketingRoutes.brands()} label="All clients" />
+      <BackRow href={marketingRoutes.brands()} label="All brands" />
       {groups.map((group) => (
         <div key={group.label}>
           {group.label === "Start" ? null : (

@@ -2,7 +2,7 @@
  * Pure validation + merge core for the `matrx-user/marketing-brand` write
  * targets (`brand_profile`, `brand_identity`). Kept free of React/services so
  * the destructive failure mode — a profile write that silently drops the rest
- * of the client's brand profile jsonb — is provable in unit tests
+ * of the brand's brand profile jsonb — is provable in unit tests
  * (`brand-write-targets.test.ts`).
  *
  * Contract (mirrors the manifest target descriptions exactly):

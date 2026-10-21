@@ -403,7 +403,7 @@ describe("no channel is bound", () => {
     }
   });
 
-  it("says which channel another client already holds, and lists the free ones first", async () => {
+  it("says which channel another brand already holds, and lists the free ones first", async () => {
     world.connections = [connection(CONNECTION_ID, "owner@allgreen.com")];
     world.resources = [
       channelResource({
@@ -537,7 +537,7 @@ describe("bound, with two windows collected alike", () => {
     world.days = [...days(30, 0, 200), ...days(30, 30, 100)];
   });
 
-  // THE PERSON, NOT THE ORG (Arman, 2026-09-23): the client's channel is read
+  // THE PERSON, NOT THE ORG (Arman, 2026-09-23): the brand's channel is read
   // in the BRAND'S organization, never the selected one — reading it in the
   // selected one showed an empty channel whenever another was picked.
   it("reads the videos and analytics in the brand's own organization, not the selected one", async () => {

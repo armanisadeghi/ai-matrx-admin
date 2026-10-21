@@ -238,7 +238,7 @@ export function BrandAssetsWorkspace({
     >
       <BrandAssetsWriteTargets onOrderChange={setOrder} />
       {/* No RouteHeader — the [brandId] layout's breadcrumb trail is the
-          header for the whole client tree (Arman, 2026-08-30). */}
+          header for the whole brand tree (Arman, 2026-08-30). */}
       <main className="h-full overflow-y-auto bg-textured">
         <div className="mx-auto w-full max-w-6xl space-y-3 px-3 pb-10 pt-[calc(var(--shell-header-h)+1rem)] sm:px-4">
           <header className="flex flex-wrap items-center justify-between gap-3">

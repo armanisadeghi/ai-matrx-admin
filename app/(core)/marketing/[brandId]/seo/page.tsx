@@ -2,7 +2,7 @@
 "use client";
 
 /**
- * The SEO section's front door for one client: the list of that client's
+ * The SEO section's front door for one brand: the list of that brand's
  * websites, each opening the SEO practice on it.
  *
  * The practice is always ABOUT a site (keywords, rankings, links, findings all
@@ -97,7 +97,7 @@ export default function MarketingBrandSeoPage() {
 
         {(sites.data ?? []).length > 0 ? (
           // The Keyword Intelligence hub — every keyword screen per website,
-          // scoped to this client. Re-doored here after the agency-model
+          // scoped to this brand. Re-doored here after the agency-model
           // restructure orphaned its flat route (audit, 2026-08-30).
           <div className="rounded-lg border border-border bg-card">
             <KeywordIntelligenceHub brandId={brand.id} />

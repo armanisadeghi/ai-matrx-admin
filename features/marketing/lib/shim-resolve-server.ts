@@ -35,7 +35,7 @@ export interface LegacySiteAddress {
  * Null when the id is malformed, the row is unreadable or deleted, or the site
  * has no brand — a brand-first URL cannot be built without a brand. Callers
  * decide what null means for them: the flat pillars land the visitor on the
- * client roster, the entity doors `notFound()`.
+ * brands list, the entity doors `notFound()`.
  */
 export const resolveLegacySiteAddress = cache(
   async (siteId: string): Promise<LegacySiteAddress | null> => {
