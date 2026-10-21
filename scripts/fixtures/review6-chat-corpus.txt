@@ -1,0 +1,66 @@
+RV6H2 chat. Repeat everything below back exactly, character for character, with no other words.
+
+Green tea is a calm drink with a mild grassy taste. Many people enjoy it in the morning.
+
+<info>
+
+</info>
+
+<info>test</info>
+
+<plan>
+ship it
+</plan>
+
+<foo>
+foo body
+</foo>
+
+<a_very_long_section_tag_name_here>
+long body
+</a_very_long_section_tag_name_here>
+
+```chart
+{"type":"pie","title":"RV6C visits","data":[{"label":"Web","value":6},{"label":"App","value":4}]}
+```
+
+```stats
+{"title":"RV6C Totals","stats":[{"label":"Revenue","value":"$1.2M"},{"label":"Users","value":12}]}
+```
+
+```tasks
+## Sprint 12
+- [ ] Write the plan
+- [x] Book the room
+```
+
+<cooking_recipe>
+### RV6C Pancakes
+Prep: 10 minutes
+Cook: 20 minutes
+#### Ingredients
+- 2 eggs
+#### Instructions
+1. Mix for 3 minutes
+</cooking_recipe>
+
+<troubleshooting>
+### RV6C The app will not start
+- Check the cable
+- Restart it
+</troubleshooting>
+
+<timeline>
+**2020**
+- Launch: the first release
+</timeline>
+
+<progress_tracker>
+### RV6C Launch
+- [x] Plan
+- [ ] Ship
+</progress_tracker>
+
+```comparison
+{"comparison":{"title":"RV6C Plans","items":["Alpha","Beta"],"criteria":[{"name":"Price","values":[10,20]},{"name":"Speed","values":[3,5]}]}}
+```

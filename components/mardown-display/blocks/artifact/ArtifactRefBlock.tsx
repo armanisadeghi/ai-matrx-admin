@@ -210,7 +210,7 @@ const ArtifactRefBlock: React.FC<ArtifactRefBlockProps> = ({
 
   // An edit (Controls, an inline edit) saves the answer AND this row.
   return (
-    <SavedArtifactEdit rowId={row.id} raw={raw} stored={stored}>
+    <SavedArtifactEdit rowId={row.id} raw={raw} stored={stored} archive={fallbackContent?.replace(/^\r?\n/, "").replace(/\r?\n$/, "")}>
       {(shownRaw) => (
         <ArtifactBlock
           content={shownRaw}

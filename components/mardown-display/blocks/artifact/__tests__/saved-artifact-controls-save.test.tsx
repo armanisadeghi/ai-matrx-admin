@@ -5,8 +5,12 @@
  * pie, and stayed a pie after reload because the row never changed.
  *
  * The block's write must (1) save the answer through the host's write (the
- * hand-edit save), (2) save the row the screen draws, (3) show the change at
- * once, and (4) offer Undo, which puts all three back.
+ * hand-edit save — which writes the row the screen draws: saveAnswerEdit →
+ * syncEditedArtifactRows, guarded in @ai-matrx/chat), (2) never write the row a
+ * second way here (review 6 H2: one save path for every surface), (3) show the
+ * change at once, and (4) offer Undo, which puts both back. When the drawn row
+ * is behind the answer's archive (a save reached the answer only), the block
+ * keeps its Controls and the next change saves through the archive.
  */
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -14,6 +18,8 @@ import { createRoot, type Root } from "react-dom/client";
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const PIE = '{\n  "type": "pie",\n  "title": "Market Share",\n  "data": [{ "label": "Chrome", "value": 65 }]\n}';
+/** What the row holds: the answer's archive by default; the old title when the row is behind. */
+let rowData = PIE;
 const BAR = PIE.replace('"pie"', '"bar"');
 const ROW_ID = "23f81dd1-671a-4df0-ba4a-a8b96b853106";
 
@@ -28,7 +34,7 @@ jest.mock("@/features/canvas/services/canvasItemsService", () => ({
 jest.mock("@/features/canvas/hooks/useCanvasItem", () => ({
   invalidateCanvasItemCache: jest.fn(),
   useCanvasItem: (id: string | null) => ({
-    row: id ? { id: ROW_ID, type: "chart", title: "Chart 1", version: 1, content: { data: PIE, type: "chart", metadata: {} } } : null,
+    row: id ? { id: ROW_ID, type: "chart", title: "Chart 1", version: 1, content: { data: rowData, type: "chart", metadata: {} } } : null,
     loading: false,
     error: null,
     refetch: jest.fn(),
@@ -68,7 +74,7 @@ import ArtifactRefBlock from "../ArtifactRefBlock";
 
 /** The chat answer: its artifact block's archive body, saved by replaceBlockContent. */
 function Answer() {
-  const [archive, setArchive] = React.useState(`\n${PIE}\n`);
+  const [archive, setArchive] = React.useState(`\n${ARCHIVE}\n`);
   return (
     <BlockEditProvider
       source={archive}
@@ -83,6 +89,7 @@ function Answer() {
   );
 }
 const answerWrites: string[] = [];
+let ARCHIVE = PIE;
 
 function q(host: HTMLElement, id: string) {
   return host.querySelector(`[data-testid="${id}"]`);
@@ -112,8 +119,9 @@ describe("Controls on a saved artifact in a chat answer", () => {
     });
     expect(q(host, "drawn")?.textContent).toBe("bar");
     expect(q(host, "archive")?.textContent).toBe("bar");
-    expect(answerWrites).toHaveLength(1);
-    expect(update).toHaveBeenCalledWith(ROW_ID, { content: { data: BAR, type: "chart", metadata: {} } });
+    expect(answerWrites).toEqual([`\n${BAR}\n`]);
+    // The answer save writes the row; this block never writes it a second way.
+    expect(update).not.toHaveBeenCalled();
   });
 
   it("Undo puts the answer, the row and the screen back", async () => {
@@ -127,6 +135,36 @@ describe("Controls on a saved artifact in a chat answer", () => {
     });
     expect(q(host, "drawn")?.textContent).toBe("pie");
     expect(q(host, "archive")?.textContent).toBe("pie");
-    expect(update).toHaveBeenLastCalledWith(ROW_ID, { content: { data: PIE, type: "chart", metadata: {} } });
+    expect(answerWrites).toEqual([`\n${BAR}\n`, `\n${PIE}\n`]);
+    expect(update).not.toHaveBeenCalled();
+  });
+});
+
+describe("the drawn row is behind the answer's archive (a save reached the answer only)", () => {
+  let host: HTMLDivElement;
+  let root: Root;
+  beforeEach(() => {
+    answerWrites.length = 0;
+    rowData = PIE.replace("Market Share", "Old Share");
+    ARCHIVE = PIE;
+    host = document.createElement("div");
+    document.body.appendChild(host);
+    root = createRoot(host);
+    act(() => root.render(<Answer />));
+  });
+  afterEach(() => {
+    act(() => root.unmount());
+    host.remove();
+    rowData = PIE;
+  });
+
+  it("keeps its Controls, and a change saves over the archive so the answer save levels the row", async () => {
+    expect(q(host, "to-bar")).not.toBeNull();
+    await act(async () => {
+      (q(host, "to-bar") as HTMLButtonElement).click();
+    });
+    const drawnBar = rowData.replace('"pie"', '"bar"');
+    expect(answerWrites).toEqual([`\n${drawnBar}\n`]);
+    expect(q(host, "archive")?.textContent).toBe("bar");
   });
 });
