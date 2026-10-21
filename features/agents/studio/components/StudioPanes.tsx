@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Panel, useGroupRef, type Layout } from "react-resizable-panels";
 import { ClientGroup } from "@/features/resizable-panels/ClientGroup";
 import { Handle } from "@/features/resizable-panels/Handle";
@@ -36,10 +36,12 @@ export function StudioPanes({
   panes: Record<StudioPane, ReactNode>;
 }) {
   const groupRef = useGroupRef();
-  const remembered = useRef<StudioSavedSizes>(saved);
-  const target = studioPanesLayout(layout, ui, remembered.current);
+  // What the person last dragged, per layout (starts from the server-read cookies).
+  const [remembered, setRemembered] = useState<StudioSavedSizes>(saved);
+  const target = studioPanesLayout(layout, ui, remembered);
   const targetKey = JSON.stringify(target);
-  const firstLayout = useRef(target);
+  // The group mounts once with the first layout; later layouts are set imperatively.
+  const [firstLayout] = useState(target);
 
   useEffect(() => {
     const current = groupRef.current?.getLayout();
@@ -75,11 +77,11 @@ export function StudioPanes({
         id={STUDIO_PANES_GROUP_ID}
         cookieName={studioPanesCookie(layout)}
         groupRef={groupRef}
-        defaultLayout={firstLayout.current}
+        defaultLayout={firstLayout}
         orientation="horizontal"
         className="min-h-0 flex-1"
         onLayoutChanged={(next) => {
-          if (layout === "three" || layout === "two") remembered.current = { ...remembered.current, [layout]: next };
+          if (layout === "three" || layout === "two") setRemembered((r) => ({ ...r, [layout]: next }));
         }}
       >
         {panel("assistant")}
