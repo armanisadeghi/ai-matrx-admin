@@ -175,7 +175,13 @@ export function DecisionDialog({
   const [perMonth, setPerMonth] = useState("");
   const [until, setUntil] = useState("");
   const [busy, setBusy] = useState(false);
-  useEffect(() => {
+  // Reset the form when the dialog opens on a new row (state adjusted during render, not in an effect).
+  const [formFor, setFormFor] = useState<{ pending: Pending | null; knobs: ApprovalColorKnobs | null }>({
+    pending: null,
+    knobs: null,
+  });
+  if (formFor.pending !== pending || formFor.knobs !== knobs) {
+    setFormFor({ pending, knobs });
     setNote("");
     setExpected(pending?.row.expected_result ?? "");
     setPerMonth(pending?.row.expected_runs_per_month != null ? String(pending.row.expected_runs_per_month) : "");
@@ -184,7 +190,7 @@ export function DecisionDialog({
         ? dateInputValue(0, new Date(pending.row.expires_at))
         : dateInputValue(knobs?.temporaryDefaultDays ?? 7),
     );
-  }, [pending, knobs]);
+  }
   if (!pending) return null;
   const { row, decision } = pending;
   const name = row.subject_name ?? row.subject_id;
