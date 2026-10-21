@@ -20,7 +20,7 @@
 // "view all" links) remains `features/scopes/components/pages/ScopeBreadcrumb.tsx`;
 // migrate it onto this template when touched.
 
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { useBackHref } from "@/lib/navigation/useBackHref";
 import NavLink from "@/components/navigation/NavLink";
 import { Check, ChevronDown, ChevronRight } from "lucide-react";
@@ -34,7 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "@ai-matrx/design-system";
+import { RecordId, Skeleton } from "@ai-matrx/design-system";
 
 export interface CrumbOption {
   label: string;
@@ -54,6 +54,19 @@ export interface Crumb {
    *  a name-sized placeholder so the header is never empty in the server HTML
    *  and the crumbs after it barely move when the name lands. */
   pending?: boolean;
+  /**
+   * Sibling links fetched when the dropdown first opens (derived trails: the route tree is
+   * loaded on demand, never shipped with every page). Used when `options` is absent.
+   */
+  loadOptions?: () => Promise<CrumbOption[]>;
+  /** A "see all" link at the foot of the dropdown (the Scopes pattern). */
+  optionsAllHref?: string;
+  optionsAllLabel?: string;
+  /**
+   * The record has no key and no name column to show: draw its id through the one canonical
+   * id component (short id + copy) instead of a label. `label` stays the accessible name.
+   */
+  recordId?: { value: string; token?: string; kind?: string };
 }
 
 export interface CrumbTrailHeaderProps {
@@ -67,9 +80,18 @@ export interface CrumbTrailHeaderProps {
 }
 
 function CrumbOptions({ crumb }: { crumb: Crumb }) {
-  if (!crumb.options || crumb.options.length === 0) return null;
+  const [loaded, setLoaded] = useState<CrumbOption[] | null>(null);
+  const [failed, setFailed] = useState(false);
+  const options = crumb.options ?? loaded ?? [];
+  const lazy = !crumb.options && crumb.loadOptions;
+  if (!lazy && options.length === 0) return null;
   return (
-    <DropdownMenu>
+    <DropdownMenu
+      onOpenChange={(open) => {
+        if (!open || !lazy || loaded) return;
+        crumb.loadOptions!().then(setLoaded, () => setFailed(true));
+      }}
+    >
       <DropdownMenuTrigger asChild>
         <button
           type="button"
@@ -89,7 +111,12 @@ function CrumbOptions({ crumb }: { crumb: Crumb }) {
           </DropdownMenuLabel>
         )}
         <div className="max-h-[60dvh] overflow-y-auto">
-          {crumb.options.map((opt) => (
+          {lazy && !loaded ? (
+            <div className="px-2 py-1.5 type-meta text-muted-foreground">
+              {failed ? "Could not load" : <Skeleton aria-label="Loading" className="h-4 w-28 rounded" />}
+            </div>
+          ) : null}
+          {options.map((opt) => (
             <DropdownMenuItem
               key={opt.href}
               asChild
@@ -107,6 +134,13 @@ function CrumbOptions({ crumb }: { crumb: Crumb }) {
             </DropdownMenuItem>
           ))}
         </div>
+        {crumb.optionsAllHref && (
+          <DropdownMenuItem asChild>
+            <NavLink href={crumb.optionsAllHref} className="text-muted-foreground">
+              {crumb.optionsAllLabel ?? "View all"}
+            </NavLink>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -120,7 +154,14 @@ export function CrumbNode({ crumb, isLast }: { crumb: Crumb; isLast: boolean }) 
       </span>
     );
   }
-  const text = isLast ? (
+  const text = crumb.recordId ? (
+    <RecordId
+      value={crumb.recordId.value}
+      label={crumb.recordId.kind ?? crumb.label}
+      token={crumb.recordId.token}
+      look="chip"
+    />
+  ) : isLast ? (
     <span
       className="min-w-0 break-words text-xs leading-4 font-medium text-foreground sm:text-sm"
       title={crumb.label}

@@ -312,6 +312,8 @@
     "check:one-id": "node scripts/one-id/check-one-id.mjs",
     "check:one-settings-row": "node scripts/one-settings-row/check-one-settings-row.mjs && node scripts/one-settings-row/check-one-settings-row.mjs --self-test",
     "check:one-id:strict": "node scripts/one-id/check-one-id.mjs --strict",
+    "check:derived-breadcrumbs": "node scripts/derived-breadcrumbs/check-derived-breadcrumbs.mjs --strict",
+    "check:derived-breadcrumbs:self-test": "node scripts/derived-breadcrumbs/check-derived-breadcrumbs.mjs --self-test",
     "check:one-id:self-test": "node scripts/one-id/check-one-id.mjs --self-test",
     "check:bulk-parity": "node scripts/bulk-parity/check-bulk-parity.mjs",
     "check:bulk-parity:strict": "node scripts/bulk-parity/check-bulk-parity.mjs --strict",

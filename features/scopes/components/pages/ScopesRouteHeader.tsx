@@ -22,6 +22,8 @@ import {
   HeaderActionGroup,
   type HeaderAction,
 } from "@/features/scopes/components/pages/HeaderActionGroup";
+import { useDerivedTrail } from "@/features/shell/breadcrumbs/useDerivedTrail";
+import type { TrailRecord } from "@/features/shell/breadcrumbs/derive-trail";
 import { useBreadcrumbOrgOptions } from "@/features/scopes/components/pages/hooks/useBreadcrumbOrgOptions";
 import {
   canManageSettings,
@@ -148,6 +150,81 @@ export function ScopesRouteHeader() {
   );
   const items = useAppSelector(selectItems);
 
+  // THE TRAIL IS DERIVED from the address + menu (features/shell/breadcrumbs); this layout supplies only
+  // what it alone knows — each level's NAME and its sibling list.
+  const scopesBase = `${base}/scopes`;
+  const typeHref = typeParam ? `${scopesBase}/${typeParam}` : null;
+  const records = useMemo(() => {
+    const r: Record<string, TrailRecord> = {};
+    if (org) {
+      r[base] = { label: org.name, options: orgOptions, optionsLabel: "Switch organization" };
+    }
+    if (typeHref && scopeType) {
+      r[typeHref] = {
+        label: scopeType.label_plural,
+        optionsLabel: "Scope types",
+        options: allTypes.map((t) => ({
+          label: t.label_plural,
+          href: scopeTypeHref(orgSlugOrId, t),
+          active: t.id === scopeType.id,
+        })),
+      };
+      if (scopeParam && scope) {
+        r[`${typeHref}/${scopeParam}`] = {
+          label: scope.name,
+          optionsLabel: scopeType.label_plural,
+          optionsAllHref: scopeTypeHref(orgSlugOrId, scopeType),
+          optionsAllLabel: `All ${scopeType.label_plural.toLowerCase()}`,
+          options: siblingScopes.map((sc) => ({
+            label: sc.name,
+            href: scopeHref(orgSlugOrId, scopeType, sc),
+            active: sc.id === scope.id,
+          })),
+        };
+        if (itemParam && item) {
+          r[`${typeHref}/${scopeParam}/${itemParam}`] = {
+            label: item.label,
+            optionsLabel: "Context items",
+            optionsAllHref: scopeHref(orgSlugOrId, scopeType, scope),
+            optionsAllLabel: `Back to ${scope.name}`,
+            options: items.map((it) => ({
+              label: it.label,
+              href: scopeItemHref(orgSlugOrId, scopeType, scope, it),
+              active: it.id === item.id,
+            })),
+          };
+        }
+      } else if (itemParam && item) {
+        r[`${typeHref}/context-items/${itemParam}`] = {
+          label: item.label,
+          optionsLabel: "Context items",
+          optionsAllHref: contextItemsHref(orgSlugOrId, scopeType),
+          optionsAllLabel: "All context items",
+          options: items.map((it) => ({
+            label: it.label,
+            href: contextItemHref(orgSlugOrId, scopeType, it),
+            active: it.id === item.id,
+          })),
+        };
+      }
+    }
+    return r;
+  }, [org, base, orgOptions, typeHref, scopeType, allTypes, scopeParam, scope, siblingScopes, itemParam, item, items, orgSlugOrId]);
+  const derived = useDerivedTrail({ records });
+  // The first level ("Organizations") is the Building button; the org is the next; the rest is the trail.
+  const orgCrumbAt = derived.findIndex((c) => c.options === orgOptions);
+  const trail: ScopeBreadcrumbTrailNode[] = (orgCrumbAt === -1 ? derived.slice(2) : derived.slice(orgCrumbAt + 1)).map(
+    (c, i, all) => ({
+      label: c.label,
+      href: i === all.length - 1 ? undefined : c.href,
+      options: c.options,
+      optionsLabel: c.optionsLabel,
+      optionsAllHref: c.optionsAllHref,
+      optionsAllLabel: c.optionsAllLabel,
+      recordId: c.recordId,
+    }),
+  );
+
   useEffect(() => {
     if (active && orgId) dispatch(ensureScopeTree());
   }, [active, dispatch, orgId]);
@@ -169,22 +246,8 @@ export function ScopesRouteHeader() {
 
   const canManage = org.role ? canManageSettings(org.role as OrgRole) : false;
 
-  const trail: ScopeBreadcrumbTrailNode[] = [];
   const actions: (HeaderAction | false)[] = [];
   let backHref: string | undefined;
-
-  const typeNode: ScopeBreadcrumbTrailNode | null = scopeType
-    ? {
-        label: scopeType.label_plural,
-        href: scopeTypeHref(orgSlugOrId, scopeType),
-        options: allTypes.map((t) => ({
-          label: t.label_plural,
-          href: scopeTypeHref(orgSlugOrId, t),
-          active: t.id === scopeType.id,
-        })),
-        optionsLabel: "Scope types",
-      }
-    : null;
 
   async function handleDeleteScope() {
     if (!scope || !scopeType) return;
@@ -231,45 +294,16 @@ export function ScopesRouteHeader() {
     // no second, weaker confirmation beside it.
   } else if (isOrgContextItems) {
     // /organizations/[orgId]/context-items — every type's items, grouped.
-    trail.push({ label: "Context items" });
     backHref = orgHref(orgSlugOrId);
-  } else if (top === "scopes" && scopeType && typeNode) {
-    const tNode = typeNode;
+  } else if (top === "scopes" && scopeType) {
 
     if (hasScope && scope) {
       // ── Scope family: type › scope › (edit | context-items | item) ──────
-      trail.push(tNode);
-      trail.push({
-        label: scope.name,
-        href: scopeHref(orgSlugOrId, scopeType, scope),
-        options: siblingScopes.map((sc) => ({
-          label: sc.name,
-          href: scopeHref(orgSlugOrId, scopeType, sc),
-          active: sc.id === scope.id,
-        })),
-        optionsLabel: scopeType.label_plural,
-        optionsAllHref: scopeTypeHref(orgSlugOrId, scopeType),
-        optionsAllLabel: `All ${scopeType.label_plural.toLowerCase()}`,
-      });
 
       const scopeIsContextItems = pathname.endsWith("/context-items");
       if (itemParam && item) {
-        trail.push({
-          label: item.label,
-          href: scopeItemHref(orgSlugOrId, scopeType, scope, item),
-          options: items.map((it) => ({
-            label: it.label,
-            href: scopeItemHref(orgSlugOrId, scopeType, scope, it),
-            active: it.id === item.id,
-          })),
-          optionsLabel: "Context items",
-          optionsAllHref: scopeHref(orgSlugOrId, scopeType, scope),
-          optionsAllLabel: `Back to ${scope.name}`,
-        });
       } else if (isEdit) {
-        trail.push({ label: "Edit" });
       } else if (scopeIsContextItems) {
-        trail.push({ label: "Context items" });
       }
 
       const isDetail = !itemParam && !isEdit && !scopeIsContextItems;
@@ -322,23 +356,9 @@ export function ScopesRouteHeader() {
       }
     } else if (isTypeContextItems) {
       // ── Type context items: type › context-items › (item › edit) ────────
-      trail.push(tNode);
       const ciHref = contextItemsHref(orgSlugOrId, scopeType);
       if (itemParam && item) {
-        trail.push({ label: "Context items", href: ciHref });
-        trail.push({
-          label: item.label,
-          href: contextItemHref(orgSlugOrId, scopeType, item),
-          options: items.map((it) => ({
-            label: it.label,
-            href: contextItemHref(orgSlugOrId, scopeType, it),
-            active: it.id === item.id,
-          })),
-          optionsLabel: "Context items",
-          optionsAllHref: ciHref,
-          optionsAllLabel: "All context items",
-        });
-        if (isEdit) trail.push({ label: "Edit" });
+        if (isEdit) 
 
         if (isEdit) {
           actions.push({
@@ -364,7 +384,6 @@ export function ScopesRouteHeader() {
           backHref = ciHref;
         }
       } else {
-        trail.push({ label: "Context items" });
         actions.push({
           key: "hub",
           icon: "hub",
@@ -375,8 +394,6 @@ export function ScopesRouteHeader() {
       }
     } else if (isEdit) {
       // ── Type edit ───────────────────────────────────────────────────────
-      trail.push(tNode);
-      trail.push({ label: "Edit" });
       actions.push({
         key: "hub",
         icon: "hub",
@@ -386,7 +403,6 @@ export function ScopesRouteHeader() {
       backHref = scopeTypeHref(orgSlugOrId, scopeType);
     } else {
       // ── Type page (list of scopes) ──────────────────────────────────────
-      trail.push(tNode);
       actions.push({
         key: "edit",
         icon: "edit",
@@ -422,7 +438,7 @@ export function ScopesRouteHeader() {
           orgName={org.name}
           backHref={backHref}
           orgOptions={orgOptions}
-          showScopesCrumb={top === "scopes"}
+          showScopesCrumb={false}
           trail={trail}
           singleLine
           className="w-full"

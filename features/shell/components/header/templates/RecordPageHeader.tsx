@@ -35,6 +35,7 @@ import {
   type EntityHeaderAction,
 } from "@/features/shell/components/header/templates/EntityModeHeader";
 import type { Crumb, CrumbOption } from "@/features/shell/components/header/templates/CrumbTrailHeader";
+import { useDerivedTrail } from "@/features/shell/breadcrumbs/useDerivedTrail";
 
 export type { EntityHeaderAction as RecordPageAction } from "@/features/shell/components/header/templates/EntityModeHeader";
 export type { Crumb as RecordPageParent } from "@/features/shell/components/header/templates/CrumbTrailHeader";
@@ -56,11 +57,16 @@ export interface RecordPageMenuItem {
 export interface RecordPageHeaderProps {
   /** Omit on a top-level page (module home, queue, inbox): no back button, just the name. Back fallback when nothing is behind this tab (opened from a link). Usually the module home. */
   backHref?: string;
-  /** Levels above the record, outermost first. Each is a link; `options` gives it a sibling menu. */
+  /**
+   * @deprecated Do not pass. The levels above the record are DERIVED from the address, the menu and
+   * the route tree (feature-pages rule 7; `pnpm check:derived-breadcrumbs`). Existing hand-typed
+   * trails sit in that guard's shrink-only baseline.
+   */
   parents?: Crumb[];
   /** The record — the LAST crumb. `siblings` turns it into a switcher. */
   record: {
-    name: string;
+    /** Omit to use the derived last crumb (the address's key, the declared name, else the short id). */
+    name?: string;
     siblings?: CrumbOption[];
     /** Type token + id of the record: "Add to my menu" then adds the record itself (current-record). */
     token?: string;
@@ -123,6 +129,11 @@ export function RecordPageHeader({
   menu,
 }: RecordPageHeaderProps) {
   const menuItems = menu?.items ?? [];
+  // THE DERIVED TRAIL: every level above the record comes from the address + menu; a page supplies
+  // only its record. The last derived crumb is the record itself (named by `record.name` when given).
+  const derived = useDerivedTrail({ recordName: record.name });
+  const trail = parents ?? derived.slice(0, -1);
+  const recordName = record.name ?? derived[derived.length - 1]?.label ?? "";
   // Phone: the menu's items are rows of the ⋮ sheet (the desktop menu button is hidden below sm).
   const phoneMenuActions: EntityHeaderAction[] = menuItems.map((item) => ({
     label: item.label,
@@ -135,8 +146,8 @@ export function RecordPageHeader({
   return (
     <EntityModeHeader
       backHref={backHref}
-      trail={parents}
-      entityLabel={record.name}
+      trail={trail}
+      entityLabel={recordName}
       entityRecord={record.token && record.id ? { token: record.token, id: record.id } : undefined}
       entityOptions={record.siblings}
       entityStatus={

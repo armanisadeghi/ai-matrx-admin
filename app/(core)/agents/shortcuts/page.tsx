@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { DerivedBreadcrumb } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { PlusTapButton, ListTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { DuplicateShortcutModal } from "@/features/agent-shortcuts/components/DuplicateShortcutModal";
@@ -72,11 +73,7 @@ export default function UserShortcutsPage() {
     <div className="h-full flex flex-col overflow-hidden bg-textured">
       <RouteHeader
         left={
-          <>
-            <h1 className="type-title text-foreground truncate">
-              My Shortcuts
-            </h1>
-          </>
+          <DerivedBreadcrumb />
         }
         right={
           <>
