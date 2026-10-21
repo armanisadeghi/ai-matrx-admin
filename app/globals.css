@@ -25,6 +25,8 @@
 @source "../features";
 @source "../node_modules/@ai-matrx/chat/dist";
 @source "../node_modules/@ai-matrx/coding-sessions/dist";
+/* The package's bundled vendor assets (minified third-party code) carry raw control characters; scanning them as class sources made Turbopack's CSS step fail on every route (2026-10-21). */
+@source not "../node_modules/@ai-matrx/coding-sessions/dist/ui/assets";
 @source "../hooks";
 @source "../lib";
 @source "../providers";
