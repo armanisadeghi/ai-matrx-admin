@@ -17,9 +17,6 @@ import { isJsonObject } from "@/types/json";
 import { useRecordLoad } from "./useRecordLoad";
 import { SIGN_IN_PAGE, appendSignInPage, cursorAfter, deviceOf, type SignInCursor, type SignInEvent, type SignInPage } from "./signInPaging";
 
-export { deviceOf };
-export type { SignInEvent, SignInPage };
-
 export async function fetchSignIns(userId: string, cursor: SignInCursor | null = null): Promise<SignInPage> {
   const { data, error } = await createClient()
     .schema("admin")
