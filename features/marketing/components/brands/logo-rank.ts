@@ -123,6 +123,7 @@ export function pickHeroLogo(brandLogoUrl: string | null | undefined, assets: re
 
 /** A property as far as avatar provenance needs it. */
 export interface OwnedAccount {
+  id?: string;
   kind: string;
   url: string | null;
   handle: string | null;
@@ -165,6 +166,30 @@ export function personAvatarAssetIds(assets: readonly AvatarProvenanceAsset[], p
     const platform = note[1]!.toLowerCase();
     const handle = accountHandle(note[2]!);
     if (personal.some((p) => p.kind === platform && p.handle === handle)) ids.add(asset.id);
+  }
+  return ids;
+}
+
+/** The brand's live account a profile picture came from (same platform and handle), or null when none matches. */
+export function sourceAccountOf<T extends OwnedAccount>(properties: readonly T[], platform: string | null | undefined, accountUrl: string | null | undefined): T | null {
+  if (!platform || !accountUrl) return null;
+  const handle = accountHandle(accountUrl);
+  if (!handle) return null;
+  const kind = platform.toLowerCase();
+  return properties.find((p) => p.kind.toLowerCase() === kind && (p.handle || (p.url ? accountHandle(p.url) : "")).replace(/^@/, "").toLowerCase() === handle) ?? null;
+}
+
+/**
+ * Ids of discovered social-avatar logos whose source account is no longer a live property of the brand (an orphan
+ * picture: the account was removed or never was ours). They are not brand logos. `properties` must be the brand's LIVE properties.
+ */
+export function orphanAvatarAssetIds(assets: readonly AvatarProvenanceAsset[], properties: readonly OwnedAccount[]): Set<string> {
+  const ids = new Set<string>();
+  for (const asset of assets) {
+    if (asset.source !== "discovered" || asset.confirmed_by) continue;
+    const note = asset.notes?.match(AVATAR_NOTE);
+    if (!note) continue;
+    if (!sourceAccountOf(properties, note[1], note[2])) ids.add(asset.id);
   }
   return ids;
 }

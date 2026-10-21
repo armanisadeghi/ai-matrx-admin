@@ -84,7 +84,7 @@ import { BusinessFactEditorDialog } from "@/features/marketing/components/brands
 import { PropertyEditorDialog } from "@/features/marketing/components/brands/PropertyEditorDialog";
 import { SiteEditorDialog } from "@/features/marketing/components/sites/SiteEditorDialog";
 import { BrandAssetGallery } from "@/features/marketing/components/brands/BrandAssetGallery";
-import { isBannerUrl, personAvatarAssetIds, pickHeroLogo } from "@/features/marketing/components/brands/logo-rank";
+import { isBannerUrl, orphanAvatarAssetIds, personAvatarAssetIds, pickHeroLogo } from "@/features/marketing/components/brands/logo-rank";
 import {
   BRAND_HERO_FRAME,
   BrandHomeSkeleton,
@@ -112,6 +112,7 @@ import {
   useBrand,
   useBrandAssets,
   useBrandProperties,
+  useBrandPropertiesForMatching,
   useBrandSites,
   useBusinessFacts,
   useCreateSite,
@@ -658,6 +659,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   const createSite = useCreateSite();
   // access-errors: ok — cockpit section list under the gated brand primary
   const properties = useBrandProperties(brandId);
+  const matchingProperties = useBrandPropertiesForMatching(brandId);
   const personas = useBrandPersonas(brandId);
   // access-errors: ok — cockpit section list under the gated brand primary
   const assets = useBrandAssets(brandId);
@@ -704,7 +706,12 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   const factRows = facts.data ?? [];
   const assetRows = assets.data ?? [];
   // A person's profile picture that enrichment saved as a logo is never the brand's mark.
-  const personAvatars = personAvatarAssetIds(assetRows, properties.data ?? []);
+  // Also not the brand's: a discovered social avatar whose source account is no longer a live property of the brand.
+  // Judged only once every live property has loaded (an unloaded list would call every avatar an orphan).
+  const personAvatars = new Set<string>([
+    ...personAvatarAssetIds(assetRows, matchingProperties.data ?? properties.data ?? []),
+    ...(matchingProperties.data ? orphanAvatarAssetIds(assetRows, matchingProperties.data) : []),
+  ]);
 
   // The brand's best identity marks: explicit brand URLs first, then the
   // confirmed asset library — a brand with confirmed logos never shows a

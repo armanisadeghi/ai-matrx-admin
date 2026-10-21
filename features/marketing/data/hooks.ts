@@ -40,6 +40,7 @@ import {
   upsertLocationListing,
   listBrandAssets,
   listBrandProperties,
+  listBrandPropertiesForMatching,
   listBrandSites,
   listBusinessFacts,
   getSitemap,
@@ -1067,6 +1068,15 @@ export function useBrandProperties(brandId: string) {
   return useQuery({
     queryKey: [...marketingKeys.root, "brand", brandId, "properties"] as const,
     queryFn: ({ signal }) => listBrandProperties(brandId, signal),
+    enabled: Boolean(brandId),
+  });
+}
+
+/** Every live property of the brand (in use or not): what a picture's source account is matched against. */
+export function useBrandPropertiesForMatching(brandId: string) {
+  return useQuery({
+    queryKey: [...marketingKeys.root, "brand", brandId, "properties-for-matching"] as const,
+    queryFn: () => listBrandPropertiesForMatching(brandId),
     enabled: Boolean(brandId),
   });
 }

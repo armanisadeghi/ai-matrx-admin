@@ -4338,6 +4338,7 @@ export async function createBrandAsset(
       is_primary: input.isPrimary,
       source: input.source,
       confirmed_at: new Date().toISOString(),
+      ...(input.metadata ? { metadata: input.metadata } : {}),
     })
     .select(BRAND_ASSET_COLUMNS)
     .single();

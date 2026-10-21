@@ -1,4 +1,4 @@
-import { personAvatarAssetIds, rankLogos } from "../logo-rank";
+import { orphanAvatarAssetIds, personAvatarAssetIds, rankLogos, sourceAccountOf } from "../logo-rank";
 
 const asset = (id: string, notes: string, over: Record<string, unknown> = {}) => ({
   id,
@@ -36,5 +36,24 @@ describe("a person's profile picture is never the brand's logo", () => {
     ]);
     expect(ranked[0]!.url).toContain("data-destruction-logo");
     expect(ranked[ranked.length - 1]!.url).toContain("twimg");
+  });
+});
+
+describe("orphan avatars and source properties", () => {
+  it("flags a discovered avatar whose account is not a live property, never a live one", () => {
+    const ids = orphanAvatarAssetIds(
+      [
+        asset("fb", "Smart Add enrich · facebook photo · https://www.facebook.com/arman.sadeghi"),
+        asset("live", "Smart Add enrich · x photo · https://x.com/datadestructio2"),
+        asset("site", "Smart Add enrich · website icon · https://datadestruction.com/"),
+      ],
+      props,
+    );
+    expect([...ids]).toEqual(["fb"]);
+  });
+  it("finds the source account so its id can ride the asset's metadata", () => {
+    const withId = props.map((p, n) => ({ ...p, id: `p${n}` }));
+    expect(sourceAccountOf(withId, "x", "https://x.com/datadestructio2")?.id).toBe("p2");
+    expect(sourceAccountOf(withId, "facebook", "https://www.facebook.com/arman.sadeghi")).toBeNull();
   });
 });

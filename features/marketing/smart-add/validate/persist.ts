@@ -28,6 +28,7 @@ import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
 import {
   createBrandAsset,
+  listBrandPropertiesForMatching,
   createBusinessFact,
   createProperty,
   createSite,
@@ -42,6 +43,7 @@ import {
   type BrandRelationKind,
 } from "@/features/marketing/data/service";
 import { startSystemRun } from "@/lib/workflows/system-runs";
+import { sourceAccountOf } from "@/features/marketing/components/brands/logo-rank";
 import { associationsService } from "@/features/scopes/service/associationsService";
 import { linkPersonToBrand } from "../relations";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
@@ -759,6 +761,11 @@ async function persistAnswerOnce(
     if (!/^https?:\/\//i.test(url)) throw new Error("This logo has no picture address to save.");
     // Whether the brand has a logo yet is read now: the setup run saves one in the background after Create.
     const brand = await freshBrand(ctx);
+    // A profile picture belongs to the account it came from: a person's account never gives the brand its logo.
+    const account = ev?.source.kind === "social_profile"
+      ? sourceAccountOf(await listBrandPropertiesForMatching(brand.id), ev.platform, ev.source.url)
+      : null;
+    if (account?.owner_kind === "person") throw new Error("This is a person's profile picture, not the brand's logo.");
     const makePrimary = !brand.logo_url;
     const asset = await createBrandAsset({
       organizationId: ctx.organizationId,
@@ -769,6 +776,7 @@ async function persistAnswerOnce(
       notes: `Smart Add validation · ${ev?.source.where ?? ev?.source.kind ?? "found"}${ev?.source.url ? ` · ${ev.source.url}` : ""}`,
       isPrimary: makePrimary,
       source: "discovered",
+      ...(account ? { metadata: { source_property_id: account.id, source_platform: account.kind } } : {}),
     });
     homes.push(`web.brand_asset:${asset.id}`);
     undos.push(() => deleteBrandAsset(asset.id));
