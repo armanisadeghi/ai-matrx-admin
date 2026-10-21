@@ -162,13 +162,16 @@ export function BrandAssists({ brandId, organizationId }: { brandId: string; org
             ) : undefined
           }
         >
-          <div className="flex min-h-[60px] flex-wrap items-center gap-x-3 gap-y-1.5 px-3 py-2" data-testid="brand-assists">
+          {/* On a phone the action sits under the text, so the title is never cut to one word. */}
+          <div className="flex min-h-[60px] flex-col items-stretch gap-x-3 gap-y-1.5 px-3 py-2 sm:flex-row sm:flex-wrap sm:items-center" data-testid="brand-assists">
             {current.kind === "offer" ? (
               <>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate type-title text-foreground">{current.assist.title}</span>
-                  {current.assist.body ? <span className="block truncate type-meta text-muted-foreground">{current.assist.body}</span> : null}
-                </span>
+                {/* The chip carries the title; the line beside it says only what it does. */}
+                {current.assist.body ? (
+                  <span className="min-w-0 flex-1 type-meta text-muted-foreground sm:truncate">{current.assist.body}</span>
+                ) : (
+                  <span className="hidden flex-1 sm:block" />
+                )}
                 <AssistStrip surfaceName={BRAND_ASSIST_SURFACE} filter={(a) => a.id === current.id} />
               </>
             ) : (

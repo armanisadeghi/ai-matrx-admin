@@ -1,4 +1,4 @@
-import { colorName, parseHex, prefersDarkText } from "../color-name";
+import { colorName, colorNames, parseHex, prefersDarkText } from "../color-name";
 
 describe("colorName", () => {
   it("names exact and near colors the way people say them", () => {
@@ -16,5 +16,17 @@ describe("colorName", () => {
   it("picks readable text on a swatch", () => {
     expect(prefersDarkText("#ffffff")).toBe(true);
     expect(prefersDarkText("#0b1a3a")).toBe(false);
+  });
+});
+
+describe("colorNames", () => {
+  it("never gives two colors in one palette the same name", () => {
+    // data-destruction's palette: two dark blues both read "Deep navy" before.
+    const names = colorNames(["#00477f", "#101828", "#1f2937", "#95b1c7", "#ffffff", "#e1e1e1"]);
+    expect(new Set(names).size).toBe(names.length);
+    expect(names[1]).not.toBe(names[0]);
+  });
+  it("keeps order and returns null for non-hex values", () => {
+    expect(colorNames(["#000000", "nope"])).toEqual(["Black", null]);
   });
 });

@@ -16,7 +16,8 @@ const NAMED: ReadonlyArray<readonly [string, string]> = [
   ["Mint", "#98ff98"], ["Sage", "#9caf88"], ["Teal", "#008080"], ["Turquoise", "#40e0d0"],
   ["Aqua", "#00ffff"], ["Sky blue", "#87ceeb"], ["Light blue", "#add8e6"], ["Azure", "#007fff"],
   ["Blue", "#1f51ff"], ["Royal blue", "#4169e1"], ["Cobalt", "#0047ab"], ["Navy", "#000080"],
-  ["Deep navy", "#0b1a3a"], ["Midnight", "#191970"], ["Indigo", "#4b0082"], ["Violet", "#7f00ff"],
+  ["Deep navy", "#0b1a3a"], ["Ink", "#141a2b"], ["Ocean blue", "#00477f"], ["Sapphire", "#0f52ba"],
+  ["Steel blue", "#4682b4"], ["Denim", "#1560bd"], ["Dusty blue", "#8fa9c9"], ["Mist", "#cfd8dc"], ["Midnight", "#191970"], ["Indigo", "#4b0082"], ["Violet", "#7f00ff"],
   ["Purple", "#800080"], ["Lavender", "#b57edc"], ["Lilac", "#c8a2c8"], ["Plum", "#8e4585"],
   ["Magenta", "#ff00ff"], ["Fuchsia", "#c154c1"], ["Hot pink", "#ff69b4"], ["Pink", "#ffc0cb"],
   ["Blush", "#de5d83"], ["Rose", "#ff007f"], ["Peach", "#ffcba4"],
@@ -61,6 +62,27 @@ export function colorName(value: string): string | null {
     }
   }
   return best[0];
+}
+
+/**
+ * Names for a whole palette: each color gets its nearest name that no earlier color took, so two
+ * close blues read "Deep navy" and "Ink", never the same name twice. Order is kept.
+ */
+export function colorNames(values: readonly string[]): Array<string | null> {
+  const used = new Set<string>();
+  return values.map((value) => {
+    const rgb = parseHex(value);
+    if (!rgb) return null;
+    const [l, a, b] = toLab(rgb);
+    const ranked = [...NAMED_LAB].sort(
+      (x, y) =>
+        (l - x[1][0]) ** 2 + (a - x[1][1]) ** 2 + (b - x[1][2]) ** 2 -
+        ((l - y[1][0]) ** 2 + (a - y[1][1]) ** 2 + (b - y[1][2]) ** 2),
+    );
+    const pick = ranked.find((entry) => !used.has(entry[0])) ?? ranked[0];
+    used.add(pick[0]);
+    return pick[0];
+  });
 }
 
 /** True when dark text reads better than white on this color (relative luminance). */

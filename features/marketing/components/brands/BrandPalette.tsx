@@ -15,7 +15,7 @@ import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { useVisualSuggestionAnswer } from "@/features/marketing/brand-guide/BrandVisualSuggestions";
-import { colorName, prefersDarkText } from "@/features/marketing/lib/color-name";
+import { colorNames, prefersDarkText } from "@/features/marketing/lib/color-name";
 import { isJsonRecord, type BrandAsset } from "@/features/marketing/types";
 
 export interface PaletteColor {
@@ -61,14 +61,14 @@ function AnswerButtons({ asset, label, onAnswer, busy }: { asset: BrandAsset; la
   );
 }
 
-function Swatch({ color, canEdit, busy, onAnswer }: { color: PaletteColor; canEdit: boolean; busy: boolean; onAnswer: (asset: BrandAsset, answer: "yes" | "no") => void }) {
+function Swatch({ color, name: givenName, canEdit, busy, onAnswer }: { color: PaletteColor; name: string | null; canEdit: boolean; busy: boolean; onAnswer: (asset: BrandAsset, answer: "yes" | "no") => void }) {
   const { copyText } = useClipboard({ notify: copyNotify });
   const hex = color.value.toUpperCase();
-  const name = colorName(color.value) ?? hex;
+  const name = givenName ?? hex;
   const dark = prefersDarkText(color.value);
   const suggestion = isSuggestion(color.asset);
   return (
-    <li className="flex min-w-0 basis-1/3 flex-col sm:basis-0 sm:flex-1">
+    <li className="flex min-w-0 basis-1/2 flex-col sm:basis-0 sm:flex-1">
       <button
         type="button"
         onClick={() => void copyText(hex, `${hex} copied`)}
@@ -80,7 +80,8 @@ function Swatch({ color, canEdit, busy, onAnswer }: { color: PaletteColor; canEd
       >
         <Copy className="absolute right-2 top-2 size-3.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" aria-hidden="true" />
       </button>
-      <span className="flex min-h-11 min-w-0 items-center gap-1 border-t border-border bg-card px-2">
+      {/* On a phone the Yes / Not ours buttons sit under the name, so the name is never cut. */}
+      <span className="flex min-h-11 min-w-0 flex-col items-stretch gap-1 border-t border-border bg-card px-2 py-1 sm:flex-row sm:items-center sm:py-0">
         <span className="min-w-0 flex-1">
           <span className="block truncate type-secondary font-medium text-foreground">{name}</span>
           <span className="block truncate font-mono type-meta text-muted-foreground">{hex}</span>
@@ -132,6 +133,7 @@ export function BrandPalette({
       .finally(() => setBusy(false));
   };
   const shownColors = colors.slice(0, MAX_COLORS);
+  const names = colorNames(shownColors.map((color) => color.value));
   const shownFonts = fonts.filter((font) => fontFamily(font)).slice(0, MAX_FONTS);
   const toConfirm = [...shownColors.map((c) => c.asset), ...shownFonts].filter(isSuggestion).length;
   const empty = shownColors.length === 0 && shownFonts.length === 0;
@@ -155,8 +157,8 @@ export function BrandPalette({
         <div className="grid gap-3 p-3">
           {shownColors.length ? (
             <ul className="flex flex-wrap overflow-hidden rounded-xl border border-border shadow-sm sm:flex-nowrap">
-              {shownColors.map((color) => (
-                <Swatch key={color.asset.id} color={color} canEdit={canEdit} busy={busy} onAnswer={onAnswer} />
+              {shownColors.map((color, i) => (
+                <Swatch key={color.asset.id} color={color} name={names[i]} canEdit={canEdit} busy={busy} onAnswer={onAnswer} />
               ))}
             </ul>
           ) : null}
