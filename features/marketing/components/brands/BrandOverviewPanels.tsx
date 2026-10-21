@@ -51,6 +51,7 @@ import { SectionCard } from "@/features/marketing/components/shared/MarketingUi"
 import { AssetTile, type OverviewAsset } from "@/features/marketing/components/brands/BrandOverview";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useGscPortfolioRollup } from "@/features/marketing/search-console/components/ambassador/useGscPortfolioRollup";
+import { useBrandOverviewTrends } from "@/features/marketing/components/brands/useBrandOverviewTrends";
 import { useBrandCheckEstimate, useBrandChecks } from "@/features/marketing/seo/ai-visibility/brand/hooks";
 import { RunCheckButton } from "@/features/marketing/seo/ai-visibility/brand/RunCheckButton";
 import { useStrategyBrief } from "@/features/marketing/strategy/hooks";
@@ -162,6 +163,13 @@ export function BrandOverviewKpis({
 
   const audience = splitAudience(accounts);
   const brandDelta = followerDelta(audience.brand);
+  const trends = useBrandOverviewTrends({
+    profileIds: audience.brand.map((a) => a.profileId).filter((id): id is string => Boolean(id)),
+    postProfileIds: accounts.map((a) => a.profileId).filter((id): id is string => Boolean(id)),
+    siteIds,
+    gscPeriods: gsc.periods,
+    gscReady: !gsc.isLoading && Boolean(gsc.rollup?.hasData),
+  });
   const posts = accounts.reduce((sum, a) => sum + a.postsTracked, 0);
   const lastPost = accounts.map((a) => a.lastPostAt).filter((d): d is string => Boolean(d)).sort().at(-1) ?? null;
   const latestCheck = checks.data?.[0] ?? null;
@@ -181,6 +189,7 @@ export function BrandOverviewKpis({
         title="Followers of the brand's own accounts; people's personal accounts are counted apart."
         loading={accountsLoading}
         value={audience.brandFollowers === null ? null : formatCompact(audience.brandFollowers)}
+        trend={trends.followers}
         href={social}
         hint={settled(
           accountsLoading,
@@ -201,6 +210,7 @@ export function BrandOverviewKpis({
         title="Posts we hold across the brand's social accounts."
         loading={accountsLoading}
         value={posts ? posts.toLocaleString() : null}
+        trend={trends.posts}
         href={social}
         hint={settled(
           accountsLoading,
@@ -219,6 +229,7 @@ export function BrandOverviewKpis({
         title="Google Search clicks to the brand's websites in the last 28 days."
         loading={gsc.isLoading}
         value={rollup?.hasData ? rollup.totalClicks.toLocaleString() : null}
+        trend={trends.clicks}
         href={tabHref("web")}
         hint={settled(
           gsc.isLoading,

@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1630 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1634 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "f5984b9f19b1";
+export const KIND_REGISTRY_FINGERPRINT = "cf80e1945244";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -5119,7 +5119,7 @@ export interface JobHighlight {
 }
 
 /**
- * * Shared by 130 kinds (ad_creative, agent_assignment_batch_result, agent_build_state, agent_iteration_plan, …).
+ * * Shared by 133 kinds (ad_creative, agent_assignment_batch_result, agent_build_assembly, agent_build_job_values, …).
  */
 export type JsonValue = unknown;
 
@@ -12386,6 +12386,59 @@ export interface AgentAssignmentBatchResult {
    */
   __kind?: "agent_assignment_batch_result";
   session: AssignmentSessionSummary;
+}
+
+/**
+ * The agent a build saves: its definition, the tool ids it gets and its output schema
+ * (moved from ``pipeline._assemble``).
+ *  *
+ *  * Kind `agent_build_assembly` (registry v1).
+ */
+export interface AgentBuildAssembly {
+  flags?: string[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_build_assembly";
+  tool_ids?: string[];
+  definition?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  output_schema?: JsonValue;
+}
+
+/**
+ * What every writer step of a build is sent: the job values (the step mandates' provision),
+ * the Goal Writer's three variables, the person's typed text (sent last, verbatim) and the
+ * locked intake the assembly step reads. Lane 3A, moved from ``pipeline_intake.gather``.
+ *  *
+ *  * Kind `agent_build_job_values` (registry v1).
+ */
+export interface AgentBuildJobValues {
+  facts?: JsonValue;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_build_job_values";
+  job_values?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  goal_writer?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: string | undefined;
+  };
+  person_text?: string | null;
 }
 
 /**
@@ -28628,6 +28681,42 @@ export interface FeedbackItemTriageDecision {
      */
     probability: number;
   };
+}
+
+/**
+ * The feedback item a step filed; ``already_applied`` when a retry found the one it filed before.
+ *  *
+ *  * Kind `feedback_ref` (registry v1).
+ */
+export interface FeedbackRef {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "feedback_ref";
+  status?: "applied" | "already_applied";
+  feedback_id: string;
+}
+
+/**
+ * One feedback item a workflow step files as the person who started the run.
+ *  *
+ *  * Kind `feedback_submission` (registry v1).
+ */
+export interface FeedbackSubmission {
+  route?: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "feedback_submission";
+  metadata?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  };
+  description: string;
+  feedback_type?: "bug" | "feature" | "suggestion" | "other";
 }
 
 /**
@@ -63919,6 +64008,8 @@ export type GeneratedKindSlug =
   | "agent_apps.auto_create_request.offer"
   | "agent_apps.metadata_request.offer"
   | "agent_assignment_batch_result"
+  | "agent_build_assembly"
+  | "agent_build_job_values"
   | "agent_build_result"
   | "agent_build_state"
   | "agent_debrief"
@@ -64349,6 +64440,8 @@ export type GeneratedKindSlug =
   | "faq_item"
   | "feedback.item_triage.offer"
   | "feedback_item_triage_decision"
+  | "feedback_ref"
+  | "feedback_submission"
   | "fetch_results"
   | "field_lookup_result"
   | "field_problem"
@@ -65552,6 +65645,8 @@ export interface KindPayloadBySlug {
   "agent_apps.auto_create_request.offer": AgentAppsAutoCreateRequestOffer;
   "agent_apps.metadata_request.offer": AgentAppsMetadataRequestOffer;
   "agent_assignment_batch_result": AgentAssignmentBatchResult;
+  "agent_build_assembly": AgentBuildAssembly;
+  "agent_build_job_values": AgentBuildJobValues;
   "agent_build_result": AgentBuildResult;
   "agent_build_state": AgentBuildState;
   "agent_debrief": AgentDebrief;
@@ -65982,6 +66077,8 @@ export interface KindPayloadBySlug {
   "faq_item": FaqItem;
   "feedback.item_triage.offer": FeedbackItemTriageOffer;
   "feedback_item_triage_decision": FeedbackItemTriageDecision;
+  "feedback_ref": FeedbackRef;
+  "feedback_submission": FeedbackSubmission;
   "fetch_results": FetchResults;
   "field_lookup_result": FieldLookupResult;
   "field_problem": FieldProblem;
@@ -67189,6 +67286,8 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "agent_apps.auto_create_request.offer",
   "agent_apps.metadata_request.offer",
   "agent_assignment_batch_result",
+  "agent_build_assembly",
+  "agent_build_job_values",
   "agent_build_result",
   "agent_build_state",
   "agent_debrief",
@@ -67619,6 +67718,8 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "faq_item",
   "feedback.item_triage.offer",
   "feedback_item_triage_decision",
+  "feedback_ref",
+  "feedback_submission",
   "fetch_results",
   "field_lookup_result",
   "field_problem",
