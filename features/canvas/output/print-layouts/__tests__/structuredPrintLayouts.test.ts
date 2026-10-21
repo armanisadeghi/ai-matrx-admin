@@ -128,6 +128,30 @@ describe("structured type layouts over real stored rows", () => {
     }
   });
 
+  it("never invents a value a block did not carry (no default times, no description copied from the title)", async () => {
+    const recipe = getBlockPrinter("recipe")!;
+    const bare = await htmlOf(
+      recipe.toPrintHtml!({ title: "Toast", ingredients: [{ item: "bread" }], instructions: ["Toast it."] }, { type: "recipe", raw: "" }),
+    );
+    expect(bare).not.toMatch(/Prep time|Cook time|Total time|Yields|\d+\s*(minutes|pieces|servings)/i);
+    const timeline = getBlockPrinter("timeline")!;
+    const t = await htmlOf(
+      timeline.toPrintHtml!({ title: "T", periods: [{ period: "P", events: [{ title: "Only title" }] }] }, { type: "timeline", raw: "" }),
+    );
+    expect(t).not.toContain("<div>Only title</div>");
+    expect(t).not.toContain("<th>When</th>");
+    for (const row of ROWS.filter((r) => r.form === "md" && r.type === "recipe")) {
+      const source = String(row.data).toLowerCase();
+      const html = (await htmlOf(recipe.toPrintHtml!(row.data, { type: "recipe", raw: "" }))) ?? "";
+      if (!source.includes("prep")) expect(html).not.toContain("Prep time");
+      if (!source.includes("cook")) expect(html).not.toContain("Cook time");
+    }
+    for (const row of ROWS.filter((r) => r.form === "md" && r.type === "timeline")) {
+      const html = (await htmlOf(timeline.toPrintHtml!(row.data, { type: "timeline", raw: "" }))) ?? "";
+      expect(html).not.toMatch(/<strong>([^<]+)<\/strong><div>\1<\/div>/);
+    }
+  });
+
   it("reads the same timeline from its object, JSON-text and wrapped forms", async () => {
     const value = ROWS.find((r) => r.type === "timeline" && r.form === "object")!.data;
     const printer = getBlockPrinter("timeline")!;
