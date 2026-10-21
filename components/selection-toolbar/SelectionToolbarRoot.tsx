@@ -23,7 +23,7 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
-import { createClickTarget, type ClickTarget } from "@ai-matrx/alchemy/actions";
+import { createClickTarget, runAlchemyAction, type ClickTarget } from "@ai-matrx/alchemy/actions";
 import { useAlchemyActions } from "@ai-matrx/alchemy/react/host";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -61,6 +61,7 @@ import { textareaSelectionRect } from "@ai-matrx/rich-content/selection-toolbar/
 import "@ai-matrx/rich-content/editor/format/format-actions";
 import { liveSelectionShapeText } from "@ai-matrx/rich-content/selection-toolbar/selection-shape";
 import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
+import { onSelectionToolbarActionRequest } from "./selection-toolbar-requests";
 
 /**
  * The live selection written back as the shapes it was drawn from (VERIFIER-30 #1): a browser
@@ -117,8 +118,11 @@ function insideToolbar(node: Node | null): boolean {
   return Boolean(layer && (frame.querySelector("[aria-expanded='true']") || frame.querySelector("[data-selection-panel]")));
 }
 
+/** How long a request from outside (the right-click Comment) waits for its selection to open the toolbar. */
+const REQUEST_WINDOW_MS = 1500;
+
 export function SelectionToolbarRoot(): React.ReactElement | null {
-  const { registry } = useAlchemyActions();
+  const { registry, ports } = useAlchemyActions();
   // Every declared selection provider joins the one registry (and any declared later).
   React.useEffect(() => {
     const sync = () => declaredSelectionProviders().forEach((p) => ensureProvider(registry, p));
@@ -348,6 +352,18 @@ export function SelectionToolbarRoot(): React.ReactElement | null {
     };
   }, [evaluate, close, isMobile]);
 
+  // A request from outside the toolbar (the right-click menu's Comment): open on the current
+  // selection, then run the toolbar's own action there (below, once the target exists).
+  const [requested, setRequested] = React.useState<{ actionId: string; at: number } | null>(null);
+  React.useEffect(
+    () =>
+      onSelectionToolbarActionRequest((actionId) => {
+        evaluate({ focusToolbar: true });
+        setRequested({ actionId, at: Date.now() });
+      }),
+    [evaluate],
+  );
+
   // A zone that unmounts under an open toolbar (the note closed) closes it.
   React.useEffect(() => {
     const current = openRef.current;
@@ -446,6 +462,28 @@ export function SelectionToolbarRoot(): React.ReactElement | null {
     });
     // `open.seq` is the selection identity; a knob or mode flip re-targets too.
   }, [open?.seq, open?.mode, highlightWhileEditing, ui, orgId, userId, slots, dispatch, openFeedback, router]);
+
+  // Run a requested action on this selection's target, through the same registry and run path as a click.
+  React.useEffect(() => {
+    if (!requested || !target) return;
+    let cancelled = false;
+    void (async () => {
+      const resolved = await registry.resolve(target);
+      if (cancelled) return;
+      setRequested(null);
+      if (Date.now() - requested.at > REQUEST_WINDOW_MS) return;
+      const hit = resolved.find((r) => r.action.id === requested.actionId && r.eligibility.status === "available");
+      if (!hit) {
+        console.error(`[selection-toolbar] "${requested.actionId}" is not available on this selection; nothing ran.`);
+        toast.error("That can't be done on this selection. Select the text again and retry.");
+        return;
+      }
+      await runAlchemyAction(hit.action, target, { ports });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [requested, target, registry, ports]);
 
   if (!open || !target) return null;
 

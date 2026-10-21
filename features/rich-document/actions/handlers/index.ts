@@ -14,5 +14,7 @@ import "./print";
 import "./feedback";
 import "./answer-tools";
 import "./annotations";
+// Right-click "Comment" on a selected passage (opens the selection toolbar's own composer).
+import "./comment-selection";
 // The non-chat half of the package's `edit` / `open-fullscreen-editor` (message-actions W1a).
 import "./host-edit-bodies";
