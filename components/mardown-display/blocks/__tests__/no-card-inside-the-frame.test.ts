@@ -13,7 +13,13 @@
  *    or an overlay over media (`absolute` / `fixed` / `inset-0`);
  *  - a raised card: rounded + `shadow-md`..`shadow-2xl` or `border-2`;
  *  - a filled tile: rounded-lg+ with padding p-3+ and its own fill (`bg-textured`, `bg-card`,
- *    `bg-background`, `bg-white`, or a light tint `bg-<hue>-50|100|200`). A dark code panel is content, not a card.
+ *    `bg-background`, `bg-white`, or a light tint `bg-<hue>-50|100|200`). A dark code panel is content, not a card;
+ *  - a saturated panel (review 4 live walk, decision tree's blue question banner): a solid palette fill
+ *    `bg-<hue>-300..900` carrying white text or its own padding (p-2+ / px-2+) — a banner, an icon
+ *    tile, a hand-colored button. The system's own fill is `bg-primary`; a dot or pill (`rounded-full`) passes;
+ *  - a tinted panel (the decision tree's purple action rows): a light tint `bg-<hue>-100|200` with a
+ *    border of a palette hue.
+ * Light-mode words decide the saturated and tinted rules (a `dark:` twin follows its light word).
  * Fullscreen shells (`dvh` heights, the phone's full-screen card player), popovers/menus/modals/sheets/portals and loading skeletons are
  * not inside the frame and are not read. A quiet row (`border-border`, no fill, no shadow) passes.
  */
@@ -25,6 +31,10 @@ const FRAME = /useBlockHostSlot\(|data-block-frame|<ChatCollapsibleWrapper|<Bloc
 const NOT_IN_FRAME = /LoadingVisualization|Modal|Dialog|Menu|Popover|Sheet|Portal|MobileView/;
 const HUE = "(?:red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|gray|slate|zinc)";
 const FILL = new RegExp(`^bg-(textured|card|background|white|${HUE}-(50|100|200))(\\/\\d+)?$`);
+const COLOR = "(?:red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)";
+const SOLID = new RegExp(`^bg-${COLOR}-(300|400|500|600|700|800|900)(\\/\\d+)?$`);
+const TINT = new RegExp(`^bg-${COLOR}-(100|200)(\\/\\d+)?$`);
+const HUE_BORDER = new RegExp(`^border-${COLOR}-\\d`);
 
 function sources(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -38,18 +48,22 @@ function sources(dir: string): string[] {
 export function cardsInsideTheFrame(files: { rel: string; text: string }[]): string[] {
   const found: string[] = [];
   for (const { rel, text } of files) {
-    for (const m of text.matchAll(/["`]([^"`\n]*)["`]/g)) {
-      const words = m[1]
-        .split(/\s+/)
-        .filter(Boolean)
-        .map((w) => w.replace(/^(dark|sm|md|lg|@\w+):/, ""));
+    // Single-quoted class strings too (`cn('…')`): research's gradient hero hid behind them.
+    for (const m of text.matchAll(/(["'`])([^"'`\n]*)\1/g)) {
+      const cls = m[2];
+      const raw = cls.split(/\s+/).filter(Boolean);
+      const words = raw.map((w) => w.replace(/^(dark|sm|md|lg|@\w+):/, ""));
       const has = (re: RegExp) => words.some((w) => re.test(w));
+      const light = raw.filter((w) => !/^(dark|hover|focus|group-hover):/.test(w)).map((w) => w.replace(/^(sm|md|lg|@\w+):/, ""));
+      const lightHas = (re: RegExp) => light.some((w) => re.test(w));
       if (has(/^(absolute|fixed|inset-0|animate-pulse)$/) || has(/dvh/)) continue;
       let why: string | null = null;
       if (has(/^bg-gradient-to-/) && !has(/^rounded-full$/) && !has(/^bg-clip-text$/)) why = "gradient panel";
       else if (has(/^rounded-(md|lg|xl|2xl|3xl)$/) && (has(/^shadow-(md|lg|xl|2xl)$/) || has(/^border-2$/))) why = "raised card";
       else if (has(/^rounded-(lg|xl|2xl)$/) && has(/^p[xy]?-([3-9]|1\d)$/) && has(FILL)) why = "filled tile";
-      if (why) found.push(`${rel}:${text.slice(0, m.index).split("\n").length}  ${why}  ${m[1].slice(0, 90)}`);
+      else if (!has(/^rounded-full$/) && lightHas(SOLID) && (lightHas(/^text-white$/) || lightHas(/^px?-([2-9]|1\d)$/))) why = "saturated panel";
+      else if (lightHas(TINT) && lightHas(HUE_BORDER)) why = "tinted panel";
+      if (why) found.push(`${rel}:${text.slice(0, m.index).split("\n").length}  ${why}  ${cls.slice(0, 90)}`);
     }
   }
   return found;
@@ -80,7 +94,27 @@ describe("no card inside a block's frame", () => {
     const raised = "<div className={`bg-textured rounded-xl shadow-lg border-2 ${c}`}>";
     const bar = `<div className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full" />`;
     const row = `<div className="rounded-md border border-border p-3">`;
-    const got = cardsInsideTheFrame([{ rel: "x.tsx", text: [hero, tile, raised, bar, row].join("\n") }]);
-    expect(got.map((g) => g.split("  ")[1])).toEqual(["gradient panel", "filled tile", "raised card"]);
+    // Review 4's live decision tree: the blue question banner, the purple action row, an icon tile.
+    const banner = `return "bg-blue-500 dark:bg-blue-600 text-white border-blue-500 dark:border-blue-600";`;
+    const tinted = `: "bg-purple-100 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 border-purple-300";`;
+    const iconTile = `<div className="p-2 bg-indigo-500 dark:bg-indigo-600 rounded-lg flex-shrink-0">`;
+    const singleQuoted = `<div className={cn('bg-gradient-to-br from-emerald-100 to-cyan-100 rounded-2xl', p)}>`;
+    // Quiet: the system's own fill, a status dot, a pill tint without a hue border, a dark-mode twin alone.
+    const primary = `<button className="rounded-md bg-primary px-2 text-primary-foreground">`;
+    const dot = `<span className="h-2 w-2 rounded-full bg-green-500" />`;
+    const pill = `<span className="px-1.5 py-0.5 rounded-full bg-red-50 text-red-600" />`;
+    const quietActive = `"border border-primary bg-muted/40 text-foreground"`;
+    const got = cardsInsideTheFrame([
+      { rel: "x.tsx", text: [hero, tile, raised, bar, row, banner, tinted, iconTile, singleQuoted, primary, dot, pill, quietActive].join("\n") },
+    ]);
+    expect(got.map((g) => g.split("  ")[1])).toEqual([
+      "gradient panel",
+      "filled tile",
+      "raised card",
+      "saturated panel",
+      "tinted panel",
+      "saturated panel",
+      "gradient panel",
+    ]);
   });
 });

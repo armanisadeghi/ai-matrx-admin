@@ -397,9 +397,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
                 <div className="flex flex-col gap-4 @4xl:flex-row @4xl:items-start @4xl:justify-between">
                   <div className="flex items-start gap-4">
                     {isFullScreen && (
-                      <div className="p-3 bg-blue-500 dark:bg-blue-600 rounded-xl">
-                        <BarChart3 className="h-8 w-8 text-white" />
-                      </div>
+                      <BarChart3 className="mt-1 h-6 w-6 flex-shrink-0 text-primary" />
                     )}
                     <div className="flex-1">
                       {isFullScreen && (

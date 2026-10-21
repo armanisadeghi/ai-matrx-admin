@@ -753,7 +753,7 @@ const TaskChecklist = ({
                   <Button
                     size="xs"
                     onClick={() => setIsImportModalOpen(true)}
-                    className="flex items-center px-1  bg-blue-500 hover:bg-blue-600 text-white"
+                    className="flex items-center px-1 bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
                     Save as Tasks
                   </Button>

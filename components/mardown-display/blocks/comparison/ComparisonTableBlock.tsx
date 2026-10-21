@@ -675,7 +675,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
                     title={showScores ? "Hide scores" : "Show scores"}
                     className={`${navBtnClass} flex-shrink-0 ${
                       showScores
-                        ? "bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700"
+                        ? "bg-muted text-foreground border-primary"
                         : "bg-background/60 text-foreground border-border"
                     }`}
                   >

@@ -400,9 +400,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex items-start gap-2 flex-1 min-w-0">
 {isFullScreen && (
-                      <div className="p-2 bg-orange-500 dark:bg-orange-600 rounded-lg flex-shrink-0">
-                        <ChefHat className="h-4 w-4 text-white" />
-                      </div>
+                      <ChefHat className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
                     )}
                     <div className="flex-1 min-w-0">
 {isFullScreen && (
@@ -579,8 +577,8 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
                               <div
                                 className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
                                   isCompleted
-                                    ? "bg-green-500 dark:bg-green-600 text-white"
-                                    : "bg-blue-500 dark:bg-blue-600 text-white"
+                                    ? "bg-primary text-primary-foreground"
+                                    : "border border-border bg-muted text-foreground"
                                 }`}
                               >
                                 {isCompleted ? (

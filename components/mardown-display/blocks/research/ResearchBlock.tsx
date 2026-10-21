@@ -227,17 +227,8 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({
   };
 
   const getConfidenceBadge = (level: 'HIGH' | 'MEDIUM' | 'LOW') => {
-    const styles = {
-      HIGH: 'bg-green-100 dark:bg-green-950/30 text-green-800 dark:text-green-300 border-green-300 dark:border-green-700',
-      MEDIUM: 'bg-yellow-100 dark:bg-yellow-950/30 text-yellow-800 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700',
-      LOW: 'bg-red-100 dark:bg-red-950/30 text-red-800 dark:text-red-300 border-red-300 dark:border-red-700'
-    };
-    
-    return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full border ${styles[level]}`}>
-        {level}
-      </span>
-    );
+    const tone = { HIGH: 'success', MEDIUM: 'warning', LOW: 'destructive' } as const;
+    return <Badge tone={tone[level]}>{level}</Badge>;
   };
 
   const getRecommendationIcon = (target: string) => {
@@ -283,12 +274,10 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({
             >
 
               {/* Header Section */}
-              <div className={cn('bg-gradient-to-br from-emerald-100 via-teal-50 to-cyan-100 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-cyan-950/40 rounded-2xl shadow-lg border-2 border-emerald-200 dark:border-emerald-800/50', narrow ? 'p-3' : 'p-6')}>
+              <div className={narrow ? 'p-1' : 'p-2'}>
                 <div className={cn('flex flex-col gap-4', narrow ? 'mb-4' : 'mb-6', at('lg:flex-row lg:items-start lg:justify-between', '@5xl:flex-row @5xl:items-start @5xl:justify-between'))}>
                   <div className={cn('flex items-start', narrow ? 'gap-3' : 'gap-4')}>
-                    <div className="p-3 bg-emerald-500 dark:bg-emerald-600 rounded-xl">
-                      <BookOpen className="h-8 w-8 text-white" />
-                    </div>
+                    <BookOpen className="mt-1 h-6 w-6 flex-shrink-0 text-primary" />
                     <div className="flex-1 min-w-0">
                       <h1 className={cn('font-bold text-gray-900 dark:text-gray-100 mb-2 break-words', narrow ? 'text-xl' : 'text-3xl')}>
                         {research.title}

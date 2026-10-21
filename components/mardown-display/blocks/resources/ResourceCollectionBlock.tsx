@@ -561,7 +561,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({
                                     )}
                                     <OutboundLink
                                       href={resource.url}
-                                      className="flex items-center justify-center gap-1 w-full py-1.5 px-2 bg-violet-500 dark:bg-violet-600 hover:bg-violet-600 dark:hover:bg-violet-700 text-white text-xs font-medium rounded-md transition-colors"
+                                      className="flex items-center justify-center gap-1 w-full py-1.5 px-2 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium rounded-md transition-colors"
                                     >
                                       <ExternalLink className="h-3 w-3" />
                                       <span className="hidden sm:inline">

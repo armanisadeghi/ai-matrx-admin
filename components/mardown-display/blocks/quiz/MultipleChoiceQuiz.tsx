@@ -869,7 +869,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
         className={`rounded-lg font-semibold transition-all duration-200 flex-1 ${isFullScreen ? "px-4 py-3 text-base" : narrowPane ? "px-2 py-1.5 text-xs" : "px-3 py-2 text-sm"} ${
           currentQuestionIndex === 0
             ? "bg-gray-400 dark:bg-gray-700 cursor-not-allowed text-gray-200 dark:text-gray-500"
-            : "bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-sm hover:shadow-md transform hover:scale-105"
+            : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transform hover:scale-105"
         }`}
       >
         ← Previous
@@ -878,14 +878,14 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
       {currentQuestionIndex === quizState.randomizedQuestions.length - 1 ? (
         <button
           onClick={handleNext}
-          className={`rounded-lg font-semibold bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 flex-1 ${isFullScreen ? "px-4 py-3 text-base" : narrowPane ? "px-2 py-1.5 text-xs" : "px-3 py-2 text-sm"}`}
+          className={`rounded-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 flex-1 ${isFullScreen ? "px-4 py-3 text-base" : narrowPane ? "px-2 py-1.5 text-xs" : "px-3 py-2 text-sm"}`}
         >
           View Results →
         </button>
       ) : (
         <button
           onClick={handleNext}
-          className={`rounded-lg font-semibold bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 flex-1 ${isFullScreen ? "px-4 py-3 text-base" : narrowPane ? "px-2 py-1.5 text-xs" : "px-3 py-2 text-sm"}`}
+          className={`rounded-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 flex-1 ${isFullScreen ? "px-4 py-3 text-base" : narrowPane ? "px-2 py-1.5 text-xs" : "px-3 py-2 text-sm"}`}
         >
           Next →
         </button>

@@ -4,7 +4,7 @@ import { FullScreenPortal } from "../FullScreenPortal";
 import { useBlockMakeReal } from "@/features/rich-content-host/block-make-real";
 import { NotebookPen } from "lucide-react";
 import { decisionTreeToMarkdown } from "@/features/rich-content-host/block-note-markdown";
-import { Button, Badge, Chip } from "@ai-matrx/design-system/controls";
+import { Button, Badge } from "@ai-matrx/design-system/controls";
 import type { KIND_KEY } from "@ai-matrx/content-ir";
 // THE SHAPES COME FROM THE REGISTRY (`pnpm shape:types`) — this file never
 // re-declares a registered kind's fields (`check:kind-type-twins`).
@@ -308,24 +308,10 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
     return Info;
   };
 
-  const getNodeColor = (node: DecisionNode, isActive = false) => {
-    if (isActive) {
-      return "bg-blue-500 dark:bg-blue-600 text-white border-blue-500 dark:border-blue-600";
-    }
-
-    if (node.question) {
-      return "bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-700";
-    }
-
-    if (node.action) {
-      const isCompleted = completedPaths.has(node.id);
-      return isCompleted
-        ? "bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700"
-        : "bg-purple-100 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-700";
-    }
-
-    return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700";
-  };
+  // One plain card (review 4): every node is a quiet bordered row in design-system tokens; the
+  // current question is marked by its border and icon, never a saturated or tinted panel.
+  const getNodeColor = (_node: DecisionNode, isActive = false) =>
+    isActive ? "border border-primary bg-muted/40 text-foreground" : "border border-border text-foreground";
 
   const getPriorityColor = (priority: string | undefined) => {
     switch (priority) {
@@ -342,13 +328,13 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
 
   const getFullTreeNodeColor = (node: DecisionNode) => {
     if (node.question) {
-      return "bg-card border border-border border-l-[3px] border-l-orange-400 text-foreground";
+      return "bg-card border border-border border-l-[3px] border-l-primary text-foreground";
     }
     if (node.action) {
       const isCompleted = completedPaths.has(node.id);
       return isCompleted
-        ? "bg-card border border-border border-l-[3px] border-l-green-500 text-foreground"
-        : "bg-card border border-border border-l-[3px] border-l-purple-400 text-foreground";
+        ? "bg-card border border-border border-l-[3px] border-l-muted-foreground text-foreground"
+        : "bg-card border border-border border-l-[3px] border-l-border text-foreground";
     }
     return "bg-card border border-border text-foreground";
   };
@@ -381,16 +367,14 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
       <div key={node.id} className="min-w-0">
         <div
           className={`rounded-md transition-all ${cardColor} ${
-            isActive && node.question ? "p-3 shadow-md" : "p-2 hover:shadow-sm"
+            isActive && node.question ? "p-3" : "p-2"
           }`}
         >
           {isActive && node.question ? (
             <div className="space-y-2">
               <div className="flex gap-2 text-sm">
                 <span className="relative flex-shrink-0 mt-[calc(0.5*(1.375em-0.875rem))]">
-                  <IconComponent
-                    className={`h-6 w-6 ${isActive ? "text-white" : ""}`}
-                  />
+                  <IconComponent className="h-6 w-6 text-primary" />
                   {isCompleted && (
                     <CheckCircle2 className="h-3 w-3 text-green-500 absolute -top-0.5 -right-0.5" />
                   )}
@@ -408,7 +392,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
               </div>
 
               {node.description && (
-                <p className="text-xs opacity-90 leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   {node.description}
                 </p>
               )}
@@ -423,10 +407,12 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
                     </span>
                   )}
                   {node.category && (
-                    <Chip tone="blue" label={node.category} />
+                    <span className="px-1.5 py-0.5 text-[10px] bg-muted text-muted-foreground rounded-full">
+                      {node.category}
+                    </span>
                   )}
                   {node.estimatedTime && (
-                    <div className="flex items-center gap-1 text-[10px] opacity-75">
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                       <Clock className="h-3 w-3" />
                       {node.estimatedTime}
                     </div>
@@ -446,7 +432,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
           ) : (
             <div className="flex items-start gap-2 min-w-0">
               <span className="relative flex-shrink-0 mt-0.5">
-                <IconComponent className="h-3.5 w-3.5 opacity-70" />
+                <IconComponent className="h-3.5 w-3.5 text-muted-foreground" />
                 {isCompleted && (
                   <CheckCircle2 className="h-2.5 w-2.5 text-green-500 absolute -top-0.5 -right-0.5" />
                 )}
@@ -603,7 +589,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
           {isFullScreen && (
             <div className="flex-shrink-0 px-3 py-2 border-b border-border flex flex-wrap items-center justify-between gap-2 bg-muted/50">
               <div className="flex items-center gap-2 min-w-0">
-                <GitBranch className="h-4 w-4 flex-shrink-0 text-indigo-600 dark:text-indigo-400" />
+                <GitBranch className="h-4 w-4 flex-shrink-0 text-primary" />
                 <h3 className="text-sm font-semibold text-foreground truncate">
                   {decisionTree.title}
                 </h3>
@@ -632,11 +618,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex items-start gap-2 flex-1 min-w-0">
-                    {isFullScreen && (
-                      <div className="p-2 bg-indigo-500 dark:bg-indigo-600 rounded-lg flex-shrink-0">
-                        <GitBranch className="h-4 w-4 text-white" />
-                      </div>
-                    )}
+                    {isFullScreen && <GitBranch className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />}
                     <div className="flex-1 min-w-0">
                       {isFullScreen && (
                         <h1 className="text-sm font-bold text-foreground leading-tight line-clamp-2">
@@ -698,7 +680,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
                     aria-label={showFullTree ? "Hide full tree" : "Show full tree"}
                     className={`${navBtnClass} border ${
                       showFullTree
-                        ? "bg-indigo-100 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-700"
+                        ? "bg-muted text-foreground border-primary"
                         : "bg-background/60 hover:bg-background text-foreground border-border"
                     }`}
                   >
@@ -758,7 +740,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
                 <div className="pt-2">
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-1.5 min-w-0">
-                      <GitBranch className="h-4 w-4 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
+                      <GitBranch className="h-4 w-4 text-primary flex-shrink-0" />
                       <span className="truncate">
                         {showFullTree
                           ? "Full Decision Tree"
@@ -767,15 +749,9 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
                     </h2>
 
                     {currentNode.action && (
-                      <div
-                        className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300 rounded-md flex-shrink-0"
-                        title="Decision Complete"
-                      >
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        <span className="text-xs font-medium hidden sm:inline">
-                          Decision Complete
-                        </span>
-                      </div>
+                      <Badge className="shrink-0" tone="success" title="Decision Complete" icon={<CheckCircle2 />}>
+                        <span className="hidden sm:inline">Decision Complete</span>
+                      </Badge>
                     )}
                   </div>
 
@@ -791,18 +767,16 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
               {currentNode.action && (
                 <div className="border-t border-border pt-3">
                   <div className="flex items-start gap-3">
-                    <div className="p-2 bg-green-500 dark:bg-green-600 rounded-full flex-shrink-0">
-                      <Target className="h-4 w-4 text-white" />
-                    </div>
+                    <Target className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-semibold text-green-900 dark:text-green-100 mb-1">
+                      <h3 className="text-sm font-semibold text-foreground mb-1">
                         Recommended Action
                       </h3>
-                      <p className="text-green-800 dark:text-green-200 text-sm mb-2">
+                      <p className="text-foreground text-sm mb-2">
                         {currentNode.action}
                       </p>
                       {currentNode.description && (
-                        <p className="text-green-700 dark:text-green-300 text-xs mb-2">
+                        <p className="text-muted-foreground text-xs mb-2">
                           {currentNode.description}
                         </p>
                       )}

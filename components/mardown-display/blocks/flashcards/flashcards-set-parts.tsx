@@ -427,7 +427,7 @@ export function FlashcardsSetControls({
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 px-2 text-xs bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 text-white"
+            className="h-7 px-2 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={onOpenCanvas}
             disabled={openingCanvas}
           >
