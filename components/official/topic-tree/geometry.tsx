@@ -53,21 +53,32 @@ export function TreeDisclosure({
   expandable,
   expanded,
   onToggle,
+  label,
   className,
 }: {
   expandable: boolean;
   expanded?: boolean;
   onToggle?: () => void;
+  /**
+   * Pass when the chevron is the row's ONLY way to expand (no `role="tree"`
+   * keyboard model around it): the button becomes focusable and announces
+   * "Expand <label>" / "Collapse <label>" with `aria-expanded`. Omit inside a
+   * tree that owns the keyboard (TopicTree), where a second tab stop is noise.
+   */
+  label?: string;
   className?: string;
 }) {
   if (!expandable) {
     return <span aria-hidden="true" className={cn("h-4 w-4 shrink-0", className)} />;
   }
+  const accessible = label !== undefined;
   return (
     <button
       type="button"
-      tabIndex={-1}
-      aria-hidden="true"
+      tabIndex={accessible ? undefined : -1}
+      aria-hidden={accessible ? undefined : true}
+      aria-label={accessible ? `${expanded ? "Collapse" : "Expand"} ${label}` : undefined}
+      aria-expanded={accessible ? Boolean(expanded) : undefined}
       onClick={(event) => {
         event.stopPropagation();
         onToggle?.();
