@@ -1,0 +1,3703 @@
+[
+ {
+  "product": "Education",
+  "family": "Solutions",
+  "summary": "A learner turns what they need to know into kits, flashcards, quizzes and a tutor, then tracks progress. Teachers and parents see classes and students.",
+  "entry": "/education",
+  "sections": [
+   {
+    "name": "Home",
+    "route": "/education/overview",
+    "why": "The signed-in learner's starting page; sends them into their tools",
+    "pages": [
+     {
+      "route": "/education/overview",
+      "title": "Overview",
+      "role": "list",
+      "reachedFrom": [
+       "/education"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education",
+      "title": "Education",
+      "role": "redirect",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": [
+       "/education/overview"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Kits",
+    "route": "/education/kits",
+    "why": "Turn a source (notes, a PDF, a lecture) into a study kit",
+    "pages": [
+     {
+      "route": "/education/kits",
+      "title": "Kits",
+      "role": "list",
+      "reachedFrom": [
+       "/education/kits"
+      ],
+      "leadsTo": [
+       "/education/kits/[sourceId]",
+       "/education/kits/new"
+      ]
+     },
+     {
+      "route": "/education/kits/[sourceId]",
+      "title": "Kits record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/kits"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/kits/new",
+      "title": "Create a Study Kit",
+      "role": "create",
+      "reachedFrom": [
+       "/education/kits"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Study Guides",
+    "route": "/education/study-guides",
+    "why": "Read AI-built guides for a kit",
+    "pages": [
+     {
+      "route": "/education/study-guides",
+      "title": "Study Guides",
+      "role": "list",
+      "reachedFrom": [
+       "/education/study-guides"
+      ],
+      "leadsTo": [
+       "/education/study-guides/[id]"
+      ]
+     },
+     {
+      "route": "/education/study-guides/[id]",
+      "title": "Study guides record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/study-guides"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Flashcard Studio",
+    "route": "/education/flashcards",
+    "why": "Make, edit and drill decks in five study modes",
+    "pages": [
+     {
+      "route": "/education/flashcards",
+      "title": "Flashcard Studio",
+      "role": "list",
+      "reachedFrom": [
+       "/education/flashcards"
+      ],
+      "leadsTo": [
+       "/education/flashcards/[setId]",
+       "/education/flashcards/admin",
+       "/education/flashcards/new",
+       "/education/flashcards/review",
+       "/education/flashcards/sessions",
+       "/education/flashcards/weak-areas"
+      ]
+     },
+     {
+      "route": "/education/flashcards/[setId]",
+      "title": "Flashcards record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/flashcards"
+      ],
+      "leadsTo": [
+       "/education/flashcards/[setId]/edit",
+       "/education/flashcards/[setId]/learn",
+       "/education/flashcards/[setId]/match",
+       "/education/flashcards/[setId]/sessions",
+       "/education/flashcards/[setId]/study",
+       "/education/flashcards/[setId]/test",
+       "/education/flashcards/[setId]/write"
+      ]
+     },
+     {
+      "route": "/education/flashcards/[setId]/edit",
+      "title": "Edit",
+      "role": "record",
+      "reachedFrom": [
+       "/education/flashcards/[setId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/flashcards/[setId]/learn",
+      "title": "Learn",
+      "role": "record",
+      "reachedFrom": [
+       "/education/flashcards/[setId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/flashcards/[setId]/match",
+      "title": "Match",
+      "role": "record",
+      "reachedFrom": [
+       "/education/flashcards/[setId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/flashcards/[setId]/sessions",
+      "title": "Sessions",
+      "role": "record",
+      "reachedFrom": [
+       "/education/flashcards/[setId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/flashcards/[setId]/study",
+      "title": "Study",
+      "role": "record",
+      "reachedFrom": [
+       "/education/flashcards/[setId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/flashcards/[setId]/test",
+      "title": "Test",
+      "role": "record",
+      "reachedFrom": [
+       "/education/flashcards/[setId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/flashcards/[setId]/write",
+      "title": "Write",
+      "role": "record",
+      "reachedFrom": [
+       "/education/flashcards/[setId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/flashcards/admin",
+      "title": "Admin",
+      "role": "tool",
+      "reachedFrom": [
+       "/education/flashcards"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/flashcards/new",
+      "title": "New",
+      "role": "create",
+      "reachedFrom": [
+       "/education/flashcards"
+      ],
+      "leadsTo": [
+       "/education/flashcards/new/from-source",
+       "/education/flashcards/new/import"
+      ]
+     },
+     {
+      "route": "/education/flashcards/new/from-source",
+      "title": "From source",
+      "role": "create",
+      "reachedFrom": [
+       "/education/flashcards/new"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/flashcards/new/import",
+      "title": "Import",
+      "role": "create",
+      "reachedFrom": [
+       "/education/flashcards/new"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/flashcards/review",
+      "title": "Review",
+      "role": "list",
+      "reachedFrom": [
+       "/education/flashcards"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/flashcards/sessions",
+      "title": "Sessions",
+      "role": "list",
+      "reachedFrom": [
+       "/education/flashcards"
+      ],
+      "leadsTo": [
+       "/education/flashcards/sessions/[sessionId]"
+      ]
+     },
+     {
+      "route": "/education/flashcards/sessions/[sessionId]",
+      "title": "Sessions record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/flashcards/sessions"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/flashcards/weak-areas",
+      "title": "Weak areas",
+      "role": "report",
+      "reachedFrom": [
+       "/education/flashcards"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Fast Fire",
+    "route": "/education/fastfire",
+    "why": "Rapid-fire recall drills",
+    "pages": [
+     {
+      "route": "/education/fastfire",
+      "title": "Fast Fire",
+      "role": "list",
+      "reachedFrom": [
+       "/education/fastfire"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Quizzes",
+    "route": "/education/quizzes",
+    "why": "Build and take quizzes, see results",
+    "pages": [
+     {
+      "route": "/education/quizzes",
+      "title": "Quizzes",
+      "role": "list",
+      "reachedFrom": [
+       "/education/quizzes"
+      ],
+      "leadsTo": [
+       "/education/quizzes/[id]",
+       "/education/quizzes/new"
+      ]
+     },
+     {
+      "route": "/education/quizzes/[id]",
+      "title": "Quizzes record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/quizzes"
+      ],
+      "leadsTo": [
+       "/education/quizzes/[id]/edit",
+       "/education/quizzes/[id]/results"
+      ]
+     },
+     {
+      "route": "/education/quizzes/[id]/edit",
+      "title": "Edit",
+      "role": "record",
+      "reachedFrom": [
+       "/education/quizzes/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/quizzes/[id]/results",
+      "title": "Results",
+      "role": "report",
+      "reachedFrom": [
+       "/education/quizzes/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/quizzes/new",
+      "title": "New",
+      "role": "create",
+      "reachedFrom": [
+       "/education/quizzes"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Practice Tests",
+    "route": "/education/practice-tests",
+    "why": "Exam-style tests with graded results",
+    "pages": [
+     {
+      "route": "/education/practice-tests",
+      "title": "Practice Tests",
+      "role": "list",
+      "reachedFrom": [
+       "/education/practice-tests"
+      ],
+      "leadsTo": [
+       "/education/practice-tests/[id]",
+       "/education/practice-tests/new"
+      ]
+     },
+     {
+      "route": "/education/practice-tests/[id]",
+      "title": "Practice tests record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/practice-tests"
+      ],
+      "leadsTo": [
+       "/education/practice-tests/[id]/edit",
+       "/education/practice-tests/[id]/results"
+      ]
+     },
+     {
+      "route": "/education/practice-tests/[id]/edit",
+      "title": "Edit",
+      "role": "record",
+      "reachedFrom": [
+       "/education/practice-tests/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/practice-tests/[id]/results",
+      "title": "Results",
+      "role": "report",
+      "reachedFrom": [
+       "/education/practice-tests/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/practice-tests/new",
+      "title": "New",
+      "role": "create",
+      "reachedFrom": [
+       "/education/practice-tests"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Study Games",
+    "route": "/education/game",
+    "why": "Solo arcade plus live rooms to host or join",
+    "pages": [
+     {
+      "route": "/education/game",
+      "title": "Study Games",
+      "role": "list",
+      "reachedFrom": [
+       "/education/game"
+      ],
+      "leadsTo": [
+       "/education/game/host",
+       "/education/game/join",
+       "/education/game/solo"
+      ]
+     },
+     {
+      "route": "/education/game/host",
+      "title": "Host a Game",
+      "role": "create",
+      "reachedFrom": [
+       "/education/game"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/game/join",
+      "title": "Join a Game",
+      "role": "create",
+      "reachedFrom": [
+       "/education/game"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/game/play/[roomId]",
+      "title": "Play record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/game"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/game/solo",
+      "title": "Solo Arcade",
+      "role": "list",
+      "reachedFrom": [
+       "/education/game"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "AI Tutor",
+    "route": "/education/tutor",
+    "why": "Talk a topic through with the tutor",
+    "pages": [
+     {
+      "route": "/education/tutor",
+      "title": "AI Tutor",
+      "role": "list",
+      "reachedFrom": [
+       "/education/tutor"
+      ],
+      "leadsTo": [
+       "/education/tutor/[conversationId]",
+       "/education/tutor/new"
+      ]
+     },
+     {
+      "route": "/education/tutor/[conversationId]",
+      "title": "Tutor record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/tutor"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/tutor/new",
+      "title": "New",
+      "role": "create",
+      "reachedFrom": [
+       "/education/tutor"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Audio Study",
+    "route": "/education/audio-study",
+    "why": "Listen to study material",
+    "pages": [
+     {
+      "route": "/education/audio-study",
+      "title": "Audio Study",
+      "role": "list",
+      "reachedFrom": [
+       "/education/audio-study"
+      ],
+      "leadsTo": [
+       "/education/audio-study/[id]",
+       "/education/audio-study/new",
+       "/education/audio-study/review"
+      ]
+     },
+     {
+      "route": "/education/audio-study/[id]",
+      "title": "Audio study record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/audio-study"
+      ],
+      "leadsTo": [
+       "/education/audio-study/[id]/edit"
+      ]
+     },
+     {
+      "route": "/education/audio-study/[id]/edit",
+      "title": "Edit",
+      "role": "record",
+      "reachedFrom": [
+       "/education/audio-study/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/audio-study/new",
+      "title": "New",
+      "role": "create",
+      "reachedFrom": [
+       "/education/audio-study"
+      ],
+      "leadsTo": [
+       "/education/audio-study/new/manual"
+      ]
+     },
+     {
+      "route": "/education/audio-study/new/manual",
+      "title": "Manual",
+      "role": "create",
+      "reachedFrom": [
+       "/education/audio-study/new"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/audio-study/review",
+      "title": "Review",
+      "role": "list",
+      "reachedFrom": [
+       "/education/audio-study"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Mind Maps & Diagrams",
+    "route": "/education/mind-maps",
+    "why": "See a topic as a picture",
+    "pages": [
+     {
+      "route": "/education/mind-maps",
+      "title": "Mind Maps & Diagrams",
+      "role": "list",
+      "reachedFrom": [
+       "/education/mind-maps"
+      ],
+      "leadsTo": [
+       "/education/mind-maps/[id]",
+       "/education/mind-maps/new"
+      ]
+     },
+     {
+      "route": "/education/mind-maps/[id]",
+      "title": "Mind maps record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/mind-maps"
+      ],
+      "leadsTo": [
+       "/education/mind-maps/[id]/edit"
+      ]
+     },
+     {
+      "route": "/education/mind-maps/[id]/edit",
+      "title": "Edit",
+      "role": "record",
+      "reachedFrom": [
+       "/education/mind-maps/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/mind-maps/new",
+      "title": "New",
+      "role": "create",
+      "reachedFrom": [
+       "/education/mind-maps"
+      ],
+      "leadsTo": [
+       "/education/mind-maps/new/manual"
+      ]
+     },
+     {
+      "route": "/education/mind-maps/new/manual",
+      "title": "Manual",
+      "role": "create",
+      "reachedFrom": [
+       "/education/mind-maps/new"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Memory Aids",
+    "route": "/education/memory",
+    "why": "Mnemonics and recall helpers",
+    "pages": [
+     {
+      "route": "/education/memory",
+      "title": "Memory Aids",
+      "role": "list",
+      "reachedFrom": [
+       "/education/memory"
+      ],
+      "leadsTo": [
+       "/education/memory/[id]",
+       "/education/memory/new"
+      ]
+     },
+     {
+      "route": "/education/memory/[id]",
+      "title": "Memory record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/memory"
+      ],
+      "leadsTo": [
+       "/education/memory/[id]/edit"
+      ]
+     },
+     {
+      "route": "/education/memory/[id]/edit",
+      "title": "Edit",
+      "role": "record",
+      "reachedFrom": [
+       "/education/memory/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/memory/new",
+      "title": "New",
+      "role": "create",
+      "reachedFrom": [
+       "/education/memory"
+      ],
+      "leadsTo": [
+       "/education/memory/new/manual"
+      ]
+     },
+     {
+      "route": "/education/memory/new/manual",
+      "title": "Manual",
+      "role": "create",
+      "reachedFrom": [
+       "/education/memory/new"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Study Summaries",
+    "route": "/education/summaries",
+    "why": "Short summaries of material",
+    "pages": [
+     {
+      "route": "/education/summaries",
+      "title": "Study Summaries",
+      "role": "list",
+      "reachedFrom": [
+       "/education/summaries"
+      ],
+      "leadsTo": [
+       "/education/summaries/[id]",
+       "/education/summaries/new"
+      ]
+     },
+     {
+      "route": "/education/summaries/[id]",
+      "title": "Summaries record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/summaries"
+      ],
+      "leadsTo": [
+       "/education/summaries/[id]/edit"
+      ]
+     },
+     {
+      "route": "/education/summaries/[id]/edit",
+      "title": "Edit",
+      "role": "record",
+      "reachedFrom": [
+       "/education/summaries/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/summaries/new",
+      "title": "New",
+      "role": "create",
+      "reachedFrom": [
+       "/education/summaries"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Smart Notes",
+    "route": "/education/notes",
+    "why": "Notes the system organises",
+    "pages": [
+     {
+      "route": "/education/notes",
+      "title": "Smart Notes",
+      "role": "list",
+      "reachedFrom": [
+       "/education/notes"
+      ],
+      "leadsTo": [
+       "/education/notes/[id]"
+      ]
+     },
+     {
+      "route": "/education/notes/[id]",
+      "title": "Notes record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/notes"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Spoken Practice",
+    "route": "/education/practice-oral",
+    "why": "Practise answering out loud",
+    "pages": [
+     {
+      "route": "/education/practice-oral",
+      "title": "Spoken Practice",
+      "role": "list",
+      "reachedFrom": [
+       "/education/practice-oral"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Grade My Work",
+    "route": "/education/grade-work",
+    "why": "Get an assignment marked",
+    "pages": [
+     {
+      "route": "/education/grade-work",
+      "title": "Grade My Work",
+      "role": "list",
+      "reachedFrom": [
+       "/education/grade-work"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Study Planner",
+    "route": "/education/planner",
+    "why": "Schedule what to study when",
+    "pages": [
+     {
+      "route": "/education/planner",
+      "title": "Study Planner",
+      "role": "list",
+      "reachedFrom": [
+       "/education/planner"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Progress",
+    "route": "/education/progress",
+    "why": "See how learning is going",
+    "pages": [
+     {
+      "route": "/education/progress",
+      "title": "Progress",
+      "role": "report",
+      "reachedFrom": [
+       "/education/progress"
+      ],
+      "leadsTo": [
+       "/education/progress/learning-gain"
+      ]
+     },
+     {
+      "route": "/education/progress/learning-gain",
+      "title": "Learning Gain",
+      "role": "report",
+      "reachedFrom": [
+       "/education/progress"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/sessions",
+      "title": "Sessions",
+      "role": "list",
+      "reachedFrom": [
+       "/education/progress"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "My Classes",
+    "route": "/education/classes",
+    "why": "Join and follow classes and their tests",
+    "pages": [
+     {
+      "route": "/education/classes",
+      "title": "My Classes",
+      "role": "list",
+      "reachedFrom": [
+       "/education/classes"
+      ],
+      "leadsTo": [
+       "/education/classes/[classId]",
+       "/education/classes/join"
+      ]
+     },
+     {
+      "route": "/education/classes/[classId]",
+      "title": "Classes record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/classes"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/classes/[classId]/tests/[testId]",
+      "title": "Tests record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/classes/[classId]"
+      ],
+      "leadsTo": [
+       "/education/classes/[classId]/tests/[testId]/study"
+      ]
+     },
+     {
+      "route": "/education/classes/[classId]/tests/[testId]/study",
+      "title": "Study",
+      "role": "record",
+      "reachedFrom": [
+       "/education/classes/[classId]/tests/[testId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/classes/join",
+      "title": "Join a Class",
+      "role": "create",
+      "reachedFrom": [
+       "/education/classes"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Family Dashboard",
+    "route": "/education/family",
+    "why": "A parent's view of each student",
+    "pages": [
+     {
+      "route": "/education/family",
+      "title": "Family Dashboard",
+      "role": "list",
+      "reachedFrom": [
+       "/education/family"
+      ],
+      "leadsTo": [
+       "/education/family/[studentId]"
+      ]
+     },
+     {
+      "route": "/education/family/[studentId]",
+      "title": "Family record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/family"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Creator Page",
+    "route": "/education/creator",
+    "why": "A teacher or creator's public page",
+    "pages": [
+     {
+      "route": "/education/creator",
+      "title": "Creator Page",
+      "role": "list",
+      "reachedFrom": [
+       "/education/creator"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Library",
+    "route": "/education/library",
+    "why": "Saved and community study material",
+    "pages": [
+     {
+      "route": "/education/library",
+      "title": "Library",
+      "role": "list",
+      "reachedFrom": [
+       "/education/library"
+      ],
+      "leadsTo": [
+       "/education/library/community",
+       "/education/library/suggestions"
+      ]
+     },
+     {
+      "route": "/education/library/community",
+      "title": "Community Library",
+      "role": "list",
+      "reachedFrom": [
+       "/education/library"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/library/suggestions",
+      "title": "Library Suggestions",
+      "role": "list",
+      "reachedFrom": [
+       "/education/library"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Learn (articles)",
+    "route": "/education/learn",
+    "why": "Public study articles by subject",
+    "pages": [
+     {
+      "route": "/education/learn",
+      "title": "Learn",
+      "role": "list",
+      "reachedFrom": [
+       "/education/learn"
+      ],
+      "leadsTo": [
+       "/education/learn/[...slug]",
+       "/education/learn/admin"
+      ]
+     },
+     {
+      "route": "/education/learn/[...slug]",
+      "title": "Learn record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/learn"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/learn/admin",
+      "title": "Admin",
+      "role": "tool",
+      "reachedFrom": [
+       "/education/learn"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Quick Math",
+    "route": "/education/subjects/quick-math",
+    "why": "Interactive algebra lessons",
+    "pages": [
+     {
+      "route": "/education/subjects/quick-math",
+      "title": "Quick Math",
+      "role": "list",
+      "reachedFrom": [
+       "/education/subjects/quick-math"
+      ],
+      "leadsTo": [
+       "/education/subjects/quick-math/[id]",
+       "/education/subjects/quick-math/admin"
+      ]
+     },
+     {
+      "route": "/education/subjects/quick-math/[id]",
+      "title": "Quick math record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/subjects/quick-math"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/subjects/quick-math/admin",
+      "title": "Admin",
+      "role": "tool",
+      "reachedFrom": [
+       "/education/subjects/quick-math"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Browse by Subject",
+    "route": "/education/subjects",
+    "why": "Public pages per subject",
+    "pages": [
+     {
+      "route": "/education/subjects",
+      "title": "Subjects",
+      "role": "list",
+      "reachedFrom": [
+       "/education/subjects"
+      ],
+      "leadsTo": [
+       "/education/subjects/[slug]"
+      ]
+     },
+     {
+      "route": "/education/subjects/[slug]",
+      "title": "Subjects record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/subjects"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Browse by Level",
+    "route": "/education/levels",
+    "why": "Public pages per school level",
+    "pages": [
+     {
+      "route": "/education/levels",
+      "title": "Levels",
+      "role": "list",
+      "reachedFrom": [
+       "/education/levels"
+      ],
+      "leadsTo": [
+       "/education/levels/[slug]"
+      ]
+     },
+     {
+      "route": "/education/levels/[slug]",
+      "title": "Levels record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/levels"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Exam Prep",
+    "route": "/education/exam-prep",
+    "why": "Public pages per exam",
+    "pages": [
+     {
+      "route": "/education/exam-prep",
+      "title": "Exam Prep",
+      "role": "list",
+      "reachedFrom": [
+       "/education/exam-prep"
+      ],
+      "leadsTo": [
+       "/education/exam-prep/[slug]"
+      ]
+     },
+     {
+      "route": "/education/exam-prep/[slug]",
+      "title": "Exam prep record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/exam-prep"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Study Aids",
+    "route": "/education/study-aids",
+    "why": "Public pages describing each study aid",
+    "pages": [
+     {
+      "route": "/education/study-aids",
+      "title": "Study Aids",
+      "role": "list",
+      "reachedFrom": [
+       "/education/study-aids"
+      ],
+      "leadsTo": [
+       "/education/study-aids/[slug]"
+      ]
+     },
+     {
+      "route": "/education/study-aids/[slug]",
+      "title": "Study aids record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/study-aids"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Education Features",
+    "route": "/education/features",
+    "why": "Public list of what Education offers",
+    "pages": [
+     {
+      "route": "/education/features",
+      "title": "Education Features",
+      "role": "list",
+      "reachedFrom": [
+       "/education/features"
+      ],
+      "leadsTo": [
+       "/education/features/[slug]"
+      ]
+     },
+     {
+      "route": "/education/features/[slug]",
+      "title": "Features record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/features"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Account & setup",
+    "route": "/education/data",
+    "why": "Your data, offline mode, study media, authoring",
+    "pages": [
+     {
+      "route": "/education/data",
+      "title": "Your Education Data",
+      "role": "list",
+      "reachedFrom": [
+       "/education/data"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/offline",
+      "title": "Offline",
+      "role": "list",
+      "reachedFrom": [
+       "/education/data"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/media/[id]",
+      "title": "Media record",
+      "role": "record",
+      "reachedFrom": [
+       "/education/data"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/admin",
+      "title": "Admin",
+      "role": "tool",
+      "reachedFrom": [
+       "/education/data"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Study from a source",
+    "steps": [
+     "/education/overview",
+     "/education/kits/new",
+     "/education/kits/[sourceId]",
+     "/education/flashcards/[setId]",
+     "/education/flashcards/[setId]/study",
+     "/education/progress"
+    ]
+   },
+   {
+    "name": "Make and drill a deck",
+    "steps": [
+     "/education/flashcards",
+     "/education/flashcards/new",
+     "/education/flashcards/[setId]/edit",
+     "/education/flashcards/[setId]/learn",
+     "/education/flashcards/weak-areas"
+    ]
+   },
+   {
+    "name": "Join a class and take its test",
+    "steps": [
+     "/education/classes/join",
+     "/education/classes",
+     "/education/classes/[classId]",
+     "/education/classes/[classId]/tests/[testId]/study"
+    ]
+   },
+   {
+    "name": "Host a live game",
+    "steps": [
+     "/education/game",
+     "/education/game/host",
+     "/education/game/play/[roomId]"
+    ]
+   },
+   {
+    "name": "Parent checks a student",
+    "steps": [
+     "/education/family",
+     "/education/family/[studentId]",
+     "/education/progress"
+    ]
+   },
+   {
+    "name": "Guest finds Education",
+    "steps": [
+     "/education",
+     "/education/subjects",
+     "/education/subjects/[slug]",
+     "/education/learn/[...slug]",
+     "/education/kits/new"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [
+   {
+    "route": "/education/overview",
+    "depth": 3,
+    "why": "The learner's real home sits in a 'More' group inside the menu",
+    "proposal": "Make Overview the first, ungrouped sidebar row"
+   },
+   {
+    "route": "/education/progress",
+    "depth": 3,
+    "why": "Progress is in 'More', yet it is the learner's scoreboard",
+    "proposal": "Give Plan & Track its own group: Planner, Progress, Sessions"
+   },
+   {
+    "route": "/education/classes/join",
+    "depth": 3,
+    "why": "Joining a class lives in 'More' away from My Classes",
+    "proposal": "Put it inside My Classes as the primary button"
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Study Games",
+    "route": "/education/game",
+    "why": "Games also live under More; the tree has no home for learning games vs fun games"
+   },
+   {
+    "name": "Creator pages",
+    "route": "/education/creator",
+    "why": "A public creator page (/c/[handle]) is share-only and has no node"
+   }
+  ],
+  "legacy": [
+   {
+    "route": "/education/fastfire/capture-test",
+    "kind": "redirect",
+    "note": "Forwards to an admin test page; old address nobody should hold"
+   },
+   {
+    "route": "/education/flashcards-2",
+    "kind": "redirect",
+    "note": "Forwards to /education/flashcards"
+   },
+   {
+    "route": "/education/flashcards/progress",
+    "kind": "redirect",
+    "note": "Forwards to /education/progress"
+   },
+   {
+    "route": "/education/start",
+    "kind": "redirect",
+    "note": "Forwards to Create a Study Kit, keeping the chosen source"
+   },
+   {
+    "route": "/education/notes/new",
+    "kind": "old copy",
+    "note": "Owner list says KILL; nothing links here, so Smart Notes cannot start a note"
+   },
+   {
+    "route": "/education/notes/[id]/edit",
+    "kind": "old copy",
+    "note": "Owner list says KILL; a note opens but cannot be edited from any link"
+   }
+  ],
+  "duplicates": [
+   {
+    "routes": [
+     "/education/learn",
+     "/education/study-guides"
+    ],
+    "note": "Public articles and signed-in study guides overlap in purpose"
+   },
+   {
+    "routes": [
+     "/education/library",
+     "/education/library/community"
+    ],
+    "note": "Library and Community Library are two lists of shared material"
+   },
+   {
+    "routes": [
+     "/education/subjects/quick-math",
+     "/education/subjects"
+    ],
+    "note": "Quick Math is an app tool filed under a public marketing axis"
+   },
+   {
+    "routes": [
+     "/education/progress",
+     "/education/sessions",
+     "/education/flashcards/sessions"
+    ],
+    "note": "Three places list study sessions"
+   }
+  ]
+ },
+ {
+  "product": "Legal",
+  "family": "Solutions",
+  "summary": "California workers' comp tools: calculate disability ratings, track cases, run value and life-expectancy utilities.",
+  "entry": "/legal",
+  "sections": [
+   {
+    "name": "Legal Hub",
+    "route": "/legal",
+    "why": "Front door to the legal tools",
+    "pages": [
+     {
+      "route": "/legal",
+      "title": "Legal",
+      "role": "list",
+      "reachedFrom": [
+       "/legal"
+      ],
+      "leadsTo": [
+       "/legal/ca-wc"
+      ]
+     },
+     {
+      "route": "/legal/ca-wc",
+      "title": "CA Workers' Comp",
+      "role": "list",
+      "reachedFrom": [
+       "/legal"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Cases",
+    "route": "/legal/ca-wc/cases",
+    "why": "Workers' comp cases",
+    "pages": [
+     {
+      "route": "/legal/ca-wc/cases",
+      "title": "WC Cases",
+      "role": "list",
+      "reachedFrom": [
+       "/legal/ca-wc/cases"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "PD Ratings Calculator",
+    "route": "/legal/ca-wc/pd-ratings-calculator",
+    "why": "Permanent-disability ratings per claim",
+    "pages": [
+     {
+      "route": "/legal/ca-wc/pd-ratings-calculator",
+      "title": "PD Ratings Calculator",
+      "role": "list",
+      "reachedFrom": [
+       "/legal/ca-wc/pd-ratings-calculator"
+      ],
+      "leadsTo": [
+       "/legal/ca-wc/pd-ratings-calculator/[claimId]"
+      ]
+     },
+     {
+      "route": "/legal/ca-wc/pd-ratings-calculator/[claimId]",
+      "title": "Pd ratings calculator record",
+      "role": "record",
+      "reachedFrom": [
+       "/legal/ca-wc/pd-ratings-calculator"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Utilities",
+    "route": "/legal/ca-wc/utilities",
+    "why": "Small calculators",
+    "pages": [
+     {
+      "route": "/legal/ca-wc/utilities",
+      "title": "WC Utilities",
+      "role": "list",
+      "reachedFrom": [
+       "/legal/ca-wc/utilities"
+      ],
+      "leadsTo": [
+       "/legal/ca-wc/utilities/life-expectancy",
+       "/legal/ca-wc/utilities/present-value",
+       "/legal/ca-wc/utilities/weeks"
+      ]
+     },
+     {
+      "route": "/legal/ca-wc/utilities/life-expectancy",
+      "title": "Life expectancy",
+      "role": "list",
+      "reachedFrom": [
+       "/legal/ca-wc/utilities"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/legal/ca-wc/utilities/present-value",
+      "title": "Present value",
+      "role": "list",
+      "reachedFrom": [
+       "/legal/ca-wc/utilities"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/legal/ca-wc/utilities/weeks",
+      "title": "Weeks",
+      "role": "list",
+      "reachedFrom": [
+       "/legal/ca-wc/utilities"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Rate a claim",
+    "steps": [
+     "/legal",
+     "/legal/ca-wc/cases",
+     "/legal/ca-wc/pd-ratings-calculator",
+     "/legal/ca-wc/pd-ratings-calculator/[claimId]"
+    ]
+   },
+   {
+    "name": "Value a settlement",
+    "steps": [
+     "/legal/ca-wc/utilities",
+     "/legal/ca-wc/utilities/present-value",
+     "/legal/ca-wc/utilities/life-expectancy"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [
+   {
+    "route": "/legal/ca-wc/utilities/present-value",
+    "depth": 4,
+    "why": "Most-used utility is behind Utilities page",
+    "proposal": "List the three utilities in the sidebar"
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Other states and areas of law",
+    "route": "/legal",
+    "why": "Everything is California workers' comp; Legal as a Solution has room for more areas"
+   }
+  ],
+  "legacy": [],
+  "duplicates": [
+   {
+    "routes": [
+     "/legal",
+     "/legal/ca-wc"
+    ],
+    "note": "Two landing pages one level apart for the only area of law"
+   }
+  ]
+ },
+ {
+  "product": "Medical",
+  "family": "Solutions",
+  "summary": "A landing for medical calculators and clinical tools; nothing is built behind it yet.",
+  "entry": "/medical",
+  "sections": [
+   {
+    "name": "Medical Hub",
+    "route": "/medical",
+    "why": "Landing page only",
+    "pages": [
+     {
+      "route": "/medical",
+      "title": "Medical",
+      "role": "list",
+      "reachedFrom": [
+       "/medical"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Look for a clinical tool",
+    "steps": [
+     "/medical"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [],
+  "missingFromTree": [
+   {
+    "name": "Medical tools",
+    "route": "/medical",
+    "why": "The menu promises calculators and clinical tools but none exist"
+   }
+  ],
+  "legacy": [],
+  "duplicates": []
+ },
+ {
+  "product": "E-Commerce",
+  "family": "Solutions",
+  "summary": "A seller photographs products, the system analyses and drafts listings, labels get printed and a store gets connected.",
+  "entry": "/tools/product-capture",
+  "sections": [
+   {
+    "name": "Capture Products",
+    "route": "/tools/product-capture",
+    "why": "Photograph products fast, voice-note them, watch analysis stream back",
+    "pages": [
+     {
+      "route": "/tools/product-capture",
+      "title": "Commerce",
+      "role": "list",
+      "reachedFrom": [
+       "/tools/product-capture"
+      ],
+      "leadsTo": [
+       "/tools/product-capture/instant",
+       "/tools/product-capture/manage",
+       "/tools/product-capture/all",
+       "/tools/product-capture/answer"
+      ]
+     },
+     {
+      "route": "/tools/product-capture/instant",
+      "title": "Instant Capture",
+      "role": "list",
+      "reachedFrom": [
+       "/tools/product-capture"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/tools/product-capture/manage",
+      "title": "Product Pipeline",
+      "role": "list",
+      "reachedFrom": [
+       "/tools/product-capture"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/tools/product-capture/all",
+      "title": "All Products",
+      "role": "list",
+      "reachedFrom": [
+       "/tools/product-capture"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/tools/product-capture/item/[id]",
+      "title": "Item record",
+      "role": "record",
+      "reachedFrom": [
+       "/tools/product-capture"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/tools/product-capture/answer",
+      "title": "Product Questions",
+      "role": "list",
+      "reachedFrom": [
+       "/tools/product-capture"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/capture/needs-you",
+      "title": "Needs You",
+      "role": "list",
+      "reachedFrom": [
+       "/tools/product-capture"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Intake",
+    "route": "/commerce/intake",
+    "why": "Bring products in with the Intake flow",
+    "pages": [
+     {
+      "route": "/commerce/intake",
+      "title": "Intake",
+      "role": "list",
+      "reachedFrom": [
+       "/commerce/intake"
+      ],
+      "leadsTo": [
+       "/commerce/intake/answer",
+       "/commerce/intake/assets",
+       "/commerce/intake/instant"
+      ]
+     },
+     {
+      "route": "/commerce/intake/answer",
+      "title": "Intake Answers",
+      "role": "list",
+      "reachedFrom": [
+       "/commerce/intake"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/commerce/intake/assets",
+      "title": "Intake Assets",
+      "role": "list",
+      "reachedFrom": [
+       "/commerce/intake"
+      ],
+      "leadsTo": [
+       "/commerce/intake/assets/[id]"
+      ]
+     },
+     {
+      "route": "/commerce/intake/assets/[id]",
+      "title": "Assets record",
+      "role": "record",
+      "reachedFrom": [
+       "/commerce/intake/assets"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/commerce/intake/instant",
+      "title": "Instant Intake",
+      "role": "list",
+      "reachedFrom": [
+       "/commerce/intake"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Listings",
+    "route": "/commerce/triage",
+    "why": "Work through what needs a decision, then drafts",
+    "pages": [
+     {
+      "route": "/commerce/attention",
+      "title": "Needs Attention",
+      "role": "list",
+      "reachedFrom": [
+       "/commerce/triage"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/commerce/triage",
+      "title": "Triage",
+      "role": "list",
+      "reachedFrom": [
+       "/commerce/triage"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/commerce/drafts",
+      "title": "Drafts",
+      "role": "list",
+      "reachedFrom": [
+       "/commerce/triage"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Labels & Stores",
+    "route": "/commerce/labels",
+    "why": "QR labels, printers, connecting a store",
+    "pages": [
+     {
+      "route": "/commerce/labels",
+      "title": "QR Labels",
+      "role": "list",
+      "reachedFrom": [
+       "/commerce/labels"
+      ],
+      "leadsTo": [
+       "/commerce/labels/[batchId]",
+       "/commerce/labels/printers"
+      ]
+     },
+     {
+      "route": "/commerce/labels/[batchId]",
+      "title": "Labels record",
+      "role": "record",
+      "reachedFrom": [
+       "/commerce/labels"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/commerce/labels/printers",
+      "title": "Certified Printers",
+      "role": "list",
+      "reachedFrom": [
+       "/commerce/labels"
+      ],
+      "leadsTo": [
+       "/commerce/labels/printers/certify"
+      ]
+     },
+     {
+      "route": "/commerce/labels/printers/certify",
+      "title": "Certify",
+      "role": "create",
+      "reachedFrom": [
+       "/commerce/labels/printers"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/commerce/stores/connect",
+      "title": "Connect a Store",
+      "role": "list",
+      "reachedFrom": [
+       "/commerce/labels"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Admin",
+    "route": "/commerce/intake/admin",
+    "why": "Setup and review for people running the pipeline",
+    "pages": [
+     {
+      "route": "/commerce/intake/admin",
+      "title": "Admin",
+      "role": "tool",
+      "reachedFrom": [
+       "/commerce/intake/admin"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/commerce/review/admin",
+      "title": "Admin",
+      "role": "tool",
+      "reachedFrom": [
+       "/commerce/intake/admin"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/tools/product-capture/admin",
+      "title": "Admin",
+      "role": "tool",
+      "reachedFrom": [
+       "/commerce/intake/admin"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Shared link",
+    "route": "/capture/[sheetId]",
+    "why": "A capture sheet someone is sent to answer",
+    "pages": [
+     {
+      "route": "/capture/[sheetId]",
+      "title": "Capture record",
+      "role": "record",
+      "reachedFrom": [
+       "/capture/[sheetId]"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Capture to listing",
+    "steps": [
+     "/tools/product-capture",
+     "/tools/product-capture/manage",
+     "/tools/product-capture/item/[id]",
+     "/commerce/drafts",
+     "/commerce/stores/connect"
+    ]
+   },
+   {
+    "name": "Answer what the system is unsure about",
+    "steps": [
+     "/capture/needs-you",
+     "/tools/product-capture/answer",
+     "/commerce/attention",
+     "/commerce/triage"
+    ]
+   },
+   {
+    "name": "Label a batch",
+    "steps": [
+     "/commerce/labels",
+     "/commerce/labels/[batchId]",
+     "/commerce/labels/printers"
+    ]
+   },
+   {
+    "name": "Someone answers a capture sheet",
+    "steps": [
+     "/capture/[sheetId]"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [
+   {
+    "route": "/commerce/labels/printers/certify",
+    "depth": 4,
+    "why": "Certifying a printer is needed before labels print",
+    "proposal": "Surface it as a button on Labels"
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Capture Products",
+    "route": "/tools/product-capture",
+    "why": "Lives under /tools but is a Commerce product; no node of its own"
+   },
+   {
+    "name": "Needs You inbox",
+    "route": "/capture/needs-you",
+    "why": "Lives under /capture, not Commerce"
+   }
+  ],
+  "legacy": [
+   {
+    "route": "/commerce/intake/v2",
+    "kind": "old copy",
+    "note": "Second version of Intake, still linked from the Intake page"
+   },
+   {
+    "route": "/commerce/intake/v2/instant",
+    "kind": "old copy",
+    "note": "Instant page of the second Intake version, unlinked"
+   },
+   {
+    "route": "/commerce/intake/v3",
+    "kind": "old copy",
+    "note": "Third version of Intake, unlinked"
+   },
+   {
+    "route": "/commerce/intake/v3/instant",
+    "kind": "old copy",
+    "note": "Instant page of the third Intake version, unlinked"
+   }
+  ],
+  "duplicates": [
+   {
+    "routes": [
+     "/tools/product-capture/instant",
+     "/commerce/intake/instant"
+    ],
+    "note": "Instant Capture and Instant Intake do the same job in two trees"
+   },
+   {
+    "routes": [
+     "/tools/product-capture/answer",
+     "/commerce/intake/answer"
+    ],
+    "note": "Product Questions and Intake Answers are two question inboxes"
+   },
+   {
+    "routes": [
+     "/capture/needs-you",
+     "/commerce/attention"
+    ],
+    "note": "Needs You and Needs Attention are two inboxes"
+   },
+   {
+    "routes": [
+     "/tools/product-capture/admin",
+     "/commerce/intake/admin",
+     "/commerce/review/admin"
+    ],
+    "note": "Three admin pages for one pipeline"
+   }
+  ]
+ },
+ {
+  "product": "Other (Solutions)",
+  "family": "Solutions",
+  "summary": "Room for further industry samples; none exist yet.",
+  "entry": "/samples",
+  "sections": [],
+  "journeys": [],
+  "stranded": [],
+  "buried": [],
+  "missingFromTree": [
+   {
+    "name": "Other industries",
+    "route": "/samples",
+    "why": "TREE has a Solutions > Other slot with no pages"
+   }
+  ],
+  "legacy": [],
+  "duplicates": []
+ },
+ {
+  "product": "More",
+  "family": "More",
+  "summary": "Games and a few showcase pages that have no home yet.",
+  "entry": "/free/games/matrx-jump",
+  "sections": [
+   {
+    "name": "Games",
+    "route": "/free/games/matrx-jump",
+    "why": "Three small games",
+    "pages": [
+     {
+      "route": "/free/games/matrx-jump",
+      "title": "Matrx Jump",
+      "role": "list",
+      "reachedFrom": [
+       "/free/games/matrx-jump"
+      ],
+      "leadsTo": [
+       "/free/games/matrx-jump/character-maker"
+      ]
+     },
+     {
+      "route": "/free/games/matrx-jump/character-maker",
+      "title": "Character maker",
+      "role": "list",
+      "reachedFrom": [
+       "/free/games/matrx-jump"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/free/games/tic-tac-toe",
+      "title": "Tic Tac Toe",
+      "role": "list",
+      "reachedFrom": [
+       "/free/games/matrx-jump"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/free/games/matrx-2048",
+      "title": "Matrx 2048",
+      "role": "list",
+      "reachedFrom": [
+       "/free/games/matrx-jump"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Showcases",
+    "route": "/samples",
+    "why": "Pages that demonstrate platform pieces",
+    "pages": [
+     {
+      "route": "/samples",
+      "title": "Samples",
+      "role": "list",
+      "reachedFrom": [
+       "/samples"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/detail/[type]/[id]",
+      "title": "Type record",
+      "role": "record",
+      "reachedFrom": [
+       "/samples"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/messages-showcase",
+      "title": "Messages showcase",
+      "role": "list",
+      "reachedFrom": [
+       "/samples"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/tool-call-visualization/admin",
+      "title": "Admin",
+      "role": "tool",
+      "reachedFrom": [
+       "/samples"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Play Matrx Jump with a custom character",
+    "steps": [
+     "/free/games/matrx-jump",
+     "/free/games/matrx-jump/character-maker"
+    ]
+   },
+   {
+    "name": "Browse static design samples",
+    "steps": [
+     "/samples"
+    ]
+   }
+  ],
+  "stranded": [
+   {
+    "route": "/detail",
+    "why": "nothing links to it; it is the record-details showcase",
+    "proposedHome": "Showcases"
+   },
+   {
+    "route": "/free/games/matrx-jump/jump-with-settings",
+    "why": "no link found; a settings variant of the Jump game",
+    "proposedHome": "Games"
+   }
+  ],
+  "buried": [],
+  "missingFromTree": [
+   {
+    "name": "Games",
+    "route": "/free/games/matrx-jump",
+    "why": "Games exist in More, in Education (Study Games) and as a public free section"
+   },
+   {
+    "name": "Showcases",
+    "route": "/samples",
+    "why": "Showcase and sample pages are dev material with no node"
+   }
+  ],
+  "legacy": [],
+  "duplicates": [
+   {
+    "routes": [
+     "/free/games/matrx-2048",
+     "/free/games/matrx-jump"
+    ],
+    "note": "2048 is public-site only; Jump and Tic Tac Toe are in the menu; same games section"
+   },
+   {
+    "routes": [
+     "/free/games/matrx-jump",
+     "/free/games/matrx-jump/jump-with-settings"
+    ],
+    "note": "Two versions of the same game"
+   }
+  ]
+ },
+ {
+  "product": "Everywhere",
+  "family": "More",
+  "summary": "Pages that follow a person across the app: the inbox, the link opener and public canvases.",
+  "entry": "/notifications",
+  "sections": [
+   {
+    "name": "Inbox",
+    "route": "/notifications",
+    "why": "What needs the person's attention",
+    "pages": [
+     {
+      "route": "/notifications",
+      "title": "Notifications",
+      "role": "list",
+      "reachedFrom": [
+       "/notifications"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Open a link",
+    "route": "/o/[id]",
+    "why": "Resolves a record link and opens it",
+    "pages": [
+     {
+      "route": "/o/[id]",
+      "title": "O record",
+      "role": "record",
+      "reachedFrom": [
+       "/o/[id]"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Canvas",
+    "route": "/canvas/discover",
+    "why": "Discover and view shared canvases",
+    "pages": [
+     {
+      "route": "/canvas/discover",
+      "title": "Discover",
+      "role": "list",
+      "reachedFrom": [
+       "/canvas/discover"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/canvas/shared/[token]",
+      "title": "Shared record",
+      "role": "record",
+      "reachedFrom": [
+       "/canvas/discover"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Open a shared canvas",
+    "steps": [
+     "/canvas/discover",
+     "/canvas/shared/[token]"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [],
+  "missingFromTree": [
+   {
+    "name": "Canvas discovery",
+    "route": "/canvas/discover",
+    "why": "Public gallery with no signed-in sidebar entry"
+   }
+  ],
+  "legacy": [],
+  "duplicates": []
+ },
+ {
+  "product": "Not in the app frame",
+  "family": "Not in the app frame",
+  "summary": "Pages that deliberately sit outside the shell: public site, share and invitation links, sign-in plumbing, portal and kiosk.",
+  "entry": "/",
+  "sections": [
+   {
+    "name": "Public website",
+    "route": "/",
+    "why": "Marketing, legal text, downloads",
+    "pages": [
+     {
+      "route": "/contact",
+      "title": "Contact",
+      "role": "list",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/desktop",
+      "title": "Desktop",
+      "role": "list",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/developers/oauth",
+      "title": "Oauth",
+      "role": "list",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/download",
+      "title": "Download",
+      "role": "list",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/extend",
+      "title": "Extend",
+      "role": "list",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/how-it-works",
+      "title": "How it works",
+      "role": "list",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/how-we-prove-it",
+      "title": "How we prove it",
+      "role": "list",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/loop",
+      "title": "Loop",
+      "role": "list",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": [
+       "/loop/diagram"
+      ]
+     },
+     {
+      "route": "/loop/diagram",
+      "title": "Diagram",
+      "role": "list",
+      "reachedFrom": [
+       "/loop"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/matrx-extend-demo",
+      "title": "Matrx extend demo",
+      "role": "list",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/privacy-policy",
+      "title": "Privacy policy",
+      "role": "report",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": [
+       "/privacy-policy/extension"
+      ]
+     },
+     {
+      "route": "/privacy-policy/extension",
+      "title": "Extension",
+      "role": "report",
+      "reachedFrom": [
+       "/privacy-policy"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/request-access/thank-you",
+      "title": "Thank you",
+      "role": "list",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/terms-and-conditions",
+      "title": "Terms and conditions",
+      "role": "report",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/terms-of-service",
+      "title": "Terms of service",
+      "role": "report",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/the-landscape",
+      "title": "The landscape",
+      "role": "list",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/why-ai-matrx",
+      "title": "Why ai matrx",
+      "role": "list",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Share links",
+    "route": "/s/[token]",
+    "why": "Links people send each other; open without the app frame",
+    "pages": [
+     {
+      "route": "/c/[handle]",
+      "title": "C record",
+      "role": "record",
+      "reachedFrom": [
+       "/s/[token]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/l/[code]",
+      "title": "L record",
+      "role": "record",
+      "reachedFrom": [
+       "/s/[token]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/p/e/[resourceType]/[id]",
+      "title": "Resourcetype record",
+      "role": "record",
+      "reachedFrom": [
+       "/s/[token]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/r/[token]",
+      "title": "R record",
+      "role": "record",
+      "reachedFrom": [
+       "/s/[token]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/s/[token]",
+      "title": "S record",
+      "role": "record",
+      "reachedFrom": [
+       "/s/[token]"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Invitation links",
+    "route": "/invitations/organization/accept/[token]",
+    "why": "Accept an invitation to something",
+    "pages": [
+     {
+      "route": "/invitations/class/accept/[token]",
+      "title": "Accept record",
+      "role": "record",
+      "reachedFrom": [
+       "/invitations/organization/accept/[token]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/invitations/employee/accept/[token]",
+      "title": "Accept record",
+      "role": "record",
+      "reachedFrom": [
+       "/invitations/organization/accept/[token]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/invitations/organization/accept/[token]",
+      "title": "Accept record",
+      "role": "record",
+      "reachedFrom": [
+       "/invitations/organization/accept/[token]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/invitations/portal/accept/[token]",
+      "title": "Accept record",
+      "role": "record",
+      "reachedFrom": [
+       "/invitations/organization/accept/[token]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/invitations/project/accept/[token]",
+      "title": "Accept record",
+      "role": "record",
+      "reachedFrom": [
+       "/invitations/organization/accept/[token]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/invitations/share/accept/[token]",
+      "title": "Accept record",
+      "role": "record",
+      "reachedFrom": [
+       "/invitations/organization/accept/[token]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/invitations/table/accept/[token]",
+      "title": "Accept record",
+      "role": "record",
+      "reachedFrom": [
+       "/invitations/organization/accept/[token]"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Sign-in plumbing",
+    "route": "/error",
+    "why": "Error, consent and callback pages the sign-in system uses",
+    "pages": [
+     {
+      "route": "/auth/auth-code-error",
+      "title": "Auth code error",
+      "role": "list",
+      "reachedFrom": [
+       "/error"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/auth/support-session/ended",
+      "title": "Ended",
+      "role": "list",
+      "reachedFrom": [
+       "/error"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/auth/verifying",
+      "title": "Verifying",
+      "role": "list",
+      "reachedFrom": [
+       "/error"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/error",
+      "title": "Error",
+      "role": "list",
+      "reachedFrom": [
+       "/error"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/oauth/callback/[app]",
+      "title": "Callback record",
+      "role": "record",
+      "reachedFrom": [
+       "/error"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/oauth/consent",
+      "title": "Consent",
+      "role": "list",
+      "reachedFrom": [
+       "/error"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Message footers",
+    "route": "/sms",
+    "why": "Pages linked from texts and emails: opt-out, reminders",
+    "pages": [
+     {
+      "route": "/appointment-reminder",
+      "title": "Appointment reminder",
+      "role": "list",
+      "reachedFrom": [
+       "/sms"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/sms",
+      "title": "Sms",
+      "role": "list",
+      "reachedFrom": [
+       "/sms"
+      ],
+      "leadsTo": [
+       "/sms/personal-staff"
+      ]
+     },
+     {
+      "route": "/sms/personal-staff",
+      "title": "Personal staff",
+      "role": "list",
+      "reachedFrom": [
+       "/sms"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/unsubscribe/[token]",
+      "title": "Unsubscribe record",
+      "role": "record",
+      "reachedFrom": [
+       "/sms"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Portal (departed members)",
+    "route": "/portal",
+    "why": "Signed-in portal for people who left an organization",
+    "pages": [
+     {
+      "route": "/portal",
+      "title": "Portal",
+      "role": "list",
+      "reachedFrom": [
+       "/portal"
+      ],
+      "leadsTo": [
+       "/portal/[orgId]"
+      ]
+     },
+     {
+      "route": "/portal/[orgId]",
+      "title": "Portal record",
+      "role": "record",
+      "reachedFrom": [
+       "/portal"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/portal/c/[slug]",
+      "title": "C record",
+      "role": "record",
+      "reachedFrom": [
+       "/portal"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/portal/c/[slug]/f/[formId]",
+      "title": "F record",
+      "role": "record",
+      "reachedFrom": [
+       "/portal/c/[slug]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/portal/c/[slug]/r/[recordId]",
+      "title": "R record",
+      "role": "record",
+      "reachedFrom": [
+       "/portal/c/[slug]"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Kiosk (HR punch tablet)",
+    "route": "/kiosk",
+    "why": "Shared tablet where staff punch in",
+    "pages": [
+     {
+      "route": "/kiosk",
+      "title": "Kiosk",
+      "role": "list",
+      "reachedFrom": [
+       "/kiosk"
+      ],
+      "leadsTo": [
+       "/kiosk/[deviceId]"
+      ]
+     },
+     {
+      "route": "/kiosk/[deviceId]",
+      "title": "Kiosk record",
+      "role": "record",
+      "reachedFrom": [
+       "/kiosk"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Google verification pages",
+    "route": "/gmail-read-review",
+    "why": "Pages Google reviewers read to approve our access",
+    "pages": [
+     {
+      "route": "/gmail-read-review",
+      "title": "Gmail read review",
+      "role": "list",
+      "reachedFrom": [
+       "/gmail-read-review"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/google-other-contacts-review",
+      "title": "Google other contacts review",
+      "role": "list",
+      "reachedFrom": [
+       "/gmail-read-review"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/google-read-only-review",
+      "title": "Google read only review",
+      "role": "list",
+      "reachedFrom": [
+       "/gmail-read-review"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Internal speed-test pages",
+    "route": "/",
+    "why": "Performance probes, one per area",
+    "pages": [
+     {
+      "route": "/acquisition/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agent-connections/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agents/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/applets/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/approvals/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/artifacts/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/board/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/camera/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/chat/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/cms/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/code/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/context-items/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/crm/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/dashboard/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/data/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/decisions/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/detail/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/devices/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/dictionary/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/documents/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/drive/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/education/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/esign/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/exports/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/features/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/files/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/hr/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/knowledge-graph/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/knowledge/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/launchpad/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/legal/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/libraries/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/make/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/mandates/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/maps/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/markdown-studio/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/marketing/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/masterwork/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/medical/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/meetings/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/messages/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/messenger/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/notes/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/notifications/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/pick-lists/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/podcast/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/presentations/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/print/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/projects/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/rag/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/reports/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/research/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/sandbox/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/schedules/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/scopes/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/scraper/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/search/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/shapes/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/spaces/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/staff/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/suggestions/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/surfaces/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/tasks/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/tools/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/transcripts/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/trash/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/user-settings/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/vault/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/voice/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/war-room/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/welcome/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/work/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/workbooks/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/workflows/speed-test",
+      "title": "Speed test",
+      "role": "tool",
+      "reachedFrom": [
+       "/"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Accept an organization invitation",
+    "steps": [
+     "/invitations/organization/accept/[token]",
+     "/"
+    ]
+   },
+   {
+    "name": "Open a shared link",
+    "steps": [
+     "/s/[token]",
+     "/r/[token]"
+    ]
+   },
+   {
+    "name": "Departed member uses the portal",
+    "steps": [
+     "/portal",
+     "/portal/[orgId]",
+     "/portal/c/[slug]",
+     "/portal/c/[slug]/r/[recordId]"
+    ]
+   },
+   {
+    "name": "Staff punch in on a tablet",
+    "steps": [
+     "/kiosk",
+     "/kiosk/[deviceId]"
+    ]
+   }
+  ],
+  "stranded": [
+   {
+    "route": "/auth/desktop-handoff",
+    "why": "no menu or link; reached only by the desktop app",
+    "proposedHome": "Sign-in plumbing"
+   },
+   {
+    "route": "/oauth/success",
+    "why": "no menu or link; only an OAuth provider lands here",
+    "proposedHome": "Sign-in plumbing"
+   },
+   {
+    "route": "/google-analytics-youtube-review",
+    "why": "nothing links to it; the other three Google review pages are linked",
+    "proposedHome": "Google verification pages"
+   }
+  ],
+  "buried": [],
+  "missingFromTree": [
+   {
+    "name": "Public website",
+    "route": "/",
+    "why": "TREE lists Not-tiles only for Account and Admin"
+   },
+   {
+    "name": "Invitations",
+    "route": "/invitations/organization/accept/[token]",
+    "why": "Seven invitation kinds with no shared inbox"
+   }
+  ],
+  "legacy": [
+   {
+    "route": "/podcast/studio/create-a",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/create-b",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/create-c",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/create-d",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/create-dense",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/create-e",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/create-f",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/create-refine",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/create-reimagine",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/create-sharp",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/run-a",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/run-b",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/run-c",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/run-d",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/run-dense/[id]",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/run-e",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/run-f",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/run-refine/[id]",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/run-reimagine/[id]",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/podcast/studio/run-sharp/[id]",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/workflows/bakeoff",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/workflows/bakeoff/dense-2/[id]",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/workflows/bakeoff/dense/[id]",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/workflows/bakeoff/refine-2/[id]",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/workflows/bakeoff/refine/[id]",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/workflows/bakeoff/reimagine-2/[id]",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/workflows/bakeoff/reimagine/[id]",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/workflows/bakeoff/sharp-2/[id]",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   },
+   {
+    "route": "/workflows/bakeoff/sharp/[id]",
+    "kind": "bake-off",
+    "note": "Design variant kept for comparison"
+   }
+  ],
+  "duplicates": [
+   {
+    "routes": [
+     "/terms-and-conditions",
+     "/terms-of-service"
+    ],
+    "note": "Two terms pages (SMS terms vs service terms) under near-identical names"
+   },
+   {
+    "routes": [
+     "/privacy-policy",
+     "/privacy-policy/extension"
+    ],
+    "note": "Two privacy policies, one for the extension"
+   },
+   {
+    "routes": [
+     "/download",
+     "/desktop"
+    ],
+    "note": "Two download pages for the desktop app"
+   }
+  ]
+ }
+]
