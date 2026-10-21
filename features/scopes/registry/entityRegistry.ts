@@ -263,7 +263,6 @@ const ENTITY_OVERLAY: Partial<Record<EntityTypeToken, EntityOverlay>> = {
   },
   app: {
     Icon: AppWindow,
-    labelPlural: "Applets",
     hrefFor: (id) => `/applets/manage/${id}`,
   },
   // ─── People (HR) ──────────────────────────────────────────────────────────
@@ -318,7 +317,6 @@ const ENTITY_OVERLAY: Partial<Record<EntityTypeToken, EntityOverlay>> = {
   },
   content_ir_kind: {
     Icon: Shapes,
-    labelPlural: "Shapes",
     // Shape detail routes use the stable kind slug. Generic EntityRef callers
     // hold the database id, so this tiny resolver route translates id → slug.
     hrefFor: (id) => `/shapes/id/${encodeURIComponent(id)}`,
@@ -421,9 +419,6 @@ const ENTITY_OVERLAY: Partial<Record<EntityTypeToken, EntityOverlay>> = {
   },
   udt_document: {
     Icon: FileText,
-    // "Documents" (A5-P, plain words). content.document (Markdown Studio) stays distinct as
-    // "Markdown documents" (its registry label), which is what VERIFIER-25 needed: no two kinds share a plural.
-    labelPlural: "Documents",
     hrefFor: (id) => `/documents/${id}`,
   },
   // `docproc.processed_documents` — a document as the PDF pipeline produced it,
@@ -463,17 +458,12 @@ const ENTITY_OVERLAY: Partial<Record<EntityTypeToken, EntityOverlay>> = {
   // flashcard-set entity (legacy education.flashcard_data merged 2026-08-12).
   fc_set: {
     Icon: Layers,
-    // "Flashcard Sets", never "Flashcards": fc_card is "Flashcards" — two kinds with one plural read
-    // as a duplicate choice in every picker (RC-B11 link picker, 2026-09-26). Guard:
-    // features/scopes/registry/__tests__/entity-plural-labels-are-distinct.test.ts.
-    labelPlural: "Flashcard Sets",
     hrefFor: (id) => `/education/flashcards/${id}`,
   },
   // A quiz SESSION (education.quiz_sessions) is a taking, not the quiz — the
   // `/education/quizzes/[id]` route keys on the ASSESSMENT id (see below).
   quiz_session: {
     Icon: ListChecks,
-    labelPlural: "Quizzes",
   },
   assessment: {
     Icon: ListChecks,
@@ -534,7 +524,6 @@ const ENTITY_OVERLAY: Partial<Record<EntityTypeToken, EntityOverlay>> = {
   // resolves any id (`/o/<id>` → `custom.where_id_opens`), asked as the person (W2.2).
   anon_form: {
     Icon: FilePen,
-    labelPlural: "Forms",
     hrefFor: (id) => openPath(id),
   },
   // A RECORD-STORE RECORD. Its name lives in its document (the table's title field), so the generic
@@ -548,7 +537,6 @@ const ENTITY_OVERLAY: Partial<Record<EntityTypeToken, EntityOverlay>> = {
   },
   google_document: {
     Icon: FileText,
-    labelPlural: "Google Files",
     hrefFor: (id) => detailRecordHref("google_document", id),
   },
 
@@ -601,7 +589,6 @@ const ENTITY_OVERLAY: Partial<Record<EntityTypeToken, EntityOverlay>> = {
   },
   sandbox_instance: {
     Icon: Boxes,
-    labelPlural: "Sandboxes",
     hrefFor: (id) => `/sandbox/${id}`,
   },
   task: {
@@ -643,7 +630,6 @@ const ENTITY_OVERLAY: Partial<Record<EntityTypeToken, EntityOverlay>> = {
   // ─── CRM (crm.party — the ONE record for an external person/company) ──────
   party: {
     Icon: Contact,
-    labelPlural: "People & Companies",
     hrefFor: (id) => `/crm/${id}`,
   },
   crm_deal: {
@@ -658,14 +644,12 @@ const ENTITY_OVERLAY: Partial<Record<EntityTypeToken, EntityOverlay>> = {
   },
   crm_sending_identity: {
     Icon: MailCheck,
-    labelPlural: "Sending Mailboxes",
     hrefFor: (id) => `/crm/sending-identities/${id}`,
   },
 
   // ─── Web (canonical Marketing access-tree doors) ─────────────────────────
   web_brand: {
     Icon: Building2,
-    labelPlural: "Marketing Accounts",
     hrefFor: (id) => `/marketing/brands/${id}`,
   },
   marketing_initiative: {
@@ -688,23 +672,19 @@ const ENTITY_OVERLAY: Partial<Record<EntityTypeToken, EntityOverlay>> = {
   },
   plan_node: {
     Icon: ListOrdered,
-    labelPlural: "Plan Pages",
     // The flat route resolves the node's site and opens that exact node.
     hrefFor: (id) => `/marketing/content-plan/nodes/${id}`,
   },
   web_property: {
     Icon: Globe,
-    labelPlural: "Marketing Properties",
     hrefFor: (id) => `/marketing/properties/${id}`,
   },
   web_snapshot: {
     Icon: FileText,
-    labelPlural: "Web Snapshots",
     hrefFor: (id) => `/marketing/snapshots/${id}`,
   },
   web_crawl_session: {
     Icon: RefreshCw,
-    labelPlural: "Crawls",
     // No flat resolver route: a crawl is only meaningful inside its site, and
     // the surfaces that name one are already standing in that site. They pass
     // `href={marketingRoutes.site(brandId, siteId, `/crawls/${id}`)}` — see
@@ -712,13 +692,11 @@ const ENTITY_OVERLAY: Partial<Record<EntityTypeToken, EntityOverlay>> = {
   },
   web_screenshot: {
     Icon: Frame,
-    labelPlural: "Web Screenshots",
     hrefFor: (id) => `/marketing/screenshots/${id}`,
   },
 
   growth_loop_run: {
     Icon: RefreshCw,
-    labelPlural: "Growth Loops",
     // Matches `platform.shareable_resource_registry.url_path_template` for this
     // token; the route resolves the run to its site and lands on the site's
     // Growth Loop tab.
@@ -728,7 +706,6 @@ const ENTITY_OVERLAY: Partial<Record<EntityTypeToken, EntityOverlay>> = {
   // ─── SEO (canonical keywords — Search Console watchlist targets) ──────────
   seo_keyword: {
     Icon: Tag,
-    labelPlural: "Keywords",
   },
   seo_change_set: {
     Icon: FlaskConical,

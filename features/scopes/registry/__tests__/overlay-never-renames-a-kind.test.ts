@@ -20,26 +20,7 @@ function pluralize(label: string): string {
  * Overlay plurals that rename a kind today, waiting for a naming ruling (vocabulary row +
  * registry label). This list only shrinks: a fixed entry fails the test until it is deleted.
  */
-const AWAITING_A_NAMING_RULING = new Set<string>([
-  "anon_form: Public form → Forms",
-  "app: App → Applets",
-  "content_ir_kind: Content-IR Kind → Shapes",
-  "crm_sending_identity: Sending Identity → Sending Mailboxes",
-  "fc_set: Flashcard Deck → Flashcard Sets",
-  "google_document: Google document → Google Files",
-  "growth_loop_run: Growth Loop Run → Growth Loops",
-  "party: Entity → People & Companies",
-  "plan_node: Plan Node → Plan Pages",
-  "quiz_session: Quiz Session → Quizzes",
-  "sandbox_instance: Sandbox Instance → Sandboxes",
-  "seo_keyword: SEO Keyword → Keywords",
-  "udt_document: Cloud document → Documents",
-  "web_brand: Brand → Marketing Accounts",
-  "web_crawl_session: Crawl Session → Crawls",
-  "web_property: Brand Property → Marketing Properties",
-  "web_screenshot: Screenshot → Web Screenshots",
-  "web_snapshot: Snapshot → Web Snapshots",
-]);
+const AWAITING_A_NAMING_RULING = new Set<string>([]);
 
 it("every overlay plural is the grammatical plural of the registry label", () => {
   const overlay = getAssociationsEntityOverlay() as Record<string, { labelPlural?: string }>;
