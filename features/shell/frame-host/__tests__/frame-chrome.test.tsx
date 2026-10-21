@@ -194,7 +194,7 @@ describe("FrameChrome fills every frame slot with the live chrome", () => {
     mount({ form: "desktop" });
     const trigger = q<HTMLButtonElement>('[aria-label="Account menu"]')!;
     await act(async () => {
-      trigger.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0, ctrlKey: false }));
+      trigger.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true, button: 0, ctrlKey: false }));
       trigger.click();
     });
     const panel = q('[data-live="user-menu"]')!;

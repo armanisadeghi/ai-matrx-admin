@@ -161,8 +161,12 @@ function seedTwoTabs(open: boolean) {
 describe("the header right set on a phone — source", () => {
   it("wraps the five in .shell-header-secondary and mounts the overflow beside them", () => {
     const header = read("features/shell/components/header/HeaderControlSet.tsx");
+    // The five controls live in ONE module every host renders (headerControls.tsx).
+    const controls = read("features/shell/components/header/headerControls.tsx");
     const secondary = header.indexOf('className="shell-header-secondary"');
     expect(secondary).toBeGreaterThan(-1);
+    const set = header.indexOf("<ShellHeaderButtons controls={headerControls(isAuthenticated)} />");
+    expect(set).toBeGreaterThan(secondary);
     for (const control of [
       "<CommandBarHeaderButton",
       "<SurfaceAgentsHeaderButton",
@@ -170,9 +174,9 @@ describe("the header right set on a phone — source", () => {
       "<MessagesHeaderButton",
       "<InboxHeaderButton",
     ]) {
-      expect(header.indexOf(control)).toBeGreaterThan(secondary);
+      expect(controls.indexOf(control)).toBeGreaterThan(-1);
     }
-    expect(header.indexOf("<HeaderPhoneOverflow")).toBeGreaterThan(header.indexOf("<CanvasToggle"));
+    expect(header.indexOf("<HeaderPhoneOverflow")).toBeGreaterThan(set);
   });
 
   it("folds below 768px and only below it", () => {

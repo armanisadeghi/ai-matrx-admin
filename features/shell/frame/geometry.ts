@@ -44,7 +44,8 @@ export function frameCompanionOpenFor(value: string | undefined | null, pageKey:
 /** The cookie's next value after the person chose `open` on `pageKey` (that page moves to the front). */
 export function nextFrameCompanionOpen(value: string | undefined | null, pageKey: string, open: boolean): string {
   const rest = parseOpenEntries(value).filter((e) => e[0] !== pageKey);
-  const entries: OpenEntry[] = [[pageKey, open ? 1 : 0], ...rest].slice(0, FRAME_COMPANION_OPEN_KEEP);
+  const chosen: OpenEntry = [pageKey, open ? 1 : 0];
+  const entries: OpenEntry[] = [chosen, ...rest].slice(0, FRAME_COMPANION_OPEN_KEEP);
   return JSON.stringify(entries);
 }
 

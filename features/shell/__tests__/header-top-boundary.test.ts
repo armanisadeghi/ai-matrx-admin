@@ -60,6 +60,7 @@ function toPx(value: string): number {
 const HEADER_SLOT_FILES = [
   HEADER,
   "features/shell/components/header/HeaderControlSet.tsx",
+  "features/shell/components/header/headerControls.tsx",
   "features/shell/components/header/PageHeader.tsx",
   "features/shell/components/header/PageHeaderPortal.tsx",
   "features/shell/components/header/PageHeaderRightPortal.tsx",
@@ -198,7 +199,7 @@ describe("the header is not glass (glass only floats; the band is solid)", () =>
   });
 
   it("the canvas toggle in the set says transparent", () => {
-    expect(read("features/shell/components/header/HeaderControlSet.tsx")).toContain(
+    expect(read("features/shell/components/header/headerControls.tsx")).toContain(
       '<CanvasToggle variant="transparent" />',
     );
   });

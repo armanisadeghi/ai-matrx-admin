@@ -707,7 +707,9 @@ describe("chrome slots (ROLLOUT-PLAN blocking change #1)", () => {
     mount(base({ form: "desktop" }));
     expect(frame().hasAttribute("data-shell-look")).toBe(false);
     expect(frame().hasAttribute("data-matrx-accent")).toBe(false);
-    expect(frameAppearanceAttributes({ accent: "blue" }).attrs["data-matrx-accent"]).toBe("blue");
+    // A curated id stamps that id ("blue" is the built-in primary, so it stamps nothing).
+    expect(frameAppearanceAttributes({ accent: "violet" }).attrs["data-matrx-accent"]).toBe("violet");
+    expect(frameAppearanceAttributes({ accent: "blue" }).attrs["data-matrx-accent"]).toBeUndefined();
   });
 });
 
