@@ -2169,7 +2169,7 @@ body[style*="pointer-events: none"] {
 }
 /* The phone nav dock is not a pill: a route that shows it has it from the first paint, a fixed
    bar of known height. The page ends above it once, by that constant — never by a measure. */
-@media (max-width: 1023px) {
+@media (width < 1024px) {
   .shell-root[data-show-dock]:not([data-note-detail-active]) [data-matrx-page-end] {
     padding-block-end: calc(
       var(--shell-dock-h) + var(--shell-dock-bottom) + env(safe-area-inset-bottom, 0px) +

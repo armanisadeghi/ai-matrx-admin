@@ -81,6 +81,16 @@ rail's icon column (x = 12px) — collapsed = icon, expanded = icon + name.
   admin, copy short link, sign out. Open state is the shell root's
   `#shell-user-menu` checkbox; items sit in `MenuItemCloseLabel`.
 
+## FLOATING THINGS NEVER MOVE THE PAGE (Arman, 2026-10-20)
+
+Pills, assists, badges, alarms, notices, toasts, the chat dock and the window tray float OVER the page. They never change the size or position of anything on it. When one would cover something, it moves itself; the page never makes room.
+
+- How chrome moves: the assists pill lifts, docks into the pager or header, or yields (`features/assists/assistClearance.ts`); the admin error badge uses the same lift (`floatingLiftFor` → `features/admin/error-inspector/useFloatingLift.ts`); the chat dock and pills rest above a page's own bars (`--matrx-page-foot-h`, and `--page-bottom-dock-h`, which a list publishes for its pager and a page publishes for its phone dock). Pages publish facts about their own bars; chrome reads them. Never the other way round.
+- What chrome may change: only the empty scroll room after a scroller's last line (the trailing `::after` runway below), which moves nothing on screen.
+- What it may never do: publish its size for a page to pad, shrink, re-centre or cap itself by, or write padding/margin/height onto page elements. Retired 2026-10-20 after 10+ sightings (the "1 error" badge lifting the Agent Studio composer): `--shell-fixed-corner-clearance` (badge → Studio, Question Desk), `--shell-fixed-alert-clearance` (alarm → shell padding), `--matrx-floating-fixed-measured` (chat dock → list page foot), the assists scroller inset, and three pages sizing by `--matrx-floating-clearance`.
+- The phone nav dock (`.shell-dock`) is not a pill: a route that shows it has it from the first paint, a fixed bar, and the list page end reserves its constant height.
+- Guard: `pnpm check:overlays-never-move-page` (`--strict`, `--self-test`; run by `styles/__tests__/overlays-never-move-page.test.ts`). Red on the 2026-10-20 tree (41 findings), green after.
+
 ## THE FLOATING CLEARANCE — every scrolling page ends clear of what floats (owner, 2026-10-04)
 
 - `FloatingClearanceSync` (mounted once by `AppShell`) measures every visible bottom-anchored element matching `FLOATING_BOTTOM_SELECTOR` (`lib/layout/floating-chrome.ts`: `[data-matrx-floating-bottom]`, `.ambient-assistant-dock`, `.shell-dock`) and publishes `--matrx-floating-measured` on `<html>`; `styles/shell.css` derives `--matrx-floating-clearance` (measured or safe area, + 1.5rem).
@@ -93,7 +103,7 @@ rail's icon column (x = 12px) — collapsed = icon, expanded = icon + name.
 
 - Supersedes "the page end = the gutter" below for every page that SCROLLS. One value: `--matrx-page-runway` = `max(50dvh, --matrx-floating-clearance)` (`styles/shell.css`). Every shell runway `::after`, `.scroll-page-end-space`, education's boundary, and the full-page notes editor (all four modes) read it; nothing hand-writes `pb-[85dvh]`/`40dvh`. A non-scrolling list surface (`data-matrx-page-end`) keeps its small foot.
 - A pane inside an app viewport that is a page (the notes editor) marks its root `data-matrx-page-runway` and pads by `var(--matrx-page-runway)`; a `ProTextarea` host passes `--matrx-textarea-end` so the control-row reserve (44px) is a floor, never a ceiling.
-- Nothing may SHRINK it: the assists pill's inset (`features/assists/assistClearance.ts`) only ever adds — it skips a scroller whose own bottom padding already covers the overlap.
+- Nothing may SHRINK it; the assists pill no longer insets any scroller (removed 2026-10-20 — FLOATING THINGS NEVER MOVE THE PAGE).
 - A page's own bottom bar (a status bar flush with the floor — the notes metadata bar) carries `data-matrx-page-foot`; `FloatingClearanceSync` publishes its height as `--matrx-page-foot-h` and the page assistant dock rests above it, never on it.
 - A page's own PHONE DOCK (a bar it floats over its content below `md`: the notes editor dock, `MobileActionBar`) carries `data-matrx-page-dock` (`PAGE_DOCK_ATTR`, `lib/layout/floating-chrome.ts`) and is the last child of its flex column. In a frame (`<html data-board-embed>`: a launchpad App page widget, a board Page tile — narrow, so the page draws its phone layout on a desktop) `styles/shell.css` §13d lays it in flow as the column's last row: the page ends above it and every control stays reachable — and, being in flow, it is SOLID (glass only floats): the same rule re-declares every `--matrx-glass-*` leaf token opaque, so every glass surface inside the dock turns solid with no call-site change. Guard: `lib/layout/framed-page-docks.test.ts` (every `md:hidden fixed|absolute bottom-0` dock carries the attribute).
 - Guards: `lib/layout/page-runway.test.ts` (token, readers, verdicts, foot lift), the dev `[page-runway]` scream (`useFloatingClearanceGuard`: a scrolling page or `[data-matrx-page-runway]` pane ending short; textareas measured by their padding), and the browser walk `node scripts/page-runway-walk.mjs` (RUNWAY_ORIGIN = your preview host; every listed route × 1280/375, notes × Write/Split/Plain/Read; exit 1 on any finding).
@@ -101,7 +111,7 @@ rail's icon column (x = 12px) — collapsed = icon, expanded = icon + name.
 ## PAGE RHYTHM — one spacing scale for page structure, the bottom once (owner, 2026-10-05)
 
 - Tokens on `:root` (`styles/shell.css`), numbers + rules in `lib/layout/page-rhythm.ts`, pinned by `lib/layout/page-rhythm.test.ts`: `--matrx-page-gutter` 12/16px, `--matrx-page-top` 16/24, `--matrx-page-block-gap` 24/32 (between BIG blocks only; control sets keep their dense gaps), `--matrx-page-end` = the gutter (phone / ≥640px).
-- The runway is the page end ONCE: `--matrx-floating-clearance` = what floats + page end, and a scroller that takes the runway loses its own bottom padding. A non-scrolling page surface (`data-matrx-page-end`: the `EntityListPage` body) gets no runway; it pads its foot by page end + `--matrx-floating-fixed-measured` (chrome WITHOUT `data-matrx-floating-follows-page`, i.e. not the assists pill that already rests above the pager) — so a pager never sits under the page assistant.
+- The runway is the page end ONCE: `--matrx-floating-clearance` = what floats + page end, and a scroller that takes the runway loses its own bottom padding. A non-scrolling page surface (`data-matrx-page-end`: the `EntityListPage` body) gets no runway; its foot is the page end + safe area, a constant (plus the phone nav dock's fixed height on a route that shows it). The chat dock and pills rest above its pager via `--page-bottom-dock-h`; the pager never moves for them (2026-10-20).
 - Guard: the same dev hook screams `[page-rhythm]` (amber outline) when a page ends with more than page end + 4px under its last element; `window.__matrxPageRhythmProbe()` runs it. Walk + screenshots: `scripts/page-rhythm-walk.mjs`.
 
 ## PAGE-TOP TEMPLATES — every page top is one of four (owner, 2026-10-05)
@@ -149,6 +159,7 @@ seeded into the store, so the first frame is already theirs and a save re-render
 
 ## Change log
 
+- `2026-10-20` — claude: **floating things never move the page** (Arman). Removed every make-room path (corner clearance, alarm clearance, the fixed floating measure, the assists inset, three pages sizing by what floats); the error badge lifts off controls; the chat dock rests above a list pager; guard `check:overlays-never-move-page`. Section above.
 - `2026-10-20` — claude (Lane P): **an in-flow framed dock is solid.** 5dcee07f6 put the dock in flow but it still drew glass; §13d now re-declares the glass tokens opaque on it. Section above.
 - `2026-10-20` — claude (Lane O): **a framed page's phone docks are its last row.** In a launchpad App page widget /notes drew its phone dock (undo, formatting, Home/Copy/Tags/More) over the note's text behind glass; `data-matrx-page-dock` + shell.css §13d put it in the page's flow inside a frame. Section above.
 - `2026-10-19` — claude (custom-experience lane A): **every nav node has a permanent id** (`ShellNavItem.id` / `ShellNavChild.id`, guard `__tests__/nav-ids.test.ts`) and `shell-layout/` gains the catalog, validator and resolver for custom layouts — read `shell-layout/FEATURE.md`. Renderers unchanged.

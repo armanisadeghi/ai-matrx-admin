@@ -90,7 +90,7 @@ Voice, speed and language are NOT here — they come from the existing tiered `l
 - **A refusal renders INSIDE the sticky action bar, above the buttons.** Printed under it, a refusal lands below the fold on a 900px viewport and the person sees nothing happen at all (verifier finding 1, 2026-09-12). Read-aloud failures also raise a toast.
 - **The progress meter counts exactly the rows the rail lists.** It used to count every question in the interview while the rail listed only the ask-mode ones — "1 of 8 answered" over six rows (verifier finding 3). Review rows now get their own line.
 - **The undo restores the status the row actually held**, passed in by the caller, never guessed from `asked_at` (verifier finding 5).
-- **The rail's legend reserves the band the shell's floating chrome ACTUALLY occupies** — `--shell-fixed-corner-clearance`, measured and published by the Error Inspector badge itself (`features/admin/error-inspector/useFixedCornerClearance.ts`). A guessed `lg:pb-14` only moved the collision one line up: at 1440×900 the chip still covered "Answers save straight to the record." (finding 6, 2026-09-12 → V2 finding 7, 2026-09-14). Nothing floating there publishes nothing, and the legend reserves nothing. (The schedule alarm deliberately publishes semantic state instead — its card is draggable and can be viewport-tall, so measuring it WOULD feed layout back into itself. Different chrome, different rule.)
+- **The rail never shrinks for floating chrome** (floating things never move the page, 2026-10-20): it is exactly the viewport under the shell header tall; the admin error badge rises off the legend instead (`useFloatingLift`). The 2026-09-14 rule here — reserve the band the badge published — was retired with that variable.
 - **`V` starts the microphone in BOTH states.** `openWrite({dictate:true})` used to set a pending flag and call `setWriting(true)`, a no-op when the box is already open, so the effect that consumes the flag never re-ran and "Answer by voice" did nothing at all in the state a person is most likely to press it in (V2 finding 4). With the box open it starts the field's recorder now; with it closed the flag survives until the box has committed, because `startDictation()` needs the field to exist.
 - **A refusal that arrives LATE still reaches the alert.** `startDictation()` returns `{started:true}` as soon as its five pre-checks pass; a microphone the browser then DENIES rejects afterwards, inside the recorder, and reaches the field's `onTranscriptionError`. Every box on this surface now passes that handler into the same refusal slot it uses for everything else — the sticky bar's `role="alert"` for the write box, the words-error line for the inline and overturn boxes — so the person is told where they are looking and not only by a toast that disappears (V2 finding 3).
 - **"k batches done" is DERIVED from the rows** (`answered / batch size`), never component state. It was state nothing incremented, so someone working 117 decisions across sittings always read "0 batches done" beside honest numbers (V2 finding 5). Derived, it survives a reload and stores nothing.
@@ -166,9 +166,9 @@ Built 2026-09-12 as lane L2 of the Question Desk campaign, then re-worked the sa
 - **V2-7** the error chip covered the rail's last line at 1280×720 even with the measured
   clearance as bottom padding: the rail is a scroll container, so padding at the END of
   its content cannot protect a line that is mid-scroll under the chip. The rail's HEIGHT
-  now stops above the band (`.qd-rail` in `question-desk.css`:
-  `calc(100dvh - var(--shell-header-h, 0px) - var(--shell-fixed-corner-clearance, 0px))` — the rail is sticky UNDER the shell header, so a plain 100dvh put its bottom 40px below the fold). Measured on the dev surface at 1280×720: rail bottom 672, chip band 48, nothing under the chip. Guard:
-  `styles/__tests__/fixed-corner-clearance.test.ts` (RED on the padding, GREEN on the height).
+  stopped above the band the badge published. Superseded 2026-10-20: the rail is
+  `calc(100dvh - var(--shell-header-h, 0px))` and the badge lifts off the legend (guard
+  `styles/__tests__/overlays-never-move-page.test.ts`).
 
 ## Admin reading banner (2026-10-08)
 

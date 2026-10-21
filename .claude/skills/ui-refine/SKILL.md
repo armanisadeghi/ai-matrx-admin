@@ -34,6 +34,10 @@ description: "Refine UI posture — improve an existing screen without reinventi
 15. **Wasted vertical space is the worst sin;** every status shown is backed by real state.
 16. **A new output style or menu layout is a NEW function used only by the new path;** never thin a shared builder.
 17. **A page fetches only what it shows, each thing once;** every removed fetch ships its on-engagement load.
+18. **Floating things never move the page.** Pills, assists, badges, alarms, notices, toasts and the
+   chat dock float over it; when one would cover something, it moves itself (lifts, rests above
+   the bar, yields). No page pads, shrinks or re-centres for one. Only the empty scroll room after a
+   page's last line may grow. Guard: `pnpm check:overlays-never-move-page` (matrx-frontend).
 <!-- rules:stamp-end -->
 
 **Your one specialty: making an existing UI *meaningfully* better while keeping the user's mental model.** "Better" is a visible quality leap, never a timid reskin. You are ruthless about the things that quietly drag a UI down — and you fix them, not paper over them:

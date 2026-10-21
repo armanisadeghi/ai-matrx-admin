@@ -1,16 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const schedulesRoute = path.join(process.cwd(), "app/(core)/schedules");
 const shellStyles = path.join(process.cwd(), "styles/shell.css");
-
-function pageFiles(directory: string): string[] {
-  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const target = path.join(directory, entry.name);
-    if (entry.isDirectory()) return pageFiles(target);
-    return entry.name === "page.tsx" ? [target] : [];
-  });
-}
 
 describe("schedule route terminal clearance", () => {
   it("creates real scroll runway below min-height route children — the page runway, never an alarm reserve", () => {
@@ -19,16 +10,5 @@ describe("schedule route terminal clearance", () => {
     expect(source).toMatch(/\.shell-main::after,[\s\S]*?block-size: var\(--matrx-page-runway\);/);
     // Floating things never move the page (2026-10-20): the alarm reserves nothing.
     expect(source).not.toContain("--shell-fixed-alert-clearance");
-  });
-
-  it("reserves mobile and desktop space above the fixed schedule alarm in every route scroller", () => {
-    const routePages = pageFiles(schedulesRoute);
-
-    expect(routePages).toHaveLength(4);
-    for (const file of routePages) {
-      const source = fs.readFileSync(file, "utf8");
-      expect(source).toContain("h-full overflow-y-auto");
-      expect(source).toContain("pb-20 sm:pb-16");
-    }
   });
 });

@@ -34,6 +34,10 @@ description: "WindowPanel (@ai-matrx/summon/window) and its window manager. Use 
 15. **Wasted vertical space is the worst sin;** every status shown is backed by real state.
 16. **A new output style or menu layout is a NEW function used only by the new path;** never thin a shared builder.
 17. **A page fetches only what it shows, each thing once;** every removed fetch ships its on-engagement load.
+18. **Floating things never move the page.** Pills, assists, badges, alarms, notices, toasts and the
+   chat dock float over it; when one would cover something, it moves itself (lifts, rests above
+   the bar, yields). No page pads, shrinks or re-centres for one. Only the empty scroll room after a
+   page's last line may grow. Guard: `pnpm check:overlays-never-move-page` (matrx-frontend).
 <!-- rules:stamp-end -->
 
 `WindowPanel`, the window manager (`windowManager` slice), the tray, pop-out, the three phone presentations and window persistence are the **npm package `@ai-matrx/summon`** (source `../aidream/apps/shared/summon/src/window`, `src/core`, `src/persistence`; guides in the package `README.md` and `FEATURE.md`). This repo no longer contains that engine. What stays here: the **window components** (`features/window-panels/windows/**`), the **Tools grid**, **tray previews**, the **Detail primitive** host and the app's wiring. Deep reference for what stays: [`features/window-panels/FEATURE.md`](../../../features/window-panels/FEATURE.md).

@@ -359,6 +359,10 @@ if $STRICT; then
         # runway under floating chrome; no hand pb-safe, no unreasoned opt-out. Offline, ~2 s.
         "Floating clearance|pnpm check:floating-clearance:strict"
         "Floating clearance — self-test|pnpm check:floating-clearance:self-test"
+        # FLOATING THINGS NEVER MOVE THE PAGE (Arman, 2026-10-20): no page pads, shrinks or re-centres
+        # by a variable floating chrome publishes; chrome never styles the page. Offline, ~2 s.
+        "Overlays never move the page|pnpm check:overlays-never-move-page:strict"
+        "Overlays never move the page — self-test|pnpm check:overlays-never-move-page:self-test"
         # SSR ZERO LAYOUT SHIFT (skill ssr-zero-layout-shift): a viewport hook choosing between JSX
         # trees paints the wrong tree first on phones; shrink-only baseline. Offline, ~2 s.
         "SSR viewport branch|pnpm check:ssr-viewport-branch:strict"
@@ -1341,6 +1345,8 @@ else
         "Scroll-chain (clipped tables/lists)|pnpm exec tsx scripts/check-scroll-chain.ts"
         "Floating clearance|pnpm check:floating-clearance"
         "Floating clearance — self-test|pnpm check:floating-clearance:self-test"
+        "Overlays never move the page|pnpm check:overlays-never-move-page"
+        "Overlays never move the page — self-test|pnpm check:overlays-never-move-page:self-test"
         "SSR viewport branch|pnpm check:ssr-viewport-branch"
         "SSR viewport branch — self-test|pnpm check:ssr-viewport-branch:self-test"
         "UI drift|pnpm check:ui-drift"

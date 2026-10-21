@@ -25,7 +25,7 @@ it("keeps the default when there is no shell column (chat closed on a page witho
 it("both badge shapes take their left from the measured start of the page, never a bare left-4", () => {
   const badge = readFileSync(join(__dirname, "..", "ErrorInspectorBadge.tsx"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
   expect(badge).toContain("useShellMainLeft");
-  expect(badge.match(/style=\{leftStyle\}/g) ?? []).toHaveLength(2);
+  expect(badge.match(/style=\{placeStyle\}/g) ?? []).toHaveLength(2);
   expect(badge).not.toMatch(/sm:left-4/);
   expect(badge.match(/sm:left-\[var\(--error-badge-left,1rem\)\]/g) ?? []).toHaveLength(2);
 });

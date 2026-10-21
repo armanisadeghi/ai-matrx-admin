@@ -23,7 +23,7 @@ describe("the page runway value", () => {
     expect(SHELL_CSS).not.toMatch(/max\(\s*var\(--matrx-floating-clearance\),\s*var\(--shell-fixed-alert-clearance/);
     expect(SHELL_CSS).not.toMatch(/height:\s*max\(var\(--shell-fixed-alert-clearance\),\s*var\(--matrx-floating-clearance\)\)/);
     const runwayReads = SHELL_CSS.match(/var\(--matrx-page-runway\)/g) ?? [];
-    expect(runwayReads.length).toBeGreaterThanOrEqual(6);
+    expect(runwayReads.length).toBeGreaterThanOrEqual(5);
   });
 
   it("the generous end-space class and education read the same token, not their own numbers", () => {

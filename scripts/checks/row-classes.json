@@ -5,7 +5,7 @@
     "repo-only": "reads the repository and nothing else"
   },
   "counts": {
-    "repo-only": 198,
+    "repo-only": 221,
     "live-db": 70
   },
   "rows": {
@@ -316,6 +316,34 @@
       "class": "repo-only",
       "cmd": "pnpm check:one-table-law:self-test",
       "reason": "no database access in 3 file(s) reached",
+      "evidence": []
+    },
+    "no-new-hand-built-record-list-use-the-ladder": {
+      "label": "No new hand-built record list (use the ladder)",
+      "class": "repo-only",
+      "cmd": "pnpm check:hand-built-lists",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "the-hand-built-lists-guard-can-still-fail-fixtures-in-a-temp": {
+      "label": "The hand-built-lists guard can still fail (fixtures in a temp dir)",
+      "class": "repo-only",
+      "cmd": "pnpm check:hand-built-lists:self-test",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "table-columns-over-db-dates-enums-declare-their-field-type": {
+      "label": "Table columns over DB dates/enums declare their field type",
+      "class": "repo-only",
+      "cmd": "pnpm check:table-field-types --strict",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "the-table-field-types-guard-can-still-fail-fixtures": {
+      "label": "The table-field-types guard can still fail (fixtures)",
+      "class": "repo-only",
+      "cmd": "pnpm check:table-field-types:self-test",
+      "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },
     "no-hand-written-find-or-create-of-a-table-list-all-search-by": {
@@ -740,6 +768,41 @@
       "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },
+    "one-file-fans-out-too-many-lazy-import-targets": {
+      "label": "One file fans out too many lazy import() targets",
+      "class": "repo-only",
+      "cmd": "pnpm check:import-fanout",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "import-fanout-guard-self-test": {
+      "label": "Import-fanout guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:import-fanout:self-test",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "login-hydrates-asset-reader-self-test": {
+      "label": "Login-hydrates asset reader self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:login-hydrates:self-test",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "the-records-ui-root-is-imported-only-through-its-one-front-d": {
+      "label": "The records-ui root is imported only through its one front door",
+      "class": "repo-only",
+      "cmd": "pnpm check:records-ui-front-door",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "records-ui-front-door-guard-self-test": {
+      "label": "Records-ui front-door guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:records-ui-front-door:self-test",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
     "server-only-module-calls-a-use-client-export": {
       "label": "Server-only module calls a \"use client\" export",
       "class": "repo-only",
@@ -899,6 +962,20 @@
       "reason": "no database access in 2 file(s) reached",
       "evidence": []
     },
+    "overlays-never-move-the-page": {
+      "label": "Overlays never move the page",
+      "class": "repo-only",
+      "cmd": "pnpm check:overlays-never-move-page:strict",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "overlays-never-move-the-page-self-test": {
+      "label": "Overlays never move the page — self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:overlays-never-move-page:self-test",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
     "ssr-viewport-branch": {
       "label": "SSR viewport branch",
       "class": "repo-only",
@@ -987,6 +1064,20 @@
       "label": "One peek — self-test",
       "class": "repo-only",
       "cmd": "pnpm check:one-peek:self-test",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "one-id": {
+      "label": "One id",
+      "class": "repo-only",
+      "cmd": "pnpm check:one-id:strict",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "one-id-self-test": {
+      "label": "One id — self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:one-id:self-test",
       "reason": "no database access in 2 file(s) reached",
       "evidence": []
     },
@@ -2077,32 +2168,15 @@
       "label": "Content IR / kinds test suite",
       "class": "repo-only",
       "cmd": "pnpm test:content-ir",
-      "reason": "no database access in 257 file(s) reached",
+      "reason": "no database access in 262 file(s) reached",
       "evidence": []
     },
     "whole-jest-suite-every-suite-not-ci-s-four-scopes": {
       "label": "Whole jest suite (every suite, not CI's four scopes)",
-      "class": "live-db",
+      "class": "repo-only",
       "cmd": "pnpm test",
-      "reason": "reaches code that can open the live database",
-      "evidence": [
-        {
-          "file": "actions/admin/database.test.ts",
-          "signal": "admin Supabase client (createAdminClient)"
-        },
-        {
-          "file": "actions/admin/database.test.ts",
-          "signal": "execute_admin_query RPC"
-        },
-        {
-          "file": "actions/feedback.actions.test.ts",
-          "signal": "admin Supabase client (createAdminClient)"
-        },
-        {
-          "file": "app/(core)/data/__tests__/route-mount.live.test.tsx",
-          "signal": "live database host"
-        }
-      ]
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
     },
     "shareable-registry-live-db-vs-committed-snapshot": {
       "label": "Shareable registry: live DB vs committed snapshot",
@@ -2255,6 +2329,20 @@
       "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },
+    "british-spelling-in-user-visible-text-changed-files": {
+      "label": "British spelling in user-visible text (changed files)",
+      "class": "repo-only",
+      "cmd": "pnpm check:us-spelling",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "us-spelling-guard-self-test": {
+      "label": "US spelling guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:us-spelling:self-test",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
     "retired-word-used-old-schema-or-actor-tier-name": {
       "label": "Retired word used (old schema or actor-tier name)",
       "class": "repo-only",
@@ -2266,6 +2354,13 @@
       "label": "Retired-words guard self-test",
       "class": "repo-only",
       "cmd": "pnpm check:retired-words:self-test",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "overlay-index-generated-from-the-definitions-is-fresh": {
+      "label": "Overlay index generated from the definitions is fresh",
+      "class": "repo-only",
+      "cmd": "pnpm check:overlays",
       "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },
@@ -2374,6 +2469,20 @@
       "reason": "no database access in 2 file(s) reached",
       "evidence": []
     },
+    "code-written-text-in-a-user-message": {
+      "label": "Code-written text in a user message",
+      "class": "repo-only",
+      "cmd": "pnpm check:no-code-authored-user-input",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "code-written-user-message-guard-self-test": {
+      "label": "Code-written user-message guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:no-code-authored-user-input:self-test",
+      "reason": "no database access in 3 file(s) reached",
+      "evidence": []
+    },
     "same-tab-navigation-from-a-notification-or-toast-action": {
       "label": "Same-tab navigation from a notification or toast action",
       "class": "repo-only",
@@ -2386,6 +2495,20 @@
       "class": "repo-only",
       "cmd": "pnpm check:notice-new-tab:self-test",
       "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "price-shown-where-someone-is-doing-not-deciding-law-14": {
+      "label": "Price shown where someone is doing, not deciding (law 14)",
+      "class": "repo-only",
+      "cmd": "pnpm check:cost-display",
+      "reason": "no database access in 3 file(s) reached",
+      "evidence": []
+    },
+    "points-placement-guard-self-test": {
+      "label": "Points-placement guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:cost-display:self-test",
+      "reason": "no database access in 3 file(s) reached",
       "evidence": []
     },
     "hand-built-mailto-tel-sms-social-link-outside-the-canonical-": {
@@ -2413,6 +2536,20 @@
       "label": "No-vendor-names guard self-test",
       "class": "repo-only",
       "cmd": "pnpm check:no-vendor-names:self-test",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "catalog-tools-hidden-from-whole-table-tool-reads": {
+      "label": "Catalog Tools hidden from whole-table tool reads",
+      "class": "repo-only",
+      "cmd": "pnpm check:tool-catalog-readers",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "catalog-readers-guard-self-test": {
+      "label": "Catalog-readers guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:tool-catalog-readers:self-test",
       "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },
@@ -2506,6 +2643,30 @@
       "cmd": "pnpm check:google-auth-gate",
       "reason": "no database access in 2 file(s) reached",
       "evidence": []
+    },
+    "google-chat-tool-names-a-renamed-server-tool-silently-disabl": {
+      "label": "Google chat tool names (a renamed server tool silently disables Google in chat)",
+      "class": "live-db",
+      "cmd": "pnpm check:google-chat-tools",
+      "reason": "reaches code that can open the live database",
+      "evidence": [
+        {
+          "file": "scripts/check-google-chat-tools.ts",
+          "signal": "direct-db loader (loadDbEnv)"
+        },
+        {
+          "file": "scripts/check-google-chat-tools.ts",
+          "signal": "gate-db helper (openGateDb/withGateDb)"
+        },
+        {
+          "file": "scripts/lib/direct-db-env.ts",
+          "signal": "live database host"
+        },
+        {
+          "file": "scripts/lib/direct-db-env.ts",
+          "signal": "nightly dev clone connection"
+        }
+      ]
     },
     "python-server-calls-outside-the-one-request-pipeline": {
       "label": "Python-server calls outside the one request pipeline",
