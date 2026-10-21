@@ -6,8 +6,8 @@
  *
  * One row per build (root `runtime.global_execution` of type
  * `agent_factory_build`), its facts read from the build's latest checkpoint.
- * A row opens the build's step-by-step view. Auto-refreshes while any build
- * on screen is still running.
+ * A row opens the build's step-by-step view. The list re-reads when a build
+ * starts or changes status (realtime on the build rows), never on a timer.
  */
 
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
@@ -27,6 +27,7 @@ import {
   verdictChip,
 } from "@/components/mardown-display/blocks/agent-factory-kinds/AgentFactoryKindBlocks";
 import { listFactoryBuildsPage } from "../service";
+import { useFactoryBuildChanges } from "../useFactoryBuildChanges";
 import { serverTableInitialState, useServerTable } from "@/features/admin/shared/server-table/useServerTable";
 import {
   STEP_LABEL,
@@ -80,6 +81,9 @@ export function FactoryBuildsPage() {
     "",
     "agent-factory-builds",
   );
+
+  // A build starting or changing status re-reads the list once; no timer.
+  useFactoryBuildChanges(reload);
 
   const rowIds = useMemo(() => rows.map((r) => r.id).join(","), [rows]);
   useEffect(() => {

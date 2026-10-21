@@ -4,7 +4,7 @@
  * The build page, the progress card and the Factory list each re-read the spine on a 3 s, 3 s and
  * 5 s timer. A run is followed on its event feed and the list on `GET /runs/stream`, so a timer is a
  * wasted request that hides a missing push. This scan refuses `setInterval` and any read of
- * `global_execution` in `features/agents/factory/**`, except the history readers: `service.ts` (old
+ * `.from("global_execution")` read in `features/agents/factory/**` (a realtime binding is not a read), except the history readers: `service.ts` (old
  * builds, read once by id or by page) and `overview.ts` (the doors table's counts).
  *
  * It must FAIL on the old code: the old files come out of git into a mktemp dir (never swapped on
@@ -26,7 +26,7 @@ export function pollingViolations(files: Record<string, string>): string[] {
   for (const [path, text] of Object.entries(files)) {
     const code = text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
     if (/\bsetInterval\s*\(/.test(code)) out.push(`${path}: setInterval`);
-    if (!HISTORY_READERS.has(path.split("/").pop() ?? "") && /["'`]global_execution["'`]/.test(code)) {
+    if (!HISTORY_READERS.has(path.split("/").pop() ?? "") && /\.from\(\s*["'`]global_execution["'`]/.test(code)) {
       out.push(`${path}: reads global_execution`);
     }
   }

@@ -11,7 +11,10 @@
  *  - a workflow run is followed on its event feed (`followWorkflowRunStream`: replay from the start,
  *    then live, closing at the run's end); the row is re-read once after a step finishes or the run
  *    waits for an answer or ends, never on a clock;
- *  - an old build that is still running is re-read when the person returns to the tab, or on `reload`.
+ *  - an old build that is still running is followed on its execution's event stream
+ *    (`GET /runtime/executions/{id}/events/stream`: the pipeline saves a checkpoint event per step), and the
+ *    spine row is re-read once after a burst of frames, never on a clock; it is also re-read when the person
+ *    returns to the tab, or on `reload`. The stream is closed as soon as the build is over.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -25,6 +28,8 @@ import {
   TERMINAL_RUN_EVENTS,
   type WorkflowRunWireEvent,
 } from "@ai-matrx/chat/agents/redux/execution-system/thunks/follow-workflow-run-stream";
+import { operationEventsStream } from "@ai-matrx/api/architecture";
+import { serverApi } from "@/lib/api/server-api";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { buildDetailFromRun, changesRowOutputs, gateOfRun, isLoggedNode, type BuildGate, type BuildRunRow, type NodeLogEntry } from "./build-run";
 import { readBuildRun } from "./build-run-service";
@@ -69,6 +74,8 @@ export function useBuildDetail(id: string): { snap: BuildDetailSnap | null; relo
     let readAgain = false;
     let settleTimer: ReturnType<typeof setTimeout> | null = null;
     let following = false;
+    let oldFeed: AbortController | null = null;
+    let oldTimer: ReturnType<typeof setTimeout> | null = null;
 
     const fail = (e: unknown) => {
       if (live) setSnap({ id, kind, detail: null, gate: null, error: e instanceof Error ? e.message : "Could not load the build", polls: 0 });
@@ -139,15 +146,52 @@ export function useBuildDetail(id: string): { snap: BuildDetailSnap | null; relo
       });
     };
 
+    const publishOld = (old: FactoryBuildDetail | null) => {
+      if (!live) return;
+      kind = "build";
+      const over = old ? spineIsOver(old.spineStatus) : false;
+      setSnap({ id, kind, detail: old, gate: null, error: null, polls: old && over ? SETTLED_POLLS : 0 });
+      if (old && !over) followOld();
+      else if (oldFeed) {
+        oldFeed.abort();
+        oldFeed = null;
+      }
+    };
+
     const readOld = async () => {
       try {
-        const old = await getFactoryBuild(id, controller.signal);
-        if (!live) return;
-        kind = "build";
-        setSnap({ id, kind, detail: old, gate: null, error: null, polls: old && spineIsOver(old.spineStatus) ? SETTLED_POLLS : 0 });
+        publishOld(await getFactoryBuild(id, controller.signal));
       } catch (e) {
         if (!controller.signal.aborted) fail(e);
       }
+    };
+
+    const scheduleOldRead = () => {
+      if (oldTimer) clearTimeout(oldTimer);
+      oldTimer = setTimeout(() => {
+        oldTimer = null;
+        void readOld();
+      }, ROW_READ_SETTLE_MS);
+    };
+
+    // An old build that is still running: every frame on its event stream is a hint to read it once.
+    const followOld = () => {
+      if (oldFeed || !live) return;
+      const feed = new AbortController();
+      oldFeed = feed;
+      controller.signal.addEventListener("abort", () => feed.abort(), { once: true });
+      void (async () => {
+        try {
+          const stream = await operationEventsStream(serverApi, { path: { execution_id: id } }, { signal: feed.signal });
+          for await (const frame of stream) {
+            if (frame && typeof frame === "object" && "data" in frame) scheduleOldRead();
+          }
+        } catch (e) {
+          if (live && !feed.signal.aborted) console.error("[agent build] the build's event stream ended with an error", e);
+        } finally {
+          if (oldFeed === feed) oldFeed = null;
+        }
+      })();
     };
 
     const start = async () => {
@@ -161,8 +205,7 @@ export function useBuildDetail(id: string): { snap: BuildDetailSnap | null; relo
           follow();
           return;
         }
-        kind = "build";
-        setSnap({ id, kind, detail: old, gate: null, error: null, polls: old && spineIsOver(old.spineStatus) ? SETTLED_POLLS : 0 });
+        publishOld(old);
       } catch (e) {
         if (!controller.signal.aborted) fail(e);
       }
@@ -186,6 +229,8 @@ export function useBuildDetail(id: string): { snap: BuildDetailSnap | null; relo
       live = false;
       controller.abort();
       if (settleTimer) clearTimeout(settleTimer);
+      if (oldTimer) clearTimeout(oldTimer);
+      oldFeed?.abort();
       document.removeEventListener("visibilitychange", onReturn);
       window.removeEventListener("focus", onReturn);
     };
