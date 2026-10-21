@@ -624,7 +624,7 @@ function DocumentViewer({ doc, onClose }: { doc: { fileId: string; name: string 
     <Dialog open={doc !== null} onOpenChange={(open) => !open && onClose()}>
       <DialogContent size="xl" height="tall" className="flex flex-col">
         <DialogHeader>
-          <DialogTitle className="truncate pr-8">{doc?.name}</DialogTitle>
+          <DialogTitle className="truncate">{doc?.name}</DialogTitle>
           <DialogDescription className="sr-only">The document as it was sent for signature.</DialogDescription>
         </DialogHeader>
         <div className="relative min-h-0 flex-1 overflow-auto rounded-md border border-border">{doc && <PdfPreview fileId={doc.fileId} layout="continuous" />}</div>

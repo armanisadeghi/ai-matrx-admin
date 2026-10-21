@@ -1108,7 +1108,7 @@ export function UserBoard({
       </div>
       <Dialog open={picking !== null} onOpenChange={(open) => !open && setPicking(null)}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader className="flex-row items-center justify-between gap-3 space-y-0 pr-8">
+          <DialogHeader className="flex-row items-center justify-between gap-3 space-y-0">
             <DialogTitle>{picking?.title ?? "Bring in"}</DialogTitle>
             {picking?.type ? (
               <div className="flex shrink-0 flex-wrap justify-end gap-1.5">

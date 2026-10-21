@@ -285,7 +285,7 @@ export function ReadResultsDialog({
     return (
       <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
         <DialogContent className="matrx-touch-targets flex max-h-[85dvh] max-w-2xl flex-col">
-          <DialogHeader className="space-y-0 pr-8">
+          <DialogHeader className="space-y-0">
             <DialogTitle>{TITLES[state.kind]}</DialogTitle>
           </DialogHeader>
           <Reading state={state} />
@@ -298,7 +298,7 @@ export function ReadResultsDialog({
     <Dialog open={result !== null} onOpenChange={(open) => (open ? undefined : onClose())}>
       {result ? (
         <DialogContent className="matrx-touch-targets flex max-h-[85dvh] max-w-2xl flex-col">
-          <DialogHeader className="flex-row items-center justify-between gap-2 space-y-0 pr-8">
+          <DialogHeader className="flex-row items-center justify-between gap-2 space-y-0">
             <DialogTitle>{TITLES[result.kind]}</DialogTitle>
             <CopyButtons
               size="icon"

@@ -615,10 +615,7 @@ export function AgentExecutionTestModal({
           {/* The modal exists to run ONE agent and never said which. The id was
               in props the whole time — naming the record and refusing to link it
               is the corollary; not naming it at all is worse. */}
-          {/* pr-14 clears the Dialog's built-in close (X) button, which sits at
-              `absolute right-4 top-4` and would otherwise land on top of the
-              always-visible door controls once the agent name truncates. */}
-          <DialogTitle className="flex min-w-0 items-center gap-1.5 pr-14 text-sm">
+          <DialogTitle className="flex min-w-0 items-center gap-1.5 text-sm">
             <span className="shrink-0">
               {MODE_TITLES[testType] ?? "Test Execution"}
             </span>
