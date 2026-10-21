@@ -236,6 +236,7 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
   // (shared cache), so the loading box can be the height of the table that replaces it.
   // access-errors: ok — only sizes the loading box; the table's own reads report any failure.
   const knownSites = useBrandSites(brand.id);
+  // access-errors: ok — only sizes the loading box; the table's own reads report any failure.
   const knownProperties = useBrandProperties(brand.id);
   const expectedRows =
     knownSites.data && knownProperties.data
