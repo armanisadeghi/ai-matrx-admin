@@ -173,7 +173,7 @@ export interface SpaceTemplateCardFace extends PackIdentity {
   /** Former public addresses (SpaceTemplatePack.formerSlugs): public.template_public_page answers them and the page redirects. */
   formerSlugs?: string[];
   /** Set when the pack makes a board: what the Board gallery lists (the Spaces gallery lists only packs with pages). */
-  board?: { title: string; chapters: number; pages: number };
+  board?: { title: string; chapters: number; pages: number; listed?: false; startsEmpty?: true };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -227,6 +227,22 @@ export interface PackBoardPage {
 /** The top board and its child boards (pages, one level: each is filed under the top board). */
 export interface PackBoard extends PackBoardPage {
   pages?: PackBoardPage[];
+  /**
+   * false = REFERENCE ONLY: published so agents read it (the design starters SP0490–SP0499 feed the Conductor's
+   * `starters` value), never listed in any gallery (Arman 2026-10-21: one "Design system board" per gallery).
+   * Default true.
+   */
+  listed?: boolean;
+  /**
+   * true = the board STARTS EMPTY: every table is installed with no rows and the cover carries no words, so
+   * the AI builds it for the person's business (Arman 2026-10-21). The checker then requires zero sample rows.
+   */
+  startsEmpty?: boolean;
+}
+
+/** Whether a gallery lists this card: a board pack published reference-only (`board.listed: false`) never is. */
+export function isListedTemplate(face: Pick<SpaceTemplateCardFace, "board"> | null | undefined): boolean {
+  return face?.board?.listed !== false;
 }
 
 /** The page-layout column (features/board/engine/page-layout.ts PAGE_COLUMN_W) and the widest tile inside a chapter. */
@@ -276,7 +292,15 @@ export function packCardFace(pack: SpaceTemplatePack): SpaceTemplateCardFace {
     body: packBodyWords(pack),
     ...(pack.formerSlugs?.length ? { formerSlugs: [...pack.formerSlugs] } : {}),
     ...(pack.board
-      ? { board: { title: pack.board.title, chapters: pack.board.chapters.length, pages: pack.board.pages?.length ?? 0 } }
+      ? {
+          board: {
+            title: pack.board.title,
+            chapters: pack.board.chapters.length,
+            pages: pack.board.pages?.length ?? 0,
+            ...(pack.board.listed === false ? { listed: false as const } : {}),
+            ...(pack.board.startsEmpty === true ? { startsEmpty: true as const } : {}),
+          },
+        }
       : {}),
   };
 }

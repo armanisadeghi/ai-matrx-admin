@@ -4,7 +4,7 @@
 // then the other built-ins, and a link to the whole gallery. Using one makes a NEW board from the template
 // and opens it (Use = duplicateBoard / the built-in's document), the same door as the gallery.
 
-import { LayoutTemplate, Sparkles } from "lucide-react";
+import { LayoutTemplate } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -17,6 +17,8 @@ import { makeBoardFromTemplate, templateBoardTitle } from "./board-templates";
 import { BUILTIN_BOARD_TEMPLATES } from "./builtin";
 import { isPackKey, listBoardPacks } from "./board-packs";
 import { TextInputDialog } from "@ai-matrx/design-system";
+import { DesignBoardStartDialog } from "./design-start";
+import { stashBoardStart, type BoardStartChoice } from "./open-design-build";
 
 /** Built-ins with the starter (when it names one) first. Exported for the test. */
 export function orderedStarters(starterKey: string | undefined) {
@@ -30,11 +32,11 @@ export function StartTemplates({ starterKey }: { starterKey?: string }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [galleryOpen, setGalleryOpen] = useState(false);
   // The published board packs (Design system, …) sit after the built-ins; a failed read leaves the built-ins and says so.
-  const [packs, setPacks] = useState<Array<{ key: string; title: string; summary: string }>>([]);
+  const [packs, setPacks] = useState<Array<{ key: string; title: string; summary: string; startsEmpty: boolean }>>([]);
   useEffect(() => {
     let live = true;
     listBoardPacks().then(
-      (all) => live && setPacks(all.map(({ key, title, summary }) => ({ key, title, summary }))),
+      (all) => live && setPacks(all.map(({ key, title, summary, startsEmpty }) => ({ key, title, summary, startsEmpty }))),
       (e: unknown) => live && toast.error(e instanceof Error ? e.message : "We couldn't list the board templates."),
     );
     return () => {
@@ -44,14 +46,19 @@ export function StartTemplates({ starterKey }: { starterKey?: string }) {
 
   // A template that makes its own tables is named first (the name titles the board and its tables).
   const [naming, setNaming] = useState<{ key: string; title: string } | null>(null);
-  const use = async (key: string, title: string, name?: string) => {
+  // A board that starts EMPTY opens on its two starts instead: Build with AI (default) or Start from a style.
+  const [starting, setStarting] = useState<{ key: string; title: string } | null>(null);
+  const use = async (key: string, title: string, name?: string, start?: BoardStartChoice) => {
     if (name === undefined && isPackKey(key)) {
-      setNaming({ key, title });
+      if (packs.find((p) => p.key === key)?.startsEmpty) setStarting({ key, title });
+      else setNaming({ key, title });
       return;
     }
     setBusy(key);
     try {
-      const board = await makeBoardFromTemplate(key, organizationId, name?.trim() || templateBoardTitle(title), undefined, undefined, { dispatch });
+      const styleTemplateId = start?.mode === "style" ? start.styleTemplateId : undefined;
+      const board = await makeBoardFromTemplate(key, organizationId, name?.trim() || templateBoardTitle(title), undefined, undefined, { dispatch, styleTemplateId });
+      if (start) stashBoardStart(board.id, start.mode === "ai" ? { mode: "ai", brief: start.brief } : { mode: "style", styleName: start.styleName });
       router.push(boardHref(board));
     } catch (e) {
       toast.error(isBoardError(e) ? e.message : e instanceof Error ? e.message : "The template could not be used. Try again.");
@@ -61,6 +68,19 @@ export function StartTemplates({ starterKey }: { starterKey?: string }) {
 
   return (
     <>
+      <DesignBoardStartDialog
+        open={starting !== null}
+        onOpenChange={(open) => {
+          if (!open) setStarting(null);
+        }}
+        packKey={starting?.key ?? null}
+        defaultName={starting?.title ?? ""}
+        onStart={(choice) => {
+          const picked = starting;
+          setStarting(null);
+          if (picked) void use(picked.key, picked.title, choice.name, choice);
+        }}
+      />
       <TextInputDialog
         open={naming !== null}
         onOpenChange={(open) => {
@@ -89,7 +109,7 @@ export function StartTemplates({ starterKey }: { starterKey?: string }) {
             onClick={() => void use(t.key, t.title)}
             className="flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-sm text-foreground transition-colors hover:border-primary/60 hover:bg-primary/5 disabled:opacity-60"
           >
-            <Sparkles className="h-4 w-4 text-primary" />
+            <LayoutTemplate className="h-4 w-4 text-primary" />
             {busy === t.key ? "Making your board…" : t.title}
           </button>
         ))}

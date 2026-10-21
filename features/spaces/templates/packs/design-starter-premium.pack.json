@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0499",
-  "version": 6,
+  "version": 7,
   "title": "Design system — Premium",
   "description": "Ivory, near-black and muted gold; fine serif type, sharp corners, slow motion.",
   "forWho": "Luxury, hospitality, jewellery, fashion and fine goods",
@@ -1275,7 +1275,7 @@
         "Rue Orsanne"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [],
   "board": {
@@ -1455,6 +1455,7 @@
           }
         ]
       }
-    ]
+    ],
+    "listed": false
   }
 }

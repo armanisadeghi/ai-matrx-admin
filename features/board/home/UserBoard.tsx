@@ -53,6 +53,7 @@ import { BoardSurface } from "../components/BoardSurface";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
 import { BOARD_SURFACE_NAME } from "@/features/surfaces/manifests/board.manifest";
+import { useBoardStartRun } from "../templates/open-design-build";
 import { BoardViewport } from "../components/BoardViewport";
 import { BoardTile, TileLayersContext } from "../components/BoardTile";
 import { BoardFrameView } from "../components/BoardFrameView";
@@ -223,6 +224,8 @@ export function UserBoard({
       ? [{ mandateKey: DESIGN_SYSTEM_BUILD_MANDATE, does: "Builds or adapts this design system to a brand, row by row.", surfaceName: BOARD_SURFACE_NAME, runHere: true }]
       : [],
   );
+  // A design board just made from the gallery opens on the start the person chose (AI build or style).
+  useBoardStartRun(boardId, tokenTables.length > 0);
   // The board's own thread, read ONCE: each board-only tile's count is its part's share of it.
   const boardCommentCounts = useBoardCommentCounts(boardId);
   const tileLayers = useMemo(() => new Map(layout.tileIds.map((tid, i) => [tid, i] as const)), [layout.tileIds]);

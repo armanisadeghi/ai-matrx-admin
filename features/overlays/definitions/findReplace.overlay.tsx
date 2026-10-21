@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Opener for the `findReplace` overlay (canonical `FindReplaceModal` in the
+ * Opener for the `findReplace` overlay (the chat package's `FindReplaceWindow` in the
  * overlay layer).
  *
  * Callback-aware: the modal needs a LIVE DOM target and an `onReplace` handler,

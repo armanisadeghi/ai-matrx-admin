@@ -12,7 +12,7 @@
 //
 // No store import here: this file is pure so tests and the clone guard can load it.
 
-import { spaceTemplateMakes, type SpaceTemplateCardFace } from "@/lib/spaces-blocks/template-pack";
+import { isListedTemplate, spaceTemplateMakes, type SpaceTemplateCardFace } from "@/lib/spaces-blocks/template-pack";
 
 /** One card exactly as `custom.templates` answers it (card keys only — never a spec, plan or row). */
 export interface GalleryCard {
@@ -53,6 +53,9 @@ export interface GalleryCard {
  * dropped the 11 design-system board packs).
  */
 export const isSpaceCard = (card: Pick<GalleryCard, "space">): boolean => spaceTemplateMakes(card.space) !== null;
+
+/** A reference-only board pack (`board.listed: false`: the design starters) is never a gallery card. */
+export const isListedCard = (card: Pick<GalleryCard, "space">): boolean => isListedTemplate(card.space);
 
 /** The first rows of a template's main table, as the public door hands them to a gallery card. */
 export interface GalleryThumb {

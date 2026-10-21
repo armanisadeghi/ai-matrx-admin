@@ -40,8 +40,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 PACKS = HERE / "packs"
-STARTER_VERSION = 3
-BASE_VERSION = 7
+STARTER_VERSION = 7
+BASE_VERSION = 11
 TODAY = "2026-10-18"
 
 # ── WCAG contrast (same rounding as @ai-matrx/design-system contrastRatio: floored to one decimal) ──
@@ -821,6 +821,10 @@ def build(s, kept=None):
     op = rows_with_extras(s["opacity"][:3], s["opacity"][3:], CORE_OPACITY, OPACITY_NOTES)
     mo = [(CORE_MOTION[i], jd({"duration": d, "easing": e}), MOTION_NOTES[i]) for i, (d, e) in enumerate(s["motion"][:3])] + [(n, jd({"duration": d, "easing": e}), note) for (n, d, e, note) in s["motion"][3:]]
     comp = samples(s)
+    if base:
+        # THE BASE STARTS EMPTY (Arman 2026-10-21, VISION Part 30): chapters and tables, no rows, no cover words,
+        # so the AI builds the system for the person's business. The groups and looks stay: the frame is whole.
+        color_rows, type_rows, sp, rd, sh, op, mo = [], [], [], [], [], [], []
     cgroups = list(dict.fromkeys(x[1] for x in comp))
     cg = {"Actions": "blue", "Inputs": "teal", "Containers": "slate", "Status": "amber", "Selection": "violet", "Disclosure": "gray"}
     tg = {"Display": "violet", "Headings": "blue", "Text": "slate", "Code": "amber"}
@@ -844,14 +848,14 @@ def build(s, kept=None):
               [name_f, f("value", "Value", "text", look={"id": "shadow"}), note_f], simple("shd", sh)),
         table("component", "Components", "Component", "Components", "component", "Each component family, drawn as it looks in light and dark, with where to use it.",
               [name_f, f("group", "Group", "select", choices=cgroups, choiceColors={g: cg[g] for g in cgroups}), f("sample", "Sample", "text", look={"id": "html_sample"}), note_f],
-              [{"key": f"cmp-{i:02d}", "values": {"name": n, "group": g, "sample": html, "usage_note": note}} for i, (n, g, html, note) in enumerate(comp, 1)]),
+              [] if base else [{"key": f"cmp-{i:02d}", "values": {"name": n, "group": g, "sample": html, "usage_note": note}} for i, (n, g, html, note) in enumerate(comp, 1)]),
         table("opacity", "Opacity", "Opacity", "Opacities", "droplet", "How see-through things get: disabled controls, tints and overlays.",
               [name_f, f("value", "Value", "number", rules=[{"kind": "min", "value": 0}, {"kind": "max", "value": 1}], look={"id": "opacity"}), note_f], simple("opa", op)),
         table("motion", "Motion", "Motion", "Motions", "zap", "How fast things move and how they ease in and out.",
               [name_f, f("value", "Value", "text", look={"id": "motion"}), note_f], simple("mot", mo)),
     ]
     views = [{"token": f"all_{t}", "name": n, "table": t, "kind": "grid", "isDefault": True} for t, n in [("color", "All colors"), ("type_style", "All text styles"), ("spacing", "All spacing values"), ("radius", "All radii"), ("shadow", "All shadows"), ("component", "All components"), ("opacity", "All opacities"), ("motion", "All motions")]]
-    surfaces = sum(1 for r in COLOR_ROLES if r[1] == "Surfaces")
+    surfaces = sum(1 for r in color_rows if r["values"]["group"] == "Surfaces")
     st = s["studio"]
     title = s.get("title", f"Design system — {s['name']}")
 
@@ -863,13 +867,16 @@ def build(s, kept=None):
         "title": "Design system" if base else title,
         "layout": "page",
         "chapters": [
-            {"title": "Overview", "tiles": [{"kind": "cover", "title": "Design system" if base else title, "hero": hero(s), "text": cover_text(s), "size": {"w": 1020, "h": 1000 if not base else 900}}]},
+            {"title": "Overview", "tiles": [{"kind": "cover", "title": "Design system" if base else title, "hero": "" if base else hero(s), "text": "" if base else cover_text(s), "size": {"w": 1020, "h": 1000 if not base else 240}}]},
             sec("Colors", "color", 120 + 80 * len(color_rows)), sec("Typography", "type_style", 160 + 100 * len(type_rows)),
             sec("Spacing", "spacing", 160 + 64 * len(sp)), sec("Corner radius", "radius", 200 + 64 * len(rd)), sec("Shadows", "shadow", 220 + 70 * len(sh)),
-            sec("Opacity", "opacity", 160 + 64 * len(op)), sec("Motion", "motion", 160 + 64 * len(mo)), sec("Components", "component", 200 + 150 * len(comp)),
+            sec("Opacity", "opacity", 160 + 64 * len(op)), sec("Motion", "motion", 160 + 64 * len(mo)), sec("Components", "component", 200 + 150 * (0 if base else len(comp))),
             {"title": "Assets", "tiles": [{"kind": "note", "title": "Assets", "text": "Keep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n", "size": {"w": 1020, "h": 280}}]},
         ],
         "pages": [{"key": "files", "title": "Files", "layout": "page", "chapters": [{"title": "Files", "tiles": [{"kind": "writeUp", "title": "Files", "text": "Drop logo files, icon sets and exports on this page. Each file becomes a tile you can open and share.", "size": {"w": 1020, "h": 200}}]}]}],
+        # One "Design system board" per gallery (Arman 2026-10-21): the base starts empty for the AI to build;
+        # a starter is reference only (the Conductor's `starters` value and "Start from a style" read it).
+        **({"startsEmpty": True} if base else {"listed": False}),
     }
     person = s.get("person", "Ilse Marchetti")
     first = person.split()[0]
@@ -890,9 +897,9 @@ def build(s, kept=None):
                   "variables": [{"name": "primary_table", "table": "color", "describes": "Every color, its light and dark values and what it is read on."}, {"name": "related_tables", "table": "type_style", "describes": "The text styles."}],
                   "question": {"ask": "How many colors are in the Surfaces group?", "whyItMatters": s.get("why") or f"{first} keeps the surfaces to a handful so screens stay calm.",
                                "expect": {"table": "color", "measure": {"op": "count"}, "filter": {"group": "Surfaces"}, "answer": surfaces, "unit": "colours"}}},
-        "walk": [{"says": "Open Colors.", "action": {"kind": "open", "surface": "all_color"}, "expect": {"kind": "renders", "surface": "all_color", "minItems": 3}},
-                 {"says": "Open Typography.", "action": {"kind": "open", "surface": "all_type_style"}, "expect": {"kind": "renders", "surface": "all_type_style", "minItems": 3}},
-                 {"says": "Open Components.", "action": {"kind": "open", "surface": "all_component"}, "expect": {"kind": "renders", "surface": "all_component", "minItems": 3}}],
+        "walk": [{"says": "Open Colors.", "action": {"kind": "open", "surface": "all_color"}, "expect": {"kind": "renders", "surface": "all_color", "minItems": 0 if base else 3}},
+                 {"says": "Open Typography.", "action": {"kind": "open", "surface": "all_type_style"}, "expect": {"kind": "renders", "surface": "all_type_style", "minItems": 0 if base else 3}},
+                 {"says": "Open Components.", "action": {"kind": "open", "surface": "all_component"}, "expect": {"kind": "renders", "surface": "all_component", "minItems": 0 if base else 3}}],
         "foundation": [],
         "provenance": {"kind": "synthesized", "authoredBy": "Board template author (Claude)", "authoredOn": TODAY, "noRealPeople": True, "sources": [], "fictionalDomains": [st[2]], "fictionalStreets": [st[3]]},
         "version": version,
