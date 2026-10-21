@@ -1,21 +1,24 @@
 /**
- * The page's full scope: every stored-component module (`stored-scope.ts`)
- * plus the heavy optional libraries chat code blocks may reference. Each
+ * The page's full scope: @ai-matrx/rich-content's one kind component scope
+ * (the same scope Matrx 2 provides: motion, date-fns, markdown, Copy-for-AI)
+ * with this app's twins on top (`stored-scope.ts`), plus the heavy optional
+ * libraries chat code blocks may reference. Each
  * library is a literal-specifier `import()` — its own chunk, fetched only
  * when a body references it. Never an async `import("lucide-react")`.
  */
 import { provideScopeModules } from "@ai-matrx/code-runtime/scope";
-import { provideStoredComponentScopeModules } from "./stored-scope";
+import { provideKindComponentScope } from "@ai-matrx/rich-content/host/kind-component-scope";
+import { provideStoredComponentScopeModules, webScopeTwins } from "./stored-scope";
 
 let provided = false;
 
 /** Idempotent: call before any compile in the page. */
 export function provideAppScopeModules(): void {
-  provideStoredComponentScopeModules();
   if (provided) return;
   provided = true;
+  provideKindComponentScope(webScopeTwins());
+  provideStoredComponentScopeModules();
   provideScopeModules({
-    "motion/react": () => import("motion/react"),
     "react-katex": () => import("./react-katex-scope"),
     // pdf.js needs its worker: the app's same-origin copy (`build:pdfjs-worker`), as the PDF viewer sets it.
     "react-pdf": async () => {
@@ -27,7 +30,6 @@ export function provideAppScopeModules(): void {
     xlsx: async () => (await import("@ai-matrx/alchemy/operate/formats/xlsx")).loadSheetJs(),
     "@react-three/fiber": () => import("@react-three/fiber"),
     three: () => import("three"),
-    "date-fns": () => import("date-fns"),
     lodash: () => import("lodash"),
   });
 }
