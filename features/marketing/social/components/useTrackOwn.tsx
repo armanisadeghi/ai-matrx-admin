@@ -12,9 +12,10 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 
 import { useInvalidateSocial } from "../hooks";
-import { accountName } from "../mappers";
+import { accountName, refreshSummary } from "../mappers";
 import { useSocialSpend } from "../cost";
-import { socialErrorCode, socialErrorMessage, trackAccount } from "../server";
+import { refreshProfile, socialErrorCode, socialErrorMessage, trackAccount } from "../server";
+import { fetchOutcomeText } from "./FetchLines";
 import { platformLabel } from "./PlatformMark";
 import { isSocialPlatform, type AccountRow } from "../types";
 import { COUNT_UNREADABLE_MESSAGE, rememberedMaxPosts } from "../post-count";
@@ -26,7 +27,7 @@ export function useTrackOwn(organizationId: string, brandId: string) {
   const [busyRow, setBusyRow] = useState<string | null>(null);
   /** The server's live step line for the row being tracked ("Fetching posts · 2 of 3"). */
   const [progress, setProgress] = useState<string | null>(null);
-  const { pointsText, confirmSpend } = useSocialSpend(organizationId);
+  const { pointsText, confirmSpend, confirmPosts } = useSocialSpend(organizationId);
 
   /** Track one own property as role Own; an empty account asks before tracking it anyway. */
   async function trackOwnRow(row: AccountRow, allowEmpty = false): Promise<"ok" | "failed"> {
@@ -108,5 +109,31 @@ export function useTrackOwn(organizationId: string, brandId: string) {
     toast.success(`Tracked ${done} of ${list.length}`);
   }
 
-  return { busyRow, setBusyRow, progress, trackOwn, trackOwnRow, trackAllOwn, confirmSpend };
+  /** Fetch a tracked account's newest posts (the cost is named first when it is worth a warning). */
+  async function refreshOwn(row: AccountRow) {
+    if (!row.profileId) return;
+    let maxPosts: number;
+    try {
+      maxPosts = await rememberedMaxPosts();
+    } catch {
+      toast.error(`${accountName(row)}: ${COUNT_UNREADABLE_MESSAGE}`);
+      return;
+    }
+    const ok = await confirmPosts(row.platform, maxPosts, { title: `Fetch new posts for ${accountName(row)}?`, confirmLabel: "Fetch" });
+    if (!ok) return;
+    setBusyRow(row.rowId);
+    setProgress("Fetching posts…");
+    try {
+      const result = await refreshProfile(row.profileId, { maxPosts, continueFromLast: row.postsTracked > 0 }, { organizationId });
+      await invalidate();
+      toast.success(fetchOutcomeText(refreshSummary(result), result));
+    } catch (err) {
+      toast.error(`${accountName(row)}: ${socialErrorMessage(err, "The posts could not be fetched.")}`);
+    } finally {
+      setBusyRow(null);
+      setProgress(null);
+    }
+  }
+
+  return { busyRow, setBusyRow, progress, trackOwn, trackOwnRow, trackAllOwn, refreshOwn, confirmSpend };
 }
