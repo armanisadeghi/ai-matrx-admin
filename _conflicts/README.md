@@ -31,9 +31,10 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
-- _conflicts/2026-10-20-204646/pnpm-lock.yaml.held — LOCAL latest 2026-10-20 20:45; GITHUB latest 2026-10-20 20:31; LOCAL lacks 4 of GITHUB's 11 new lines; GITHUB lacks 10 of LOCAL's 17 new lines; recover: git show 59ab76bb21:'pnpm-lock.yaml' / e71d9408b1:'pnpm-lock.yaml'
 
 ## Resolution log
+
+- 2026-10-20 21:04 PDT — Codex resolved `_conflicts/2026-10-20-204646/pnpm-lock.yaml.held`: kept the live lockfile from the current ship-all consumer sync (release `v0.4.3400`). It preserves LOCAL's newer chat `0.8.263` and coding-sessions `0.3.401`, GITHUB's rich-content `0.2.242`, and advances coding-sessions to `0.3.402`. Owner: none found (the session lookup found mentions only, with no edit owner). Verified `check:matrx-packages`, duplicate and lockfile-key checks; no conflict markers remain.
 
 - 2026-10-19 21:02 PDT — Codex resolved seven held items from the 20:39 ship-all sweep. Owner 4aca9d01 was notified urgently before the capture trio and link fixture; owner 52397d01 was notified urgently before the settings files; the lockfile had no editing owner. Kept the live lockfile: both held versions are older package graphs, while live has 33 Matrx packages exactly once. Kept the capture page, test, and `useWarmOfflineCode`: commit 26203b4f56 supersedes both 17:16 sides with `userId, sheetId`, the service-worker registration, and the second definition read; the test asserts that final call. Kept the live settings source and test, byte-identical to their held copies and still imported by the live Builder. Merged the fixture's held `agent` and `file` link columns onto GITHUB's newer safe teardown loop.
 
