@@ -43,6 +43,10 @@ export function NoteStatsFooter({ noteId, className }: NoteStatsFooterProps) {
   const words = `${formatCount(metrics.words)} ${metrics.words === 1 ? "word" : "words"}`;
   const chars = `${formatCount(metrics.characters)} chars`;
   const read = `${metrics.readingMinutes} min`;
+  // Review 4 F16: a note of charts and tables read "20 words · 94 chars" — honest about prose, silent
+  // about the rest. The blocks the counts leave out are counted too, so the line never undersells.
+  const blocks = metrics.islands > 0 ? `${formatCount(metrics.islands)} ${metrics.islands === 1 ? "block" : "blocks"}` : null;
+  const summary = [words, blocks, chars].filter(Boolean).join(" · ");
 
   const isDirty = useAppSelector(selectNoteIsDirtyById(noteId));
   const isSaving = useAppSelector(selectNoteIsSavingById(noteId));
@@ -83,9 +87,10 @@ export function NoteStatsFooter({ noteId, className }: NoteStatsFooterProps) {
       <span
         className="hidden truncate text-xs tabular-nums text-muted-foreground @[22rem]/notemeta:inline"
         data-note-metrics=""
-        title={`${words} · ${chars} · ${metrics.readingMinutes} min read`}
+        title={`${summary} · ${metrics.readingMinutes} min read`}
       >
         {words}
+        {blocks && <> · {blocks}</>}
         <span className="hidden @[36rem]/notemeta:inline">
           {" "}· {chars} · {read}
         </span>
