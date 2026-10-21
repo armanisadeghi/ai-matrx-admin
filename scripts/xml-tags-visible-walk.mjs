@@ -98,6 +98,13 @@ try {
   await sleep(6000);
   await page.keyboard.press("Escape").catch(() => {});
   results.write = await sections();
+  // An empty section is one compact row: its height, and what its inside holds.
+  results.writeEmptyRows = await page.evaluate(() =>
+    [...document.querySelectorAll(".ProseMirror [data-xml-section][data-empty]")].map((el) => ({
+      tag: el.getAttribute("data-xml-section"),
+      height: Math.round(el.getBoundingClientRect().height),
+      body: (el.querySelector(".rich-editor-xml-section-body")?.innerHTML ?? "").slice(0, 300),
+    })));
   await scrollTo("[data-xml-section='info']");
   await shot("01-write");
   await mode("Plain");
@@ -142,7 +149,9 @@ if (process.env.XMLTAGS_CHAT !== "0") {
     await box.waitFor({ timeout: 90000 });
     await sleep(3000);
     await box.fill(`XMLTAGS chat. Repeat this message back exactly.\n\n<info>\n\n</info>\n\n<plan>\nship it\n</plan>\n\n<foo>\nfoo body\n</foo>`);
-    await box.press("Enter");
+    const send = page.getByRole("button", { name: /^send/i }).first();
+    if (await send.isVisible().catch(() => false)) await (PHONE ? send.tap() : send.click());
+    else await box.press("Enter");
     await sleep(20000);
     results.chat = await page.evaluate(() =>
       [...document.querySelectorAll("[data-xml-section]")].filter((el) => el.getBoundingClientRect().height > 0).map((el) => ({
