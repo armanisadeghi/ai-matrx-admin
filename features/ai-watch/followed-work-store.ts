@@ -56,3 +56,24 @@ export function useFollowedRunSummaries(): readonly AiWatchRunSummary[] {
     () => [] as readonly AiWatchRunSummary[],
   );
 }
+
+// Why the last read of followed work failed (null = it read fine). Watch AI shows it; it is never swallowed.
+let readError: string | null = null;
+const errorListeners = new Set<() => void>();
+
+export function setFollowedReadError(next: string | null): void {
+  if (next === readError) return;
+  readError = next;
+  for (const fn of errorListeners) fn();
+}
+
+export function useFollowedReadError(): string | null {
+  return useSyncExternalStore(
+    (fn) => {
+      errorListeners.add(fn);
+      return () => errorListeners.delete(fn);
+    },
+    () => readError,
+    () => null,
+  );
+}

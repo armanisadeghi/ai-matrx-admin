@@ -28,11 +28,12 @@
  * Open it with ONE call: `useWatchAiRun()(…)` (features/overlays/definitions/aiWatchWindow.overlay.tsx).
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import EverythingFeed from "./EverythingFeed";
 import { KIND_KEY } from "@ai-matrx/content-ir";
 import { AnswerValueView } from "@/components/official/structured-value/AnswerValueView";
-import { useFollowedRunSummaries, useResolvedFollowed } from "./followed-work-store";
+import { useFollowedReadError, useFollowedRunSummaries, useResolvedFollowed } from "./followed-work-store";
+import { useUserRequestChanges } from "./useUserRequestChanges";
 import { useFollowedWork } from "./followed-work";
 import { RunTestReplaysStrip } from "@/features/ai-test-mode/RunTestReplaysStrip";
 import Link from "next/link";
@@ -57,7 +58,7 @@ import {
 import type { ActiveRequest } from "@ai-matrx/chat/agents/types/request.types";
 import type { MandateRunData } from "@ai-matrx/agents/generated/stream-events";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
-import { cn, ErrorNotice, displayId } from "@ai-matrx/design-system";
+import { cn, ErrorNotice, RecordId, displayId } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
 import { usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -120,9 +121,6 @@ export interface AiWatchWindowProps {
 type ActiveRoot = { activeRequests: { byRequestId: Record<string, ActiveRequest> } };
 
 /** The page's run ids Watch AI remembers across a reload (this tab, this page). */
-/** A running call with no client stream is re-read this often, for up to ~5 minutes (MKT-117). */
-const FOLLOW_READ_MS = 2000;
-const MAX_FOLLOW_READS = 150;
 const HISTORY_KEY_PREFIX = "matrx:ai-watch:runs:";
 const HISTORY_MAX = 10;
 
@@ -176,14 +174,17 @@ export function useAiWatchPanel({
   }, [history, historyKey]);
 
   const registry = useAppSelector(selectPageAiRuns);
-  const anyLive = registry.some((r) => r.live);
   const [records, setRecords] = useState<AiWatchRunSummary[]>([]);
   const [listError, setListError] = useState<string | null>(null);
   const historyScope = history.join(",");
   const listConversation = !historyScope ? conversationId : null;
 
+  // The list re-reads when a run changes (`chat.user_request` realtime) — a round that keeps adding AI calls
+  // shows them as they land, and an idle page makes no requests.
+  const listRefresh = useRef<() => void>(() => undefined);
+  const listActive = canWatch && !legacy && Boolean(historyScope || listConversation);
   useEffect(() => {
-    if (!canWatch || legacy || (!historyScope && !listConversation)) return;
+    if (!listActive) return;
     let cancelled = false;
     const load = () =>
       fetchAiWatchRuns({ workflowRunIds: historyScope ? historyScope.split(",") : null, conversationId: listConversation })
@@ -196,19 +197,20 @@ export function useAiWatchPanel({
           // Never swallowed: the list says it could not read the runs.
           if (!cancelled) setListError(err instanceof Error ? err.message : String(err));
         });
+    listRefresh.current = () => void load();
     void load();
-    // A round keeps adding AI calls while it runs: re-read fast while one is live.
-    const timer = setInterval(load, anyLive ? 1500 : 5000);
     return () => {
       cancelled = true;
-      clearInterval(timer);
+      listRefresh.current = () => undefined;
     };
-  }, [canWatch, legacy, historyScope, listConversation, anyLive]);
+  }, [listActive, historyScope, listConversation]);
+  useUserRequestChanges({ scope: "list", enabled: listActive, refresh: () => listRefresh.current() });
 
   // Followed server work (factory builds, eval runs): their recorded calls join the rail as their own groups.
   const followedRuns = useFollowedRunSummaries();
   const followedWork = useFollowedWork();
   const followedState = useResolvedFollowed();
+  const followedReadError = useFollowedReadError();
   const followedIds = new Set(followedRuns.map((r) => r.userRequestId));
   const groups = buildRail(registry, [...records.filter((r) => !followedIds.has(r.userRequestId)), ...followedRuns]);
 
@@ -269,6 +271,11 @@ export function useAiWatchPanel({
         {listError ? (
           <div className="p-2">
             <ErrorNotice title="The runs could not be read" message={listError} />
+          </div>
+        ) : null}
+        {followedReadError ? (
+          <div className="p-2">
+            <ErrorNotice title="Followed work could not be read" message={followedReadError} />
           </div>
         ) : null}
         {callCount === 0 && !listError ? <div className="p-2 text-muted-foreground">No AI calls on this page yet</div> : null}
@@ -348,34 +355,33 @@ function AiWatchRunView({ serverId, requestIds }: { serverId: string | null; req
   const [record, setRecord] = useState<AiWatchRecord | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // The record is written a moment after the run ends; re-read until its snapshot lands.
+  // The record is written a moment after the run ends: it is read now and again on every change to this
+  // call's own row (`chat.user_request` realtime, `id=eq.<serverId>`) until its snapshot lands (MKT-117).
+  // Nothing re-reads on a timer.
   const hasLive = Boolean(latest);
+  const followActive = Boolean(serverId) && !(hasLive && !liveDone);
+  const recordRefresh = useRef<() => void>(() => undefined);
   useEffect(() => {
-    if (!serverId) return;
-    if (hasLive && !liveDone) return;
+    if (!serverId || !followActive) return;
     let cancelled = false;
-    let attempt = 0;
     const load = async () => {
       try {
         const next = await fetchAiWatchRecord(serverId);
         if (cancelled) return;
         setRecord(next);
         setLoadError(null);
-        const inFlight = !next || next.status === "pending" || next.status === "running";
-        const settled = !inFlight && next.snapshots.length > 0;
-        // A call still running (a workflow step's call has no client stream) is followed until its answer lands
-        // (MKT-117); a finished call whose record is late gets a few more reads.
-        const more = inFlight ? attempt++ < MAX_FOLLOW_READS : attempt++ < 8;
-        if (!settled && more) setTimeout(load, inFlight ? FOLLOW_READ_MS : 1500);
       } catch (err) {
         if (!cancelled) setLoadError(err instanceof Error ? err.message : String(err));
       }
     };
+    recordRefresh.current = () => void load();
     void load();
     return () => {
       cancelled = true;
+      recordRefresh.current = () => undefined;
     };
-  }, [serverId, hasLive, liveDone]);
+  }, [serverId, followActive]);
+  useUserRequestChanges({ scope: "follow", enabled: followActive, id: serverId, refresh: () => recordRefresh.current() });
 
   if (!serverId && !latest) {
     return <div className="p-3 text-xs text-muted-foreground">No AI run selected</div>;
@@ -655,9 +661,11 @@ function MandateSection({
       .then((v) => {
         if (!cancelled) setCurrentDefinition(v);
       })
-      .catch(() => {
-        // The comparison is a hint; the run's own goal is still shown.
-        if (!cancelled) setCurrentDefinition(null);
+      .catch((err: unknown) => {
+        // The comparison is a hint; the run's own goal is still shown, and the failure is said, not hidden.
+        if (cancelled) return;
+        setCurrentDefinition(null);
+        setVersionError(err instanceof Error ? `The mandate's current version could not be read: ${err.message}` : String(err));
       });
     return () => {
       cancelled = true;
@@ -680,7 +688,7 @@ function MandateSection({
                 {attributedKey}
               </button>
             </Metric>
-            <Metric label="Step">{record?.workflowNodeId ?? "—"}</Metric>
+            <Metric label="Step">{record?.workflowNodeId ? <RecordId value={record.workflowNodeId} label="Workflow step" /> : "—"}</Metric>
             <Metric label="Agent">
               {record?.agentId ? (
                 <Link className="text-primary underline" href={`/agents/${record.agentId}`}>
