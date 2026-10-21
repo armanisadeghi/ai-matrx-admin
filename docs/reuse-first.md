@@ -31,14 +31,14 @@ file is where you search first in this repo.
 | Pick or create a project (complete searchable list) | `ProjectPicker` | `features/projects/components/ProjectPicker.tsx` |
 | Overflow / hierarchical action menu | `AdvancedMenu` | `components/official/AdvancedMenu.tsx` |
 | **Name another record anywhere** (cell, row, dialog, badge) — open / new tab / peek. THE DOOR LAW: never a bare `<span>` or UUID. Two props carry the decisions it can't make for you: `openInNewTab` on anything embedded (rail, sheet, panel, audit) so following a record can't cost the user what they're in, and `href` to override the registry on an `(admin)`/`(dev)` surface, where a `(core)` route is a **different origin** and bounces off the console. Where the id itself is the information, pass it as `name` **plus `wrap`** — it truncates by default (its home is a table cell), which silently eats the thing an admin came to copy. Safe to drop inside a clickable row: the controls AND the portaled peek both stop propagation (React events travel the React tree, so a portal alone does not isolate them). Replacing a FULL-WIDTH control? Add `fill` — `className="flex-1"` stretches only the wrapper, so the label stops opening the record everywhere the old button's padding used to. Styling that must land on the TEXT (`line-through`, weight) goes in `labelClassName`, not `className`. Name is JSX, not a string (title + badge, title over subtitle)? Pass it as CHILDREN — a surface that can't be flattened is how a shell ends up building its own poorer door | `EntityRef` | `components/official/entity-ref/EntityRef.tsx` |
-| Render an AI-model or built-in-tool FK. These references resolve active AND historical/deactivated rows, never expose a UUID as the identity label, and can retain the complete ID beneath the name with `showId` for version/audit surfaces. Use `disableNavigation` only when nested inside another interactive control | `AiModelRef` / `AiToolRef` | `components/official/entity-ref/AiIdentityRef.tsx` |
+| Render an AI-model or built-in-tool FK. These references resolve active AND historical/deactivated rows, never expose a UUID as the identity label, and can retain the complete ID beneath the name with `showId` for version/audit surfaces. Use `disableNavigation` only when nested inside another interactive control | `AiModelRef` / `AiToolRef` | `@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef` |
 | Ask whether a kind has a registered peek (without pulling all 19 peeks into your chunk), and translate a canonical token to its peek key — **six differ**, and keying off the token loses the peek for exactly those six | `hasPeek` + `peekKeyForToken` + `ResourcePeekHost` | `features/organizations/peek/kinds-list.ts`, `features/organizations/peek/ResourcePeekHost.tsx` |
 | Turn a `kind` / `type` string written by ANOTHER system (an ingest pipeline, a stream envelope, a legacy catalog) into a canonical entity token before you resolve a route or a peek. **A column named `kind` is not a token**: `source_kind='cld_file'` is the registry's `file` — same row, same id, same route — but handed over raw it renders doorless while `note`/`task` on the same screen work, which is the most deceptive possible failure. Canonicalise ONCE and carry that token to both doors; resolving the entity from the canonical string and the peek from the raw one is the exact split this exists to stop. Add a new alias here and nowhere else, and only after verifying it points at the same physical row | `resolveEntityToken` (+ `tryGetEntityInfo`, which canonicalises for you) | `features/scopes/registry/entityRegistry.ts` |
 | An agent's parent / children / system twin (derived, no query) | `selectAgentLineageIndex` / `selectAgentLineage` | `../aidream/apps/shared/chat/src/agents/redux/agent-definition/selectors.ts` |
 | Run an agent headlessly and get its extracted JSON (one-shot, optional file/audio message parts) — NEVER hand-roll launch+poll (D126) | `useHeadlessAgentJson` (React) / `runHeadlessAgentJson` (thunk-style) | `../aidream/apps/shared/chat/src/agents/hooks/useHeadlessAgentJson.ts`, `../aidream/apps/shared/chat/src/agents/redux/execution-system/thunks/run-headless-agent-json.ts` |
 | Resolve Lucide / custom icon by name | `IconResolver` | `@ai-matrx/icons` |
 | Render a 0–100 score as an accessible SVG ring with domain-specific good/warning thresholds | `ScoreRing` | `@ai-matrx/design-system` (npm) |
-| 44×44 icon tap targets | `TapTargetButton` + `tap-buttons` | `@ai-matrx/tap-target`, `@ai-matrx/tap-target/buttons` |
+| 44×44 icon tap targets | `TapTargetButton` + `tap-buttons` | `@ai-matrx/design-system/tap-target`, `@ai-matrx/design-system/tap-target/buttons` |
 | Single-value picker over a `platform.categories` dimension (FK columns) | `CategorySelect` | `@ai-matrx/associations/react` |
 | Tag an entity with categories via association edges (multi-select + inline create) | `CategoryTagPicker` | `@ai-matrx/associations/react` |
 
@@ -54,8 +54,8 @@ this section exists to stop. Campaign: `docs/handoffs/inventory-law-sweep.md`.
 | Declare a list column (sorts AND filters server-side — no exceptions) | `EntityColumnSpec` (+ `relativeTime` / `timeCell`) | `lib/entity-list/columns.tsx` |
 | A list column that NAMES a record — give it `entityToken` and the shell renders the cell through `EntityRef` (Open + new tab + peek), keeping the pencil-forcing that lets a linked body coexist with inline edit. `href` still overrides the route for an admin-side/satellite one. **Do not hand-roll a `<Link>` in a `cell`** — that is the Open-only door this replaced | `entityToken` on the column | `@ai-matrx/design-system/data-table/types` |
 | The scoped list RPC behind a config's `service` | the `*_list_scoped` template | `lib/list-scope/FEATURE.md` |
-| **One action list per entity**, consumed identically by table, cards, rows, and right-click | `ItemMenuConfig` + `ItemMenu` / `ItemContextMenu` | `components/official/item/types.ts`, `components/official/item/ItemMenu.tsx` |
-| A list / sidebar / tree row with kebab + right-click + inline rename | `ItemRow` | `components/official/item/ItemRow.tsx` |
+| **One action list per entity**, consumed identically by table, cards, rows, and right-click | `ItemMenuConfig` + `ItemMenu` / `ItemContextMenu` | `@ai-matrx/design-system/item` |
+| A list / sidebar / tree row with kebab + right-click + inline rename | `ItemRow` | `@ai-matrx/design-system/item` |
 | Rename in place (optimistic or awaited) | `EditableLabel` | `@ai-matrx/design-system` (npm) |
 | Persist a list's VIEW STYLE (view, density, sort, page size, hidden columns — never search/filters/page) | `useListViewPrefs` | `lib/list-views/useListViewPrefs.ts` — see `lib/list-views/FEATURE.md` |
 | Every action an **agent** record supports (23 entries) | `buildAgentMenu` + `useAgentRowActions` | `features/agents/browse/agentActionRegistry.tsx`, `features/agents/browse/useAgentRowActions.tsx` |
@@ -63,7 +63,7 @@ this section exists to stop. Campaign: `docs/handoffs/inventory-law-sweep.md`.
 | **Universal right-click menu** (copy-as, export, download as markdown, convert, attach, share, AI actions) | `NonEditableContextMenu` / `EditableContextMenu` — pass `contentSource` **and** `entity` or half the menu stays dark | `@ai-matrx/context-menu (src/engine/NonEditableContextMenu.tsx)`, `@ai-matrx/context-menu (src/engine/EditableContextMenu.tsx)` — see the `context-menu-v3` skill |
 | Copy, prepare, or export content from a new surface without recreating a menu, serializer, or destination list | `ContentTransferMenu` / `AlchemyMenu` from the Alchemy public React entry — pass a payload or click-time source; inherit a mounted declared surface when no source is supplied | Usage demo: `app/(admin)/administration/ui/official-components/alchemy/page.tsx` |
 | Copy + Copy-for-AI (+ Export) on any data surface | `CopyButtons` over the package-owned Alchemy Menu (`export` / `grouped`) | `components/agent-copy/CopyButtons.tsx` — see `components/agent-copy/README.md` |
-| Building a KIND COMPONENT (Shape renderer, compiled or DB-authored): drag-to-reorder list, side-by-side panels grid, panel with overflow menu / subline / pinned footer, title+stats+copy header, streaming skeleton + tolerant reads, wrapping keyword chips | `SortableList` · `KindPanelGrid` · `KindPanel` · `KindHeaderBar` · `StreamingSkeleton` + `useStreamingValue`/`streamList`/`streamText` · `KeywordChip`/`TagList` | `@ai-matrx/content-ir/kind-kit (was components/kind-kit/)*` — contracts in `components/kind-kit/README.md`; all allowlisted for the in-page compiler; demo `/demos/kind-kit` |
+| Building a KIND COMPONENT (Shape renderer, compiled or DB-authored): drag-to-reorder list, side-by-side panels grid, panel with overflow menu / subline / pinned footer, title+stats+copy header, streaming skeleton + tolerant reads, wrapping keyword chips | `SortableList` · `KindPanelGrid` · `KindPanel` · `KindHeaderBar` · `StreamingSkeleton` + `useStreamingValue`/`streamList`/`streamText` · `KeywordChip`/`TagList` | `@ai-matrx/content-ir/kind-kit (was components/kind-kit/)*`; all allowlisted for the in-page compiler; demo `/demos/kind-kit` |
 
 ### Components — AI assists & promises
 
@@ -79,14 +79,14 @@ this section exists to stop. Campaign: `docs/handoffs/inventory-law-sweep.md`.
 
 | If you need to… | Use | Located at |
 | --- | --- | --- |
-| Render streaming or static markdown | `MarkdownStream` | `components/MarkdownStream.tsx` |
-| Lightweight non-streaming markdown | `BasicMarkdownContent` | `components/mardown-display/chat-markdown/BasicMarkdownContent.tsx` |
-| Document shell with actions + context menu | `RichDocument` | `features/rich-document/RichDocument.tsx` |
-| Floating content action rail (copy, TTS, export…) | `RichDocumentActions` (the one action bar) | `features/rich-document/RichDocumentActions.tsx` |
-| Compare structured records, optionally with exact version / per-field dates | `DiffViewerShell` + `DiffTemporalMetadata` | `components/diff/views/DiffViewerShell.tsx`, `components/diff/engine/types.ts` |
+| Render streaming or static markdown | `MarkdownStream` | `@ai-matrx/chat/ui/markdown-stream/MarkdownStream` |
+| Lightweight non-streaming markdown | `BasicMarkdownContent` | `@ai-matrx/rich-content/display/chat-markdown/BasicMarkdownContent` |
+| Document shell with actions + context menu | `RichDocument` | `@ai-matrx/rich-content/rich-document/RichDocument` |
+| Floating content action rail (copy, TTS, export…) | `RichDocumentActions` (the one action bar) | `@ai-matrx/rich-content/rich-document/RichDocumentActions` |
+| Compare structured records, optionally with exact version / per-field dates | `DiffViewerShell` + `DiffTemporalMetadata` | `@ai-matrx/diff/react`, `@ai-matrx/diff` |
 | **Render ANY JSON value as a human document** (the floor beneath the Shape System — never a `JSON.stringify` fence) | `StructuredValueView` | `components/official/structured-value/StructuredValueView.tsx` |
 | Inspect / edit large JSON | `JsonInspector` | `components/official-candidate/json-inspector/JsonInspector.tsx` |
-| Detect JSON in text (fenced or bare) / re-print it minified, condensed, or pretty | `detectJson` / `formatJsonText` | `lib/json-format/detect.ts` · `lib/json-format/format.ts` |
+| Detect JSON in text (fenced or bare) / re-print it minified, condensed, or pretty | `detectJson` / `formatJsonText` | `@ai-matrx/kit/json-format` |
 | Clean up a document (whitespace, typography, JSON blocks) without harming code | `cleanContent` | `lib/content-cleanup/clean.ts` |
 
 ### Components — chat & messages
@@ -103,8 +103,8 @@ this section exists to stop. Campaign: `docs/handoffs/inventory-law-sweep.md`.
 
 | If you need to… | Use | Located at |
 | --- | --- | --- |
-| Draggable / resizable window frame | `WindowPanel` | `features/window-panels/WindowPanel.tsx` — see `features/window-panels/FEATURE.md` |
-| Open any overlay / window / modal | typed opener, else `openOverlay` | `features/overlays/definitions/*`, `lib/redux/thunks/overlayThunks.ts` — see `features/overlays/FEATURE.md` |
+| Draggable / resizable window frame | `WindowPanel` | `@ai-matrx/summon/window` — see `features/window-panels/FEATURE.md` |
+| Open any overlay / window / modal | typed opener, else `openOverlay` | `features/overlays/definitions/*`, `@ai-matrx/summon/open` — see `features/overlays/FEATURE.md` |
 | **Register a NEW window panel** (~10 registration sites; a half-registered panel is invisible to the tray, minimize-all and persistence). **Check first whether a twin already exists** — seven windows currently have a canonical opener with ZERO call sites while a colocated copy does the work, and several blocking modals already have a `WindowPanel` twin one file over | the `window-panel-authoring` skill (deleting one: its `removing.md`) | `.claude/skills/window-panel-authoring/SKILL.md` — see `features/window-panels/FEATURE.md` |
 | Full-viewport overlay shell | `FullScreenOverlay` | `components/official/FullScreenOverlay.tsx` |
 | Imperative confirm (replaces `window.confirm`) | `confirm({…})` | `components/dialogs/confirm/ConfirmDialogHost.tsx` |
@@ -139,22 +139,22 @@ this section exists to stop. Campaign: `docs/handoffs/inventory-law-sweep.md`.
 | Know whether persisted Redux state has finished loading ("nothing saved" vs "not read yet") | `useSyncHydrated` | `lib/sync/useSyncHydrated.ts` |
 | Stop a superseded async response from applying (refetch on a changing scope/query/id) | `useLatestRequest` | `@ai-matrx/kit/latest-request` |
 | Run independent bulk work without serial waits or an unbounded request spike | `runWithConcurrency` | `@ai-matrx/kit/concurrency` |
-| Say a read FAILED rather than render its rows as fresh | `StaleDataNotice` | `components/official/stale-data/StaleDataNotice.tsx` |
+| Say a read FAILED rather than render its rows as fresh | `StaleDataNotice` | `@ai-matrx/design-system` |
 | Render a count derived from a read that may have failed | `UntrustedCount` | `@ai-matrx/design-system` |
-| Invalidate a heavy chunk's cache from a ubiquitous module with NO import edge (D115) | `registerInvalidationCallback` / `fireInvalidation` | `lib/invalidation/invalidation-registry.ts` |
+| Invalidate a heavy chunk's cache from a ubiquitous module with NO import edge (D115) | `registerInvalidationCallback` / `fireInvalidation` | `@ai-matrx/kit/invalidation` |
 | Humanize labels (snake/kebab → Title Case, acronyms) | `formatText` / `formatTitleCase` | `@ai-matrx/kit/text-case` |
 | Slugify to kebab-case | `convertToKebabCase` | `utils/text/stringUtils.ts` |
 | Markdown → speakable plain text (TTS) | `parseMarkdownToText` | `@ai-matrx/media/voices` |
 | Strip markdown to plain text | `cleanMarkdown` | `utils/markdown-processors/clean-markdown-to-text.ts` |
 | Drop a portion's (slide / page / sheet) leading heading when your own chrome already shows it | `stripDuplicatePortionHeading` | `lib/markdown/portion-heading.ts` |
-| Copy / strip / sanitize markdown for clipboard | markdown-copy helpers | `components/agent-copy/copy-commands.ts` |
+| Copy / strip / sanitize markdown for clipboard | markdown-copy helpers | `@ai-matrx/rich-content/copy/copy-commands` |
 | Detect expiring S3 signed URLs | `isSignedUrl` | `lib/media/signed-url.ts` |
 | Categorize an image by size tier / photo grade / aspect (photo vs graphic vs icon, dimension inference from URL) | `categorizeSizeTier`, `photoGrade`, `categorizeAspect`, `resolveDimensions` | `lib/media/categorization.ts` |
 | Alarm on non-durable media URLs | `reportMediaDurabilityViolation` | `lib/media/durability.ts` |
 | Build a rounded SVG path through explicit collision-free map lanes | `roundedOrthogonalPath` | `features/canvas/edges/rounded-orthogonal-path.ts` |
 | Cmd/Ctrl/middle-click → new tab | `shouldOpenInNewTab` / `openInNewTab` | `utils/navigation/should-open-in-new-tab.ts` |
 | Toast success / error / info | `toast` from `sonner` | (package) — never `window.alert` |
-| Undo after archive / move / remove (teach → guide → plain, ⌘Z, "Open Trash") | `announceReversible` from `@/lib/reversible/announceReversible` | `lib/reversible/` — never a hand-written `{ action: { label: "Undo" } }` (`pnpm check:undo-toasts`); `../common-docs/systems/platform/reversible-action/FEATURE.md` |
+| Undo after archive / move / remove (teach → guide → plain, ⌘Z, "Open Trash") | `announceReversible` | `lib/reversible/announceReversible.tsx` — never a hand-written `{ action: { label: "Undo" } }` (`pnpm check:undo-toasts`); `../common-docs/systems/platform/reversible-action/FEATURE.md` |
 | Read a persisted `token_usage` JSONB blob (tokens, cache, cost, per-model) | `normalizeTokenUsage` / `rollupByModel` | `lib/token-usage/normalize.ts` |
 | Convert a USD cost to points / format it (rate = the `billing.points_per_usd` knob via `currentPointsRate()` / `useCostDisplay().rate`) | `usdToPoints` / `formatCost` / `formatPoints` | `@ai-matrx/kit/format` + `components/cost/pointsRate.ts` |
 
@@ -162,12 +162,12 @@ this section exists to stop. Campaign: `docs/handoffs/inventory-law-sweep.md`.
 
 | If you need to… | Use | Located at |
 | --- | --- | --- |
-| Detect mobile (Drawer vs Dialog, stack vs tabs) | `useIsMobile` | `hooks/use-mobile.tsx` |
+| Detect mobile (Drawer vs Dialog, stack vs tabs) | `useIsMobile` | `@ai-matrx/kit/media-query` |
 | Call Python backend from client (typed auth + URL + capture) | a generated `@ai-matrx/api/<domain>` operation called with `serverApi`; Redux/streaming surfaces use `callApi` | `lib/api/server-api.ts`; `lib/api/call-api.ts` |
 | Auth headers for Next.js `/api/*` routes | `useApiAuth` | `hooks/useApiAuth.ts` |
 | Resolve durable media `src` from `file_id` | `useMediaResolution(ref).resolution?.src` | `@ai-matrx/media/core` |
 | Read / write a catalog preference | `useSetting` | `features/settings/hooks/useSetting.ts` |
-| Show a cost — FIRST the deciding-vs-doing test: points only where the person is deciding or investigating (battle, picker, info/details, history table, bulk/repeating confirm, schedule setup, billing, admin), never where they are doing (chat, results, receipts, toasts, buttons); then points for everyone, $ only for a system admin who flipped the switch | `<Cost usd>` / `<CostBadge>` (confirm step or picker only) / `useCostDisplay` | `components/cost/`; rule `common-docs/policies/points-and-money-in-the-ui.md` (guard `pnpm check:cost-display`, P1 ALLOWED_PLACES) |
+| Show a cost — FIRST the deciding-vs-doing test: points only where the person is deciding or investigating (battle, picker, info/details, history table, bulk/repeating confirm, schedule setup, billing, admin), never where they are doing (chat, results, receipts, toasts, buttons); then points for everyone, $ only for a system admin who flipped the switch | `<Cost usd>` / `<CostBadge>` (confirm step or picker only) / `useCostDisplay` | `components/cost/`; rule `../common-docs/policies/points-and-money-in-the-ui.md` (guard `pnpm check:cost-display`, P1 ALLOWED_PLACES) |
 | Copy one complete agent request draft to another run | `copyInstanceRequestDraft` | `../aidream/apps/shared/chat/src/agents/redux/execution-system/thunks/copy-instance-request-draft.thunk.ts` |
 | Prove a scroll area is not clipped (unbounded-height chain) | `useClippedContentGuard` | `lib/layout/useClippedContentGuard.ts` |
 | Put a view control in the URL with refresh + Back/Forward fidelity | `useUrlState` + typed codecs | `@ai-matrx/kit/url-state` |
@@ -182,12 +182,12 @@ this section exists to stop. Campaign: `docs/handoffs/inventory-law-sweep.md`.
 | Overlay catalog + openers | `features/overlays/` | `features/overlays/FEATURE.md` + `overlay-system` skill |
 | Window panels + tray | `features/window-panels/` | `features/window-panels/FEATURE.md` + `window-panels` skill |
 | Universal files | `features/files/handler/` | `features/files/handler/FEATURE.md` |
-| Actions on content (every bar, ⋯, right-click, sheet, palette) | the ONE Alchemy action registry — register via `features/rich-document/actions/provider.ts` (`registerAction`) or a provider | register an action; never build a parallel menu or registry (ALC-15) |
-| Parameterized message authoring + strict real-record rendering | `agent.message_template`, `features/message-templates/`, aidream `services/message_templates` | `features/message-templates/FEATURE.md` + common-docs `systems/communications/message-templates/FEATURE.md` |
-| One human-reviewed Lane B email | planned `crm.interaction` + aidream `services/outreach_single_send` | `features/crm/components/outreach-lists/SingleSendDialog.tsx` + aidream `services/outreach_single_send/FEATURE.md` |
+| Actions on content (every bar, ⋯, right-click, sheet, palette) | the ONE Alchemy action registry — register via `@ai-matrx/rich-content/rich-document/actions/provider` (`registerAction`) or a provider | register an action; never build a parallel menu or registry (ALC-15) |
+| Parameterized message authoring + strict real-record rendering | `agent.message_template`, `features/message-templates/`, aidream `../aidream/aidream/services/message_templates` | `features/message-templates/FEATURE.md` + common-docs `../common-docs/systems/communications/message-templates/FEATURE.md` |
+| One human-reviewed Lane B email | planned `crm.interaction` + aidream `../aidream/aidream/services/outreach_single_send` | `features/crm/components/outreach-lists/SingleSendDialog.tsx` + aidream `../aidream/aidream/services/outreach_single_send/FEATURE.md` |
 | Canonical entity list shell | `lib/entity-list/` | `lib/entity-list/FEATURE.md` — write a config, never a bespoke table |
 | Scoped configuration (platform → org → user setting/limit/mode) | `platform.feature_knob` + `platform.knob_override`, client `lib/scoped-config/` | `../common-docs/systems/platform/feature-knobs/FEATURE.md` — a knob row, never a `*_config` table or settings blob |
-| Per-entity record actions | `components/official/item/` | one `ItemMenuConfig` builder per entity; three rival lists for one entity is the defect this kills |
+| Per-entity record actions | `@ai-matrx/design-system/item` | one `ItemMenuConfig` builder per entity; three rival lists for one entity is the defect this kills |
 | Universal right-click | `@ai-matrx/context-menu` | `features/context-menu-host/FEATURE.md` + `context-menu-v3` skill |
 | AI assists everywhere | `features/assists/` | `features/assists/FEATURE.md` — never fork a second chip, table, or accept handler |
 | Signed Twilio webhooks (Messaging, Voice, future channels) | `validateTwilioWebhook` | `lib/communications/providers/twilio/webhook-validation.ts` |
