@@ -448,6 +448,7 @@ export function ReviewQueue({
                   view={selected.view}
                   instructions={selected.instructions ? { [selected.question]: selected.instructions } : undefined}
                   showInstructions={false}
+                  showCost
                 />
               )}
 

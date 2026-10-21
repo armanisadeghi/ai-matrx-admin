@@ -375,7 +375,7 @@ function ItemDrill({
             Decision model{item.model ? ` · ${item.model}` : ""}
           </div>
           {item.view ? (
-            <DecisionAnswers view={item.view} instructions={instructions} showInstructions={false} />
+            <DecisionAnswers view={item.view} instructions={instructions} showInstructions={false} showCost />
           ) : (
             <span className="type-secondary text-muted-foreground">Answer not readable</span>
           )}
@@ -403,7 +403,7 @@ function ItemDrill({
               The reference is answering
             </span>
           ) : refView ? (
-            <DecisionAnswers view={refView} instructions={instructions} showInstructions={false} />
+            <DecisionAnswers view={refView} instructions={instructions} showInstructions={false} showCost />
           ) : (
             <span className="type-secondary text-muted-foreground">Not checked yet</span>
           )}

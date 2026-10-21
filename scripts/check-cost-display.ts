@@ -320,6 +320,8 @@ export const ALLOWED_PLACES: Record<string, string> = {
     "bulk/repeating confirm: the classify estimate before apply",
   "features/rag/components/library/KnowledgeAssetPanel.tsx": "bulk/repeating confirm: a heavy rebuild's estimate",
   "features/source-library/components/ActionRunDialog.tsx": "bulk/repeating confirm: the spend cap before a job starts",
+  "features/marketing/local/rank-grid/RankGridWorkspace.tsx":
+    "bulk/repeating confirm: a rank grid preview states what the multi-point run costs before Run grid (a 3x3 under the org threshold never shows the approve-spend dialog)",
   // schedule setup
   "features/spaces/data/Automations.tsx": "schedule setup: an automation's per-check and monthly estimate",
   "features/marketing/monitor-setup/MonitorSetupEditor.tsx":
@@ -398,10 +400,6 @@ export const ALLOWED_PLACES: Record<string, string> = {
     "option picker: the price text for a source in the data library",
   "features/data-sources/library/SourceDetail.tsx":
     "info/details: a data source's detail page with its unit price and the total before Get data",
-  "features/data-sources/library/tools/ToolCard.tsx":
-    "info/details: a tool's info card in the tool catalog",
-  "features/data-sources/library/tools/ToolPage.tsx":
-    "info/details: a tool's own page states its price hint",
   "features/data-sources/live-column/LiveDataColumnButton.tsx":
     "bulk/repeating confirm: the points preview for filling a column, before anything is fetched",
   "features/data-sources/unlock/UnlockPage.tsx":

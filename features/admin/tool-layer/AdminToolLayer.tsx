@@ -11,6 +11,7 @@ import { toast } from "@/lib/toast";
 import { plainLoadError } from "@/features/admin/tool-control/words";
 import { extractErrorMessage } from "@/utils/errors";
 import { formatRelativeTime } from "@/utils/datetime";
+import { formatAdminUsd } from "@/components/cost/formatAdminCost";
 import {
   loadToolDetail,
   loadToolPricing,
@@ -39,7 +40,7 @@ function vendorCost(p: EndpointPrice | undefined): { text: string; sub: string |
   if (!p) return { text: "—", sub: null };
   if (p.free) return { text: "Free", sub: null };
   if (p.unit_usd === null) return { text: "No price", sub: "not in the price book", tone: "text-destructive" };
-  return { text: `$${p.unit_usd}`, sub: p.unit ? p.unit.replace(/^USD\s*/i, "") : null };
+  return { text: formatAdminUsd(Number(p.unit_usd), { digits: "price" }), sub: p.unit ? p.unit.replace(/^USD\s*/i, "") : null };
 }
 
 function lastReason(log: ControlLogEntry[] | undefined): string {

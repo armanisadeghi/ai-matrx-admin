@@ -39,6 +39,7 @@ import { useToolAction } from "@ai-matrx/chat/action-requests/hooks/useToolActio
 import type { ToolEnvelope } from "@ai-matrx/chat/action-requests/screen-run";
 import type { MapMarker } from "@/components/mardown-display/blocks/map/MapCanvas";
 import { ErrorNotice } from "@ai-matrx/design-system";
+import { CostBadge } from "@/components/cost/CostBadge";
 import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { useBusinessLocations } from "@/features/marketing/data/hooks";
@@ -476,6 +477,7 @@ function PreviewView({
         {data.reused_points > 0 ? (
           <Badge tone="neutral">{data.reused_points} of {total} points stored</Badge>
         ) : null}
+        {free ? null : <CostBadge usd={data.estimate_usd} />}
         <Button
           variant="primary"
           className="ml-auto"
