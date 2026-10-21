@@ -86,8 +86,14 @@ export function ArtifactBlockAttach({
   return (
     <div className="group/artifact-attach relative" data-artifact-attach={type}>
       <div ref={body}>{children}</div>
-      {enabled && first ? (
-      <div className="absolute bottom-1 right-1 flex items-center opacity-0 transition-opacity group-hover/artifact-attach:opacity-100 focus-within:opacity-100">
+      {first ? (
+      // The tools take their own row UNDER the block, never a corner OVER it (live review 5, G10: the
+      // row sat on a stats tile, a flashcard face and the quiz's View Results). The row is reserved
+      // while the block streams, so it finishing moves nothing; it is inert until `enabled`.
+      <div
+        data-artifact-attach-tools=""
+        className={`flex h-6 items-center justify-end opacity-0 transition-opacity group-hover/artifact-attach:opacity-100 focus-within:opacity-100 ${enabled ? "" : "invisible pointer-events-none"}`}
+      >
         {savedId ? (
           <>
             <ArtifactVersionHistory
