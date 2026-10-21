@@ -19,7 +19,6 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   Check,
-  CircleDashed,
   ExternalLink,
   History,
   Loader2,
@@ -28,7 +27,8 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PropertyRow, Tile } from "@ai-matrx/design-system/controls";
+import { PropertyRow } from "@ai-matrx/design-system/controls";
+import { KpiGrid, KpiTile, type KpiTone } from "@/components/official/kpi/KpiTile";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { DurableRunFailure } from "@/lib/durable-run/DurableRunFailure";
@@ -237,56 +237,76 @@ export function StrategyBriefWorkspace({
     ? FACT_ROWS[scope].filter((row) => asText(current.facts[row.key])).length
     : 0;
   const factsTotal = FACT_ROWS[scope].length;
-  const goTo = (anchor: string) => {
-    const target = document.getElementById(anchor);
-    if (!target) return;
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
-    target.focus({ preventScroll: true });
-  };
-  // Short states only — what is done, what is not, and the one door to change it.
-  const states: Array<{
+  // Facts, open questions and service lines read like the brief: the same
+  // content renderer, so the page is one document, not a form.
+  const factsMarkdown = current
+    ? [
+        ...FACT_ROWS[scope].map((row) => {
+          const value = asText(current.facts[row.key]);
+          return `### ${row.label}\n${value || "_Not established — write a new version to ask._"}`;
+        }),
+        ...(openQuestions.length > 0
+          ? [`### What the AI was unsure about\n${openQuestions.map((q) => `- ${q}`).join("\n")}`]
+          : []),
+      ].join("\n\n")
+    : "";
+  const serviceLinesMarkdown = current
+    ? current.serviceLines.length === 0
+      ? "_None established yet._"
+      : current.serviceLines
+          .map((line) =>
+            [
+              `### ${line.name}`,
+              `**Reach:** ${footprintLabel(line.footprint)}${line.footprintDetail ? ` — ${line.footprintDetail}` : ""}`,
+              line.customerSegment ? `**For:** ${line.customerSegment}` : "",
+              line.why ? line.why : "",
+            ]
+              .filter(Boolean)
+              .join("\n\n"),
+          )
+          .join("\n\n")
+    : "";
+  // The dashboard numbers: what is done and what is not; each opens its section.
+  const corrected = Boolean(current?.guidance.trim());
+  const kpis: Array<{
     key: string;
     label: string;
     value: string;
-    done: boolean;
-    action: string;
+    hint: string;
+    tone: KpiTone;
     anchor: string;
   }> = current
     ? [
         {
           key: "facts",
           label: "Facts",
-          value: `${factsFound} of ${factsTotal} found`,
-          done: factsFound === factsTotal,
-          action: "Review",
+          value: `${factsFound}/${factsTotal}`,
+          hint: factsFound === factsTotal ? "All established" : "Some missing",
+          tone: factsFound === factsTotal ? "good" : "warn",
           anchor: "strategy-facts",
         },
         {
           key: "lines",
           label: "Service lines",
-          value: current.serviceLines.length
-            ? String(current.serviceLines.length)
-            : "None yet",
-          done: current.serviceLines.length > 0,
-          action: "Review",
+          value: String(current.serviceLines.length),
+          hint: current.serviceLines.length ? "Each with its reach" : "None established",
+          tone: current.serviceLines.length ? "good" : "warn",
           anchor: "strategy-lines",
         },
         {
           key: "questions",
           label: "AI is unsure about",
-          value: openQuestions.length
-            ? String(openQuestions.length)
-            : "Nothing",
-          done: openQuestions.length === 0,
-          action: "Answer",
+          value: String(openQuestions.length),
+          hint: openQuestions.length ? "Open questions" : "Nothing open",
+          tone: openQuestions.length ? "warn" : "good",
           anchor: "strategy-facts",
         },
         {
           key: "corrections",
           label: "Your corrections",
-          value: current.guidance.trim() ? "Added" : "None yet",
-          done: Boolean(current.guidance.trim()),
-          action: current.guidance.trim() ? "Edit" : "Add",
+          value: corrected ? "Added" : "None",
+          hint: corrected ? "Agents follow them" : "Nothing added yet",
+          tone: corrected ? "good" : "neutral",
           anchor: "strategy-corrections",
         },
       ]
@@ -336,46 +356,42 @@ export function StrategyBriefWorkspace({
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-[var(--matrx-page-block-gap)] px-[var(--matrx-page-gutter)] pt-[var(--matrx-page-top)]">
       {/* The shell breadcrumb names the page; this is its one heading for assistive tech. */}
       <h1 className="sr-only">{nounTitle}</h1>
-      {/* Where it stands: what is done, what is not, each opening its section. */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        {states.length > 0 ? (
-          <ul className="grid min-w-0 flex-1 grid-cols-2 gap-2 lg:grid-cols-4">
-            {states.map((state) => (
-              <li key={state.key} className="min-w-0">
-                <Tile
-                  layout="row"
-                  icon={state.done ? <Check /> : <CircleDashed />}
-                  glyphTone={state.done ? "success" : undefined}
-                  title={state.label}
-                  line={state.value}
-                  onClick={() => goTo(state.anchor)}
-                />
-              </li>
+      {/* Where it stands, at a glance: the title, its one action, and the numbers. */}
+      <header className="flex flex-col gap-4 rounded-xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            {nounTitle}
+          </h2>
+          {generate.running ? (
+            <span className="type-secondary flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+              {generate.stage ?? "Working…"}
+            </span>
+          ) : (
+            <Button
+              variant={current ? "outline" : "primary"}
+              onClick={() => void runGenerate()}
+            >
+              {current ? <RefreshCw aria-hidden /> : <AGENT_ICON aria-hidden />}
+              {current ? "Write a new version" : `Write the ${noun}`}
+            </Button>
+          )}
+        </div>
+        {kpis.length > 0 ? (
+          <KpiGrid className="lg:grid-cols-4">
+            {kpis.map((kpi) => (
+              <KpiTile
+                key={kpi.key}
+                label={kpi.label}
+                value={kpi.value}
+                hint={kpi.hint}
+                tone={kpi.tone}
+                href={`#${kpi.anchor}`}
+              />
             ))}
-          </ul>
-        ) : (
-          <div className="flex-1" />
-        )}
-        {generate.running ? (
-          <span className="type-secondary flex shrink-0 items-center gap-2 text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" aria-hidden />
-            {generate.stage ?? "Working…"}
-          </span>
-        ) : (
-          <Button
-            className="shrink-0"
-            variant={current ? "outline" : "primary"}
-            onClick={() => void runGenerate()}
-          >
-            {current ? (
-              <RefreshCw aria-hidden />
-            ) : (
-              <AGENT_ICON aria-hidden />
-            )}
-            {current ? "Write a new version" : `Write the ${noun}`}
-          </Button>
-        )}
-      </div>
+          </KpiGrid>
+        ) : null}
+      </header>
 
       <DurableRunFailure
         error={generate.error}
@@ -415,34 +431,13 @@ export function StrategyBriefWorkspace({
               title="Facts the AI established"
               about="What the AI concluded about the business. Anything wrong goes in Your corrections and outranks these."
             >
-              <div className="space-y-3 p-3">
-                {factsFound === 0 ? (
-                  <p className="type-secondary text-muted-foreground">
-                    Asked after this version — write a new version
-                  </p>
-                ) : null}
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {FACT_ROWS[scope].map((row) => {
-                    const value = asText(current.facts[row.key]);
-                    return (
-                      <PropertyRow
-                        key={row.key}
-                        label={row.label}
-                        value={value || undefined}
-                        missing={value ? undefined : "Not established"}
-                      />
-                    );
-                  })}
-                </div>
-                {openQuestions.length > 0 ? (
-                  <PropertyRow label="What the AI was unsure about">
-                    <ul className="list-outside list-disc space-y-1 pl-0">
-                      {openQuestions.map((q) => (
-                        <li key={q}>{q}</li>
-                      ))}
-                    </ul>
-                  </PropertyRow>
-                ) : null}
+              <div className="p-3">
+                <RichContent
+                  source={factsMarkdown}
+                  level="standard"
+                  imagePolicy="ai"
+                  headingAnchors={false}
+                />
               </div>
             </SectionCard>
           </div>
@@ -457,37 +452,14 @@ export function StrategyBriefWorkspace({
                 }
                 about="Each line of business, the customers it is for and how far it reaches: national, regional, a service radius or specific locations."
               >
-                {current.serviceLines.length === 0 ? (
-                  <p className="type-body p-3 text-muted-foreground">
-                    None established yet
-                  </p>
-                ) : (
-                  <ul className="divide-y divide-border">
-                    {current.serviceLines.map((line) => (
-                      <li key={line.name} className="flex flex-col gap-1 px-3 py-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="type-title text-foreground">
-                            {line.name}
-                          </span>
-                          <Badge variant="outline">
-                            {footprintLabel(line.footprint)}
-                          </Badge>
-                        </div>
-                        {line.customerSegment ? (
-                          <p className="type-secondary text-muted-foreground">
-                            For {line.customerSegment}
-                          </p>
-                        ) : null}
-                        {line.footprintDetail ? (
-                          <p className="type-body text-foreground">{line.footprintDetail}</p>
-                        ) : null}
-                        {line.why ? (
-                          <p className="type-secondary text-muted-foreground">{line.why}</p>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                <div className="p-3">
+                  <RichContent
+                    source={serviceLinesMarkdown}
+                    level="standard"
+                    imagePolicy="ai"
+                    headingAnchors={false}
+                  />
+                </div>
               </SectionCard>
             </div>
           ) : null}
