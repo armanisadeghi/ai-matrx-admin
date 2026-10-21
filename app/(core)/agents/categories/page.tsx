@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { DerivedBreadcrumb } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { RefreshCwTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import {
@@ -104,11 +105,7 @@ export default function UserCategoriesPage() {
     <div className="h-full flex flex-col overflow-hidden bg-textured">
       <RouteHeader
         left={
-          <>
-            <h1 className="type-title text-foreground truncate">
-              My Categories
-            </h1>
-          </>
+          <DerivedBreadcrumb />
         }
         right={
           <>

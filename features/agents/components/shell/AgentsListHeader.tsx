@@ -2,7 +2,8 @@
 
 import { Link } from "@ai-matrx/chat/host/navigation";
 import { useEffect } from "react";
-import { FileChartColumn, Webhook } from "lucide-react";
+import { FileChartColumn } from "lucide-react";
+import { DerivedBreadcrumb } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 import { Button } from "@ai-matrx/design-system/controls";
 import { useDriftAlerts } from "../../hooks/useDriftAlerts";
 import { DriftSeverityBadge } from "@ai-matrx/chat/ui/usages/DriftSeverityBadge";
@@ -38,8 +39,8 @@ export function AgentsListHeader() {
 
   return (
     <div className="flex items-center w-full gap-2 px-1">
-      <Webhook className="w-4 h-4 text-muted-foreground shrink-0" />
-      <h1 className="text-sm font-semibold text-foreground">Agents</h1>
+      {/* The trail is derived from the address + menu (features/shell/breadcrumbs); nothing typed here. */}
+      <DerivedBreadcrumb />
 
       {/* On a phone the drift door folds into the shell's one ⋮. */}
       <HeaderActionsSlot className="ml-auto flex shrink-0 items-center">

@@ -87,6 +87,10 @@ someone fixes it.
 6. **Double menus** — a page-level nav next to the sidebar. Large routes register ONE menu in `features/shell/constants/route-menu-registry.ts` (desktop `RouteMenuSlot` + `MobileRouteMenuSlot` come free).
 7. **Avatar collision** — `ml-auto` / `justify-between` actions in the body drifting behind the fixed avatar (the old `pr-14` hack). Fixed automatically by moving actions into the bounded center zone.
 
+## Breadcrumbs are derived — never pass a trail
+
+Do not pass `parents` to `RecordPageHeader` or a `trail` literal to `CrumbTrailHeader` (`pnpm check:derived-breadcrumbs`). A list/module header mounts `<DerivedBreadcrumb />`; a record page passes only its record (`record={{ name }}`, or declare it with `useDeclareCurrentRecord({ token, id })` and the key, name column or short id is used). A wrong word for one route goes in `features/shell/breadcrumbs/trail-overrides.ts`. A layout that knows level names (Scopes) passes `records` to `useDerivedTrail`, never a trail.
+
 ## Templates — reach for these FIRST
 
 Two drop-in templates in `features/shell/components/header/templates/` cover almost every route; consuming one is the default, hand-rolling is the exception:

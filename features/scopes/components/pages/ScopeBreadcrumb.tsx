@@ -28,6 +28,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
+import { RecordId } from "@ai-matrx/design-system";
 import { cn } from "@/styles/themes/utils";
 import {
   orgScopesHref,
@@ -53,6 +54,8 @@ export interface ScopeBreadcrumbTrailNode {
   /** Optional "see all" link appended to the bottom of the dropdown. */
   optionsAllHref?: string;
   optionsAllLabel?: string;
+  /** No key or name to show: the id through the one id component. */
+  recordId?: { value: string; token?: string; kind?: string };
 }
 
 export interface ScopeBreadcrumbProps {
@@ -86,6 +89,7 @@ interface Level {
   optionsLabel?: string;
   optionsAllHref?: string;
   optionsAllLabel?: string;
+  recordId?: { value: string; token?: string; kind?: string };
   isCurrent?: boolean;
 }
 
@@ -160,7 +164,14 @@ function OptionsMenu({
 }
 
 function DesktopCrumb({ level }: { level: Level }) {
-  const text = level.href ? (
+  const text = level.recordId ? (
+    <RecordId
+      value={level.recordId.value}
+      label={level.recordId.kind ?? level.label}
+      token={level.recordId.token}
+      look="chip"
+    />
+  ) : level.href ? (
     <Link
       href={level.href}
       aria-current={level.isCurrent ? "page" : undefined}
@@ -311,6 +322,7 @@ export function ScopeBreadcrumb({
       optionsLabel: node.optionsLabel,
       optionsAllHref: node.optionsAllHref,
       optionsAllLabel: node.optionsAllLabel,
+      recordId: node.recordId,
       isCurrent: i === trail.length - 1,
     })),
   ];
