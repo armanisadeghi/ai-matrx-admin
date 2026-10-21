@@ -113,6 +113,7 @@ is easy to fill in.
 
 ## Change log
 
+- 2026-10-21 — Admin Shows: Edit / Delete are declared once (`defineRowVerbs`) and Delete has a bulk twin on the same `removeShow` door.
 - 2026-09-21 — **Admin podcast editor tables use the canonical shared table.**
   `components/admin/PodcastsTable.tsx` renders the Shows and Episodes tabs
   through `MatrxDataTable` while retaining their editor-owned filtered search,

@@ -176,6 +176,7 @@ export default function OfferingsContainer() {
     } catch (err) {
       console.error("Delete failed", extractErrorMessage(err));
       toast.error(extractErrorMessage(err));
+      throw err;
     }
   };
 

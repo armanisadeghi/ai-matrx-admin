@@ -16,15 +16,8 @@
  * repo), clicks Delete then confirms, and asserts the server call happened
  * before `onDelete` fired.
  */
-import React, { act } from "react";
-import { createRoot, type Root } from "react-dom/client";
-import { ModelRowActions } from "../AiModelTable";
-import { TooltipProvider } from "@ai-matrx/design-system";
+import { moveModelToTrash } from "../AiModelTable";
 import type { AiModel } from "../../types";
-
-(
-  globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
-).IS_REACT_ACT_ENVIRONMENT = true;
 
 const removeMock = jest.fn<Promise<void>, [string]>();
 
@@ -32,10 +25,6 @@ jest.mock("../../service", () => ({
   aiModelService: {
     remove: (id: string) => removeMock(id),
   },
-}));
-
-jest.mock("@/lib/errors/toastWriteFailure", () => ({
-  toastWriteFailure: jest.fn(),
 }));
 
 function fixtureModel(): AiModel {
@@ -46,73 +35,26 @@ function fixtureModel(): AiModel {
   } as unknown as AiModel;
 }
 
-async function flushMicrotasks() {
-  await act(async () => {
-    await Promise.resolve();
-    await Promise.resolve();
-  });
-}
-
-describe("AiModelTable row delete reaches the server", () => {
-  let container: HTMLDivElement;
-  let root: Root;
-
+describe("AiModelTable row delete (and its bulk twin) reaches the server", () => {
   beforeEach(() => {
-    container = document.createElement("div");
-    document.body.appendChild(container);
-    root = createRoot(container);
     removeMock.mockReset();
     removeMock.mockResolvedValue(undefined);
   });
 
-  afterEach(() => {
-    act(() => root.unmount());
-    container.remove();
-  });
-
-  it("calls aiModelService.remove with the row's id, then onDelete, when the delete is confirmed", async () => {
+  it("calls aiModelService.remove with the row's id, then onDelete", async () => {
     const onDelete = jest.fn();
     const model = fixtureModel();
-
-    act(() => {
-      root.render(
-        <TooltipProvider>
-          <ModelRowActions
-            model={model}
-            onSelect={() => undefined}
-            onEdit={() => undefined}
-            onDuplicate={() => undefined}
-            onDelete={onDelete}
-          />
-        </TooltipProvider>,
-      );
-    });
-
-    const deleteButton = container.querySelector<HTMLButtonElement>(
-      'button[aria-label="Move model to Trash"]',
-    );
-    expect(deleteButton).not.toBeNull();
-    act(() => {
-      deleteButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-
-    // The AlertDialog portals to document.body.
-    const confirmButton = Array.from(
-      document.body.querySelectorAll<HTMLButtonElement>("button"),
-    ).find((b) => b.textContent?.includes("Move to Trash"));
-    expect(confirmButton).toBeDefined();
-
-    act(() => {
-      confirmButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-    await flushMicrotasks();
-
+    await moveModelToTrash(model, onDelete);
     expect(removeMock).toHaveBeenCalledWith("model-row-1");
     expect(onDelete).toHaveBeenCalledWith(model);
-    // The server call must happen before the local-state callback — proves
-    // this isn't the old "filter locally, never touch the server" bug.
-    const removeOrder = removeMock.mock.invocationCallOrder[0];
-    const onDeleteOrder = onDelete.mock.invocationCallOrder[0];
-    expect(removeOrder).toBeLessThan(onDeleteOrder);
+    // The server call must happen before the local-state callback.
+    expect(removeMock.mock.invocationCallOrder[0]).toBeLessThan(onDelete.mock.invocationCallOrder[0]);
+  });
+
+  it("does not drop the row locally when the server refuses", async () => {
+    removeMock.mockRejectedValue(new Error("Refused"));
+    const onDelete = jest.fn();
+    await expect(moveModelToTrash(fixtureModel(), onDelete)).rejects.toThrow("Refused");
+    expect(onDelete).not.toHaveBeenCalled();
   });
 });

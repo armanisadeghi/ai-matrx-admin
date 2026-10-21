@@ -8,12 +8,6 @@ import {
   type ToolbarFacet,
 } from "@ai-matrx/design-system/data-table";
 import {
-  ViewTapButton,
-  PencilTapButton,
-  CopyTapButton,
-  TrashTapButton,
-} from "@ai-matrx/design-system/tap-target/buttons";
-import {
   Badge,
   Chip,
   Select,
@@ -21,16 +15,6 @@ import {
   type ChipTone,
 } from "@ai-matrx/design-system/controls";
 import { AI_MODEL_DRILL } from "./aiModelDrill";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import type { AiModel, AiProvider } from "../types";
 import { AiModelRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
 import { aiModelSummary, AI_MODELS_LOCATION } from "../format";
@@ -42,7 +26,8 @@ import { type ContentType } from "@ai-matrx/agents/models";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { aiModelHref, aiProviderHref } from "../doors";
 import { aiModelService } from "../service";
-import { toastWriteFailure } from "@/lib/errors/toastWriteFailure";
+import { useAiTableBulk } from "./useAiTableBulk";
+import { Copy, Eye, Pencil } from "lucide-react";
 import {
   modelFiltersToColumns,
   modelQueryToTab,
@@ -382,6 +367,19 @@ export default function AiModelTable(props: AiModelTableProps) {
     onRefresh,
   } = props;
   const { tabState, onUpdateTabState } = props;
+  const { rowActionDefs, selection } = useAiTableBulk<AiModel>({
+    noun: "model",
+    rows: models,
+    getRowName: (model) => model.common_name || model.name,
+    deleteOne: (model) => moveModelToTrash(model, onDelete),
+    deleteLabel: "Move to Trash",
+    consequence: "The model leaves the model list, and agents set to it cannot run on it. Restore it from Trash to bring it back.",
+    extraVerbs: [
+      { id: "view", icon: Eye, label: "View model", onClick: onSelect, bulk: false, noBulk: "view" },
+      { id: "edit", icon: Pencil, label: "Edit model", onClick: onEdit, bulk: false, noBulk: "edit" },
+      { id: "duplicate", icon: Copy, label: "Duplicate model", onClick: onDuplicate, bulk: false, noBulk: "single" },
+    ],
+  });
   const extraQuery: Partial<MatrxDataTableQueryState> = tabState.tableQuery ?? {};
   const state: MatrxDataTableQueryState = {
     ...extraQuery,
@@ -542,15 +540,9 @@ export default function AiModelTable(props: AiModelTableProps) {
       viewTabs={false}
       data={tierModels}
       drill={AI_MODEL_DRILL}
-      columns={[...(columns), ...drillColumns, { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (model) => (
-        <ModelRowActions
-          model={model}
-          onSelect={onSelect}
-          onEdit={onEdit}
-          onDuplicate={onDuplicate}
-          onDelete={onDelete}
-        />
-      ) }]}
+      columns={[...columns, ...drillColumns]}
+      rowActionDefs={rowActionDefs}
+      selection={selection}
       getRowId={(model) => model.id}
       query={{
         mode: "controlled-local",
@@ -615,77 +607,12 @@ export default function AiModelTable(props: AiModelTableProps) {
   );
 }
 
-export function ModelRowActions({
-  model,
-  onSelect,
-  onEdit,
-  onDuplicate,
-  onDelete,
-}: {
-  model: AiModel;
-  onSelect: (model: AiModel) => void;
-  onEdit: (model: AiModel) => void;
-  onDuplicate: (model: AiModel) => void;
-  onDelete: (model: AiModel) => void;
-}) {
-  const [confirmDelete, setConfirmDelete] = React.useState(false);
-  const [deleting, setDeleting] = React.useState(false);
-
-  const handleConfirmDelete = async () => {
-    setDeleting(true);
-    try {
-      await aiModelService.remove(model.id);
-      setConfirmDelete(false);
-      onDelete(model);
-    } catch (err) {
-      toastWriteFailure(err, { action: "move this model to Trash", remedy: "Try again." });
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  return (
-    <>
-      <ViewTapButton
-        variant="transparent"
-        ariaLabel="View model"
-        onClick={() => onSelect(model)}
-      />
-      <PencilTapButton
-        variant="transparent"
-        ariaLabel="Edit model"
-        onClick={() => onEdit(model)}
-      />
-      <CopyTapButton
-        variant="transparent"
-        ariaLabel="Duplicate model"
-        onClick={() => onDuplicate(model)}
-      />
-      <TrashTapButton
-        variant="transparent"
-        iconColor="text-destructive"
-        ariaLabel="Move model to Trash"
-        onClick={() => setConfirmDelete(true)}
-      />
-      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Move &quot;{model.common_name || model.name}&quot; to Trash?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              This model leaves the model list, and agents set to it cannot run
-              on it while it is in Trash. Restore it from Trash to bring it back.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction disabled={deleting} onClick={() => void handleConfirmDelete()}>
-              {deleting ? "Moving…" : "Move to Trash"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
+/**
+ * Move one model to Trash: the server write first (`ai.model_definition.deleted_at`; delete means
+ * archive, 2026-09-27), then the caller's local-state removal. The row's Delete and its bulk twin
+ * both call this, so neither can drop a row locally without the write (it did once).
+ */
+export async function moveModelToTrash(model: AiModel, onDelete: (model: AiModel) => void): Promise<void> {
+  await aiModelService.remove(model.id);
+  onDelete(model);
 }

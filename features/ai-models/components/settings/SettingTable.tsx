@@ -1,7 +1,6 @@
 "use client";
 
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
-import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -9,26 +8,13 @@ import {
   type MatrxColumnDef,
 } from "@ai-matrx/design-system/data-table";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  PencilTapButton,
-  TrashTapButton,
-} from "@ai-matrx/design-system/tap-target/buttons";
-import { Lock, SlidersHorizontal } from "lucide-react";
+import { Lock, Pencil, SlidersHorizontal } from "lucide-react";
+import { useAiTableBulk } from "../useAiTableBulk";
 import type { AiSetting } from "../../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readOf } from "@ai-matrx/design-system";
@@ -71,69 +57,6 @@ function TruncatedText({
   );
 }
 
-function RowActions({
-  item,
-  onEdit,
-  onDelete,
-}: {
-  item: AiSetting;
-  onEdit: (item: AiSetting) => void;
-  onDelete: (item: AiSetting) => void;
-}) {
-  const [pendingDelete, setPendingDelete] = useState(false);
-  const isSystem = item.is_system ?? false;
-  return (
-    <>
-      <PencilTapButton
-        variant="transparent"
-        ariaLabel={`Edit ${item.key}`}
-        tooltip="Edit setting"
-        onClick={() => onEdit(item)}
-      />
-      <TrashTapButton
-        variant="solid"
-        bgColor="bg-destructive/10"
-        iconColor="text-destructive"
-        hoverBgColor="hover:bg-destructive/20"
-        activeBgColor="active:bg-destructive/25"
-        ariaLabel={
-          isSystem
-            ? "System settings cannot be deleted"
-            : `Delete ${item.key}`
-        }
-        tooltip={
-          isSystem ? "System settings cannot be deleted" : "Delete setting"
-        }
-        disabled={isSystem}
-        onClick={() => setPendingDelete(true)}
-      />
-      <AlertDialog open={pendingDelete} onOpenChange={setPendingDelete}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete &quot;{humanizeIdentifier(item.key)}&quot;?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will remove the setting &quot;{humanizeIdentifier(item.key)}&quot; from the
-              active settings vocabulary.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                setPendingDelete(false);
-                onDelete(item);
-              }}
-            >
-              Delete Setting
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
-}
-
 export interface SettingTableProps {
   settings: AiSetting[];
   isLoading: boolean;
@@ -141,7 +64,7 @@ export interface SettingTableProps {
   selectedId: string | null;
   onSelect: (setting: AiSetting) => void;
   onEdit: (setting: AiSetting) => void;
-  onDelete: (setting: AiSetting) => void;
+  onDelete: (setting: AiSetting) => Promise<void>;
   onCreate: () => void;
   onRetry: () => void;
 }
@@ -158,6 +81,16 @@ export default function SettingTable({
   onRetry,
 }: SettingTableProps) {
   const searchParams = useSearchParams();
+  const { rowActionDefs, selection } = useAiTableBulk<AiSetting>({
+    noun: "setting",
+    rows: settings,
+    getRowName: (item) => humanizeIdentifier(item.key),
+    deleteOne: onDelete,
+    protectedReason: (item) => (item.is_system ? "System settings cannot be deleted" : null),
+    deleteLabel: "Delete setting",
+    consequence: "The setting leaves the active settings vocabulary.",
+    extraVerbs: [{ id: "edit", icon: Pencil, label: "Edit setting", onClick: onEdit, bulk: false, noBulk: "edit" }],
+  });
   if (searchParams.get("tablePreview") === "defaults") {
     const fields = Array.from(new Set(settings.flatMap((row) => Object.keys(row))));
     const defaultColumns: MatrxColumnDef<AiSetting>[] = fields.map((field) => ({
@@ -248,9 +181,9 @@ export default function SettingTable({
         data={settings}
         isLoading={isLoading && settings.length === 0}
         isFetching={isLoading && settings.length > 0}
-        columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (item) => (
-          <RowActions item={item} onEdit={onEdit} onDelete={onDelete} />
-        ) }]}
+        columns={columns}
+        rowActionDefs={rowActionDefs}
+        selection={selection}
         getRowId={(item) => item.id}
         pageSize={50}
         pageSizeOptions={[10, 25, 50, 100]}

@@ -26,12 +26,11 @@ import {
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, Save, X } from "lucide-react";
-import { TrashTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { extractErrorMessage } from "@/utils/errors";
 import { resolveSystemOrgId } from "@/lib/organizations/systemOrg";
 import { AiModelRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
+import { useAiTableBulk } from "../useAiTableBulk";
 import { aiModelService } from "../../service";
 import type { AiModelAliasRow, AiModelRow } from "../../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -66,23 +65,6 @@ const kindBadgeClass: Record<AliasKind, string> = {
   latest: "bg-green-50 text-green-600 dark:bg-green-900/20",
 };
 
-function AliasDeleteAction({
-  item,
-  onDelete,
-}: {
-  item: AiModelAliasRow;
-  onDelete: (item: AiModelAliasRow) => void;
-}) {
-  return (
-    <TrashTapButton
-      variant="transparent"
-      iconColor="text-destructive"
-      onClick={() => onDelete(item)}
-      ariaLabel={`Delete alias ${item.alias}`}
-    />
-  );
-}
-
 export default function AliasesContainer() {
   const [aliases, setAliases] = useState<AiModelAliasRow[]>([]);
   const [models, setModels] = useState<AliasTargetModel[]>([]);
@@ -93,9 +75,6 @@ export default function AliasesContainer() {
   const [form, setForm] = useState<AliasFormData>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<AiModelAliasRow | null>(
-    null,
-  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -198,10 +177,17 @@ export default function AliasesContainer() {
       if (editingId === row.id) cancelEdit();
     } catch (err) {
       setSaveError(extractErrorMessage(err));
-    } finally {
-      setPendingDelete(null);
+      throw err;
     }
   };
+  const { rowActionDefs, selection } = useAiTableBulk<AiModelAliasRow>({
+    noun: "alias",
+    rows: aliases,
+    getRowName: (item) => item.alias,
+    deleteOne: handleDelete,
+    deleteLabel: "Delete alias",
+    consequence: "Requests using the alias stop resolving to its model.",
+  });
 
   const columns: MatrxColumnDef<AiModelAliasRow>[] = [
     {
@@ -382,9 +368,9 @@ export default function AliasesContainer() {
           data={aliases}
           isLoading={loading && aliases.length === 0}
           isFetching={loading && aliases.length > 0}
-          columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (item) => (
-            <AliasDeleteAction item={item} onDelete={setPendingDelete} />
-          ) }]}
+          columns={columns}
+          rowActionDefs={rowActionDefs}
+          selection={selection}
           getRowId={(item) => item.id}
           pageSize={25}
           pageSizeOptions={[10, 25, 50, 100]}
@@ -457,26 +443,6 @@ export default function AliasesContainer() {
           )}
         />
       </div>
-
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingDelete(null);
-        }}
-        title="Delete alias?"
-        description={
-          pendingDelete
-            ? `Requests using "${pendingDelete.alias}" will stop resolving to ${modelLabel(
-                pendingDelete.model_id,
-              )}.`
-            : ""
-        }
-        confirmLabel="Delete"
-        variant="destructive"
-        onConfirm={async () => {
-          if (pendingDelete) await handleDelete(pendingDelete);
-        }}
-      />
     </div>
   );
 }

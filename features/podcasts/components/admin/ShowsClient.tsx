@@ -15,16 +15,9 @@ import {
   MatrxDataTable,
   type MatrxColumnDef,
 } from "@ai-matrx/design-system/data-table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { podcastService } from "../../service";
 import type { PcShow } from "../../types";
 import { InlineMediaRef } from "@ai-matrx/media/react";
@@ -68,8 +61,6 @@ export function ShowsClient() {
   const [isLoading, setIsLoading] = useState(true);
   // A failed read is said — never "No shows yet" (RC-B12 r13).
   const [loadError, setLoadError] = useState<unknown>(null);
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   // URL-driven search state — survives refresh
   const search = searchParams.get("q") ?? "";
@@ -104,22 +95,62 @@ export function ShowsClient() {
     load();
   }, []);
 
-  const handleDeleteConfirm = async () => {
-    if (!pendingDeleteId) return;
-    setIsDeleting(true);
-    try {
-      await podcastService.removeShow(pendingDeleteId);
-      setShows((prev) => prev.filter((s) => s.id !== pendingDeleteId));
-    } catch (e) {
-      console.error("Delete failed", e);
-      toast.error(
-        `Couldn't delete the show: ${e instanceof Error ? e.message : String(e)}`,
-      );
-    } finally {
-      setIsDeleting(false);
-      setPendingDeleteId(null);
-    }
-  };
+  // One declaration: the row's Edit / Delete and the bar's Delete twin (the same removeShow door).
+  const openShow = (show: PcShow) =>
+    startTransition(() => pushAppHref(router, podcastShowAdminHref(show.id)));
+  const { rowActionDefs, bulkActions } = defineRowVerbs<PcShow>(
+    [
+      { id: "edit", icon: Pencil, label: "Edit show", onClick: openShow, bulk: false, noBulk: "edit" },
+      {
+        id: "delete",
+        icon: Trash2,
+        label: "Delete",
+        tone: "destructive",
+        onClick: (show) => {
+          void (async () => {
+            const ok = await confirm({
+              title: "Delete show?",
+              description: archiveConfirmSentence("the show"),
+              confirmLabel: "Delete",
+              variant: "destructive",
+            });
+            if (!ok) return;
+            try {
+              await podcastService.removeShow(show.id);
+              setShows((prev) => prev.filter((s) => s.id !== show.id));
+            } catch (e) {
+              console.error("Delete failed", e);
+              toast.error(`Couldn't delete the show: ${e instanceof Error ? e.message : String(e)}`);
+            }
+          })();
+        },
+        bulk: {
+          done: "Deleted",
+          removesRows: true,
+          confirm: (targets) => ({
+            title: `Delete ${targets.ids.length} show${targets.ids.length === 1 ? "" : "s"}?`,
+            description: archiveConfirmSentence(targets.ids.length === 1 ? "the show" : "these shows"),
+            confirmLabel: "Delete",
+            variant: "destructive",
+          }),
+          runOne: async (id) => {
+            await podcastService.removeShow(id);
+            setShows((prev) => prev.filter((s) => s.id !== id));
+          },
+        },
+      },
+    ],
+    { noun: "show", getRowId: (s) => s.id, getRowName: (s) => s.title },
+  );
+  const bulk = useTableBulkSelection<PcShow>({
+    noun: "show",
+    rows: shows,
+    getRowId: (s) => s.id,
+    getRowName: (s) => s.title,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: () => {},
+  });
 
   const columns = useMemo<MatrxColumnDef<PcShow>[]>(
     () => [
@@ -219,28 +250,10 @@ export function ShowsClient() {
             <div className="flex items-center gap-0.5">
               <PublicPageLink slug={show.slug} label={show.title} />
               <CopyLinkButton slug={show.slug} />
-              <button
-                type="button"
-                onClick={() =>
-                  startTransition(() =>
-                    pushAppHref(router, podcastShowAdminHref(show.id)),
-                  )
-                }
-                className="p-1.5 text-muted-foreground hover:text-foreground"
-                title="Edit show"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setPendingDeleteId(show.id)}
-                className="p-1.5 text-muted-foreground hover:text-destructive"
-                title="Delete"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
             </div>
           ) }]}
+          rowActionDefs={rowActionDefs}
+          selection={bulk.selection}
           getRowId={(show) => show.id}
           searchText={podcastShowSearchText}
           isLoading={isLoading}
@@ -279,32 +292,6 @@ export function ShowsClient() {
           }}
         />
         )}
-
-        <AlertDialog
-          open={!!pendingDeleteId}
-          onOpenChange={(open) => !open && setPendingDeleteId(null)}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete show?</AlertDialogTitle>
-              <AlertDialogDescription>
-                {archiveConfirmSentence("the show")}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={isDeleting}>
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteConfirm}
-                disabled={isDeleting}
-                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-              >
-                {isDeleting ? "Deleting…" : "Delete"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </>
     </SurfaceRuntimeProvider>
   );

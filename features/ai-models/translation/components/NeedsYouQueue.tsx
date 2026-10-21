@@ -244,15 +244,33 @@ export default function NeedsYouQueue({
         selection={{
           selectedIds,
           onSelectedIdsChange: setSelectedIds,
-          isRowSelectable: (r) => r.cell != null,
           noun: "rule",
+          // Every row can be selected: a row with no rule yet can't be approved but can be skipped, so
+          // Approve counts only the rows that have a rule and Skip takes all of them.
           actions: (_rows, ids) => {
-            const batch = ids.map((id) => byId.get(id)).filter((i): i is QueueItem => !!i?.cell);
-            if (batch.length === 0) return null;
+            const chosen = ids.map((id) => byId.get(id)).filter((i): i is QueueItem => !!i);
+            const batch = chosen.filter((i) => !!i.cell);
+            if (chosen.length === 0) return null;
             return (
-              <Button icon={<Check />} variant="primary" type="button" disabled={busy} onClick={() => setPending(batch)}>
-                Approve {batch.length}
-              </Button>
+              <>
+                {batch.length > 0 ? (
+                  <Button icon={<Check />} variant="primary" type="button" disabled={busy} onClick={() => setPending(batch)}>
+                    Approve {batch.length}
+                  </Button>
+                ) : null}
+                <Button
+                  icon={<SkipForward />}
+                  variant="outline"
+                  type="button"
+                  disabled={busy}
+                  onClick={() => {
+                    chosen.forEach((item) => onSkip(item));
+                    setSelectedIds([]);
+                  }}
+                >
+                  Skip {chosen.length}
+                </Button>
+              </>
             );
           },
         }}

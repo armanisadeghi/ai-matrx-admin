@@ -470,12 +470,14 @@ export default function SettingsContainer() {
    *  detail panel's own delete flow already calls the service itself
    *  before invoking `onDeleted`, so this is only for table rows. */
   const handleRowDelete = async (setting: AiSetting) => {
+    if (setting.is_system) throw new Error("System settings cannot be deleted");
     setActionError(null);
     try {
       await aiModelService.deleteSetting(setting.id);
       handleDeleted(setting.id);
     } catch (err) {
       setActionError(extractErrorMessage(err));
+      throw err;
     }
   };
 

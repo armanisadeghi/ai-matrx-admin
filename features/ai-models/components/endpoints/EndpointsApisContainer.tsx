@@ -19,19 +19,9 @@ import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { EnhancedEditableJsonViewer } from "@/components/ui/JsonComponents/JsonEditor";
 import { AlertTriangle, Lock, Plug, Save, X } from "lucide-react";
-import { TrashTapButton } from "@ai-matrx/design-system/tap-target/buttons";
+import { useAiTableBulk } from "../useAiTableBulk";
 import { extractErrorMessage } from "@/utils/errors";
 import { resolveSystemOrgId } from "@/lib/organizations/systemOrg";
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -375,63 +365,6 @@ function ApiFormFields({
 
 type EndpointApiRow = { id: string; is_system: boolean };
 
-function RowActions<T extends EndpointApiRow>({
-  row,
-  onDelete,
-  deleteNoun,
-}: {
-  row: T;
-  onDelete: (row: T) => void;
-  deleteNoun: string;
-}) {
-  const [pendingDelete, setPendingDelete] = useState(false);
-  return (
-    <>
-      <TrashTapButton
-        variant="solid"
-        bgColor="bg-destructive/10"
-        iconColor="text-destructive"
-        hoverBgColor="hover:bg-destructive/20"
-        activeBgColor="active:bg-destructive/25"
-        ariaLabel={
-          row.is_system
-            ? "System rows cannot be deleted"
-            : `Delete ${deleteNoun}`
-        }
-        tooltip={
-          row.is_system
-            ? "System rows cannot be deleted"
-            : `Delete ${deleteNoun}`
-        }
-        disabled={row.is_system}
-        onClick={() => setPendingDelete(true)}
-      />
-      <AlertDialog open={pendingDelete} onOpenChange={setPendingDelete}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this {deleteNoun}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This removes the {deleteNoun} from the active list.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                setPendingDelete(false);
-                onDelete(row);
-              }}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
-}
-
 function EndpointApiTable<T extends EndpointApiRow>({
   title,
   rows,
@@ -457,12 +390,21 @@ function EndpointApiTable<T extends EndpointApiRow>({
   selectedId: string | null;
   onSelect: (row: T) => void;
   onCreate: () => void;
-  onDelete: (row: T) => void;
+  onDelete: (row: T) => Promise<void>;
   onRetry: () => void;
   deleteNoun: string;
   mobileTitle: (row: T) => string;
   mobileDetails: (row: T) => React.ReactNode;
 }) {
+  const { rowActionDefs, selection } = useAiTableBulk<T>({
+    noun: deleteNoun,
+    rows,
+    getRowName: mobileTitle,
+    deleteOne: onDelete,
+    protectedReason: (row) => (row.is_system ? "System rows cannot be deleted" : null),
+    deleteLabel: `Delete ${deleteNoun}`,
+    consequence: `The ${deleteNoun} leaves the active list.`,
+  });
   return (
     <div className="flex h-full min-h-0 flex-col">
       {/* Action failures only: the read's failure is the table's to say (read=), once. */}
@@ -475,9 +417,9 @@ function EndpointApiTable<T extends EndpointApiRow>({
       )}
       <MatrxDataTable<T>
         data={rows}
-        columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (row) => (
-          <RowActions row={row} onDelete={onDelete} deleteNoun={deleteNoun} />
-        ) }]}
+        columns={columns}
+        rowActionDefs={rowActionDefs}
+        selection={selection}
         getRowId={(row) => row.id}
         isLoading={loading && rows.length === 0}
         isFetching={loading && rows.length > 0}
@@ -732,6 +674,7 @@ export default function EndpointsApisContainer() {
   };
 
   const deleteEndpoint = async (row: AiEndpoint) => {
+    if (row.is_system) throw new Error("System rows cannot be deleted");
     setActionError(null);
     try {
       await aiModelService.deleteEndpoint(row.id);
@@ -739,6 +682,7 @@ export default function EndpointsApisContainer() {
       if (selectedEndpoint?.id === row.id) setEndpointPanelOpen(false);
     } catch (err) {
       setActionError(extractErrorMessage(err));
+      throw err;
     }
   };
 
@@ -798,6 +742,7 @@ export default function EndpointsApisContainer() {
   };
 
   const deleteApi = async (row: AiApi) => {
+    if (row.is_system) throw new Error("System rows cannot be deleted");
     setActionError(null);
     try {
       await aiModelService.deleteApi(row.id);
@@ -805,6 +750,7 @@ export default function EndpointsApisContainer() {
       if (selectedApi?.id === row.id) setApiPanelOpen(false);
     } catch (err) {
       setActionError(extractErrorMessage(err));
+      throw err;
     }
   };
 

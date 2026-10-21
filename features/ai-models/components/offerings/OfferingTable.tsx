@@ -1,23 +1,12 @@
 "use client";
 
 import { RecordId } from "@ai-matrx/design-system";
-import { useState } from "react";
 import {
   MatrxDataTable,
   type MatrxColumnDef,
 } from "@ai-matrx/design-system/data-table";
-import { TrashTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { Badge } from "@/components/ui/badge";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { useAiTableBulk } from "../useAiTableBulk";
 import { AiModelRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
 import type { AiApi, AiEndpoint, AiModel, AiOffering } from "../../types";
 import type { ReadOutcome } from "@ai-matrx/design-system";
@@ -33,7 +22,7 @@ interface OfferingTableProps {
   apis: AiApi[];
   loading: boolean;
   onSelect: (offering: AiOffering) => void;
-  onDelete: (offering: AiOffering) => void;
+  onDelete: (offering: AiOffering) => Promise<void>;
   onCreate: () => void;
   onRetry: () => void;
   /** The offerings read (the container owns it). */
@@ -45,69 +34,6 @@ function ProviderModelIdCell({ value }: { value: string }) {
     <span className="inline-flex min-w-0 items-center">
       <RecordId value={value} label="Provider model" show="full" className="min-w-0 truncate text-xs" />
     </span>
-  );
-}
-
-function OfferingRowActions({
-  offering,
-  modelName,
-  endpointName,
-  onDelete,
-}: {
-  offering: AiOffering;
-  modelName: string | null;
-  endpointName: string;
-  onDelete: (offering: AiOffering) => void;
-}) {
-  const [pendingDelete, setPendingDelete] = useState(false);
-
-  return (
-    <>
-      <TrashTapButton
-        variant="solid"
-        bgColor="bg-destructive/10"
-        iconColor="text-destructive"
-        hoverBgColor="hover:bg-destructive/20"
-        activeBgColor="active:bg-destructive/25"
-        ariaLabel={`Delete offering for ${endpointName}`}
-        tooltip="Delete offering"
-        onClick={() => setPendingDelete(true)}
-      />
-      <AlertDialog open={pendingDelete} onOpenChange={setPendingDelete}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this offering?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This removes the <strong>{endpointName}</strong> offering for{" "}
-              <strong>
-                <AiModelRef
-                  modelId={offering.model_id}
-                  name={modelName}
-                  showId
-                  showIcon={false}
-                  disableNavigation
-                />
-              </strong>
-              . This cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPendingDelete(false)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive hover:bg-destructive/90"
-              onClick={() => {
-                onDelete(offering);
-                setPendingDelete(false);
-              }}
-            >
-              Delete Offering
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
   );
 }
 
@@ -262,18 +188,22 @@ export default function OfferingTable({
     },
   ];
 
+  const { rowActionDefs, selection } = useAiTableBulk<AiOffering>({
+    noun: "offering",
+    rows: offerings,
+    getRowName: (offering) => `${endpointName(offering.endpoint_id)} · ${resolvedModelName(offering.model_id) ?? offering.model_id}`,
+    deleteOne: onDelete,
+    deleteLabel: "Delete offering",
+    consequence: "The offering is removed. This cannot be undone.",
+  });
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <MatrxDataTable<AiOffering>
         data={offerings}
-        columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (offering) => (
-          <OfferingRowActions
-            offering={offering}
-            modelName={resolvedModelName(offering.model_id)}
-            endpointName={endpointName(offering.endpoint_id)}
-            onDelete={onDelete}
-          />
-        ) }]}
+        columns={columns}
+        rowActionDefs={rowActionDefs}
+        selection={selection}
         getRowId={(offering) => offering.id}
         isLoading={loading && offerings.length === 0}
         isFetching={loading && offerings.length > 0}
