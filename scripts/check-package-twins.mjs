@@ -93,8 +93,9 @@ import {
   selfTestUuidShape,
   UUID_SHAPE_POSITIVES,
 } from "./uuid-shape.mjs";
-import { readFileSync } from "node:fs";
-import { execFileSync } from "node:child_process";
+import { runContentLane, selfTestContentLane } from "./content-lane.mjs";
+import { existsSync, readFileSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import process from "node:process";
@@ -122,6 +123,9 @@ const { emitItem, endItems } = await import("./checks/items.mjs").then(
 );
 const STRICT = process.argv.includes("--strict");
 const SELF_TEST = process.argv.includes("--self-test");
+const PRUNE_STALE = process.argv.includes("--prune-stale");
+/** --content-only: run just the CONTENT lane (fast loop for whoever is deleting copies). */
+const CONTENT_ONLY = process.argv.includes("--content-only");
 
 const register = JSON.parse(
   readFileSync(resolve(ROOT, "scripts/package-twins.json"), "utf8"),
@@ -1398,8 +1402,13 @@ if (SELF_TEST) {
       }
     }
   }
+  let contentSample = null;
+  for (const c of ["kit/src/format.ts", "../aidream/apps/shared/kit/src/format.ts"]) {
+    try { contentSample = readFileSync(resolve(ROOT, c), "utf8"); break; } catch { /* next */ }
+  }
+  selfTestContentLane({ sampleSource: contentSample });
   console.log(
-    `check:package-twins self-test PASSED (every lane can fail) — ` +
+    `check:package-twins self-test PASSED (every lane can fail, incl. the CONTENT lane) — ` +
       `${TWINS.length} collapsed export(s) registered, plus ` +
       `${SHAPE_RULES.length} SHAPE rule(s): ` +
       `${SHAPE_RULES.map((r) => r.id).join(", ")}, and the ALIAS lane in four forms (specifier, assignment, wrapper, object-property pass-through).`,
@@ -1477,6 +1486,16 @@ export function staleNameCensus(rows, hits) {
     console.error(`\ncheck:package-twins — ${breach}\n`);
     process.exit(1);
   }
+}
+
+if (CONTENT_ONLY) {
+  const r = await runContentLane({
+    root: ROOT, register, registerPath: resolve(ROOT, "scripts/package-twins.json"),
+    excludePrefixes: [], prune: PRUNE_STALE, log: (m) => console.log(m), error: (m) => console.error(m),
+  });
+  process.exitCode = r.ok === false && STRICT ? 1 : 0;
+  await new Promise((res) => setImmediate(res));
+  process.exit(process.exitCode);
 }
 
 const findings = [];
@@ -1697,7 +1716,43 @@ if (VENDORED.prefixes.length > 0) {
   );
 }
 
+/**
+ * THE CONTENT LANE (2026-10-21, scripts/content-lane.mjs): whole-file copies
+ * between the app and package source, or between packages. Opt-in per register
+ * via `contentLane`; its census is `contentCensus` (shrink-only).
+ */
+const CONTENT = await runContentLane({
+  root: ROOT,
+  register,
+  registerPath: resolve(ROOT, "scripts/package-twins.json"),
+  excludePrefixes: VENDORED.prefixes,
+  prune: PRUNE_STALE,
+  log: (m) => console.log(m),
+  error: (m) => console.error(m),
+});
+
+
+/**
+ * REPORT-ONLY LANES (2026-10-21): `package-export-collisions.mjs` (one name
+ * defined in two packages; aidream apps/shared only) and `moved-path-pointers.mjs`
+ * (a moved path must stay a one-line pointer). Each keeps its own shrink-only
+ * baseline and runs here in census mode: it prints, and it never changes this
+ * guard's verdict (policy rule 13: app findings are reports, never a gate). Run
+ * either directly with --strict to see only new debt. Absent module = skipped.
+ */
+for (const [file, args] of [
+  ["package-export-collisions.mjs", []],
+  ["moved-path-pointers.mjs", [execFileSync("git", ["rev-parse", "--show-toplevel"], { cwd: ROOT, encoding: "utf8" }).trim()]],
+]) {
+  const path = resolve(dirname(fileURLToPath(import.meta.url)), file);
+  if (!existsSync(path)) continue;
+  const r = spawnSync(process.execPath, [path, ...args], { encoding: "utf8", timeout: 120_000 });
+  const out = `${r.stdout ?? ""}${r.stderr ?? ""}`.trim();
+  console.log(`\n[report-only] ${file}${r.status === 0 ? "" : ` (exit ${r.status ?? r.signal}; ignored)`}\n${out}`);
+}
+
 const clean =
+  CONTENT.ok !== false &&
   findings.length === 0 &&
   shapeFailures === 0 &&
   nameCensusFailures === 0 &&
@@ -1737,7 +1792,7 @@ if (clean) {
       );
     }
   }
-  advisoryNote(findings.length + shapeFailures + nameCensusFailures + VENDORED.errors.length + OWNER_GAPS.length);
+  advisoryNote((CONTENT.uncensused?.length ?? 0) + (CONTENT.stale?.length ?? 0) + findings.length + shapeFailures + nameCensusFailures + VENDORED.errors.length + OWNER_GAPS.length);
 }
 
 /**
