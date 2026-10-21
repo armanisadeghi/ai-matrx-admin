@@ -10,12 +10,14 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { tableShapeChanged, useTable } from "@ai-matrx/records/react";
 import { RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Spinner } from "@/components/ui/loaders/Spinner";
 import { postJson } from "@/lib/python-client";
 import { readNotionSyncState } from "./notionSyncState";
+import { followSyncRun, isSyncWaiting, runningSync, syncRunFailure, type NotionSyncWaiting } from "./notionSyncWaiting";
 import { HeldKeptChip } from "@/features/unified-data/table-page/HeldArchiveLine";
 import { answerHold, keptHold, openHold } from "@/features/unified-data/table-page/heldArchive";
 import { usePublishHeld } from "@/features/unified-data/table-page/heldArchiveStore";
@@ -125,6 +127,9 @@ export function NotionSyncBar({ tableId, organizationId }: { tableId: string; or
   const [busy, setBusy] = useState(false);
   const [showing, setShowing] = useState(false);
   const [was, setWas] = useState<number | null>(null);
+  /** The server's "Waiting for the import of <table> to finish" while this table's own import runs. */
+  const [waiting, setWaiting] = useState<string | null>(null);
+  const follow = useRef<AbortController | null>(null);
   const opts = organizationId ? { organizationId } : {};
   const table = useTable(tableId);
   const fileImported = carriesNotionKey((table.data as { fields?: Array<{ name?: string; label?: string }> } | null)?.fields);
@@ -139,11 +144,55 @@ export function NotionSyncBar({ tableId, organizationId }: { tableId: string; or
     };
   }, [tableId, organizationId]);
 
+  /** Follow the background sync to its end, then show its report (the server saved it on the table's source). */
+  const followRun = async (since: number) => {
+    follow.current?.abort();
+    const stop = new AbortController();
+    follow.current = stop;
+    const settled = await followSyncRun(tableId, { since, signal: stop.signal });
+    if (!settled || stop.signal.aborted) return;
+    follow.current = null;
+    setWaiting(null);
+    const failure = syncRunFailure(settled);
+    if (failure) toast.error(failure);
+    try {
+      const fresh = (await readNotionSyncState(tableId)) as SyncState;
+      setState(fresh);
+      if (!failure) setShowing(!fresh.report?.archive_held);
+    } catch (err) {
+      toast.error(extractErrorMessage(err));
+    }
+    tableShapeChanged(tableId);
+  };
+
+  // a reload mid-wait picks the wait up again: the background run is still on the table's link
+  useEffect(() => {
+    let live = true;
+    runningSync(tableId)
+      .then((op) => {
+        if (!live || !op) return;
+        setWaiting((now) => now ?? "Waiting for the import to finish");
+        void followRun(new Date(op.created_at ?? Date.now()).getTime());
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+      follow.current?.abort();
+    };
+  }, [tableId]);
+
   const syncNow = useCallback(async (confirmArchive?: string) => {
     setBusy(true);
     try {
       const body = confirmArchive ? { table_id: tableId, confirm_archive: confirmArchive } : { table_id: tableId };
-      const { data } = await postJson<NotionSyncReport, { table_id: string; confirm_archive?: string }>("/notion-import/sync", body, opts);
+      const pressed = Date.now();
+      const { data } = await postJson<NotionSyncReport | NotionSyncWaiting, { table_id: string; confirm_archive?: string }>("/notion-import/sync", body, opts);
+      if (isSyncWaiting(data)) {
+        // 202: this table's own import is running; the sync runs right after it, as a background run we follow
+        setWaiting(data.message);
+        void followRun(pressed);
+        return;
+      }
       // an Archive the server answered with a different hold: say the count changed, never re-ask as if nothing happened
       setWas(confirmArchive && data.archive_held && data.archive_confirm !== confirmArchive ? Number(confirmArchive.split(":")[0]) : null);
       setState((prev) => ({ connected: true, synced_at: data.finished_at, report: { ...data, archive_kept: prev?.report?.archive_kept ?? null } }));
@@ -193,14 +242,14 @@ export function NotionSyncBar({ tableId, organizationId }: { tableId: string; or
       {!held && kept ? (
         <HeldKeptChip tableId={tableId} count={kept.held} />
       ) : (
-        <Button type="button" variant="quiet" className="hidden max-w-[16rem] truncate md:inline-flex" onClick={() => setShowing(true)} data-notion-sync-when="">
-          {busy ? "Syncing Notion" : `Notion synced ${ago(state.synced_at)}`}
+        <Button type="button" variant="quiet" className="hidden max-w-[16rem] truncate md:inline-flex" onClick={() => setShowing(true)} title={waiting ?? undefined} data-notion-sync-when="" data-notion-sync-waiting={waiting ? "" : undefined}>
+          {waiting ?? (busy ? "Syncing Notion" : `Notion synced ${ago(state.synced_at)}`)}
           {report?.conflicts?.length ? ` · ${report.conflicts.length} conflict${report.conflicts.length === 1 ? "" : "s"}` : ""}
         </Button>
       )}
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button icon={<RefreshCw className={busy ? "animate-spin" : undefined} />} variant="quiet" aria-label="Sync now with Notion" disabled={busy} onClick={() => void syncNow()} data-notion-sync-now="" />
+          <Button icon={busy || waiting ? <Spinner size="xs" label="Syncing" /> : <RefreshCw />} variant="quiet" aria-label="Sync now with Notion" disabled={busy || Boolean(waiting)} onClick={() => void syncNow()} data-notion-sync-now="" />
         </TooltipTrigger>
         <TooltipContent>Sync now with Notion</TooltipContent>
       </Tooltip>
