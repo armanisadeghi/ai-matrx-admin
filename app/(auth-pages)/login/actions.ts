@@ -17,6 +17,7 @@ import {
   clearPendingSignupEmail,
   rememberPendingSignupEmail,
 } from "@/utils/auth/pending-signup";
+import { scheduleFoundSearchAtSignIn } from "@/features/marketing/smart-add/welcome/foundSearchAtSignIn";
 
 // Preserve the exact origin where OAuth began (including the localhost port),
 // with deployment metadata only as a no-request-context fallback.
@@ -70,7 +71,7 @@ export async function login(redirectToArg: string, formData: FormData) {
 
   const data = { email, password };
   // Logging in to an existing account brings this browser's guest records with it (G2 guest data).
-  const { error } = await handOverSession(
+  const { data: signedIn, error } = await handOverSession(
     "password_login",
     () => supabase.auth.signInWithPassword(data),
     { visitorId: formData.get("guestFingerprint")?.toString() ?? null },
@@ -105,6 +106,8 @@ export async function login(redirectToArg: string, formData: FormData) {
   }
 
   await clearPendingSignupEmail();
+  // The sign-up welcome's found search starts on the server, after the response (SIGNUP-WELCOME.md § The flow).
+  scheduleFoundSearchAtSignIn(signedIn?.session, "password_login");
 
   // Gate PII (email) behind dev; never leak
   // user emails into production logs.

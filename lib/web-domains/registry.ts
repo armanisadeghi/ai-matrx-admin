@@ -20,6 +20,30 @@ export interface KnownDomainRule {
   label: string;
 }
 
+const PROVENANCES = new Set(["seeded", "learned", "pattern", "admin_approved"]);
+
+/** One row of `web.domain_categories_snapshot()`, as PostgREST returns it. */
+export interface KnownDomainSnapshotRow {
+  host: string;
+  path_pattern: string | null;
+  category: string;
+  provenance: string;
+  confidence: number | string;
+  label: string | null;
+}
+
+/** The snapshot's rows as rules: the one mapping every reader (browser or server) uses. */
+export function knownDomainRulesFromSnapshot(rows: readonly KnownDomainSnapshotRow[]): KnownDomainRule[] {
+  return rows.map((r) => ({
+    host: r.host,
+    pathPattern: r.path_pattern ?? "",
+    category: r.category,
+    provenance: (PROVENANCES.has(r.provenance) ? r.provenance : "seeded") as KnownDomainRule["provenance"],
+    confidence: Number(r.confidence),
+    label: r.label ?? "",
+  }));
+}
+
 /** `https://www.Yelp.com/biz/x?y` → `yelp.com/biz/x`. Mirrors SQL `web.domain_address` and aidream `address()`. */
 export function domainAddress(url: string): string {
   return url

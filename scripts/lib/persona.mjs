@@ -157,6 +157,26 @@ async function gotrue(target, method, path, body) {
 }
 
 /**
+ * The persona's one-time sign-in link, exactly as an email from us carries it: the app's own
+ * `/auth/confirm?token_hash=…&type=magiclink` — the same door a sign-up confirmation email opens, so the
+ * persona lands where a real person lands and every sign-in door's server work runs. Refuses any account
+ * without the `test_fixture` tag.
+ * @param {FixtureTarget} target
+ * @param {{ id: string, email: string }} user
+ * @param {{ origin: string }} options origin = the site the link opens (`https://www.aimatrx.com`)
+ */
+export async function fixtureConfirmLink(target, user, { origin }) {
+  const account = await gotrue(target, "GET", `users/${user.id}`);
+  if (!account.app_metadata?.test_fixture) {
+    throw new PersonaFactoryRefusal(`${user.email} carries no test_fixture tag; the persona factory only signs in its own accounts.`);
+  }
+  const link = await gotrue(target, "POST", "generate_link", { type: "magiclink", email: user.email });
+  const tokenHash = link.hashed_token ?? link.properties?.hashed_token;
+  if (!tokenHash) throw new PersonaFactoryRefusal("GoTrue minted no link for the persona.");
+  return `${origin.replace(/\/+$/, "")}/auth/confirm?token_hash=${encodeURIComponent(tokenHash)}&type=magiclink`;
+}
+
+/**
  * Create a tagged, passwordless auth user through the GoTrue admin API.
  * @param {FixtureTarget} target
  * @param {{ suite?: string, purpose?: string, ttlHours?: number, persona?: Awaited<ReturnType<typeof makePersona>>, useCase?: string, skipFoundSearch?: boolean }} [options]

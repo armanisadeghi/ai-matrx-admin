@@ -16,6 +16,7 @@ import {
 } from "@/utils/auth/auth-destination";
 import { markShellLayoutDeviceAtSignIn, shellLandingAfterSignIn } from "@/features/shell/shell-layout/server";
 import { clearPendingSignupEmail } from "@/utils/auth/pending-signup";
+import { scheduleFoundSearchAtSignIn } from "@/features/marketing/smart-add/welcome/foundSearchAtSignIn";
 
 function isEmailOtpType(value: string | null): value is EmailOtpType {
   return (
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
 
     // A confirm or password-recovery link opened in a browser holding a guest brings its records along (G2).
-    const { error } = await handOverSession("email_otp", () =>
+    const { data, error } = await handOverSession("email_otp", () =>
       supabase.auth.verifyOtp({
         type,
         token_hash,
@@ -66,6 +67,9 @@ export async function GET(request: NextRequest) {
 
     if (!error) {
       await clearPendingSignupEmail();
+      // The sign-up welcome's found search starts HERE, on the server, after the redirect is sent: never on the
+      // person staying on a page (SIGNUP-WELCOME.md § The flow).
+      if (type !== "recovery") scheduleFoundSearchAtSignIn(data?.session, "email_confirm");
       // redirect user to specified redirect URL with success message
       // The platform default counts as no destination: a saved landing applies (utils/auth/FEATURE.md).
       if (type !== "recovery") await markShellLayoutDeviceAtSignIn(supabase);

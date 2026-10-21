@@ -6,8 +6,10 @@
  * Loaded only on demand (FoundSearchIsland decides from the session it already holds, with zero reads, whether there
  * is anything to do). Nothing here is ever awaited on a render path.
  *
- * 1. Start once: the first signed-in load of an account that never started fires the welcome's first round — the
- *    exact round the welcome door starts (welcomeRound.ts), on the same stable subject, so the door later RESUMES it.
+ * 1. Start once: the SERVER starts the first round at sign-in (foundSearchAtSignIn.ts), so it never depends on the
+ *    person staying on a page; a load that finds it still unstarted retries it here. Both run the one core
+ *    (foundSearchStart.ts): the door's own first round (welcomeRound.ts) on the same stable subject, so the door
+ *    later RESUMES it.
  * 2. Know when there is something: while the app is open, the round is checked by subject about every 30 s for up
  *    to 15 minutes after it started; a later load checks once. "Something" is the door's own rule (welcomeVerdict.ts)
  *    over the finished run's output (roundOutput.ts).
@@ -28,30 +30,26 @@ import { getJson } from "@/lib/python-client";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { fetchKnownDomainRules } from "@/lib/web-domains/service";
 import { liveKnownDomainRules } from "@/lib/web-domains/registry";
-import { lookupSystemRun } from "@/lib/workflows/system-runs";
+import { lookupSystemRun, startSystemRun } from "@/lib/workflows/system-runs";
 import { addWitnesses } from "../found/foundCards";
-import { mergeEvidence, type EvidenceItem, type SocialSeed } from "../evidence";
+import { mergeEvidence, type EvidenceItem } from "../evidence";
 import { finishedRound } from "../roundOutput";
 import { mergeFacts, type BrandFact } from "../validate/queue";
 import { visibleEvidence } from "../visibleEvidence";
 import type { WeThinkSuggestion } from "../weThink";
 import { loginSeed, provenProfileName, type LoginSeed } from "./loginSeed";
-import { IDENTIFY_WORKFLOW_KEY, startWelcomeRound, welcomeFirstRound } from "./welcomeRound";
-import { MAX_WELCOME_ROUNDS, roundSubject, welcomeSubject } from "./welcomeSession";
+import { IDENTIFY_WORKFLOW_KEY, welcomeFirstRound } from "./welcomeRound";
+import { roundSubject, welcomeSubject } from "./welcomeSession";
 import { welcomeFoundSomething, welcomeVerdict } from "./welcomeVerdict";
-import { FOUND_WINDOW_LINK, foundSearchState, lightBasis, type FoundSearchState } from "./foundSearchState";
+import { FOUND_WINDOW_LINK, foundSearchState, type FoundSearchState } from "./foundSearchState";
+import { foundStateMetadata, startFoundSearchWith, type FoundSearchInfo } from "./foundSearchStart";
 
 /** How often an open app checks a running round, and for how long after it started. */
 export const FOUND_POLL_MS = 30_000;
 export const FOUND_POLL_FOR_MS = 15 * 60_000;
 const TERMINAL = ["completed", "failed", "errored", "cancelled", "stopped", "refused"];
 
-/** New information beyond the login: a profile website or account, a name. */
-export interface FoundSearchInfo {
-  name?: string | null;
-  website?: string | null;
-  socials?: SocialSeed[];
-}
+export type { FoundSearchInfo } from "./foundSearchStart";
 
 const dispatchOf = (): AppDispatch => {
   const store = getStoreSingleton();
@@ -60,29 +58,8 @@ const dispatchOf = (): AppDispatch => {
 };
 
 async function writeState(patch: Partial<FoundSearchState>): Promise<void> {
-  const data: Record<string, unknown> = {};
-  if ("startedAt" in patch) data.found_search_started_at = patch.startedAt;
-  if ("round" in patch) data.found_search_round = patch.round;
-  if ("basis" in patch) data.found_search_basis = patch.basis;
-  if ("checkedAt" in patch) data.found_search_checked_at = patch.checkedAt;
-  if ("shownAt" in patch) data.found_search_shown_at = patch.shownAt;
-  const { error } = await supabase.auth.updateUser({ data });
+  const { error } = await supabase.auth.updateUser({ data: foundStateMetadata(patch) });
   if (error) throw new Error(`The found search could not save its progress: ${error.message}`);
-}
-
-/** The pieces of information a round searched with, as stable keys (what makes a later round "new"). */
-export function basisOf(seed: LoginSeed, info: FoundSearchInfo = {}): string[] {
-  const keys = [
-    ...(seed.name ? [`name:${seed.name.toLowerCase()}`] : []),
-    ...(info.name ? [`name:${info.name.trim().toLowerCase()}`] : []),
-    ...(seed.emailProven && seed.email ? [`email:${seed.email}`] : []),
-    ...(seed.workspaceDomain ? [`website:${seed.workspaceDomain}`] : []),
-    ...(info.website ? [`website:${info.website.trim().toLowerCase().replace(/^https?:\/\/(www\.)?/, "").replace(/\/+$/, "")}`] : []),
-    ...(seed.githubLogin ? [`social:github:${seed.githubLogin.toLowerCase()}`] : []),
-    ...(info.socials ?? []).map((s) => `social:${(s.platform ?? "").toLowerCase()}:${s.handle_or_url.trim().toLowerCase()}`),
-    ...seed.providers.filter((p) => p !== "email").map((p) => `identity:${p}`),
-  ];
-  return [...new Set(keys)];
 }
 
 async function freshUser(): Promise<User | null> {
@@ -91,64 +68,31 @@ async function freshUser(): Promise<User | null> {
   return data.user ?? null;
 }
 
-async function seedFor(user: User): Promise<LoginSeed> {
-  const rules = await fetchKnownDomainRules().catch(() => liveKnownDomainRules());
-  return loginSeed(user, rules);
-}
+const browserRules = () => fetchKnownDomainRules().catch(() => liveKnownDomainRules());
 
-/** The first free round index of this session (rounds the welcome door ran itself count too). */
-async function nextRound(dispatch: AppDispatch, base: string, organizationId: string, from: number): Promise<number | null> {
-  for (let n = from; n < MAX_WELCOME_ROUNDS; n++) {
-    const run = await lookupSystemRun(dispatch, IDENTIFY_WORKFLOW_KEY, roundSubject(base, n), organizationId, "This session could not be read.");
-    if (!run) return n;
-  }
-  return null;
+async function seedFor(user: User): Promise<LoginSeed> {
+  return loginSeed(user, await browserRules());
 }
 
 /**
- * Start a round in the background. The first one (`info` empty) is exactly the door's first round; a later one
- * carries the new information on a new subject suffix. Records the state BEFORE it starts, so two tabs never pay twice.
+ * Start a round from the browser (the shared core, foundSearchStart.ts): a later round on new information, or the
+ * retry when the sign-in's server start did not land.
  */
 export async function startFoundSearch(info: FoundSearchInfo = {}): Promise<void> {
   const dispatch = dispatchOf();
-  const user = await freshUser();
-  if (!user) return;
-  const state = foundSearchState(user);
-  if (state.skip || state.shownAt) return;
-  const seed = await seedFor(user);
-  // The light keys the island compares on every load are always recorded too, so it never wakes for nothing.
-  const basis = [...new Set([...basisOf(seed, info), ...lightBasis(user)])];
-  const later = Boolean(state.startedAt);
-  // Never a loop: a later round only for a piece of information no earlier round had.
-  if (later && basis.every((k) => state.basis.includes(k))) return;
-  const name = seed.name ?? info.name ?? null;
-  const round = welcomeFirstRound(name && !seed.name ? { ...seed, name } : seed);
-  const now = new Date().toISOString();
-  if (!round) {
-    // Nothing to search with yet (no name, no proven email): wait for new information.
-    await writeState({ startedAt: now, basis, checkedAt: now, round: -1 });
-    return;
-  }
-  const extra = { website: info.website ?? "", socials: info.socials ?? [] };
-  const inputs = {
-    ...round.inputs,
-    website: extra.website || round.seeds.website,
-    socials: [...round.seeds.socials, ...extra.socials],
-  };
-  const organizationId = await ensureOrgId(null);
-  const base = welcomeSubject(user.id);
-  const n = later ? await nextRound(dispatch, base, organizationId, state.round + 1) : 0;
-  if (n === null) return;
-  await writeState({ startedAt: now, round: n, basis: [...new Set([...state.basis, ...basis])], checkedAt: null });
-  try {
-    await startWelcomeRound(dispatch, { base, n, inputs, organizationId });
-  } catch (error) {
-    // Not started: everything goes back as it was, so the next load (or the next save) tries again.
-    await writeState({ startedAt: later ? state.startedAt : null, round: state.round, basis: state.basis, checkedAt: state.checkedAt }).catch(
-      () => undefined,
-    );
-    throw error;
-  }
+  await startFoundSearchWith(
+    {
+      freshUser,
+      rules: browserRules,
+      organizationId: () => ensureOrgId(null),
+      writeState,
+      runExists: async (subject, organizationId) =>
+        Boolean(await lookupSystemRun(dispatch, IDENTIFY_WORKFLOW_KEY, subject, organizationId, "This session could not be read.")),
+      startRun: ({ subject, organizationId, inputs }) =>
+        startSystemRun(dispatch, IDENTIFY_WORKFLOW_KEY, { subject, organizationId, sourceFeature: "marketing", inputs }, "Identification could not start."),
+    },
+    info,
+  );
 }
 
 /** Everything the session's rounds found so far, as the door would show it, and whether to tell the person. */
