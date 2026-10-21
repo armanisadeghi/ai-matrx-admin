@@ -14,7 +14,7 @@
 import { allTables, listTemplateInstances, newTemplateInstallId, runTemplateDoor, templateUpgradeHint, upgradeTemplateInstall, type TemplateDoorAnswer, type TemplateSpec } from "@ai-matrx/records/templates";
 import { storeDoors, supabaseDataSource } from "@ai-matrx/records/core";
 
-import { packPageSettings, packPagesInOrder, resolvePackBlocks, spaceTemplateMakes, type ResolvedTable, type SpaceTemplateCardFace, type SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
+import { isListedTemplate, packPageSettings, packPagesInOrder, resolvePackBlocks, spaceTemplateMakes, type ResolvedTable, type SpaceTemplateCardFace, type SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
 import type { AppDispatch } from "@/lib/redux/store";
 import { errorSentence, toast } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
@@ -74,11 +74,14 @@ const door = () => createClient().schema("custom") as unknown as Door;
  * test `spaceTemplateMakes`; a board card opens the Board gallery's install) or "board" (the Board gallery: packs
  * that carry a board, `card.space.board`). One catalog, two doors.
  */
-export async function listSpaceTemplates(installedIn: string | null, makes: "any" | "board" = "any"): Promise<SpaceTemplateCard[]> {
+export async function listSpaceTemplates(installedIn: string | null, makes: "any" | "board" | "reference" = "any"): Promise<SpaceTemplateCard[]> {
   const { data, error } = await door().rpc("space_templates", { p_filter: installedIn ? { installed_in: installedIn } : {} });
   if (error) throw new Error(`We couldn't list the templates: ${error.message}`);
   const cards = (data?.cards ?? []) as SpaceTemplateCard[];
-  return cards.filter((c) => (makes === "board" ? !!c.space?.board : spaceTemplateMakes(c.space) !== null));
+  // "reference": the board packs published reference-only (`board.listed: false`, the design starters): read by
+  // agents and "Start from a style", never a gallery entry. Every gallery door filters them out.
+  if (makes === "reference") return cards.filter((c) => !!c.space?.board && !isListedTemplate(c.space));
+  return cards.filter((c) => isListedTemplate(c.space) && (makes === "board" ? !!c.space?.board : spaceTemplateMakes(c.space) !== null));
 }
 
 const full = new Map<string, Promise<SpaceTemplateFull>>();

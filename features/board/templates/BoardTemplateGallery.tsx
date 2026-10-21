@@ -19,6 +19,8 @@ import { isPackKey } from "./board-packs";
 import { TextInputDialog } from "@ai-matrx/design-system";
 import { BUILTIN_BOARD_TEMPLATES } from "./builtin";
 import { openFromNotice } from "@/lib/notice-open/openFromNotice";
+import { DesignBoardStartDialog } from "./design-start";
+import { stashBoardStart, type BoardStartChoice } from "./open-design-build";
 
 export function BoardTemplateGallery({
   open,
@@ -63,15 +65,20 @@ export function BoardTemplateGallery({
   // A template that makes its own tables (a design system per brand) is named first: the name titles the
   // board and its tables ("Colors · Acme"), so two brands' boards never read alike.
   const [naming, setNaming] = useState(false);
-  const use = async (name?: string) => {
+  // A board that starts EMPTY opens on its two starts instead: Build with AI (default) or Start from a style.
+  const [starting, setStarting] = useState(false);
+  const use = async (name?: string, start?: BoardStartChoice) => {
     if (!current) return;
     if (name === undefined && isPackKey(current.key)) {
-      setNaming(true);
+      if ("startsEmpty" in current && current.startsEmpty) setStarting(true);
+      else setNaming(true);
       return;
     }
     setUsing(true);
     try {
-      const board = await makeBoardFromTemplate(current.key, organizationId, name?.trim() || templateBoardTitle(current.title), undefined, undefined, { dispatch, onStage: setStage });
+      const styleTemplateId = start?.mode === "style" ? start.styleTemplateId : undefined;
+      const board = await makeBoardFromTemplate(current.key, organizationId, name?.trim() || templateBoardTitle(current.title), undefined, undefined, { dispatch, onStage: setStage, styleTemplateId });
+      if (start) stashBoardStart(board.id, start.mode === "ai" ? { mode: "ai", brief: start.brief } : { mode: "style", styleName: start.styleName });
       // A stale toast ("Saved as a template") must not sit over the new board; the new one carries Open
       // in case the navigation is slow or blocked.
       toast.dismiss();
@@ -104,6 +111,16 @@ export function BoardTemplateGallery({
       usable={!!current}
       using={using}
       onUse={() => void use()}
+    />
+    <DesignBoardStartDialog
+      open={starting}
+      onOpenChange={setStarting}
+      packKey={current?.key ?? null}
+      defaultName={current?.title ?? ""}
+      onStart={(choice) => {
+        setStarting(false);
+        void use(choice.name, choice);
+      }}
     />
     <TextInputDialog
       open={naming}

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0490",
-  "version": 6,
+  "version": 7,
   "title": "Design system — Near blank",
   "description": "The floor: grays, graphite actions and one blue accent. Complete, but plain.",
   "forWho": "Anyone starting a design system from almost nothing",
@@ -1253,7 +1253,7 @@
         "Hollis Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [],
   "board": {
@@ -1433,6 +1433,7 @@
           }
         ]
       }
-    ]
+    ],
+    "listed": false
   }
 }

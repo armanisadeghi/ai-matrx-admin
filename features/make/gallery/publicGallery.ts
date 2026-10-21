@@ -15,7 +15,7 @@ import { SPACE_TEMPLATE_CATEGORIES } from "@/lib/spaces-blocks/template-pack";
 import { searchTemplates, type TemplateSearchFace } from "@/lib/spaces-blocks/template-search";
 import { signUpHref } from "@/utils/auth/auth-destination";
 
-import { GALLERY_PAGE, isSpaceCard, wordFor, type GalleryAnswer, type GalleryCard } from "./catalogue";
+import { GALLERY_PAGE, isListedCard, isSpaceCard, wordFor, type GalleryAnswer, type GalleryCard } from "./catalogue";
 
 export const PUBLIC_GALLERY_PATH = "/templates";
 
@@ -96,7 +96,8 @@ export function closedReason(error: DoorError): "absent" | "refused" | null {
 
 /** The platform's published templates only: an organization's own saved templates are never public. */
 export function publicCards(cards: readonly GalleryCard[]): GalleryCard[] {
-  return cards.filter((c) => c.scope === "platform" && !c.owner_organization_id);
+  // A reference-only board pack (the design starters) is read by agents, never listed.
+  return cards.filter((c) => c.scope === "platform" && !c.owner_organization_id && isListedCard(c));
 }
 
 type Rpc = (offset: number) => PromiseLike<{ data: unknown; error: DoorError | null }>;

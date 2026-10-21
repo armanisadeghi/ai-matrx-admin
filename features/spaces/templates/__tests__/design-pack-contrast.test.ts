@@ -31,9 +31,11 @@ describe("design packs", () => {
     expect(contrastFindings(load(f))).toEqual([]);
   });
 
-  it.each(FILES)("%s: carries the shared token vocabulary and a typed profile", (f) => {
+  // The base board starts EMPTY (Arman 2026-10-21): the vocabulary is every starter's, the one the AI fills it from.
+  const STARTERS = FILES.filter((f) => f.startsWith("design-starter-"));
+  it.each(STARTERS)("%s: carries the shared token vocabulary and a typed profile", (f) => {
     const p = load(f);
-    const vocab = JSON.stringify(names(load(FILES[0]!), "color").sort());
+    const vocab = JSON.stringify(names(load(STARTERS[0]!), "color").sort());
     expect(JSON.stringify(names(p, "color").sort())).toBe(vocab);
     for (const [t, core] of [
       ["type_style", ["display", "title", "heading", "body", "label", "caption", "code"]],

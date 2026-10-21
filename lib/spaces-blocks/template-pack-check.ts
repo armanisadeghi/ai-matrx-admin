@@ -133,8 +133,12 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
   (spec.agent?.variables ?? []).forEach((v, vi) => {
     if (!tables.has(v.table)) say(`spec.agent.variables[${vi}]`, `It binds "${v.name}" to "${v.table}", which this pack does not make. Its tables are: ${[...tables.keys()].join(", ")}.`);
   });
+  // A board that STARTS EMPTY (Arman 2026-10-21: the AI builds it for the business) seeds no row at all.
+  const startsEmpty = isObj(pack.board) && (pack.board as { startsEmpty?: unknown }).startsEmpty === true;
   for (const t of every) {
-    if ((t.rows?.length ?? 0) < MIN_SAMPLE_ROWS) say(`spec.tables (${t.token}).rows`, `Seed at least ${MIN_SAMPLE_ROWS} realistic sample rows (it has ${t.rows?.length ?? 0}); every view opens on them.`);
+    if (startsEmpty) {
+      if (t.rows?.length) say(`spec.tables (${t.token}).rows`, `This board starts empty: seed no rows (it has ${t.rows.length}); the AI builds them.`);
+    } else if ((t.rows?.length ?? 0) < MIN_SAMPLE_ROWS) say(`spec.tables (${t.token}).rows`, `Seed at least ${MIN_SAMPLE_ROWS} realistic sample rows (it has ${t.rows?.length ?? 0}); every view opens on them.`);
   }
 
   const storeViewNames = new Set<string>();
@@ -418,6 +422,9 @@ function checkBoard(raw: unknown, tables: Map<string, TemplateSpec["tables"][num
     return;
   }
   const board = raw as unknown as PackBoard;
+  if (board.listed !== undefined && typeof board.listed !== "boolean") say("board.listed", "listed is true or false (false: reference only, never in a gallery).");
+  if (board.startsEmpty !== undefined && typeof board.startsEmpty !== "boolean") say("board.startsEmpty", "startsEmpty is true or false.");
+  const startsEmpty = board.startsEmpty === true;
   const keys = new Set<string>();
   const one = (b: unknown, at: string) => {
     if (!isObj(b)) {
@@ -469,7 +476,9 @@ function checkBoard(raw: unknown, tables: Map<string, TemplateSpec["tables"][num
           if (t.layout !== undefined && t.layout !== "section" && t.layout !== "table") say(`${tat}.layout`, `"${String(t.layout)}" is not a table layout. Write "section" or "table".`);
           if (t.text !== undefined) say(`${tat}.text`, "A table tile has no text; its rows are the table's sample rows.");
         } else if (t.kind === "cover") {
-          if (!str(t.hero) && !str(t.text)) say(`${tat}`, "A cover tile has a hero (HTML) or text (markdown): write at least one.");
+          if (startsEmpty) {
+            if (str(t.hero) || str(t.text)) say(`${tat}`, "This board starts empty: its cover has no hero and no text; the AI writes them.");
+          } else if (!str(t.hero) && !str(t.text)) say(`${tat}`, "A cover tile has a hero (HTML) or text (markdown): write at least one.");
           if (t.hero !== undefined && typeof t.hero !== "string") say(`${tat}.hero`, "A cover's hero is HTML text.");
           else if (typeof t.hero === "string" && /<script\b/i.test(t.hero)) say(`${tat}.hero`, "A cover's hero is markup and CSS only: scripts do not run in it.");
           if (t.table !== undefined || t.entity !== undefined || t.layout !== undefined) say(`${tat}`, "A cover tile names no table and no layout.");
