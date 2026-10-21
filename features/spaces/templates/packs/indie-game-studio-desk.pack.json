@@ -1,0 +1,3808 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0578",
+  "version": 1,
+  "title": "Indie Game Studio Desk",
+  "description": "Milestones, tasks by discipline, bugs, playtests and wishlists for a small game studio.",
+  "forWho": "Indie game studios and small game teams",
+  "icon": {
+    "emoji": "🎮"
+  },
+  "cover": {
+    "url": "gallery:media-game-controller-neon",
+    "offsetY": 50
+  },
+  "category": "media",
+  "tags": [
+    "game dev",
+    "indie games",
+    "game studio",
+    "playtest",
+    "bug tracker",
+    "milestones"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-indie-game-studio-desk",
+    "catalogueId": "SP0578",
+    "useCase": "The studio lead at Driftlight Games uses this to steer the team to each publisher milestone, triage bugs from playtests and watch wishlists grow.",
+    "industry": "media_creators",
+    "vertical": "Indie game studio",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Driftlight Games",
+      "describes": "A five-person indie studio making a coastal adventure platformer, funded by a small publisher advance paid at milestones.",
+      "address": {
+        "line1": "12 Harborlight Lane",
+        "city": "Portland",
+        "region": "ME",
+        "postalCode": "04101",
+        "country": "US"
+      },
+      "phone": "(207) 555-0130",
+      "website": "driftlightgames.net",
+      "email": "hello@driftlightgames.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-indie-game-studio-desk",
+    "tables": [
+      {
+        "token": "task",
+        "name": "Tasks",
+        "labelSingular": "Task",
+        "labelPlural": "Tasks",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "Every piece of work by discipline, with its milestone, owner, estimate and due date.",
+        "subject": "thing",
+        "independentOf": {
+          "milestone": "Either record can be created or change status before the other.",
+          "team_member": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "done_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Task card",
+            "values": {
+              "status": "Backlog",
+              "task_name": "New task"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What and why"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the player will see or feel when this is done."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Done means"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Works in the current build on every target platform"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Reviewed by one other person"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "No new warnings in the log"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Links to references, mockups or the design page."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Due is planned; Done on is stamped when the task is finished, early or late.",
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Backlog",
+              "Next sprint",
+              "In progress",
+              "In review",
+              "Done",
+              "Cut"
+            ],
+            "choiceColors": {
+              "Backlog": "slate",
+              "Next sprint": "blue",
+              "In progress": "amber",
+              "In review": "violet",
+              "Done": "green",
+              "Cut": "gray"
+            },
+            "required": true,
+            "default": "Backlog",
+            "statusGroups": {
+              "Backlog": "todo",
+              "Next sprint": "todo",
+              "In progress": "in_progress",
+              "In review": "in_progress",
+              "Done": "done",
+              "Cut": "done"
+            }
+          },
+          {
+            "key": "discipline",
+            "label": "Discipline",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Code",
+              "Art",
+              "Animation",
+              "Audio",
+              "Design",
+              "Writing",
+              "QA"
+            ],
+            "choiceColors": {
+              "Code": "blue",
+              "Art": "pink",
+              "Animation": "violet",
+              "Audio": "teal",
+              "Design": "amber",
+              "Writing": "brown",
+              "QA": "red"
+            }
+          },
+          {
+            "key": "milestone",
+            "label": "Milestone",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "milestone",
+            "relationMax": 1
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "estimate",
+            "label": "Estimate (days)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ],
+            "description": "Ideal working days."
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "done_on",
+            "label": "Done on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "assigned_to",
+            "label": "Working on it",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_done"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_take"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "tk-1",
+            "values": {
+              "task_name": "Grappling hook swing physics",
+              "status": "Done",
+              "discipline": "Code",
+              "milestone": "ms-2",
+              "owner": "tm-2",
+              "estimate": 6,
+              "due_on": "@today-12d",
+              "done_on": "@today-13d"
+            }
+          },
+          {
+            "key": "tk-2",
+            "values": {
+              "task_name": "Lighthouse level greybox",
+              "status": "Done",
+              "discipline": "Design",
+              "milestone": "ms-2",
+              "owner": "tm-1",
+              "estimate": 4,
+              "due_on": "@today-9d",
+              "done_on": "@today-9d"
+            }
+          },
+          {
+            "key": "tk-3",
+            "values": {
+              "task_name": "Fox protagonist run cycle",
+              "status": "Done",
+              "discipline": "Animation",
+              "milestone": "ms-2",
+              "owner": "tm-4",
+              "estimate": 3,
+              "due_on": "@today-6d",
+              "done_on": "@today-7d"
+            }
+          },
+          {
+            "key": "tk-4",
+            "values": {
+              "task_name": "Tide cave ambient loop",
+              "status": "In review",
+              "discipline": "Audio",
+              "milestone": "ms-2",
+              "owner": "tm-5",
+              "estimate": 2,
+              "due_on": "@today-1d",
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "tk-5",
+            "values": {
+              "task_name": "Demo save and resume",
+              "status": "In progress",
+              "discipline": "Code",
+              "milestone": "ms-2",
+              "owner": "tm-2",
+              "estimate": 3,
+              "due_on": "@today",
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "tk-6",
+            "values": {
+              "task_name": "Store page capsule art",
+              "status": "In progress",
+              "discipline": "Art",
+              "milestone": "ms-2",
+              "owner": "tm-3",
+              "estimate": 4,
+              "due_on": "@today+2d"
+            }
+          },
+          {
+            "key": "tk-7",
+            "values": {
+              "task_name": "Opening cutscene script pass",
+              "status": "Next sprint",
+              "discipline": "Writing",
+              "milestone": "ms-3",
+              "owner": "tm-1",
+              "estimate": 2,
+              "due_on": "@today+4d",
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "tk-8",
+            "values": {
+              "task_name": "Controller rebinding menu",
+              "status": "Next sprint",
+              "discipline": "Code",
+              "milestone": "ms-3",
+              "owner": "tm-2",
+              "estimate": 4,
+              "due_on": "@today+6d"
+            }
+          },
+          {
+            "key": "tk-9",
+            "values": {
+              "task_name": "Second biome tileset, kelp forest",
+              "status": "Backlog",
+              "discipline": "Art",
+              "milestone": "ms-3",
+              "owner": "tm-3",
+              "estimate": 10,
+              "due_on": "@today+5w"
+            }
+          },
+          {
+            "key": "tk-10",
+            "values": {
+              "task_name": "Boss fight, harbor crane",
+              "status": "Backlog",
+              "discipline": "Design",
+              "milestone": "ms-4",
+              "owner": "tm-1",
+              "estimate": 12,
+              "due_on": "@today+10w"
+            }
+          },
+          {
+            "key": "tk-11",
+            "values": {
+              "task_name": "Localization string freeze",
+              "status": "Backlog",
+              "discipline": "Writing",
+              "milestone": "ms-4",
+              "owner": "tm-1",
+              "estimate": 2,
+              "due_on": "@today+12w"
+            }
+          },
+          {
+            "key": "tk-12",
+            "values": {
+              "task_name": "Online leaderboards",
+              "status": "Cut",
+              "discipline": "Code",
+              "milestone": "ms-3",
+              "owner": "tm-2",
+              "estimate": 8,
+              "due_on": "@today+3w"
+            }
+          }
+        ]
+      },
+      {
+        "token": "milestone",
+        "name": "Milestones",
+        "labelSingular": "Milestone",
+        "labelPlural": "Milestones",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "target",
+        "titleField": "ms_name",
+        "describes": "The publisher milestones, what done means for each, the payment attached and progress so far.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Hit"
+            ],
+            "filled": [
+              "hit_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Milestone brief",
+            "values": {
+              "status": "Planned",
+              "ms_name": "New milestone"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Done means"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Exactly what the publisher will play and check."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Deliverables"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Build uploaded and the version noted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Short video of the new content"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Known issues list"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Payment"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Amount, invoice date and when it is due."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Target date is agreed with the publisher; Hit on is stamped on sign-off, before or after it.",
+        "fields": [
+          {
+            "key": "ms_name",
+            "label": "Milestone",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planned",
+              "In progress",
+              "Slipping",
+              "Hit"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "In progress": "blue",
+              "Slipping": "orange",
+              "Hit": "green"
+            },
+            "required": true,
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "In progress": "in_progress",
+              "Slipping": "in_progress",
+              "Hit": "done"
+            }
+          },
+          {
+            "key": "target_on",
+            "label": "Target date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "hit_on",
+            "label": "Hit on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "payment",
+            "label": "Publisher payment (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "paid",
+            "label": "Payment received",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "wishlists",
+            "label": "Wishlists at this point",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "exit_criteria",
+            "label": "Done means",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "tasks_total",
+            "label": "Tasks",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Backlog",
+                "Next sprint",
+                "In progress",
+                "In review",
+                "Done"
+              ]
+            }
+          },
+          {
+            "key": "tasks_done",
+            "label": "Tasks done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "progress",
+            "label": "Progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Tasks} > 0, ROUND({Tasks done} / {Tasks} * 100, 0), 0)"
+          },
+          {
+            "key": "open_bugs",
+            "label": "Open bugs",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bugs_targeted",
+            "pick": "bug_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "New",
+                "Confirmed",
+                "Fixing"
+              ]
+            }
+          },
+          {
+            "key": "hit_btn",
+            "label": "Mark hit",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "ms_hit"
+            }
+          },
+          {
+            "key": "task_btn",
+            "label": "Add a task",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "Task card",
+              "prefill": {
+                "milestone": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ms-1",
+            "values": {
+              "ms_name": "Prototype greenlight",
+              "status": "Hit",
+              "target_on": "@today-5m",
+              "hit_on": "@today-5m",
+              "payment": 40000,
+              "paid": true,
+              "wishlists": 0,
+              "exit_criteria": "Swing, climb and one puzzle room playable start to finish."
+            }
+          },
+          {
+            "key": "ms-2",
+            "values": {
+              "ms_name": "Vertical slice and festival demo",
+              "status": "In progress",
+              "target_on": "@today+9d",
+              "payment": 60000,
+              "wishlists": 4850,
+              "exit_criteria": "Twenty-minute demo, lighthouse level polished, store page live, no crash bugs."
+            }
+          },
+          {
+            "key": "ms-3",
+            "values": {
+              "ms_name": "Content complete, act one",
+              "status": "Planned",
+              "target_on": "@today+3m",
+              "payment": 75000,
+              "exit_criteria": "Act one levels, boss and story beats in; placeholder art under 10 percent."
+            }
+          },
+          {
+            "key": "ms-4",
+            "values": {
+              "ms_name": "Early access launch",
+              "status": "Planned",
+              "target_on": "@today+7m",
+              "payment": 90000,
+              "exit_criteria": "Three biomes, save system, controller support, localization in four languages."
+            }
+          }
+        ]
+      },
+      {
+        "token": "bug",
+        "name": "Bugs",
+        "labelSingular": "Bug",
+        "labelPlural": "Bugs",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "flask-conical",
+        "titleField": "bug_name",
+        "describes": "Every bug with severity, platform, build, steps to reproduce and the milestone it must be fixed by.",
+        "subject": "thing",
+        "independentOf": {
+          "milestone": "Either record can be created or change status before the other.",
+          "playtest": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Fixed"
+            ],
+            "filled": [
+              "fixed_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Bug report",
+            "values": {
+              "status": "New",
+              "bug_name": "New bug"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Steps to reproduce"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Start from"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Do"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "See"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Expected and actual"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What should happen, and what happens instead."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Evidence"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Build number, platform, a clip or a log."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Reported is when it was found; Fixed on is stamped when the fix lands.",
+        "fields": [
+          {
+            "key": "bug_name",
+            "label": "Bug",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Confirmed",
+              "Fixing",
+              "Fixed",
+              "Verified",
+              "Won't fix"
+            ],
+            "choiceColors": {
+              "New": "slate",
+              "Confirmed": "blue",
+              "Fixing": "amber",
+              "Fixed": "teal",
+              "Verified": "green",
+              "Won't fix": "gray"
+            },
+            "required": true,
+            "default": "New",
+            "statusGroups": {
+              "New": "todo",
+              "Confirmed": "todo",
+              "Fixing": "in_progress",
+              "Fixed": "in_progress",
+              "Verified": "done",
+              "Won't fix": "done"
+            }
+          },
+          {
+            "key": "severity",
+            "label": "Severity",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Crash",
+              "Blocker",
+              "Major",
+              "Minor",
+              "Polish"
+            ],
+            "choiceColors": {
+              "Crash": "red",
+              "Blocker": "orange",
+              "Major": "amber",
+              "Minor": "blue",
+              "Polish": "slate"
+            }
+          },
+          {
+            "key": "platform",
+            "label": "Platform",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Windows",
+              "macOS",
+              "Handheld PC",
+              "Console"
+            ],
+            "choiceColors": {
+              "Windows": "blue",
+              "macOS": "slate",
+              "Handheld PC": "violet",
+              "Console": "teal"
+            }
+          },
+          {
+            "key": "build",
+            "label": "Found in build",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "target",
+            "label": "Fix by milestone",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "milestone",
+            "relationMax": 1
+          },
+          {
+            "key": "found_in",
+            "label": "Found in playtest",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "playtest",
+            "relationMax": 1
+          },
+          {
+            "key": "repro",
+            "label": "Steps to reproduce",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reported_on",
+            "label": "Reported",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "fixed_on",
+            "label": "Fixed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "assignee",
+            "label": "Fixing it",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fixed_btn",
+            "label": "Mark fixed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "bug_fixed"
+            }
+          },
+          {
+            "key": "bug_take",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "bug_take_it"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "bg-1",
+            "values": {
+              "bug_name": "Crash when hook attaches during a cutscene",
+              "status": "Fixing",
+              "severity": "Crash",
+              "platform": "Windows",
+              "build": "0.4.2",
+              "target": "ms-2",
+              "found_in": "pt-2",
+              "repro": "1. Start the lighthouse level. 2. Fire the hook as the gull cutscene starts. 3. Game closes.",
+              "reported_on": "@today-3d",
+              "assignee": "@installer"
+            }
+          },
+          {
+            "key": "bg-2",
+            "values": {
+              "bug_name": "Save file lost after quitting from the pause menu",
+              "status": "Confirmed",
+              "severity": "Blocker",
+              "platform": "Handheld PC",
+              "build": "0.4.2",
+              "target": "ms-2",
+              "found_in": "pt-2",
+              "reported_on": "@today-3d",
+              "assignee": "@installer"
+            }
+          },
+          {
+            "key": "bg-3",
+            "values": {
+              "bug_name": "Fox clips through the dock railing",
+              "status": "New",
+              "severity": "Minor",
+              "platform": "Windows",
+              "build": "0.4.3",
+              "target": "ms-3",
+              "found_in": "pt-3",
+              "reported_on": "@today-1d"
+            }
+          },
+          {
+            "key": "bg-4",
+            "values": {
+              "bug_name": "Music drops out after alt-tab",
+              "status": "Fixed",
+              "severity": "Major",
+              "platform": "Windows",
+              "build": "0.4.1",
+              "target": "ms-2",
+              "found_in": "pt-1",
+              "reported_on": "@today-12d",
+              "fixed_on": "@today-4d"
+            }
+          },
+          {
+            "key": "bg-5",
+            "values": {
+              "bug_name": "Text overflows the settings menu in German",
+              "status": "Verified",
+              "severity": "Polish",
+              "platform": "macOS",
+              "build": "0.4.0",
+              "target": "ms-2",
+              "found_in": "pt-1",
+              "reported_on": "@today-15d",
+              "fixed_on": "@today-9d"
+            }
+          },
+          {
+            "key": "bg-6",
+            "values": {
+              "bug_name": "Frame drops in the tide cave on handhelds",
+              "status": "Confirmed",
+              "severity": "Major",
+              "platform": "Handheld PC",
+              "build": "0.4.2",
+              "target": "ms-2",
+              "found_in": "pt-2",
+              "reported_on": "@today-3d"
+            }
+          },
+          {
+            "key": "bg-7",
+            "values": {
+              "bug_name": "Gull shadow flickers at dawn",
+              "status": "Won't fix",
+              "severity": "Polish",
+              "platform": "Windows",
+              "build": "0.3.9",
+              "target": "ms-3",
+              "found_in": "pt-1",
+              "reported_on": "@today-20d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "playtest",
+        "name": "Playtests",
+        "labelSingular": "Playtest",
+        "labelPlural": "Playtests",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "pt_name",
+        "describes": "Every playtest from couch tests to public demos: testers, fun score, would-buy and wishlist adds.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "Playtest plan",
+            "values": {
+              "status": "Recruiting",
+              "pt_name": "New playtest"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Goal"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The one question this test must answer."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Setup"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Build and keys ready"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Survey with fun score, would buy and open questions"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Recording consent where sessions are watched"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Report"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Top three findings, bugs filed, decisions made."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "pt_name",
+            "label": "Playtest",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Recruiting",
+              "Scheduled",
+              "Running",
+              "Report written"
+            ],
+            "choiceColors": {
+              "Recruiting": "slate",
+              "Scheduled": "blue",
+              "Running": "amber",
+              "Report written": "green"
+            },
+            "required": true,
+            "default": "Recruiting",
+            "statusGroups": {
+              "Recruiting": "todo",
+              "Scheduled": "todo",
+              "Running": "in_progress",
+              "Report written": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Friends and family",
+              "Closed key test",
+              "Public demo",
+              "Festival demo"
+            ],
+            "choiceColors": {
+              "Friends and family": "pink",
+              "Closed key test": "violet",
+              "Public demo": "teal",
+              "Festival demo": "orange"
+            }
+          },
+          {
+            "key": "test_on",
+            "label": "Test date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "testers",
+            "label": "Testers",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "fun_score",
+            "label": "Fun score (1 to 10)",
+            "parityType": "decimal",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 10
+              }
+            ]
+          },
+          {
+            "key": "would_buy",
+            "label": "Would buy (%)",
+            "parityType": "percent",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "wishlist_adds",
+            "label": "Wishlist adds",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "top_findings",
+            "label": "Top findings",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "bug_count",
+            "label": "Bugs found",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bugs_found",
+            "pick": "bug_name",
+            "agg": "count"
+          },
+          {
+            "key": "organizer",
+            "label": "Organizer",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "pt-1",
+            "values": {
+              "pt_name": "Studio friends couch test",
+              "status": "Report written",
+              "kind": "Friends and family",
+              "test_on": "@today-16d",
+              "testers": 9,
+              "fun_score": 7.4,
+              "would_buy": 56,
+              "wishlist_adds": 0,
+              "top_findings": "Swing feels great; nobody found the second hook upgrade; menus too small on a TV."
+            }
+          },
+          {
+            "key": "pt-2",
+            "values": {
+              "pt_name": "Closed key test, 0.4.2",
+              "status": "Report written",
+              "kind": "Closed key test",
+              "test_on": "@today-4d",
+              "testers": 140,
+              "fun_score": 7.9,
+              "would_buy": 61,
+              "wishlist_adds": 310,
+              "top_findings": "One crash in cutscenes; save loss on handhelds; tide cave praised for mood.",
+              "organizer": "@installer"
+            }
+          },
+          {
+            "key": "pt-3",
+            "values": {
+              "pt_name": "Public demo soft launch",
+              "status": "Running",
+              "kind": "Public demo",
+              "test_on": "@today-1d",
+              "testers": 620,
+              "wishlist_adds": 1240,
+              "organizer": "@installer"
+            }
+          },
+          {
+            "key": "pt-4",
+            "values": {
+              "pt_name": "Festival demo week",
+              "status": "Scheduled",
+              "kind": "Festival demo",
+              "test_on": "@today+9d",
+              "testers": 0,
+              "wishlist_adds": 0
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each task counts toward one milestone.",
+        "fromTable": "task",
+        "fromField": "milestone",
+        "toTable": "milestone",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tasks"
+      },
+      {
+        "describes": "Each task has one owner.",
+        "fromTable": "task",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tasks_owned"
+      },
+      {
+        "describes": "Each bug is fixed by one milestone.",
+        "fromTable": "bug",
+        "fromField": "target",
+        "toTable": "milestone",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bugs_targeted"
+      },
+      {
+        "describes": "A bug may come from one playtest.",
+        "fromTable": "bug",
+        "fromField": "found_in",
+        "toTable": "playtest",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bugs_found"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Imogen Reyes",
+              "role": "Studio lead and designer",
+              "work_email": "imogen@driftlightgames.net",
+              "mobile": "(207) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Tobias Lindqvist",
+              "role": "Programmer",
+              "work_email": "tobias@driftlightgames.net",
+              "mobile": "(207) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Kenji Arakawa",
+              "role": "Artist",
+              "work_email": "kenji@driftlightgames.net",
+              "mobile": "(207) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Zuri Okonkwo",
+              "role": "Animator",
+              "work_email": "zuri@driftlightgames.net",
+              "mobile": "(207) 555-0143",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Felix Moreau",
+              "role": "Composer and sound",
+              "work_email": "felix@driftlightgames.net",
+              "mobile": "(207) 555-0144",
+              "start_date": "@today-9y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "bug_report",
+        "name": "Bug report",
+        "describes": "How a tester or team member reports a bug.",
+        "audience": "staff",
+        "table": "bug",
+        "fields": [
+          {
+            "fieldKey": "bug_name",
+            "ask": "What went wrong, in one line?",
+            "required": true
+          },
+          {
+            "fieldKey": "repro",
+            "ask": "What steps make it happen again?"
+          },
+          {
+            "fieldKey": "platform",
+            "ask": "Which platform were you playing on?"
+          },
+          {
+            "fieldKey": "build",
+            "ask": "Which build number is shown on the title screen?"
+          }
+        ],
+        "submitLabel": "Send the bug",
+        "confirmation": "Thanks. The team reads every report before the next build."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "task_done",
+        "table": "task",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          },
+          {
+            "field": "done_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_take",
+        "table": "task",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "ms_hit",
+        "table": "milestone",
+        "name": "Mark hit",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Hit"
+          },
+          {
+            "field": "hit_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "bug_fixed",
+        "table": "bug",
+        "name": "Mark fixed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Fixed"
+          },
+          {
+            "field": "fixed_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "bug_take_it",
+        "table": "bug",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assignee",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_task",
+        "name": "All tasks",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "task_board",
+        "name": "Tasks board",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_cal",
+        "name": "Tasks calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "task_over",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Backlog",
+            "Next sprint",
+            "In progress",
+            "In review"
+          ]
+        }
+      },
+      {
+        "token": "task_week",
+        "name": "Due this week",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Backlog",
+            "Next sprint",
+            "In progress",
+            "In review"
+          ]
+        }
+      },
+      {
+        "token": "task_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Backlog",
+            "Next sprint",
+            "In progress",
+            "In review"
+          ]
+        }
+      },
+      {
+        "token": "task_mine",
+        "name": "My tasks",
+        "table": "task",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_milestone",
+        "name": "All milestones",
+        "table": "milestone",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "milestone_board",
+        "name": "Milestones board",
+        "table": "milestone",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "milestone_cal",
+        "name": "Milestones calendar",
+        "table": "milestone",
+        "kind": "calendar",
+        "dateField": "target_on",
+        "allDay": true
+      },
+      {
+        "token": "all_bug",
+        "name": "All bugs",
+        "table": "bug",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "bug_board",
+        "name": "Bugs board",
+        "table": "bug",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "bug_mine",
+        "name": "My bugs",
+        "table": "bug",
+        "kind": "grid",
+        "me": [
+          "assignee"
+        ]
+      },
+      {
+        "token": "all_playtest",
+        "name": "All playtests",
+        "table": "playtest",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "playtest_board",
+        "name": "Playtests board",
+        "table": "playtest",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "playtest_cal",
+        "name": "Playtests calendar",
+        "table": "playtest",
+        "kind": "calendar",
+        "dateField": "test_on",
+        "allDay": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Indie Game Studio Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "task",
+          "describes": "Every piece of work by discipline, with its milestone, owner, estimate and due date."
+        },
+        {
+          "name": "related_tables",
+          "table": "milestone",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many bugs are confirmed and not yet being fixed?",
+        "whyItMatters": "Confirmed bugs are assigned at the Monday triage.",
+        "expect": {
+          "table": "bug",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Confirmed"
+          },
+          "answer": 2,
+          "unit": "bugs"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open tasks.",
+        "action": {
+          "kind": "open",
+          "surface": "task_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open milestones.",
+        "action": {
+          "kind": "open",
+          "surface": "milestone_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "milestone_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open bugs.",
+        "action": {
+          "kind": "open",
+          "surface": "bug_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "bug_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-21",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "driftlightgames.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Harborlight Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "indie-game-studio-desk",
+      "parent": null,
+      "title": "Indie Game Studio Desk",
+      "icon": {
+        "emoji": "🎮"
+      },
+      "cover": {
+        "url": "gallery:media-game-controller-neon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Start the week on the Dashboard: the next milestone's progress, crash and blocker bugs, and wishlists from the latest playtest. Tasks move Backlog to Done on the board; bugs move New to Verified. Mark done and Mark fixed stamp the day. A milestone is Hit only when its Done means list is true in the build."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:bug-triage"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:playtests-and-wishlists"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tasks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every piece of work by discipline, with its milestone, owner, estimate and due date."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "task_board"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "task-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "estimate",
+                  "due_on",
+                  "done_on",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "task-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "status",
+                  "estimate",
+                  "due_on",
+                  "done_on",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "task-t",
+                "name": "All tasks",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "task-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Backlog",
+                    "Next sprint",
+                    "In progress",
+                    "In review"
+                  ]
+                }
+              },
+              {
+                "id": "task-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Backlog",
+                    "Next sprint",
+                    "In progress",
+                    "In review"
+                  ]
+                }
+              },
+              {
+                "id": "task-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Backlog",
+                    "Next sprint",
+                    "In progress",
+                    "In review"
+                  ]
+                }
+              },
+              {
+                "id": "task-m",
+                "name": "My tasks",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "task-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Milestones"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The publisher milestones, what done means for each, the payment attached and progress so far."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "milestone",
+              "view": "milestone_board"
+            },
+            "inline": true,
+            "title": "Milestones",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "mile-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "paid",
+                  "wishlists",
+                  "exit_criteria",
+                  "tasks_total",
+                  "tasks_done",
+                  "progress",
+                  "open_bugs",
+                  "hit_btn",
+                  "task_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "mile-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "target_on",
+                "hiddenFields": [
+                  "status",
+                  "target_on",
+                  "paid",
+                  "wishlists",
+                  "exit_criteria",
+                  "tasks_total",
+                  "tasks_done",
+                  "progress",
+                  "open_bugs",
+                  "hit_btn",
+                  "task_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "mile-t",
+                "name": "All milestones",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "mile-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Bugs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every bug with severity, platform, build, steps to reproduce and the milestone it must be fixed by."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "bug",
+              "view": "bug_board"
+            },
+            "inline": true,
+            "title": "Bugs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "bug-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "build",
+                  "found_in",
+                  "repro",
+                  "reported_on",
+                  "fixed_on",
+                  "assignee",
+                  "fixed_btn",
+                  "bug_take",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "bug-t",
+                "name": "All bugs",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "bug-m",
+                "name": "My bugs",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assignee"
+                ]
+              }
+            ],
+            "activeViewId": "bug-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Playtests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every playtest from couch tests to public demos: testers, fun score, would-buy and wishlist adds."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "playtest",
+              "view": "playtest_board"
+            },
+            "inline": true,
+            "title": "Playtests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "play-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "testers",
+                  "fun_score",
+                  "would_buy",
+                  "wishlist_adds",
+                  "top_findings",
+                  "bug_count",
+                  "organizer",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "play-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "test_on",
+                "hiddenFields": [
+                  "status",
+                  "test_on",
+                  "testers",
+                  "fun_score",
+                  "would_buy",
+                  "wishlist_adds",
+                  "top_findings",
+                  "bug_count",
+                  "organizer",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "play-t",
+                "name": "All playtests",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "play-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "indie-game-studio-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A small game studio lives between two deadlines: the publisher milestone that pays the bills, and the launch that has to find players. This workspace keeps the work, the bugs, the playtests and the wishlists in one place so the whole team sees the same picture."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The four tables"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tasks",
+              "bold": true
+            },
+            {
+              "text": ": every piece of work, tagged by discipline (code, art, animation, audio, design, writing, QA), tied to a milestone with an owner, estimate and due date. Cut tasks stay visible but leave the progress count."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Milestones",
+              "bold": true
+            },
+            {
+              "text": ": what the publisher has agreed to pay for, with Done means written out, the payment attached, and wishlists at that point. Progress and Open bugs roll up from tasks and bugs."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Bugs",
+              "bold": true
+            },
+            {
+              "text": ": severity, platform, build, steps to reproduce, the playtest it came from and the milestone it must be fixed by. Mark fixed stamps the day; QA moves it to Verified."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Playtests",
+              "bold": true
+            },
+            {
+              "text": ": from couch tests to the festival demo, with testers, a fun score, would-buy percentage, wishlist adds and the top findings."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A normal week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday triage (30 minutes): every New bug gets a severity and a milestone; crash and blocker bugs get an owner the same hour."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Each person works from Tasks, My tasks view. Move cards as you go; In review means someone else must look."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Wednesday build: the build number goes on every bug found in it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Friday: the studio lead reads Progress on the current milestone. Below plan means cutting scope, not adding weekends."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After each playtest, fill in the numbers and top findings within two days and file the bugs from it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who owns what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Area"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Milestones and publisher contact"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Studio lead"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Build health and bug triage"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Programmer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Store page, capsule art and trailer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Artist and studio lead"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Playtest recruiting and surveys"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Studio lead"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The rule we keep"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A milestone is Hit only when every line of Done means is true in the uploaded build. The payment follows the publisher's sign-off, so tick Payment received only when the money lands."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "indie-game-studio-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Tasks by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Tasks by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Estimate by discipline",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Estimate by discipline",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "discipline",
+                          "op": "sum",
+                          "field": "estimate"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "bug",
+                      "view": "all_bug"
+                    },
+                    "inline": true,
+                    "title": "Bugs by severity",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Bugs by severity",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "severity",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "bug",
+                      "view": "all_bug"
+                    },
+                    "inline": true,
+                    "title": "Bugs by platform",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Bugs by platform",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "platform",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "playtest",
+                      "view": "all_playtest"
+                    },
+                    "inline": true,
+                    "title": "Wishlist adds by playtest kind",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Wishlist adds by playtest kind",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "sum",
+                          "field": "wishlist_adds"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "milestone",
+                      "view": "all_milestone"
+                    },
+                    "inline": true,
+                    "title": "Publisher payments by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Publisher payments by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "payment"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Crash and blocker bugs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "bug",
+              "view": "all_bug"
+            },
+            "inline": true,
+            "title": "Crash and blocker bugs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl0",
+                "name": "Must fix",
+                "layout": "list",
+                "anyOf": {
+                  "severity": [
+                    "Crash",
+                    "Blocker"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "In review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "In review",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl1",
+                "name": "Needs a reviewer",
+                "layout": "list",
+                "filters": {
+                  "status": "In review"
+                }
+              }
+            ],
+            "activeViewId": "dl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Milestones ahead"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "milestone",
+              "view": "all_milestone"
+            },
+            "inline": true,
+            "title": "Milestones ahead",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl2",
+                "name": "Not yet hit",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "In progress",
+                    "Slipping"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Progress (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Done tasks over tasks still in scope (cut tasks left out)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 70 percent with two weeks to go means cut scope now"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Open bugs"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "New, confirmed and fixing bugs aimed at the milestone"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Any crash or blocker stops a milestone build"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wishlist adds"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Counted from the store page the week of each playtest"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Festival weeks should beat a normal week several times over"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Would buy (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Survey answer from testers"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Watch the trend between builds, not one number"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "bug-triage",
+      "parent": "indie-game-studio-desk",
+      "title": "Bug triage and the milestone build",
+      "icon": {
+        "emoji": "🐞"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Bugs pile up fastest right before a milestone, which is exactly when the team has the least time. This page is the triage routine and the rules for what blocks a milestone build."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Severity, in our words"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Severity"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rule"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Crash"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The game closes or freezes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fixed before any build leaves the studio"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Blocker"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The player cannot continue or loses progress"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fixed before the milestone build"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Major"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Clearly wrong and most players will see it"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fixed this milestone if time allows"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Minor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Wrong but easy to play around"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Next milestone"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Polish"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Looks or feels a little off"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Batched into a polish week"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monday triage"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Bugs, sort New by Reported."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Try to reproduce each one on the platform it was found on. Can't reproduce after two tries: ask the reporter for a clip, leave it New."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reproduced: set severity, Fix by milestone, and move to Confirmed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Crash and Blocker: an owner presses Assign to me now and moves it to Fixing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Won't fix needs a sentence in the bug saying why. Never delete a bug."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Fixing and verifying"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The person fixing presses Mark fixed, which stamps the day, and writes the build the fix is in."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Someone else plays the steps in that build and moves it to Verified. The fixer never verifies their own bug."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Milestone build checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No Crash or Blocker bugs open against this milestone"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every task in Done means is Done"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Build number written on the milestone and in the known issues list"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Save files from the last build still load"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A full play-through on the slowest target device"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Worked example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The closed key test on build 0.4.2 found a cutscene crash and a save loss on handhelds. Both were set to the vertical slice milestone at Monday triage; the crash went to the programmer at once, and the slice build waits until both are Verified."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "playtests-and-wishlists",
+      "parent": "indie-game-studio-desk",
+      "title": "Playtests, demos and wishlists",
+      "icon": {
+        "emoji": "📈"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "For an indie game, wishlists before launch are the best early sign of sales, and playtests are how you find out if the game is fun before it is too late to change. This page is how the studio runs a playtest and what it records."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Choose the kind of test"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Kind"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Good for"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Size"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friends and family"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "First-hour confusion, controls"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "5 to 15 people watched in person"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Closed key test"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Bugs across hardware, early fun score"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "100 to 300 keys"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Public demo"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Wishlists, store page conversion"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Open to anyone"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Festival demo"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A big wishlist week alongside many other games"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Open, one week"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Running one"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write the one question the test must answer in the playtest plan, for example \"Do players find the second hook upgrade?\""
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Prepare the build, keys and a short survey: fun score from 1 to 10, would you buy it, and two open questions."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "During the test, watch at least five people play without helping them."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Within two days, fill in testers, fun score, would buy and wishlist adds, and write the top three findings."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "File every bug from the test with Found in playtest set, so the playtest shows Bugs found."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading wishlists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Record the wishlist count on each milestone as well, so growth between milestones is visible."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Compare adds per playtest kind on the Dashboard chart; a festival week should far outrun an ordinary week."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A drop in would-buy between two builds matters more than any single score. Read the open answers next to it; they usually name the reason in the players' own words."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist before a public demo"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Store page live with capsule art, trailer and five screenshots"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Demo ends on a clear call to wishlist"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No crash bugs open in the demo build"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Survey link shown on the demo's end screen"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
