@@ -10,7 +10,6 @@
  * never a stub. A suite that registers its own slot afterwards simply overrides it.
  */
 import { createElement } from "react";
-import { registerChatUi } from "@ai-matrx/chat/host/ui-slots";
 
 type Slots = Record<string, unknown>;
 const load = (): Slots => require("@/providers/chatAppDataRegistration").chatAppDataSlots;
@@ -27,4 +26,5 @@ for (const name of COMPONENTS) {
   Lazy.displayName = `LazyChatHost(${name})`;
   lazy[name] = Lazy;
 }
-registerChatUi(lazy as never);
+// Applied when ui-slots first loads, after the suite's own mocks (jest.setup.ts explains why).
+(globalThis as unknown as { __registerChatUiOnLoad: (r: never) => void }).__registerChatUiOnLoad(lazy as never);
