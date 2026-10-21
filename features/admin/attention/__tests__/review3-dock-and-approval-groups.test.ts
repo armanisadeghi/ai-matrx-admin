@@ -4,15 +4,15 @@
  * "Approve again". SUT: `triageStatus`, `spendAlarmItems`, `decideGroup` (the decide door is doubled).
  */
 
-jest.mock("@/features/admin/spend-approvals/spendApprovals", () => ({
-  decideSpendApproval: jest.fn(),
-  restoreOwnerApproval: jest.fn(),
-}));
+jest.mock("@/features/admin/spend-approvals/spendApprovals", () => {
+  class ApprovalDecidedSinceError extends Error {}
+  return { decideSpendApproval: jest.fn(), restoreOwnerApproval: jest.fn(), ApprovalDecidedSinceError };
+});
 
 import { triageStatus } from "../sources/useAttentionTriage";
 import { spendAlarmItems, type SpendAlarmDeps } from "../sources/spend-alarms";
 import { decideGroup } from "../sources/useSpendAlarmSource";
-import { decideSpendApproval } from "@/features/admin/spend-approvals/spendApprovals";
+import { ApprovalDecidedSinceError, decideSpendApproval } from "@/features/admin/spend-approvals/spendApprovals";
 import type { SpendAlarmAttentionRow } from "@/features/admin/spend-alarms/spendAlarms";
 
 const A = "9a0b1c2d-2222-4e3f-9a00-00000000bb02";
@@ -73,7 +73,7 @@ describe("approval groups (N6)", () => {
     const decide = decideSpendApproval as jest.Mock;
     decide.mockReset();
     decide.mockImplementation(async (id: string) => {
-      if (id === B) throw new Error("Not changed: Kind Creator is now rejected, not temporary");
+      if (id === B) throw new ApprovalDecidedSinceError("Not changed: Kind Creator is now rejected, not temporary");
     });
     await expect(decideGroup([A, B], "2026-11-20T09:00:00+00:00", "temporary")).rejects.toThrow(/1 of 2 done; 1 left as they are/);
     expect(decide).toHaveBeenCalledWith(A, "approve_temporary", { expiresAt: "2026-11-20T09:00:00+00:00", expectedStatus: "temporary" });
@@ -81,5 +81,22 @@ describe("approval groups (N6)", () => {
     decide.mockResolvedValue(undefined);
     await expect(decideGroup([A], "2026-11-20T09:00:00+00:00", "rejected")).resolves.toBeUndefined();
     expect(decide).toHaveBeenCalledWith(A, "approve_temporary", { expiresAt: "2026-11-20T09:00:00+00:00", expectedStatus: "rejected" });
+  });
+
+  it("a failure that is not the stale-status refusal is said with its own reason, never as 'decided since' (2026-10-21)", async () => {
+    const decide = decideSpendApproval as jest.Mock;
+    decide.mockReset();
+    decide.mockRejectedValue(new Error("canceling statement due to statement timeout — (code: 57014)"));
+    const err = await decideGroup([A, B], "2026-11-20T09:00:00+00:00", "temporary").catch((e: Error) => e);
+    expect(String(err)).toMatch(/0 of 2 done; 2 failed: canceling statement due to statement timeout/);
+    expect(String(err)).not.toMatch(/decided/);
+    decide.mockReset();
+    decide.mockImplementation(async (id: string) => {
+      if (id === A) throw new ApprovalDecidedSinceError("Not changed");
+      throw new Error("Could not query the database for the schema cache. Retrying.");
+    });
+    await expect(decideGroup([A, B], "2026-11-20T09:00:00+00:00", "temporary")).rejects.toThrow(
+      "0 of 2 done; 1 left as they are because someone decided it since; 1 failed: Could not query the database for the schema cache. Retrying.",
+    );
   });
 });

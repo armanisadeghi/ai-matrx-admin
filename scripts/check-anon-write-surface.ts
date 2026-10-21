@@ -355,19 +355,21 @@ async function main() {
 
     // A restrictive policy is a veto, never a write authorization. Verify the
     // actual catalog query, then prove a permissive sibling still goes RED.
-    // `create policy` takes ACCESS EXCLUSIVE on admin.admins, so this arm
-    // contends exactly like the others and carries the same retry.
+    // `create policy` takes ACCESS EXCLUSIVE on its table for the whole arm, so the
+    // policy arms plant on a cold table: on admin.admins (read by every admin check)
+    // they would queue the app behind a self-test (the 2026-10-21 iam.memberships stall;
+    // aidream scripts/check_no_hot_table_ddl_outside_runner.py).
     await arm(
       client,
       "permissive authorization remains visible beside a restrictive policy",
       async () => {
-        await client.query("create policy b87_self_test_restrictive_write on admin.admins as restrictive for insert to public with check (true)");
+        await client.query("create policy b87_self_test_restrictive_write on public.app_config_history as restrictive for insert to public with check (true)");
         if (report(await measure(client)) !== 0) {
           throw new Error("Restrictive policy incorrectly classified as a write authorization");
         }
-        await client.query("create policy b87_self_test_permissive_write on admin.admins for insert to public with check (true)");
+        await client.query("create policy b87_self_test_permissive_write on public.app_config_history for insert to public with check (true)");
         const findings = classifyAnonWrites(await measure(client));
-        if (!findings.some((finding) => finding.arm === "policy" && finding.object === "admin.admins :: b87_self_test_permissive_write")) {
+        if (!findings.some((finding) => finding.arm === "policy" && finding.object === "public.app_config_history :: b87_self_test_permissive_write")) {
           throw new Error("Permissive policy hidden by a restrictive sibling");
         }
         console.log(`${C.g}RED proven${C.x} permissive authorization remains visible beside a restrictive policy`);
@@ -378,8 +380,8 @@ async function main() {
     // ARM 4 - a write policy reaching every role that nobody declared.
     await red(
       client,
-      "an undeclared TO PUBLIC insert policy on admin.admins",
-      ["create policy b87_self_test_public_write on admin.admins for insert to public with check (true)"],
+      "an undeclared TO PUBLIC insert policy on public.app_config_history",
+      ["create policy b87_self_test_public_write on public.app_config_history for insert to public with check (true)"],
       state,
     );
 

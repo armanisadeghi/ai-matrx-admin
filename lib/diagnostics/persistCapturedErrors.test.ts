@@ -132,6 +132,26 @@ describe("captured error persistence settlement", () => {
     ]);
   });
 
+  // 2026-10-21: three captures failed to file with PGRST002 during a database stall and were never
+  // retried, so the server never saw the outage. A transient refusal tries again; a real refusal does not.
+  it("re-files a capture whose filing failed transiently, and never one the database refused", async () => {
+    rpc.mockResolvedValueOnce({ data: null, error: { code: "PGRST002", message: "schema cache" }, status: 503 });
+    captureError({ source: "runtime-exception", message: "outage failure" });
+    await jest.advanceTimersByTimeAsync(1_500);
+    expect(rpc).toHaveBeenCalledTimes(1);
+    await jest.advanceTimersByTimeAsync(16_000);
+    expect(rpc).toHaveBeenCalledTimes(2);
+    expect(rpc.mock.calls[1][1]).toEqual(expect.objectContaining({ p_message: "outage failure" }));
+
+    rpc.mockClear();
+    clearCapturedErrors();
+    rpc.mockResolvedValueOnce({ data: null, error: { code: "22023", message: "bad source" }, status: 400 });
+    captureError({ source: "runtime-exception", message: "refused failure" });
+    await jest.advanceTimersByTimeAsync(1_500);
+    await jest.advanceTimersByTimeAsync(60_000);
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
   it("persists the captured document identity even if scripts change before flush", async () => {
     const script = document.createElement("script");
     script.src =

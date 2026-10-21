@@ -26,6 +26,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { markBrowserAgentTraffic } from "../lib/agent-traffic.mjs";
+import { mintSessionCookies } from "./session-cookies.mjs";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
@@ -98,30 +99,10 @@ const out = (v) => console.log(typeof v === "string" ? v : JSON.stringify(v, nul
 switch (cmd) {
   case "goto": await markBrowserAgentTraffic(ctx, "real-tests", args[0]).catch(() => {}); await page.goto(args[0], { waitUntil: "load", timeout: 120000 }); out(page.url()); break;
   case "signin": {
-    // Session minted over the Supabase auth API (password never typed into a page); cookies built by
-    // @supabase/ssr with the app's own name/domain (utils/supabase/authCookie.ts). Nothing printed but the email.
-    const envText = ["../../.env", "../../.env.local"].map((f) => { try { return fs.readFileSync(new URL(f, import.meta.url), "utf8"); } catch { return ""; } }).join("\n");
-    const env = {};
-    for (const line of envText.split("\n")) { const m = line.match(/^([A-Z0-9_]+)=(.*)$/); if (m) env[m[1]] = m[2].trim().replace(/^["']|["']$/g, ""); }
+    // Session minted over the Supabase auth API (password never typed into a page): session-cookies.mjs.
     const asAt = args.indexOf("--as");
-    const want = (asAt >= 0 ? args[asAt + 1] : env.AI_ADMIN_USERNAME || "admin@admin.com").toLowerCase();
-    const pairs = [["AI_ADMIN_USERNAME", "AI_ADMIN_PASSWORD"], ["AI_MEMBER_USERNAME", "AI_MEMBER_PASSWORD"]];
-    const hit = pairs.find(([u, p]) => env[u]?.toLowerCase() === want && env[p]);
-    if (!hit) { console.error(`signin: no credentials for ${want} in the matrx-frontend .env files`); process.exit(1); }
-    const url = env.NEXT_PUBLIC_SUPABASE_URL, key = env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-    if (!url || !key) { console.error("signin: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY missing from .env.local"); process.exit(1); }
-    const { createServerClient } = require("@supabase/ssr");
-    const jar = new Map();
-    const sb = createServerClient(url, key, {
-      cookieOptions: { name: "sb-matrx-auth-v2", domain: ".aimatrx.com", secure: true },
-      cookies: { getAll: () => [...jar.values()].map(({ name, value }) => ({ name, value })), setAll: (cs) => cs.forEach((c) => jar.set(c.name, c)) },
-    });
-    const { error } = await sb.auth.signInWithPassword({ email: env[hit[0]], password: env[hit[1]] });
-    if (error) { console.error(`signin: Supabase refused the sign-in for ${want} (${error.status ?? ""} ${error.code ?? error.name})`); process.exit(1); }
-    const now = Math.floor(Date.now() / 1000);
-    await ctx.addCookies([...jar.values()].filter((c) => c.value && !(c.options?.maxAge === 0)).map((c) => ({
-      name: c.name, value: c.value, domain: ".aimatrx.com", path: "/", secure: true, httpOnly: false, sameSite: "Lax", expires: now + (c.options?.maxAge ?? 34560000),
-    })));
+    const { email: want, cookies } = await mintSessionCookies(asAt >= 0 ? args[asAt + 1] : undefined);
+    await ctx.addCookies(cookies);
     await markBrowserAgentTraffic(ctx, "real-tests", "https://www.aimatrx.com/").catch(() => {});
     await page.goto("https://www.aimatrx.com/", { waitUntil: "load", timeout: 120000 });
     await page.waitForTimeout(3000);

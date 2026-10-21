@@ -24,7 +24,11 @@ import {
   resumeCostlyWorkflows,
   type CostlyWorkflow,
 } from "@/features/admin/spend-alarms/ciPause";
-import { decideSpendApproval, restoreOwnerApproval } from "@/features/admin/spend-approvals/spendApprovals";
+import {
+  ApprovalDecidedSinceError,
+  decideSpendApproval,
+  restoreOwnerApproval,
+} from "@/features/admin/spend-approvals/spendApprovals";
 import { patchSystemTask, runSystemTaskNow } from "@/features/scheduling/service/schedulerClient";
 import { adminScheduleHref } from "@/features/scheduling/constants/routes";
 import { ATTENTION_POLL_MS } from "../poll";
@@ -118,17 +122,25 @@ export function useSpendAlarmSource(enabled: boolean): AttentionSourceState {
 /**
  * One grouped approval action (Extend / Approve again): each approval moves only while it is still in the
  * status the card showed (`billing.run_approval_decide` p_expected_status), so a stale card never overrides a
- * decision made since (review 3, N6). Any left alone are SAID, never silently skipped.
+ * decision made since (review 3, N6). Any left alone are SAID, never silently skipped — and only a refusal
+ * the door made for that reason is called "decided since"; any other failure is said with its own reason
+ * (2026-10-21: eight extensions failed while the database was locked and read "someone decided them since").
  */
 export async function decideGroup(approvalIds: string[], expiresAt: string, expectedStatus: "temporary" | "rejected"): Promise<void> {
   const settled = await Promise.allSettled(
     approvalIds.map((id) => decideSpendApproval(id, "approve_temporary", { expiresAt, expectedStatus })),
   );
-  const left = settled.filter((s) => s.status === "rejected").length;
-  if (left > 0) {
-    const done = approvalIds.length - left;
-    throw new Error(
-      `${done} of ${approvalIds.length} done; ${left} left as they are because someone decided ${left === 1 ? "it" : "them"} since.`,
-    );
+  const failures = settled.flatMap((s) => (s.status === "rejected" ? [s.reason] : []));
+  if (failures.length === 0) return;
+  const done = approvalIds.length - failures.length;
+  const since = failures.filter((r) => r instanceof ApprovalDecidedSinceError).length;
+  const other = failures.filter((r) => !(r instanceof ApprovalDecidedSinceError));
+  const parts = [`${done} of ${approvalIds.length} done`];
+  if (since > 0) parts.push(`${since} left as they are because someone decided ${since === 1 ? "it" : "them"} since`);
+  if (other.length > 0) {
+    const first = other[0];
+    const reason = first instanceof Error ? first.message : String(first);
+    parts.push(`${other.length} failed: ${reason}`);
   }
+  throw new Error(`${parts.join("; ")}.`);
 }

@@ -1,0 +1,4491 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0572",
+  "version": 1,
+  "title": "Independent Pharmacy Desk",
+  "description": "Run the fill queue, will-call bins, prior auths, med sync and drug stock for one store.",
+  "forWho": "Independent and community pharmacies",
+  "icon": {
+    "emoji": "💊"
+  },
+  "cover": {
+    "url": "gallery:healthcare-hospital-corridor",
+    "offsetY": 50
+  },
+  "category": "healthcare",
+  "tags": [
+    "pharmacy",
+    "drugstore",
+    "prescriptions",
+    "chemist",
+    "pharmacist",
+    "rx"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-independent-pharmacy-desk",
+    "catalogueId": "SP0572",
+    "useCase": "The pharmacist-owner of Bramblewood Pharmacy uses this to see what must be filled today, what is stuck with a plan, and what to order tonight.",
+    "industry": "healthcare",
+    "vertical": "Independent pharmacy",
+    "job": "work_orders",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Bramblewood Pharmacy",
+      "describes": "A family-owned community pharmacy with two pharmacists, three technicians, home delivery and a flu clinic.",
+      "address": {
+        "line1": "214 Quarry Hollow Road",
+        "city": "Asheville",
+        "region": "NC",
+        "postalCode": "28801",
+        "country": "US"
+      },
+      "phone": "(828) 555-0130",
+      "website": "bramblewoodrx.net",
+      "email": "counter@bramblewoodrx.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-independent-pharmacy-desk",
+    "tables": [
+      {
+        "token": "rx",
+        "name": "Prescriptions",
+        "labelSingular": "Prescription",
+        "labelPlural": "Prescriptions",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-list",
+        "titleField": "rx_name",
+        "describes": "Every fill from the moment it arrives to the moment it leaves the bag: who it is for, who pays, and what it earned.",
+        "subject": "thing",
+        "independentOf": {
+          "patient": "Either record can be created or change status before the other.",
+          "drug": "Either record can be created or change status before the other.",
+          "team_member": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Picked up"
+            ],
+            "filled": [
+              "picked_up_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New fill",
+            "values": {
+              "status": "New",
+              "rx_name": "New prescription"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Data entry"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Patient profile matched (name, birth date, address)"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Prescriber, quantity, days supply and refills match the written order"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Allergies and current medicines checked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pharmacist verification"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Right drug, strength and directions against the image"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Interaction and duplicate-therapy alerts reviewed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Bag and hand-off"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Bin number written on the fill"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Counseling offered and noted for new medicines"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Promised for is set when the fill is taken in; Picked up on is stamped when the patient collects, before or after the promise.",
+        "fields": [
+          {
+            "key": "rx_name",
+            "label": "Prescription",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Needs prior auth",
+              "Filling",
+              "Ready for pickup",
+              "Picked up",
+              "Returned to stock",
+              "Transferred out"
+            ],
+            "choiceColors": {
+              "New": "slate",
+              "Needs prior auth": "amber",
+              "Filling": "blue",
+              "Ready for pickup": "teal",
+              "Picked up": "green",
+              "Returned to stock": "gray",
+              "Transferred out": "violet"
+            },
+            "required": true,
+            "default": "New",
+            "statusGroups": {
+              "New": "todo",
+              "Needs prior auth": "in_progress",
+              "Filling": "in_progress",
+              "Ready for pickup": "in_progress",
+              "Picked up": "done",
+              "Returned to stock": "done",
+              "Transferred out": "done"
+            }
+          },
+          {
+            "key": "patient",
+            "label": "Patient",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "patient",
+            "relationMax": 1
+          },
+          {
+            "key": "drug",
+            "label": "Drug",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "drug",
+            "relationMax": 1
+          },
+          {
+            "key": "payer",
+            "label": "Paid by",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Commercial plan",
+              "Medicare Part D",
+              "Medicaid",
+              "Cash price"
+            ],
+            "choiceColors": {
+              "Commercial plan": "blue",
+              "Medicare Part D": "violet",
+              "Medicaid": "teal",
+              "Cash price": "orange"
+            }
+          },
+          {
+            "key": "schedule",
+            "label": "Schedule",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not controlled",
+              "C-II",
+              "C-III to C-V"
+            ],
+            "choiceColors": {
+              "Not controlled": "slate",
+              "C-II": "red",
+              "C-III to C-V": "amber"
+            },
+            "default": "Not controlled"
+          },
+          {
+            "key": "prescriber",
+            "label": "Prescriber",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "verified_by",
+            "label": "Verified by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "promised_on",
+            "label": "Promised for",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "picked_up_on",
+            "label": "Picked up on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "qty",
+            "label": "Quantity",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "days_supply",
+            "label": "Days supply",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 365
+              }
+            ]
+          },
+          {
+            "key": "refills_left",
+            "label": "Refills left",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 11
+              }
+            ]
+          },
+          {
+            "key": "bin",
+            "label": "Will-call bin",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "copay",
+            "label": "Patient copay (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "plan_paid",
+            "label": "Plan paid (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "cost",
+            "label": "Acquisition cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "gross",
+            "label": "Gross profit (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Status} = \"Returned to stock\", {Status} = \"Transferred out\"), \"\", {Patient copay (USD)} + {Plan paid (USD)} - {Acquisition cost (USD)})"
+          },
+          {
+            "key": "margin_pct",
+            "label": "Margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Status} = \"Returned to stock\", {Status} = \"Transferred out\"), \"\", IF({Patient copay (USD)} + {Plan paid (USD)} > 0, ROUND({Gross profit (USD)} / ({Patient copay (USD)} + {Plan paid (USD)}) * 100, 0), 0))"
+          },
+          {
+            "key": "margin_check",
+            "label": "Margin check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Status} = \"Returned to stock\", {Status} = \"Transferred out\"), \"\", IF({Margin (%)} < 0, \"Below cost\", IF({Margin (%)} < 10, \"Thin, brand\", \"Healthy\")))"
+          },
+          {
+            "key": "assigned_to",
+            "label": "Working it",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pickup_btn",
+            "label": "Mark picked up",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "rx_picked_up"
+            }
+          },
+          {
+            "key": "ready_btn",
+            "label": "Ready for pickup",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "rx_ready"
+            }
+          },
+          {
+            "key": "rts_btn",
+            "label": "Return to stock",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "rx_rts"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "rx_take"
+            }
+          },
+          {
+            "key": "add_pa",
+            "label": "Start a prior auth",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "auth",
+              "template": "Prior auth work-up",
+              "prefill": {
+                "rx": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "rx-1",
+            "values": {
+              "rx_name": "Atorvastatin 20 mg, 90-day refill",
+              "status": "Picked up",
+              "verified_by": "tm-1",
+              "patient": "pt-1",
+              "drug": "dr-1",
+              "payer": "Medicare Part D",
+              "schedule": "Not controlled",
+              "prescriber": "Dr. Imani Okafor",
+              "promised_on": "@today-9d",
+              "picked_up_on": "@today-9d",
+              "qty": 90,
+              "days_supply": 90,
+              "refills_left": 3,
+              "copay": 0,
+              "plan_paid": 14.6,
+              "cost": 4.1
+            }
+          },
+          {
+            "key": "rx-2",
+            "values": {
+              "rx_name": "Lisinopril 10 mg, 90-day refill",
+              "status": "Picked up",
+              "verified_by": "tm-1",
+              "patient": "pt-2",
+              "drug": "dr-2",
+              "payer": "Commercial plan",
+              "schedule": "Not controlled",
+              "prescriber": "Dr. Paul Whitcombe",
+              "promised_on": "@today-7d",
+              "picked_up_on": "@today-6d",
+              "qty": 90,
+              "days_supply": 90,
+              "refills_left": 1,
+              "copay": 10,
+              "plan_paid": 6.4,
+              "cost": 3.2
+            }
+          },
+          {
+            "key": "rx-3",
+            "values": {
+              "rx_name": "Metformin ER 500 mg, med sync fill",
+              "status": "Picked up",
+              "verified_by": "tm-1",
+              "patient": "pt-3",
+              "drug": "dr-3",
+              "payer": "Medicaid",
+              "schedule": "Not controlled",
+              "prescriber": "Dr. Imani Okafor",
+              "promised_on": "@today-5d",
+              "picked_up_on": "@today-5d",
+              "qty": 120,
+              "days_supply": 30,
+              "refills_left": 5,
+              "copay": 1,
+              "plan_paid": 11.25,
+              "cost": 5.4
+            }
+          },
+          {
+            "key": "rx-4",
+            "values": {
+              "rx_name": "Amoxicillin 500 mg, 10-day course",
+              "status": "Picked up",
+              "verified_by": "tm-1",
+              "patient": "pt-4",
+              "drug": "dr-4",
+              "payer": "Commercial plan",
+              "schedule": "Not controlled",
+              "prescriber": "Lakeside Urgent Care",
+              "promised_on": "@today-4d",
+              "picked_up_on": "@today-4d",
+              "qty": 30,
+              "days_supply": 10,
+              "refills_left": 0,
+              "copay": 5,
+              "plan_paid": 4.8,
+              "cost": 2.9
+            }
+          },
+          {
+            "key": "rx-5",
+            "values": {
+              "rx_name": "Eliquis 5 mg, 30-day fill",
+              "status": "Picked up",
+              "verified_by": "tm-1",
+              "patient": "pt-5",
+              "drug": "dr-5",
+              "payer": "Medicare Part D",
+              "schedule": "Not controlled",
+              "prescriber": "Dr. Rania Haddad",
+              "promised_on": "@today-3d",
+              "picked_up_on": "@today-3d",
+              "qty": 60,
+              "days_supply": 30,
+              "refills_left": 4,
+              "copay": 47,
+              "plan_paid": 541.3,
+              "cost": 561.8
+            }
+          },
+          {
+            "key": "rx-6",
+            "values": {
+              "rx_name": "Hydrocodone-APAP 5/325, post-op",
+              "status": "Picked up",
+              "verified_by": "tm-1",
+              "patient": "pt-6",
+              "drug": "dr-6",
+              "payer": "Commercial plan",
+              "schedule": "C-II",
+              "prescriber": "Dr. Grant Lindqvist",
+              "promised_on": "@today-2d",
+              "picked_up_on": "@today-2d",
+              "qty": 12,
+              "days_supply": 3,
+              "refills_left": 0,
+              "copay": 8,
+              "plan_paid": 7.9,
+              "cost": 4.6
+            }
+          },
+          {
+            "key": "rx-7",
+            "values": {
+              "rx_name": "Semaglutide pen, new start",
+              "status": "Needs prior auth",
+              "patient": "pt-7",
+              "drug": "dr-7",
+              "payer": "Commercial plan",
+              "schedule": "Not controlled",
+              "prescriber": "Dr. Rania Haddad",
+              "promised_on": "@today-1d",
+              "qty": 1,
+              "days_supply": 28,
+              "refills_left": 5,
+              "copay": 25,
+              "plan_paid": 918,
+              "cost": 889.5,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "rx-8",
+            "values": {
+              "rx_name": "Levothyroxine 75 mcg, refill request",
+              "status": "New",
+              "patient": "pt-8",
+              "drug": "dr-8",
+              "payer": "Medicare Part D",
+              "schedule": "Not controlled",
+              "prescriber": "Dr. Paul Whitcombe",
+              "promised_on": "@today",
+              "qty": 90,
+              "days_supply": 90,
+              "refills_left": 2,
+              "copay": 0,
+              "plan_paid": 12.2,
+              "cost": 6.75
+            }
+          },
+          {
+            "key": "rx-9",
+            "values": {
+              "rx_name": "Sertraline 50 mg, early refill",
+              "status": "Needs prior auth",
+              "patient": "pt-2",
+              "drug": "dr-9",
+              "payer": "Commercial plan",
+              "schedule": "Not controlled",
+              "prescriber": "Dr. Paul Whitcombe",
+              "promised_on": "@today",
+              "qty": 30,
+              "days_supply": 30,
+              "refills_left": 4,
+              "copay": 10,
+              "plan_paid": 5.1,
+              "cost": 2.4
+            }
+          },
+          {
+            "key": "rx-10",
+            "values": {
+              "rx_name": "Atorvastatin 20 mg, med sync fill",
+              "status": "Filling",
+              "patient": "pt-3",
+              "drug": "dr-1",
+              "payer": "Medicaid",
+              "schedule": "Not controlled",
+              "prescriber": "Dr. Imani Okafor",
+              "promised_on": "@today+1d",
+              "qty": 30,
+              "days_supply": 30,
+              "refills_left": 4,
+              "copay": 1,
+              "plan_paid": 6.9,
+              "cost": 1.4,
+              "bin": "B-14",
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "rx-11",
+            "values": {
+              "rx_name": "Lisinopril 20 mg, new dose",
+              "status": "Ready for pickup",
+              "verified_by": "tm-1",
+              "patient": "pt-9",
+              "drug": "dr-2",
+              "payer": "Cash price",
+              "schedule": "Not controlled",
+              "prescriber": "Lakeside Urgent Care",
+              "promised_on": "@today-1d",
+              "qty": 30,
+              "days_supply": 30,
+              "refills_left": 2,
+              "copay": 12,
+              "plan_paid": 0,
+              "cost": 1.6,
+              "bin": "A-03"
+            }
+          },
+          {
+            "key": "rx-12",
+            "values": {
+              "rx_name": "Metformin ER 500 mg, 90-day refill",
+              "status": "Ready for pickup",
+              "verified_by": "tm-1",
+              "patient": "pt-10",
+              "drug": "dr-3",
+              "payer": "Commercial plan",
+              "schedule": "Not controlled",
+              "prescriber": "Dr. Grant Lindqvist",
+              "promised_on": "@today+2d",
+              "qty": 360,
+              "days_supply": 90,
+              "refills_left": 1,
+              "copay": 10,
+              "plan_paid": 24.5,
+              "cost": 16.2,
+              "bin": "A-07"
+            }
+          },
+          {
+            "key": "rx-13",
+            "values": {
+              "rx_name": "Levothyroxine 75 mcg, 30-day refill",
+              "status": "Returned to stock",
+              "patient": "pt-1",
+              "drug": "dr-8",
+              "payer": "Medicare Part D",
+              "schedule": "Not controlled",
+              "prescriber": "Dr. Imani Okafor",
+              "promised_on": "@today-16d",
+              "qty": 30,
+              "days_supply": 30,
+              "refills_left": 5,
+              "copay": 0,
+              "plan_paid": 4.1,
+              "cost": 2.25
+            }
+          },
+          {
+            "key": "rx-14",
+            "values": {
+              "rx_name": "Eliquis 5 mg, transfer to mail order",
+              "status": "Transferred out",
+              "patient": "pt-5",
+              "drug": "dr-5",
+              "payer": "Medicare Part D",
+              "schedule": "Not controlled",
+              "prescriber": "Dr. Rania Haddad",
+              "promised_on": "@today-30d",
+              "qty": 60,
+              "days_supply": 30,
+              "refills_left": 3,
+              "copay": 47,
+              "plan_paid": 0,
+              "cost": 0
+            }
+          },
+          {
+            "key": "rx-15",
+            "values": {
+              "rx_name": "Amoxicillin suspension 400 mg/5 mL",
+              "status": "Filling",
+              "patient": "pt-11",
+              "drug": "dr-4",
+              "payer": "Medicaid",
+              "schedule": "Not controlled",
+              "prescriber": "Lakeside Urgent Care",
+              "promised_on": "@today+4d",
+              "qty": 100,
+              "days_supply": 10,
+              "refills_left": 0,
+              "copay": 0,
+              "plan_paid": 9.8,
+              "cost": 3.9,
+              "assigned_to": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "patient",
+        "name": "Patients",
+        "labelSingular": "Patient",
+        "labelPlural": "Patients",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "patient_name",
+        "describes": "The people you fill for, their plan, allergies and med sync day, with what is waiting for them.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New patient",
+            "values": {
+              "pt_status": "Active",
+              "patient_name": "New patient"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Profile"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Birth date, address and phone confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Insurance cards scanned, front and back"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Allergies asked out loud, even if the answer is none"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Transfers in"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Old pharmacy called for active prescriptions and refills left"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Med sync"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Pick one day each month for every chronic medicine and write it in Med sync day."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "patient_name",
+            "label": "Patient",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "pt_status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Delivery route",
+              "Inactive",
+              "Transferred away"
+            ],
+            "choiceColors": {
+              "Active": "green",
+              "Delivery route": "blue",
+              "Inactive": "gray",
+              "Transferred away": "violet"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "plan",
+            "label": "Primary plan",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Commercial plan",
+              "Medicare Part D",
+              "Medicaid",
+              "Cash price"
+            ],
+            "choiceColors": {
+              "Commercial plan": "blue",
+              "Medicare Part D": "violet",
+              "Medicaid": "teal",
+              "Cash price": "orange"
+            }
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "allergies",
+            "label": "Allergies and cautions",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "sync_day",
+            "label": "Med sync day",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 28
+              }
+            ],
+            "description": "Day of the month every chronic fill is lined up to."
+          },
+          {
+            "key": "delivery",
+            "label": "Home delivery",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "vaccines_due",
+            "label": "Vaccine due",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "description": "Flu, shingles or pneumonia shot not yet given this season."
+          },
+          {
+            "key": "open_rx",
+            "label": "Open prescriptions",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "prescriptions",
+            "pick": "rx_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "New",
+                "Needs prior auth",
+                "Filling",
+                "Ready for pickup"
+              ]
+            }
+          },
+          {
+            "key": "ready_rx",
+            "label": "Waiting in will-call",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "prescriptions",
+            "pick": "rx_name",
+            "agg": "count",
+            "filter": {
+              "status": "Ready for pickup"
+            }
+          },
+          {
+            "key": "fills",
+            "label": "Fills picked up",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "prescriptions",
+            "pick": "rx_name",
+            "agg": "count",
+            "filter": {
+              "status": "Picked up"
+            }
+          },
+          {
+            "key": "pt_gross",
+            "label": "Gross profit (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "prescriptions",
+            "pick": "gross",
+            "agg": "sum",
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "add_rx",
+            "label": "New prescription",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "rx",
+              "template": "New fill",
+              "prefill": {
+                "patient": "@row"
+              }
+            }
+          },
+          {
+            "key": "call_btn",
+            "label": "Call patient",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "tel:{{phone}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "pt-1",
+            "values": {
+              "patient_name": "Odalys Ferreira",
+              "pt_status": "Active",
+              "plan": "Medicare Part D",
+              "phone": "(828) 555-0121",
+              "sync_day": 12,
+              "allergies": "Sulfa drugs (rash).",
+              "vaccines_due": true
+            }
+          },
+          {
+            "key": "pt-2",
+            "values": {
+              "patient_name": "Desmond Achterberg",
+              "pt_status": "Active",
+              "plan": "Commercial plan",
+              "phone": "(828) 555-0122",
+              "sync_day": 3
+            }
+          },
+          {
+            "key": "pt-3",
+            "values": {
+              "patient_name": "Lucinda Marwick",
+              "pt_status": "Delivery route",
+              "plan": "Medicaid",
+              "phone": "(828) 555-0123",
+              "sync_day": 18,
+              "delivery": true,
+              "allergies": "Penicillin (hives)."
+            }
+          },
+          {
+            "key": "pt-4",
+            "values": {
+              "patient_name": "Theo Brannigan",
+              "pt_status": "Active",
+              "plan": "Commercial plan",
+              "phone": "(828) 555-0124"
+            }
+          },
+          {
+            "key": "pt-5",
+            "values": {
+              "patient_name": "Margarethe Solis",
+              "pt_status": "Delivery route",
+              "plan": "Medicare Part D",
+              "phone": "(828) 555-0125",
+              "sync_day": 12,
+              "delivery": true,
+              "vaccines_due": true
+            }
+          },
+          {
+            "key": "pt-6",
+            "values": {
+              "patient_name": "Curtis Wainwright",
+              "pt_status": "Active",
+              "plan": "Commercial plan",
+              "phone": "(828) 555-0126"
+            }
+          },
+          {
+            "key": "pt-7",
+            "values": {
+              "patient_name": "Priya Venkataraman",
+              "pt_status": "Active",
+              "plan": "Commercial plan",
+              "phone": "(828) 555-0127",
+              "sync_day": 22
+            }
+          },
+          {
+            "key": "pt-8",
+            "values": {
+              "patient_name": "Harold Kessling",
+              "pt_status": "Active",
+              "plan": "Medicare Part D",
+              "phone": "(828) 555-0128",
+              "sync_day": 12,
+              "vaccines_due": true
+            }
+          },
+          {
+            "key": "pt-9",
+            "values": {
+              "patient_name": "Josefina Arreola",
+              "pt_status": "Active",
+              "plan": "Cash price",
+              "phone": "(828) 555-0129"
+            }
+          },
+          {
+            "key": "pt-10",
+            "values": {
+              "patient_name": "Wendell Ostrowski",
+              "pt_status": "Active",
+              "plan": "Commercial plan",
+              "phone": "(828) 555-0130",
+              "sync_day": 7
+            }
+          },
+          {
+            "key": "pt-11",
+            "values": {
+              "patient_name": "Amara N., age 6",
+              "pt_status": "Active",
+              "plan": "Medicaid",
+              "phone": "(828) 555-0131",
+              "allergies": "No known drug allergies."
+            }
+          }
+        ]
+      },
+      {
+        "token": "drug",
+        "name": "Drug inventory",
+        "labelSingular": "Drug",
+        "labelPlural": "Drugs",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "drug_name",
+        "describes": "What is on the shelf, what it cost, what is about to expire and what needs ordering tonight.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "stock",
+            "when": [
+              "On order"
+            ],
+            "filled": [
+              "ordered_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New stock item",
+            "values": {
+              "stock": "In stock",
+              "drug_name": "New drug"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Setting it up"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "NDC entered exactly as printed on the bottle"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Reorder point set to about two weeks of normal fills"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Nearest expiry date entered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "When it arrives"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Count checked against the invoice"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Controlled items counted by a second person and logged"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "before": [
+          [
+            "ordered_on",
+            "expires_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "drug_name",
+            "label": "Drug and strength",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "stock",
+            "label": "Stock",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "In stock",
+              "Low",
+              "On order",
+              "Out of stock",
+              "Short-dated"
+            ],
+            "choiceColors": {
+              "In stock": "green",
+              "Low": "amber",
+              "On order": "blue",
+              "Out of stock": "red",
+              "Short-dated": "orange"
+            },
+            "required": true,
+            "default": "In stock",
+            "statusGroups": {
+              "In stock": "done",
+              "Low": "in_progress",
+              "On order": "in_progress",
+              "Out of stock": "todo",
+              "Short-dated": "in_progress"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Generic",
+              "Brand",
+              "Over the counter",
+              "Controlled"
+            ],
+            "choiceColors": {
+              "Generic": "teal",
+              "Brand": "violet",
+              "Over the counter": "slate",
+              "Controlled": "red"
+            }
+          },
+          {
+            "key": "ndc",
+            "label": "NDC",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "source",
+            "label": "Bought from",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Primary wholesaler",
+              "Secondary wholesaler",
+              "Direct from maker"
+            ],
+            "choiceColors": {
+              "Primary wholesaler": "blue",
+              "Secondary wholesaler": "amber",
+              "Direct from maker": "green"
+            }
+          },
+          {
+            "key": "on_hand",
+            "label": "Units on hand",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at (units)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "unit_cost",
+            "label": "Cost per unit (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "expires_on",
+            "label": "Nearest expiry",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ordered_on",
+            "label": "Ordered on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "stock_value",
+            "label": "Stock value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND({Units on hand} * {Cost per unit (USD)}, 2)"
+          },
+          {
+            "key": "reorder_flag",
+            "label": "Reorder check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Units on hand} <= {Reorder at (units)}, \"Order now\", \"OK\")"
+          },
+          {
+            "key": "fills_open",
+            "label": "Fills waiting on it",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "fills",
+            "pick": "rx_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "New",
+                "Needs prior auth",
+                "Filling"
+              ]
+            }
+          },
+          {
+            "key": "fills_done",
+            "label": "Fills dispensed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "fills",
+            "pick": "rx_name",
+            "agg": "count",
+            "filter": {
+              "status": "Picked up"
+            }
+          },
+          {
+            "key": "order_btn",
+            "label": "Mark ordered",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "drug_ordered"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "dr-1",
+            "values": {
+              "drug_name": "Atorvastatin 20 mg tablet",
+              "stock": "In stock",
+              "kind": "Generic",
+              "ndc": "0000-1111-90",
+              "source": "Primary wholesaler",
+              "on_hand": 1350,
+              "reorder_at": 500,
+              "unit_cost": 0.045,
+              "expires_on": "@today+14m"
+            }
+          },
+          {
+            "key": "dr-2",
+            "values": {
+              "drug_name": "Lisinopril 10 mg tablet",
+              "stock": "In stock",
+              "kind": "Generic",
+              "ndc": "0000-2222-90",
+              "source": "Primary wholesaler",
+              "on_hand": 980,
+              "reorder_at": 400,
+              "unit_cost": 0.035,
+              "expires_on": "@today+11m"
+            }
+          },
+          {
+            "key": "dr-3",
+            "values": {
+              "drug_name": "Metformin ER 500 mg tablet",
+              "stock": "Low",
+              "kind": "Generic",
+              "ndc": "0000-3333-01",
+              "source": "Primary wholesaler",
+              "on_hand": 410,
+              "reorder_at": 500,
+              "unit_cost": 0.045,
+              "expires_on": "@today+9m"
+            }
+          },
+          {
+            "key": "dr-4",
+            "values": {
+              "drug_name": "Amoxicillin 500 mg capsule",
+              "stock": "In stock",
+              "kind": "Generic",
+              "ndc": "0000-4444-50",
+              "source": "Secondary wholesaler",
+              "on_hand": 600,
+              "reorder_at": 200,
+              "unit_cost": 0.097,
+              "expires_on": "@today+7m"
+            }
+          },
+          {
+            "key": "dr-5",
+            "values": {
+              "drug_name": "Eliquis 5 mg tablet",
+              "stock": "In stock",
+              "kind": "Brand",
+              "ndc": "0000-5555-60",
+              "source": "Primary wholesaler",
+              "on_hand": 240,
+              "reorder_at": 120,
+              "unit_cost": 9.36,
+              "expires_on": "@today+15m"
+            }
+          },
+          {
+            "key": "dr-6",
+            "values": {
+              "drug_name": "Hydrocodone-APAP 5/325 tablet",
+              "stock": "In stock",
+              "kind": "Controlled",
+              "ndc": "0000-6666-10",
+              "source": "Primary wholesaler",
+              "on_hand": 180,
+              "reorder_at": 100,
+              "unit_cost": 0.38,
+              "expires_on": "@today+12m"
+            }
+          },
+          {
+            "key": "dr-7",
+            "values": {
+              "drug_name": "Semaglutide pen 0.25 mg",
+              "stock": "On order",
+              "kind": "Brand",
+              "ndc": "0000-7777-01",
+              "source": "Primary wholesaler",
+              "on_hand": 0,
+              "reorder_at": 2,
+              "unit_cost": 889.5,
+              "expires_on": "@today+6m",
+              "ordered_on": "@today-1d"
+            }
+          },
+          {
+            "key": "dr-8",
+            "values": {
+              "drug_name": "Levothyroxine 75 mcg tablet",
+              "stock": "Short-dated",
+              "kind": "Generic",
+              "ndc": "0000-8888-90",
+              "source": "Direct from maker",
+              "on_hand": 420,
+              "reorder_at": 300,
+              "unit_cost": 0.075,
+              "expires_on": "@today+2m"
+            }
+          },
+          {
+            "key": "dr-9",
+            "values": {
+              "drug_name": "Sertraline 50 mg tablet",
+              "stock": "In stock",
+              "kind": "Generic",
+              "ndc": "0000-9999-30",
+              "source": "Primary wholesaler",
+              "on_hand": 720,
+              "reorder_at": 300,
+              "unit_cost": 0.08,
+              "expires_on": "@today+18m"
+            }
+          },
+          {
+            "key": "dr-10",
+            "values": {
+              "drug_name": "Albuterol inhaler 90 mcg",
+              "stock": "Out of stock",
+              "kind": "Generic",
+              "ndc": "0000-1212-20",
+              "source": "Secondary wholesaler",
+              "on_hand": 0,
+              "reorder_at": 12,
+              "unit_cost": 21.5,
+              "expires_on": "@today+10m"
+            }
+          },
+          {
+            "key": "dr-11",
+            "values": {
+              "drug_name": "Flu vaccine, quadrivalent syringe",
+              "stock": "In stock",
+              "kind": "Brand",
+              "ndc": "0000-1313-10",
+              "source": "Direct from maker",
+              "on_hand": 85,
+              "reorder_at": 30,
+              "unit_cost": 17.9,
+              "expires_on": "@today+5m"
+            }
+          },
+          {
+            "key": "dr-12",
+            "values": {
+              "drug_name": "Children's acetaminophen 160 mg/5 mL",
+              "stock": "Low",
+              "kind": "Over the counter",
+              "ndc": "0000-1414-04",
+              "source": "Primary wholesaler",
+              "on_hand": 6,
+              "reorder_at": 8,
+              "unit_cost": 3.4,
+              "expires_on": "@today+13m"
+            }
+          }
+        ]
+      },
+      {
+        "token": "auth",
+        "name": "Prior auths and rejects",
+        "labelSingular": "Prior auth",
+        "labelPlural": "Prior auths",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "badge-check",
+        "titleField": "pa_name",
+        "describes": "Claims the plan refused at the counter and the prior authorizations working to fix them.",
+        "subject": "thing",
+        "independentOf": {
+          "rx": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "pa_status",
+            "when": [
+              "Approved",
+              "Denied"
+            ],
+            "filled": [
+              "decided_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Prior auth work-up",
+            "values": {
+              "pa_status": "Rejected at counter",
+              "pa_name": "New prior auth"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The reject"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Write the code and the plan's message exactly as they came back."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next step"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Patient told what is happening and when to expect a call"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Prescriber's office sent the plan's form or the cheaper covered option"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Follow up on date set"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Result"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Reference number, decision and what the patient paid in the end."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Follow up on is planned; Decided on is stamped when the plan answers, which can come earlier or later.",
+        "fields": [
+          {
+            "key": "pa_name",
+            "label": "Prior auth or reject",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "pa_status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Rejected at counter",
+              "Sent to prescriber",
+              "Submitted to plan",
+              "Approved",
+              "Denied"
+            ],
+            "choiceColors": {
+              "Rejected at counter": "orange",
+              "Sent to prescriber": "amber",
+              "Submitted to plan": "blue",
+              "Approved": "green",
+              "Denied": "red"
+            },
+            "required": true,
+            "default": "Rejected at counter",
+            "statusGroups": {
+              "Rejected at counter": "todo",
+              "Sent to prescriber": "in_progress",
+              "Submitted to plan": "in_progress",
+              "Approved": "done",
+              "Denied": "done"
+            }
+          },
+          {
+            "key": "rx",
+            "label": "Prescription",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "rx",
+            "relationMax": 1
+          },
+          {
+            "key": "reject_code",
+            "label": "Reject code",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "75 Prior auth required",
+              "70 Not covered",
+              "79 Refill too soon",
+              "76 Plan limits exceeded",
+              "88 Drug interaction review"
+            ],
+            "choiceColors": {
+              "75 Prior auth required": "amber",
+              "70 Not covered": "red",
+              "79 Refill too soon": "blue",
+              "76 Plan limits exceeded": "violet",
+              "88 Drug interaction review": "pink"
+            }
+          },
+          {
+            "key": "plan",
+            "label": "Plan type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Commercial plan",
+              "Medicare Part D",
+              "Medicaid"
+            ],
+            "choiceColors": {
+              "Commercial plan": "blue",
+              "Medicare Part D": "violet",
+              "Medicaid": "teal"
+            }
+          },
+          {
+            "key": "follow_up_on",
+            "label": "Follow up on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "decided_on",
+            "label": "Decided on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "pa_ref",
+            "label": "Plan reference number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "outcome",
+            "label": "What happened",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Working it",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ok_btn",
+            "label": "Mark approved",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "pa_approved"
+            }
+          },
+          {
+            "key": "no_btn",
+            "label": "Mark denied",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "pa_denied"
+            }
+          },
+          {
+            "key": "pa_take",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "pa_take_it"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "pa-1",
+            "values": {
+              "pa_name": "Semaglutide new start, BMI and A1c notes needed",
+              "pa_status": "Sent to prescriber",
+              "rx": "rx-7",
+              "reject_code": "75 Prior auth required",
+              "plan": "Commercial plan",
+              "follow_up_on": "@today-1d",
+              "owner": "@installer",
+              "outcome": "Faxed the plan's form to Dr. Haddad's office; nurse line says notes go out by end of day."
+            }
+          },
+          {
+            "key": "pa-2",
+            "values": {
+              "pa_name": "Sertraline early refill, lost bottle",
+              "pa_status": "Rejected at counter",
+              "rx": "rx-9",
+              "reject_code": "79 Refill too soon",
+              "plan": "Commercial plan",
+              "follow_up_on": "@today",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "pa-3",
+            "values": {
+              "pa_name": "Hydrocodone quantity over plan limit",
+              "pa_status": "Approved",
+              "rx": "rx-6",
+              "reject_code": "76 Plan limits exceeded",
+              "plan": "Commercial plan",
+              "follow_up_on": "@today-3d",
+              "decided_on": "@today-2d",
+              "pa_ref": "PA-48213"
+            }
+          },
+          {
+            "key": "pa-4",
+            "values": {
+              "pa_name": "Eliquis tier exception request",
+              "pa_status": "Denied",
+              "rx": "rx-14",
+              "reject_code": "70 Not covered",
+              "plan": "Medicare Part D",
+              "follow_up_on": "@today-34d",
+              "decided_on": "@today-31d",
+              "outcome": "Plan held its tier; patient moved to the plan's mail-order pharmacy to lower the copay."
+            }
+          },
+          {
+            "key": "pa-5",
+            "values": {
+              "pa_name": "Levothyroxine interaction override",
+              "pa_status": "Submitted to plan",
+              "rx": "rx-8",
+              "reject_code": "88 Drug interaction review",
+              "plan": "Medicare Part D",
+              "follow_up_on": "@today+2d",
+              "pa_ref": "PA-48377"
+            }
+          },
+          {
+            "key": "pa-6",
+            "values": {
+              "pa_name": "Metformin ER 90-day quantity check",
+              "pa_status": "Approved",
+              "rx": "rx-12",
+              "reject_code": "76 Plan limits exceeded",
+              "plan": "Commercial plan",
+              "follow_up_on": "@today-2d",
+              "decided_on": "@today-1d",
+              "pa_ref": "PA-48350"
+            }
+          },
+          {
+            "key": "pa-7",
+            "values": {
+              "pa_name": "Amoxicillin suspension, Medicaid preferred brand",
+              "pa_status": "Submitted to plan",
+              "rx": "rx-15",
+              "reject_code": "70 Not covered",
+              "plan": "Medicaid",
+              "follow_up_on": "@today+3d",
+              "owner": "@installer"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each prescription belongs to one patient.",
+        "fromTable": "rx",
+        "fromField": "patient",
+        "toTable": "patient",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "prescriptions"
+      },
+      {
+        "describes": "Each fill draws on one stocked drug.",
+        "fromTable": "rx",
+        "fromField": "drug",
+        "toTable": "drug",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "fills"
+      },
+      {
+        "describes": "Each fill is verified by one pharmacist.",
+        "fromTable": "rx",
+        "fromField": "verified_by",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "fills_verified"
+      },
+      {
+        "describes": "Each prior auth or reject is about one prescription.",
+        "fromTable": "auth",
+        "fromField": "rx",
+        "toTable": "rx",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "auths"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Naomi Castellano",
+              "role": "Pharmacist in charge",
+              "work_email": "naomi@bramblewoodrx.net",
+              "mobile": "(828) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Gideon Ferraro",
+              "role": "Staff pharmacist",
+              "work_email": "gideon@bramblewoodrx.net",
+              "mobile": "(828) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Bettina Kowalczyk",
+              "role": "Lead technician",
+              "work_email": "bettina@bramblewoodrx.net",
+              "mobile": "(828) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Rashad Ellison",
+              "role": "Technician",
+              "work_email": "rashad@bramblewoodrx.net",
+              "mobile": "(828) 555-0143",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Ingrid Thorsby",
+              "role": "Technician and buyer",
+              "work_email": "ingrid@bramblewoodrx.net",
+              "mobile": "(828) 555-0144",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Mateo Quiroga",
+              "role": "Delivery driver",
+              "work_email": "mateo@bramblewoodrx.net",
+              "mobile": "(828) 555-0145",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "refill_request",
+        "name": "Refill request",
+        "describes": "How a patient or caregiver asks for a refill.",
+        "audience": "staff",
+        "table": "rx",
+        "fields": [
+          {
+            "fieldKey": "rx_name",
+            "ask": "Which medicine needs refilling?",
+            "required": true
+          },
+          {
+            "fieldKey": "patient",
+            "ask": "Who is the medicine for?",
+            "required": true
+          },
+          {
+            "fieldKey": "promised_on",
+            "ask": "When do you need it by?"
+          }
+        ],
+        "submitLabel": "Request the refill",
+        "confirmation": "Thanks. The refill is in the queue and the pharmacy will text when it is in a bin."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "rx_picked_up",
+        "table": "rx",
+        "name": "Mark picked up",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Picked up"
+          },
+          {
+            "field": "picked_up_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "rx_ready",
+        "table": "rx",
+        "name": "Ready for pickup",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Ready for pickup"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "rx_rts",
+        "table": "rx",
+        "name": "Return to stock",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Returned to stock"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "rx_take",
+        "table": "rx",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "drug_ordered",
+        "table": "drug",
+        "name": "Mark ordered",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stock",
+            "set": "value",
+            "value": "On order"
+          },
+          {
+            "field": "ordered_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "pa_approved",
+        "table": "auth",
+        "name": "Mark approved",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "pa_status",
+            "set": "value",
+            "value": "Approved"
+          },
+          {
+            "field": "decided_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "pa_denied",
+        "table": "auth",
+        "name": "Mark denied",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "pa_status",
+            "set": "value",
+            "value": "Denied"
+          },
+          {
+            "field": "decided_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "pa_take_it",
+        "table": "auth",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_rx",
+        "name": "All prescriptions",
+        "table": "rx",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "rx_board",
+        "name": "Prescriptions board",
+        "table": "rx",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "rx_cal",
+        "name": "Prescriptions calendar",
+        "table": "rx",
+        "kind": "calendar",
+        "dateField": "promised_on",
+        "allDay": true
+      },
+      {
+        "token": "rx_over",
+        "name": "Overdue",
+        "table": "rx",
+        "kind": "grid",
+        "within": {
+          "promised_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Needs prior auth",
+            "Filling",
+            "Ready for pickup"
+          ]
+        }
+      },
+      {
+        "token": "rx_week",
+        "name": "Due this week",
+        "table": "rx",
+        "kind": "grid",
+        "within": {
+          "promised_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Needs prior auth",
+            "Filling",
+            "Ready for pickup"
+          ]
+        }
+      },
+      {
+        "token": "rx_next7",
+        "name": "Next 7 days",
+        "table": "rx",
+        "kind": "grid",
+        "within": {
+          "promised_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Needs prior auth",
+            "Filling",
+            "Ready for pickup"
+          ]
+        }
+      },
+      {
+        "token": "rx_mine",
+        "name": "My prescriptions",
+        "table": "rx",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_patient",
+        "name": "All patients",
+        "table": "patient",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "patient_board",
+        "name": "Patients board",
+        "table": "patient",
+        "kind": "kanban",
+        "groupBy": "pt_status"
+      },
+      {
+        "token": "all_drug",
+        "name": "All drugs",
+        "table": "drug",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "drug_board",
+        "name": "Drugs board",
+        "table": "drug",
+        "kind": "kanban",
+        "groupBy": "stock"
+      },
+      {
+        "token": "all_auth",
+        "name": "All prior auths",
+        "table": "auth",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "auth_board",
+        "name": "Prior auths board",
+        "table": "auth",
+        "kind": "kanban",
+        "groupBy": "pa_status"
+      },
+      {
+        "token": "auth_over",
+        "name": "Overdue",
+        "table": "auth",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "pa_status": [
+            "Rejected at counter",
+            "Sent to prescriber",
+            "Submitted to plan"
+          ]
+        }
+      },
+      {
+        "token": "auth_week",
+        "name": "Due this week",
+        "table": "auth",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "pa_status": [
+            "Rejected at counter",
+            "Sent to prescriber",
+            "Submitted to plan"
+          ]
+        }
+      },
+      {
+        "token": "auth_next7",
+        "name": "Next 7 days",
+        "table": "auth",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "pa_status": [
+            "Rejected at counter",
+            "Sent to prescriber",
+            "Submitted to plan"
+          ]
+        }
+      },
+      {
+        "token": "auth_mine",
+        "name": "My prior auths",
+        "table": "auth",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Independent Pharmacy Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "rx",
+          "describes": "Every fill from the moment it arrives to the moment it leaves the bag: who it is for, who pays, and what it earned."
+        },
+        {
+          "name": "related_tables",
+          "table": "patient",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many prescriptions are waiting in will-call right now?",
+        "whyItMatters": "Bags left past ten days are returned to stock and the claim reversed.",
+        "expect": {
+          "table": "rx",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Ready for pickup"
+          },
+          "answer": 2,
+          "unit": "prescriptions"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open prescriptions.",
+        "action": {
+          "kind": "open",
+          "surface": "rx_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "rx_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open patients.",
+        "action": {
+          "kind": "open",
+          "surface": "patient_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "patient_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open drugs.",
+        "action": {
+          "kind": "open",
+          "surface": "drug_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "drug_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-21",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "bramblewoodrx.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Quarry Hollow Road"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "independent-pharmacy-desk",
+      "parent": null,
+      "title": "Independent Pharmacy Desk",
+      "icon": {
+        "emoji": "💊"
+      },
+      "cover": {
+        "url": "gallery:healthcare-hospital-corridor",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Start the day on the Dashboard. Every fill lives on the Prescriptions board from New to Picked up; a plan reject goes to Prior auths and rejects with a follow-up date. Mark picked up stamps the day. Bags in will-call longer than ten days go back to stock. Drugs at or under their reorder point say Order now."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:will-call-and-return-to-stock"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:rejects-and-prior-auths"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Prescriptions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every fill from the moment it arrives to the moment it leaves the bag: who it is for, who pays, and what it earned."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "rx",
+              "view": "rx_board"
+            },
+            "inline": true,
+            "title": "Prescriptions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "rx-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "schedule",
+                  "prescriber",
+                  "verified_by",
+                  "promised_on",
+                  "picked_up_on",
+                  "qty",
+                  "days_supply",
+                  "refills_left",
+                  "bin",
+                  "copay",
+                  "plan_paid",
+                  "cost",
+                  "gross",
+                  "margin_pct",
+                  "margin_check",
+                  "assigned_to",
+                  "pickup_btn",
+                  "ready_btn",
+                  "rts_btn",
+                  "take_btn",
+                  "add_pa",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "rx-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "promised_on",
+                "hiddenFields": [
+                  "status",
+                  "schedule",
+                  "prescriber",
+                  "verified_by",
+                  "promised_on",
+                  "picked_up_on",
+                  "qty",
+                  "days_supply",
+                  "refills_left",
+                  "bin",
+                  "copay",
+                  "plan_paid",
+                  "cost",
+                  "gross",
+                  "margin_pct",
+                  "margin_check",
+                  "assigned_to",
+                  "pickup_btn",
+                  "ready_btn",
+                  "rts_btn",
+                  "take_btn",
+                  "add_pa",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "rx-t",
+                "name": "All prescriptions",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "rx-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "promised_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Needs prior auth",
+                    "Filling",
+                    "Ready for pickup"
+                  ]
+                }
+              },
+              {
+                "id": "rx-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "promised_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Needs prior auth",
+                    "Filling",
+                    "Ready for pickup"
+                  ]
+                }
+              },
+              {
+                "id": "rx-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "promised_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Needs prior auth",
+                    "Filling",
+                    "Ready for pickup"
+                  ]
+                }
+              },
+              {
+                "id": "rx-m",
+                "name": "My prescriptions",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "rx-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Patients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The people you fill for, their plan, allergies and med sync day, with what is waiting for them."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "patient",
+              "view": "patient_board"
+            },
+            "inline": true,
+            "title": "Patients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pati-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "pt_status",
+                "hiddenFields": [
+                  "phone",
+                  "allergies",
+                  "sync_day",
+                  "delivery",
+                  "vaccines_due",
+                  "open_rx",
+                  "ready_rx",
+                  "fills",
+                  "add_rx",
+                  "call_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "pati-t",
+                "name": "All patients",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "pati-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Drug inventory"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What is on the shelf, what it cost, what is about to expire and what needs ordering tonight."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "drug",
+              "view": "drug_board"
+            },
+            "inline": true,
+            "title": "Drug inventory",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "drug-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stock",
+                "hiddenFields": [
+                  "ndc",
+                  "on_hand",
+                  "reorder_at",
+                  "expires_on",
+                  "ordered_on",
+                  "stock_value",
+                  "reorder_flag",
+                  "fills_open",
+                  "fills_done",
+                  "order_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "drug-t",
+                "name": "All drugs",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "drug-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Prior auths and rejects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Claims the plan refused at the counter and the prior authorizations working to fix them."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "auth",
+              "view": "auth_board"
+            },
+            "inline": true,
+            "title": "Prior auths and rejects",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "auth-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "pa_status",
+                "hiddenFields": [
+                  "follow_up_on",
+                  "decided_on",
+                  "pa_ref",
+                  "outcome",
+                  "owner",
+                  "ok_btn",
+                  "no_btn",
+                  "pa_take",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "auth-t",
+                "name": "All prior auths",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "auth-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "pa_status": [
+                    "Rejected at counter",
+                    "Sent to prescriber",
+                    "Submitted to plan"
+                  ]
+                }
+              },
+              {
+                "id": "auth-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "pa_status": [
+                    "Rejected at counter",
+                    "Sent to prescriber",
+                    "Submitted to plan"
+                  ]
+                }
+              },
+              {
+                "id": "auth-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "pa_status": [
+                    "Rejected at counter",
+                    "Sent to prescriber",
+                    "Submitted to plan"
+                  ]
+                }
+              },
+              {
+                "id": "auth-m",
+                "name": "My prior auths",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "auth-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "independent-pharmacy-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This workspace follows one prescription from the moment it arrives to the moment the patient walks out, and keeps the shelf and the plan rejects in step with it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The four tables"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Prescriptions",
+              "bold": true
+            },
+            {
+              "text": " is the fill queue. A new e-script, a phoned refill or a transfer comes in as New. It moves to Filling once data entry is done, to Ready for pickup once the pharmacist has verified it and it is bagged with a bin number, and to Picked up when it leaves. Mark picked up stamps the day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Patients",
+              "bold": true
+            },
+            {
+              "text": " holds the profile: plan, allergies, med sync day and whether they are on the delivery route. Each patient shows open prescriptions, bags waiting and lifetime gross profit."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Drug inventory",
+              "bold": true
+            },
+            {
+              "text": " is every stocked item with its NDC, units on hand, reorder point, cost per unit and nearest expiry. Reorder check says Order now when on-hand falls to the reorder point."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Prior auths and rejects",
+              "bold": true
+            },
+            {
+              "text": " catches every claim the plan refused at the counter, with the reject code and a follow-up date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A normal day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Before opening, a technician works the Overdue and This week views on Prescriptions. Anything promised for yesterday and still not bagged is first."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Rejects from the overnight refills go straight to Prior auths and rejects. Start a prior auth from the prescription row so the two stay linked."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The pharmacist verifies Filling rows in promised order and presses Ready for pickup."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "At 2 pm the buyer opens the Order tonight list on the Dashboard and places the order before the wholesaler's cutoff."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "At close, count the will-call bins against the Waiting in will-call list. A bag you cannot find is a problem today, not next week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who owns what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Area"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fill queue and verification"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pharmacist on duty"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Rejects and prior auths"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lead technician"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Ordering and returns"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Technician and buyer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Delivery route"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Delivery driver, from the Patients board"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Money in plain words"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Gross profit on a fill is the copay plus what the plan paid, less your acquisition cost. Generics usually earn most of the store's margin; brand fills often earn only a few dollars, which is why Thin, brand is a normal label and not an alarm. Below cost is the alarm: write down the plan and drug and raise it at the next contract review."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "independent-pharmacy-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "rx",
+                      "view": "all_rx"
+                    },
+                    "inline": true,
+                    "title": "Fills by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Fills by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "rx",
+                      "view": "all_rx"
+                    },
+                    "inline": true,
+                    "title": "Gross profit by payer",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Gross profit by payer",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "payer",
+                          "op": "sum",
+                          "field": "gross"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "auth",
+                      "view": "all_auth"
+                    },
+                    "inline": true,
+                    "title": "Rejects by code",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Rejects by code",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "reject_code",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "drug",
+                      "view": "all_drug"
+                    },
+                    "inline": true,
+                    "title": "Stock value by kind",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Stock value by kind",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "sum",
+                          "field": "stock_value"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "patient",
+                      "view": "all_patient"
+                    },
+                    "inline": true,
+                    "title": "Patients by plan",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Patients by plan",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "plan",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "drug",
+                      "view": "all_drug"
+                    },
+                    "inline": true,
+                    "title": "Drugs by stock state",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Drugs by stock state",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "stock",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Waiting in will-call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "rx",
+              "view": "all_rx"
+            },
+            "inline": true,
+            "title": "Waiting in will-call",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl0",
+                "name": "In bins",
+                "layout": "list",
+                "filters": {
+                  "status": "Ready for pickup"
+                }
+              }
+            ],
+            "activeViewId": "dl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Open prior auths and rejects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "auth",
+              "view": "all_auth"
+            },
+            "inline": true,
+            "title": "Open prior auths and rejects",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl1",
+                "name": "Open",
+                "layout": "list",
+                "anyOf": {
+                  "pa_status": [
+                    "Rejected at counter",
+                    "Sent to prescriber",
+                    "Submitted to plan"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Order tonight"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "drug",
+              "view": "all_drug"
+            },
+            "inline": true,
+            "title": "Order tonight",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl2",
+                "name": "To order",
+                "layout": "list",
+                "anyOf": {
+                  "stock": [
+                    "Low",
+                    "Out of stock"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Gross profit (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Copay plus plan paid, less what the drug cost you"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Brand fills often clear only a few dollars; generics carry the store"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Margin check"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Below cost, Thin or Healthy per fill"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two Below cost fills on the same drug means a plan rate to appeal"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Waiting in will-call"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fills bagged and not collected"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call at day 5, return to stock at day 10"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Reorder check"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Units on hand against the reorder point"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Order now rows go on tonight's order"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "will-call-and-return-to-stock",
+      "parent": "independent-pharmacy-desk",
+      "title": "Will-call bins and return to stock",
+      "icon": {
+        "emoji": "🛍️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A bag left in will-call is money the plan has paid you on loan. Most plans expect the claim reversed if the patient never picks up, usually within 10 to 14 days. This page is the routine that keeps the bins honest."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The rule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every bag gets a bin number (A-01 to C-20) written in Will-call bin before it goes on the shelf."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Day 1: the patient gets a text that the prescription is ready."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Day 5: a person calls. A real voice catches the patient who forgot, or tells you they no longer need it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Day 10: the bag comes back to stock. Press Return to stock on the prescription, reverse the claim, and put the medicine back in its original bottle with the lot and expiry."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly bin sweep (Monday, 20 minutes)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Prescriptions and use the Ready for pickup column of the board."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Sort by Promised for, oldest first. Anything over ten days is pulled."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "For each pulled bag: reverse the claim, press Return to stock, and add a line in the row's page: date, who pulled it and why."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Controlled medicines are returned with a second person present and logged the same day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Refrigerated items are checked every day, not weekly; a pen left out of the fridge is waste, not stock."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Calling script"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "\"Hi, this is Bramblewood Pharmacy. Your prescription has been ready since Thursday. We hold it ten days, so we will keep it until next Monday. Would you like us to deliver it instead?\""
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Offer delivery before you offer anything else. Patients on the delivery route are flagged on the Patients board."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Why it matters"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "What goes wrong"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it costs"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Bag never reversed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The plan claws it back at audit, often with a penalty"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Bag returned without lot and expiry"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The stock cannot be dispensed again"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Patient never called"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A missed dose and, often, a transfer to another store"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist for the person closing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Bins counted against the Waiting in will-call list"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fridge bags checked and the temperature written down"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Return to stock today has its claim reversed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "rejects-and-prior-auths",
+      "parent": "independent-pharmacy-desk",
+      "title": "Working a reject or prior auth",
+      "icon": {
+        "emoji": "📨"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A reject at the counter is not a no. Most are fixed in a day if the right person gets the right form. This page is how the counter turns a reject into a filled prescription without the patient waiting in the dark."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Read the reject code first"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Code"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it usually means"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "First move"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "75 Prior auth required"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The plan wants the prescriber to justify the drug"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Send the plan's form to the prescriber's office"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "70 Not covered"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The drug is off the plan's list"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ask the prescriber for the covered alternative"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "79 Refill too soon"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Less than about 75 percent of the last supply used"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check for a dose change or lost supply; vacation overrides exist"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "76 Plan limits exceeded"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quantity over the plan's maximum"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fill to the limit now, request an override for the rest"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "88 Drug interaction review"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Plan's own interaction screen"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pharmacist reviews and enters the override code"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "From the prescription, press Start a prior auth. The new row is linked to it and the patient."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write the code and the plan's exact message in the row. Set Follow up on to tomorrow."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tell the patient what happens next and when you will call. Never let them leave thinking the medicine is simply unavailable."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the request. Move the row to Sent to prescriber, then Submitted to plan once the office has sent it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the plan answers, press Mark approved or Mark denied. Both stamp Decided on."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Approved: refill the claim and move the prescription to Filling. Denied: call the prescriber with one covered alternative and its cash price."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ten-minute daily review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Open the Overdue view. Every row there is a patient without medicine."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Anything Sent to prescriber for two days gets a phone call, not another fax."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write the outcome in What happened, so the next person does not repeat the call."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Worked example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A semaglutide new start rejects with 75. The technician starts a prior auth, faxes the form with a note that the plan wants the latest A1c and weight, and sets Follow up on to tomorrow. The office sends notes that afternoon; the plan approves the next morning; Mark approved stamps the day and the pen is ordered for next-day delivery."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
