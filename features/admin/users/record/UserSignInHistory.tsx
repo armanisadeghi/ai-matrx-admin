@@ -1,8 +1,8 @@
 "use client";
 
 // A person's sign-in history — the Security tab's "Sign-in history" section. ONE read:
-// admin.user_sign_ins (migration 20261022150000_iam_sign_in_history.sql), which pages
-// iam.sign_in_event newest first, strictly before a cursor. Every sign-in since 2026-10-21 is
+// admin.user_sign_ins_page (migration 20261022160100), which pages
+// iam.sign_in_event newest first on a (time, id) cursor. Every sign-in since 2026-10-21 is
 // captured by triggers on auth.sessions / auth.mfa_amr_claims; older rows were seeded from the
 // sessions live that day. Live sessions (with End session) stay in the Active sessions table.
 
@@ -15,66 +15,22 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { createClient } from "@/utils/supabase/client";
 import { isJsonObject } from "@/types/json";
 import { useRecordLoad } from "./useRecordLoad";
+import { SIGN_IN_PAGE, appendSignInPage, cursorAfter, deviceOf, type SignInCursor, type SignInEvent, type SignInPage } from "./signInPaging";
 
-/** "Chrome on Mac" from a user agent; the full string stays in the cell's tooltip. */
-export function deviceOf(ua: string | null | undefined): string {
-  if (!ua) return "Unknown device";
-  const browser = /Edg\//.test(ua)
-    ? "Edge"
-    : /OPR\//.test(ua)
-      ? "Opera"
-      : /Firefox\//.test(ua)
-        ? "Firefox"
-        : /Chrome\//.test(ua)
-          ? "Chrome"
-          : /Safari\//.test(ua)
-            ? "Safari"
-            : /node|undici|python|curl|axios|okhttp|Go-http/i.test(ua)
-              ? "Script"
-              : null;
-  const os = /iPhone|iPad|iOS/.test(ua)
-    ? "iOS"
-    : /Android/.test(ua)
-      ? "Android"
-      : /Mac OS X|Macintosh/.test(ua)
-        ? "Mac"
-        : /Windows/.test(ua)
-          ? "Windows"
-          : /Linux/.test(ua)
-            ? "Linux"
-            : null;
-  if (browser && os) return `${browser} on ${os}`;
-  return browser ?? os ?? ua.slice(0, 40);
-}
+export { deviceOf };
+export type { SignInEvent, SignInPage };
 
-export const SIGN_IN_PAGE = 50;
-
-export interface SignInEvent {
-  id: string;
-  signed_in_at: string;
-  method: string | null;
-  provider: string | null;
-  aal: string | null;
-  ip: string | null;
-  user_agent: string | null;
-  session_id: string | null;
-  session_live: boolean;
-  oauth_client: string | null;
-  seeded: boolean;
-}
-
-export interface SignInPage {
-  items: SignInEvent[];
-  has_more: boolean;
-}
-
-export async function fetchSignIns(userId: string, before: string | null = null): Promise<SignInPage> {
+export async function fetchSignIns(userId: string, cursor: SignInCursor | null = null): Promise<SignInPage> {
   const { data, error } = await createClient()
     .schema("admin")
-    .rpc("user_sign_ins", { p_user: userId, p_limit: SIGN_IN_PAGE, ...(before ? { p_before: before } : {}) });
+    .rpc("user_sign_ins_page", {
+      p_user: userId,
+      p_limit: SIGN_IN_PAGE,
+      ...(cursor ? { p_before: cursor.before, p_before_id: cursor.beforeId } : {}),
+    });
   if (error) throw new Error(error.message);
   if (!isJsonObject(data) || !Array.isArray(data.items) || typeof data.has_more !== "boolean") {
-    throw new Error("admin.user_sign_ins returned an unexpected shape");
+    throw new Error("admin.user_sign_ins_page returned an unexpected shape");
   }
   // Every key is built by jsonb_build_object in the RPC; the guard checks the envelope.
   return data as unknown as SignInPage;
@@ -134,14 +90,13 @@ export function UserSignInHistory({ userId, version }: { userId: string; version
   const items = shown?.items ?? [];
 
   const loadMore = async () => {
-    const last = items[items.length - 1];
-    if (!first || !last) return;
+    const cursor = cursorAfter(items);
+    if (!first || !cursor || !shown) return;
     setBusy(true);
     setMoreError(null);
     try {
-      const next = await fetchSignIns(userId, last.signed_in_at);
-      const seen = new Set(items.map((e) => e.id));
-      setMore({ base: first, page: { items: [...items, ...next.items.filter((e) => !seen.has(e.id))], has_more: next.has_more } });
+      const next = await fetchSignIns(userId, cursor);
+      setMore({ base: first, page: appendSignInPage(shown, next) });
     } catch (e) {
       setMoreError(e);
     } finally {
@@ -166,7 +121,7 @@ export function UserSignInHistory({ userId, version }: { userId: string; version
           message="Older sign-ins could not load."
           error={moreError instanceof Error ? moreError.message : String(moreError)}
           operation="Read sign-in history"
-          calls={["admin.user_sign_ins"]}
+          calls={["admin.user_sign_ins_page"]}
         />
       ) : null}
       {shown?.has_more ? (

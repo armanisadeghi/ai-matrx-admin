@@ -808,6 +808,15 @@ export type Database = {
         Args: { p_before?: string; p_limit?: number; p_user: string }
         Returns: Json
       }
+      user_sign_ins_page: {
+        Args: {
+          p_before?: string
+          p_before_id?: string
+          p_limit?: number
+          p_user: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
@@ -9635,6 +9644,30 @@ export type Database = {
           },
         ]
       }
+      free_use_counter: {
+        Row: {
+          day: string
+          feature: string
+          updated_at: string
+          used: number
+          user_id: string
+        }
+        Insert: {
+          day: string
+          feature: string
+          updated_at?: string
+          used?: number
+          user_id: string
+        }
+        Update: {
+          day?: string
+          feature?: string
+          updated_at?: string
+          used?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       hard_cost_reconciliation: {
         Row: {
           charged_points: number
@@ -11937,6 +11970,14 @@ export type Database = {
       }
       free_spend_today: { Args: never; Returns: Json }
       free_tier_of: { Args: { p_user: string }; Returns: string }
+      free_use_release: {
+        Args: { p_feature: string; p_user: string }
+        Returns: undefined
+      }
+      free_use_reserve: {
+        Args: { p_feature: string; p_limit: number; p_user: string }
+        Returns: Json
+      }
       hard_cost_unbanked_executions: {
         Args: never
         Returns: {
@@ -88259,6 +88300,7 @@ export type Database = {
         Args: { p_id: string; p_token: string }
         Returns: boolean
       }
+      _end_user_sessions: { Args: { p_user: string }; Returns: Json }
       _fk_check13: {
         Args: never
         Returns: {

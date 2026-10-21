@@ -5,7 +5,7 @@
 // its row actions, each asking a reason through the one reason prompt and writing
 // admin.admin_audit_log inside its SQL function: iam.end_session (one sign-in),
 // iam.remove_mfa_factor, iam.revoke_api_key_for_person. Sign out everywhere is the page's
-// registered action (useUserActions). Sign-in history is its own read (admin.user_sign_ins over
+// registered action (useUserActions). Sign-in history is its own read (admin.user_sign_ins_page over
 // iam.sign_in_event, captured by auth triggers since 2026-10-21 — UserSignInHistory); Active sessions
 // lists only the sign-ins still live.
 

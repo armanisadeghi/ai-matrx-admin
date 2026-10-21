@@ -352,11 +352,14 @@ export function DrillExplorer({
   const carriedSaid = carriedWords(carried, labelOfKey);
   // "Save this question as a view" keeps what the open view carries, so a copy is never wider.
   const savedQuestion: ExplorerQuestion = carried ? { ...asked, door: carried } : asked;
-  const conditions = [
+  // Built fresh each render, so keyed on its words: `conditions` keeps one identity until a word changes
+  // (the onShown effect below must not re-fire on every render).
+  const conditionsKey = [
     ...(openView ? [`Saved view "${openView.label}" is open.`] : []),
     ...(carriedSaid.kept ? [carriedSaid.kept] : []),
     ...(carriedSaid.leftOut ? [carriedSaid.leftOut] : []),
-  ];
+  ].join("\u0000");
+  const conditions = useMemo(() => (conditionsKey ? conditionsKey.split("\u0000") : []), [conditionsKey]);
 
   // WHAT IS ON SCREEN, for the host's Copy for AI (onShown). A host stores it (a ref), so saying it
   // again after a render costs nothing and never re-renders.
