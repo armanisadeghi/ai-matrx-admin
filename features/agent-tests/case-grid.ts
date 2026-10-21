@@ -56,3 +56,18 @@ export function caseVersionGrid(
     cell: (caseId, version) => cells.get(`${caseId}:${version}`) ?? null,
   };
 }
+
+/**
+ * Why a case did not pass, in the words a person reads on the case row: the judge's reason, else
+ * the deciding check's reason (or its title), else the run's error. Null when it passed or ran
+ * no check (nothing to say rather than a made-up reason).
+ */
+export function failReason(r: TestResultView | undefined): string | null {
+  if (!r || r.verdict === null || r.verdict.startsWith("pass")) return null;
+  const reason = r.verdictReason?.trim();
+  if (reason) return reason;
+  const required = r.checks.filter((c) => c.required);
+  const deciding = required.find((c) => c.outcome === "fail") ?? required.find((c) => c.outcome === "undecided");
+  if (deciding) return deciding.reason.trim() || deciding.title;
+  return r.error?.trim() || null;
+}

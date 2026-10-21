@@ -23,11 +23,8 @@ import {
   DEFAULT_ARCHIVE_FILTER,
   type ArchiveFilterValue,
 } from "@ai-matrx/design-system";
-import {
-  openStream,
-  type NdjsonEvent,
-  type OperationDescriptor,
-} from "@ai-matrx/api";
+import type { OperationDescriptor } from "@ai-matrx/api";
+import { startLiveRun } from "./liveRun";
 import { serverApi } from "@/lib/api/server-api";
 import { followServerWork } from "@/features/ai-watch/followed-work";
 import { isTestVerdict } from "./verdicts";
@@ -510,15 +507,6 @@ const RECHECK_OP: OperationDescriptor = {
   p: "/agent-tests/runs/{run_id}/recheck",
   n: "agent_tests.recheck_run",
 };
-const STREAM_OP: OperationDescriptor = {
-  m: "GET",
-  p: "/agent-tests/runs/{run_id}/stream",
-  d: "aidream",
-  a: "user",
-  o: "required",
-  s: "ndjson",
-  n: "agent_tests.stream_run",
-};
 
 /** Launch, cancel, resume and re-check are live on the server. */
 export const LAUNCH_AVAILABLE = true;
@@ -542,7 +530,12 @@ function readLaunched(data: unknown): LaunchedRun {
   };
 }
 
-/** `POST /agent-tests/runs`: every live case of this agent (or `caseIds`). */
+function launchedFrom(started: { runId: string; status: string; resultCount: number }): LaunchedRun {
+  followServerWork({ kind: "test_run", id: started.runId, label: "Eval run", source: "agent tests" });
+  return { runId: started.runId, status: started.status, resultCount: started.resultCount };
+}
+
+/** `POST /agent-tests/runs/live` (the stream): every live case of this agent (or `caseIds`). */
 export async function launchRun(
   agentId: string,
   options: RunOptions,
@@ -559,7 +552,7 @@ export async function launchRun(
     initiation: "user",
   };
   if (caseIds && caseIds.length > 0) body.case_ids = [...caseIds];
-  return readLaunched(await serverApi.call<unknown>(RUNS_OP, { body }));
+  return launchedFrom(await startLiveRun(body));
 }
 
 /** One column of a battle on cases (CONTRACT §4.1 `RunSetup`). */
@@ -605,7 +598,7 @@ export async function launchBattle(
   };
   if (caseIds && caseIds.length > 0) body.case_ids = [...caseIds];
   if (comparisonSetId) body.comparison_set_id = comparisonSetId;
-  return readLaunched(await serverApi.call<unknown>(RUNS_OP, { body }));
+  return launchedFrom(await startLiveRun(body));
 }
 
 /** The newest test run filed under a saved Agent Battle (null when it never ran on the server). */
@@ -642,32 +635,4 @@ export async function recheckRun(runId: string): Promise<LaunchedRun> {
   return readLaunched(
     await serverApi.call<unknown>(RECHECK_OP, { path: { run_id: runId }, body: {} }),
   );
-}
-
-/** One event of a run's server stream (`agent_test_progress` · `agent_test_result` · `agent_test_run_status`). */
-export interface RunStreamEvent {
-  event: string;
-  status: string | null;
-  resultId: string | null;
-}
-
-/** The run's server stream: it ends when the run finishes, pauses or is canceled. */
-export async function* followRun(
-  runId: string,
-  signal: AbortSignal,
-): AsyncGenerator<RunStreamEvent> {
-  const stream = await openStream<NdjsonEvent>(
-    serverApi,
-    STREAM_OP,
-    { path: { run_id: runId } },
-    { signal, totalTimeoutMs: null },
-  );
-  for await (const envelope of stream) {
-    const data = isJsonObject(envelope.data) ? envelope.data : {};
-    yield {
-      event: envelope.event,
-      status: str(data.status) || null,
-      resultId: str(data.result_id) || null,
-    };
-  }
 }

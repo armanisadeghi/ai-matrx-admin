@@ -69,6 +69,12 @@ export interface NewTestCase {
   variables: Record<string, Json>;
   /** What the person typed (never structured content). */
   userInput: string;
+  /**
+   * The whole input of the run the case comes from: the typed text AND every attached file
+   * (media or resource part). When given, it is stored as the case's input content, so the run
+   * the case makes is the run the person saved (a file is never replaced by its description).
+   */
+  inputContent?: readonly unknown[];
   /** The approved answer, when the case comes from one (also becomes a fact). */
   approvedAnswer?: string | null;
   /** Extra facts a good reply must hold. */
@@ -78,6 +84,15 @@ export interface NewTestCase {
   /** Provenance of the row (`authored` typed by hand, `borrowed` from a run). */
   source?: "authored" | "borrowed";
   head: AgentContractHead | null;
+}
+
+/**
+ * What a case keeps as its input content: the run's own parts when it has any (text and files
+ * in order), otherwise the typed text alone.
+ */
+export function storedInputContent(parts: readonly unknown[] | undefined, userInput: string | null): Json[] {
+  if (parts && parts.length > 0) return parts as unknown as Json[];
+  return userInput ? [{ type: "text", text: userInput }] : [];
 }
 
 /** The insert a new case makes — pure, so the shape is tested without a database. */
@@ -120,7 +135,7 @@ export function testCaseInsert(
     visibility: "personal",
     organization_id: organizationId,
     metadata: {
-      [SAMPLE_INPUT_CONTENT_KEY]: userInput ? [{ type: "text", text: userInput }] : [],
+      [SAMPLE_INPUT_CONTENT_KEY]: storedInputContent(input.inputContent, userInput),
     },
   };
 }
@@ -154,6 +169,7 @@ export async function saveRunAsTestCase(input: {
       `Run of ${new Date(input.run.createdAt).toLocaleDateString()}`,
     variables: input.run.variables as Record<string, Json>,
     userInput: input.run.userInput ?? "",
+    inputContent: input.run.inputContent,
     approvedAnswer: answer,
     sourceConversationId: input.run.conversationId,
     source: "borrowed",

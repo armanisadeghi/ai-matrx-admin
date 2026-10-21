@@ -42,6 +42,8 @@ export function TestCaseForm({
   const [error, setError] = useState<unknown>(null);
   const declarations = head?.variableDeclarations ?? [];
   const ready = label.trim() !== "" && factsFromLines(facts).length > 0;
+  /** Why the button waits: the first missing piece, in the field's own words. */
+  const whyNot = label.trim() === "" ? "Add a name" : factsFromLines(facts).length === 0 ? "Say what a good reply does" : null;
 
   const save = async () => {
     setSaving(true);
@@ -111,10 +113,16 @@ export function TestCaseForm({
           variant="primary"
           icon={<Plus />}
           disabled={!ready || saving}
+          title={whyNot ?? undefined}
           onClick={() => void save()}
         >
           {saving ? "Adding…" : "Add test case"}
         </Button>
+        {whyNot ? (
+          <span className="text-xs text-muted-foreground" data-testid="test-case-form-why-not">
+            {whyNot}
+          </span>
+        ) : null}
         {onCancel ? (
           <Button variant="quiet" onClick={onCancel}>
             Cancel

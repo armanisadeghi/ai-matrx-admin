@@ -9,6 +9,7 @@
 import { useEffect, useState } from "react";
 import { Badge, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { fetchTestCaseRows, type TestCaseRow } from "../cases";
 import { fetchCaseResults, fetchVersionNumbers } from "../service";
 import { caseVersionGrid, type CaseVersionGrid as Grid } from "../case-grid";
@@ -37,36 +38,57 @@ export function CaseVersionGrid({ agentId }: { agentId: string }) {
   if (!data) return <RegionSkeleton shape="rows" count={3} aria-label="Loading test results" />;
   const { rows, grid } = data;
   if (rows.length === 0 || grid.versions.length === 0) return null;
+  const columns: MatrxColumnDef<TestCaseRow>[] = [
+    {
+      id: "case",
+      header: "Case",
+      accessorFn: (row) => row.label || "Untitled case",
+      filter: "text",
+      width: 200,
+      frozen: true,
+    },
+    ...grid.versions.map(
+      (v): MatrxColumnDef<TestCaseRow> => ({
+        id: `v${v}`,
+        header: `v${v}`,
+        accessorFn: (row) => {
+          const r = grid.cell(row.id, v);
+          return r?.verdict ? VERDICT_META[r.verdict].label : "—";
+        },
+        filter: "select",
+        width: 110,
+        cell: (row) => {
+          const r = grid.cell(row.id, v);
+          const meta = r?.verdict ? VERDICT_META[r.verdict] : null;
+          return meta ? <Badge tone={meta.tone}>{meta.label}</Badge> : <span className="text-disabled-foreground">—</span>;
+        },
+      }),
+    ),
+  ];
   return (
-    <div className="max-w-full overflow-x-auto" data-testid="case-version-grid">
-      <table className="w-full min-w-0 border-collapse text-xs">
-        <thead>
-          <tr>
-            <th className="px-2 py-1 text-left font-medium text-muted-foreground">Case</th>
-            {grid.versions.map((v) => (
-              <th key={v} className="px-2 py-1 text-left font-medium text-muted-foreground">
-                v{v}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.id} className="border-t border-border">
-              <td className="max-w-28 truncate px-2 py-1 text-foreground">{row.label || "Untitled case"}</td>
-              {grid.versions.map((v) => {
-                const r = grid.cell(row.id, v);
-                const meta = r?.verdict ? VERDICT_META[r.verdict] : null;
-                return (
-                  <td key={v} className="px-2 py-1">
-                    {meta ? <Badge tone={meta.tone}>{meta.label}</Badge> : <span className="text-disabled-foreground">—</span>}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div data-testid="case-version-grid">
+      <MatrxDataTable<TestCaseRow>
+        tableId="agents/test/case-version-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        pageSize={0}
+        density="condensed"
+        viewTabs={false}
+        toolbar={{ title: "Cases by version" }}
+        detail={{ enabled: false }}
+        copy={{
+          label: "Test case",
+          listLabel: "Test cases by version (this view)",
+          location: "Agent Studio — versions",
+          rowKind: "agent-test-case",
+          listKind: "agent-test-case-list",
+          rowDescription: "One test case and its newest verdict on each saved version.",
+          listDescription: "The agent's test cases by saved version.",
+          humanRow: (row) => row.label || "Untitled case",
+        }}
+        emptyState={{ title: "No results yet" }}
+      />
     </div>
   );
 }

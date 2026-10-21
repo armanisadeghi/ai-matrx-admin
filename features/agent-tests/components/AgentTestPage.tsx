@@ -1,7 +1,7 @@
 "use client";
 
 import { answerRows } from "../battle";
-import { useEffect, useEffectEvent, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { FlaskConical, Play, Plus, RotateCcw, Square, StepForward } from "lucide-react";
@@ -19,6 +19,7 @@ import {
 import {
   ArchiveFilter,
   Card,
+  RecordId,
   CardContent,
   DEFAULT_ARCHIVE_FILTER,
   ErrorNotice,
@@ -38,12 +39,13 @@ import {
   fetchRun,
   fetchRunResults,
   fetchTestCases,
-  followRun,
   launchRun,
   recheckRun,
   resumeRun,
 } from "../service";
 import { agentTestModes } from "../agentModes";
+import { followRunByLink, agentTestFrame } from "../liveRun";
+import { useRunChanges } from "../useRunChanges";
 import { caseDecidersLine, runStatusMeta } from "../verdicts";
 import {
   DEFAULT_RUN_OPTIONS,
@@ -253,24 +255,30 @@ export function TestRunPanel({
     rereadResults();
   });
   const settled = useEffectEvent(() => onSettled?.());
-  // A live run follows the server's run stream: each stored result and the final
-  // status re-read the rows (RLS). The stream ends when the run finishes or pauses.
+  // Counts, status and each verdict arrive over realtime (`useRunChanges`): no polling. A live
+  // run is also picked back up by link and rejoined (replay, then follow), so a reload mid-run
+  // reattaches; when that stream ends the run is final and the page reads it once more.
+  useRunChanges({ scope: "run-panel", runId, onRun: rereadRun, onResults: rereadResults });
+  // The run stops being live (seen over realtime or by the stream): its results are final.
+  const wasLive = useRef(false);
+  useEffect(() => {
+    if (wasLive.current && !live && status !== null) settled();
+    wasLive.current = live;
+  }, [live, status]);
   useEffect(() => {
     if (!live) return;
     const controller = new AbortController();
     void (async () => {
       try {
-        for await (const event of followRun(runId, controller.signal)) {
-          if (event.event !== "agent_test_progress") reread();
-        }
+        await followRunByLink(runId, controller.signal, (event) => {
+          const frame = agentTestFrame(event);
+          if (frame?.type === "agent_test_run_status") reread();
+        });
       } catch (err) {
         if (!controller.signal.aborted)
           setActionError({ error: err, what: "Lost the run's live updates" });
       }
-      if (!controller.signal.aborted) {
-        reread();
-        settled();
-      }
+      if (!controller.signal.aborted) reread();
     })();
     return () => controller.abort();
   }, [live, runId]);
@@ -307,6 +315,7 @@ export function TestRunPanel({
   const paused = run.status.startsWith("paused_");
   return (
     <div className="flex flex-col gap-3">
+      <RecordId value={runId} label="Run" token="agent_test_run" />
       <RunProgress counts={counts} status={run.status} />
       {seat === "user" ? (
         <div className="flex items-center gap-2">
