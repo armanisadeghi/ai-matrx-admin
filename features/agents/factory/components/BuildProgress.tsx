@@ -35,6 +35,7 @@ import { StateChip, isRecord } from "@/components/mardown-display/blocks/result-
 import { plainBuildState } from "../plain-stop-reason";
 import { keepBuildAnyway, startAgentBuild } from "../service";
 import { answerBuildGate } from "../build-run-service";
+import { runHref } from "@/features/workflow-runtime/run-doors";
 import { useBuildDetail } from "../useBuildDetail";
 import type { BuildGate } from "../build-run";
 import {
@@ -455,6 +456,12 @@ export function BuildProgress({ buildId, onFinished, onRebuilt, onKept, forwardW
         <span className="ml-auto shrink-0 type-secondary tabular-nums text-muted-foreground">
           {formatDuration(detail.startedAt ?? detail.createdAt, detail.endedAt ?? new Date().toISOString())}
         </span>
+        {snap?.kind === "run" ? (
+          <Link href={runHref(currentId)} className="flex shrink-0 items-center gap-1 type-secondary text-primary hover:underline">
+            Open run
+            <ExternalLink className="size-3" />
+          </Link>
+        ) : null}
         {isAdmin ? (
           <Link
             href={`${ADMIN_BUILD_PATH}/${currentId}`}

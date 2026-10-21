@@ -21,11 +21,15 @@ jest.mock("@/lib/scoped-config/sessionKnob", () => ({
 }));
 
 const posted: { path: string; body: Record<string, unknown>; opts: Record<string, unknown> }[] = [];
-jest.mock("@/lib/python-client", () => ({
-  postJson: async (path: string, body: Record<string, unknown>, opts: Record<string, unknown> = {}) => {
-    posted.push({ path, body, opts });
-    return { data: { build_id: "build-9" }, meta: {} };
+jest.mock("@ai-matrx/api/agents", () => ({
+  startBuild: async (_api: unknown, args: { body: Record<string, unknown> }, opts: Record<string, unknown> = {}) => {
+    posted.push({ path: "/agent-factory/builds", body: args.body, opts });
+    return { build_id: "build-9" };
   },
+}));
+jest.mock("@/lib/api/server-api", () => ({
+  serverApi: {},
+  callOptionsFrom: (o: { organizationId?: string } = {}) => (o.organizationId ? { organizationId: o.organizationId } : {}),
 }));
 jest.mock("@/utils/supabase/client", () => ({ createClient: () => ({}), supabase: {} }));
 
@@ -54,10 +58,12 @@ describe("a door's knob", () => {
     expect(await resolveFactoryDoor("mandate_holder_draft")).toBe("legacy"); // per door
   });
 
-  it("a dev-only local override forces a door without any knob row", async () => {
-    const { resolveFactoryDoor, DEV_DOOR_OVERRIDE_PREFIX } = await import("../door");
-    window.localStorage.setItem(`${DEV_DOOR_OVERRIDE_PREFIX}generate`, "pipeline");
-    expect(await resolveFactoryDoor("generate")).toBe("pipeline");
+  it("has no local override: a door follows its knob row alone", async () => {
+    const door = await import("../door");
+    expect("devDoorOverride" in door).toBe(false);
+    window.localStorage.setItem("matrx.dev.agent_factory.door_generate", "pipeline");
+    knobValues["agent_factory.door_generate"] = "legacy";
+    expect(await door.resolveFactoryDoor("generate")).toBe("legacy");
   });
 });
 

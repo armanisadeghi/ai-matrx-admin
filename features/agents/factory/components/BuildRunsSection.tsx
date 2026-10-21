@@ -14,6 +14,7 @@ import Link from "@/components/navigation/AppLink";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { outcomeChip } from "@/components/mardown-display/blocks/agent-factory-kinds/AgentFactoryKindBlocks";
 import { StateChip } from "@/components/mardown-display/blocks/result-kinds/result-kind-shared";
+import { runHref } from "@/features/workflow-runtime/run-doors";
 import { listItemFromRun, type BuildRunListItem } from "../build-run";
 import { listBuildRuns } from "../build-run-service";
 import { useBuildRunAnnouncements } from "../useBuildRunAnnouncements";
@@ -57,7 +58,10 @@ export function BuildRunsSection() {
             </Link>
             {r.spineStatus === "running" ? <StateChip label="Building" tone="accent" /> : (outcomeChip(r.outcome) ?? null)}
             {r.agentId ? <EntityRef token="agent" id={r.agentId} /> : null}
-            <EntityRef token="workflow" id={r.id} />
+            {r.definitionId ? <EntityRef token="workflow" id={r.definitionId} /> : null}
+            <Link href={runHref(r.id)} className="shrink-0 type-secondary text-primary hover:underline">
+              Open run
+            </Link>
           </li>
         ))}
       </ul>

@@ -26,7 +26,9 @@ jest.mock("../service", () => ({
   startAgentBuild: (...args: unknown[]) => startAgentBuild(...(args as [])),
 }));
 jest.mock("next/navigation", () => ({ useRouter: () => ({ push: jest.fn() }) }));
-jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => false }));
+const mockDispatch = jest.fn();
+jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => false, useAppDispatch: () => mockDispatch }));
+jest.mock("../build-run-service", () => ({ readBuildRun: async () => null, answerBuildGate: jest.fn() }));
 jest.mock("@/lib/redux/selectors/userSelectors", () => ({ selectIsAdminPerson: () => false }));
 jest.mock("@/components/mardown-display/blocks/agent-factory-kinds/AgentFactoryKindBlocks", () => ({
   outcomeChip: () => null,
