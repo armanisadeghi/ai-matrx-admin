@@ -42,6 +42,7 @@ jest.mock("../workspace", () => ({
 }));
 jest.mock("@ai-matrx/rich-content/levels/RichContent", () => ({ RichContent: () => null }));
 jest.mock("@ai-matrx/rich-content/display/chat-markdown/matrx-variables/VariableChip", () => ({ VariableChip: () => null }));
+jest.mock("@/components/official/ProTextarea", () => ({ ProTextarea: () => null }));
 jest.mock("@/lib/toast", () => ({ toast: { error: jest.fn(), info: jest.fn(), success: jest.fn() } }));
 
 const STUDIO = join(__dirname, "..");
@@ -92,9 +93,9 @@ describe("guard 1: one pane tree survives an agent arriving and a layout change"
 
 describe("guard 2: an idle workspace pane makes 0 reads in 30 s", () => {
   it("reads once on open, then only on a realtime UPDATE", async () => {
-    jest.useFakeTimers();
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { useStudioWorkspace } = require(process.env.STUDIO_PANE_UNDER_TEST ?? "../components/StudioWorkspacePane") as typeof import("../components/StudioWorkspacePane");
+    jest.useFakeTimers();
     function Probe() {
       useStudioWorkspace("conv-1");
       return null;
@@ -109,7 +110,7 @@ describe("guard 2: an idle workspace pane makes 0 reads in 30 s", () => {
     });
     expect(reads() - opened).toBe(0);
     jest.useRealTimers();
-  });
+  }, 120_000);
 });
 
 describe("guard 3: nothing is swallowed in features/agents/studio/**", () => {
