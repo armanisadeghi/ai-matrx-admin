@@ -30,6 +30,7 @@ import { disposeSaveToTableCallbackGroup, emitSaveToTableEvent } from "@/feature
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { expectNavigation } from "@ai-matrx/summon/url";
 
 const WEB_SCREENS = { RecordsMount, SaveToTable } as unknown as SaveToTableScreens;
 
@@ -87,6 +88,7 @@ export default function OverlayRender({ data: overlayData, close }: OverlayRende
           onSaved={(tableId, how) => void emitSaveToTableEvent(callbackGroupId, { type: "saved", tableId, how, tableName: null })}
           onOpenTable={(tableId) => {
             onClose();
+            expectNavigation(`/data/${tableId}`); // a window closes before this push: the overlay layer writes no address behind it
             router.push(`/data/${tableId}`);
           }}
           onClose={onClose}

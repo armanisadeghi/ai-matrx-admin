@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import type { PeekRecord } from "@ai-matrx/design-system";
 import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
 import { usePeekHrefOverride } from "./peekHrefOverride";
+import { expectNavigation } from "@ai-matrx/summon/url";
 
 export function useRecordPeekDoors({
   token,
@@ -36,6 +37,7 @@ export function useRecordPeekDoors({
       label: "Open",
       onSelect: () => {
         onClose();
+        expectNavigation(resolved); // a window closes before this push: the overlay layer writes no address behind it
         router.push(resolved);
       },
     },

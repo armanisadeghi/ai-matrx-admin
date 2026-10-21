@@ -31,6 +31,7 @@ import {
   useAppRecordsConfig,
   useRecordsUiPorts,
 } from "@/features/data-tables/records-ui-host/recordsUiHost";
+import { expectNavigation } from "@ai-matrx/summon/url";
 
 /** The no-organization notice's line here: nothing failed to load, a new thing needs a home. */
 export const SAVED_WHERE_CHOSEN = "New things are saved in the organization you choose";
@@ -112,6 +113,7 @@ export function NewTableBody({
           // NAVIGATE FIRST, THEN CLOSE (member walk 2026-10-10: "Open the table" stayed on the list). Closing
           // unmounts this body inside the dialog; the push is issued while it is still mounted, and the
           // Data home lists the new table at once when the person comes back.
+          expectNavigation(dashboardId ? `/data/${tableId}?dashboard=${dashboardId}` : `/data/${tableId}`); // a window closes before this push: the overlay layer writes no address behind it
           router.push(dashboardId ? `/data/${tableId}?dashboard=${dashboardId}` : `/data/${tableId}`);
           readTheHomeAgain();
           onClose?.();

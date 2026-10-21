@@ -45,6 +45,7 @@ import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { adminDoorOpen } from "@/lib/api/adminDoor";
 import { agentGoHref } from "@ai-matrx/chat/agents/addressing/agentAddress";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { expectNavigation } from "@ai-matrx/summon/url";
 
 type Lane = "agent" | "masterwork";
 type ResultTab = "compare" | "requirements" | "inputs";
@@ -181,6 +182,7 @@ function AgentFromChatWindowInner({
         clientToken: masterworkToken.current,
       });
       onClose();
+      expectNavigation(href); // a window closes before this push: the overlay layer writes no address behind it
       router.push(href);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "The Masterwork could not be started.");
