@@ -21,6 +21,7 @@ import { ArrowRight, Globe2, Inbox, Plus, Share2 } from "lucide-react";
 
 import Link from "@/components/navigation/AppLink";
 import { KpiTile } from "@/components/official/kpi/KpiTile";
+import { readOf } from "@ai-matrx/design-system";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@ai-matrx/design-system/controls";
@@ -70,21 +71,21 @@ function Totals() {
       <KpiTile
         label="Brands"
         value={brands.data?.toLocaleString() ?? null}
-        read={{ status: brands.status, error: brands.error }}
+        read={readOf(brands)}
         href={marketingRoutes.brands()}
         title="Every brand you can open, not counting archived ones."
       />
       <KpiTile
         label="Websites"
         value={sites.data?.toLocaleString() ?? null}
-        read={{ status: sites.status, error: sites.error }}
+        read={readOf(sites)}
         title="Every website across all your brands."
       />
       <KpiTile
         label="Social accounts"
         value={social.data?.accounts.toLocaleString() ?? null}
         hint={social.data ? `${social.data.tracked.toLocaleString()} tracked` : undefined}
-        read={{ status: social.status, error: social.error }}
+        read={readOf(social)}
         title="Social accounts on your brands; tracked ones are refreshed on a schedule."
       />
       <KpiTile
@@ -92,7 +93,7 @@ function Totals() {
         value={review.data?.toLocaleString() ?? null}
         tone={review.data ? "warn" : "neutral"}
         hint={review.data ? "In each brand's inbox" : undefined}
-        read={{ status: review.status, error: review.error }}
+        read={readOf(review)}
         title="Things found for your brands that wait for a yes or no."
       />
     </div>

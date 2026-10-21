@@ -98,7 +98,7 @@ describe("Google File menu", () => {
     for (const a of flattenMenus([{ id: "file", label: "File", items: menu }]).filter((r) => r.soon)) expect(getComingSoon(a.soon!)).toBeDefined();
   });
   it("Sheets without a Settings row shows none (its promise was retired when Settings was built; no stand-in)", () => {
-    const menu = buildEditorFileMenu({ product: "sheets", rows: rows.filter((r) => r.id !== "file.settings"), templatesHref: "/t", downloads: [] }, handlers);
+    const menu = buildEditorFileMenu({ product: "sheets", rows: rows.filter((r) => !("id" in r) || r.id !== "file.settings"), templatesHref: "/t", downloads: [] }, handlers);
     expect(labels(menu)).not.toContain("Settings");
   });
   it("Slides: Import slides, Language and Page setup in Google's places; no owner rows without rights", () => {

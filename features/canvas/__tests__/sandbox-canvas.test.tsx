@@ -284,51 +284,16 @@ describe("default hidden", () => {
   });
 });
 
-describe("it opens on demand, and only when nothing else is on the canvas", () => {
-  const base = {
-    bound: true,
-    toolRan: true,
-    autoOpen: true,
-    alreadyAutoOpened: false,
-    userClosed: false,
-    canvasHasOtherContent: false,
-  };
-
+describe("a bound box is OFFERED, never opened (owner, 2026-10-21)", () => {
+  // The canvas no longer pops open on the agent's first sandbox tool call
+  // (@ai-matrx/chat c0a5ef1439): a bound box only puts the Sandbox pane in the
+  // canvas switcher, and the person opens it when they want it.
   it("does nothing at all when no box is bound", () => {
-    expect(decideSandboxCanvasAction({ ...base, bound: false })).toBe("none");
+    expect(decideSandboxCanvasAction({ bound: false })).toBe("none");
   });
 
-  it("is merely available until the agent actually works in the box", () => {
-    expect(decideSandboxCanvasAction({ ...base, toolRan: false })).toBe(
-      "offer",
-    );
-  });
-
-  it("opens on the first sandbox tool call when the canvas is empty", () => {
-    expect(decideSandboxCanvasAction(base)).toBe("open");
-  });
-
-  it("offers instead of hijacking a document or the browser", () => {
-    expect(
-      decideSandboxCanvasAction({ ...base, canvasHasOtherContent: true }),
-    ).toBe("offer");
-  });
-
-  it("respects the user's auto-open knob", () => {
-    expect(decideSandboxCanvasAction({ ...base, autoOpen: false })).toBe(
-      "offer",
-    );
-  });
-
-  it("never re-opens behind the user after the first reveal — but stays OFFERED", () => {
-    // This used to expect "none", and "none" meant the item was never even put
-    // in the switcher. After a reload of a bound chat that also held a document
-    // (canvas slice not persisted, reveal memory persisted) the switcher stayed
-    // hidden at one item and the running box had no door left — independent
-    // review, production 528560bbc8, 2026-09-15.
-    expect(
-      decideSandboxCanvasAction({ ...base, alreadyAutoOpened: true }),
-    ).toBe("offer");
+  it("offers a bound box and never opens it", () => {
+    expect(decideSandboxCanvasAction({ bound: true })).toBe("offer");
   });
 
   it("fires on the sandbox tools and nothing else", () => {
@@ -350,47 +315,9 @@ describe("it opens on demand, and only when nothing else is on the canvas", () =
   });
 });
 
-describe("a put-away pane STAYS put away, across reloads", () => {
-  /**
-   * The defect (owner, seen live 2026-09-13): "Put away canvas" did not
-   * persist — a reload brought the sandbox pane straight back. The reveal
-   * decision lived in a React ref and the canvas slice is deliberately not
-   * persisted, so every load replayed the first-tool-call reveal.
-   *
-   * Proven failing before passing:
-   *   - dropped the `userClosed` branch from `decideSandboxCanvasAction`;
-   *     a put-away pane returned "open" on the next tool call → RED.
-   *   - made `writeSandboxCanvasMemory` a no-op; the decision did not survive
-   *     the simulated reload → RED.
-   */
-  const base = {
-    bound: true,
-    toolRan: true,
-    autoOpen: true,
-    alreadyAutoOpened: false,
-    userClosed: false,
-    canvasHasOtherContent: false,
-  };
-
+describe("the pane's put-away memory survives a reload", () => {
   beforeEach(() => {
     window.localStorage.clear();
-  });
-
-  it("never re-opens a pane the user closed, even on a later tool call", () => {
-    expect(decideSandboxCanvasAction({ ...base, userClosed: true })).toBe(
-      "offer",
-    );
-  });
-
-  it("keeps it reachable rather than removing it", () => {
-    // "offer", not "none": the box is still one click away in the switcher.
-    expect(
-      decideSandboxCanvasAction({
-        ...base,
-        userClosed: true,
-        alreadyAutoOpened: true,
-      }),
-    ).toBe("offer");
   });
 
   it("remembers the decision across a reload, per conversation AND per box", () => {
@@ -412,16 +339,6 @@ describe("a put-away pane STAYS put away, across reloads", () => {
         sandboxCanvasSourceId("other-conversation", SANDBOX_ROW_ID),
       ).userClosed,
     ).toBe(false);
-  });
-
-  it("remembers that the reveal already happened, so a reload is not a first run", () => {
-    const sourceId = sandboxCanvasSourceId(CONVERSATION_ID, SANDBOX_ROW_ID);
-    writeSandboxCanvasMemory(sourceId, { autoOpened: true });
-    expect(readSandboxCanvasMemory(sourceId).autoOpened).toBe(true);
-    // Not a first run — so not OPENED. Still offered, so still reachable.
-    expect(
-      decideSandboxCanvasAction({ ...base, alreadyAutoOpened: true }),
-    ).toBe("offer");
   });
 
   it("re-opening clears the decision, so the pane behaves normally again", () => {

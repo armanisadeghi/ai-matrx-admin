@@ -20,6 +20,7 @@
 // per group, disabled entries stay visible with their reason).
 
 import {
+  CornerDownRight,
   Archive,
   ArchiveRestore,
   ArrowUpFromLine,
@@ -76,6 +77,7 @@ export const OBJECT_ACTION_ICONS: Record<ObjectActionIcon, LucideIcon> = {
   pencil: Pencil,
   copy: Copy,
   "folder-input": FolderInput,
+  "corner-down-right": CornerDownRight,
   star: Star,
   "star-off": StarOff,
   "share-2": Share2,
