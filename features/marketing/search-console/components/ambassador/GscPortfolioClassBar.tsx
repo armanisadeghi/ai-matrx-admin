@@ -42,6 +42,11 @@ interface GscPortfolioClassBarProps {
   range?: GscRangeKey;
   title?: string;
   className?: string;
+  /**
+   * Every Search Console click over the same window, when the host has it. The class split only counts
+   * clicks on queries Google names, so with this the headline is the total and the split says it is a part.
+   */
+  totalClicks?: number | null;
 }
 
 export function GscPortfolioClassBar({
@@ -50,6 +55,7 @@ export function GscPortfolioClassBar({
   range = "28d",
   title = "Search performance by traffic class",
   className,
+  totalClicks = null,
 }: GscPortfolioClassBarProps) {
   const { rollup, isLoading, error } = useGscPortfolioRollup(siteIds, range);
 
@@ -143,7 +149,10 @@ export function GscPortfolioClassBar({
         <div className="min-w-0">
           <h3 className="text-xs font-medium text-foreground">{title}</h3>
           <p className="truncate text-[11px] text-muted-foreground">
-            {formatCount(rollup.totalClicks)} clicks · {coverage} · {windowLabel}
+            {totalClicks !== null && totalClicks > rollup.totalClicks
+              ? `${formatCount(totalClicks)} clicks · ${formatCount(rollup.totalClicks)} on named queries`
+              : `${formatCount(rollup.totalClicks)} clicks`}{" "}
+            · {coverage} · {windowLabel}
           </p>
         </div>
         <Link

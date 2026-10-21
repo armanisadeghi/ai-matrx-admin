@@ -83,8 +83,8 @@ import { BrandAssetEditorDialog } from "@/features/marketing/components/brands/B
 import { BusinessFactEditorDialog } from "@/features/marketing/components/brands/BusinessFactEditorDialog";
 import { PropertyEditorDialog } from "@/features/marketing/components/brands/PropertyEditorDialog";
 import { SiteEditorDialog } from "@/features/marketing/components/sites/SiteEditorDialog";
-import { GscPortfolioClassBar } from "@/features/marketing/search-console/components/ambassador/GscPortfolioClassBar";
 import { BrandAssetGallery } from "@/features/marketing/components/brands/BrandAssetGallery";
+import { pickHeroLogo } from "@/features/marketing/components/brands/logo-rank";
 import {
   BRAND_HERO_FRAME,
   BrandHomeSkeleton,
@@ -100,6 +100,7 @@ import {
   BrandOverviewKpis,
   BrandOverviewNext,
   BrandOverviewLook,
+  BrandSearchClassBar,
 } from "@/features/marketing/components/brands/BrandOverviewPanels";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
@@ -708,9 +709,17 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   // placeholder globe just because nobody copied a URL onto the brand row.
   const heroIdentity = {
     name: current.name,
+    // A sharing banner saved as the logo (og:image) never stands in for the mark: the best ranked logo asset does.
     logo_url:
-      current.logo_url ||
-      firstAssetUrl(assetRows, ["logo", "logo_dark", "wordmark", "headshot"]),
+      pickHeroLogo(
+        current.logo_url,
+        assetRows
+          .filter((asset) => ["logo", "logo_dark", "wordmark", "headshot"].includes(asset.kind))
+          .flatMap((asset) => {
+            const url = assetPreviewUrl(asset);
+            return url ? [{ url, kind: asset.kind, fileId: asset.file_id }] : [];
+          }),
+      ),
     favicon_url: current.favicon_url || firstAssetUrl(assetRows, ["favicon"]),
   };
 
@@ -731,6 +740,8 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   const toOverviewAsset = (asset: BrandAsset) => ({
     id: asset.id,
     preview: assetPreviewUrl(asset),
+    kind: asset.kind,
+    fileId: asset.file_id,
     color: null,
     label: isBrandAssetKind(asset.kind) ? BRAND_ASSET_KIND_LABELS[asset.kind] : humanizeIdentifier(asset.kind) || asset.kind,
   });
@@ -1156,6 +1167,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   <BrandOverviewAccounts
                     brandId={current.id}
                     brandSeg={brandSeg}
+                    brandName={current.name}
                     organizationId={current.organization_id}
                     accounts={socialAccounts.data ?? []}
                     loading={socialAccounts.isLoading}
@@ -1173,6 +1185,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                     siteIds={websiteSites.map((site) => site.id)}
                     profile={parseBrandProfile(current.profile)}
                     personas={personas.data ?? []}
+                    tabHref={tabHref}
                   />
                   <BrandOverviewAbout
                     facts={factRows}
@@ -1293,7 +1306,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
             // Holds the bar's height while the brand's sites load, so the cards below never drop.
             <div aria-hidden="true" className="h-[42px] rounded-lg border border-border bg-card" />
           ) : websiteSites.length > 0 ? (
-            <GscPortfolioClassBar
+            <BrandSearchClassBar
               siteIds={websiteSites.map((site) => site.id)}
               totalSites={websiteSites.length}
               title={`Search performance across ${current.name}`}

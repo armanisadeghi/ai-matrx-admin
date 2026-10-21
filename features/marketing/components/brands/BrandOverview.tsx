@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight, Globe2, ImageOff, ListChecks, Plus } from "lucide-react";
 import { useOutsideImage } from "@/features/marketing/lib/useOutsideImage";
+import { TONE_BACKDROP, type Tone } from "@/features/marketing/components/brands/logo-tones";
 import type { LucideIcon } from "lucide-react";
 
 import { Button, Chip, EmptyState, PropertyRow } from "@ai-matrx/design-system/controls";
@@ -42,6 +43,10 @@ export interface OverviewFactGroup {
 export interface OverviewAsset {
   id: string;
   preview: string | null;
+  /** The asset kind (logo, favicon…), for ranking which mark leads. */
+  kind?: string;
+  /** A saved copy's file id: two rows over one stored file are one picture. */
+  fileId?: string | null;
   color: string | null;
   label: string;
 }
@@ -252,7 +257,7 @@ export function BrandOverviewFacts({
  * One asset tile: shimmer while the picture loads; outside pictures fall back through useOutsideImage; a source
  * that truly fails shows an image glyph and its site's domain, never a broken image.
  */
-export function AssetTile({ asset, onOpen }: { asset: OverviewAsset; onOpen: () => void }) {
+export function AssetTile({ asset, onOpen, tone }: { asset: OverviewAsset; onOpen: () => void; tone?: Tone }) {
   const image = useOutsideImage(asset.preview);
   return (
     <button
@@ -260,17 +265,18 @@ export function AssetTile({ asset, onOpen }: { asset: OverviewAsset; onOpen: () 
       onClick={onOpen}
       title={asset.label}
       aria-label={asset.label}
-      className="relative aspect-square overflow-hidden rounded-md border border-border"
-      /* ui-exception: a logo sits on a neutral checkerboard, so a white mark and a dark outline both show in either theme */
-      style={{ background: "repeating-conic-gradient(rgb(128 128 128 / 0.18) 0 25%, rgb(128 128 128 / 0.06) 0 50%) 0 0 / 12px 12px" }}
+      className={`relative aspect-square overflow-hidden rounded-md border border-border${tone ? ` ${TONE_BACKDROP[tone]}` : ""}`}
+      /* ui-exception: a logo of unknown tone sits on a neutral checkerboard, so a white mark and a dark outline both show in either theme */
+      style={tone ? undefined : { background: "repeating-conic-gradient(rgb(128 128 128 / 0.18) 0 25%, rgb(128 128 128 / 0.06) 0 50%) 0 0 / 12px 12px" }}
     >
       {image.src ? (
+        // Natural size, scaled down only: a 32 px favicon stays crisp at 32 px, never blown up and blurred.
         <img
           key={image.imgKey}
           {...image.imgProps}
           alt=""
           decoding="async"
-          className={image.loaded ? "absolute inset-0 h-full w-full object-contain p-1" : "absolute inset-0 h-full w-full object-contain p-1 opacity-0"}
+          className={`absolute inset-0 m-auto h-auto max-h-[calc(100%-0.5rem)] w-auto max-w-[calc(100%-0.5rem)] object-contain${image.loaded ? "" : " opacity-0"}`}
         />
       ) : null}
       {image.src && !image.loaded ? <Skeleton motion="shimmer" className="absolute inset-0" /> : null}

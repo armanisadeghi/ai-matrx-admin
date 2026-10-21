@@ -86,8 +86,10 @@ function KpiSparkline({ trend, label }: { trend: KpiTrend; label: string }) {
   const max = Math.max(...trend.values);
   // A floor of 10% of the peak: a change of 11 on 3,700 stays a near-flat line, never a cliff.
   const range = Math.max(max - min, Math.abs(max) * 0.1) || 1;
+  // A level line sits at mid-height: drawn on the floor it would read as zero.
+  const y = (v: number) => (max === min ? SPARK_H / 2 : SPARK_H - 2 - ((v - min) / range) * (SPARK_H - 4));
   const pts = trend.values
-    .map((v, i) => `${((i / (n - 1)) * SPARK_W).toFixed(1)},${(SPARK_H - 2 - ((v - min) / range) * (SPARK_H - 4)).toFixed(1)}`)
+    .map((v, i) => `${((i / (n - 1)) * SPARK_W).toFixed(1)},${y(v).toFixed(1)}`)
     .join(" ");
   return (
     <svg
