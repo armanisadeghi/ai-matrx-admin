@@ -97,6 +97,7 @@ Every read and write goes through the `public.org_admin_*` RPC family; each RPC 
 ---
 
 ## Change Log
+- **2026-10-21** — The member roster takes a selection: Suspend (one reason), Reactivate, Set spend cap (a choice of monthly caps; other controls kept) and Remove, declared in `bulkVerbs.ts` over the same `org_admin_*` doors the member page uses.
 - **2026-10-20** — The member page is the platform user page scoped to this organization (Arman 2026-10-18): one frame, one tab registry, one set of tab bodies with a `scope` prop; `MemberDetailView` / `MemberResourcesView` deleted. New org-gated reads `iam.org_admin_member_activity` / `_feedback` / `_audit` (`migrations/20261020120000_org_admin_member_record_reads.sql`). Suspend/Reactivate now asks for a reason (recorded in this org's log). The member note moved from the controls form to the Notes tab. Verified on localhost as admin@admin.com (owner of a test organization).
 - **2026-09-28** — ACCESS LADDER T-16d: `TakeOverAccountDialog` now offers the right take-over automatically — whole account for a member of this org alone, their records in this org (to a member you pick, default you, with what moves listed) for a member of other orgs too. New RPCs `org_admin_take_over_options` / `org_admin_take_over_member_records` (`migrations/access_ladder_t16d_take_over_member_records_in_one_org.sql`); access log shows "Records taken over". Verified on localhost as admin@admin.com.
 
