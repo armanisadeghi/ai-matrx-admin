@@ -17,29 +17,19 @@ import {
   Target,
   Trophy,
   Flame,
-  Calendar,
   Maximize2,
   Minimize2,
-  Play,
-  Pause,
   RotateCcw,
   TrendingUp,
-  Award,
-  Zap,
   Clock,
-  Star,
   ChevronRight,
   ChevronDown,
-  Plus,
-  Minus,
   BookOpen,
   Code,
   Lightbulb,
   Users,
   Coffee,
   Heart,
-  PartyPopper,
-  Rainbow,
   Upload,
   Printer,
   ArrowUpRight,
@@ -303,30 +293,6 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
     return colors[index % colors.length];
   };
 
-  const getCategoryBorderColor = (color: string | undefined, index: number) => {
-    if (color)
-      return color
-        .replace("from-", "border-")
-        .replace(" to-blue-600", "")
-        .replace(" to-green-600", "")
-        .replace(" to-purple-600", "")
-        .replace(" to-orange-600", "")
-        .replace(" to-pink-600", "")
-        .replace(" to-indigo-600", "")
-        .replace(" to-red-600", "")
-        .replace(" to-teal-600", "");
-    const colors = [
-      "border-blue-500",
-      "border-green-500",
-      "border-purple-500",
-      "border-orange-500",
-      "border-pink-500",
-      "border-indigo-500",
-      "border-red-500",
-      "border-teal-500",
-    ];
-    return colors[index % colors.length];
-  };
 
   const getPriorityColor = (priority: string | undefined) => {
     switch (priority) {
@@ -409,7 +375,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
           )}
           {/* Fullscreen Header */}
           {isFullScreen && (
-            <div className="flex-shrink-0 px-6 py-4 border-b border-border flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
+            <div className="flex-shrink-0 px-6 py-4 border-b border-border flex flex-wrap items-center justify-between gap-2 bg-muted/50">
               <div className="flex items-center gap-3">
                 <BarChart3 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">
@@ -424,14 +390,14 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
 
           {/* Scrollable Content */}
           <div className={isFullScreen ? "flex-1 overflow-y-auto" : ""}>
-            <div className="p-4 sm:p-6 space-y-6">
+            <div className="p-3 space-y-4">
               {/* Header Section */}
-              <div className="bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-purple-950/40 rounded-xl p-4 sm:p-6">
+              <div className="space-y-3">
                 {(isFullScreen || tracker.description) && (
-                <div className="flex flex-col gap-4 mb-6 @4xl:flex-row @4xl:items-start @4xl:justify-between">
+                <div className="flex flex-col gap-4 @4xl:flex-row @4xl:items-start @4xl:justify-between">
                   <div className="flex items-start gap-4">
                     {isFullScreen && (
-                      <div className="p-3 bg-blue-500 dark:bg-blue-600 rounded-xl shadow-md">
+                      <div className="p-3 bg-blue-500 dark:bg-blue-600 rounded-xl">
                         <BarChart3 className="h-8 w-8 text-white" />
                       </div>
                     )}
@@ -454,16 +420,16 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
                 )}
 
                 {/* Overall Progress */}
-                <div className="mb-6">
+                <div>
                   <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-3">
                     <div className="flex items-center gap-3">
-                      <Trophy className="h-6 w-6 text-yellow-500 dark:text-yellow-400" />
-                      <span className="whitespace-nowrap text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      <Trophy className="h-4 w-4 text-yellow-500 dark:text-yellow-400" />
+                      <span className="whitespace-nowrap text-sm font-medium text-foreground">
                         Overall Progress
                       </span>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="whitespace-nowrap text-2xl font-bold text-blue-600 dark:text-blue-400" data-progress-value="">
+                      <span className="whitespace-nowrap text-base font-semibold text-foreground" data-progress-value="">
                         {progressStats.overallPercentage}%
                       </span>
                       <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -472,7 +438,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
                       </span>
                     </div>
                   </div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner">
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 transition-all duration-500 rounded-full relative"
                       style={{ width: `${progressStats.overallPercentage}%` }}
@@ -486,44 +452,12 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
                   </div>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="grid md:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-textured/50 rounded-lg p-3 border border-blue-200 dark:border-blue-800/50">
-                    <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-1">
-                      <Target className="h-4 w-4" />
-                      <span className="text-xs font-medium">Total Goals</span>
-                    </div>
-                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                      {progressStats.total_items}
-                    </div>
-                  </div>
-                  <div className="bg-textured/50 rounded-lg p-3 border border-green-200 dark:border-green-800/50">
-                    <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-1">
-                      <CheckCircle2 className="h-4 w-4" />
-                      <span className="text-xs font-medium">Completed</span>
-                    </div>
-                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                      {progressStats.completedCount}
-                    </div>
-                  </div>
-                  <div className="bg-textured/50 rounded-lg p-3 border border-orange-200 dark:border-orange-800/50">
-                    <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400 mb-1">
-                      <Clock className="h-4 w-4" />
-                      <span className="text-xs font-medium">Remaining</span>
-                    </div>
-                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                      {progressStats.total_items - progressStats.completedCount}
-                    </div>
-                  </div>
-                  <div className="bg-textured/50 rounded-lg p-3 border border-purple-200 dark:border-purple-800/50">
-                    <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 mb-1">
-                      <TrendingUp className="h-4 w-4" />
-                      <span className="text-xs font-medium">Categories</span>
-                    </div>
-                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                      {tracker.phases.length}
-                    </div>
-                  </div>
+                {/* Totals: one quiet line, never a row of tiles */}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground" data-progress-totals="">
+                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Target className="h-3.5 w-3.5" />{progressStats.total_items} goals</span>
+                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><CheckCircle2 className="h-3.5 w-3.5" />{progressStats.completedCount} done</span>
+                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Clock className="h-3.5 w-3.5" />{progressStats.total_items - progressStats.completedCount} left</span>
+                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><TrendingUp className="h-3.5 w-3.5" />{tracker.phases.length} {tracker.phases.length === 1 ? "category" : "categories"}</span>
                 </div>
 
                 {/* Controls */}
@@ -567,10 +501,6 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
                     category.color,
                     categoryIndex,
                   );
-                  const borderColor = getCategoryBorderColor(
-                    category.color,
-                    categoryIndex,
-                  );
                   const isExpanded = expandedCategories.has(category.id);
                   const allItemsCompleted = category.steps.every((item) =>
                     completed_items.has(item.id),
@@ -579,7 +509,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
                   return (
                     <div
                       key={category.id}
-                      className={`bg-textured rounded-xl shadow-lg border-2 ${borderColor} dark:border-opacity-50 overflow-hidden`}
+                      className="overflow-hidden rounded-md border border-border"
                     >
                       <div className="p-4">
                         {/* Category Header */}
@@ -643,38 +573,11 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
                 })}
               </div>
 
-              {/* Completion Celebration */}
+              {/* Completion: one quiet line under the categories */}
               {progressStats.overallPercentage === 100 && (
-                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 rounded-xl p-6 border-2 border-yellow-300 dark:border-yellow-700 shadow-lg">
-                  <div className="flex flex-col items-center text-center gap-4">
-                    <div className="relative">
-                      <div className="p-4 bg-yellow-500 dark:bg-yellow-600 rounded-full shadow-lg">
-                        <Trophy className="h-12 w-12 text-white" />
-                      </div>
-                      <div className="absolute -top-2 -right-2 animate-bounce">
-                        <Star className="h-8 w-8 text-yellow-400 dark:text-yellow-300 fill-current" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <PartyPopper className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-                        <h3 className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">
-                          Congratulations!
-                        </h3>
-                        <Rainbow className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-                      </div>
-                      <p className="text-yellow-700 dark:text-yellow-300 text-lg">
-                        You've completed all tasks in {tracker.title}!
-                      </p>
-                      <div className="flex items-center justify-center gap-2 mt-2">
-                        <Award className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                        <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                          Amazing work! Time to celebrate your achievement!
-                        </p>
-                        <Zap className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                      </div>
-                    </div>
-                  </div>
+                <div className="flex items-center gap-2 border-t border-border pt-3 text-sm font-medium text-foreground">
+                  <Trophy className="h-4 w-4 text-yellow-500 dark:text-yellow-400" />
+                  All {progressStats.total_items} done
                 </div>
               )}
             </div>

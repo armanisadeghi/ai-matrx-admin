@@ -77,11 +77,24 @@ interface RecipeViewerProps {
 }
 
 const STAT_ITEMS = [
-  { key: "totalTime", label: "Total", icon: Clock },
-  { key: "prepTime", label: "Prep", icon: UtensilsCrossed },
-  { key: "cookTime", label: "Cook", icon: Flame },
-  { key: "progress", label: "Done", icon: CheckCircle2, suffix: "%" },
+  { key: "totalTime", label: "Total", icon: Clock, words: ["total", "in total"] },
+  { key: "prepTime", label: "Prep", icon: UtensilsCrossed, words: ["prep", "preparation", "prep time"] },
+  { key: "cookTime", label: "Cook", icon: Flame, words: ["cook", "cooking", "cook time", "cooking time"] },
+  { key: "progress", label: "Done", icon: CheckCircle2, suffix: "%", words: [] },
 ] as const;
+
+/**
+ * A recipe time as it reads beside its label: "10 minutes prep" under "Prep" says "prep" twice, so a
+ * trailing (or leading) word that repeats the label is dropped. Review 4, F7.
+ */
+export function recipeStatValue(raw: string | number | undefined | null, words: readonly string[]): string {
+  let value = String(raw ?? "").trim();
+  for (const word of [...words].sort((a, b) => b.length - a.length)) {
+    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    value = value.replace(new RegExp(`\\s*\\b${escaped}\\b\\s*:?$`, "i"), "").replace(new RegExp(`^${escaped}\\s*:\\s*`, "i"), "").trim();
+  }
+  return value;
+}
 
 const RecipeViewer: React.FC<RecipeViewerProps> = ({
   recipe,
@@ -344,7 +357,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
           )}
 
           {isFullScreen && (
-            <div className="flex-shrink-0 px-3 py-2 border-b border-border flex items-center justify-between bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30">
+            <div className="flex-shrink-0 px-3 py-2 border-b border-border flex flex-wrap items-center justify-between gap-2 bg-muted/50">
               <div className="flex items-center gap-2 min-w-0">
                 <ChefHat className="h-4 w-4 flex-shrink-0 text-orange-600 dark:text-orange-400" />
                 <h3 className="text-sm font-semibold text-foreground truncate">
@@ -383,7 +396,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
             />
             <div ref={blockContentRef} className="@container p-2 space-y-3">
               {/* Header Section */}
-              <div className="bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-100 dark:from-orange-950/40 dark:via-amber-950/30 dark:to-yellow-950/40 rounded-xl p-2">
+              <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex items-start gap-2 flex-1 min-w-0">
 {isFullScreen && (
@@ -407,35 +420,23 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
 
                 </div>
 
-                {/* Quick Stats */}
-                <div
-                  className={`grid gap-1.5 ${narrowPane ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-4"}`}
-                  data-testid="recipe-quick-stats"
-                >
+                {/* Quick Stats: one quiet line that wraps, never a row of tiles */}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm" data-testid="recipe-quick-stats">
                   {STAT_ITEMS.map((item) => {
                     const { key, label, icon: StatIcon } = item;
                     const suffix = "suffix" in item ? item.suffix : "";
-                    let displayValue: string | number = overallProgress;
-                    if (key === "totalTime") displayValue = recipe.totalTime;
-                    else if (key === "prepTime") displayValue = recipe.prepTime;
-                    else if (key === "cookTime") displayValue = recipe.cookTime;
-                    else if (key === "progress") displayValue = overallProgress;
+                    const raw = key === "progress" ? overallProgress : recipe[key];
+                    const displayValue = key === "progress" ? raw : recipeStatValue(raw, item.words);
+                    if (displayValue === "" || displayValue === undefined) return null;
                     return (
-                      <div
-                        key={key}
-                        className="rounded-md border border-border bg-background/50 px-1.5 py-1.5 text-center"
-                      >
-                        <div className="flex items-center justify-center gap-1 text-muted-foreground">
-                          <StatIcon className="h-3 w-3 flex-shrink-0" />
-                          <span className="text-[10px] font-medium truncate hidden md:inline">
-                            {label}
-                          </span>
-                        </div>
-                        <div className="whitespace-nowrap text-sm font-semibold text-foreground tabular-nums" data-recipe-stat-value="">
+                      <span key={key} className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                        <StatIcon className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+                        <span className="text-muted-foreground">{label}</span>
+                        <span className="whitespace-nowrap font-medium text-foreground tabular-nums" data-recipe-stat-value="">
                           {displayValue}
                           {suffix}
-                        </div>
-                      </div>
+                        </span>
+                      </span>
                     );
                   })}
                 </div>
@@ -447,7 +448,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
               >
                 {/* Ingredients Section */}
                 <div className="space-y-2">
-                  <div className="bg-textured rounded-xl p-2 shadow-md border-border">
+                  <div className="bg-textured rounded-xl p-2 border-border">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-2 mb-3">
                       <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2 min-w-0">
                         <Star className="h-4 w-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
@@ -531,7 +532,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
 
                 {/* Instructions Section */}
                 <div className="space-y-2">
-                  <div className="bg-textured rounded-xl p-2 shadow-md border-border">
+                  <div className="bg-textured rounded-xl p-2 border-border">
                     <div className="flex items-center justify-between mb-3">
                       <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                         <Timer className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -625,14 +626,14 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
 
               {/* Notes Section */}
               {recipe.notes && (
-                <div className="bg-amber-50 dark:bg-amber-950/30 rounded-xl p-3 border border-amber-200 dark:border-amber-800/50 shadow-sm">
+                <div className="border-t border-border pt-3">
                   <div className="flex items-start gap-2">
                     <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h3 className="font-semibold text-amber-900 dark:text-amber-200 mb-1 text-sm">
+                      <h3 className="font-medium text-foreground mb-1 text-sm">
                         Pro Tips
                       </h3>
-                      <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                      <p className="text-sm text-muted-foreground leading-relaxed">
                         {recipe.notes}
                       </p>
                     </div>
@@ -640,26 +641,16 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
                 </div>
               )}
 
-              {/* Completion Message */}
+              {/* Completion: one quiet line */}
               {overallProgress === 100 && (
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-xl p-4 border border-green-300 dark:border-green-700 shadow-md">
-                  <div className="flex flex-col items-center text-center gap-2">
-                    <div className="p-2 bg-green-500 dark:bg-green-600 rounded-full">
-                      <CheckCircle2 className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-green-900 dark:text-green-100 mb-1">
-                        Recipe Complete!
-                      </h3>
-                      <p className="text-xs text-green-700 dark:text-green-300">
-                        Your {recipe.title.toLowerCase()} should be ready to
-                        enjoy!
-                      </p>
-                    </div>
-                    <Button variant="success" onClick={resetProgress} className="mt-1">
-                      Start Again
-                    </Button>
-                  </div>
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
+                  <span className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    Recipe complete
+                  </span>
+                  <Button variant="quiet" onClick={resetProgress}>
+                    Start again
+                  </Button>
                 </div>
               )}
             </div>

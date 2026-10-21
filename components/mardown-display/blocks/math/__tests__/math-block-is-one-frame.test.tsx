@@ -73,6 +73,7 @@ describe("the math block is one plain card with one header", () => {
   it("keeps the header's glyph and the interactive buttons", () => {
     expect(host.querySelector("[data-block-header] svg")).not.toBeNull();
     expect(host.textContent).toContain("Start Interactive");
-    expect(host.textContent).toContain("Reset");
+    // Review 4 F18: Reset and Back do nothing before the walk starts, so the idle block offers neither.
+    expect(host.textContent).not.toContain("Reset");
   });
 });

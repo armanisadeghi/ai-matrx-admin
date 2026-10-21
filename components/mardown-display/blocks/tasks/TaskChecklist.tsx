@@ -629,10 +629,7 @@ const TaskChecklist = ({
         <CardHeader className={cn("pb-2", narrow && "px-2 pt-2")}>
           <div className={cn("mt-2", narrow ? "space-y-2" : "space-y-4")}>
             <div
-              className={cn(
-                "flex items-center justify-between",
-                narrow && "flex-wrap gap-x-3 gap-y-1",
-              )}
+              className="flex flex-wrap items-center gap-x-3 gap-y-1"
               data-testid="task-checklist-toolbar"
               data-canvas-fit={narrow ? "narrow" : undefined}
             >
@@ -645,8 +642,8 @@ const TaskChecklist = ({
               </div>
               <div
                 className={cn(
-                  "flex justify-end items-center space-x-2 text-muted-foreground",
-                  narrow ? "ml-auto text-xs" : "text-sm",
+                  "ml-auto flex items-center gap-2 whitespace-nowrap text-muted-foreground",
+                  narrow ? "text-xs" : "text-sm",
                 )}
               >
                 <span>Hide completed</span>

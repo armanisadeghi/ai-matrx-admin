@@ -464,7 +464,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
 
         {/* Completion message */}
         {progressPercentage === 100 && (
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-xl p-4 border border-green-300 dark:border-green-700 shadow-md">
+          <div className="rounded-xl p-4 border border-green-300 dark:border-green-700">
             <div className="flex flex-col items-center text-center gap-2">
               <div className="p-2 bg-green-500 dark:bg-green-600 rounded-full">
                 <CheckCircle2 className="h-5 w-5 text-white" />

@@ -675,7 +675,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
 
       {/* Question Card */}
       <div
-        className={`bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 border border-blue-200 dark:border-gray-700 rounded-xl shadow-md mb-4 ${isFullScreen ? "p-6" : "p-4"}`}
+        className={`mb-4 ${isFullScreen ? "p-6" : "p-1"}`}
       >
         <div className="text-gray-800 dark:text-gray-100">
           <div className="flex justify-between items-center mb-4 gap-3">
@@ -903,7 +903,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     return (
       <div className="w-full py-3">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-textured rounded-xl p-4 shadow-lg border-border">
+          <div className="rounded-xl p-4 border-border">
             <div className="text-center mb-4">
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Trophy className="h-6 w-6 text-yellow-500 dark:text-yellow-400" />

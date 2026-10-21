@@ -22,10 +22,11 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onReset, onBack, onNext, st
                                 <Link href="/education/subjects/quick-math">All Lessons</Link>
                             </Button>
                         )}
-                        <Button variant="outline" onClick={onReset}>Reset</Button>
+                        {/* Review 4 F18: Reset and Back do nothing before the walk starts, so they show only once it has. */}
+                        {started && <Button variant="outline" onClick={onReset}>Reset</Button>}
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" onClick={onBack}>Back</Button>
+                        {started && <Button variant="outline" onClick={onBack}>Back</Button>}
                         <Button variant="primary" onClick={onNext}>{!started ? 'Start Interactive' : 'Next'}</Button>
                     </div>
                 </div>

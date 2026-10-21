@@ -333,7 +333,6 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
         <Card
           className={cn(
             "absolute w-full h-full overflow-hidden",
-            "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950",
             isPanel
               ? "rounded-none border-0 shadow-none"
               : "border-2 border-blue-200 dark:border-blue-800 shadow-lg hover:shadow-xl transition-shadow",
@@ -385,7 +384,6 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({
         <Card
           className={cn(
             "absolute w-full h-full overflow-hidden",
-            "bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950",
             isPanel
               ? "rounded-none border-0 shadow-none"
               : "border-2 border-green-200 dark:border-green-800 shadow-lg hover:shadow-xl transition-shadow",
