@@ -12,10 +12,17 @@
  * WILL SEE when they cross the line — because a rule whose consequence is
  * invisible reads as a suggestion.
  *
- * Pure data — no React, no server imports — so the same list can be rendered on
- * the authoring screen, handed to the component-authoring agent, and asserted
- * in a test. When the sandbox gains or loses a boundary, THIS is the file that
- * changes, and the screen follows.
+ * HUMAN-FACING VIEW ONLY. This list is rendered to people on the code tab and
+ * asserted in a test; it is NOT handed to the authoring agent. The agent's
+ * rulebook is the one `shape-authoring` skill
+ * (`common-docs/skills/shape-authoring/SKILL.md`) — the single home of how a
+ * shape component is written. These rows describe the sandbox boundaries the
+ * running system enforces; they must never contradict that skill, and any
+ * authoring rule (which imports, props, kit primitives, media, actions) is
+ * changed THERE, then mirrored here in plain words. When the sandbox itself
+ * gains or loses a boundary, this file changes and the screen follows.
+ *
+ * Pure data — no React, no server imports.
  *
  * Cross-repo context lives once, in
  * `common-docs/systems/architecture/content-ir/FEATURE.md`.
