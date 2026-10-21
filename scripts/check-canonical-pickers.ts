@@ -146,17 +146,28 @@ interface Finding {
   rule: string;
 }
 
+/**
+ * `git ls-files --cached` still lists a tracked file a peer deleted in the
+ * working tree without committing; reading it crashed the whole guard (ENOENT).
+ */
+export function existingOnly(files: readonly string[], root: string): string[] {
+  return files.filter((file) => existsSync(path.join(root, file)));
+}
+
 function sourceFiles(): string[] {
   const out = execSync(
     "git ls-files --cached --others --exclude-standard '*.ts' '*.tsx'",
     { cwd: ROOT, encoding: "utf8", maxBuffer: 32 * 1024 * 1024 },
   );
-  return out
-    .split("\n")
-    .filter(Boolean)
-    .filter((file) =>
-      /^(app|components|features|hooks|lib|utils)\//.test(file),
-    );
+  return existingOnly(
+    out
+      .split("\n")
+      .filter(Boolean)
+      .filter((file) =>
+        /^(app|components|features|hooks|lib|utils)\//.test(file),
+      ),
+    ROOT,
+  );
 }
 
 function lineFor(text: string, index: number): number {
@@ -355,6 +366,14 @@ function selfTest(): void {
         "positive that makes agents delete the guard instead of the fork.",
     );
   }
+  // A tracked file deleted in the working tree is skipped, never read (ENOENT).
+  const present = existingOnly(["package.json", "no/such/deleted-file.tsx"], ROOT);
+  if (present.length !== 1 || present[0] !== "package.json") {
+    failures.push(
+      `existingOnly kept a missing file or dropped a present one: ${JSON.stringify(present)}`,
+    );
+  }
+
   if (failures.length > 0) {
     console.error("\n🚨 check:canonical-pickers SELF-TEST FAILED\n");
     for (const failure of failures) console.error(`  ✗ ${failure}`);

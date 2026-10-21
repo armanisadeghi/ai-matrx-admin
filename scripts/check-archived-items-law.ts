@@ -815,18 +815,29 @@ export function lawfulEntitiesIn(
   return lawful;
 }
 
+/**
+ * `git ls-files --cached` still lists a tracked file a peer deleted in the
+ * working tree without committing; reading it crashed the whole guard (ENOENT).
+ */
+export function existingOnly(files: readonly string[], root: string): string[] {
+  return files.filter((file) => existsSync(path.join(root, file)));
+}
+
 function sourceFiles(): string[] {
   const out = execSync(
     "git ls-files --cached --others --exclude-standard '*.ts' '*.tsx'",
     { cwd: ROOT, encoding: "utf8", maxBuffer: 32 * 1024 * 1024 },
   );
-  return out
-    .split("\n")
-    .filter(Boolean)
-    .filter((file) =>
-      /^(app|components|features|hooks|lib|utils|providers)\//.test(file),
-    )
-    .filter((file) => !/\.(test|spec)\.tsx?$/.test(file));
+  return existingOnly(
+    out
+      .split("\n")
+      .filter(Boolean)
+      .filter((file) =>
+        /^(app|components|features|hooks|lib|utils|providers)\//.test(file),
+      )
+      .filter((file) => !/\.(test|spec)\.tsx?$/.test(file)),
+    ROOT,
+  );
 }
 
 // ── Self-test ──────────────────────────────────────────────────────────────
@@ -1316,6 +1327,14 @@ function selfTest(): void {
     );
   }
 
+  // A tracked file deleted in the working tree is skipped, never read (ENOENT).
+  const present = existingOnly(["package.json", "no/such/deleted-file.tsx"], ROOT);
+  if (present.length !== 1 || present[0] !== "package.json") {
+    failures.push(
+      `existingOnly kept a missing file or dropped a present one: ${JSON.stringify(present)}`,
+    );
+  }
+
   if (failures.length > 0) {
     console.error("\n🚨 check:archived-items-law SELF-TEST FAILED\n");
     for (const failure of failures) console.error(`  ✗ ${failure}`);
@@ -1347,6 +1366,34 @@ function selfTest(): void {
   );
 }
 
+/**
+ * `--files` mode reads only what can change the result: the named files, the
+ * `utils/supabase/` helper files, and every file whose text says "archive" in
+ * any case — each CONTROL_SIGNALS pattern contains that word, so a file
+ * without it can never add to the settled classes. `git grep` finds them
+ * without node reading 18k files (a whole read took 50 s+ under load, past the
+ * Stop hook's budget); the derived classes are identical to a whole-repo run.
+ */
+function passOneCandidates(only: ReadonlySet<string>): string[] {
+  let out = "";
+  try {
+    out = execSync("git grep -l -i --untracked -e archive -- '*.ts' '*.tsx'", {
+      cwd: ROOT,
+      encoding: "utf8",
+      maxBuffer: 32 * 1024 * 1024,
+    });
+  } catch (error) {
+    // exit 1 = no file mentions it; anything else is a real failure.
+    if ((error as { status?: number }).status !== 1) throw error;
+  }
+  const mention = new Set(out.split("\n").filter(Boolean));
+  return sourceFiles().filter(
+    (file) =>
+      (only.has(file) || mention.has(file) || /^utils\/supabase\//.test(file)) &&
+      existsSync(path.join(ROOT, file)),
+  );
+}
+
 /** `--files a.ts b.tsx` (repo-relative) -> the set to judge; null = whole repo. */
 function filesArg(): Set<string> | null {
   const at = process.argv.indexOf("--files");
@@ -1367,11 +1414,7 @@ function main(): void {
 
   const only = filesArg();
   const entities = archivableEntities(readFileSync(DB_TYPES, "utf8"));
-  const listed =
-    only === null
-      ? sourceFiles()
-      : sourceFiles().filter((file) => existsSync(path.join(ROOT, file)));
-  const files = listed.map((file) => ({
+  const files = (only === null ? sourceFiles() : passOneCandidates(only)).map((file) => ({
     file,
     raw: readFileSync(path.join(ROOT, file), "utf8"),
   }));
