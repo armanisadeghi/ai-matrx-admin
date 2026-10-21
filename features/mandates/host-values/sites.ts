@@ -82,6 +82,14 @@ export const HOST_VALUE_SITES: readonly HostValueSite[] = [
     status: "wired",
   },
   {
+    site: "agent studio assistant",
+    mandateKey: "agent_studio.do_the_job_together",
+    provision: "agent_studio.do_the_job_together",
+    // Sent on every turn (everyTurn): studio_mode, studio_phase, agent_id, build_id.
+    file: "features/agents/studio/components/AgentStudioPage.tsx",
+    status: "wired",
+  },
+  {
     site: "voice tutor",
     mandateKey: "education.voice_tutor",
     provision: "education.voice_tutor",

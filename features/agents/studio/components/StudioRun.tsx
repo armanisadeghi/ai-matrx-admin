@@ -19,7 +19,6 @@ import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { AgentRunner } from "@ai-matrx/chat/agents/components/smart/AgentRunner";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { registerConversationHooks } from "@ai-matrx/chat/host";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
 import { loadConversation } from "@ai-matrx/chat/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { followWhatIsStillInFlight } from "@ai-matrx/chat/agents/runtime-reconnect/follow-what-is-still-in-flight";
@@ -64,11 +63,10 @@ interface StudioRunProps {
   agentId?: string | null;
   /**
    * Run through a MANDATE (the server resolves the holder; never an agent id). Used by the Studio assistant.
-   * `mandateVariables` are the page's offered values (ids and where we are only; the server builds the rest)
-   * and ride every turn — `everyTurnThroughMandate` — so each turn sees the current workspace.
+   * The page's offered values ride every turn through the host-values channel (`useMandateHostValues`
+   * with `everyTurn`); the server builds the rest from the conversation id.
    */
   mandateKey?: AnyMandateKey | null;
-  mandateVariables?: () => Record<string, unknown>;
   /** What the mandate's agent does HERE, for the top Agents menu (the run declares the job it runs). */
   mandateDoes?: string;
   /** The surface the server resolves this chat's tool defaults from. */
@@ -88,7 +86,6 @@ interface StudioRunProps {
 export function StudioRun({
   agentId = null,
   mandateKey = null,
-  mandateVariables,
   mandateDoes,
   surfaceName,
   conversationId = null,
@@ -102,10 +99,6 @@ export function StudioRun({
 }: StudioRunProps) {
   const { launchAgent, launchMandate } = useAgentLauncher();
   useDeclaredSurfaceMandates(mandateKey && mandateDoes ? [{ mandateKey, does: mandateDoes }] : []);
-  const variablesRef = useRef(mandateVariables);
-  useEffect(() => {
-    variablesRef.current = mandateVariables;
-  });
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const [shown, setShown] = useState<string | null>(null);
@@ -113,8 +106,6 @@ export function StudioRun({
   // A conversation reopened from the URL (a reload) lands on its LATEST turn: `AgentRunner` does it
   // itself (@ai-matrx/chat `useOpenAtLatest`, 0.8.198), so the Studio keeps no pin of its own.
   const startedFor = useRef<string | null>(null);
-  const unhook = useRef<(() => void) | null>(null);
-  useEffect(() => () => unhook.current?.(), []);
 
   useEffect(() => {
     if (!agentId && !mandateKey) return;
@@ -140,7 +131,6 @@ export function StudioRun({
         seed || context || mandateKey
           ? {
               ...(seed?.variables && Object.keys(seed.variables).length > 0 ? { variables: seed.variables } : {}),
-              ...(mandateKey ? { variables: variablesRef.current?.() ?? {} } : {}),
               ...(seed?.userInput ? { userInput: seed.userInput } : {}),
               ...(context ? { context } : {}),
               ...(surfaceName ? { surfaceName } : {}),
@@ -148,7 +138,6 @@ export function StudioRun({
           : undefined,
       onConversationCreated: (id: string) => {
         rememberLaunchedRun(key, id);
-        hookUp(id);
         setShown(id);
         onConversation?.(id);
       },
@@ -157,25 +146,6 @@ export function StudioRun({
       (mandateKey ? launchMandate(mandateKey, options as never) : launchAgent(agentId as string, options as never)).catch(
         (e: unknown) => setError(e instanceof Error ? e.message : String(e)),
       );
-    // Every turn goes through the mandate with the page's CURRENT offered values (the server rebuilds the
-    // workspace from the conversation id; the client sends ids and where we are, nothing else).
-    // The Studio shows what the person typed and attached on their own bubble: the "N sent" receipt
-    // chip is the chat package's own host option (`hostSuppliesContext`, display only; the receipt
-    // stays in Debug and the canvas tab).
-    const hookUp = (id: string) => {
-      unhook.current?.();
-      unhook.current = registerConversationHooks(
-        id,
-        mandateKey
-          ? {
-              hostSuppliesContext: true,
-              everyTurnThroughMandate: true,
-              beforeSend: async () => ({ variables: variablesRef.current?.() ?? {} }),
-            }
-          : { hostSuppliesContext: true },
-      );
-    };
-
     if (openId) {
       dispatch(
         loadConversation({
@@ -195,7 +165,6 @@ export function StudioRun({
           // Every reopen runs the shared second half: a turn still running on the server
           // (a refresh mid-answer, a question answered elsewhere) is followed, never lost.
           followWhatIsStillInFlight(dispatch, openId);
-          hookUp(openId);
           setShown(openId);
           onConversation?.(openId);
         })

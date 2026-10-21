@@ -94,12 +94,25 @@ function sourcesOf(n: number, s: Step, fieldsOf: (tableId: string) => Field[], t
   return [];
 }
 
-function triggerSources(env: Env): Source[] {
+/** What each connected-app trigger hands a run, by key: `{{trigger.body.<key>}}`. Mirrors the server's items
+ *  (aidream services/automations/app_triggers.py: _event_item, poll_gmail, poll_slack, _outlook_item). */
+export const APP_TRIGGER_FIELDS: Record<string, Array<[key: string, label: string]>> = {
+  calendar_event: [["title", "Title"], ["starts_at", "Starts at"], ["ends_at", "Ends at"], ["location", "Location"], ["description", "Description"], ["organizer", "Organizer"], ["attendees", "Guests"], ["link", "Link"]],
+  gmail_received: [["from", "From"], ["to", "To"], ["subject", "Subject"], ["snippet", "Preview"], ["date", "Date"], ["received_at", "Received at"], ["labels", "Labels"], ["link", "Link"]],
+  outlook_received: [["from", "From"], ["from_name", "Sender name"], ["to", "To"], ["subject", "Subject"], ["received_at", "Received at"], ["importance", "Importance"], ["link", "Link"]],
+  slack_message: [["text", "Message"], ["user", "Sender"], ["channel", "Channel"], ["ts", "Sent at"]],
+};
+
+export function triggerSources(env: Env): Source[] {
   const on = env.trigger?.on;
   if (on === "webhook") return [];
   if (on === "schedule" || !on) return [];
+  const app = APP_TRIGGER_FIELDS[on];
+  if (app) return app.map(([key, label]) => ({ token: tok(`trigger.body.${key}`), label: `${APP_NAME[on] ?? "App"} › ${label}`, group: APP_NAME[on] ?? "App" }));
   return env.fields.map((f) => ({ token: tok(`trigger.${f.key}`), label: `Starting record › ${f.label || f.key}`, group: "Starting record" }));
 }
+
+const APP_NAME: Record<string, string> = { calendar_event: "Calendar event", gmail_received: "Gmail email", outlook_received: "Outlook email", slack_message: "Slack message" };
 
 function labelOf(token: string, sources: Source[]): string {
   const hit = sources.find((x) => x.token === token);

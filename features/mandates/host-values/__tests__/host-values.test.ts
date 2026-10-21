@@ -55,6 +55,16 @@ describe("host-value sites guard", () => {
     });
   }
 
+  it("the Studio sends its four values every turn and keeps no hooks of its own", () => {
+    const page = readFileSync(path.join(ROOT, "features/agents/studio/components/AgentStudioPage.tsx"), "utf8");
+    const run = readFileSync(path.join(ROOT, "features/agents/studio/components/StudioRun.tsx"), "utf8");
+    expect(page).toMatch(
+      /useMandateHostValues\(\s*ASSISTANT_MANDATE,\s*"agent_studio\.do_the_job_together",[\s\S]*?studio_mode[\s\S]*?studio_phase[\s\S]*?agent_id[\s\S]*?build_id[\s\S]*?\{\s*everyTurn:\s*true\s*\}/,
+    );
+    expect(page).not.toMatch(/assistantVariables|mandateVariables/);
+    expect(run).not.toMatch(/mandateVariables|registerConversationHooks|variablesRef/);
+  });
+
   it("the assist launch provides the chip's values and opens the mandate door", () => {
     const source = readFileSync(
       path.join(ROOT, "features/assists/runtime/handlers/launch-agent.ts"),

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Button } from "@ai-matrx/design-system/controls";
 import {
   ArrowRight,
   Loader2,
@@ -208,15 +209,14 @@ function StepRow({
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           {secondary && (
-            <button
-              type="button"
+            <Button
+              variant="outline"
               onClick={() => void secondary.onAction()}
               disabled={disabled}
-              className="inline-flex items-center gap-1 h-7 px-2.5 rounded-full matrx-glass-card text-[11px] font-medium text-foreground/80 hover:text-foreground disabled:opacity-40 disabled:pointer-events-none transition-colors"
+              icon={<secondary.icon />}
             >
-              <secondary.icon className="h-3 w-3" />
               {secondary.label}
-            </button>
+            </Button>
           )}
           {href ? (
             <Link href={href} className={actionClass}>

@@ -86,6 +86,7 @@ import { STUDIO_ASSISTANT_MANDATE, STUDIO_SURFACE_NAME, buildFromWorkspace, chec
 import { approvalText, codeApprove, type WorkspaceInput } from "../workspace";
 import { StudioWorkspacePane, useStudioWorkspace } from "./StudioWorkspacePane";
 import { useStudioBuilderFeed } from "../studio-builder-feed";
+import { useMandateHostValues } from "@/features/mandates/host-values/useMandateHostValues";
 import { StudioStart, keepStudioDraft } from "./StudioStart";
 import { StudioRun } from "./StudioRun";
 import { StudioControls, type ControlsTab } from "./StudioControls";
@@ -367,13 +368,18 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     );
   }, [state, agentName]);
 
-  /** The page's offered values, sent on EVERY turn: ids and where we are only (the server builds the rest). */
-  const assistantVariables = () => ({
-    studio_mode: mode.id,
-    studio_phase: state.agentId ? "improving" : state.buildId ? "building" : "doing",
-    ...(state.agentId ? { agent_id: state.agentId } : {}),
-    ...(state.buildId ? { build_id: state.buildId } : {}),
-  });
+  /** The page's offered values ride EVERY turn through the host-values channel (ids and where we are only). */
+  useMandateHostValues(
+    ASSISTANT_MANDATE,
+    "agent_studio.do_the_job_together",
+    {
+      studio_mode: mode.id,
+      studio_phase: state.agentId ? "improving" : state.buildId ? "building" : "doing",
+      agent_id: state.agentId ?? undefined,
+      build_id: state.buildId ?? undefined,
+    },
+    { everyTurn: true },
+  );
 
   /**
    * One turn into the assistant's conversation (feedback from the controls), through the mandate.
@@ -389,7 +395,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
         surfaceKey: ASSISTANT_SURFACE,
         sourceFeature: "agent-studio",
         config: { displayMode: "direct", autoRun: true, allowChat: true },
-        runtime: { userInput: text, variables: assistantVariables(), surfaceName: STUDIO_SURFACE_NAME },
+        runtime: { userInput: text, surfaceName: STUDIO_SURFACE_NAME },
       });
       const started = conversationId ?? launched.conversationId;
       if (!started) throw new Error("The assistant did not open a conversation");
@@ -524,7 +530,6 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   ) : (
     <StudioRun
       mandateKey={ASSISTANT_MANDATE}
-      mandateVariables={assistantVariables}
       mandateDoes={ASSISTANT_DOES}
       surfaceName={STUDIO_SURFACE_NAME}
       conversationId={state.chatId}

@@ -15,6 +15,7 @@ import {
   Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Field } from "@ai-matrx/design-system/controls";
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import {
@@ -234,12 +235,9 @@ export default function TagManager() {
         />
       </div>
       <div className="flex justify-end gap-2">
-        <button
-          onClick={() => setCreateOpen(false)}
-          className="inline-flex items-center h-8 px-4 rounded-full matrx-glass-card text-xs font-medium text-muted-foreground hover:text-foreground transition-colors min-h-[44px]"
-        >
+        <Button variant="outline" onClick={() => setCreateOpen(false)}>
           Cancel
-        </button>
+        </Button>
         <button
           onClick={handleSave}
           disabled={!name.trim() || saving}
@@ -258,7 +256,7 @@ export default function TagManager() {
 
   return (
     <div className="p-3 sm:p-4 space-y-3">
-      <div className="flex items-center gap-2 rounded-full matrx-glass-thin-border px-3 py-1.5">
+      <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5">
         <span className="type-secondary font-medium text-foreground/80">Tags</span>
         <span className="type-meta text-muted-foreground tabular-nums">
           <UntrustedCount
@@ -267,23 +265,17 @@ export default function TagManager() {
             label="Tags"
           />
         </span>
-        <div className="flex-1 relative">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-          <input
+        <div className="flex-1">
+          <Field
+            icon={<Search />}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search tags..."
-            className="w-full h-6 pl-7 pr-2 text-[11px] rounded-full matrx-glass-card border-0 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
-            style={{ fontSize: "16px" }}
           />
         </div>
-        <button
-          onClick={openCreate}
-          className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full matrx-glass-card text-[11px] font-medium text-primary hover:text-primary/80 transition-colors min-h-[44px] sm:min-h-0"
-        >
-          <Plus className="h-3 w-3" />
+        <Button variant="outline" onClick={openCreate} icon={<Plus />}>
           <span className="hidden sm:inline">Add Tag</span>
-        </button>
+        </Button>
       </div>
 
       <CrossCuttingTagsPanel onTagsCreated={refresh} />

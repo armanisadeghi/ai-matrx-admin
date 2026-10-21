@@ -120,7 +120,7 @@ export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layo
   if (!document && (stream.isStreaming || streamingDocText)) {
     return (
       <div className="flex-1 min-w-0 overflow-y-auto p-3 sm:p-4">
-        <div className="flex items-center gap-2 rounded-full matrx-glass-thin-border px-3 py-1.5 mb-4">
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 mb-4">
           <Loader2 className="h-3.5 w-3.5 text-primary animate-spin shrink-0" />
           <span className="type-secondary font-medium text-primary">
             {stream.isStreaming ? "Generating document…" : "Finalizing…"}

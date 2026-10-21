@@ -6,6 +6,7 @@ import { ReadFailure } from '@ai-matrx/design-system';
 import { UntrustedCount } from '@ai-matrx/design-system';
 import { ExternalLink, Plus, Loader2, Link2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Field } from '@ai-matrx/design-system/controls';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useTopicContext } from '../../context/ResearchContext';
 import { useResearchApi } from '../../hooks/useResearchApi';
@@ -71,30 +72,28 @@ export default function LinkExplorer() {
 
     return (
         <div className="p-3 sm:p-4 space-y-3">
-            <div className="flex items-center gap-2 rounded-xl matrx-glass-thin-border px-3 py-1.5">
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5">
                 <span className="type-secondary font-medium text-foreground/80">Links</span>
                 <span className="type-meta text-muted-foreground tabular-nums">
                     <UntrustedCount read={linksRead} value={`${filtered.length}/${linkList.length}`} label="Links" />
                 </span>
-                <div className="flex-1 relative">
-                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                    <input
+                <div className="flex-1">
+                    <Field
+                        icon={<Search />}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         placeholder="Search url, text, source..."
-                        className="w-full h-6 pl-7 pr-2 text-[11px] rounded-full matrx-glass-card border-0 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
-                        style={{ fontSize: '16px' }}
                     />
                 </div>
                 {selected.size > 0 && (
-                    <button
+                    <Button
+                        variant="outline"
                         onClick={() => handleAddToScope()}
                         disabled={adding}
-                        className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full matrx-glass-card text-[11px] font-medium text-primary disabled:opacity-50 transition-colors shrink-0"
+                        icon={adding ? <Loader2 className="animate-spin" /> : <Plus />}
                     >
-                        {adding ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
                         Add {selected.size}
-                    </button>
+                    </Button>
                 )}
             </div>
 

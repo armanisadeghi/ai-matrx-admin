@@ -1,8 +1,8 @@
 'use client';
 
 import { RefreshCw, Pencil, Plus, Loader2 } from 'lucide-react';
+import { Button, ControlRow } from '@ai-matrx/design-system/controls';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
 import { ITERATION_MODE_INFO } from '../../constants';
 
 interface IterationControlsProps {
@@ -13,36 +13,27 @@ interface IterationControlsProps {
 }
 
 export function IterationControls({ onRebuild, onUpdate, onAddKeywords, isLoading }: IterationControlsProps) {
-    const btnClass = cn(
-        'inline-flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium transition-all',
-        'matrx-glass-card text-muted-foreground hover:text-foreground',
-        'disabled:opacity-40 disabled:pointer-events-none',
-    );
-
     return (
-        <div className="flex items-center gap-1.5 p-1 rounded-full matrx-glass-thin-border">
-            <button onClick={onAddKeywords} disabled={isLoading} className={btnClass}>
-                <Plus className="h-3 w-3" />
+        <ControlRow>
+            <Button variant="outline" onClick={onAddKeywords} disabled={isLoading} icon={<Plus />}>
                 <span className="hidden sm:inline">Add Keywords</span>
-            </button>
+            </Button>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <button onClick={onRebuild} disabled={isLoading} className={btnClass}>
-                        {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                    <Button variant="outline" onClick={onRebuild} disabled={isLoading} icon={isLoading ? <Loader2 className="animate-spin" /> : <RefreshCw />}>
                         <span className="hidden sm:inline">Rebuild</span>
-                    </button>
+                    </Button>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs type-secondary">{ITERATION_MODE_INFO.rebuild.description}</TooltipContent>
             </Tooltip>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <button onClick={onUpdate} disabled={isLoading} className={btnClass}>
-                        {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Pencil className="h-3 w-3" />}
+                    <Button variant="outline" onClick={onUpdate} disabled={isLoading} icon={isLoading ? <Loader2 className="animate-spin" /> : <Pencil />}>
                         <span className="hidden sm:inline">Update</span>
-                    </button>
+                    </Button>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs type-secondary">{ITERATION_MODE_INFO.update.description}</TooltipContent>
             </Tooltip>
-        </div>
+        </ControlRow>
     );
 }
