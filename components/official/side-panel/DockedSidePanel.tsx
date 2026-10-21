@@ -274,7 +274,8 @@ export function DockedSidePanel({
               edge === "left" ? "right-0" : "left-0",
               dragging
                 ? "bg-primary"
-                : "bg-transparent group-hover/handle:bg-primary/50 group-focus-visible/handle:bg-primary",
+                : // At rest the inner edge is a 1px border, so the panel never blends into the page beside it.
+                  "bg-border group-hover/handle:bg-primary/50 group-focus-visible/handle:bg-primary",
             )}
           />
         </div>
