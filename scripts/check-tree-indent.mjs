@@ -26,6 +26,8 @@ export function findings(file, text) {
   const out = [];
   const lines = text.split("\n");
   lines.forEach((line, i) => {
+    // Not a tree (a meter, a chart offset): say why on the line or the one above.
+    if (/tree-indent-ok:\s*\S/.test(line) || /tree-indent-ok:\s*\S/.test(lines[i - 1] ?? "")) return;
     if (NAMED_STEP.test(line)) {
       out.push(`${file}:${i + 1} tree indent step in a local constant — import TREE_INDENT_PX / treeIndentPx from components/official/topic-tree/geometry.tsx`);
       return;
@@ -50,6 +52,7 @@ function selfTest() {
   const green = [
     ...findings("a.tsx", `<div style={treeIndentStyle(depth)} />`),
     ...findings("a.tsx", `const pct = Math.round(level * 100);`),
+    ...findings("a.tsx", `// tree-indent-ok: chart axis offset, not a tree\nconst w = { width: depth * 20 };`),
   ];
   if (red.length !== 5 || green.length !== 0) {
     console.error(`self-test FAILED: literal steps=${red.length} (want 5), shared helper / non-indent=${green.length} (want 0)`);
