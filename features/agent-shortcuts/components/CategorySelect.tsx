@@ -38,6 +38,7 @@ import {
   TreeFolderIcon,
 } from "@/components/official/topic-tree/geometry";
 import {
+  DynamicIcon,
   getIconComponent,
 } from "@ai-matrx/icons";
 import {
@@ -261,7 +262,17 @@ export function CategorySelect({
             </span>
           ) : selectedCategory ? (
             <div className="flex items-center gap-1.5 min-w-0">
-              <TreeFolderIcon />
+              {selectedCategory.iconName ? (
+                <DynamicIcon
+                  name={selectedCategory.iconName}
+                  color={selectedCategory.color || "zinc"}
+                  size={4}
+                  fallbackIcon="SquareMenu"
+                  className="h-4 w-4 shrink-0"
+                />
+              ) : (
+                <TreeFolderIcon />
+              )}
               {showPlacementHeaders && selectedPlacementMeta && (
                 <Badge
                   variant="secondary"
@@ -361,7 +372,17 @@ function CategorySelectItem({
           className="inline-flex items-center shrink-0"
           style={{ paddingLeft: indent }}
         >
-          <TreeFolderIcon open={hasChildren} />
+          {category.iconName ? (
+            <DynamicIcon
+              name={category.iconName}
+              color={category.color || "zinc"}
+              size={4}
+              fallbackIcon="SquareMenu"
+              className="h-4 w-4 shrink-0"
+            />
+          ) : (
+            <TreeFolderIcon open={hasChildren} />
+          )}
         </span>
         <span
           className={cn(

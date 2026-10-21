@@ -480,6 +480,7 @@ function SortableCategoryRow({
         expandable={node.hasChildren}
         expanded={!collapsed}
         onToggle={onToggleCollapse}
+        label={node.row.label}
       />
       <TreeFolderIcon open={node.hasChildren && !collapsed} />
 

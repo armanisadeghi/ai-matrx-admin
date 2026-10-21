@@ -165,6 +165,7 @@ function ChildRow({ child, depth }: { child: DirectoryChild; depth: number }) {
           expandable={child.children.length > 0}
           expanded={open}
           onToggle={() => setOpen((value) => !value)}
+          label={child.label}
         />
         {child.children.length > 0 ? (
           <TreeFolderIcon open={open} />

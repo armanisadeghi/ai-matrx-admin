@@ -1249,6 +1249,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                         )}
                         expanded={isExpanded}
                         onToggle={() => toggleCategoryExpanded(cat.id)}
+                        label={cat.label}
                       />
                       <TreeFolderIcon open={isExpanded} />
                       <span className="truncate">{cat.label}</span>
