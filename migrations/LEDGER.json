@@ -2084,6 +2084,12 @@
       "checksum": "c66407c51fe889beff7bfb6dce9162aa9b7c2add14aa25f95f6dba3efdcb8d31",
       "applied_at": "2026-09-22 17:43:57.685784+00"
     },
+    "migrations/campaign/close_core_a_a_a_record_moves_to_another_table_with_what_does_not_fit_in_history.sql": {
+      "source": "matrx-frontend",
+      "filename": "close_core_a_a_a_record_moves_to_another_table_with_what_does_not_fit_in_history.sql",
+      "checksum": "102bea462e25bb7623d5b14e985dd1b221cba5a40c781307965da5db14d496e9",
+      "applied_at": "2026-10-21 17:09:35.142107+00"
+    },
     "migrations/campaign/confstructure_a_the_hide_structure_knob.sql": {
       "source": "matrx-frontend",
       "filename": "confstructure_a_the_hide_structure_knob.sql",
