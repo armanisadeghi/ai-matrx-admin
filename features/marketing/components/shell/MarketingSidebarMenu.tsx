@@ -15,11 +15,12 @@
  *     (lib/brand-sections.ts). Coming-soon sections stay VISIBLE with a tag —
  *     the brand workspace's promised shape is part of the map (Arman,
  *     2026-08-28).
- *   • WEBSITE — one site's inventory: `MARKETING_WEBSITE_SECTIONS`, plus the
- *     door into the SEO practice on that site (the menu points at the
- *     practice; it never re-contains it).
- *   • SEO     — the practice on one site: `MARKETING_SEO_SECTIONS`, plus the
- *     door back to the site's inventory.
+ *   • WEBSITE — one site: its inventory (`MARKETING_WEBSITE_SECTIONS`), its
+ *     main SEO rooms listed directly, and its content plan and reputation
+ *     (Arman, 2026-10-21: "websites have seo, google search console and
+ *     things like that").
+ *   • SEO     — the full SEO practice on one site (`MARKETING_SEO_SECTIONS`);
+ *     its back row returns to the website.
  *
  * `RouteMenuSlot` owns switching, collapse, the mobile presentation, and the
  * reversible Main Menu control. This component only renders registry data.
@@ -28,7 +29,13 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import NavLink from "@/components/navigation/NavLink";
 import { usePathname } from "next/navigation";
-import { ChevronLeft, Globe, Search, TrendingUp } from "lucide-react";
+import {
+  ChevronLeft,
+  ListTree,
+  Search,
+  ShieldCheck,
+  TrendingUp,
+} from "lucide-react";
 
 import { IconResolver } from "@ai-matrx/icons";
 import { resolveActiveRouteMode } from "@/features/shell/components/header/route-mode-match";
@@ -41,9 +48,20 @@ import { MARKETING_PILLARS } from "@/features/marketing/lib/marketing-nav";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { resolveMarketingSidebarContext } from "@/features/marketing/lib/sidebar-site-context";
 import {
+  getMarketingSeoSection,
   listMarketingSeoModeGroups,
   listMarketingWebsiteModeGroups,
 } from "@/features/marketing/lib/route-sections";
+
+/** The SEO rooms a website's own menu lists directly; the rest sit behind "All SEO". */
+const WEBSITE_MENU_SEO_SLUGS = [
+  "keywords",
+  "rankings",
+  "search-console",
+  "audit",
+  "backlinks",
+  "ai-visibility",
+] as const;
 import { listMarketingBrandModeGroups } from "@/features/marketing/lib/brand-sections";
 import {
   arrangeBrandNav,
@@ -171,7 +189,8 @@ function useScrollActiveIntoView(activeHref: string | undefined) {
       const row = el.getBoundingClientRect();
       const box = scroller.getBoundingClientRect();
       if (row.top < box.top) scroller.scrollTop -= box.top - row.top;
-      else if (row.bottom > box.bottom) scroller.scrollTop += row.bottom - box.bottom;
+      else if (row.bottom > box.bottom)
+        scroller.scrollTop += row.bottom - box.bottom;
       return true;
     };
     if (scrollToActive()) return;
@@ -278,7 +297,8 @@ function BrandMenu({
   // A person brand answers "do they have a website" from its sites; the read is
   // cheap and cached, and only a person brand waits on it.
   const sites = useBrandSites(kind === "person" ? (brand.data?.id ?? "") : "");
-  const hasWebsite = kind !== "person" || (sites.data?.length ?? 0) > 0 || sites.isPending;
+  const hasWebsite =
+    kind !== "person" || (sites.data?.length ?? 0) > 0 || sites.isPending;
   const allGroups = listMarketingBrandModeGroups(brandPath);
   const groups = arrangeBrandNav(allGroups, kind, hasWebsite);
   // Hidden rows (a person's Locations) still resolve as active on their own address.
@@ -358,8 +378,96 @@ function WebsiteMenu({
     groups.flatMap((group) => group.modes),
     pathname,
   );
-  const activeRef = useScrollActiveIntoView(active?.href);
+  const activeRef = useScrollActiveIntoView(active?.href ?? pathname);
   const siteLabel = site.data?.name ?? site.data?.domain ?? siteSeg;
+  // A website HAS its SEO (Arman, 2026-10-21): the main SEO rooms sit right in
+  // the website's menu; the full SEO menu is one click in ("All SEO").
+  const seoPath = `/marketing/${brandSeg}/seo/${siteSeg}`;
+  const seoRows = [
+    ...WEBSITE_MENU_SEO_SLUGS.flatMap((slug) => {
+      const section = getMarketingSeoSection(slug);
+      const Icon = MARKETING_SEO_SECTION_ICONS[slug];
+      return section
+        ? [
+            {
+              href: `${seoPath}/${slug}`,
+              label: section.name,
+              title: section.description,
+              Icon,
+            },
+          ]
+        : [];
+    }),
+    {
+      href: seoPath,
+      label: "All SEO",
+      title:
+        "Every SEO room for this site: technical health, links, programs, setup.",
+      Icon: Search,
+    },
+  ];
+  const brandPath = `/marketing/${brandSeg}`;
+  const siteWorkRows = [
+    {
+      href: `${brandPath}/content/plan/${siteSeg}`,
+      label: "Content plan",
+      title:
+        "Every URL this site should have — pillars, clusters, briefs, keywords.",
+      Icon: ListTree,
+    },
+    {
+      href: `${brandPath}/intelligence/reputation/${siteSeg}`,
+      label: "Reputation",
+      title:
+        "Publication opportunities and reputation decisions for this site.",
+      Icon: ShieldCheck,
+    },
+  ];
+  const siteWorkActive = siteWorkRows.some(
+    (row) => pathname === row.href || pathname.startsWith(`${row.href}/`),
+  );
+
+  // The site's own pages first, its SEO and content beside them, settings last.
+  const inventoryGroups = groups.filter(
+    (group) => group.label !== "Configuration",
+  );
+  const configGroups = groups.filter(
+    (group) => group.label === "Configuration",
+  );
+  const renderGroups = (list: typeof groups) =>
+    list.map((group) => (
+      <div key={group.label}>
+        {group.label === "Start" ? null : (
+          <GroupHeading label={group.label} expanded={expanded} />
+        )}
+        {group.modes.map((mode) => {
+          const Icon = MARKETING_WEBSITE_SECTION_ICONS[mode.slug];
+          const isActive = !siteWorkActive && active?.href === mode.href;
+          return (
+            <NavRow
+              key={mode.href}
+              href={mode.href}
+              label={mode.slug === "" ? siteLabel : mode.name}
+              title={mode.description}
+              active={isActive}
+              activeRef={
+                isActive
+                  ? (el) => {
+                      activeRef.current = el;
+                    }
+                  : undefined
+              }
+              icon={
+                <Icon
+                  size={ROUTE_MENU_ICON_SIZE}
+                  strokeWidth={ROUTE_MENU_ICON_STROKE_WIDTH}
+                />
+              }
+            />
+          );
+        })}
+      </div>
+    ));
 
   return (
     <>
@@ -367,52 +475,51 @@ function WebsiteMenu({
         href={`/marketing/${brandSeg}/websites`}
         label={brand.data?.name ?? "All websites"}
       />
-      {groups.map((group) => (
-        <div key={group.label}>
-          {group.label === "Start" ? null : (
-            <GroupHeading label={group.label} expanded={expanded} />
-          )}
-          {group.modes.map((mode) => {
-            const Icon = MARKETING_WEBSITE_SECTION_ICONS[mode.slug];
-            const isActive = active?.href === mode.href;
-            return (
-              <NavRow
-                key={mode.href}
-                href={mode.href}
-                label={mode.slug === "" ? siteLabel : mode.name}
-                title={mode.description}
-                active={isActive}
-                activeRef={
-                  isActive
-                    ? (el) => {
-                        activeRef.current = el;
-                      }
-                    : undefined
-                }
-                icon={
-                  <Icon
-                    size={ROUTE_MENU_ICON_SIZE}
-                    strokeWidth={ROUTE_MENU_ICON_STROKE_WIDTH}
-                  />
-                }
-              />
-            );
-          })}
-        </div>
+      {renderGroups(inventoryGroups)}
+      <GroupHeading label="SEO" expanded={expanded} />
+      {seoRows.map((row) => (
+        <NavRow
+          key={row.href}
+          href={row.href}
+          label={row.label}
+          title={row.title}
+          active={false}
+          icon={
+            <row.Icon
+              size={ROUTE_MENU_ICON_SIZE}
+              strokeWidth={ROUTE_MENU_ICON_STROKE_WIDTH}
+            />
+          }
+        />
       ))}
-      <GroupHeading label="Search & SEO" expanded={expanded} />
-      <NavRow
-        href={`/marketing/${brandSeg}/seo/${siteSeg}`}
-        label="Open SEO workspace"
-        title="Keywords, rankings, technical health, links, and AI visibility for this site."
-        active={false}
-        icon={
-          <Search
-            size={ROUTE_MENU_ICON_SIZE}
-            strokeWidth={ROUTE_MENU_ICON_STROKE_WIDTH}
+      <GroupHeading label="Content & reputation" expanded={expanded} />
+      {siteWorkRows.map((row) => {
+        const isActive =
+          pathname === row.href || pathname.startsWith(`${row.href}/`);
+        return (
+          <NavRow
+            key={row.href}
+            href={row.href}
+            label={row.label}
+            title={row.title}
+            active={isActive}
+            activeRef={
+              isActive
+                ? (el) => {
+                    activeRef.current = el;
+                  }
+                : undefined
+            }
+            icon={
+              <row.Icon
+                size={ROUTE_MENU_ICON_SIZE}
+                strokeWidth={ROUTE_MENU_ICON_STROKE_WIDTH}
+              />
+            }
           />
-        }
-      />
+        );
+      })}
+      {renderGroups(configGroups)}
     </>
   );
 }
@@ -443,21 +550,23 @@ function SeoMenu({
 
   return (
     <>
-      <BackRow href={`/marketing/${brandSeg}/seo`} label="SEO overview" />
-      <NavLink
+      {/* SEO lives inside its website (Arman, 2026-10-21): back goes to the site. */}
+      <BackRow
+        href={`/marketing/${brandSeg}/websites/${siteSeg}`}
+        label={siteLabel}
+      />
+      <NavRow
         href={basePath}
-        title={siteLabel}
-        aria-label={siteLabel}
-        className={cn(ROUTE_MENU_NAV_ITEM_CLASS, "font-medium")}
-      >
-        <span className="shell-nav-icon">
-          <Globe
+        label="SEO overview"
+        title="This site's search health at a glance."
+        active={pathname === basePath}
+        icon={
+          <Search
             size={ROUTE_MENU_ICON_SIZE}
             strokeWidth={ROUTE_MENU_ICON_STROKE_WIDTH}
           />
-        </span>
-        <span className="shell-nav-label truncate">{siteLabel}</span>
-      </NavLink>
+        }
+      />
       {groups.map((group) => (
         <div key={group.label}>
           <GroupHeading label={group.label} expanded={expanded} />
@@ -489,19 +598,6 @@ function SeoMenu({
           })}
         </div>
       ))}
-      <GroupHeading label="The Website" expanded={expanded} />
-      <NavRow
-        href={`/marketing/${brandSeg}/websites/${siteSeg}`}
-        label="Website inventory"
-        title="Pages, structure, sitemaps, media, crawls, and settings for this site."
-        active={false}
-        icon={
-          <Globe
-            size={ROUTE_MENU_ICON_SIZE}
-            strokeWidth={ROUTE_MENU_ICON_STROKE_WIDTH}
-          />
-        }
-      />
     </>
   );
 }

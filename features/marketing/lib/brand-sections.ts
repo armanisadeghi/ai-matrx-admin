@@ -4,9 +4,12 @@ import type { ShellIconName } from "@/features/shell/shellIconMap";
  * The Brand WORKSPACE's sections — everything under `/marketing/[brandId]`.
  *
  * A person or team works on one or more brands - usually their own. Every section here
- * is about ONE brand, grouped the way the design was ratified (2026-08-28):
- * Identity (what the brand IS), Properties (what it OWNS), Marketing (the
- * work), Insight (what's true around it), plus Inbox and Settings.
+ * is about ONE brand, grouped as Arman laid Marketing out (2026-10-21):
+ * "Marketing -> Brand -> Brands have websites, socials, and other things.
+ * Then, each of those has things within it." So the brand's properties come
+ * first (Websites — with SEO and the content plan, which live per website —
+ * Socials, Locations), then Identity, Content, Outreach, Competitors &
+ * monitoring, and Settings. The overview, inbox and analytics sit at the top.
  *
  * Coming-soon sections are REAL reserved routes rendering
  * `<MarketingComingSoon>` and stay VISIBLE in the brand sidebar with their tag
@@ -20,11 +23,13 @@ import type { ShellIconName } from "@/features/shell/shellIconMap";
 
 export const MARKETING_BRAND_SECTION_GROUPS = [
   "Start",
+  "Websites",
+  "Socials",
+  "Locations",
   "Identity",
-  "Properties",
-  "Social",
-  "Marketing",
-  "Insight",
+  "Content",
+  "Outreach",
+  "Competitors & monitoring",
   "Manage",
 ] as const;
 
@@ -69,6 +74,158 @@ export const MARKETING_BRAND_SECTIONS = [
     exact: true,
   },
   {
+    slug: "inbox",
+    name: "Inbox",
+    titlePrefix: "Discovery Inbox",
+    description:
+      "Review machine-found assets, properties, and facts before they join the brand.",
+    letter: "In",
+    iconName: "Inbox",
+    group: "Start",
+  },
+  {
+    slug: "analytics",
+    name: "Analytics",
+    titlePrefix: "Analytics",
+    description:
+      "Google Analytics traffic and conversion per website today; the other channels join it as they land.",
+    letter: "Ay",
+    iconName: "ChartNoAxesColumn",
+    group: "Start",
+  },
+  {
+    slug: "websites",
+    name: "Websites",
+    titlePrefix: "Websites",
+    description: "This brand's sites — pages, structure, crawls, settings.",
+    letter: "Ws",
+    iconName: "Globe",
+    group: "Websites",
+  },
+  {
+    slug: "seo",
+    name: "SEO",
+    titlePrefix: "SEO",
+    description:
+      "The organic-search practice on this brand's sites — keywords, rankings, technical, links, AI visibility.",
+    letter: "Sr",
+    iconName: "Search",
+    group: "Websites",
+  },
+  {
+    // A website's content plan. The plan is per site; this row opens the
+    // picker (or the only site's plan) — the website menu links each site's.
+    slug: "content",
+    name: "Content plan",
+    titlePrefix: "Content Plan",
+    description:
+      "Plan every URL each website should have — pillars, clusters, briefs, keywords.",
+    letter: "Pn",
+    iconName: "ListTree",
+    group: "Websites",
+    subPath: "plan",
+  },
+  {
+    slug: "socials",
+    name: "Accounts",
+    titlePrefix: "Social Accounts",
+    description:
+      "Tracked and own social accounts for this brand — track, compare, and open any account.",
+    letter: "Sa",
+    iconName: "Users",
+    group: "Socials",
+    subPath: "accounts",
+    bareRoute: true,
+  },
+  {
+    slug: "socials",
+    name: "Look up",
+    titlePrefix: "Social Look Up",
+    description:
+      "Look up any account, topic, ad or post — what it costs shows before you press.",
+    letter: "Lu",
+    iconName: "Search",
+    group: "Socials",
+    subPath: "research",
+  },
+  {
+    slug: "socials",
+    name: "Studio",
+    titlePrefix: "Social Studio",
+    description:
+      "The social board — ideas, drafts, and references laid out for this brand.",
+    letter: "Sk",
+    iconName: "LayoutDashboard",
+    group: "Socials",
+    subPath: "studio",
+  },
+  {
+    slug: "socials",
+    name: "Outliers",
+    titlePrefix: "Outliers",
+    description:
+      "Posts that beat their account's normal — what is working right now.",
+    letter: "Ot",
+    iconName: "TrendingUp",
+    group: "Socials",
+    subPath: "outliers",
+  },
+  {
+    slug: "socials",
+    name: "Swipe file",
+    titlePrefix: "Swipe File",
+    description:
+      "Saved posts and ads worth learning from, with notes and tags.",
+    letter: "Sf",
+    iconName: "BookmarkCheck",
+    group: "Socials",
+    subPath: "swipe",
+  },
+  {
+    slug: "socials",
+    name: "Videos",
+    titlePrefix: "Videos",
+    description: "Clones of outlier and swipe-file videos, with variants.",
+    letter: "Sv",
+    iconName: "Video",
+    group: "Socials",
+    subPath: "videos",
+  },
+  {
+    slug: "socials",
+    // "Ad library" — competitor ad research; never "Ads" beside the Advertising
+    // section (the brand's own ad accounts), which read as the same thing.
+    name: "Ad library",
+    titlePrefix: "Ad Library",
+    description:
+      "Ads the tracked accounts are running, from the platforms' ad libraries.",
+    letter: "Sj",
+    iconName: "Megaphone",
+    group: "Socials",
+    subPath: "ads",
+  },
+  {
+    slug: "socials",
+    name: "KPIs",
+    titlePrefix: "Social KPIs",
+    description:
+      "Followers, growth, and goals for the brand's own accounts.",
+    letter: "Kp",
+    iconName: "Target",
+    group: "Socials",
+    subPath: "kpis",
+  },
+  {
+    slug: "locations",
+    name: "Locations",
+    titlePrefix: "Locations & Listings",
+    description:
+      "Business locations, Google Business Profiles, directory listings, and reviews.",
+    letter: "Lc",
+    iconName: "MapPin",
+    group: "Locations",
+  },
+  {
     slug: "identity",
     // Ruling 2026-10-09: the brand's HOME is Overview (the root row, labeled with
     // the brand's name). This room is the brand's Identity — never a second "home".
@@ -90,133 +247,14 @@ export const MARKETING_BRAND_SECTIONS = [
     group: "Identity",
   },
   {
-    slug: "websites",
-    name: "Websites",
-    titlePrefix: "Websites",
-    description: "This brand's sites — pages, structure, crawls, settings.",
-    letter: "Ws",
-    iconName: "Globe",
-    group: "Properties",
-  },
-  {
-    slug: "locations",
-    name: "Locations",
-    titlePrefix: "Locations & Listings",
-    description:
-      "Business locations, Google Business Profiles, directory listings, and reviews.",
-    letter: "Lc",
-    iconName: "MapPin",
-    group: "Properties",
-  },
-  {
-    slug: "socials",
-    name: "Accounts",
-    titlePrefix: "Social Accounts",
-    description:
-      "Tracked and own social accounts for this brand — track, compare, and open any account.",
-    letter: "Sa",
-    iconName: "Users",
-    group: "Social",
-    subPath: "accounts",
-    bareRoute: true,
-  },
-  {
-    slug: "socials",
-    name: "Look up",
-    titlePrefix: "Social Look Up",
-    description:
-      "Look up any account, topic, ad or post — what it costs shows before you press.",
-    letter: "Lu",
-    iconName: "Search",
-    group: "Social",
-    subPath: "research",
-  },
-  {
-    slug: "socials",
-    name: "Studio",
-    titlePrefix: "Social Studio",
-    description:
-      "The social board — ideas, drafts, and references laid out for this brand.",
-    letter: "Sk",
-    iconName: "LayoutDashboard",
-    group: "Social",
-    subPath: "studio",
-  },
-  {
-    slug: "socials",
-    name: "Outliers",
-    titlePrefix: "Outliers",
-    description:
-      "Posts that beat their account's normal — what is working right now.",
-    letter: "Ot",
-    iconName: "TrendingUp",
-    group: "Social",
-    subPath: "outliers",
-  },
-  {
-    slug: "socials",
-    name: "Swipe file",
-    titlePrefix: "Swipe File",
-    description:
-      "Saved posts and ads worth learning from, with notes and tags.",
-    letter: "Sf",
-    iconName: "BookmarkCheck",
-    group: "Social",
-    subPath: "swipe",
-  },
-  {
-    slug: "socials",
-    name: "Videos",
-    titlePrefix: "Videos",
-    description: "Clones of outlier and swipe-file videos, with variants.",
-    letter: "Sv",
-    iconName: "Video",
-    group: "Social",
-    subPath: "videos",
-  },
-  {
-    slug: "socials",
-    // "Ad library" — competitor ad research; never "Ads" beside the Advertising
-    // section (the brand's own ad accounts), which read as the same thing.
-    name: "Ad library",
-    titlePrefix: "Ad Library",
-    description:
-      "Ads the tracked accounts are running, from the platforms' ad libraries.",
-    letter: "Sj",
-    iconName: "Megaphone",
-    group: "Social",
-    subPath: "ads",
-  },
-  {
-    slug: "socials",
-    name: "KPIs",
-    titlePrefix: "Social KPIs",
-    description:
-      "Followers, growth, and goals for the brand's own accounts.",
-    letter: "Kp",
-    iconName: "Target",
-    group: "Social",
-    subPath: "kpis",
-  },
-  {
-    slug: "seo",
-    name: "SEO",
-    titlePrefix: "SEO",
-    description:
-      "The organic-search practice on this brand's sites — keywords, rankings, technical, links, AI visibility.",
-    letter: "Sr",
-    iconName: "Search",
-    group: "Marketing",
-  },
-  {
     slug: "content",
-    name: "Content",
+    name: "Topical maps",
     titlePrefix: "Content",
     description:
       "The topical map: which pages this brand should have and where they live. The content plan produces what it calls for.",
     letter: "Tm",
     iconName: "Network",
-    group: "Marketing",
+    group: "Content",
     // ⚠️ `/marketing/<brand>/content` answered with `permanentRedirect` (HTTP
     // 308) into the content plan until the map took that slot on 2026-09-16,
     // and browsers cache a 308 indefinitely. Pointing this row at the
@@ -225,14 +263,14 @@ export const MARKETING_BRAND_SECTIONS = [
     subPath: "map",
   },
   {
-    slug: "email",
-    name: "Email",
-    titlePrefix: "Email",
+    slug: "planning",
+    name: "Planning",
+    titlePrefix: "Planning",
     description:
-      "The mailbox you send from, the templates you send, and the sequences that send them.",
-    letter: "Em",
-    iconName: "Mail",
-    group: "Marketing",
+      "Initiatives — the container above channels — and the marketing calendar.",
+    letter: "Pl",
+    iconName: "Target",
+    group: "Content",
   },
   {
     slug: "pr",
@@ -242,7 +280,7 @@ export const MARKETING_BRAND_SECTIONS = [
       "What is genuinely newsworthy about this brand, the proof, and the journalists to pitch.",
     letter: "Pr",
     iconName: "Newspaper",
-    group: "Marketing",
+    group: "Outreach",
   },
   {
     slug: "pr",
@@ -252,7 +290,7 @@ export const MARKETING_BRAND_SECTIONS = [
       "Link and PR prospecting, sequenced contact, and earned-placement tracking.",
     letter: "Ou",
     iconName: "Send",
-    group: "Marketing",
+    group: "Outreach",
     subPath: "outreach",
   },
   {
@@ -265,8 +303,18 @@ export const MARKETING_BRAND_SECTIONS = [
       "The sourced moments worth pitching over the next six months, with pitch windows for every kind of outlet.",
     letter: "Cy",
     iconName: "CalendarDays",
-    group: "Marketing",
+    group: "Outreach",
     subPath: "calendar",
+  },
+  {
+    slug: "email",
+    name: "Email",
+    titlePrefix: "Email",
+    description:
+      "The mailbox you send from, the templates you send, and the sequences that send them.",
+    letter: "Em",
+    iconName: "Mail",
+    group: "Outreach",
   },
   {
     slug: "ads",
@@ -276,7 +324,7 @@ export const MARKETING_BRAND_SECTIONS = [
       "Ad accounts, campaigns, creative, and budgets across Google, Meta, and LinkedIn.",
     letter: "Az",
     iconName: "BadgeDollarSign",
-    group: "Marketing",
+    group: "Outreach",
   },
   {
     slug: "intelligence",
@@ -286,7 +334,7 @@ export const MARKETING_BRAND_SECTIONS = [
       "Tracked rivals, share of voice, keyword and content gaps, and their movement.",
     letter: "Cm",
     iconName: "Swords",
-    group: "Insight",
+    group: "Competitors & monitoring",
     subPath: "competitors",
   },
   {
@@ -297,7 +345,7 @@ export const MARKETING_BRAND_SECTIONS = [
       "Who wrote about this brand, what happened to its links, and whether the answer engines cite it.",
     letter: "Mo",
     iconName: "Radar",
-    group: "Insight",
+    group: "Competitors & monitoring",
     subPath: "monitoring",
   },
   {
@@ -308,7 +356,7 @@ export const MARKETING_BRAND_SECTIONS = [
       "How the answer engines talk about this brand, and its share of voice against its competitors.",
     letter: "AI",
     iconName: "SearchCheck",
-    group: "Insight",
+    group: "Competitors & monitoring",
     subPath: "ai-visibility",
   },
   {
@@ -319,38 +367,8 @@ export const MARKETING_BRAND_SECTIONS = [
       "Evidence-backed publication opportunities and reputation handling decisions.",
     letter: "Ru",
     iconName: "ShieldCheck",
-    group: "Insight",
+    group: "Competitors & monitoring",
     subPath: "reputation",
-  },
-  {
-    slug: "analytics",
-    name: "Analytics",
-    titlePrefix: "Analytics",
-    description:
-      "Google Analytics traffic and conversion per website today; the other channels join it as they land.",
-    letter: "Ay",
-    iconName: "ChartNoAxesColumn",
-    group: "Insight",
-  },
-  {
-    slug: "planning",
-    name: "Planning",
-    titlePrefix: "Planning",
-    description:
-      "Initiatives — the container above channels — and the marketing calendar.",
-    letter: "Pl",
-    iconName: "Target",
-    group: "Insight",
-  },
-  {
-    slug: "inbox",
-    name: "Inbox",
-    titlePrefix: "Discovery Inbox",
-    description:
-      "Review machine-found assets, properties, and facts before they join the brand.",
-    letter: "In",
-    iconName: "Inbox",
-    group: "Manage",
   },
   {
     slug: "settings",

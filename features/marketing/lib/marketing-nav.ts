@@ -355,7 +355,7 @@ export const MARKETING_PILLARS: readonly MarketingNavPillar[] = [
       "Websites, socials, and locations",
       "SEO, content, email, PR, and ads",
     ],
-    landingHref: "/marketing/brands",
+    landingHref: "/marketing/brands/all",
     entries: [
       {
         label: "Brands",
@@ -407,6 +407,19 @@ export const MARKETING_PILLARS: readonly MarketingNavPillar[] = [
         description:
           "Every tracked social account and recent outlier across your brands, in one place.",
         iconName: "Share2",
+      },
+      {
+        label: "News monitors",
+        href: marketingRoutes.monitoring(),
+        description:
+          "Every news monitor across your brands; each opens into its brand.",
+        iconName: "Radar",
+      },
+      {
+        label: "PR calendars",
+        href: marketingRoutes.calendar(),
+        description: "Pick a brand to open its PR calendar.",
+        iconName: "CalendarDays",
       },
       {
         label: "Cost",
@@ -501,10 +514,57 @@ export const MARKETING_PILLARS: readonly MarketingNavPillar[] = [
           "Find videos and compare creator authority, engagement, and research value.",
         iconName: "Video",
       },
+      {
+        label: "Zip code heatmap",
+        href: "/free/zip-code-heatmap",
+        description: "Map any numbers by zip code and share the map.",
+        iconName: "Map",
+        external: true,
+      },
       ...MARKETING_PUBLIC_TOOLS.slice(0, 3).map((tool) => ({
         ...tool,
         navHidden: true,
       })),
+    ],
+  },
+  {
+    // Publishing is part of Marketing (app-frame lineup: "Marketing (CMS,
+    // podcasts inside)"); listed here so the sidebar and home reach it.
+    key: "publish",
+    label: "Publish",
+    description: "Websites, pages, podcasts and artifacts you publish.",
+    iconName: "Newspaper",
+    entries: [
+      {
+        label: "CMS sites",
+        href: "/cms",
+        description: "Websites you build and publish here.",
+        iconName: "Globe",
+      },
+      {
+        label: "HTML pages",
+        href: "/cms/html-pages",
+        description: "Single published HTML pages.",
+        iconName: "Code2",
+      },
+      {
+        label: "Podcasts",
+        href: "/podcast",
+        description: "Your published podcast shows.",
+        iconName: "Mic",
+      },
+      {
+        label: "Podcast studio",
+        href: "/podcast/studio",
+        description: "Make a new podcast episode.",
+        iconName: "Mic",
+      },
+      {
+        label: "Artifacts",
+        href: "/artifacts",
+        description: "Pages and files agents made for you.",
+        iconName: "Boxes",
+      },
     ],
   },
 ];

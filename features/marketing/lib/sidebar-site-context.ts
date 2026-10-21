@@ -11,7 +11,9 @@ import { MARKETING_RESERVED_SEGMENTS } from "@/features/marketing/lib/keys";
  *
  *   agency  — /marketing, /marketing/brands, /marketing/operations/…
  *   brand   — /marketing/[brandSeg]/… (any brand-workspace section)
- *   website — /marketing/[brandSeg]/websites/[siteSeg]/…
+ *   website — /marketing/[brandSeg]/websites/[siteSeg]/…, plus that site's
+ *             content plan (content/plan/[siteSeg]) and reputation
+ *             (intelligence/reputation/[siteSeg])
  *   seo     — /marketing/[brandSeg]/seo/[siteSeg]/…
  */
 
@@ -38,6 +40,18 @@ export function resolveMarketingSidebarContext(
   if (segments[1] === "seo" && segments[2]) {
     return { kind: "seo", brandSeg, siteSeg: segments[2] };
   }
+  // A site's content plan and reputation are the website's own work, so they
+  // show the website menu (Arman, 2026-10-21).
+  if (segments[1] === "content" && segments[2] === "plan" && segments[3]) {
+    return { kind: "website", brandSeg, siteSeg: segments[3] };
+  }
+  if (
+    segments[1] === "intelligence" &&
+    segments[2] === "reputation" &&
+    segments[3]
+  ) {
+    return { kind: "website", brandSeg, siteSeg: segments[3] };
+  }
   return { kind: "brand", brandSeg };
 }
 
@@ -58,7 +72,11 @@ export function resolveMarketingSidebarSiteContext(
   const canonical = /^\/marketing\/brands\/([^/]+)\/sites\/([^/]+)/.exec(
     pathname,
   );
-  if (canonical && validSiteSegment(canonical[1]) && validSiteSegment(canonical[2])) {
+  if (
+    canonical &&
+    validSiteSegment(canonical[1]) &&
+    validSiteSegment(canonical[2])
+  ) {
     return { brandId: canonical[1], siteId: canonical[2] };
   }
   const flat = /^\/marketing\/sites\/([^/]+)/.exec(pathname);

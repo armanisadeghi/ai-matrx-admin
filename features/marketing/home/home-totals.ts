@@ -22,7 +22,9 @@ import { readBrandSocialCounts } from "@/features/marketing/social/service";
 const STALE_MS = 60_000;
 
 async function countActiveBrands(signal: AbortSignal): Promise<number> {
-  const response = await (await authenticatedWebDb(supabase))
+  const response = await (
+    await authenticatedWebDb(supabase)
+  )
     .from("brand")
     .select("id", { count: "exact", head: true })
     .is("deleted_at", null)
@@ -32,7 +34,9 @@ async function countActiveBrands(signal: AbortSignal): Promise<number> {
 }
 
 async function countPendingReview(signal: AbortSignal): Promise<number> {
-  const response = await (await authenticatedWebDb(supabase))
+  const response = await (
+    await authenticatedWebDb(supabase)
+  )
     .from("discovered_item")
     .select("id", { count: "exact", head: true })
     .eq("status", "pending")
@@ -71,7 +75,8 @@ async function sumSocialAccounts(
   return { accounts, tracked };
 }
 
-const homeKey = (part: string) => [...marketingKeys.root, "home", part] as const;
+const homeKey = (part: string) =>
+  [...marketingKeys.root, "home", part] as const;
 
 export function useMarketingHomeBrandCount() {
   return useQuery({

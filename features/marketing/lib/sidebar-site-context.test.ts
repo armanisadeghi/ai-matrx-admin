@@ -55,4 +55,25 @@ describe("resolveMarketingSidebarContext", () => {
       "brand",
     );
   });
+
+  it("a site's content plan and reputation resolve to that website's menu", () => {
+    expect(
+      resolveMarketingSidebarContext(
+        "/marketing/acme/content/plan/acme-com/brief",
+      ),
+    ).toEqual({ kind: "website", brandSeg: "acme", siteSeg: "acme-com" });
+    expect(
+      resolveMarketingSidebarContext(
+        "/marketing/acme/intelligence/reputation/acme-com/cases",
+      ),
+    ).toEqual({ kind: "website", brandSeg: "acme", siteSeg: "acme-com" });
+    // The brand-level pickers stay on the brand menu.
+    expect(
+      resolveMarketingSidebarContext("/marketing/acme/content/plan").kind,
+    ).toBe("brand");
+    expect(
+      resolveMarketingSidebarContext("/marketing/acme/intelligence/reputation")
+        .kind,
+    ).toBe("brand");
+  });
 });
