@@ -35,4 +35,13 @@ describe("one card per provider", () => {
     expect(out.map((i) => i.id)).toEqual(["native:google"]);
     expect(out[0].abilities?.map((a) => a.item.id)).toEqual(["g2"]);
   });
+  it("a folded catalog row's products stay searchable on the card it folds into (Teams finds Microsoft)", () => {
+    const out = foldAbilities([
+      item("native:microsoft", { keywords: "outlook mail" }),
+      item("wiq", { server: server("microsoft-work-iq"), keywords: "microsoft-work-iq Teams chat meetings SharePoint" }),
+    ]);
+    expect(out).toHaveLength(1);
+    expect(out[0].keywords).toContain("SharePoint");
+    expect(out[0].keywords).toContain("outlook mail");
+  });
 });

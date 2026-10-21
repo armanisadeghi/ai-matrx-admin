@@ -95,7 +95,7 @@ export function foldAbilities(
         status: item.status,
       },
       keywords: `${item.keywords} ${abilities
-        .map((ability) => `${ability.label} ${ability.item.name} ${ability.item.description}`)
+        .map((ability) => `${ability.label} ${ability.item.name} ${ability.item.description} ${ability.item.keywords}`)
         .join(" ")}`,
       featured: all.some((entry) => entry.featured),
       saved: all.some((entry) => entry.saved),
