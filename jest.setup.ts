@@ -23,6 +23,45 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test";
 }
 
+/**
+ * CHAT'S UI SLOTS LOAD ON FIRST USE, NEVER AT SETUP.
+ *
+ * `@ai-matrx/chat/host/ui-slots` imports its package defaults, and those import the files engine
+ * (`defaults/files-ui` → `@ai-matrx/media/files/engine/api/files`; `defaults/resource-picker-menu`
+ * → the engine's front door). Anything a setup file loads sits in the module registry BEFORE a
+ * suite's own `jest.mock` runs, so from chat 5fa78b5231 (2026-10-08, "required pieces are package
+ * code") every suite that mocked a files-engine module got the REAL module inside the engine's own
+ * thunks — the mock silently never reached the code under test (save-file-new-version, the
+ * editor's working-copy suite). So the setup files never load ui-slots: they hand their
+ * registrations to `__registerChatUiOnLoad`, and the module applies them the first time anything
+ * loads it — after the suite's mocks, through the suite's registry. A suite that mocks ui-slots
+ * itself still wins. Guard:
+ * features/files/__tests__/a-suite-mock-of-the-files-engine-reaches-the-engine.test.ts.
+ */
+{
+  type ChatUiSlots = typeof import("@ai-matrx/chat/host/ui-slots");
+  const uiSlotsPath = require.resolve("@ai-matrx/chat/host/ui-slots");
+  const pending: Parameters<ChatUiSlots["registerChatUi"]>[0][] = [];
+  (globalThis as { __registerChatUiOnLoad?: (r: (typeof pending)[number]) => void }).__registerChatUiOnLoad =
+    (registration) => {
+      pending.push(registration);
+    };
+  // ui-slots sits in an import cycle (a default it imports imports it back), so the factory can be
+  // re-entered while the real module is still evaluating; only the outermost call registers.
+  let loading = false;
+  jest.doMock(uiSlotsPath, () => {
+    if (loading) return jest.requireActual(uiSlotsPath);
+    loading = true;
+    try {
+      const real = jest.requireActual(uiSlotsPath) as ChatUiSlots;
+      for (const registration of pending) real.registerChatUi(registration);
+      return real;
+    } finally {
+      loading = false;
+    }
+  });
+}
+
 if (
   typeof (globalThis as { structuredClone?: unknown }).structuredClone !==
   "function"
@@ -397,7 +436,6 @@ if (typeof globalThis.CSS === "undefined" || typeof globalThis.CSS?.escape !== "
   // "is not set up here" stand-in.
   {
     /* eslint-disable @typescript-eslint/no-require-imports */
-    const uiSeam = require("@ai-matrx/chat/host/ui-slots") as typeof import("@ai-matrx/chat/host/ui-slots");
     const reactForUi = require("react") as typeof import("react");
     const slot = (modulePath: string, exportName: string) => (props: object) =>
       reactForUi.createElement(
@@ -405,7 +443,7 @@ if (typeof globalThis.CSS === "undefined" || typeof globalThis.CSS?.escape !== "
         props,
       );
     /* eslint-enable @typescript-eslint/no-require-imports */
-    uiSeam.registerChatUi({
+    (globalThis as unknown as { __registerChatUiOnLoad: typeof import("@ai-matrx/chat/host/ui-slots").registerChatUi }).__registerChatUiOnLoad({
       ErrorAlchemyMenu: slot("@/components/errors/ErrorAlchemyMenu", "ErrorAlchemyMenu"),
       // Package cards (RunFailureCard, ...) print the server's sentence through these two slots.
       TextWithDoors: slot("@/components/official/entity-ref/TextWithDoors", "TextWithDoors"),

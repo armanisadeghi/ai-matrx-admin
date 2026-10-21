@@ -42,7 +42,7 @@ import { AgentDiffViewer, buildAgentAdapterRegistry } from "@/features/agents/co
 import { VersionHistoryTimeline } from "@/features/agents/components/diff/VersionHistoryTimeline";
 import { useAgentDuplicateFlow } from "@/features/agents/hooks/useAgentDuplicateFlow";
 import { RecordId } from "@ai-matrx/design-system";
-import { promoteFailureMessage } from "@ai-matrx/agents/versions";
+import { promoteFailureMessage, promoteSuccessMessage } from "@ai-matrx/agents/versions";
 import { compareAgentDefinitions } from "@ai-matrx/agents/versions";
 import { useDiffEnrichment } from "@ai-matrx/chat/agents/hooks/useDiffEnrichment";
 import { DefaultFieldAdapter } from "@ai-matrx/diff/react";
@@ -228,7 +228,8 @@ export function AgentVersionDiffPage({
         promoteAgentVersion({ agentId, version: leftVersion }),
       ).unwrap();
       if (result.success) {
-        toast.success(`Promoted v${leftVersion} to current`);
+        // agx_promote_version saves no new version: say so, never let a person wait for a new row.
+        toast.success(promoteSuccessMessage(leftVersion));
       } else {
         toast.error(result.error ?? "Failed to promote version");
       }
