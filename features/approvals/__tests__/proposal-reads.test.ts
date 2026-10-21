@@ -24,6 +24,11 @@ import { join } from "node:path";
 
 const mockGetAssistById = jest.fn();
 const mockReadAllRows = jest.fn();
+const mockReadStoreApprovalState = jest.fn();
+
+jest.mock("../store-door", () => ({
+  readStoreApprovalState: (...args: unknown[]) => mockReadStoreApprovalState(...args),
+}));
 
 jest.mock("@/features/assists/service", () => ({
   getAssistById: (...args: unknown[]) => mockGetAssistById(...args),
@@ -121,6 +126,28 @@ afterEach(() => {
 });
 
 describe("readProposalStatus", () => {
+  beforeEach(() => mockReadStoreApprovalState.mockResolvedValue(null));
+
+  // A HELD WRITE IS AN APPROVAL TOO (lane CLOSE2, 2026-10-21): `store_change` rows live in the
+  // record store, not `platform.assists`, so an approved one reloaded as "we could not confirm
+  // what became of it". The deep link asks the store for its state.
+  it("says a decided store approval is decided, and a waiting one is waiting", async () => {
+    mockGetAssistById.mockResolvedValue(null);
+    mockReadStoreApprovalState.mockResolvedValue("approved");
+    await expect(
+      readProposalStatus({ userId: "u1", proposalId: "held-1", mounted, scope }),
+    ).resolves.toMatchObject({ status: "decided" });
+    expect(mockReadStoreApprovalState).toHaveBeenCalledWith("held-1");
+    mockReadStoreApprovalState.mockResolvedValue("declined");
+    await expect(
+      readProposalStatus({ userId: "u1", proposalId: "held-1", mounted, scope }),
+    ).resolves.toMatchObject({ status: "decided" });
+    mockReadStoreApprovalState.mockResolvedValue("pending");
+    await expect(
+      readProposalStatus({ userId: "u1", proposalId: "held-1", mounted, scope }),
+    ).resolves.toMatchObject({ status: "pending" });
+  });
+
   it("says an id that is not an approval item is not one", async () => {
     mockGetAssistById.mockResolvedValue({
       id: "x",

@@ -186,6 +186,25 @@ async function conversationsFor(
   return found;
 }
 
+/**
+ * WHAT BECAME OF ONE STORE APPROVAL, by id — the `?item=` deep link's read for a row that is not
+ * an assist (lane CLOSE2, 2026-10-21: an approved held write, reloaded, said "we could not confirm
+ * what became of it" because only `platform.assists` was asked). Answers the store's own `state`
+ * word (`pending`, `approved`, `declined`, `withdrawn`, …), or null when the id is not a store
+ * approval this person may read.
+ */
+export async function readStoreApprovalState(approvalId: string): Promise<string | null> {
+  const where = await resolveObjectOrganization(dataSource(), approvalId);
+  if (where.state !== "found") return null;
+  const doors = storeDoors(createClient());
+  const read = (await doors.rpc("work_approval_read", {
+    p_organization_id: where.organizationId,
+    p_approval_id: approvalId,
+  })) as { data?: unknown; error?: unknown };
+  if (read.error || !read.data || typeof read.data !== "object") return null;
+  return text((read.data as Record<string, unknown>)["state"]);
+}
+
 /** Every store approval waiting on this person, read in full. */
 export async function listStoreApprovals(userId: string): Promise<StoreApproval[]> {
   const waiting = await waitingDecisions(userId);
