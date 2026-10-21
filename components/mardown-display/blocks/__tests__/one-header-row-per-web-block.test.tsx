@@ -30,6 +30,11 @@ jest.mock("@/features/canvas/hooks/useCanvasItem", () => ({
   useCanvasItem: () => ({ row: null, loading: false, error: null, refetch: () => {} }),
 }));
 
+// Body parts the header guard does not read, which cannot run in jsdom: the leaflet map (ESM-only
+// react-leaflet) and the closed "import as tasks" dialog (reads the projects store).
+jest.mock("@/components/mardown-display/blocks/map/MapCanvas", () => ({ __esModule: true, default: () => null }));
+jest.mock("@/features/tasks/components/ImportTasksModal", () => ({ __esModule: true, default: () => null }));
+
 const json = (value: unknown) => JSON.stringify(value);
 const fence = (language: string, body: string) => "```" + language + "\n" + body + "\n```";
 const tag = (name: string, body: string) => `<${name}>\n${body}\n</${name}>`;
@@ -53,6 +58,8 @@ const TROUBLE = "### The app will not start\n- Check the cable\n- Restart it";
 const RECIPE = "### Pancakes\n#### Ingredients\n- 2 eggs\n#### Instructions\n1. Mix";
 const TREE = json({ decision_tree: { title: "RV5 Pick", root: { question: "Ready?", yes: { action: "Go" }, no: { action: "Wait" } } } });
 const MAP = json({ title: "RV5 Offices", markers: [{ name: "Paris", lat: 48.85, lng: 2.35 }] });
+const RESOURCES = "### Reading\n- [Docs](https://example.com): the manual";
+const RESEARCH = "### Findings\n- Point one";
 
 const CASES: Case[] = [
   { name: "stats", text: fence("stats", STATS), savedType: "stats", savedBody: STATS, title: "RV5 Totals" },
@@ -63,6 +70,9 @@ const CASES: Case[] = [
   { name: "recipe", text: tag("cooking_recipe", RECIPE), savedType: "cooking_recipe", savedBody: RECIPE, title: "Pancakes" },
   { name: "decision tree", text: fence("decision_tree", TREE), savedType: "decision_tree", savedBody: TREE, title: "RV5 Pick" },
   { name: "map", text: fence("map", MAP), savedType: "map", savedBody: MAP, title: "RV5 Offices" },
+  // The other web cards that take the editor's tools: the same one-row rule.
+  { name: "resources", text: tag("resources", RESOURCES), savedType: "resources", savedBody: RESOURCES, title: "" },
+  { name: "research", text: tag("research", RESEARCH), savedType: "research", savedBody: RESEARCH, title: "" },
 ];
 
 const SAVED_ID = "0b46d390-ab07-4d37-b34f-c4981a10dd42";
@@ -159,6 +169,7 @@ describe("every web block draws ONE header row holding its title, its type label
         labels: 1,
         labelInHeader: true,
       });
+      if (c.title) expect(seen.headerText[0]).toContain(c.title);
     }, 60_000);
   }
 });

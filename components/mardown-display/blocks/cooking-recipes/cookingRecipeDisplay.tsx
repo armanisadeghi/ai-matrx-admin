@@ -96,6 +96,12 @@ export function recipeStatValue(raw: string | number | undefined | null, words: 
   return value;
 }
 
+/** A step with no bold action is its own description: the heading is the whole line, said once (review 5, G13: "Mix for" over "Mix for 3 minutes"). */
+export function stepRepeatsItsAction(step: { action: string; description: string }): boolean {
+  const action = step.action.trim().toLowerCase();
+  return action !== "" && step.description.trim().toLowerCase().startsWith(action);
+}
+
 const RecipeViewer: React.FC<RecipeViewerProps> = ({
   recipe,
   source,
@@ -599,15 +605,17 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
                                     : "text-gray-900 dark:text-gray-100"
                                 }`}
                               >
-                                {step.action}
+                                {stepRepeatsItsAction(step) ? step.description : step.action}
                               </div>
                             </div>
 
                             {!isCompleted && (
                               <div className="mt-2 space-y-1.5 w-full">
-                                <p className="text-xs leading-relaxed text-gray-700 dark:text-gray-300">
-                                  {step.description}
-                                </p>
+                                {!stepRepeatsItsAction(step) && (
+                                  <p className="text-xs leading-relaxed text-gray-700 dark:text-gray-300">
+                                    {step.description}
+                                  </p>
+                                )}
                                 {step.time && (
                                   <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
                                     <Clock className="h-3 w-3 flex-shrink-0" />

@@ -62,6 +62,7 @@ import "@ai-matrx/rich-content/editor/format/format-actions";
 import { liveSelectionShapeText } from "@ai-matrx/rich-content/selection-toolbar/selection-shape";
 import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 import { onSelectionToolbarActionRequest } from "./selection-toolbar-requests";
+import { textRangeOf } from "./text-range";
 
 /**
  * The live selection written back as the shapes it was drawn from (VERIFIER-30 #1): a browser
@@ -204,7 +205,8 @@ export function SelectionToolbarRoot(): React.ReactElement | null {
       } else {
         const sel = window.getSelection();
         if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
-          range = sel.getRangeAt(0);
+          // Judged by the words it holds: a triple-click's end runs on past the content.
+          range = textRangeOf(sel.getRangeAt(0)) ?? sel.getRangeAt(0);
           node = range.commonAncestorContainer;
           text = sel.toString();
           const measured = range.getBoundingClientRect();
@@ -324,7 +326,8 @@ export function SelectionToolbarRoot(): React.ReactElement | null {
       if (e.altKey && (e.ctrlKey || e.metaKey) && (e.code === "KeyM" || e.key.toLowerCase() === "m")) {
         const sel = window.getSelection();
         if (!sel || sel.isCollapsed) return;
-        if (zonesContaining(sel.getRangeAt(0).commonAncestorContainer).length === 0) return;
+        const held = textRangeOf(sel.getRangeAt(0)) ?? sel.getRangeAt(0);
+        if (zonesContaining(held.commonAncestorContainer).length === 0) return;
         e.preventDefault();
         evaluate({ focusToolbar: true });
         return;

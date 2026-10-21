@@ -10,6 +10,7 @@
 import { MessageSquarePlus } from "lucide-react";
 import { zonesContaining } from "@ai-matrx/rich-content/selection-toolbar/selection-zones";
 import { requestSelectionToolbarAction } from "@/components/selection-toolbar/selection-toolbar-requests";
+import { textRangeOf } from "@/components/selection-toolbar/text-range";
 import { toast } from "@/lib/toast";
 import { ANNOTATION_HOST_KEY, type AnnotationSelectionHost } from "../../annotations/annotation-actions";
 import { registerActionIfAbsent } from "./register-if-absent";
@@ -41,8 +42,10 @@ export function canPinComment(range: Range): boolean {
 function passageFor(ctx: RichDocumentActionContext): Range | null {
   const open = ctx.openSelection;
   if (!open?.range || !open.text.trim()) return null;
-  const range = open.range;
-  if (range.collapsed || !range.startContainer.isConnected) return null;
+  if (!open.range.startContainer.isConnected) return null;
+  // The words selected, never the blank space a triple-click runs on into (the answer's footer).
+  const range = textRangeOf(open.range);
+  if (!range) return null;
   return canPinComment(range) ? range : null;
 }
 

@@ -746,7 +746,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
                     </h2>
 
                     {currentNode.action && (
-                      <Badge className="shrink-0" tone="success" title="Decision Complete" icon={<CheckCircle2 />}>
+                      <Badge className="shrink-0 gap-1.5" tone="success" title="Decision Complete" icon={<CheckCircle2 />}>
                         <span className="hidden sm:inline">Decision Complete</span>
                       </Badge>
                     )}
@@ -778,13 +778,13 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
                         </p>
                       )}
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <Button variant="success" icon={<CheckCircle2 />} onClick={() => {
+                        <Button variant={completedPaths.has(currentNode.id) ? "outline" : "success"} disabled={completedPaths.has(currentNode.id)} icon={<CheckCircle2 />} onClick={() => {
                             const newPaths = new Set([...completedPaths, currentNode.id]);
                             setCompletedPaths(newPaths);
                             emitState(currentNode, navigationHistory, newPaths);
-                          }} title="Mark as Completed">
+                          }} title={completedPaths.has(currentNode.id) ? "Completed" : "Mark as Completed"} data-decision-completed={completedPaths.has(currentNode.id) ? "" : undefined}>
                           <span className="hidden sm:inline">
-                            Mark as Completed
+                            {completedPaths.has(currentNode.id) ? "Completed" : "Mark as Completed"}
                           </span>
                         </Button>
                         <Button variant="outline" icon={<RotateCcw />} onClick={goToRoot} title="Start New Decision">

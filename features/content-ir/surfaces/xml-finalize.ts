@@ -12,9 +12,9 @@
  * convergence happens at COMPLETE only, mirroring the envelope-cache
  * complete-only law.
  *
- * Failure posture: LOUD fail-open. A missing strategy, a throw, or a
- * no-value parse leaves today's rendering untouched and emits exactly ONE
- * console.error per (tag, region source) — the memo carries the null so the
+ * Failure posture: LOUD fail-open. A missing strategy or a throw leaves
+ * today's rendering untouched and emits exactly ONE console.error per (tag, region source); a
+ * no-value parse (the author's text is not in the grammar) leaves it untouched with ONE console.warn — the memo carries the null so the
  * hot re-split path never spams. Results are memoized by source text so
  * repeated re-splits of the same message return the SAME envelope object
  * (reference equality → React bail-outs), matching region-envelope-memo.
@@ -90,7 +90,11 @@ function envelopeForCompletedRegion(
       if (value) {
         envelope = envelopeFromCompleteValue(value, kind, { discriminator });
       } else {
-        console.error(
+        // An author's text that is not in the surface's grammar (a <troubleshooting> with no
+        // Symptom) is not a defect of ours: the block still draws, as written, in its legacy
+        // rendering. It is a warning, never a captured error that raises the admin badge on a
+        // person's note (review 5, G8). A missing strategy or a throw below stays an error.
+        console.warn(
           `[content-ir] ${surfaceLabel} surface "${token}" strategy "${parserStrategy}" produced no canonical value — region left on legacy rendering`,
         );
       }

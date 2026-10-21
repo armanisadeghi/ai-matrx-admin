@@ -32,7 +32,7 @@ describe("parsers never invent", () => {
   });
 
   it("research: no placeholder overview, introduction, conclusion, source or finding title", () => {
-    const r = parseResearchMarkdown("## Findings\nSome plain text with no structure.\n");
+    const r = parseResearchMarkdown("## Findings\nSome plain text with no structure.\n")!;
     expect(r.title).toBe("");
     expect([r.overview, r.introduction, r.conclusion]).toEqual(["", "", ""]);
     expect(JSON.stringify(r)).not.toMatch(/No overview found|No introduction found|No conclusion found|Multiple Sources|General Research Content/);

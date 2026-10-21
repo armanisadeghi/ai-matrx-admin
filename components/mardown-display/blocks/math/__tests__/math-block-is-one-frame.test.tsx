@@ -21,7 +21,7 @@ jest.mock("@ai-matrx/print/react", () => ({
 jest.mock("../math-printer", () => ({ mathPrinter: {} }));
 jest.mock("@/features/math/utils/math-problem-persistence", () => ({ downloadMathProblem: jest.fn(), uploadMathProblem: jest.fn() }));
 
-import MathProblemBlock from "../MathProblemBlock";
+import MathProblemBlock, { withStatementRecord } from "../MathProblemBlock";
 import { TooltipProvider } from "@ai-matrx/design-system";
 
 const problem = {
@@ -75,5 +75,27 @@ describe("the math block is one plain card with one header", () => {
     expect(host.textContent).toContain("Start Interactive");
     // Review 4 F18: Reset and Back do nothing before the walk starts, so the idle block offers neither.
     expect(host.textContent).not.toContain("Reset");
+  });
+});
+
+describe("a plain-string statement (review 5, G12)", () => {
+  it("becomes the statement's text, with nothing made up beside it", () => {
+    expect(withStatementRecord({ problem_statement: "Solve 2x + 3 = 7" })).toEqual({ problem_statement: { text: "Solve 2x + 3 = 7" } });
+    expect(withStatementRecord({ problem_statement: { text: "t", equation: "e" } })).toEqual({ problem_statement: { text: "t", equation: "e" } });
+  });
+
+  it("is drawn by the block", async () => {
+    const stringStatement = { math_problem: { title: "RV5 Sum", problem_statement: "Solve 2x + 3 = 7", solutions: [] } };
+    const second = document.createElement("div");
+    document.body.appendChild(second);
+    await act(async () => {
+      createRoot(second).render(
+        <TooltipProvider>
+          <MathProblemBlock problemData={stringStatement as never} />
+        </TooltipProvider>,
+      );
+    });
+    expect(second.textContent).toContain("Solve 2x + 3 = 7");
+    second.remove();
   });
 });

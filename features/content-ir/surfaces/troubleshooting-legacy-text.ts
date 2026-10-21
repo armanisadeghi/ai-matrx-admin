@@ -17,10 +17,8 @@
  * regenerates the identical ids deterministically, so XML → kind → component
  * produces byte-equal serverData to the legacy direct-parse path.
  *
- * Failure: the legacy parser NEVER returns zero issues — with no `**Symptom:**`
- * marker it fabricates a "General Issue" placeholder guide. For convergence
- * that placeholder is a parse FAILURE, so regions without a symptom marker
- * return null (the caller logs loudly and legacy rendering stands untouched).
+ * Failure: a region with no `**Symptom:**` marker has no issue to converge, so it returns null
+ * and the legacy rendering stands (it lists the lines as written; the parser invents nothing).
  */
 
 import { parseTroubleshootingMarkdown } from "@/components/mardown-display/blocks/troubleshooting/parseTroubleshootingMarkdown";
@@ -107,8 +105,7 @@ export function troubleshootingLegacyTextToKindValue(
   const closeIdx = inner.toLowerCase().indexOf(CLOSING_TAG);
   if (closeIdx !== -1) inner = inner.slice(0, closeIdx);
 
-  // No symptom marker → the parser could only fabricate its placeholder
-  // guide. That is a convergence failure, not content.
+  // No symptom marker → no issue to converge: legacy rendering stands.
   if (!SYMPTOM_MARKER_RE.test(inner)) return null;
 
   const parsed = parseTroubleshootingMarkdown(inner);
